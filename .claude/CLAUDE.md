@@ -1,5 +1,24 @@
 # GenHub PWA - Project Instructions
 
+## Core Documentation Reference (MANDATORY)
+
+**Before starting ANY work, agents MUST reference these authoritative documentation files:**
+
+| Document | Location | Purpose |
+|----------|----------|---------|
+| **SYSTEM.md** | [.claude/docs/law/SYSTEM.md](docs/law/SYSTEM.md) | Architecture rules, tech stack, data flow patterns, security |
+| **DB_SCHEMA.md** | [.claude/docs/law/DB_SCHEMA.md](docs/law/DB_SCHEMA.md) | Database tables, RLS policies, relationships, queries |
+| **UI_RULES.md** | [.claude/docs/law/UI_RULES.md](docs/law/UI_RULES.md) | Design system, colors, components, responsive patterns |
+
+### When to Reference Each Document:
+- **SYSTEM.md** → Architecture decisions, which client to use, error handling, agent workflows
+- **DB_SCHEMA.md** → Writing queries, creating tables, understanding relationships, RLS policies
+- **UI_RULES.md** → Building components, applying colors, using icons, responsive design
+
+> **These files are THE authoritative source of truth. Always check them before making assumptions.**
+
+---
+
 ## Design System
 **GenHub PWA - Construction Industry Theme**
 - **Primary Color**: #001B51 (Navy Blue - professional, trustworthy)
@@ -112,6 +131,8 @@ Backend Work:
 ├── agents/           # Agent definitions
 ├── commands/kc/      # Skills (slash commands)
 ├── docs/
+│   ├── law/         # AUTHORITATIVE DOCS (SYSTEM.md, DB_SCHEMA.md, UI_RULES.md)
+│   ├── specs/       # Feature specifications
 │   └── ui-plans/    # UI implementation plans
 ├── rules/           # Project rules
 ├── system/          # System documentation
