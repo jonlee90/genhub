@@ -9,7 +9,7 @@ Successfully implemented material display functionality in the tasks module, sho
 Added material statistics fetching to the tasks page that efficiently loads material counts and costs for all tasks in a single query.
 
 **Files Modified:**
-- `C:\Users\Jon\Documents\claude projects\next-saas-starter\app\app\tasks\page.tsx`
+- `C:\Users\Jon\Documents\claude projects\genhub\app\app\tasks\page.tsx`
 
 **Changes:**
 - Queries `material_assignments` table for all tasks
@@ -20,7 +20,7 @@ Added material statistics fetching to the tasks page that efficiently loads mate
 Enhanced TaskCard component with distinctive industrial material indicators.
 
 **Files Modified:**
-- `C:\Users\Jon\Documents\claude projects\next-saas-starter\components\tasks\TaskCard.tsx`
+- `C:\Users\Jon\Documents\claude projects\genhub\components\tasks\TaskCard.tsx`
 
 **Changes:**
 - Added `materialStats` to Task type definition

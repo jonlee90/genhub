@@ -6,7 +6,7 @@ Updated the Sidebar component to add Subcontractors as a nested/collapsible item
 ## Implementation Summary
 
 ### Changes Made
-Updated `C:\Users\Jon\Documents\claude projects\next-saas-starter\components\app\Sidebar.tsx`:
+Updated `C:\Users\Jon\Documents\claude projects\genhub\components\app\Sidebar.tsx`:
 
 1. **Added New Icons**
    - `ChevronDown` - For expand/collapse indicator
@@ -140,7 +140,7 @@ const navigation: NavigationItem[] = [
 - Framer Motion animations configured correctly
 
 ## Files Modified
-1. `C:\Users\Jon\Documents\claude projects\next-saas-starter\components\app\Sidebar.tsx`
+1. `C:\Users\Jon\Documents\claude projects\genhub\components\app\Sidebar.tsx`
 
 ## Design System Compliance
 - Primary Color: #001B51 (Navy Blue) - Used for active states

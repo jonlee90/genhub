@@ -1398,18 +1398,18 @@ const checkExpiryStatus = (expiryDate: string | null): 'valid' | 'expiring' | 'e
 ### File Locations
 
 **Server Components**:
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\app\app\team\subcontractors\page.tsx`
+- `c:\Users\Jon\Documents\claude projects\genhub\app\app\team\subcontractors\page.tsx`
 
 **Client Components**:
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\components\team\SubcontractorList.tsx`
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\components\team\SubcontractorCard.tsx`
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\components\team\AddSubcontractorModal.tsx`
+- `c:\Users\Jon\Documents\claude projects\genhub\components\team\SubcontractorList.tsx`
+- `c:\Users\Jon\Documents\claude projects\genhub\components\team\SubcontractorCard.tsx`
+- `c:\Users\Jon\Documents\claude projects\genhub\components\team\AddSubcontractorModal.tsx`
 
 **Server Actions** (existing):
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\app\actions\subcontractors.ts`
+- `c:\Users\Jon\Documents\claude projects\genhub\app\actions\subcontractors.ts`
 
 **Types** (existing):
-- `c:\Users\Jon\Documents\claude projects\next-saas-starter\types\database.types.ts`
+- `c:\Users\Jon\Documents\claude projects\genhub\types\database.types.ts`
 
 ---
 

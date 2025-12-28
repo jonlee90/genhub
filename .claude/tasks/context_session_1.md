@@ -380,7 +380,7 @@ All 13 SQL migration files created in `supabase/migrations/`:
 **Date**: 2025-12-04
 
 ### File Created
-Location: `c:\Users\Jon\Documents\claude projects\next-saas-starter\supabase\migrations\__consolidated_migration.sql`
+Location: `c:\Users\Jon\Documents\claude projects\genhub\supabase\migrations\__consolidated_migration.sql`
 
 ### Purpose
 Created a properly structured consolidated SQL migration file that combines all 14 individual migration files in the correct dependency order to avoid circular reference issues during database setup.
@@ -2761,9 +2761,9 @@ The critical issues must be resolved before Epic 4 can be considered production-
 4. **Client-side UX**: HTML5 `min` attribute prevents invalid due date selection
 
 ### Files Modified
-- `C:\Users\Jon\Documents\claude projects\next-saas-starter\components\tasks\TaskModal.tsx`
-- `C:\Users\Jon\Documents\claude projects\next-saas-starter\components\tasks\CreateTaskForm.tsx`
-- `C:\Users\Jon\Documents\claude projects\next-saas-starter\app\actions\tasks.ts`
+- `C:\Users\Jon\Documents\claude projects\genhub\components\tasks\TaskModal.tsx`
+- `C:\Users\Jon\Documents\claude projects\genhub\components\tasks\CreateTaskForm.tsx`
+- `C:\Users\Jon\Documents\claude projects\genhub\app\actions\tasks.ts`
 
 ### Benefits
 1. **Gantt Chart Integration**: Tasks can now be properly scheduled with start and end dates

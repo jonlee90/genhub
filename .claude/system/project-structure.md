@@ -6,7 +6,7 @@
 ## Directory Structure
 
 ```
-next-saas-starter/
+genhub/
 ├── app/                           # Next.js 15 App Router
 │   ├── (login)/                   # Public authentication routes
 │   │   ├── sign-in/

@@ -49,7 +49,7 @@ This document describes the complete service worker implementation for GenHub PW
 ## File Structure
 
 ```
-next-saas-starter/
+genhub/
 ├── public/
 │   └── sw.js                                    # Service Worker
 ├── lib/

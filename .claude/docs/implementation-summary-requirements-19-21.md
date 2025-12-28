@@ -495,7 +495,7 @@ Use the testing checklist in the context file:
 ## File Structure
 
 ```
-C:\Users\Jon\Documents\claude projects\next-saas-starter\
+C:\Users\Jon\Documents\claude projects\genhub\
 
 ├── supabase/migrations/
 │   ├── 020_materials_and_expenses.sql
