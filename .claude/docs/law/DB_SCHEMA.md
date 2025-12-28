@@ -730,6 +730,22 @@ RETURNS TABLE (
 );
 ```
 
+### get_top_team_members_by_completed_tasks()
+```sql
+-- Returns top team members by completed task count (for dashboard stats)
+CREATE FUNCTION get_top_team_members_by_completed_tasks(
+  p_company_id uuid,
+  limit_count integer DEFAULT 5
+)
+RETURNS TABLE (
+  id uuid,
+  name text,
+  avatar_url text,
+  completed_tasks bigint
+);
+-- Usage: SELECT * FROM get_top_team_members_by_completed_tasks('company-uuid', 5);
+```
+
 ---
 
 ## Database Triggers
@@ -830,6 +846,7 @@ GROUP BY p.id, p.budget;
 | 20251209034916 | fix_company_users_rls_complete | Complete RLS fix with helper functions |
 | 20251209035356 | fix_all_rls_policies_using_helper_functions | Refactored all RLS to use helper functions |
 | 20251209074250 | add_start_date_to_tasks | Added start_date column to tasks |
+| 20251228000000 | add_top_team_members_function | Function for top team members by completed tasks |
 
 ---
 

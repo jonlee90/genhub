@@ -114,6 +114,12 @@ next-saas-starter/
 │   │   ├── KanbanBoard.tsx
 │   │   ├── TaskCard.tsx
 │   │   ├── TaskList.tsx
+│   │   ├── TaskBoard.tsx       # Main task board with filters, views, stats
+│   │   ├── TaskFilters.tsx     # Task filtering UI
+│   │   ├── TaskModal.tsx       # Create/Edit task modal
+│   │   ├── DashboardStats.tsx  # Stats cards (totals, budget overview)
+│   │   ├── TopProjectsCard.tsx # Top projects by task completion
+│   │   ├── TopTeamMembersCard.tsx # Top team members by completed tasks
 │   │   ├── gantt/              # Gantt chart components
 │   │   └── ...
 │   │

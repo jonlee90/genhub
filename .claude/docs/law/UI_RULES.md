@@ -652,6 +652,101 @@ components/pwa/
 </div>
 ```
 
+### Dashboard Stats Card
+```tsx
+// Single stat card with icon and value
+<div className="relative group h-full">
+  <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
+  <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+    <div className="flex items-center justify-between mb-3">
+      <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+        <CheckSquare className="h-5 w-5 text-construction-blue" />
+      </div>
+      <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+        Total
+      </div>
+    </div>
+    <div>
+      <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+        {value}
+      </div>
+      <div className="text-sm font-bold text-gray-600">Label</div>
+    </div>
+  </div>
+</div>
+```
+
+### Budget Overview Card
+```tsx
+// Multi-value card with planned/actual/variance
+<div className="relative group lg:col-span-2 h-full">
+  <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-green/5 rounded-lg" />
+  <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction h-full flex flex-col">
+    <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-gray-100">
+      <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+        <DollarSign className="h-5 w-5 text-construction-blue" />
+      </div>
+      <h3 className="text-lg font-black uppercase tracking-tight text-construction-blue">
+        Budget Overview
+      </h3>
+    </div>
+    <div className="grid grid-cols-3 gap-4 flex-1 items-end">
+      {/* Planned */}
+      <div className="text-center lg:text-left">
+        <div className="text-xs font-mono uppercase text-construction-blue/60 mb-1">Planned</div>
+        <div className="text-2xl lg:text-3xl font-black text-construction-blue">{planned}</div>
+      </div>
+      {/* Actual */}
+      <div className="text-center lg:text-left">
+        <div className="text-xs font-mono uppercase text-construction-green/60 mb-1">Actual</div>
+        <div className="text-2xl lg:text-3xl font-black text-construction-green">{actual}</div>
+      </div>
+      {/* Variance - color based on under/over budget */}
+      <div className="text-center lg:text-left">
+        <div className={cn("text-xs font-bold", isUnderBudget ? "text-construction-green" : "text-construction-red")}>
+          {isUnderBudget ? "Under Budget" : "Over Budget"}
+        </div>
+        <div className={cn("text-2xl lg:text-3xl font-black", isUnderBudget ? "text-construction-green" : "text-construction-red")}>
+          {isUnderBudget ? "-" : "+"}{variance}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+### Top List Card (Projects/Team Members)
+```tsx
+// Card showing ranked list with progress bars
+<div className="relative group">
+  <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg" />
+  <div className="relative bg-white border-2 border-gray-200 rounded-lg p-6 shadow-construction">
+    {/* Header */}
+    <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-construction-blue/20">
+      <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+        <Building2 className="h-5 w-5 text-construction-blue" />
+      </div>
+      <h3 className="text-lg font-black uppercase tracking-tight text-construction-blue">
+        Top Projects by Tasks
+      </h3>
+    </div>
+    {/* List items with staggered animation */}
+    <div className="space-y-3">
+      {items.map((item, index) => (
+        <motion.div
+          key={item.id}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.08, duration: 0.4 }}
+        >
+          {/* Rank badge + Name + Progress bar + Value */}
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</div>
+```
+
 ---
 
 ## Code Examples
