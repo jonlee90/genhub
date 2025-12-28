@@ -69,9 +69,14 @@ export function GanttTaskRow({
               {task.durationDays}d
             </span>
           </div>
-          {/* Show phase only on desktop */}
-          {task.phase && !isMobile && (
-            <span className="text-xs text-gray-500 truncate block">{task.phase.name}</span>
+          {/* Show project name on both mobile and desktop */}
+          {task.project && (
+            <span className={cn(
+              'text-gray-500 truncate block',
+              isMobile ? 'text-[10px]' : 'text-xs'
+            )}>
+              {task.project.name}
+            </span>
           )}
         </div>
       </div>
