@@ -130,7 +130,7 @@ export function DashboardStats({
           </div>
         </div>
 
-        {/* Budget Overview - spans 2 columns */}
+        {/* TaskBudget Overview - spans 2 columns */}
         <div className="relative group lg:col-span-2 h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-green/5 rounded-lg transform group-hover:scale-[1.02] transition-transform" />
           <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col">
@@ -139,7 +139,7 @@ export function DashboardStats({
                 <DollarSign className="h-5 w-5 text-construction-blue" />
               </div>
               <h3 className="text-lg font-black uppercase tracking-tight text-construction-blue">
-                Budget Overview
+                Task Budget
               </h3>
             </div>
 

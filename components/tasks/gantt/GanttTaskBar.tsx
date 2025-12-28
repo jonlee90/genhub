@@ -44,13 +44,13 @@ export function GanttTaskBar({
       {...attributes}
       {...listeners}
       className={cn(
-        'absolute rounded-md cursor-grab active:cursor-grabbing',
+        'absolute rounded-md cursor-grab active:cursor-grabbing bg-construction-blue ',
         'transition-all duration-200',
         isMobile ? 'touch-manipulation' : 'hover:shadow-md',
         // Clean background based on priority - removed gradients for simplicity
         task.priority === 'high' && 'bg-red-600 border border-red-700',
-        task.priority === 'medium' && 'bg-construction-blue border border-blue-700',
-        task.priority === 'low' && 'bg-emerald-500 border border-emerald-600',
+        task.priority === 'medium' && 'border border-amber-600 text-amber-600',
+        task.priority === 'low' && 'border border-emerald-600 text-emerald-600',
         // Status overlay styles
         statusStyle,
         // Dragging and hover states
