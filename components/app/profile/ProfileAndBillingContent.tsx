@@ -318,8 +318,10 @@ export default function ProfileAndBillingContent() {
 					</div>
 				</div>
 			</motion.div>
+			)}
 
 			{/* Pricing Section */}
+			{PAYMENTS_ENABLED && (
 			<AnimatePresence>
 				{showPricing && (
 					<motion.div 
