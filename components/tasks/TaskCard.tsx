@@ -48,21 +48,22 @@ interface TaskCardProps {
   showEditIndicator?: boolean;
 }
 
+// Debug: Priority config - status badge colors only (border now uses construction theme)
 const PRIORITY_CONFIG = {
   low: {
     label: 'Low',
-    color: 'bg-[#059669]/10 text-[#059669]',
-    border: 'border-l-4 border-[#059669]',
+    color: 'bg-[#059669]/10 text-[#059669]', // Status badge color - green
+    border: 'border-l-4 border-construction-blue', // Construction theme border
   },
   medium: {
     label: 'Medium',
-    color: 'bg-[#FFB627]/10 text-[#FFB627]',
-    border: 'border-l-4 border-[#FFB627]',
+    color: 'bg-[#FFB627]/10 text-[#FFB627]', // Status badge color - amber
+    border: 'border-l-4 border-construction-blue', // Construction theme border
   },
   high: {
     label: 'High',
-    color: 'bg-[#DC2626]/10 text-[#DC2626]',
-    border: 'border-l-4 border-[#DC2626]',
+    color: 'bg-[#DC2626]/10 text-[#DC2626]', // Status badge color - red
+    border: 'border-l-4 border-construction-blue', // Construction theme border
   },
 };
 
@@ -76,7 +77,9 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
     isDragging: isSortableDragging,
   } = useSortable({ id: task.id });
 
-  const style = {
+  // Debug: When in DragOverlay (isDragging=true), don't apply transform
+  // The DragOverlay handles positioning via its own internal transform
+  const style = isDragging ? {} : {
     transform: CSS.Transform.toString(transform),
     transition,
   };
@@ -137,27 +140,39 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
       {...attributes}
       {...listeners}
       className="touch-manipulation"
-      animate={isSortableDragging ? {
+      // Debug: Disable animations when in DragOverlay to prevent positioning issues
+      animate={isDragging ? false : (isSortableDragging ? {
         opacity: 0.5,
         scale: 0.95
-      } : isDragging ? {
-        scale: 1.05,
-        rotate: 2,
-        boxShadow: '0 10px 20px rgba(0, 27, 81, 0.3)'
       } : {
         scale: 1,
         rotate: 0,
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-      }}
+      })}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <div onClick={() => onTaskClick?.(task)}>
+      {/* Debug: Separate click handler from drag handler to prevent positioning conflicts */}
+      <div
+        onClick={(e) => {
+          // Debug: Only trigger modal if not dragging AND not in drag preview
+          if (!isSortableDragging && !isDragging) {
+            console.log('[TaskCard] Click handler fired for task:', task.title);
+            onTaskClick?.(task);
+          } else {
+            console.log('[TaskCard] Click prevented - dragging:', isSortableDragging, 'isDragOverlay:', isDragging);
+          }
+        }}
+        className="relative"
+      >
         <Card
           className={cn(
             'p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group',
+            // Debug: Apply construction blue border by default, with priority accent on left
             priorityConfig.border,
-            isBlocked && 'border-red-300 bg-red-50',
-            isOverdue && !isBlocked && 'border-orange-300'
+            // Debug: Blocked state - keep red background but use construction blue border
+            isBlocked && 'bg-red-50',
+            // Debug: Overdue state (when not blocked) - keep default border
+            // All borders now use construction-blue from PRIORITY_CONFIG
           )}
         >
           {/* Edit indicator on hover */}
@@ -220,7 +235,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
               <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
-              <Badge variant="secondary" className={cn('shrink-0 font-bold', priorityConfig.color)}>
+              <Badge variant="secondary" className={cn('shrink-0 font-bold text-[10px] px-2 py-0.5', priorityConfig.color)}>
                 {priorityConfig.label}
               </Badge>
             </div>
