@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, Calendar, Phone, Mail, MapPin, Upload, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';
 
 /**
  * Debug: Mobile-Optimized Form Component
@@ -40,7 +41,9 @@ export function MobileOptimizedForm({ onSubmit, className }: MobileOptimizedForm
 
   // Debug: Handle input changes
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Format phone number if it's the phone field
+    const formattedValue = field === 'phone' ? formatPhoneNumber(value) : value;
+    setFormData((prev) => ({ ...prev, [field]: formattedValue }));
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => {

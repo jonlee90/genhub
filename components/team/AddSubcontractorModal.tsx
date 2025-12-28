@@ -3,6 +3,7 @@
 import { useState, useActionState, useEffect, useCallback } from 'react';
 import { createSubcontractor, uploadSubcontractorDocument } from '@/app/actions/subcontractors';
 import { Database } from '@/types/database.types';
+import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
 import {
   Dialog,
   DialogContent,
@@ -74,6 +75,7 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
   const [isUploadingDocs, setIsUploadingDocs] = useState(false);
+  const [phoneValue, setPhoneValue] = useState('');
 
   // State to capture form metadata for document upload
   const [capturedFormData, setCapturedFormData] = useState<{
@@ -190,6 +192,7 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
     setLicenseFile(null);
     setInsuranceFile(null);
     setIsUploadingDocs(false);
+    setPhoneValue('');
     onClose();
   }, [onClose]);
 
@@ -365,6 +368,8 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
               name="phone"
               type="tel"
               placeholder="(555) 123-4567"
+              value={phoneValue}
+              onChange={(e) => setPhoneValue(formatPhoneNumber(e.target.value))}
               disabled={isPending || state?.success || isUploadingDocs}
               className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
             />
