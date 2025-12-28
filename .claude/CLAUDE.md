@@ -57,6 +57,7 @@ Backend Work:
 
 | Agent | Purpose |
 |-------|---------|
+| **supabase-nextjs-expert** | Supabase + Next.js integration |
 | **vercel-ai-sdk-v5-expert** | AI SDK integration tasks |
 | **kiro-requirement** | Requirements analysis |
 | **kiro-design** | Feature design documents |
@@ -68,6 +69,7 @@ Backend Work:
 
 | Skill | Purpose |
 |-------|---------|
+| `/kc:nextjs` | Next.js development, optimization, and PWA |
 | `/kc:impl [task]` | Implement task from specs |
 | `/kc:build` | Build and verify project |
 | `/kc:db-check` | Database health check |
