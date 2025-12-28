@@ -13,6 +13,7 @@ import { Loader2, Building2, Home, UtensilsCrossed, Factory, AlertCircle, MapPin
 import { Stepper } from '@/components/ui/aceternity/stepper';
 import { TextGenerateEffect } from '@/components/ui/aceternity/text-generate-effect';
 import { cn } from '@/lib/utils';
+import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';
 
 const PROJECT_TYPES = [
   {
@@ -353,11 +354,12 @@ export function CreateProjectForm() {
                         <Input
                           id="client_phone"
                           name="client_phone"
+                          type="tel"
                           placeholder="(555) 123-4567"
                           disabled={isPending}
                           className="border-2 h-11"
-                          defaultValue={formValues.client_phone}
-                          onChange={(e) => setFormValues({ ...formValues, client_phone: e.target.value })}
+                          value={formValues.client_phone}
+                          onChange={(e) => setFormValues({ ...formValues, client_phone: formatPhoneNumber(e.target.value) })}
                         />
                       </div>
                     </div>
