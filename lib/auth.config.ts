@@ -28,6 +28,8 @@ const authConfig = {
 	adapter: SupabaseAdapter({
 		url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
 		secret: process.env.SUPABASE_SECRET_KEY!,
+		// Specify the schema where NextAuth tables are located
+		schema: 'next_auth',
 	}),
 	callbacks: {
 		async session({ session, user }) {
