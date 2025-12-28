@@ -5,6 +5,9 @@ import PortalButton from '@/components/stripe/PortalButton';
 import CheckoutButton from "@/components/CheckoutButton";
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Check if payments are enabled
+const PAYMENTS_ENABLED = process.env.NEXT_PUBLIC_PAYMENTS_ENABLED === 'true';
+
 // Helper function to get plan badge style
 function getPlanBadgeStyle(planName: string): { bgColor: string; textColor: string; borderColor: string } {
 	switch (planName.toLowerCase()) {
@@ -194,8 +197,9 @@ export default function ProfileAndBillingContent() {
 				</div>
 			</motion.div>
 
-			{/* Subscription Information */}
-			<motion.div 
+			{/* Subscription Information - Only show if payments are enabled */}
+			{PAYMENTS_ENABLED && (
+			<motion.div
 				className="bg-[var(--background)] shadow-lg rounded-xl p-8 border border-[var(--border)] hover:shadow-xl transition-shadow duration-300"
 				variants={fadeIn}
 			>
@@ -496,6 +500,7 @@ export default function ProfileAndBillingContent() {
 					</motion.div>
 				)}
 			</AnimatePresence>
+			)}
 		</motion.div>
 	);
 } 

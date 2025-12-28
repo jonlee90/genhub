@@ -4,6 +4,11 @@ import { stripe } from '@/utils/stripe';
 import { auth } from '@/lib/auth';
 
 export async function POST(request: Request) {
+	// Check if payments are enabled
+	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
+		return NextResponse.json({ message: 'Payments are currently disabled' }, { status: 403 });
+	}
+
 	try {
 		const userSession = await auth()
 		const userId = userSession?.user?.id

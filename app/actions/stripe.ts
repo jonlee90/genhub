@@ -4,7 +4,13 @@ import { stripe } from '@/utils/stripe';
 import { headers } from 'next/headers';
 import { createSupabaseAdminClient } from '@/utils/supabase/server';
 const supabaseAdmin = await createSupabaseAdminClient();
+
 export async function createPortalSession(customerId: string) {
+	// Check if payments are enabled
+	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
+		throw new Error('Payments are currently disabled');
+	}
+
 	if (!customerId) {
 		throw new Error('Customer ID is required');
 	}
@@ -28,6 +34,11 @@ export async function createPortalSession(customerId: string) {
 
 
 export async function refund(subscriptionId: string) {
+	// Check if payments are enabled
+	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
+		throw new Error('Payments are currently disabled');
+	}
+
 	try {
 		const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 		const latestInvoice = await stripe.invoices.retrieve(subscription.latest_invoice as string);

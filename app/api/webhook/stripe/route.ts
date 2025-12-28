@@ -9,6 +9,11 @@ import Stripe from 'stripe';
 const supabaseAdmin = await createSupabaseAdminClient();
 
 export async function POST(request: NextRequest) {
+	// Check if payments are enabled
+	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
+		return NextResponse.json({ message: 'Payments are currently disabled' }, { status: 403 });
+	}
+
 	try {
 		const rawBody = await request.text();
 		const signature = request.headers.get('stripe-signature');
