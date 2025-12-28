@@ -503,13 +503,15 @@ export async function updateTaskStatus(
 
     if (managers) {
       for (const manager of managers) {
-        await supabase.from('notifications').insert({
-          user_id: manager.user_id,
-          type: 'task_blocked',
-          title: 'Task Blocked',
-          message: `Task "${task.title}" is blocked: ${blockedReason}`,
-          link: `/app/tasks/${taskId}`,
-        });
+        if (manager.user_id) {
+          await supabase.from('notifications').insert({
+            user_id: manager.user_id,
+            type: 'task_blocked',
+            title: 'Task Blocked',
+            message: `Task "${task.title}" is blocked: ${blockedReason}`,
+            link: `/app/tasks/${taskId}`,
+          });
+        }
       }
     }
   }

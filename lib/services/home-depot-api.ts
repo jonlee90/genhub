@@ -764,7 +764,7 @@ function searchMockProducts(params: HomeDepotSearchParams): HomeDepotSearchResul
   } = params;
 
   // Filter products
-  let filteredProducts = MOCK_PRODUCTS.filter(product => {
+  const filteredProducts = MOCK_PRODUCTS.filter(product => {
     // Search query match
     const searchMatch = query.toLowerCase().split(' ').every(term =>
       product.name.toLowerCase().includes(term) ||

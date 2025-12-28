@@ -34,7 +34,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { createTask, updateTask } from '@/app/actions/tasks';
-import { TaskMaterials } from './TaskMaterials';
+import { TaskMaterialsManager } from './TaskMaterialsManager';
 import type { Database } from '@/types/database.types';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -298,19 +298,23 @@ function TaskModalForm({
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className="px-6 py-5 max-h-[calc(100vh-280px)] overflow-y-auto space-y-5">
-          {/* Materials Section - Edit mode only */}
-          {mode === 'edit' && task && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                <Package className="h-4 w-4 text-construction-blue" />
-                <h3 className="text-sm font-bold text-gray-900">Assigned Materials</h3>
-                <p className="text-xs text-gray-500">Materials for this task</p>
-              </div>
-              <div className="max-h-80 overflow-y-auto">
-                <TaskMaterials taskId={task.id} canEdit={false} />
-              </div>
+          {/* Materials Section - Full management with search and edit */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+              <Package className="h-4 w-4 text-construction-blue" />
+              <h3 className="text-sm font-bold text-gray-900">Materials</h3>
+              <p className="text-xs text-gray-500">
+                {mode === 'create'
+                  ? 'Add materials after creating task'
+                  : 'Search & manage task materials'}
+              </p>
             </div>
-          )}
+            <TaskMaterialsManager
+              taskId={task?.id}
+              projectId={selectedProjectId}
+              mode={mode}
+            />
+          </div>
           {/* Error/Success Messages */}
           <AnimatePresence mode="wait">
             {error && (

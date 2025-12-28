@@ -113,8 +113,8 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
     setUpdatingId(materialAssignmentId);
     startTransition(async () => {
       const result = await updateMaterialAssignment({
-        assignmentId: materialAssignmentId,
-        procurementStatus: newStatus as any,
+        id: materialAssignmentId,
+        procurement_status: newStatus as 'needed' | 'ordered' | 'delivered' | 'installed',
       });
 
       if (result.success) {

@@ -27,6 +27,7 @@ import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
 import type { Database } from '@/types/database.types';
+import { DashboardStats } from '../tasks/DashboardStats';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -192,58 +193,13 @@ export function ProjectDetailContent({
 
         {/* Task Stats - Only show on Tasks tab */}
         {activeTab === 'tasks' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="grid grid-cols-2 md:grid-cols-5 gap-4"
-          >
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <CheckSquare className="h-5 w-5 text-construction-blue" />
-                <span className="text-xs font-mono uppercase text-gray-500">Total</span>
-              </div>
-              <div className="text-3xl font-black text-construction-blue">{totalTasks}</div>
-              <div className="text-xs font-bold text-gray-600">Tasks</div>
-            </div>
-
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <Activity className="h-5 w-5 text-construction-blue" />
-                <span className="text-xs font-mono uppercase text-gray-500">Active</span>
-              </div>
-              <div className="text-3xl font-black text-construction-blue">{inProgressTasks}</div>
-              <div className="text-xs font-bold text-gray-600">In Progress</div>
-            </div>
-
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <CheckCircle2 className="h-5 w-5 text-construction-green" />
-                <span className="text-xs font-mono uppercase text-gray-500">Done</span>
-              </div>
-              <div className="text-3xl font-black text-construction-green">{completedTasks}</div>
-              <div className="text-xs font-bold text-gray-600">Completed</div>
-            </div>
-
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <Clock className="h-5 w-5 text-construction-accent" />
-                <span className="text-xs font-mono uppercase text-gray-500">Overdue</span>
-              </div>
-              <div className="text-3xl font-black text-construction-accent">{overdueTasks}</div>
-              <div className="text-xs font-bold text-gray-600">Past Due</div>
-            </div>
-
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <XCircle className="h-5 w-5 text-construction-red" />
-                <span className="text-xs font-mono uppercase text-gray-500">Blocked</span>
-              </div>
-              <div className="text-3xl font-black text-construction-red">{blockedTasks}</div>
-              <div className="text-xs font-bold text-gray-600">Need Help</div>
-            </div>
-          </motion.div>
-        )}
+          <DashboardStats
+              tasks={project.tasks || []}
+              projectFilter={project.id}
+              projects={projects}
+              budget={project.budget}
+            />
+                )}
 
         {/* Stats Dashboard - Show on all tabs except Tasks */}
         {activeTab !== 'tasks' && (
@@ -522,7 +478,11 @@ export function ProjectDetailContent({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <ProjectTeam projectId={project.id} team={project.project_team || []} />
+            <ProjectTeam
+              projectId={project.id}
+              companyId={project.company_id}
+              team={project.project_team || []}
+            />
           </motion.div>
         )}
 

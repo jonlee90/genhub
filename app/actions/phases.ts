@@ -222,13 +222,25 @@ export async function updatePhase(formData: FormData) {
 export async function getProjectPhases(projectId: string) {
   const supabase = await createClient();
 
-  // Get user's company
-  const userContext = await getUserCompanyAndRole(supabase);
-  if ('error' in userContext) {
-    return { error: userContext.error };
+  // Get NextAuth session
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
   }
 
-  const { companyId } = userContext;
+  // Get user's company and role
+  const { data: companyUser, error: companyError } = await supabase
+    .from('company_users')
+    .select('company_id, role, status')
+    .eq('user_id', session.user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (companyError || !companyUser) {
+    return { error: 'No active company found for user' };
+  }
+
+  const companyId = companyUser.company_id;
 
   // Verify project access
   const { data: project, error: projectError } = await supabase

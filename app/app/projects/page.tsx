@@ -52,8 +52,9 @@ async function getProjects() {
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const params = await searchParams;
   const { projects, role } = await getProjects();
 
   // Calculate stats

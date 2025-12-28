@@ -27,13 +27,20 @@ interface DashboardStatsProps {
     name: string;
     status?: string | null;
   }>;
+
+  // Optional project budget - when provided, displays instead of total projects
+  budget?: number | null;
 }
 
 export function DashboardStats({
   tasks,
   projectFilter,
   projects,
+  budget,
 }: DashboardStatsProps) {
+  // Debug: Log component render with budget prop
+  console.log('[DashboardStats] Rendering with budget:', budget);
+
   // Debug: Calculate all stats reactively using useMemo
   const stats = useMemo(() => {
     console.log('[DashboardStats] Recalculating stats for', tasks.length, 'tasks');
@@ -64,6 +71,7 @@ export function DashboardStats({
       totalActiveProjects,
       totalActualCost,
       totalPlannedCost,
+      budget,
     });
 
     return {
@@ -72,7 +80,7 @@ export function DashboardStats({
       totalActualCost,
       totalPlannedCost,
     };
-  }, [tasks, projectFilter, projects]);
+  }, [tasks, projectFilter, projects, budget]);
 
   // Debug: Format currency values
   const formatCurrency = (amount: number) => {
@@ -109,26 +117,48 @@ export function DashboardStats({
           </div>
         </div>
 
-        {/* Total Active Projects */}
-        <div className="relative group h-full">
-          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <Building2 className="h-5 w-5 text-construction-blue" />
+        {/* Project Budget (if provided) OR Total Active Projects (default) */}
+        {budget !== undefined && budget !== null ? (
+          <div className="relative group h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
+                  <DollarSign className="h-5 w-5 text-construction-accent" />
+                </div>
+                <div className="text-xs font-mono uppercase tracking-wider text-construction-accent/60">
+                  Budget
+                </div>
               </div>
-              <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
-                Active
+              <div>
+                <div className="text-4xl font-black text-construction-accent leading-none mb-1">
+                  {formatCurrency(budget)}
+                </div>
+                <div className="text-sm font-bold text-gray-600">Project Budget</div>
               </div>
-            </div>
-            <div>
-              <div className="text-4xl font-black text-construction-blue leading-none mb-1">
-                {stats.totalActiveProjects}
-              </div>
-              <div className="text-sm font-bold text-gray-600">Projects</div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="relative group h-full">
+            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                  <Building2 className="h-5 w-5 text-construction-blue" />
+                </div>
+                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                  Active
+                </div>
+              </div>
+              <div>
+                <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+                  {stats.totalActiveProjects}
+                </div>
+                <div className="text-sm font-bold text-gray-600">Projects</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* TaskBudget Overview - spans 2 columns */}
         <div className="relative group lg:col-span-2 h-full">
@@ -143,7 +173,12 @@ export function DashboardStats({
               </h3>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 flex-1 items-end">
+            <div className={cn(
+              "grid gap-4 flex-1 items-end",
+              stats.totalPlannedCost === 0 && stats.totalActualCost === 0
+                ? "grid-cols-2"
+                : "grid-cols-3"
+            )}>
               {/* Planned Cost */}
               <div className="text-center lg:text-left">
                 <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60 mb-1">
@@ -164,27 +199,29 @@ export function DashboardStats({
                 </div>
               </div>
 
-              {/* Variance - no label, status text below amount */}
-              <div className="text-center lg:text-left">
-                <div className={cn(
-                  "text-xs font-bold mt-1",
-                  stats.totalActualCost <= stats.totalPlannedCost
-                    ? "text-construction-green"
-                    : "text-construction-red"
-                )}>
-                  {stats.totalActualCost <= stats.totalPlannedCost ? "Under Budget" : "Over Budget"}
+              {/* Variance - only show if there's cost data */}
+              {(stats.totalPlannedCost !== 0 || stats.totalActualCost !== 0) && (
+                <div className="text-center lg:text-left">
+                  <div className={cn(
+                    "text-xs font-bold mt-1",
+                    stats.totalActualCost <= stats.totalPlannedCost
+                      ? "text-construction-green"
+                      : "text-construction-red"
+                  )}>
+                    {stats.totalActualCost <= stats.totalPlannedCost ? "Under Budget" : "Over Budget"}
+                  </div>
+                  <div className={cn(
+                    "text-2xl lg:text-3xl font-black leading-none",
+                    stats.totalActualCost <= stats.totalPlannedCost
+                      ? "text-construction-green"
+                      : "text-construction-red"
+                  )}>
+                    {stats.totalActualCost <= stats.totalPlannedCost ? "-" : "+"}
+                    {formatCurrency(Math.abs(stats.totalPlannedCost - stats.totalActualCost))}
+                  </div>
+
                 </div>
-                <div className={cn(
-                  "text-2xl lg:text-3xl font-black leading-none",
-                  stats.totalActualCost <= stats.totalPlannedCost
-                    ? "text-construction-green"
-                    : "text-construction-red"
-                )}>
-                  {stats.totalActualCost <= stats.totalPlannedCost ? "-" : "+"}
-                  {formatCurrency(Math.abs(stats.totalPlannedCost - stats.totalActualCost))}
-                </div>
-                
-              </div>
+              )}
             </div>
           </div>
         </div>

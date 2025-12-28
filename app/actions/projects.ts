@@ -527,6 +527,101 @@ export async function assignProjectTeamMember(projectId: string, userId: string,
   return { success: true, teamMember };
 }
 
+export async function addProjectTeamMember(projectId: string, userId: string, userRole: string) {
+  console.log('[addProjectTeamMember] Starting - Project:', projectId, 'User:', userId, 'Role:', userRole);
+
+  // Get user's company and role
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    console.error('[addProjectTeamMember] User context error:', userContext.error);
+    return { error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+  console.log('[addProjectTeamMember] User context:', { companyId, role });
+
+  // Check permissions
+  if (role !== 'gc_admin' && role !== 'project_manager') {
+    console.error('[addProjectTeamMember] Insufficient permissions - User role:', role);
+    return { error: 'Insufficient permissions to add team members' };
+  }
+
+  // Verify project belongs to user's company
+  const { data: existingProject, error: fetchError } = await supabase
+    .from('projects')
+    .select('company_id')
+    .eq('id', projectId)
+    .single();
+
+  if (fetchError || !existingProject) {
+    console.error('[addProjectTeamMember] Project not found:', fetchError);
+    return { error: 'Project not found' };
+  }
+
+  if (existingProject.company_id !== companyId) {
+    console.error('[addProjectTeamMember] Project company mismatch');
+    return { error: 'Insufficient permissions to manage this project team' };
+  }
+
+  console.log('[addProjectTeamMember] Project verified');
+
+  // Check if user is already on the team
+  const { data: existingMember, error: checkError } = await supabase
+    .from('project_team')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (checkError) {
+    console.error('[addProjectTeamMember] Error checking existing member:', checkError);
+  }
+
+  if (existingMember) {
+    console.error('[addProjectTeamMember] User already on team');
+    return { error: 'This user is already a member of the project team' };
+  }
+
+  console.log('[addProjectTeamMember] User not already on team, proceeding with insert');
+
+  // Validate role is one of the allowed roles
+  const validRoles = ['gc_admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client'];
+  if (!validRoles.includes(userRole)) {
+    console.error('[addProjectTeamMember] Invalid role:', userRole);
+    return { error: 'Invalid role selected' };
+  }
+
+  // Add team member
+  const { data: teamMember, error: insertError } = await supabase
+    .from('project_team')
+    .insert({
+      project_id: projectId,
+      user_id: userId,
+      role: userRole as Database['public']['Enums']['user_role'],
+      assigned_by: userContext.userId,
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error('[addProjectTeamMember] Error adding team member:', insertError);
+    console.error('[addProjectTeamMember] Error details:', {
+      code: insertError.code,
+      message: insertError.message,
+      details: insertError.details,
+    });
+    return { error: 'Failed to add team member. Please try again.' };
+  }
+
+  console.log('[addProjectTeamMember] Team member added successfully:', teamMember);
+
+  // Revalidate paths and related caches
+  revalidatePath(`/app/projects/${projectId}`);
+  revalidateTag(`project-${projectId}`);
+
+  return { success: true, teamMember };
+}
+
 export async function removeProjectTeamMember(projectId: string, userId: string) {
   // Get user's company and role
   const userContext = await getUserContext();

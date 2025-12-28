@@ -43,7 +43,7 @@ const createMaterialSchema = z.object({
   product_image_url: z.string().url().optional().nullable(),
   stock_status: z.string().optional().nullable(),
   lead_time_days: z.number().int().min(0).optional().nullable(),
-  specifications: z.record(z.string()).optional().nullable(),
+  specifications: z.record(z.string(), z.any()).optional().nullable(),
 });
 
 const assignMaterialSchema = z.object({
@@ -161,7 +161,7 @@ export async function createMaterial(data: z.infer<typeof createMaterialSchema>)
     return { success: true, data: material };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error creating material:', error);
     return { success: false, error: 'Failed to create material' };
@@ -353,8 +353,8 @@ export async function assignMaterialToTask(data: z.infer<typeof assignMaterialSc
     return { success: true, data: assignment };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      console.error('Zod validation error:', error.errors);
-      return { success: false, error: `Validation error: ${error.errors[0].message}` };
+      console.error('Zod validation error:', error.issues);
+      return { success: false, error: `Validation error: ${error.issues[0].message}` };
     }
     console.error('Error assigning material:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -429,7 +429,7 @@ export async function updateMaterialAssignment(data: z.infer<typeof updateMateri
     return { success: true, data: assignment };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error updating material assignment:', error);
     return { success: false, error: 'Failed to update material assignment' };
@@ -658,5 +658,253 @@ export async function getPhaseTasks(phaseId: string) {
   } catch (error) {
     console.error('Error fetching phase tasks:', error);
     return { success: false, error: 'Failed to fetch phase tasks' };
+  }
+}
+
+// ============================================
+// Task Materials Management (In-Modal)
+// ============================================
+
+/**
+ * Get materials assigned to a specific task with full material details
+ * Used by TaskMaterialsManager component
+ */
+export async function getTaskMaterials(taskId: string) {
+  console.log('[getTaskMaterials] Fetching materials for task:', taskId);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      console.log('[getTaskMaterials] Unauthorized - no session');
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    const { data: assignments, error } = await supabase
+      .from('material_assignments')
+      .select(`
+        id,
+        quantity,
+        unit_cost,
+        total_cost,
+        procurement_status,
+        purchaser_type,
+        notes,
+        created_at,
+        material:materials(
+          id,
+          product_name,
+          sku,
+          category,
+          unit_of_measure,
+          product_image_url,
+          stock_status,
+          home_depot_product_id
+        )
+      `)
+      .eq('task_id', taskId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[getTaskMaterials] Error:', error.message, error.details);
+      return { success: false, error: `Failed to fetch task materials: ${error.message}` };
+    }
+
+    console.log('[getTaskMaterials] Found', assignments?.length || 0, 'materials');
+    return { success: true, data: assignments || [] };
+  } catch (error) {
+    console.error('[getTaskMaterials] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch task materials' };
+  }
+}
+
+/**
+ * Remove a material assignment from a task
+ * Called from TaskMaterialsList component
+ */
+export async function removeMaterialFromTask(assignmentId: string) {
+  console.log('[removeMaterialFromTask] Removing assignment:', assignmentId);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Get assignment details before deleting for path revalidation
+    const { data: assignment, error: fetchError } = await supabase
+      .from('material_assignments')
+      .select('task_id, project_id')
+      .eq('id', assignmentId)
+      .single();
+
+    if (fetchError || !assignment) {
+      console.error('[removeMaterialFromTask] Assignment not found:', fetchError);
+      return { success: false, error: 'Material assignment not found' };
+    }
+
+    // Delete the assignment
+    const { error: deleteError } = await supabase
+      .from('material_assignments')
+      .delete()
+      .eq('id', assignmentId);
+
+    if (deleteError) {
+      console.error('[removeMaterialFromTask] Delete error:', deleteError);
+      return { success: false, error: 'Failed to remove material from task' };
+    }
+
+    // Revalidate relevant paths
+    revalidatePath(`/app/tasks/${assignment.task_id}`);
+    revalidatePath(`/app/projects/${assignment.project_id}`);
+    revalidatePath('/app/materials');
+
+    console.log('[removeMaterialFromTask] Successfully removed assignment');
+    return { success: true };
+  } catch (error) {
+    console.error('[removeMaterialFromTask] Unexpected error:', error);
+    return { success: false, error: 'Failed to remove material from task' };
+  }
+}
+
+/**
+ * Update the quantity of a material assignment
+ * Called from TaskMaterialsList component when user edits quantity
+ */
+export async function updateMaterialQuantity(
+  assignmentId: string,
+  quantity: number
+) {
+  console.log('[updateMaterialQuantity] Updating assignment:', assignmentId, 'to quantity:', quantity);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (quantity <= 0) {
+      return { success: false, error: 'Quantity must be greater than 0' };
+    }
+
+    const supabase = await createClient();
+
+    // Update quantity (total_cost is auto-calculated via GENERATED column)
+    const { data: assignment, error } = await supabase
+      .from('material_assignments')
+      .update({
+        quantity,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', assignmentId)
+      .select(`
+        id,
+        quantity,
+        unit_cost,
+        total_cost,
+        task_id,
+        project_id
+      `)
+      .single();
+
+    if (error) {
+      console.error('[updateMaterialQuantity] Update error:', error);
+      return { success: false, error: 'Failed to update material quantity' };
+    }
+
+    // Revalidate relevant paths
+    if (assignment) {
+      revalidatePath(`/app/tasks/${assignment.task_id}`);
+      revalidatePath(`/app/projects/${assignment.project_id}`);
+    }
+    revalidatePath('/app/materials');
+
+    console.log('[updateMaterialQuantity] Successfully updated quantity');
+    return { success: true, data: assignment };
+  } catch (error) {
+    console.error('[updateMaterialQuantity] Unexpected error:', error);
+    return { success: false, error: 'Failed to update material quantity' };
+  }
+}
+
+/**
+ * Add a Home Depot product to a task as a material
+ * Creates material record if needed, then creates assignment
+ */
+export async function addProductToTask(
+  product: HomeDepotProduct,
+  taskId: string,
+  projectId: string,
+  quantity: number
+) {
+  console.log('[addProductToTask] Adding product to task:', {
+    productId: product.id,
+    productName: product.name,
+    taskId,
+    projectId,
+    quantity
+  });
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    if (quantity <= 0) {
+      return { success: false, error: 'Quantity must be greater than 0' };
+    }
+
+    // First, create or get the material record
+    const materialResult = await createMaterialFromHomeDepot(product);
+
+    if (!materialResult.success || !materialResult.data) {
+      console.error('[addProductToTask] Failed to create/get material:', materialResult.error);
+      return { success: false, error: materialResult.error || 'Failed to create material' };
+    }
+
+    const materialId = materialResult.data.id;
+    console.log('[addProductToTask] Material ID:', materialId, 'alreadyExists:', materialResult.alreadyExists);
+
+    // Check if this material is already assigned to this task
+    const supabase = await createClient();
+    const { data: existingAssignment } = await supabase
+      .from('material_assignments')
+      .select('id, quantity')
+      .eq('material_id', materialId)
+      .eq('task_id', taskId)
+      .single();
+
+    if (existingAssignment) {
+      // Update quantity instead of creating duplicate
+      console.log('[addProductToTask] Material already assigned, updating quantity');
+      const newQuantity = existingAssignment.quantity + quantity;
+      return await updateMaterialQuantity(existingAssignment.id, newQuantity);
+    }
+
+    // Create new assignment
+    const assignmentResult = await assignMaterialToTask({
+      material_id: materialId,
+      task_id: taskId,
+      project_id: projectId,
+      quantity,
+      unit_cost: product.price,
+      purchaser_type: 'gc',
+      procurement_status: 'needed',
+    });
+
+    if (!assignmentResult.success) {
+      console.error('[addProductToTask] Failed to assign material:', assignmentResult.error);
+      return { success: false, error: assignmentResult.error || 'Failed to assign material to task' };
+    }
+
+    console.log('[addProductToTask] Successfully added product to task');
+    return { success: true, data: assignmentResult.data };
+  } catch (error) {
+    console.error('[addProductToTask] Unexpected error:', error);
+    return { success: false, error: 'Failed to add product to task' };
   }
 }

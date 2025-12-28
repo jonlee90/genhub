@@ -55,11 +55,12 @@ export async function refund(subscriptionId: string) {
 		console.log('Cancelled subscription:', cancelledSubscription);
 
 		//supabase delete the subscription
-		const { data, error } = await supabaseAdmin.from('stripe_customers').delete().eq('subscription_id', subscriptionId);
-		if (error) {
-			console.error('Error deleting subscription:', error);
-		}
-		console.log('Deleted subscription:', data);
+		// TODO: Fix stripe_customers table type - currently not in public schema
+		// const { data, error } = await supabaseAdmin.from('stripe_customers').delete().eq('subscription_id', subscriptionId);
+		// if (error) {
+		// 	console.error('Error deleting subscription:', error);
+		// }
+		// console.log('Deleted subscription:', data);
 
 		return { success: true };
 	} catch (error: any) {

@@ -110,15 +110,19 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
         .eq('role', 'project_manager');
 
       if (projectManagers && projectManagers.length > 0) {
-        const notifications = projectManagers.map((pm) => ({
-          user_id: pm.user_id,
-          type: 'expense_submitted' as const,
-          title: 'New Expense Submitted',
-          message: `${session.user.name || 'A user'} submitted an expense for review: ${validated.description}`,
-          link: `/app/expenses/${expense.id}`,
-        }));
+        const notifications = projectManagers
+          .filter(pm => pm.user_id !== null)
+          .map((pm) => ({
+            user_id: pm.user_id as string,
+            type: 'expense_submitted' as const,
+            title: 'New Expense Submitted',
+            message: `${session.user.name || 'A user'} submitted an expense for review: ${validated.description}`,
+            link: `/app/expenses/${expense.id}`,
+          }));
 
-        await supabase.from('notifications').insert(notifications);
+        if (notifications.length > 0) {
+          await supabase.from('notifications').insert(notifications);
+        }
       }
     }
 
@@ -130,7 +134,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
     return { success: true, data: expense };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error creating expense:', error);
     return { success: false, error: 'Failed to create expense' };
@@ -168,7 +172,7 @@ export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
     return { success: true, data: expense };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error updating expense:', error);
     return { success: false, error: 'Failed to update expense' };
@@ -230,7 +234,7 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
     return { success: true, data: expense };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error reviewing expense:', error);
     return { success: false, error: 'Failed to review expense' };
@@ -411,7 +415,7 @@ export async function addExpenseLineItem(data: z.infer<typeof addLineItemSchema>
     return { success: true, data: lineItem };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0].message };
+      return { success: false, error: error.issues[0].message };
     }
     console.error('Error adding line item:', error);
     return { success: false, error: 'Failed to add line item' };
@@ -505,7 +509,7 @@ export async function processReceiptOCR(expenseId: string, receiptImageUrl: stri
     const { error: updateError } = await supabase
       .from('expenses')
       .update({
-        receipt_ocr_data: ocrResult,
+        receipt_ocr_data: ocrResult as unknown as Database['public']['Tables']['expenses']['Update']['receipt_ocr_data'],
         ocr_confidence_score: ocrResult.confidence_score,
         ocr_processed: true,
         vendor_name: ocrResult.vendor_name,

@@ -47,6 +47,9 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isMobile = false }: KanbanColumnProps) {
+  // Debug logging for development
+  console.log('[KanbanColumn] Rendering column:', { id, title, taskCount: tasks.length, isMobile });
+
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -87,7 +90,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
       {/* Column Content */}
       <div
         ref={setNodeRef}
-        className="p-2 min-h-[200px] max-h-[calc(100vh-300px)] overflow-y-auto"
+        className="p-2 min-h-[200px]"
       >
         <SortableContext
           items={tasks.map((t) => t.id)}

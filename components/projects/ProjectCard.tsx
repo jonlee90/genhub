@@ -144,9 +144,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {/* Debug: Header Section - Icon, Name/Client, Status Badge */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="p-2 rounded-md bg-construction-blue/5 border border-construction-blue/20 shrink-0">
-                <TypeIcon className="h-5 w-5 text-construction-blue" />
-              </div>
+          
 
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-lg line-clamp-1 text-gray-900 group-hover:text-construction-blue transition-colors">

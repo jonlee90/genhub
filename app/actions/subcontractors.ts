@@ -92,7 +92,7 @@ const deactivateSubcontractorSchema = z.object({
 const uploadDocumentSchema = z.object({
   subcontractor_id: z.string().uuid('Invalid subcontractor ID'),
   document_type: z.enum(['license', 'insurance'], {
-    errorMap: () => ({ message: 'Document type must be "license" or "insurance"' })
+    message: 'Document type must be "license" or "insurance"'
   }),
 });
 
@@ -574,7 +574,7 @@ export async function uploadSubcontractorDocument(formData: FormData) {
     // Check if subcontractor exists and belongs to user's company
     const { data: existingSubcontractor, error: fetchError } = await supabase
       .from('subcontractors')
-      .select('id, company_id, company_name, is_active, license_document_url, insurance_document_url')
+      .select('id, company_id, company_name, is_active')
       .eq('id', subcontractorId)
       .eq('company_id', companyId)
       .maybeSingle();
@@ -588,11 +588,12 @@ export async function uploadSubcontractorDocument(formData: FormData) {
       return { success: false, error: 'Cannot upload documents for inactive subcontractor.' };
     }
 
-    // Delete old document if it exists
-    const oldDocumentUrl = validatedDocumentType === 'license'
-      ? existingSubcontractor.license_document_url
-      : existingSubcontractor.insurance_document_url;
+    // TODO: Implement document storage - currently no document_url columns in subcontractors table
+    // const oldDocumentUrl = validatedDocumentType === 'license'
+    //   ? existingSubcontractor.license_document_url
+    //   : existingSubcontractor.insurance_document_url;
 
+    const oldDocumentUrl = null; // Placeholder until document_url columns are added
     if (oldDocumentUrl) {
       try {
         await del(oldDocumentUrl);
@@ -621,19 +622,20 @@ export async function uploadSubcontractorDocument(formData: FormData) {
       updated_at: new Date().toISOString(),
     };
 
-    // Store the URL in the dedicated column based on document type
+    // TODO: Store the URL in the dedicated column based on document type
+    // These columns don't exist yet in the subcontractors table
     if (validatedDocumentType === 'license') {
       const licenseNumber = formData.get('license_number') as string;
       const licenseExpiry = formData.get('license_expiry') as string;
 
-      updateData.license_document_url = blob.url;
+      // updateData.license_document_url = blob.url;
       if (licenseNumber) updateData.license_number = licenseNumber.trim();
       if (licenseExpiry) updateData.license_expiry = licenseExpiry;
     } else {
       const insuranceProvider = formData.get('insurance_provider') as string;
       const insuranceExpiry = formData.get('insurance_expiry') as string;
 
-      updateData.insurance_document_url = blob.url;
+      // updateData.insurance_document_url = blob.url;
       if (insuranceProvider) updateData.insurance_provider = insuranceProvider.trim();
       if (insuranceExpiry) updateData.insurance_expiry = insuranceExpiry;
     }

@@ -31,9 +31,7 @@ export interface GanttTask extends Omit<TaskRow, 'due_date'> {
 }
 
 // Task dependency with relationship info
-export interface TaskDependency extends TaskDependencyRow {
-  // Additional relationship data if needed
-}
+export type TaskDependency = TaskDependencyRow;
 
 // Configuration for Gantt chart rendering
 export interface GanttConfig {

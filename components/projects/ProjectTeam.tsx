@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { removeProjectTeamMember } from '@/app/actions/projects';
+import { AddMemberModal } from './AddMemberModal';
 
 interface TeamMember {
   id: string;
@@ -32,6 +33,7 @@ interface TeamMember {
 interface ProjectTeamProps {
   projectId: string;
   team: TeamMember[];
+  companyId: string; // Added to fetch company users
 }
 
 const ROLE_CONFIG = {
@@ -43,18 +45,27 @@ const ROLE_CONFIG = {
   client: { label: 'Client', color: 'bg-pink-100 text-pink-800 border-pink-200', icon: Users },
 };
 
-export function ProjectTeam({ projectId, team }: ProjectTeamProps) {
+export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
+  // Debug: State for modal and removing members
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleRemove = async (memberId: string, userId: string) => {
+    console.log('[ProjectTeam] Removing team member:', { memberId, userId });
     setRemovingId(memberId);
     try {
       await removeProjectTeamMember(projectId, userId);
+      console.log('[ProjectTeam] Team member removed successfully');
     } catch (error) {
-      console.error('Failed to remove team member:', error);
+      console.error('[ProjectTeam] Failed to remove team member:', error);
     } finally {
       setRemovingId(null);
     }
+  };
+
+  const handleOpenModal = () => {
+    console.log('[ProjectTeam] Opening Add Member modal');
+    setModalOpen(true);
   };
 
   const getInitials = (name: string) => {
@@ -122,7 +133,10 @@ export function ProjectTeam({ projectId, team }: ProjectTeamProps) {
                 {team.length} team member{team.length !== 1 ? 's' : ''} assigned to this project
               </CardDescription>
             </div>
-            <Button className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold">
+            <Button
+              className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+              onClick={handleOpenModal}
+            >
               <UserPlus className="h-4 w-4" />
               Add Member
             </Button>
@@ -138,7 +152,10 @@ export function ProjectTeam({ projectId, team }: ProjectTeamProps) {
               <p className="text-gray-500 mb-4">
                 Add team members to collaborate on this project
               </p>
-              <Button className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold">
+              <Button
+                className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+                onClick={handleOpenModal}
+              >
                 <UserPlus className="h-4 w-4" />
                 Add First Member
               </Button>
@@ -216,6 +233,15 @@ export function ProjectTeam({ projectId, team }: ProjectTeamProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Debug: Add Member Modal */}
+      <AddMemberModal
+        projectId={projectId}
+        companyId={companyId}
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        existingMemberIds={team.map((m) => m.user_id).filter((id): id is string => id !== null)}
+      />
     </div>
   );
 }
