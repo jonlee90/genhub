@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
-import { Wrench, CheckSquare, Clock, AlertTriangle, Ban } from 'lucide-react';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
 
 interface TasksPageProps {
@@ -38,6 +37,9 @@ async function getTasks() {
         .select(`
           id,
           name,
+          status,
+          health_score,
+          completion_percentage,
           project_phases (
             id,
             name,
@@ -168,6 +170,9 @@ async function getTasks() {
     .select(`
       id,
       name,
+      status,
+      health_score,
+      completion_percentage,
       project_phases (
         id,
         name,
@@ -176,6 +181,13 @@ async function getTasks() {
     `)
     .eq('company_id', companyUser.company_id)
     .order('name');
+
+  // Fetch top team members using database function
+  const { data: topTeamMembers } = await supabase
+    .rpc('get_top_team_members_by_completed_tasks', {
+      p_company_id: companyUser.company_id,
+      limit_count: 5
+    });
 
   // Get all team members for this company (for filtering)
   const { data: teamMembers } = await supabase
@@ -272,6 +284,7 @@ async function getTasks() {
       projects: projects || [],
       teamMembers: teamMembers?.map((tm) => tm.user_profiles) || [],
       taskDependencies: dependencies || [],
+      topTeamMembers: topTeamMembers || [],
     };
   }
 
@@ -280,24 +293,16 @@ async function getTasks() {
     projects: projects || [],
     teamMembers: teamMembers?.map((tm) => tm.user_profiles) || [],
     taskDependencies: [],
+    topTeamMembers: topTeamMembers || [],
   };
 }
 
 export default async function TasksPage({ searchParams }: TasksPageProps) {
-  const { tasks, projects, teamMembers, taskDependencies } = await getTasks();
+  const { tasks, projects, teamMembers, taskDependencies, topTeamMembers } = await getTasks();
   const params = await searchParams;
 
   // Get view mode from URL or default to kanban
   const viewMode = (params.view as string) || 'kanban';
-
-  // Calculate stats
-  const totalTasks = tasks.length;
-  const activeTasks = tasks.filter(t => t.status === 'in_progress').length;
-  const completedTasks = tasks.filter(t => t.status === 'completed').length;
-  const blockedTasks = tasks.filter(t => t.status === 'blocked').length;
-  const overdueTasks = tasks.filter(t =>
-    t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
-  ).length;
 
   return (
     <div className="flex-1 space-y-6 p-8 pt-6 relative overflow-hidden">
@@ -334,93 +339,14 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
         </div>
       </div>
 
-      {/* Industrial Stats Dashboard - Work Progress Tracker */}
-      {totalTasks > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {/* Total Tasks */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <CheckSquare className="h-5 w-5 text-construction-blue" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
-              </div>
-              <div className="text-4xl font-black text-construction-blue leading-none mb-1">{totalTasks}</div>
-              <div className="text-sm font-bold text-gray-600">Work Items</div>
-            </div>
-          </div>
-
-          {/* Active Tasks */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <Wrench className="h-5 w-5 text-construction-blue" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">Active</div>
-              </div>
-              <div className="text-4xl font-black text-construction-blue leading-none mb-1">{activeTasks}</div>
-              <div className="text-sm font-bold text-gray-600">In Progress</div>
-            </div>
-          </div>
-
-          {/* Completed Tasks */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                  <CheckSquare className="h-5 w-5 text-construction-green" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-green/60">Done</div>
-              </div>
-              <div className="text-4xl font-black text-construction-green leading-none mb-1">{completedTasks}</div>
-              <div className="text-sm font-bold text-gray-600">Completed</div>
-            </div>
-          </div>
-
-          {/* Overdue Tasks */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <Clock className="h-5 w-5 text-construction-accent" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-accent/60">Overdue</div>
-              </div>
-              <div className="text-4xl font-black text-construction-accent leading-none mb-1">{overdueTasks}</div>
-              <div className="text-sm font-bold text-gray-600">Past Due</div>
-            </div>
-          </div>
-
-          {/* Blocked Tasks */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-red/5 to-construction-red/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-red/10 rounded-lg border-2 border-construction-red/20">
-                  <Ban className="h-5 w-5 text-construction-red" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-red/60">Blocked</div>
-              </div>
-              <div className="text-4xl font-black text-construction-red leading-none mb-1">{blockedTasks}</div>
-              <div className="text-sm font-bold text-gray-600">Need Help</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Task Board */}
+      {/* Task Board with Dashboard Stats */}
       <TaskBoard
         initialTasks={tasks}
         taskDependencies={taskDependencies}
         projects={projects}
         teamMembers={teamMembers}
         initialView={viewMode as 'kanban' | 'list'}
+        topTeamMembers={topTeamMembers}
       />
 
       {/* Decorative bottom border */}

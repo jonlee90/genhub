@@ -53,10 +53,13 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
 interface Project {
   id: string;
   name: string;
+  status?: string;
+  health_score?: number;
+  completion_percentage?: number;
   project_phases?: Array<{
     id: string;
     name: string;
-    order_index: number;
+    order_index?: number;
   }>;
 }
 
@@ -303,7 +306,6 @@ function TaskModalForm({
                 <h3 className="text-sm font-bold text-gray-900">Assigned Materials</h3>
                 <p className="text-xs text-gray-500">Materials for this task</p>
               </div>
-              {console.log('[TaskModal] Rendering TaskMaterials with taskId:', task.id)}
               <div className="max-h-80 overflow-y-auto">
                 <TaskMaterials taskId={task.id} canEdit={false} />
               </div>
@@ -412,7 +414,7 @@ function TaskModalForm({
                 <SelectContent>
                   <SelectItem value="none">No phase</SelectItem>
                   {phases
-                    .sort((a, b) => a.order_index - b.order_index)
+                    .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
                     .map((phase) => (
                       <SelectItem key={phase.id} value={phase.id}>
                         {phase.name}

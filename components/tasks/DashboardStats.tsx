@@ -1,0 +1,194 @@
+'use client';
+
+import { useMemo } from 'react';
+import { CheckSquare, Building2, DollarSign } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Debug: DashboardStats - Main dashboard component with 8 metrics
+interface DashboardStatsProps {
+  // Filtered tasks array - stats calculated from this
+  tasks: Array<{
+    id: string;
+    title: string;
+    status: string | null;
+    due_date?: string | null;
+    actual_cost?: number | string | null;
+    planned_cost?: number | string | null;
+    assignee_id?: string | null;
+    project_id: string;
+  }>;
+
+  // Current project filter value ('all' or project_id)
+  projectFilter: string;
+
+  // List of all projects (for counting active when not filtered)
+  projects: Array<{
+    id: string;
+    name: string;
+    status?: string | null;
+  }>;
+}
+
+export function DashboardStats({
+  tasks,
+  projectFilter,
+  projects,
+}: DashboardStatsProps) {
+  // Debug: Calculate all stats reactively using useMemo
+  const stats = useMemo(() => {
+    console.log('[DashboardStats] Recalculating stats for', tasks.length, 'tasks');
+
+    // Total tasks from filtered array
+    const totalTasks = tasks.length;
+
+    // Total active projects - 1 if filtered, or count active projects if 'all'
+    const totalActiveProjects =
+      projectFilter === 'all'
+        ? projects.filter((p) => p.status === 'active').length
+        : 1;
+
+    // Sum of actual cost
+    const totalActualCost = tasks.reduce(
+      (sum, t) => sum + (Number(t.actual_cost) || 0),
+      0
+    );
+
+    // Sum of planned cost
+    const totalPlannedCost = tasks.reduce(
+      (sum, t) => sum + (Number(t.planned_cost) || 0),
+      0
+    );
+
+    console.log('[DashboardStats] Calculated stats:', {
+      totalTasks,
+      totalActiveProjects,
+      totalActualCost,
+      totalPlannedCost,
+    });
+
+    return {
+      totalTasks,
+      totalActiveProjects,
+      totalActualCost,
+      totalPlannedCost,
+    };
+  }, [tasks, projectFilter, projects]);
+
+  // Debug: Format currency values
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Row 1 - Stats Cards (matching heights on desktop) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Tasks */}
+        <div className="relative group h-full">
+          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
+          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                <CheckSquare className="h-5 w-5 text-construction-blue" />
+              </div>
+              <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                Total
+              </div>
+            </div>
+            <div>
+              <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+                {stats.totalTasks}
+              </div>
+              <div className="text-sm font-bold text-gray-600">Work Items</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Total Active Projects */}
+        <div className="relative group h-full">
+          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
+          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                <Building2 className="h-5 w-5 text-construction-blue" />
+              </div>
+              <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                Active
+              </div>
+            </div>
+            <div>
+              <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+                {stats.totalActiveProjects}
+              </div>
+              <div className="text-sm font-bold text-gray-600">Projects</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Budget Overview - spans 2 columns */}
+        <div className="relative group lg:col-span-2 h-full">
+          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-green/5 rounded-lg transform group-hover:scale-[1.02] transition-transform" />
+          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col">
+            <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-gray-100">
+              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                <DollarSign className="h-5 w-5 text-construction-blue" />
+              </div>
+              <h3 className="text-lg font-black uppercase tracking-tight text-construction-blue">
+                Budget Overview
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4 flex-1 items-end">
+              {/* Planned Cost */}
+              <div className="text-center lg:text-left">
+                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60 mb-1">
+                  Planned
+                </div>
+                <div className="text-2xl lg:text-3xl font-black text-construction-blue leading-none">
+                  {formatCurrency(stats.totalPlannedCost)}
+                </div>
+              </div>
+
+              {/* Actual Cost */}
+              <div className="text-center lg:text-left">
+                <div className="text-xs font-mono uppercase tracking-wider text-construction-green/60 mb-1">
+                  Actual
+                </div>
+                <div className="text-2xl lg:text-3xl font-black text-construction-green leading-none">
+                  {formatCurrency(stats.totalActualCost)}
+                </div>
+              </div>
+
+              {/* Variance - no label, status text below amount */}
+              <div className="text-center lg:text-left">
+                <div className={cn(
+                  "text-xs font-bold mt-1",
+                  stats.totalActualCost <= stats.totalPlannedCost
+                    ? "text-construction-green"
+                    : "text-construction-red"
+                )}>
+                  {stats.totalActualCost <= stats.totalPlannedCost ? "Under Budget" : "Over Budget"}
+                </div>
+                <div className={cn(
+                  "text-2xl lg:text-3xl font-black leading-none",
+                  stats.totalActualCost <= stats.totalPlannedCost
+                    ? "text-construction-green"
+                    : "text-construction-red"
+                )}>
+                  {stats.totalActualCost <= stats.totalPlannedCost ? "-" : "+"}
+                  {formatCurrency(Math.abs(stats.totalPlannedCost - stats.totalActualCost))}
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

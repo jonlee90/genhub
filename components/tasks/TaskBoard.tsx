@@ -7,6 +7,9 @@ import { TaskList } from './TaskList';
 import { TaskFilters } from './TaskFilters';
 import { TaskModal } from './TaskModal';
 import { GanttChart } from './gantt/GanttChart';
+import { DashboardStats } from './DashboardStats';
+import { TopProjectsCard } from './TopProjectsCard';
+import { TopTeamMembersCard } from './TopTeamMembersCard';
 import { transformTasksForGantt } from './gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { Button } from '@/components/ui/button';
@@ -43,7 +46,17 @@ type Phase = {
 type Project = {
   id: string;
   name: string;
+  status?: string;
+  health_score?: number;
+  completion_percentage?: number;
   project_phases?: Phase[];
+};
+
+type TopTeamMember = {
+  id: string;
+  name: string;
+  avatar_url?: string;
+  completed_tasks: number;
 };
 
 type TeamMember = {
@@ -67,6 +80,8 @@ interface TaskBoardProps {
   phases?: Phase[];
   /** Whether to show the New Task button (default: true when projectId is provided) */
   showNewTaskButton?: boolean;
+  /** Top 5 team members by completed tasks (for dashboard stats) */
+  topTeamMembers?: TopTeamMember[];
 }
 
 export function TaskBoard({
@@ -78,6 +93,7 @@ export function TaskBoard({
   projectId,
   phases,
   showNewTaskButton,
+  topTeamMembers = [],
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -222,6 +238,14 @@ export function TaskBoard({
         </motion.div>
       )}
 
+      {/* Dashboard Stats - Only show on Tasks page (not in project context) */}
+      {!isProjectContext && initialTasks.length > 0 && (
+        <DashboardStats
+          tasks={filteredTasks}
+          projectFilter={projectFilter}
+          projects={projects}
+        />
+      )}
 
       {/* Gantt Chart Timeline - Above Task Board */}
       {filteredTasks.length > 0 && (
@@ -368,6 +392,22 @@ export function TaskBoard({
           onTaskClick={handleTaskClick}
           phases={isProjectContext ? phases : undefined}
         />
+      )}
+
+      {/* Top Projects & Team Members - Only show on Tasks page (not in project context) */}
+      {!isProjectContext && filteredTasks.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+          <TopProjectsCard
+            tasks={filteredTasks}
+            projects={projects}
+            projectFilter={projectFilter}
+          />
+          <TopTeamMembersCard
+            topTeamMembers={topTeamMembers}
+            tasks={filteredTasks}
+            projectFilter={projectFilter}
+          />
+        </div>
       )}
 
       {/* Task Modal */}
