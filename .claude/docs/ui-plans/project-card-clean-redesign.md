@@ -25,10 +25,9 @@ Create a clean, minimal, professional redesign of the ProjectCard component that
 
 ### Visual Strategy
 - Use construction blue (#001B51) border for cohesive identity
+- Construction Industry Theme
 - Strategic color use (only for status indicators)
-- NO colored background sections
 - Subtle hover effects for premium feel
-- Maintain existing 3D tilt effect
 
 ## Component Structure
 
