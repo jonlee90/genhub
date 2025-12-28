@@ -82,7 +82,7 @@ const STATUS_CONFIG = {
   },
   in_progress: {
     label: 'In Progress',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30',
+    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
     icon: Activity,
     dotColor: 'bg-construction-blue',
   },

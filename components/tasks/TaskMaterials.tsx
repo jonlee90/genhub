@@ -49,7 +49,7 @@ const PROCUREMENT_STATUS_CONFIG = {
   ordered: {
     label: 'Ordered',
     icon: TrendingUp,
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30',
+    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
     dotColor: 'bg-construction-blue',
   },
   delivered: {

@@ -259,7 +259,7 @@ export function PhaseStation({
         {/* Status Badge with construction theme */}
         {isCurrent && !isCompleted && (
           <motion.span
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-construction-blue/10 to-construction-blue/20 text-construction-blue text-xs font-black rounded-full border-2 border-construction-blue/30"
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-construction-blue/10 to-construction-blue/20 text-construction-blue text-xs font-black rounded-full border-2 border-construction-blue"
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}

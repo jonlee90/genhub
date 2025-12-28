@@ -390,7 +390,7 @@ Mobile focus states - Enhanced outline for accessibility
 
 ```tsx
 <div className="px-3 py-3 border-t-2 border-construction-blue/20 bg-gradient-to-b from-white to-gray-50">
-  <motion.div className="relative p-3 rounded-xl bg-gradient-to-br from-white to-gray-50/80 border-2 border-construction-blue/30 shadow-construction-lg overflow-hidden">
+  <motion.div className="relative p-3 rounded-xl bg-gradient-to-br from-white to-gray-50/80 border-2 border-construction-blue shadow-construction-lg overflow-hidden">
     {/* Industrial corner accents (4 corners) */}
 
     {/* Active Company Status Badge - Top */}

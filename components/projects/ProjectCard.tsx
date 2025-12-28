@@ -16,56 +16,43 @@ import {
   Users,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Package,
+  AlertTriangle,
 } from 'lucide-react';
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import type { Database } from '@/types/database.types';
-import { cn } from '@/lib/utils';
+import { cn, formatBudget, formatShortDistance, getBudgetVarianceDisplay } from '@/lib/utils';
+import type { ProjectWithStats } from '@/app/actions/projects';
 
 type Project = Database['public']['Tables']['projects']['Row'] & {
   project_phases?: Array<{
     id: string;
     status: string;
-    completion_percentage: number;
+    completion_percentage: number | null;
   }>;
 };
 
 interface ProjectCardProps {
-  project: Project;
+  project: Project | ProjectWithStats;
 }
 
 const PROJECT_TYPE_CONFIG = {
   residential: {
     icon: Home,
     label: 'Residential',
-    color: 'bg-blue-50 text-blue-700 border-blue-200',
-    iconColor: 'text-blue-600',
-    gradient: 'from-blue-400 via-blue-500 to-blue-600',
-    hoverShadow: 'hover:shadow-blue-500/20',
   },
   restaurant_cafe: {
     icon: UtensilsCrossed,
     label: 'Restaurant/Cafe',
-    color: 'bg-amber-50 text-amber-700 border-amber-200',
-    iconColor: 'text-amber-600',
-    gradient: 'from-amber-400 via-amber-500 to-amber-600',
-    hoverShadow: 'hover:shadow-amber-500/20',
   },
   commercial_office: {
     icon: Building2,
     label: 'Commercial',
-    color: 'bg-purple-50 text-purple-700 border-purple-200',
-    iconColor: 'text-purple-600',
-    gradient: 'from-purple-400 via-purple-500 to-purple-600',
-    hoverShadow: 'hover:shadow-purple-500/20',
   },
   industrial: {
     icon: Factory,
     label: 'Industrial',
-    color: 'bg-slate-50 text-slate-700 border-slate-200',
-    iconColor: 'text-slate-600',
-    gradient: 'from-slate-400 via-slate-500 to-slate-600',
-    hoverShadow: 'hover:shadow-slate-500/20',
   },
 };
 
@@ -73,26 +60,22 @@ const STATUS_CONFIG = {
   active: {
     label: 'Active',
     icon: Clock,
-    color: 'bg-green-50 text-green-700 border border-green-200',
-    dotColor: 'bg-green-500',
+    color: 'text-construction-green border-construction-green',
   },
   on_hold: {
     label: 'On Hold',
     icon: AlertCircle,
-    color: 'bg-yellow-50 text-yellow-700 border border-yellow-200',
-    dotColor: 'bg-yellow-500',
+    color: 'text-yellow-600 border-yellow-400',
   },
   completed: {
     label: 'Completed',
     icon: CheckCircle2,
-    color: 'bg-construction-blue/10 text-construction-blue border border-construction-blue/20',
-    dotColor: 'bg-construction-blue',
+    color: 'text-construction-blue border-construction-blue',
   },
   archived: {
     label: 'Archived',
     icon: Clock,
-    color: 'bg-gray-50 text-gray-700 border border-gray-200',
-    dotColor: 'bg-gray-500',
+    color: 'text-gray-500 border-gray-400',
   },
 };
 
@@ -104,24 +87,21 @@ function getHealthScoreIcon(score: number) {
 
 function getHealthScoreColors(score: number) {
   if (score >= 80) return {
-    gradient: ['#059669', '#10B981'],
     textColor: 'text-construction-green',
-    bgColor: 'bg-green-50',
-    borderColor: 'border-construction-green',
+    bgColor: 'bg-construction-green/10',
+    borderColor: 'border-construction-green/30',
     label: 'On Track'
   };
   if (score >= 50) return {
-    gradient: ['#3C3C3C', '#7A7A7A'],
-    textColor: 'text-construction-accent',
-    bgColor: 'bg-gray-50',
-    borderColor: 'border-construction-accent',
+    textColor: 'text-yellow-600',
+    bgColor: 'bg-yellow-50',
+    borderColor: 'border-yellow-300',
     label: 'At Risk'
   };
   return {
-    gradient: ['#DC2626', '#EF4444'],
     textColor: 'text-construction-red',
-    bgColor: 'bg-red-50',
-    borderColor: 'border-construction-red',
+    bgColor: 'bg-construction-red/10',
+    borderColor: 'border-construction-red/30',
     label: 'Delayed'
   };
 }
@@ -186,212 +166,232 @@ export function ProjectCard({ project }: ProjectCardProps) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         className={cn(
-          "group relative cursor-pointer h-full rounded-xl",
-          "bg-white border-2 border-gray-200",
-          "shadow-construction-lg hover:shadow-construction-xl",
-          typeConfig.hoverShadow,
-          "transition-all duration-300",
+          "group relative cursor-pointer h-full rounded-lg",
+          "bg-white border-[1.5px] border-construction-blue",
+          "hover:border-construction-blue hover:shadow-lg",
+          "transition-all duration-200",
           "overflow-hidden"
         )}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        whileHover={{ scale: 1.01 }}
       >
-        {/* Animated Gradient Top Border */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 overflow-hidden rounded-t-xl">
-          <motion.div
-            className={cn(
-              "h-full bg-gradient-to-r",
-              typeConfig.gradient
-            )}
-            animate={{
-              backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{
-              duration: 3,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            style={{
-              backgroundSize: "200% 100%",
-            }}
-          />
-        </div>
-
         {/* Card Content */}
-        <div className="pt-5 px-6 pb-3 space-y-3">
+        <div className="p-5 space-y-4">
+          {/* Header */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              {/* Animated Type Icon */}
-              <motion.div
-                className={cn(
-                  "p-2.5 rounded-xl border-2",
-                  typeConfig.color
-                )}
-                whileHover={{ scale: 1.15, rotate: 5 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <TypeIcon className={cn("h-6 w-6", typeConfig.iconColor)} />
-              </motion.div>
+              <div className="p-2 rounded-md bg-construction-blue/5 border border-construction-blue/20 shrink-0">
+                <TypeIcon className="h-5 w-5 text-construction-blue" />
+              </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg line-clamp-1 group-hover:text-construction-blue transition-colors">
+                <h3 className="font-semibold text-base line-clamp-1 text-gray-900 group-hover:text-construction-blue transition-colors">
                   {project.name}
                 </h3>
-                <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
+                <p className="text-sm text-gray-600 line-clamp-1 mt-0.5">
                   {project.client_name}
                 </p>
               </div>
             </div>
 
             {/* Status Badge */}
-            <Badge variant="secondary" className={cn(statusConfig.color, "flex items-center gap-1.5 px-2.5 py-1 shrink-0")}>
-              <span className={cn("w-1.5 h-1.5 rounded-full", statusConfig.dotColor, "animate-pulse-construction")} />
+            <Badge variant="outline" className={cn(
+              "flex items-center gap-1.5 px-2 py-0.5 shrink-0 font-medium",
+              statusConfig.color
+            )}>
               <StatusIcon className="h-3 w-3" />
-              <span className="font-semibold text-xs">{statusConfig.label}</span>
+              <span className="text-xs">{statusConfig.label}</span>
             </Badge>
           </div>
 
-          {/* Project Type Badge */}
-          <div className="flex items-center justify-between">
-            <Badge variant="outline" className="text-xs font-medium border-current">
+          {/* Meta Info */}
+          <div className="flex items-center justify-between text-xs text-gray-500">
+            <span className="flex items-center gap-1">
+              <TypeIcon className="h-3 w-3" />
               {typeConfig.label}
-            </Badge>
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
+            </span>
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
               {formattedStartDate}
             </span>
           </div>
         </div>
 
-        <div className="px-6 pb-6 space-y-4">
+        <div className="px-5 pb-5 space-y-4">
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Overall Progress</span>
-              <span className="text-sm font-bold text-foreground">{completionPercentage}%</span>
+              <span className="text-xs font-medium text-gray-700">Overall Progress</span>
+              <span className="text-sm font-bold text-construction-blue">{completionPercentage}%</span>
             </div>
-            <div className="relative">
-              <Progress
-                value={completionPercentage}
-                className="h-2.5 bg-gray-100"
-              />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse-construction" />
-            </div>
+            <Progress
+              value={completionPercentage}
+              className="h-2 bg-gray-100"
+            />
             {currentPhase && (
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-construction-blue" />
-                Phase {project.project_phases?.findIndex((p) => p.id === currentPhase.id) + 1} of{' '}
-                {project.project_phases?.length || 0}
-              </p>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>
+                  Phase {project.project_phases?.findIndex((p) => p.id === currentPhase.id) + 1} of{' '}
+                  {project.project_phases?.length || 0}
+                </span>
+                {currentPhase.completion_percentage !== null && currentPhase.completion_percentage !== undefined && (
+                  <span className="font-medium text-construction-blue">
+                    {currentPhase.completion_percentage}%
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
-          {/* Enhanced Health Score with Circular Progress - Aceternity Style */}
-          <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-gray-50 via-white to-gray-50/50 rounded-xl border-2 border-gray-100">
-            {/* Circular Progress Ring */}
-            <div className="relative w-20 h-20 shrink-0">
-              <svg className="w-full h-full transform -rotate-90">
-                {/* Background circle */}
-                <circle
-                  cx="40"
-                  cy="40"
-                  r="32"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  fill="none"
-                  className="text-gray-200"
-                />
-                {/* Animated progress circle */}
-                <motion.circle
-                  cx="40"
-                  cy="40"
-                  r="32"
-                  stroke={`url(#healthGradient-${project.id})`}
-                  strokeWidth="6"
-                  fill="none"
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: healthScore / 100 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  strokeDasharray={`${2 * Math.PI * 32}`}
-                  style={{
-                    filter: "drop-shadow(0 0 8px rgba(0, 27, 81, 0.4))",
-                  }}
-                />
-                <defs>
-                  <linearGradient id={`healthGradient-${project.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={healthColors.gradient[0]} />
-                    <stop offset="100%" stopColor={healthColors.gradient[1]} />
-                  </linearGradient>
-                </defs>
-              </svg>
-              {/* Center text */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={cn("text-2xl font-black", healthColors.textColor)}>{healthScore}</span>
-                <span className="text-[10px] font-semibold text-gray-500 -mt-1">SCORE</span>
+          {/* Health Score */}
+          <div className={cn(
+            "flex items-center justify-between p-3 rounded-md border",
+            healthColors.bgColor,
+            healthColors.borderColor
+          )}>
+            <div className="flex items-center gap-2">
+              <div className={cn("flex items-center gap-1.5", healthColors.textColor)}>
+                {getHealthScoreIcon(healthScore)}
+                <span className="text-sm font-semibold">{healthColors.label}</span>
               </div>
+              <span className="text-xs text-gray-400">·</span>
+              <span className={cn("text-lg font-bold", healthColors.textColor)}>{healthScore}</span>
             </div>
 
-            {/* Health Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Project Health</p>
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 text-sm font-bold",
-                    healthColors.textColor,
-                    healthColors.bgColor,
-                    healthColors.borderColor
-                  )}
-                >
-                  {getHealthScoreIcon(healthScore)}
-                  <span className="font-black">{healthColors.label}</span>
-                </div>
+            {/* Risk Indicators (show if project has stats and risks) */}
+            {'stats' in project && project.stats &&
+             (project.stats.taskCounts.blocked > 0 || project.stats.taskCounts.overdue > 0) && (
+              <div className="flex items-center gap-1.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-yellow-600" />
+                <span className="text-xs font-medium text-gray-700">
+                  {project.stats.taskCounts.blocked > 0 && `${project.stats.taskCounts.blocked} blocked`}
+                  {project.stats.taskCounts.blocked > 0 && project.stats.taskCounts.overdue > 0 && ', '}
+                  {project.stats.taskCounts.overdue > 0 && `${project.stats.taskCounts.overdue} overdue`}
+                </span>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Budget & Team Info */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t-2 border-gray-100">
-            {project.budget && (
-              <motion.div
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <div className="p-1.5 bg-green-50 rounded-lg border border-green-200">
-                  <DollarSign className="h-4 w-4 text-construction-green" />
+          {/* Budget & Schedule Grid */}
+          {'stats' in project && project.stats ? (
+            <>
+              <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+                {/* Budget Column */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1 mb-1">
+                    <DollarSign className="h-3.5 w-3.5 text-construction-accent" />
+                    <span className="text-xs font-semibold text-gray-700">Budget</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Planned</span>
+                      <span className="font-semibold text-gray-900">{formatBudget(project.budget)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Actual</span>
+                      <span className={cn(
+                        "font-bold",
+                        project.stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
+                      )}>
+                        {formatBudget(project.stats.actualSpent)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Budget</p>
-                  <p className="text-sm font-black">
-                    ${(project.budget / 1000).toFixed(0)}K
+
+                {/* Schedule Column */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Calendar className="h-3.5 w-3.5 text-construction-accent" />
+                    <span className="text-xs font-semibold text-gray-700">Schedule</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Remaining</span>
+                      <span className="font-semibold text-construction-blue">{project.stats.schedule.daysRemaining} days</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-gray-500">Status</span>
+                      <span className={cn(
+                        "font-bold",
+                        project.stats.schedule.status === 'on-time' && "text-construction-green",
+                        project.stats.schedule.status === 'at-risk' && "text-yellow-600",
+                        project.stats.schedule.status === 'delayed' && "text-construction-red"
+                      )}>
+                        {project.stats.schedule.status === 'on-time' && 'On Track'}
+                        {project.stats.schedule.status === 'at-risk' && 'At Risk'}
+                        {project.stats.schedule.status === 'delayed' && `${project.stats.schedule.daysBehind}d behind`}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Task Summary */}
+              <div className="flex items-center gap-3 pt-3 border-t border-gray-200 text-xs">
+                <div className="flex items-center gap-1 text-construction-green">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span className="font-medium">{project.stats.taskCounts.completed} done</span>
+                </div>
+                <div className="flex items-center gap-1 text-gray-600">
+                  <Package className="h-3.5 w-3.5" />
+                  <span className="font-medium">{project.stats.taskCounts.todo} todo</span>
+                </div>
+                {project.stats.taskCounts.blocked > 0 && (
+                  <div className="flex items-center gap-1 text-yellow-600">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    <span className="font-medium">{project.stats.taskCounts.blocked} blocked</span>
+                  </div>
+                )}
+                {project.stats.taskCounts.overdue > 0 && (
+                  <div className="flex items-center gap-1 text-construction-red">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span className="font-medium">{project.stats.taskCounts.overdue} overdue</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer - Team & Materials */}
+              <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1 text-construction-blue">
+                  <Users className="h-3.5 w-3.5" />
+                  <span className="font-medium">{project.stats.teamSize} team</span>
+                </div>
+                {project.stats.materials.needed > 0 && (
+                  <div className="flex items-center gap-1 text-yellow-600">
+                    <Package className="h-3.5 w-3.5" />
+                    <span className="font-medium">{project.stats.materials.needed} needed</span>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            /* Fallback for projects without stats */
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-gray-200">
+              {project.budget && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <DollarSign className="h-3.5 w-3.5 text-construction-accent" />
+                    <span className="text-xs font-semibold text-gray-700">Budget</span>
+                  </div>
+                  <p className="text-sm font-bold text-construction-blue">
+                    {formatBudget(project.budget)}
                   </p>
                 </div>
-              </motion.div>
-            )}
-            {project.project_team && (
-              <motion.div
-                className="flex items-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
-                <div className="p-1.5 bg-blue-50 rounded-lg border border-blue-200">
-                  <Users className="h-4 w-4 text-construction-blue" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Team</p>
-                  <p className="text-sm font-black">
+              )}
+              {project.project_team && (
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5 text-construction-accent" />
+                    <span className="text-xs font-semibold text-gray-700">Team</span>
+                  </div>
+                  <p className="text-sm font-bold text-construction-blue">
                     {Array.isArray(project.project_team) ? project.project_team.length : 0} members
                   </p>
                 </div>
-              </motion.div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
-
-        {/* Subtle glow effect on hover */}
-        <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-br from-construction-blue/5 via-transparent to-construction-accent/5" />
       </motion.div>
     </Link>
   );

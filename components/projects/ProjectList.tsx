@@ -178,7 +178,7 @@ export function ProjectList({ initialProjects, searchParams }: ProjectListProps)
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
               >
-                <div className="flex flex-col items-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-construction-blue/30 transition-all shadow-construction hover:shadow-construction-lg">
+                <div className="flex flex-col items-center p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-construction-blue transition-all shadow-construction hover:shadow-construction-lg">
                   <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-construction-blue/10 border-2 border-construction-blue/20 mb-3 group-hover:scale-110 transition-transform">
                     <step.icon className="h-6 w-6 text-construction-blue" />
                   </div>

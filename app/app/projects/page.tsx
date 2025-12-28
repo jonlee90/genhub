@@ -1,5 +1,4 @@
 import { Suspense } from 'react';
-import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { HardHat, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
@@ -7,6 +6,8 @@ import Link from 'next/link';
 import { ProjectList } from '@/components/projects/ProjectList';
 import { ProjectListSkeleton } from '@/components/projects/ProjectListSkeleton';
 import { auth } from '@/lib/auth';
+import { getProjectsWithStats } from '@/app/actions/projects';
+import { createClient } from '@/utils/supabase/server';
 
 export const metadata = {
   title: 'Projects | GenHub',
@@ -14,6 +15,8 @@ export const metadata = {
 };
 
 async function getProjects() {
+  console.log('[ProjectsPage] Fetching projects with stats...');
+
   // Get NextAuth session
   const session = await auth();
 
@@ -21,41 +24,28 @@ async function getProjects() {
     redirect('/');
   }
 
+  // Get user's role for permissions
   const supabase = await createClient();
-
-  // Get user's company using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
+  const { data: companyUser } = await supabase
     .from('company_users')
     .select('company_id, role')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
     .maybeSingle();
 
-  if (companyError || !companyUser) {
-    // User doesn't have an active company - return empty state
+  if (!companyUser) {
     return { projects: [], role: null };
   }
 
-  // Fetch projects with phases for completion calculation
-  const { data: projects, error: projectsError } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      project_phases(id, status, completion_percentage),
-      project_team(
-        user_id,
-        subcontractor_id,
-        role
-      )
-    `)
-    .eq('company_id', companyUser.company_id)
-    .order('created_at', { ascending: false });
+  // Fetch projects with enhanced stats
+  const { projects, error } = await getProjectsWithStats();
 
-  if (projectsError) {
-    console.error('Error fetching projects:', projectsError);
+  if (error) {
+    console.error('[ProjectsPage] Error fetching projects:', error);
     return { projects: [], role: companyUser.role };
   }
 
+  console.log(`[ProjectsPage] Successfully fetched ${projects?.length || 0} projects with stats`);
   return { projects: projects || [], role: companyUser.role };
 }
 

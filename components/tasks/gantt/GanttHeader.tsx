@@ -14,7 +14,7 @@ export function GanttHeader({ config, dateGroups, dateCells }: GanttHeaderProps)
       <div className="flex h-full">
         {/* Sidebar header */}
         <div
-          className="sticky left-0 z-30 bg-gradient-to-br from-construction-blue via-blue-700 to-blue-800 border-r-2 border-construction-blue/30 flex items-center justify-center shadow-md"
+          className="sticky left-0 z-30 bg-gradient-to-br from-construction-blue via-blue-700 to-blue-800 border-r-2 border-construction-blue flex items-center justify-center shadow-md"
           style={{ width: sidebarWidth, padding: isMobile ? '0 8px' : '0 16px' }}
         >
           <span className={cn(

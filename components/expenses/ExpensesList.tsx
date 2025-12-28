@@ -54,7 +54,7 @@ const STATUS_CONFIG = {
   },
   under_review: {
     label: 'Under Review',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30',
+    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
   },
   approved: {
     label: 'Approved',

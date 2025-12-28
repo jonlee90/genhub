@@ -1,0 +1,39 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": {
+      "headless": false,
+      "args": [
+        "--disable-web-security",
+        "--disable-blink-features=AutomationControlled",
+        "--no-sandbox"
+      ]
+    },
+    "contextOptions": {
+      "viewport": { "width": 1920, "height": 1080 },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+      "bypassCSP": true,
+      "javaScriptEnabled": true,
+      "locale": "en-US",
+      "timezoneId": "America/Los_Angeles",
+      "deviceScaleFactor": 2,
+      "hasTouch": false,
+      "isMobile": false
+    }
+  },
+  "server": {
+    "port": 8033,
+    "host": "localhost"
+  },
+  "capabilities": [
+    "core",
+    "tabs",
+    "pdf",
+    "history",
+    "wait",
+    "files"
+  ],
+  "outputDir": "./output",
+  "vision": true
+  
+}

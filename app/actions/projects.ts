@@ -12,6 +12,58 @@ type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
 type ProjectUpdate = Database['public']['Tables']['projects']['Update'];
 
 // ============================================
+// Project Stats Types (for enhanced ProjectCard)
+// ============================================
+
+export interface TaskCounts {
+  total: number;
+  completed: number;
+  in_progress: number;
+  blocked: number;
+  overdue: number;
+  todo: number;
+}
+
+export interface ScheduleStatus {
+  daysRemaining: number;
+  status: 'on-time' | 'at-risk' | 'delayed';
+  daysBehind: number;
+}
+
+export interface MaterialsStatus {
+  needed: number;
+  ordered: number;
+  delivered: number;
+}
+
+export interface ProjectStats {
+  actualSpent: number;
+  plannedCost: number;
+  budgetVariance: number;
+  isUnderBudget: boolean;
+  taskCounts: TaskCounts;
+  schedule: ScheduleStatus;
+  materials: MaterialsStatus;
+  teamSize: number;
+}
+
+export interface ProjectWithStats extends Project {
+  stats: ProjectStats;
+  project_phases?: Array<{
+    id: string;
+    name: string;
+    order_index: number;
+    status: string;
+    completion_percentage: number | null;
+  }>;
+  project_team?: Array<{
+    id: string;
+    user_id: string | null;
+    role: string;
+  }>;
+}
+
+// ============================================
 // Validation Schemas
 // ============================================
 
@@ -521,4 +573,359 @@ export async function removeProjectTeamMember(projectId: string, userId: string)
   revalidateTag(`project-${projectId}`);
 
   return { success: true };
+}
+
+// ============================================
+// Enhanced Project Fetch with Stats
+// ============================================
+
+/**
+ * Calculate schedule status based on end date and completion percentage
+ * @param endDate - Project end date
+ * @param completionPercentage - Current completion percentage
+ * @param startDate - Project start date
+ */
+function calculateScheduleStatus(
+  endDate: string | null,
+  completionPercentage: number,
+  startDate: string | null
+): ScheduleStatus {
+  // Default values if no end date
+  if (!endDate) {
+    return {
+      daysRemaining: 0,
+      status: 'on-time',
+      daysBehind: 0,
+    };
+  }
+
+  const now = new Date();
+  const end = new Date(endDate);
+  const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Calculate expected progress based on timeline
+  let expectedProgress = 100;
+  if (startDate) {
+    const start = new Date(startDate);
+    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const elapsedDays = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    expectedProgress = Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
+  }
+
+  // Calculate days behind based on progress difference
+  const progressDifference = expectedProgress - completionPercentage;
+  const daysBehind = Math.max(0, Math.round((progressDifference / 100) * daysRemaining));
+
+  // Determine status
+  let status: 'on-time' | 'at-risk' | 'delayed' = 'on-time';
+  if (daysRemaining < 0) {
+    status = 'delayed'; // Past due date
+  } else if (daysBehind > 5) {
+    status = 'delayed';
+  } else if (daysBehind >= 1) {
+    status = 'at-risk';
+  }
+
+  console.log('[getProjectsWithStats] Schedule calculation:', {
+    endDate,
+    daysRemaining,
+    expectedProgress: expectedProgress.toFixed(1),
+    actualProgress: completionPercentage,
+    daysBehind,
+    status,
+  });
+
+  return {
+    daysRemaining: Math.max(0, daysRemaining),
+    status,
+    daysBehind,
+  };
+}
+
+/**
+ * Get all projects for the user's company with enhanced stats for ProjectCard
+ * Includes: task counts, budget variance, schedule status, materials status
+ */
+export async function getProjectsWithStats(): Promise<{
+  projects?: ProjectWithStats[];
+  error?: string
+}> {
+  console.log('[getProjectsWithStats] Starting enhanced project fetch...');
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    console.error('[getProjectsWithStats] User context error:', userContext.error);
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+  console.log('[getProjectsWithStats] Fetching for company:', companyId);
+
+  try {
+    // 1. Fetch projects with phases and team
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        project_phases (
+          id,
+          name,
+          order_index,
+          status,
+          completion_percentage
+        ),
+        project_team (
+          id,
+          user_id,
+          role
+        )
+      `)
+      .eq('company_id', companyId)
+      .order('created_at', { ascending: false });
+
+    if (projectsError) {
+      console.error('[getProjectsWithStats] Error fetching projects:', projectsError);
+      return { error: 'Failed to fetch projects' };
+    }
+
+    if (!projects || projects.length === 0) {
+      console.log('[getProjectsWithStats] No projects found');
+      return { projects: [] };
+    }
+
+    console.log(`[getProjectsWithStats] Found ${projects.length} projects`);
+
+    // 2. Fetch task counts for all projects in a single query
+    const projectIds = projects.map(p => p.id);
+
+    // Get all tasks for these projects
+    const { data: tasks, error: tasksError } = await supabase
+      .from('tasks')
+      .select('id, project_id, status, due_date, actual_cost, planned_cost')
+      .in('project_id', projectIds);
+
+    if (tasksError) {
+      console.error('[getProjectsWithStats] Error fetching tasks:', tasksError);
+      // Continue with empty task counts rather than failing
+    }
+
+    // 3. Fetch material assignments for all projects
+    const { data: materials, error: materialsError } = await supabase
+      .from('material_assignments')
+      .select('id, project_id, procurement_status, total_cost')
+      .in('project_id', projectIds);
+
+    if (materialsError) {
+      console.error('[getProjectsWithStats] Error fetching materials:', materialsError);
+      // Continue with empty materials rather than failing
+    }
+
+    // 4. Process and calculate stats for each project
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const projectsWithStats: ProjectWithStats[] = projects.map(project => {
+      // Filter tasks for this project
+      const projectTasks = tasks?.filter(t => t.project_id === project.id) || [];
+
+      // Calculate task counts
+      const taskCounts: TaskCounts = {
+        total: projectTasks.length,
+        completed: projectTasks.filter(t => t.status === 'completed').length,
+        in_progress: projectTasks.filter(t => t.status === 'in_progress').length,
+        blocked: projectTasks.filter(t => t.status === 'blocked').length,
+        todo: projectTasks.filter(t => t.status === 'todo').length,
+        overdue: projectTasks.filter(t => {
+          if (!t.due_date || t.status === 'completed') return false;
+          const dueDate = new Date(t.due_date);
+          dueDate.setHours(0, 0, 0, 0);
+          return dueDate < today;
+        }).length,
+      };
+
+      // Calculate budget variance from task costs
+      const actualSpent = projectTasks.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
+      const plannedCost = projectTasks.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
+      const budget = Number(project.budget) || 0;
+      const budgetVariance = budget - actualSpent;
+      const isUnderBudget = budgetVariance >= 0;
+
+      // Calculate schedule status
+      const schedule = calculateScheduleStatus(
+        project.end_date,
+        project.completion_percentage || 0,
+        project.start_date
+      );
+
+      // Filter materials for this project
+      const projectMaterials = materials?.filter(m => m.project_id === project.id) || [];
+
+      // Calculate materials status
+      const materialsStatus: MaterialsStatus = {
+        needed: projectMaterials.filter(m => m.procurement_status === 'needed').length,
+        ordered: projectMaterials.filter(m => m.procurement_status === 'ordered').length,
+        delivered: projectMaterials.filter(m => m.procurement_status === 'delivered').length,
+      };
+
+      // Add material costs to actual spent
+      const materialCosts = projectMaterials.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0);
+      const totalActualSpent = actualSpent + materialCosts;
+
+      // Team size
+      const teamSize = project.project_team?.length || 0;
+
+      const stats: ProjectStats = {
+        actualSpent: totalActualSpent,
+        plannedCost,
+        budgetVariance: budget - totalActualSpent,
+        isUnderBudget: (budget - totalActualSpent) >= 0,
+        taskCounts,
+        schedule,
+        materials: materialsStatus,
+        teamSize,
+      };
+
+      console.log(`[getProjectsWithStats] Stats for "${project.name}":`, {
+        taskCounts,
+        budget,
+        actualSpent: totalActualSpent,
+        scheduleStatus: schedule.status,
+        materialsNeeded: materialsStatus.needed,
+      });
+
+      return {
+        ...project,
+        stats,
+      } as ProjectWithStats;
+    });
+
+    console.log(`[getProjectsWithStats] Successfully processed ${projectsWithStats.length} projects with stats`);
+    return { projects: projectsWithStats };
+
+  } catch (error) {
+    console.error('[getProjectsWithStats] Unexpected error:', error);
+    return { error: 'An unexpected error occurred' };
+  }
+}
+
+/**
+ * Get a single project with enhanced stats
+ */
+export async function getProjectWithStats(projectId: string): Promise<{
+  project?: ProjectWithStats;
+  error?: string;
+}> {
+  console.log('[getProjectWithStats] Fetching project:', projectId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  try {
+    // 1. Fetch project with phases and team
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select(`
+        *,
+        project_phases (
+          id,
+          name,
+          order_index,
+          status,
+          completion_percentage
+        ),
+        project_team (
+          id,
+          user_id,
+          role
+        )
+      `)
+      .eq('id', projectId)
+      .eq('company_id', companyId)
+      .single();
+
+    if (projectError || !project) {
+      console.error('[getProjectWithStats] Error fetching project:', projectError);
+      return { error: 'Project not found' };
+    }
+
+    // 2. Fetch tasks for this project
+    const { data: tasks } = await supabase
+      .from('tasks')
+      .select('id, status, due_date, actual_cost, planned_cost')
+      .eq('project_id', projectId);
+
+    // 3. Fetch materials for this project
+    const { data: materials } = await supabase
+      .from('material_assignments')
+      .select('id, procurement_status, total_cost')
+      .eq('project_id', projectId);
+
+    // 4. Calculate stats
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const projectTasks = tasks || [];
+
+    const taskCounts: TaskCounts = {
+      total: projectTasks.length,
+      completed: projectTasks.filter(t => t.status === 'completed').length,
+      in_progress: projectTasks.filter(t => t.status === 'in_progress').length,
+      blocked: projectTasks.filter(t => t.status === 'blocked').length,
+      todo: projectTasks.filter(t => t.status === 'todo').length,
+      overdue: projectTasks.filter(t => {
+        if (!t.due_date || t.status === 'completed') return false;
+        const dueDate = new Date(t.due_date);
+        dueDate.setHours(0, 0, 0, 0);
+        return dueDate < today;
+      }).length,
+    };
+
+    const actualSpent = projectTasks.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
+    const plannedCost = projectTasks.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
+    const budget = Number(project.budget) || 0;
+
+    const schedule = calculateScheduleStatus(
+      project.end_date,
+      project.completion_percentage || 0,
+      project.start_date
+    );
+
+    const projectMaterials = materials || [];
+    const materialsStatus: MaterialsStatus = {
+      needed: projectMaterials.filter(m => m.procurement_status === 'needed').length,
+      ordered: projectMaterials.filter(m => m.procurement_status === 'ordered').length,
+      delivered: projectMaterials.filter(m => m.procurement_status === 'delivered').length,
+    };
+
+    const materialCosts = projectMaterials.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0);
+    const totalActualSpent = actualSpent + materialCosts;
+
+    const stats: ProjectStats = {
+      actualSpent: totalActualSpent,
+      plannedCost,
+      budgetVariance: budget - totalActualSpent,
+      isUnderBudget: (budget - totalActualSpent) >= 0,
+      taskCounts,
+      schedule,
+      materials: materialsStatus,
+      teamSize: project.project_team?.length || 0,
+    };
+
+    return {
+      project: {
+        ...project,
+        stats,
+      } as ProjectWithStats,
+    };
+
+  } catch (error) {
+    console.error('[getProjectWithStats] Unexpected error:', error);
+    return { error: 'An unexpected error occurred' };
+  }
 }

@@ -36,7 +36,7 @@ interface ProjectTeamProps {
 
 const ROLE_CONFIG = {
   gc_admin: { label: 'GC Admin', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: HardHat },
-  project_manager: { label: 'Project Manager', color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30', icon: HardHat },
+  project_manager: { label: 'Project Manager', color: 'bg-construction-blue/10 text-construction-blue border-construction-blue', icon: HardHat },
   foreman: { label: 'Foreman', color: 'bg-construction-green/10 text-construction-green border-construction-green/30', icon: HardHat },
   field_worker: { label: 'Field Worker', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: HardHat },
   subcontractor: { label: 'Subcontractor', color: 'bg-construction-accent/10 text-construction-accent border-construction-accent/30', icon: HardHat },

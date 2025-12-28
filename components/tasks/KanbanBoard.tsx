@@ -67,7 +67,6 @@ const VALID_STATUSES = new Set<string>(['todo', 'in_progress', 'review', 'blocke
 
 export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
   const [isPending, startTransition] = useTransition();
   // Debug: Mobile-specific state - track active column/status tab
   const [mobileActiveStatus, setMobileActiveStatus] = useState<TaskStatus>('todo');
@@ -84,13 +83,11 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
       )
   );
 
-  // Debug: Configure sensors with delay and distance to prevent accidental drags on click
+  // Configure sensors with larger distance threshold for mobile
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 15, // Increased from 8 to prevent accidental drags on click
-        delay: 100, // 100ms delay - must hold pointer down before drag starts
-        tolerance: 5, // Allow 5px of movement during delay without canceling
+        distance: 8, // Larger distance to prevent accidental drags
       },
     }),
     useSensor(KeyboardSensor, {
@@ -108,19 +105,13 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    // Debug: Only set active task if event is valid (not a canceled click)
     const task = optimisticTasks.find((t) => t.id === event.active.id);
-    if (task) {
-      setActiveTask(task);
-      setIsDragging(true);
-      console.log('[KanbanBoard] Drag started for task:', task.title);
-    }
+    setActiveTask(task || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
-    setIsDragging(false);
 
     if (!over) return;
 
