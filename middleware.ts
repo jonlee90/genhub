@@ -10,6 +10,6 @@ const { auth } = NextAuth(authConfig)
 
 export default auth((req) => {
 	if (!req.auth) {
-		return NextResponse.redirect(new URL("/api/auth/signin", req.url));
+		return NextResponse.redirect(new URL("/login", req.url));
 	}
 });

@@ -11,6 +11,6 @@ export default async function Home() {
     redirect('/app');
   }
 
-  // Redirect non-logged-in users to sign-in
-  redirect('/api/auth/signin');
+  // Redirect non-logged-in users to login page
+  redirect('/login');
 }
