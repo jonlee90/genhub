@@ -305,7 +305,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
   const viewMode = (params.view as string) || 'kanban';
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 relative overflow-hidden">
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
         <div className="absolute inset-0" style={{
@@ -323,10 +323,10 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
           {/* Construction border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
-        <div className="flex items-start justify-between pt-4">
-          <div className="space-y-3">
+        <div className="flex items-start justify-between pt-2 md:pt-4 gap-3">
+          <div className="space-y-1 md:space-y-3">
             {/* Main Title - Heavy Industrial Typography */}
-            <h1 className="text-5xl font-black tracking-tighter text-construction-blue leading-none">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
               TASKS
             </h1>
           </div>

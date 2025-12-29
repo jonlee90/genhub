@@ -1,5 +1,6 @@
 import { Header } from "../../components/app/Header";
 import { Sidebar } from "../../components/app/Sidebar";
+import { BottomNavigation } from "../../components/app/BottomNavigation";
 import { Toaster } from "sonner";
 import { ServiceWorkerRegistration } from "../../components/pwa/ServiceWorkerRegistration";
 import { OfflineBanner } from "../../components/pwa/OfflineBanner";
@@ -25,11 +26,14 @@ export default function AppLayout({
 					<Header />
 				</div>
 
-				{/* Page Content */}
-				<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 md:p-0">
+				{/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
+				<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 md:p-0 pb-20 md:pb-0">
 					{children}
 				</main>
 			</div>
+
+			{/* Bottom Navigation - Mobile Only */}
+			<BottomNavigation />
 
 			{/* Toast Notifications */}
 			<Toaster position="top-right" richColors />

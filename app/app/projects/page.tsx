@@ -64,7 +64,7 @@ export default async function ProjectsPage({
   const atRiskProjects = projects.filter(p => (p.health_score || 100) < 70).length;
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 relative overflow-hidden">
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
         <div className="absolute inset-0" style={{
@@ -82,22 +82,22 @@ export default async function ProjectsPage({
          {/* Construction border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
-        <div className="flex items-start justify-between pt-4">
-          <div className="space-y-3">
+        <div className="flex items-start justify-between pt-2 md:pt-4 gap-3">
+          <div className="space-y-1 md:space-y-3">
             {/* Main Title - Heavy Industrial Typography */}
-            <h1 className="text-5xl font-black tracking-tighter text-construction-blue leading-none">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
               PROJECTS
             </h1>
-        
           </div>
 
           {/* Action Button with Construction Theme */}
           {(role === 'gc_admin' || role === 'project_manager') && (
             <Link href="/app/projects/new">
-              <Button size="lg" className="relative h-14 px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white">
+              <Button size="lg" className="relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white">
                 <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-10 transition-opacity" />
-                <HardHat className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                <span className="font-black text-base">NEW PROJECT</span>
+                <HardHat className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
+                <span className="font-black text-sm md:text-base">NEW</span>
+                <span className="hidden sm:inline font-black text-sm md:text-base ml-1">PROJECT</span>
               </Button>
             </Link>
           )}
@@ -106,64 +106,64 @@ export default async function ProjectsPage({
 
       {/* Industrial Stats Dashboard - Foreman's Clipboard */}
       {totalProjects > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {/* Total Projects */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <HardHat className="h-5 w-5 text-construction-blue" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                  <HardHat className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
               </div>
-              <div className="text-4xl font-black text-construction-blue leading-none mb-1">{totalProjects}</div>
-              <div className="text-sm font-bold text-gray-600">Active Sites</div>
+              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{totalProjects}</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">Active Sites</div>
             </div>
           </div>
 
           {/* Active Projects */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                  <TrendingUp className="h-5 w-5 text-construction-green" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
+                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-green/60">In Progress</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">Active</div>
               </div>
-              <div className="text-4xl font-black text-construction-green leading-none mb-1">{activeProjects}</div>
-              <div className="text-sm font-bold text-gray-600">Under Construction</div>
+              <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">{activeProjects}</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">In Progress</div>
             </div>
           </div>
 
           {/* Completed Projects */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <Clock className="h-5 w-5 text-construction-accent" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
+                  <Clock className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-accent/60">Delivered</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">Done</div>
               </div>
-              <div className="text-4xl font-black text-construction-accent leading-none mb-1">{completedProjects}</div>
-              <div className="text-sm font-bold text-gray-600">Projects Complete</div>
+              <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">{completedProjects}</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">Complete</div>
             </div>
           </div>
 
           {/* At Risk Projects */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-red/5 to-construction-red/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-red/10 rounded-lg border-2 border-construction-red/20">
-                  <AlertTriangle className="h-5 w-5 text-construction-red" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-red/10 rounded-lg border-2 border-construction-red/20">
+                  <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-construction-red" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-red/60">Alert</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-red/60">Alert</div>
               </div>
-              <div className="text-4xl font-black text-construction-red leading-none mb-1">{atRiskProjects}</div>
-              <div className="text-sm font-bold text-gray-600">Needs Attention</div>
+              <div className="text-2xl md:text-4xl font-black text-construction-red leading-none mb-1">{atRiskProjects}</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">At Risk</div>
             </div>
           </div>
         </div>

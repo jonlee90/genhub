@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Receipt, CheckCircle2, XCircle, Loader2, FileText, Image as ImageIcon, AlertCircle } from 'lucide-react';
-import { reviewExpense } from '@/app/actions/expenses';
+import { Receipt, CheckCircle2, XCircle, Loader2, FileText, Image as ImageIcon, AlertCircle, Trash2 } from 'lucide-react';
+import { reviewExpense, deleteExpense } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -76,6 +76,7 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const { toast } = useToast();
 
   const statusConfig = STATUS_CONFIG[expense.status];
@@ -92,10 +93,11 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
     if (!reviewAction) return;
 
     startTransition(async () => {
+      // DEBUG: reviewExpense expects snake_case params: id, status, approval_notes
       const result = await reviewExpense({
-        expenseId: expense.id,
-        action: reviewAction,
-        reviewNotes: reviewNotes || undefined,
+        id: expense.id,
+        status: reviewAction === 'approve' ? 'approved' : 'rejected',
+        approval_notes: reviewNotes || undefined,
       });
 
       if (result.success) {
@@ -113,6 +115,31 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
       }
     });
   };
+
+  // DEBUG: Delete expense handler - only works for submitted expenses or gc_admin
+  const handleDelete = () => {
+    startTransition(async () => {
+      const result = await deleteExpense(expense.id);
+
+      if (result.success) {
+        toast({
+          title: 'Expense Deleted',
+          description: 'The expense has been permanently deleted.',
+        });
+        onClose();
+      } else {
+        toast({
+          title: 'Error',
+          description: result.error || 'Failed to delete expense. You may not have permission.',
+          variant: 'destructive',
+        });
+        setShowDeleteConfirm(false);
+      }
+    });
+  };
+
+  // Can delete if status is 'submitted' (user's own expense before approval)
+  const canDelete = expense.status === 'submitted';
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -334,13 +361,68 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
             </motion.div>
           )}
 
+          {/* Delete Confirmation */}
+          {showDeleteConfirm && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-construction-red/5 border-2 border-construction-red/30 rounded-lg p-6 space-y-4"
+            >
+              <h3 className="font-bold text-lg text-construction-red flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Delete Expense
+              </h3>
+              <p className="text-gray-700">
+                Are you sure you want to delete this expense? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={isPending}
+                  className="bg-construction-red hover:bg-construction-red/90 text-white font-bold"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Permanently
+                    </>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           {/* Actions */}
           <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              {canDelete && !showDeleteConfirm && !showReviewForm && (
+                <Button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="outline"
+                  className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </div>
 
-            {canReview && !showReviewForm && (
+            {canReview && !showReviewForm && !showDeleteConfirm && (
               <div className="flex gap-3">
                 <Button
                   onClick={() => handleReview('reject')}

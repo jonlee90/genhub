@@ -93,26 +93,26 @@ export function DashboardStats({
   };
 
   return (
-    <div className="space-y-4">
-      {/* Row 1 - Stats Cards (matching heights on desktop) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-3 md:space-y-4">
+      {/* Row 1 - Stats Cards (2x2 on mobile, 4 cols on desktop) */}
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {/* Total Tasks */}
         <div className="relative group h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <CheckSquare className="h-5 w-5 text-construction-blue" />
+          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2 md:mb-3">
+              <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                <CheckSquare className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
               </div>
-              <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
                 Total
               </div>
             </div>
             <div>
-              <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
                 {stats.totalTasks}
               </div>
-              <div className="text-sm font-bold text-gray-600">Work Items</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">Tasks</div>
             </div>
           </div>
         </div>
@@ -121,80 +121,80 @@ export function DashboardStats({
         {budget !== undefined && budget !== null ? (
           <div className="relative group h-full">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <DollarSign className="h-5 w-5 text-construction-accent" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
+                  <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-accent/60">
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">
                   Budget
                 </div>
               </div>
               <div>
-                <div className="text-4xl font-black text-construction-accent leading-none mb-1">
+                <div className="text-xl md:text-4xl font-black text-construction-accent leading-none mb-1">
                   {formatCurrency(budget)}
                 </div>
-                <div className="text-sm font-bold text-gray-600">Project Budget</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">Budget</div>
               </div>
             </div>
           </div>
         ) : (
           <div className="relative group h-full">
             <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <Building2 className="h-5 w-5 text-construction-blue" />
+            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2 md:mb-3">
+                <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                  <Building2 className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
                 </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
                   Active
                 </div>
               </div>
               <div>
-                <div className="text-4xl font-black text-construction-blue leading-none mb-1">
+                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
                   {stats.totalActiveProjects}
                 </div>
-                <div className="text-sm font-bold text-gray-600">Projects</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">Projects</div>
               </div>
             </div>
           </div>
         )}
 
-        {/* TaskBudget Overview - spans 2 columns */}
-        <div className="relative group lg:col-span-2 h-full">
+        {/* TaskBudget Overview - spans 2 columns on all screens */}
+        <div className="relative group col-span-2 h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-green/5 rounded-lg transform group-hover:scale-[1.02] transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col">
-            <div className="flex items-center gap-3 mb-4 pb-3 border-b-2 border-gray-100">
-              <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <DollarSign className="h-5 w-5 text-construction-blue" />
+          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col">
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 pb-2 md:pb-3 border-b-2 border-gray-100">
+              <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
+                <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
               </div>
-              <h3 className="text-lg font-black uppercase tracking-tight text-construction-blue">
+              <h3 className="text-sm md:text-lg font-black uppercase tracking-tight text-construction-blue">
                 Task Budget
               </h3>
             </div>
 
             <div className={cn(
-              "grid gap-4 flex-1 items-end",
+              "grid gap-3 md:gap-4 flex-1 items-end",
               stats.totalPlannedCost === 0 && stats.totalActualCost === 0
                 ? "grid-cols-2"
                 : "grid-cols-3"
             )}>
               {/* Planned Cost */}
               <div className="text-center lg:text-left">
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60 mb-1">
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60 mb-0.5 md:mb-1">
                   Planned
                 </div>
-                <div className="text-2xl lg:text-3xl font-black text-construction-blue leading-none">
+                <div className="text-lg md:text-2xl lg:text-3xl font-black text-construction-blue leading-none">
                   {formatCurrency(stats.totalPlannedCost)}
                 </div>
               </div>
 
               {/* Actual Cost */}
               <div className="text-center lg:text-left">
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-green/60 mb-1">
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60 mb-0.5 md:mb-1">
                   Actual
                 </div>
-                <div className="text-2xl lg:text-3xl font-black text-construction-green leading-none">
+                <div className="text-lg md:text-2xl lg:text-3xl font-black text-construction-green leading-none">
                   {formatCurrency(stats.totalActualCost)}
                 </div>
               </div>
@@ -203,15 +203,15 @@ export function DashboardStats({
               {(stats.totalPlannedCost !== 0 || stats.totalActualCost !== 0) && (
                 <div className="text-center lg:text-left">
                   <div className={cn(
-                    "text-xs font-bold mt-1",
+                    "text-[10px] md:text-xs font-bold",
                     stats.totalActualCost <= stats.totalPlannedCost
                       ? "text-construction-green"
                       : "text-construction-red"
                   )}>
-                    {stats.totalActualCost <= stats.totalPlannedCost ? "Under Budget" : "Over Budget"}
+                    {stats.totalActualCost <= stats.totalPlannedCost ? "Under" : "Over"}
                   </div>
                   <div className={cn(
-                    "text-2xl lg:text-3xl font-black leading-none",
+                    "text-lg md:text-2xl lg:text-3xl font-black leading-none",
                     stats.totalActualCost <= stats.totalPlannedCost
                       ? "text-construction-green"
                       : "text-construction-red"
@@ -219,7 +219,6 @@ export function DashboardStats({
                     {stats.totalActualCost <= stats.totalPlannedCost ? "-" : "+"}
                     {formatCurrency(Math.abs(stats.totalPlannedCost - stats.totalActualCost))}
                   </div>
-
                 </div>
               )}
             </div>

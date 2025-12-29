@@ -35,6 +35,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { createTask, updateTask } from '@/app/actions/tasks';
 import { TaskMaterialsManager } from './TaskMaterialsManager';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import type { Database } from '@/types/database.types';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -623,6 +624,7 @@ function TaskModalForm({
 }
 
 // Main modal component - handles open/close and remounts form on task change
+// Debug: Uses BottomSheet behavior on mobile, centered modal on desktop
 export function TaskModal({
   isOpen,
   onClose,
@@ -638,6 +640,9 @@ export function TaskModal({
   // This forces React to remount the form component with fresh state
   const formKey = mode === 'edit' && task ? `edit-${task.id}` : 'create';
 
+  // Debug: Detect mobile for bottom sheet behavior
+  const isMobile = useMediaQuery('(max-width: 767px)');
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -652,30 +657,67 @@ export function TaskModal({
             onClick={onClose}
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+          {/* Debug: Mobile - Bottom Sheet behavior */}
+          {isMobile ? (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-2xl pointer-events-auto"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-x-0 bottom-0 z-50"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              style={{
+                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              }}
             >
-              {/* Key forces remount when switching between tasks */}
-              <TaskModalForm
-                key={formKey}
-                mode={mode}
-                task={task}
-                projects={projects}
-                teamMembers={teamMembers}
-                preselectedProjectId={preselectedProjectId}
-                preselectedPhaseId={preselectedPhaseId}
-                onClose={onClose}
-                onSuccess={onSuccess}
-              />
+              <div
+                className="relative bg-white rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Debug: Drag handle indicator */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-10 h-1 rounded-full bg-gray-300" />
+                </div>
+
+                {/* Key forces remount when switching between tasks */}
+                <TaskModalForm
+                  key={formKey}
+                  mode={mode}
+                  task={task}
+                  projects={projects}
+                  teamMembers={teamMembers}
+                  preselectedProjectId={preselectedProjectId}
+                  preselectedPhaseId={preselectedPhaseId}
+                  onClose={onClose}
+                  onSuccess={onSuccess}
+                />
+              </div>
             </motion.div>
-          </div>
+          ) : (
+            /* Debug: Desktop - Centered Modal behavior */
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                className="relative w-full max-w-2xl pointer-events-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Key forces remount when switching between tasks */}
+                <TaskModalForm
+                  key={formKey}
+                  mode={mode}
+                  task={task}
+                  projects={projects}
+                  teamMembers={teamMembers}
+                  preselectedProjectId={preselectedProjectId}
+                  preselectedPhaseId={preselectedPhaseId}
+                  onClose={onClose}
+                  onSuccess={onSuccess}
+                />
+              </motion.div>
+            </div>
+          )}
         </>
       )}
     </AnimatePresence>

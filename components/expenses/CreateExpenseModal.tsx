@@ -128,14 +128,14 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
       // const receiptUrl = await uploadReceiptToStorage(receiptFile);
 
       const result = await createExpense({
-        projectId: selectedProject,
-        taskId: selectedTask || undefined,
+        project_id: selectedProject,
+        task_id: selectedTask || undefined,
         description,
         amount: parseFloat(amount),
         category: category as any,
-        expenseDate,
-        vendorName: vendorName || undefined,
-        receiptUrl: receiptPreview || undefined, // In real implementation, use the uploaded URL
+        expense_date: expenseDate,
+        vendor_name: vendorName || undefined,
+        receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
       });
 
       if (result.success) {
@@ -357,7 +357,9 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
                     <SelectItem value="labor">Labor</SelectItem>
                     <SelectItem value="equipment">Equipment</SelectItem>
                     <SelectItem value="permits">Permits</SelectItem>
-                    <SelectItem value="utilities">Utilities</SelectItem>
+                    <SelectItem value="transportation">Transportation</SelectItem>
+                    <SelectItem value="meals">Meals</SelectItem>
+                    <SelectItem value="lodging">Lodging</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>

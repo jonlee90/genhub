@@ -570,10 +570,7 @@ export async function matchLineItemToMaterial(
         manually_matched: true,
       })
       .eq('id', lineItemId)
-      .select(`
-        *,
-        expense:expenses(id, project_id)
-      `)
+      .select('*')
       .single();
 
     if (error) {
@@ -581,9 +578,16 @@ export async function matchLineItemToMaterial(
       return { success: false, error: 'Failed to match line item' };
     }
 
-    revalidatePath(`/app/expenses/${lineItem.expense.id}`);
-    if (lineItem.expense.project_id) {
-      revalidatePath(`/app/projects/${lineItem.expense.project_id}`);
+    // Get the expense to find project_id for revalidation
+    const { data: expense } = await supabase
+      .from('expenses')
+      .select('id, project_id')
+      .eq('id', lineItem.expense_id)
+      .single();
+
+    revalidatePath(`/app/expenses/${lineItem.expense_id}`);
+    if (expense?.project_id) {
+      revalidatePath(`/app/projects/${expense.project_id}`);
     }
 
     return { success: true, data: lineItem };

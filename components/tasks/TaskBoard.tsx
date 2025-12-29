@@ -219,7 +219,7 @@ export function TaskBoard({
   const shouldShowNewTaskButton = showNewTaskButton ?? isProjectContext;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {/* New Task Button (Project context) */}
       {shouldShowNewTaskButton && (
         <motion.div
@@ -230,10 +230,10 @@ export function TaskBoard({
           <Button
             onClick={handleOpenCreateModal}
             size="lg"
-            className="h-12 px-6 bg-gradient-to-r from-construction-blue to-blue-600 hover:from-construction-blue/90 hover:to-blue-600/90 text-white shadow-lg hover:shadow-xl transition-all group"
+            className="h-11 md:h-12 px-4 md:px-6 bg-gradient-to-r from-construction-blue to-blue-600 hover:from-construction-blue/90 hover:to-blue-600/90 text-white shadow-lg hover:shadow-xl transition-all group"
           >
-            <Plus className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-300" />
-            <span className="font-bold">New Task</span>
+            <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform duration-300" />
+            <span className="font-bold text-sm md:text-base">New Task</span>
           </Button>
         </motion.div>
       )}
@@ -267,8 +267,17 @@ export function TaskBoard({
 
       {/* Results count (Tasks page only) */}
       {!isProjectContext && (
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredTasks.length} of {initialTasks.length} tasks
+        <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
+          <div className="flex items-center gap-1.5 md:gap-2">
+            <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
+            <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
+              Status
+            </span>
+          </div>
+          <div className="h-4 w-px bg-construction-blue/30" />
+          <span className="text-xs md:text-sm font-bold text-gray-700">
+            {filteredTasks.length} of {initialTasks.length} tasks
+          </span>
         </div>
       )}
       
@@ -396,7 +405,7 @@ export function TaskBoard({
 
       {/* Top Projects & Team Members - Only show on Tasks page (not in project context) */}
       {!isProjectContext && filteredTasks.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
           <TopProjectsCard
             tasks={filteredTasks}
             projects={projects}

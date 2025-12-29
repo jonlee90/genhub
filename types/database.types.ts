@@ -7,8 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -123,22 +121,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "company_users_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_users_user_profile_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       expense_line_items: {
         Row: {
@@ -189,29 +172,7 @@ export type Database = {
           unit_price?: number
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "expense_line_items_expense_id_fkey"
-            columns: ["expense_id"]
-            isOneToOne: false
-            referencedRelation: "expenses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expense_line_items_material_assignment_id_fkey"
-            columns: ["material_assignment_id"]
-            isOneToOne: false
-            referencedRelation: "material_assignments"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expense_line_items_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "materials"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       expenses: {
         Row: {
@@ -286,29 +247,7 @@ export type Database = {
           vendor_address?: string | null
           vendor_name?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "expenses_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expenses_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "expenses_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       material_assignments: {
         Row: {
@@ -374,36 +313,7 @@ export type Database = {
           unit_cost?: number
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "material_assignments_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "materials"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_assignments_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_assignments_subcontractor_id_fkey"
-            columns: ["subcontractor_id"]
-            isOneToOne: false
-            referencedRelation: "subcontractors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "material_assignments_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       materials: {
         Row: {
@@ -469,15 +379,7 @@ export type Database = {
           unit_price?: number
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "materials_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -555,15 +457,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["phase_status"]
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "project_phases_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       project_team: {
         Row: {
@@ -593,22 +487,7 @@ export type Database = {
           subcontractor_id?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "project_team_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_team_subcontractor_id_fkey"
-            columns: ["subcontractor_id"]
-            isOneToOne: false
-            referencedRelation: "subcontractors"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       projects: {
         Row: {
@@ -680,15 +559,7 @@ export type Database = {
           updated_at?: string
           zip_code?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "projects_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       subcontractors: {
         Row: {
@@ -748,15 +619,7 @@ export type Database = {
           trade_specialization?: Database["public"]["Enums"]["trade_type"]
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "subcontractors_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       task_activity: {
         Row: {
@@ -789,15 +652,7 @@ export type Database = {
           task_id?: string
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "task_activity_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       task_dependencies: {
         Row: {
@@ -818,22 +673,7 @@ export type Database = {
           id?: string
           task_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "task_dependencies_depends_on_task_id_fkey"
-            columns: ["depends_on_task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_dependencies_task_id_fkey"
-            columns: ["task_id"]
-            isOneToOne: false
-            referencedRelation: "tasks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       tasks: {
         Row: {
@@ -893,22 +733,7 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "tasks_phase_id_fkey"
-            columns: ["phase_id"]
-            isOneToOne: false
-            referencedRelation: "project_phases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tasks_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       team_invitations: {
         Row: {
@@ -953,22 +778,7 @@ export type Database = {
           updated_at?: string
           used_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "team_invitations_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_invitations_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "user_profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_profiles: {
         Row: {
@@ -1022,6 +832,15 @@ export type Database = {
         Returns: {
           project_count: number
           user_id: string
+        }[]
+      }
+      get_top_team_members_by_completed_tasks: {
+        Args: { limit_count?: number; p_company_id: string }
+        Returns: {
+          avatar_url: string
+          completed_tasks: number
+          id: string
+          name: string
         }[]
       }
       get_user_company_id: { Args: { p_user_id: string }; Returns: string }
@@ -1103,7 +922,7 @@ export type Database = {
         | "commercial_office"
         | "industrial"
       purchaser_type: "gc" | "pm" | "subcontractor"
-      task_priority: "low" | "medium" | "high" | "critical"
+      task_priority: "low" | "medium" | "high"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed"
       trade_type:
         | "general"
@@ -1340,7 +1159,7 @@ export const Constants = {
         "industrial",
       ],
       purchaser_type: ["gc", "pm", "subcontractor"],
-      task_priority: ["low", "medium", "high", "critical"],
+      task_priority: ["low", "medium", "high"],
       task_status: ["todo", "in_progress", "review", "blocked", "completed"],
       trade_type: [
         "general",

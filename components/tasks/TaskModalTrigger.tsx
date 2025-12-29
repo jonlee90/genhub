@@ -54,15 +54,15 @@ export function TaskModalTrigger({
         variant={variant}
         className={
           variant === 'default'
-            ? 'relative h-14 px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white'
+            ? 'relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white'
             : ''
         }
       >
         {variant === 'default' && (
           <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-10 transition-opacity" />
         )}
-        <Wrench className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-        <span className="font-black text-base">{label}</span>
+        <Wrench className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
+        <span className="font-black text-sm md:text-base">{label}</span>
       </Button>
 
       <TaskModal

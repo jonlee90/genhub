@@ -57,17 +57,16 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
   return (
     <motion.div
       className={cn(
-        'flex-shrink-0 rounded-lg border-2 transition-all duration-300',
-        color,
+        'flex-shrink-0 rounded-lg border-2 transition-all duration-300 bg-white shadow-construction',
         'border-gray-200',
         isMobile ? 'w-full' : 'w-[300px]'
       )}
       animate={isOver ? {
-        boxShadow: '0 0 20px rgba(0, 27, 81, 0.4), inset 0 0 10px rgba(0, 27, 81, 0.2)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 20px rgba(0, 27, 81, 0.4), inset 0 0 10px rgba(0, 27, 81, 0.2)',
         borderColor: 'rgba(0, 27, 81, 0.5)',
         scale: isMobile ? 1 : 1.02
       } : {
-        boxShadow: '0 0 0 rgba(0, 27, 81, 0)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         borderColor: 'rgba(229, 231, 235, 1)',
         scale: 1
       }}
@@ -75,12 +74,12 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
     >
       {/* Column Header - hidden on mobile since we have tabs */}
       {!isMobile && (
-        <div className="p-3 border-b border-gray-200 bg-gradient-to-r from-[#001B51]/10 to-transparent">
+        <div className="p-3 border-b-2 border-gray-200 bg-gradient-to-r from-[#001B51]/5 to-transparent">
           <div className="flex items-center justify-between">
             <h3 className="font-black text-sm uppercase tracking-wider text-[#001B51]">
               {title}
             </h3>
-            <span className="text-xs font-bold text-[#001B51] bg-white px-2 py-0.5 rounded-full border border-[#001B51]/20">
+            <span className="text-xs font-bold text-[#001B51] bg-gray-50 px-2 py-0.5 rounded-full border border-[#001B51]/20">
               {tasks.length}
             </span>
           </div>
@@ -90,7 +89,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
       {/* Column Content */}
       <div
         ref={setNodeRef}
-        className="p-2 min-h-[200px]"
+        className="p-3 min-h-[200px] bg-white"
       >
         <SortableContext
           items={tasks.map((t) => t.id)}

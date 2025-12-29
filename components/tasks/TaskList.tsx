@@ -19,11 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, AlertTriangle, Ban, ArrowUpDown, Wrench, CheckCircle } from 'lucide-react';
+import { Calendar, AlertTriangle, Ban, ArrowUpDown, Wrench, CheckCircle, ChevronRight, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { updateTaskStatus } from '@/app/actions/tasks';
+import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import type { Database } from '@/types/database.types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
@@ -80,6 +81,9 @@ type SortOrder = 'asc' | 'desc';
 export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
   const [sortField, setSortField] = useState<SortField>('due_date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+
+  // Debug: Detect mobile for card view
+  const isMobile = useMediaQuery('(max-width: 767px)');
 
   // Determine if we're in project context
   const isProjectContext = !!phases;
@@ -194,8 +198,105 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
     </Button>
   );
 
+  // Debug: Mobile Card View
+  if (isMobile) {
+    return (
+      <div className="space-y-3">
+        {sortedTasks.map((task, index) => {
+          const statusConfig = STATUS_CONFIG[task.status];
+          const priorityConfig = PRIORITY_CONFIG[task.priority];
+          const taskIsOverdue = isOverdue(task);
+
+          return (
+            <motion.div
+              key={task.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+            >
+              <button
+                onClick={() => onTaskClick?.(task)}
+                className="w-full text-left bg-white rounded-lg border-2 border-gray-200 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all p-4 active:bg-gray-50"
+              >
+                {/* Header: Title + Priority */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {task.status === 'blocked' && (
+                        <Ban className="h-4 w-4 text-red-500 flex-shrink-0" />
+                      )}
+                      {taskIsOverdue && task.status !== 'blocked' && (
+                        <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                      )}
+                      <h3 className="font-bold text-gray-900 line-clamp-2">{task.title}</h3>
+                    </div>
+                    {task.project && (
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <FolderKanban className="h-3 w-3" />
+                        <span className="truncate">{task.project.name}</span>
+                      </div>
+                    )}
+                  </div>
+                  <Badge variant="secondary" className={cn('text-[10px] font-bold shrink-0', priorityConfig.color)}>
+                    {priorityConfig.label}
+                  </Badge>
+                </div>
+
+                {/* Middle: Status + Assignee */}
+                <div className="flex items-center justify-between gap-3 mb-3">
+                  <motion.div
+                    animate={statusConfig.animate ? { scale: [1, 1.02, 1] } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <Badge className={cn('font-bold text-[10px]', statusConfig.color)}>
+                      <div className="flex items-center gap-1">
+                        {statusConfig.icon && <statusConfig.icon className="w-3 h-3" />}
+                        {statusConfig.label}
+                      </div>
+                    </Badge>
+                  </motion.div>
+
+                  {task.assignee ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={task.assignee.avatar_url || undefined} />
+                        <AvatarFallback className="text-[10px] bg-construction-blue text-white">
+                          {getInitials(task.assignee.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-gray-600">{task.assignee.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400">Unassigned</span>
+                  )}
+                </div>
+
+                {/* Footer: Due Date + Phase + Arrow */}
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div className="flex items-center gap-3 text-xs text-gray-500">
+                    {task.due_date && (
+                      <div className={cn('flex items-center gap-1', taskIsOverdue && 'text-red-600')}>
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(task.due_date)}
+                      </div>
+                    )}
+                    {getPhaseName(task) !== '-' && (
+                      <span className="text-gray-400">{getPhaseName(task)}</span>
+                    )}
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+              </button>
+            </motion.div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Debug: Desktop Table View
   return (
-    <div className="rounded-lg border-2 border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
       <Table>
         <TableHeader className="sticky top-0 bg-[#001B51] text-white shadow-construction z-10">
           <TableRow className="border-none hover:bg-[#001B51]">
@@ -227,7 +328,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
             return (
               <TableRow
                 key={task.id}
-                className="group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer"
+                className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100"
               >
                 {/* Title */}
                 <TableCell>
