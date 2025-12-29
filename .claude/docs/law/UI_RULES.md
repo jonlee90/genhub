@@ -747,6 +747,133 @@ components/pwa/
 </div>
 ```
 
+### Task Materials Manager (Tabbed Interface)
+```tsx
+// Tabbed interface for managing materials within task modal
+<div className="space-y-4">
+  {/* Tab Navigation */}
+  <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+    <button
+      className={cn(
+        'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all',
+        activeTab === 'search'
+          ? 'bg-white text-construction-blue shadow-sm'
+          : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+      )}
+    >
+      <Search className="h-4 w-4" />
+      Search Products
+    </button>
+    <button className={cn(/* ... */)}>
+      <Package className="h-4 w-4" />
+      Assigned
+      {materials.length > 0 && (
+        <Badge className="ml-1 bg-construction-blue text-white">
+          {materials.length}
+        </Badge>
+      )}
+    </button>
+  </div>
+
+  {/* Tab Content */}
+  <AnimatePresence mode="wait">
+    {activeTab === 'search' && <TaskMaterialSearch />}
+    {activeTab === 'assigned' && <TaskMaterialsList />}
+  </AnimatePresence>
+</div>
+```
+
+### Material Search Card (Compact)
+```tsx
+// Compact product card for search results in modal
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="flex items-start gap-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-construction-blue/50"
+>
+  {/* Product Image */}
+  <div className="shrink-0 w-14 h-14 rounded-md border border-gray-200 overflow-hidden">
+    <img src={product.imageUrl} className="w-full h-full object-contain" />
+  </div>
+
+  {/* Product Info */}
+  <div className="flex-1 min-w-0 space-y-1">
+    <h4 className="text-sm font-bold text-construction-blue line-clamp-1">{product.name}</h4>
+    <div className="flex items-center gap-2">
+      <span className="text-lg font-black text-construction-blue">{price}</span>
+      <Badge className="text-[10px]">{stockStatus}</Badge>
+    </div>
+  </div>
+
+  {/* Quantity & Add */}
+  <div className="shrink-0 flex flex-col gap-2">
+    <div className="flex items-center border-2 border-gray-200 rounded-md">
+      <button className="p-1"><Minus className="h-3 w-3" /></button>
+      <input type="number" className="w-10 h-6 text-center text-sm font-bold" />
+      <button className="p-1"><Plus className="h-3 w-3" /></button>
+    </div>
+    <Button size="sm" className="h-7 bg-construction-blue">
+      <Plus className="mr-1 h-3 w-3" />Add
+    </Button>
+  </div>
+</motion.div>
+```
+
+### Add Member Modal
+```tsx
+// Modal for adding team members to project
+<Dialog>
+  <DialogContent className="max-w-2xl">
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2">
+        <UserPlus className="h-5 w-5 text-construction-blue" />
+        Add Team Member
+      </DialogTitle>
+    </DialogHeader>
+
+    {/* Search Input */}
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <Input placeholder="Search team members..." className="pl-9" />
+    </div>
+
+    {/* User List */}
+    <div className="max-h-[300px] overflow-y-auto space-y-2">
+      {users.map(user => (
+        <div className="flex items-center gap-3 p-3 border-2 rounded-lg hover:border-construction-blue/50">
+          <Avatar />
+          <div className="flex-1">
+            <p className="font-medium">{user.name}</p>
+            <p className="text-sm text-gray-500">{user.email}</p>
+          </div>
+          <Select placeholder="Select Role">
+            <SelectItem value="project_manager">Project Manager</SelectItem>
+            <SelectItem value="foreman">Foreman</SelectItem>
+          </Select>
+          <Button size="sm">Add</Button>
+        </div>
+      ))}
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+### Progress Bar (Construction Theme)
+```tsx
+// Fixed progress bar with construction-themed colors
+<ProgressPrimitive.Root
+  className="relative h-4 w-full overflow-hidden rounded-full bg-gray-200"
+>
+  <ProgressPrimitive.Indicator
+    className="h-full w-full flex-1 bg-construction-blue transition-all"
+    style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+  />
+</ProgressPrimitive.Root>
+
+// NOTE: Use bg-gray-200 for track (not bg-secondary)
+// NOTE: Use bg-construction-blue for fill (not bg-primary)
+```
+
 ---
 
 ## Code Examples

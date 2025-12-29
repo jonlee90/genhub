@@ -74,22 +74,24 @@ next-saas-starter/
 │   │   └── profile/            # User profile
 │   │
 │   ├── actions/                # Server Actions (grouped by feature)
-│   │   ├── auth.ts
-│   │   ├── projects.ts
-│   │   ├── tasks.ts
-│   │   ├── materials.ts
-│   │   ├── expenses.ts
-│   │   ├── team.ts
-│   │   ├── subcontractors.ts
-│   │   ├── phases.ts
-│   │   ├── accept-invite.ts
-│   │   └── stripe.ts
+│   │   ├── auth.ts             # Authentication actions
+│   │   ├── projects.ts         # Project CRUD + addProjectTeamMember
+│   │   ├── tasks.ts            # Task CRUD
+│   │   ├── materials.ts        # Material search, assignment, CRUD
+│   │   │   └── getTaskMaterials, addProductToTask, removeMaterialFromTask, updateMaterialQuantity
+│   │   ├── expenses.ts         # Expense CRUD
+│   │   ├── team.ts             # Team management
+│   │   ├── subcontractors.ts   # Subcontractor CRUD
+│   │   ├── phases.ts           # Phase management
+│   │   ├── accept-invite.ts    # Invitation acceptance
+│   │   └── stripe.ts           # Stripe payment actions
 │   │
 │   ├── api/                    # API routes
 │   │   ├── auth/[...nextauth]/ # NextAuth handlers
 │   │   ├── profile/            # Profile API
 │   │   ├── webhook/stripe/     # Stripe webhooks
-│   │   └── (payment)/          # Payment routes
+│   │   ├── (payment)/          # Payment routes
+│   │   └── companies/[companyId]/users/ # Company users for team management
 │   │
 │   ├── accept-invite/          # Public invitation flow
 │   ├── success/                # Payment success page
@@ -107,6 +109,9 @@ next-saas-starter/
 │   ├── projects/               # Project components
 │   │   ├── ProjectList.tsx
 │   │   ├── ProjectCard.tsx
+│   │   ├── ProjectDetailContent.tsx # Project detail with tabs
+│   │   ├── ProjectTeam.tsx     # Team management tab
+│   │   ├── AddMemberModal.tsx  # Add team member modal with search
 │   │   ├── MetroJourney.tsx    # Phase visualization
 │   │   └── ...
 │   │
@@ -116,10 +121,14 @@ next-saas-starter/
 │   │   ├── TaskList.tsx
 │   │   ├── TaskBoard.tsx       # Main task board with filters, views, stats
 │   │   ├── TaskFilters.tsx     # Task filtering UI
-│   │   ├── TaskModal.tsx       # Create/Edit task modal
-│   │   ├── DashboardStats.tsx  # Stats cards (totals, budget overview)
+│   │   ├── TaskModal.tsx       # Create/Edit task modal with materials section
+│   │   ├── TaskMaterialsManager.tsx # Tabbed interface for task materials
+│   │   ├── TaskMaterialSearch.tsx   # Home Depot product search for tasks
+│   │   ├── TaskMaterialsList.tsx    # Assigned materials list with CRUD
+│   │   ├── DashboardStats.tsx  # Stats cards (totals, budget, variance)
 │   │   ├── TopProjectsCard.tsx # Top projects by task completion
 │   │   ├── TopTeamMembersCard.tsx # Top team members by completed tasks
+│   │   ├── KanbanColumn.tsx    # Individual kanban column (no height limit)
 │   │   ├── gantt/              # Gantt chart components
 │   │   └── ...
 │   │
