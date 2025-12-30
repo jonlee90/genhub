@@ -65,13 +65,7 @@ export function ProjectFilters({
   return (
     <div className="space-y-4">
 
-      {/* Status Tabs */}
-      <Tabs
-        tabs={statusTabs}
-        activeTab={statusFilter}
-        onChange={onStatusChange}
-      />
-
+ 
       {/* Search & Dropdowns */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:flex-wrap">
         {/* Search input with vanishing placeholders */}
@@ -147,6 +141,14 @@ export function ProjectFilters({
           </SelectContent>
         </Select>
       </div>
+
+           {/* Status Tabs */}
+      <Tabs
+        tabs={statusTabs}
+        activeTab={statusFilter}
+        onChange={onStatusChange}
+      />
+
     </div>
   );
 }

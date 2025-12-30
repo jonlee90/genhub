@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Receipt, Plus, Search, Filter, Eye, FileText, Image as ImageIcon } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { Receipt, Plus, X, ShieldAlert, Wrench, DollarSign } from 'lucide-react';
+import { ExpenseCard } from './ExpenseCard';
+import { ExpenseFilters } from './ExpenseFilters';
 import { CreateExpenseModal } from './CreateExpenseModal';
 import { ExpenseDetailModal } from './ExpenseDetailModal';
 
+// Debug: Type definitions for expenses list
 interface Project {
   id: string;
   name: string;
@@ -49,267 +47,286 @@ interface Expense {
 }
 
 interface ExpensesListProps {
-  expenses: Expense[];
+  initialExpenses: Expense[];
   projects: Project[];
   tasks: Task[];
+  searchParams: { [key: string]: string | string[] | undefined };
 }
 
-const STATUS_CONFIG = {
-  submitted: {
-    label: 'Submitted',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
-  },
-  under_review: {
-    label: 'Under Review',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
-  },
-  approved: {
-    label: 'Approved',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-  },
-  rejected: {
-    label: 'Rejected',
-    color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
-  },
-  paid: {
-    label: 'Paid',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-  },
-};
+export function ExpensesList({ initialExpenses, projects, tasks, searchParams }: ExpensesListProps) {
+  // Debug: Track component rendering
+  console.log('[ExpensesList] Rendering with', initialExpenses.length, 'expenses');
 
-export function ExpensesList({ expenses, projects, tasks }: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('created_at');
 
-  // Filter expenses
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch = searchQuery === '' ||
-      expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      expense.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
+  // Apply filters and sorting
+  const filteredExpenses = useMemo(() => {
+    let filtered = [...initialExpenses];
 
-    const matchesStatus = statusFilter === 'all' || expense.status === statusFilter;
-    const matchesProject = projectFilter === 'all' || expense.project?.id === projectFilter;
-
-    return matchesSearch && matchesStatus && matchesProject;
-  });
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    // Debug: Log filtering
+    console.log('[ExpensesList] Filtering expenses:', {
+      searchQuery,
+      statusFilter,
+      projectFilter,
+      sortBy,
     });
-  };
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (expense) =>
+          expense.description.toLowerCase().includes(query) ||
+          expense.vendor_name?.toLowerCase().includes(query) ||
+          expense.category.toLowerCase().includes(query)
+      );
+    }
+
+    // Status filter
+    if (statusFilter && statusFilter !== 'all') {
+      filtered = filtered.filter((expense) => expense.status === statusFilter);
+    }
+
+    // Project filter
+    if (projectFilter && projectFilter !== 'all') {
+      filtered = filtered.filter((expense) => expense.project?.id === projectFilter);
+    }
+
+    // Sorting
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'amount_high':
+          return b.amount - a.amount;
+        case 'amount_low':
+          return a.amount - b.amount;
+        case 'date':
+          return new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime();
+        case 'description':
+          return a.description.localeCompare(b.description);
+        case 'status':
+          return a.status.localeCompare(b.status);
+        case 'created_at':
+        default:
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      }
+    });
+
+    console.log('[ExpensesList] Filtered to', filtered.length, 'expenses');
+    return filtered;
+  }, [initialExpenses, searchQuery, statusFilter, projectFilter, sortBy]);
+
+  // Empty State - No Expenses Created Yet
+  if (initialExpenses.length === 0) {
+    return (
+      <div className="relative">
+        {/* Industrial Frame - hidden on mobile */}
+        <div className="hidden md:block absolute inset-0 border-4 border-construction-blue/10 rounded-2xl transform rotate-1" />
+        <div className="hidden md:block absolute inset-0 border-4 border-construction-accent/10 rounded-2xl transform -rotate-1" />
+
+        <div className="relative flex flex-col items-center justify-center py-12 md:py-24 px-4 md:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-xl md:rounded-2xl border-2 border-gray-200 shadow-construction-lg">
+          {/* Construction Site Illustration */}
+          <div className="relative mb-6 md:mb-8">
+            {/* Receipt Icon - Central */}
+            <motion.div
+              className="relative z-10"
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
+            >
+              <div className="relative p-5 md:p-8 bg-gradient-to-br from-construction-blue to-blue-700 rounded-2xl md:rounded-3xl shadow-construction-xl">
+                <Receipt className="h-12 w-12 md:h-20 md:w-20 text-white" />
+                <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent rounded-full animate-pulse" />
+              </div>
+            </motion.div>
+
+            {/* Floating Tools - hidden on small mobile */}
+            <motion.div
+              className="hidden sm:block absolute -left-10 md:-left-12 top-6 md:top-8 p-2 md:p-3 bg-white rounded-lg md:rounded-xl shadow-construction border-2 border-gray-200"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              <DollarSign className="h-4 w-4 md:h-6 md:w-6 text-construction-accent" />
+            </motion.div>
+
+            <motion.div
+              className="hidden sm:block absolute -right-10 md:-right-12 top-8 md:top-12 p-2 md:p-3 bg-white rounded-lg md:rounded-xl shadow-construction border-2 border-gray-200"
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <Wrench className="h-4 w-4 md:h-6 md:w-6 text-construction-blue" />
+            </motion.div>
+          </div>
+
+          {/* Heavy Industrial Typography */}
+          <motion.h2
+            className="text-2xl sm:text-3xl md:text-5xl font-black text-center mb-3 md:mb-4 bg-gradient-to-r from-construction-blue via-construction-blue to-blue-700 bg-clip-text text-transparent leading-tight"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            SUBMIT YOUR<br />FIRST EXPENSE
+          </motion.h2>
+
+          <motion.p
+            className="text-sm md:text-lg text-gray-600 font-medium mb-6 md:mb-10 max-w-xl text-center leading-relaxed px-4"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+          >
+            Track receipts, AI OCR processing, and automated expense management all in one place.
+          </motion.p>
+
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.6 }}
+          >
+            <Button
+              size="lg"
+              onClick={() => setShowCreateModal(true)}
+              className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white"
+            >
+              <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
+              <Receipt className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
+              SUBMIT EXPENSE
+            </Button>
+          </motion.div>
+
+          {/* Industrial Process Steps */}
+          <div className="mt-8 md:mt-12 grid grid-cols-3 gap-2 md:gap-6 max-w-2xl w-full">
+            {[
+              { num: '01', label: 'Upload', icon: Receipt },
+              { num: '02', label: 'Review', icon: DollarSign },
+              { num: '03', label: 'Approve', icon: Wrench }
+            ].map((step, index) => (
+              <motion.div
+                key={step.num}
+                className="relative group"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
+              >
+                <div className="flex flex-col items-center p-2 md:p-4 bg-white border-2 border-gray-200 rounded-lg md:rounded-xl hover:border-construction-blue transition-all shadow-construction hover:shadow-construction-lg">
+                  <div className="flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-lg bg-construction-blue/10 border-2 border-construction-blue/20 mb-2 md:mb-3 group-hover:scale-110 transition-transform">
+                    <step.icon className="h-4 w-4 md:h-6 md:w-6 text-construction-blue" />
+                  </div>
+                  <div className="text-lg md:text-2xl font-black text-construction-blue mb-0.5 md:mb-1">{step.num}</div>
+                  <p className="text-[10px] md:text-sm font-bold text-gray-600 text-center">{step.label}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Create Expense Modal */}
+        {showCreateModal && (
+          <CreateExpenseModal
+            projects={projects}
+            tasks={tasks}
+            onClose={() => setShowCreateModal(false)}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
-    <>
-      <Card className="border-2 border-gray-200 shadow-construction">
-        <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-black text-construction-blue flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              All Expenses ({filteredExpenses.length})
-            </CardTitle>
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+    <div className="space-y-4 md:space-y-6">
+      {/* Filters */}
+      <ExpenseFilters
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        projectFilter={projectFilter}
+        onProjectChange={setProjectFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        projects={projects}
+      />
+
+      {/* Results count - Industrial Style */}
+      <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
+        <div className="flex items-center gap-1.5 md:gap-2">
+          <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
+          <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
+            Status
+          </span>
+        </div>
+        <div className="h-4 w-px bg-construction-blue/30" />
+        <span className="text-xs md:text-sm font-bold text-gray-700">
+          {filteredExpenses.length} of {initialExpenses.length} expenses
+        </span>
+      </div>
+
+      {/* No Results State */}
+      {filteredExpenses.length === 0 ? (
+        <div className="relative">
+          <div className="absolute inset-0 border-2 border-dashed border-construction-red/20 rounded-xl transform rotate-1" />
+
+          <div className="relative flex flex-col items-center justify-center py-20 px-8 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
+            {/* Warning Icon */}
+            <motion.div
+              className="mb-6 p-6 bg-gradient-to-br from-construction-red/10 to-construction-red/5 rounded-2xl border-2 border-construction-red/20"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, type: "spring" }}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Submit Expense
+              <ShieldAlert className="h-16 w-16 text-construction-red" />
+            </motion.div>
+
+            <h3 className="text-3xl font-black text-construction-red mb-3">
+              NO EXPENSES FOUND
+            </h3>
+
+            <p className="text-gray-600 font-medium mb-8 max-w-md text-center text-lg">
+              No expenses match your current filters. Adjust search criteria or clear all filters.
+            </p>
+
+            <Button
+              size="lg"
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setProjectFilter('all');
+                setSortBy('created_at');
+              }}
+              className="h-12 px-8 bg-white border-2 border-construction-red hover:bg-construction-red hover:text-white transition-all shadow-construction font-black group"
+            >
+              <X className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform" />
+              CLEAR ALL FILTERS
             </Button>
           </div>
-
-          {/* Filters */}
-          <div className="flex flex-wrap gap-4 mt-4">
-            {/* Search */}
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search expenses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border-2"
-              />
-            </div>
-
-            {/* Status Filter */}
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] border-2">
-                <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="submitted">Submitted</SelectItem>
-                <SelectItem value="under_review">Under Review</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Project Filter */}
-            <Select value={projectFilter} onValueChange={setProjectFilter}>
-              <SelectTrigger className="w-[200px] border-2">
-                <SelectValue placeholder="All Projects" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Projects</SelectItem>
-                {projects.map(project => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-6">
-          {filteredExpenses.length > 0 ? (
-            <div className="space-y-3">
-              <AnimatePresence>
-                {filteredExpenses.map((expense, index) => {
-                  const statusConfig = STATUS_CONFIG[expense.status];
-
-                  return (
-                    <motion.div
-                      key={expense.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -20 }}
-                      transition={{ delay: index * 0.03 }}
-                      className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => setSelectedExpense(expense)}
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Receipt Icon */}
-                        <div className={cn(
-                          "p-3 rounded-lg border-2 shrink-0",
-                          expense.receipt_url
-                            ? "bg-construction-blue/10 border-construction-blue/20"
-                            : "bg-gray-100 border-gray-200"
-                        )}>
-                          {expense.receipt_url ? (
-                            <ImageIcon className="h-6 w-6 text-construction-blue" />
-                          ) : (
-                            <FileText className="h-6 w-6 text-gray-400" />
-                          )}
-                        </div>
-
-                        {/* Expense Details */}
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-construction-blue line-clamp-1">
-                                {expense.description}
-                              </h4>
-                              <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
-                                {expense.vendor_name && (
-                                  <>
-                                    <span>{expense.vendor_name}</span>
-                                    <span className="text-gray-400">•</span>
-                                  </>
-                                )}
-                                <Badge variant="outline" className="font-semibold capitalize text-xs">
-                                  {expense.category}
-                                </Badge>
-                              </div>
-                            </div>
-
-                            <div className="text-right shrink-0">
-                              <div className="text-2xl font-black text-construction-blue">
-                                {formatCurrency(expense.amount)}
-                              </div>
-                              <div className="text-xs text-gray-600 mt-1">
-                                {formatDate(expense.expense_date)}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Project and Task */}
-                          <div className="flex items-center gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Project:</span>{' '}
-                              <span className="font-semibold text-gray-900">{expense.project?.name || 'N/A'}</span>
-                            </div>
-                            {expense.task && (
-                              <>
-                                <span className="text-gray-400">•</span>
-                                <div>
-                                  <span className="text-gray-600">Task:</span>{' '}
-                                  <span className="font-semibold text-gray-900">{expense.task.title}</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-
-                          {/* Status and Submitter */}
-                          <div className="flex items-center gap-3">
-                            <Badge className={cn('font-semibold border-2', statusConfig.color)}>
-                              {statusConfig.label}
-                            </Badge>
-                            {expense.submitter && (
-                              <span className="text-xs text-gray-600">
-                                Submitted by {expense.submitter.name}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* View Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="shrink-0"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedExpense(expense);
-                          }}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <Receipt className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Expenses Found</h3>
-              <p className="text-gray-600 mb-4">
-                {searchQuery || statusFilter !== 'all' || projectFilter !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Submit your first expense to get started'
-                }
-              </p>
-              {!(searchQuery || statusFilter !== 'all' || projectFilter !== 'all') && (
-                <Button
-                  onClick={() => setShowCreateModal(true)}
-                  className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Submit Expense
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+      ) : (
+        /* Expense Grid with Staggered Animation */
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {filteredExpenses.map((expense, index) => (
+            <motion.div
+              key={expense.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: index * 0.05,
+                duration: 0.5,
+                type: "spring",
+                stiffness: 200,
+                damping: 20
+              }}
+              onClick={() => setSelectedExpense(expense)}
+            >
+              <ExpenseCard expense={expense} />
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* Create Expense Modal */}
       {showCreateModal && (
@@ -327,6 +344,6 @@ export function ExpensesList({ expenses, projects, tasks }: ExpensesListProps) {
           onClose={() => setSelectedExpense(null)}
         />
       )}
-    </>
+    </div>
   );
 }

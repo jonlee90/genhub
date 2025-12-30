@@ -16,7 +16,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from "framer-motion";
-import { Users, Calendar, TrendingUp, Hash } from 'lucide-react';
+import { Users, Calendar, MapPin } from 'lucide-react';
 import type { Database } from '@/types/database.types';
 import { cn, formatBudget } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
@@ -250,39 +250,51 @@ export function ProjectCard({ project }: ProjectCardProps) {
           {/* Debug: Divider */}
           <div className="h-px bg-gray-100" />
 
-          {/* Debug: Footer - Project ID & Actual Spent */}
+          {/* Debug: Footer - Google Maps Address Link */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 text-gray-400">
-              <Hash className="h-3 w-3" />
-              <span className="text-[11px] font-mono tracking-tight">
-                {project.id.slice(0, 8).toUpperCase()}
-              </span>
-            </div>
-
-            {stats ? (
-              <div className="flex items-center gap-1">
-                <TrendingUp className={cn(
-                  "h-3.5 w-3.5",
-                  stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
-                )} />
-                <span className={cn(
-                  "text-sm font-bold",
-                  stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
-                )}>
-                  {formatBudget(stats.actualSpent)}
+            {/* Debug: If address exists, show clickable Google Maps link */}
+            {project.address ? (
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                  `${project.address}${project.city ? `, ${project.city}` : ''}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  // Debug: Prevent parent Link navigation
+                  e.stopPropagation();
+                  console.log('[ProjectCard] Opening Google Maps for address:', project.address);
+                }}
+                className={cn(
+                  "flex items-center gap-1.5 group/link",
+                  "text-construction-blue hover:text-construction-blue/80",
+                  "transition-colors duration-200"
+                )}
+              >
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="text-xs font-medium group-hover/link:underline truncate max-w-[200px]">
+                  {project.address}
+                  {project.city && `, ${project.city}`}
                 </span>
-              </div>
+              </a>
             ) : (
-              <span className="text-[11px] text-gray-400 font-medium">
-                {project.start_date
-                  ? new Date(project.start_date).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric'
-                    })
-                  : 'Not started'
-                }
-              </span>
+              // Debug: Fallback when no address is available
+              <div className="flex items-center gap-1.5 text-gray-300">
+                <MapPin className="h-3.5 w-3.5" />
+                <span className="text-xs">No address</span>
+              </div>
             )}
+
+            {/* Debug: Start date display (right side) */}
+            <span className="text-[11px] text-gray-400 font-medium shrink-0">
+              {project.start_date
+                ? new Date(project.start_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  })
+                : 'Not started'
+              }
+            </span>
           </div>
         </div>
 

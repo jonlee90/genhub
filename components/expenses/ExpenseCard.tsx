@@ -1,0 +1,174 @@
+'use client';
+
+import { Badge } from '@/components/ui/badge';
+import { Receipt, FileText, Image as ImageIcon, DollarSign, Calendar, Building2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Debug: Expense card component for grid display
+interface Expense {
+  id: string;
+  description: string;
+  amount: number;
+  category: string;
+  expense_date: string;
+  vendor_name: string | null;
+  receipt_url: string | null;
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
+  created_at: string;
+  project: {
+    id: string;
+    name: string;
+  } | null;
+  task?: {
+    id: string;
+    title: string;
+  } | null;
+  submitter?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+}
+
+interface ExpenseCardProps {
+  expense: Expense;
+}
+
+const STATUS_CONFIG = {
+  submitted: {
+    label: 'Submitted',
+    color: 'bg-gray-100 text-gray-700 border-gray-300',
+  },
+  under_review: {
+    label: 'Under Review',
+    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
+  },
+  approved: {
+    label: 'Approved',
+    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+  },
+  rejected: {
+    label: 'Rejected',
+    color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
+  },
+  paid: {
+    label: 'Paid',
+    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+  },
+};
+
+export function ExpenseCard({ expense }: ExpenseCardProps) {
+  // Debug: Render expense card
+  console.log('[ExpenseCard] Rendering expense:', expense.id);
+
+  const statusConfig = STATUS_CONFIG[expense.status];
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  return (
+    <div className="group relative h-full cursor-pointer">
+      {/* Decorative background - construction theme */}
+      <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-transparent rounded-xl transform group-hover:scale-105 transition-transform" />
+
+      <div className="relative h-full bg-white border-2 border-gray-200 rounded-xl shadow-construction hover:shadow-construction-lg transition-all overflow-hidden flex flex-col">
+        {/* Receipt/Image header */}
+        <div className={cn(
+          "relative h-32 md:h-40 border-b-2 flex items-center justify-center",
+          expense.receipt_url
+            ? "bg-gradient-to-br from-construction-blue/10 to-construction-blue/5 border-construction-blue/20"
+            : "bg-gradient-to-br from-gray-100 to-gray-50 border-gray-200"
+        )}>
+          {expense.receipt_url ? (
+            <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-construction-blue opacity-40" />
+          ) : (
+            <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-400 opacity-40" />
+          )}
+
+          {/* Status badge - top right */}
+          <div className="absolute top-2 right-2">
+            <Badge className={cn('font-bold border-2 text-xs', statusConfig.color)}>
+              {statusConfig.label}
+            </Badge>
+          </div>
+
+          {/* Receipt indicator - top left */}
+          {expense.receipt_url && (
+            <div className="absolute top-2 left-2 p-1.5 bg-white rounded-lg border-2 border-construction-blue/20 shadow-sm">
+              <Receipt className="h-3 w-3 text-construction-blue" />
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 p-4 md:p-5 space-y-3 flex flex-col">
+          {/* Amount - prominent display */}
+          <div className="flex items-baseline gap-2">
+            <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-construction-blue shrink-0" />
+            <div className="text-2xl md:text-3xl font-black text-construction-blue leading-none">
+              {formatCurrency(expense.amount)}
+            </div>
+          </div>
+
+          {/* Description */}
+          <h3 className="font-bold text-gray-900 line-clamp-2 text-sm md:text-base leading-tight min-h-[2.5rem]">
+            {expense.description}
+          </h3>
+
+          {/* Category and Vendor */}
+          <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm">
+            <Badge variant="outline" className="font-semibold capitalize">
+              {expense.category}
+            </Badge>
+            {expense.vendor_name && (
+              <>
+                <span className="text-gray-400">•</span>
+                <span className="text-gray-600 font-medium truncate">
+                  {expense.vendor_name}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Spacer */}
+          <div className="flex-1" />
+
+          {/* Footer - Project and Date */}
+          <div className="space-y-2 pt-3 border-t-2 border-gray-100">
+            {/* Project */}
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+              <span className="text-gray-600 truncate">
+                {expense.project?.name || 'No project'}
+              </span>
+            </div>
+
+            {/* Date */}
+            <div className="flex items-center gap-2 text-xs md:text-sm">
+              <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+              <span className="text-gray-600">
+                {formatDate(expense.expense_date)}
+              </span>
+            </div>
+          </div>
+
+          {/* Hover indicator */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-construction-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+        </div>
+      </div>
+    </div>
+  );
+}

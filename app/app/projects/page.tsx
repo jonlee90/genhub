@@ -104,70 +104,7 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      {/* Industrial Stats Dashboard - Foreman's Clipboard */}
-      {totalProjects > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {/* Total Projects */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <HardHat className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
-              </div>
-              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{totalProjects}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Active Sites</div>
-            </div>
-          </div>
-
-          {/* Active Projects */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                  <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">Active</div>
-              </div>
-              <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">{activeProjects}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">In Progress</div>
-            </div>
-          </div>
-
-          {/* Completed Projects */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <Clock className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">Done</div>
-              </div>
-              <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">{completedProjects}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Complete</div>
-            </div>
-          </div>
-
-          {/* At Risk Projects */}
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-red/5 to-construction-red/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-red/10 rounded-lg border-2 border-construction-red/20">
-                  <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-construction-red" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-red/60">Alert</div>
-              </div>
-              <div className="text-2xl md:text-4xl font-black text-construction-red leading-none mb-1">{atRiskProjects}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">At Risk</div>
-            </div>
-          </div>
-        </div>
-      )}
+ 
 
       {/* Project List with Filters */}
       <Suspense fallback={<ProjectListSkeleton />}>
