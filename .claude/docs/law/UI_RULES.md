@@ -819,6 +819,37 @@ components/pwa/
 </motion.div>
 ```
 
+### Creator Badge (Metadata Component)
+```tsx
+// Display who created a record and when - used in edit modals
+import { CreatorBadge } from '@/components/ui/CreatorBadge';
+
+// Default variant - subtle background, stacked layout
+<CreatorBadge
+  creatorName="John Smith"
+  createdAt="2024-12-29T10:30:00Z"
+/>
+
+// Compact variant - inline layout for tight spaces
+<CreatorBadge
+  creatorName="John Smith"
+  createdAt="2024-12-29T10:30:00Z"
+  variant="compact"
+/>
+
+// Usage in modal footer (edit mode only)
+<div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
+  {mode === 'edit' && task?.creator && (
+    <CreatorBadge
+      creatorName={task.creator.name}
+      createdAt={task.created_at}
+    />
+  )}
+  <Button variant="outline">Cancel</Button>
+  <Button>Save</Button>
+</div>
+```
+
 ### Add Member Modal
 ```tsx
 // Modal for adding team members to project

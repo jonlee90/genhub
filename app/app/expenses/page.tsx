@@ -12,7 +12,7 @@ async function getExpensesData() {
       const session = await auth();
 
       if (!session?.user?.id) {
-        return { expenses: [], projects: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
+        return { expenses: [], projects: [], tasks: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
       }
 
       // Get user's company
@@ -24,7 +24,7 @@ async function getExpensesData() {
         .maybeSingle();
 
       if (!companyUser) {
-        return { expenses: [], projects: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
+        return { expenses: [], projects: [], tasks: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
       }
 
       // Get all projects for this company
@@ -34,6 +34,13 @@ async function getExpensesData() {
         .eq('company_id', companyUser.company_id)
         .eq('status', 'active')
         .order('name');
+
+      // Get all tasks for this company
+      const { data: tasks } = await supabase
+        .from('tasks')
+        .select('id, title, project_id')
+        .eq('project.company_id', companyUser.company_id)
+        .order('created_at');
 
       // Get all expenses for this company
       const { data: expenses } = await supabase
@@ -65,11 +72,12 @@ async function getExpensesData() {
       return {
         expenses: expenses || [],
         projects: projects || [],
+        tasks: tasks || [],
         stats,
       };
     } catch (error) {
       console.error('Database not available:', error);
-      return { expenses: [], projects: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
+      return { expenses: [], projects: [], tasks: [], stats: { total: 0, pending: 0, approved: 0, rejected: 0, totalAmount: 0 } };
     }
   }
 
@@ -99,6 +107,13 @@ async function getExpensesData() {
     .eq('company_id', companyUser.company_id)
     .eq('status', 'active')
     .order('name');
+
+  // Get all tasks for this company
+  const { data: tasks } = await supabase
+    .from('tasks')
+    .select('id, title, project_id')
+    .eq('project.company_id', companyUser.company_id)
+    .order('created_at');
 
   // Get all expenses for this company
   const { data: expenses } = await supabase
@@ -130,12 +145,13 @@ async function getExpensesData() {
   return {
     expenses: expenses || [],
     projects: projects || [],
+    tasks: tasks || [],
     stats,
   };
 }
 
 export default async function ExpensesPage() {
-  const { expenses, projects, stats } = await getExpensesData();
+  const { expenses, projects, tasks, stats } = await getExpensesData();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -267,7 +283,7 @@ export default async function ExpensesPage() {
       </div>
 
       {/* Expenses List */}
-      <ExpensesList expenses={expenses} projects={projects} />
+      <ExpensesList expenses={expenses} projects={projects} tasks={tasks} />
 
       {/* Decorative bottom border */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />

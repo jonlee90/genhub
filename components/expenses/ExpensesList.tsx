@@ -17,6 +17,12 @@ interface Project {
   name: string;
 }
 
+interface Task {
+  id: string;
+  title: string;
+  project_id: string;
+}
+
 interface Expense {
   id: string;
   description: string;
@@ -45,6 +51,7 @@ interface Expense {
 interface ExpensesListProps {
   expenses: Expense[];
   projects: Project[];
+  tasks: Task[];
 }
 
 const STATUS_CONFIG = {
@@ -70,7 +77,7 @@ const STATUS_CONFIG = {
   },
 };
 
-export function ExpensesList({ expenses, projects }: ExpensesListProps) {
+export function ExpensesList({ expenses, projects, tasks }: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -308,6 +315,7 @@ export function ExpensesList({ expenses, projects }: ExpensesListProps) {
       {showCreateModal && (
         <CreateExpenseModal
           projects={projects}
+          tasks={tasks}
           onClose={() => setShowCreateModal(false)}
         />
       )}

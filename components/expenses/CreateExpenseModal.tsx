@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useEffect, useRef } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Loader2, Upload, Camera, X, FileText, Sparkles } from 'lucide-react';
 import { createExpense, processReceiptOCR } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
-import { createSupabaseClient } from '@/utils/supabase/front';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -22,14 +21,16 @@ interface Project {
 interface Task {
   id: string;
   title: string;
+  project_id: string;
 }
 
 interface CreateExpenseModalProps {
   projects: Project[];
+  tasks: Task[];
   onClose: () => void;
 }
 
-export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProps) {
+export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseModalProps) {
   const [selectedProject, setSelectedProject] = useState<string>('');
   const [selectedTask, setSelectedTask] = useState<string>('');
   const [description, setDescription] = useState('');
@@ -39,52 +40,19 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
   const [vendorName, setVendorName] = useState('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Load tasks when project is selected
-  useEffect(() => {
-    if (selectedProject) {
-      console.log('[CreateExpenseModal] Loading tasks for project:', selectedProject);
-      setIsLoadingTasks(true);
-      setSelectedTask('');
+  // Filter tasks for selected project
+  const projectTasks = selectedProject
+    ? tasks.filter(task => task.project_id === selectedProject)
+    : [];
 
-      // Fetch tasks for the selected project
-      (async () => {
-        try {
-          const supabase = await createSupabaseClient();
-          const { data, error } = await supabase
-            .from('tasks')
-            .select('id, title, phase_id')
-            .eq('project_id', selectedProject)
-            .order('created_at');
-
-          if (error) {
-            console.error('[CreateExpenseModal] Error loading tasks:', error);
-            toast({
-              title: 'Error',
-              description: 'Failed to load tasks',
-              variant: 'destructive',
-            });
-          } else {
-            console.log('[CreateExpenseModal] Tasks loaded:', data);
-            setTasks(data || []);
-          }
-        } catch (err) {
-          console.error('[CreateExpenseModal] Exception loading tasks:', err);
-        } finally {
-          setIsLoadingTasks(false);
-        }
-      })();
-    } else {
-      setTasks([]);
-    }
-  }, [selectedProject]);
+  console.log('[CreateExpenseModal] Selected project:', selectedProject);
+  console.log('[CreateExpenseModal] Filtered tasks:', projectTasks);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -312,14 +280,14 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
                 <Select
                   value={selectedTask}
                   onValueChange={setSelectedTask}
-                  disabled={!selectedProject || isLoadingTasks}
+                  disabled={!selectedProject}
                 >
                   <SelectTrigger id="task" className="border-2">
-                    <SelectValue placeholder={isLoadingTasks ? "Loading tasks..." : "Select a task"} />
+                    <SelectValue placeholder="Select a task" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="no-task">No task</SelectItem>
-                    {tasks.map((task) => (
+                    {projectTasks.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}
                       </SelectItem>

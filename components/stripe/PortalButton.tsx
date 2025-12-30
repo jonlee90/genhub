@@ -1,7 +1,6 @@
 'use client';
 
-import { createPortalSession } from '@/app/actions/stripe';
-import { createSupabaseClient } from '@/utils/supabase/front';
+import { createPortalSession, getStripeCustomerId } from '@/app/actions/stripe';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -10,6 +9,7 @@ export default function PortalButton() {
 	const { data: session } = useSession();
 	const [isLoading, setIsLoading] = useState(false);
 	const user = session?.user;
+
 	if (!user) {
 		return <div>User not found</div>
 	}
@@ -17,24 +17,19 @@ export default function PortalButton() {
 	const handleClick = async () => {
 		try {
 			setIsLoading(true);
+
 			if (!user) {
 				throw 'Please log in to manage your billing.';
 			}
-			if (!session?.supabaseAccessToken) {
-				throw 'Please log in to manage your billing.';
-			}
-			const supabase = await createSupabaseClient(session?.supabaseAccessToken);
 
-			if (user.id) {
-				const { data: customer, error: fetchError } = await supabase
-					.from('stripe_customers')
-					.select('stripe_customer_id')
-					.eq('user_id', user.id)
-					.single();
-				if (customer?.stripe_customer_id) {
-					const url = await createPortalSession(customer?.stripe_customer_id);
-					window.location.href = url;
-				}
+			// Fetch Stripe customer ID via server action
+			const customerId = await getStripeCustomerId();
+
+			if (customerId) {
+				const url = await createPortalSession(customerId);
+				window.location.href = url;
+			} else {
+				toast.error('No billing information found');
 			}
 		} catch (error) {
 			console.error('Failed to create billing portal session:', error);

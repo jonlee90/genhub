@@ -163,8 +163,8 @@ next-saas-starter/
 │
 ├── utils/
 │   └── supabase/
-│       ├── client.ts           # Browser client (RLS-enabled)
-│       ├── server.ts           # Server clients (admin/user)
+│       ├── client.ts           # Server-side client with auth (NOT for client components!)
+│       ├── server.ts           # Admin clients (bypasses RLS)
 │       └── user.ts             # User utilities
 │
 ├── supabase/
@@ -365,12 +365,22 @@ mcp__supabase__generate_typescript_types
 
 ### Supabase Client Selection
 
-| Client | Use Case | RLS |
-|--------|----------|-----|
-| `createClient()` (server.ts) | Server Actions, API routes | Bypassed (admin) |
-| `createAdminClient()` | Pre-auth operations, system tasks | Bypassed |
-| `createUserClient()` | User-scoped operations | Should respect RLS |
-| `createSupabaseClient()` (client.ts) | Browser client with token | Respected |
+| Client | File | Use Case | RLS |
+|--------|------|----------|-----|
+| `createClient()` | server.ts | Server Actions, API routes | Bypassed (admin) |
+| `createAdminClient()` | server.ts | Pre-auth operations, system tasks | Bypassed |
+| `createUserClient()` | server.ts | User-scoped operations | Should respect RLS |
+
+> **⚠️ CRITICAL: Client Components**
+>
+> **DO NOT import any Supabase client in client components (`'use client'`).**
+>
+> - `client.ts` imports `auth` from `lib/auth`, which imports `nodemailer` (server-only)
+> - Using `client.ts` in client components causes build errors (missing `child_process`, `dns`, `fs`, `net`)
+>
+> **Instead:**
+> - Server Components: Fetch data server-side, pass as props
+> - Client Components: Use Server Actions for all database operations
 
 ### Server-Side Pattern
 ```typescript
