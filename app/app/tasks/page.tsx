@@ -87,23 +87,33 @@ async function getTasks() {
         return { tasks: [], projects: [], teamMembers: [] };
       }
 
-      // Fetch user profiles for assignees separately
+      // Fetch user profiles for assignees and creators separately
       if (tasks && tasks.length > 0) {
         const assigneeIds = tasks
           .filter((t: any) => t.assignee_id)
           .map((t: any) => t.assignee_id);
 
-        if (assigneeIds.length > 0) {
-          const { data: assignees } = await supabase
+        const creatorIds = tasks
+          .filter((t: any) => t.created_by)
+          .map((t: any) => t.created_by);
+
+        // Combine unique IDs
+        const uniqueUserIds = Array.from(new Set([...assigneeIds, ...creatorIds]));
+
+        if (uniqueUserIds.length > 0) {
+          const { data: users } = await supabase
             .from('user_profiles')
             .select('id, name, email, avatar_url')
-            .in('id', assigneeIds);
+            .in('id', uniqueUserIds);
 
-          // Attach assignees to tasks
-          if (assignees) {
+          // Attach assignees and creators to tasks
+          if (users) {
             (tasks as any[]).forEach((task: any) => {
               if (task.assignee_id) {
-                task.assignee = assignees.find((a: any) => a.id === task.assignee_id) || null;
+                task.assignee = users.find((u: any) => u.id === task.assignee_id) || null;
+              }
+              if (task.created_by) {
+                task.creator = users.find((u: any) => u.id === task.created_by) || null;
               }
             });
           }

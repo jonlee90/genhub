@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Receipt, CheckCircle2, XCircle, Loader2, FileText, Image as ImageIcon, AlertCircle, Trash2 } from 'lucide-react';
+import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import { reviewExpense, deleteExpense } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -77,6 +78,13 @@ const STATUS_CONFIG = {
 };
 
 export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps) {
+  console.log('[ExpenseDetailModal] Rendering with expense:', {
+    id: expense.id,
+    status: expense.status,
+    amount: expense.amount,
+    submitter: expense.submitter?.name,
+  });
+
   const [isPending, startTransition] = useTransition();
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null);
@@ -249,6 +257,13 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 space-y-3">
             <h3 className="font-bold text-gray-900 text-lg mb-4">Timeline</h3>
 
+            {/* Created By - Industrial Metadata Tag */}
+            <CreatorBadge
+              creatorName={expense.submitter?.name || 'Unknown User'}
+              createdAt={expense.created_at}
+              variant="default"
+            />
+
             <div className="flex items-center gap-3">
               <div className="p-2 bg-construction-blue/10 rounded-lg">
                 <FileText className="h-5 w-5 text-construction-blue" />
@@ -256,7 +271,7 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
               <div>
                 <Label className="text-sm font-bold text-gray-600">Submitted</Label>
                 <p className="text-sm text-gray-900">
-                  {expense.submitter?.name} on {formatDate(expense.created_at)}
+                  {formatDate(expense.created_at)}
                 </p>
               </div>
             </div>

@@ -96,6 +96,19 @@ async function getProjectData(id: string) {
     .eq('id', id)
     .single();
 
+  // Fetch creator profile if project has created_by
+  if (project && project.created_by) {
+    const { data: creator } = await supabase
+      .from('user_profiles')
+      .select('id, name, email, avatar_url')
+      .eq('id', project.created_by)
+      .single();
+
+    if (creator) {
+      (project as any).creator = creator;
+    }
+  }
+
   if (error || !project) {
     console.log('Error fetching project:', error);
     return null;

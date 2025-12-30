@@ -36,6 +36,7 @@ import { cn } from '@/lib/utils';
 import { createTask, updateTask } from '@/app/actions/tasks';
 import { TaskMaterialsManager } from './TaskMaterialsManager';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import type { Database } from '@/types/database.types';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -48,6 +49,12 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
   phase?: {
     id: string;
     name: string;
+  } | null;
+  creator?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
   } | null;
 };
 
@@ -151,6 +158,13 @@ function TaskModalForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // DEBUG: Log modal rendering
+  console.log('[TaskModalForm] Rendering in mode:', mode, {
+    taskId: task?.id,
+    taskTitle: task?.title,
+    creator: task?.creator?.name,
+  });
 
   // Form state - initialized directly from task props for edit mode
   // Using function initializers ensures values are set on first render
@@ -299,23 +313,7 @@ function TaskModalForm({
       {/* Form */}
       <form onSubmit={handleSubmit}>
         <div className="px-6 py-5 max-h-[calc(100vh-280px)] overflow-y-auto space-y-5">
-          {/* Materials Section - Full management with search and edit */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <Package className="h-4 w-4 text-construction-blue" />
-              <h3 className="text-sm font-bold text-gray-900">Materials</h3>
-              <p className="text-xs text-gray-500">
-                {mode === 'create'
-                  ? 'Add materials after creating task'
-                  : 'Search & manage task materials'}
-              </p>
-            </div>
-            <TaskMaterialsManager
-              taskId={task?.id}
-              projectId={selectedProjectId}
-              mode={mode}
-            />
-          </div>
+
           {/* Error/Success Messages */}
           <AnimatePresence mode="wait">
             {error && (
@@ -570,13 +568,38 @@ function TaskModalForm({
               </div>
             )}
           </div>
+
+                    {/* Materials Section - Full management with search and edit */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+              <Package className="h-4 w-4 text-construction-blue" />
+              <h3 className="text-sm font-bold text-gray-900">Materials</h3>
+              <p className="text-xs text-gray-500">
+                {mode === 'create'
+                  ? 'Add materials after creating task'
+                  : 'Search & manage task materials'}
+              </p>
+            </div>
+            <TaskMaterialsManager
+              taskId={task?.id}
+              projectId={selectedProjectId}
+              mode={mode}
+            />
+          </div>
         </div>
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-xs text-gray-500">
-            <span className="text-red-500">*</span> Required fields
-          </p>
+          {/* Creator Badge - Only show in edit mode */}
+          {mode === 'edit' && task ? (
+            <CreatorBadge
+              creatorName={task.creator?.name || 'Unknown User'}
+              createdAt={task.created_at}
+              variant="default"
+            />
+          ) : (
+            <div></div>
+          )}
           <div className="flex items-center gap-3">
             <Button
               type="button"

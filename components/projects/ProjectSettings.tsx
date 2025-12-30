@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Trash2, AlertTriangle } from 'lucide-react';
+import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,7 +37,14 @@ import {
 import { updateProject, updateProjectStatus } from '@/app/actions/projects';
 import type { Database } from '@/types/database.types';
 
-type Project = Database['public']['Tables']['projects']['Row'];
+type Project = Database['public']['Tables']['projects']['Row'] & {
+  creator?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+};
 
 interface ProjectSettingsProps {
   project: Project;
@@ -50,6 +58,13 @@ const PROJECT_STATUSES = [
 ];
 
 export function ProjectSettings({ project }: ProjectSettingsProps) {
+  console.log('[ProjectSettings] Rendering with project:', {
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    creator: project.creator?.name,
+  });
+
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -120,6 +135,15 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Creator Badge - Industrial Metadata Tag */}
+            {project.creator && (
+              <CreatorBadge
+                creatorName={project.creator.name}
+                createdAt={project.created_at}
+                variant="default"
+              />
+            )}
+
             {error && (
               <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-lg text-sm">
                 {error}
