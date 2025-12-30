@@ -35,12 +35,19 @@ async function getExpensesData() {
         .eq('status', 'active')
         .order('name');
 
-      // Get all tasks for this company
-      const { data: tasks } = await supabase
+      // Get all tasks for this company's projects
+      // Debug: Filter by project IDs instead of trying to join through company
+      const projectIds = projects?.map(p => p.id) || [];
+      
+      const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
         .select('id, title, project_id')
-        .eq('project.company_id', companyUser.company_id)
+        .in('project_id', projectIds)
         .order('created_at');
+
+      console.log('[ExpensesPage] Project IDs:', projectIds);
+      console.log('[ExpensesPage] Tasks query error:', tasksError);
+      console.log('[ExpensesPage] Fetched tasks:', tasks);
 
       // Get all expenses for this company
       const { data: expenses } = await supabase
@@ -108,12 +115,19 @@ async function getExpensesData() {
     .eq('status', 'active')
     .order('name');
 
-  // Get all tasks for this company
-  const { data: tasks } = await supabase
+  // Get all tasks for this company's projects
+  // Debug: Filter by project IDs instead of trying to join through company
+  const projectIds = projects?.map(p => p.id) || [];
+  
+  const { data: tasks, error: tasksError } = await supabase
     .from('tasks')
     .select('id, title, project_id')
-    .eq('project.company_id', companyUser.company_id)
+    .in('project_id', projectIds)
     .order('created_at');
+
+  console.log('[ExpensesPage] Project IDs:', projectIds);
+  console.log('[ExpensesPage] Tasks query error:', tasksError);
+  console.log('[ExpensesPage] Fetched tasks:', tasks);
 
   // Get all expenses for this company
   const { data: expenses } = await supabase

@@ -32,7 +32,7 @@ import type {
 /**
  * Calculate the date range for the Gantt chart based on tasks
  */
-export function calculateDateRange(tasks: GanttTask[], padding: number = 30): DateRange {
+export function calculateDateRange(tasks: GanttTask[], padding: number = 10): DateRange {
   if (tasks.length === 0) {
     const today = new Date();
     return {
@@ -46,7 +46,7 @@ export function calculateDateRange(tasks: GanttTask[], padding: number = 30): Da
   const maxDate = max(dates);
 
   return {
-    start: addDays(startOfDay(minDate), -padding),
+    start: addDays(startOfDay(minDate), -padding /2),
     end: addDays(endOfDay(maxDate), padding),
   };
 }

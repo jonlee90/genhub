@@ -194,6 +194,24 @@ After orchestrating implementation:
 4. **Validation**: How implementation matches spec
 5. **Remaining Work**: Any incomplete items or follow-ups
 
+## Frontend Complexity Rules (MANDATORY)
+
+A UI task is considered COMPLEX if it includes ANY of:
+- New page or route
+- New reusable component
+- Form with conditional fields
+- Interaction with expenses, tasks, or workflow logic
+- Mobile + desktop behavior differences
+- State-driven UI
+
+If COMPLEX → MUST call frontend-architect first.
+
+## STRICT FRONTEND SEQUENCE RULE
+If frontend-architect is used:
+- frontend-builder MUST NOT be called
+- until the architect plan exists on disk
+- and its path is explicitly referenced
+
 ## Rules
 
 - NEVER implement code yourself - ALWAYS delegate to specialized agents

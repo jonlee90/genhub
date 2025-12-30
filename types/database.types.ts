@@ -7,6 +7,8 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -121,7 +123,22 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "company_users_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_users_user_profile_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expense_line_items: {
         Row: {
@@ -172,7 +189,29 @@ export type Database = {
           unit_price?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expense_line_items_expense_id_fkey"
+            columns: ["expense_id"]
+            isOneToOne: false
+            referencedRelation: "expenses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_line_items_material_assignment_id_fkey"
+            columns: ["material_assignment_id"]
+            isOneToOne: false
+            referencedRelation: "material_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expense_line_items_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expenses: {
         Row: {
@@ -247,7 +286,29 @@ export type Database = {
           vendor_address?: string | null
           vendor_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       material_assignments: {
         Row: {
@@ -313,7 +374,36 @@ export type Database = {
           unit_cost?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "material_assignments_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_assignments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_assignments_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "material_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       materials: {
         Row: {
@@ -379,7 +469,15 @@ export type Database = {
           unit_price?: number
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "materials_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -457,7 +555,15 @@ export type Database = {
           status?: Database["public"]["Enums"]["phase_status"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_team: {
         Row: {
@@ -487,7 +593,22 @@ export type Database = {
           subcontractor_id?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "project_team_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_team_subcontractor_id_fkey"
+            columns: ["subcontractor_id"]
+            isOneToOne: false
+            referencedRelation: "subcontractors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -559,6 +680,47 @@ export type Database = {
           updated_at?: string
           zip_code?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stripe_customers: {
+        Row: {
+          created_at: string
+          id: string
+          plan_active: boolean
+          plan_expires: number | null
+          stripe_customer_id: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          plan_active?: boolean
+          plan_expires?: number | null
+          stripe_customer_id: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          plan_active?: boolean
+          plan_expires?: number | null
+          stripe_customer_id?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
         Relationships: []
       }
       subcontractors: {
@@ -619,7 +781,15 @@ export type Database = {
           trade_specialization?: Database["public"]["Enums"]["trade_type"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "subcontractors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_activity: {
         Row: {
@@ -652,7 +822,15 @@ export type Database = {
           task_id?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "task_activity_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       task_dependencies: {
         Row: {
@@ -673,11 +851,30 @@ export type Database = {
           id?: string
           task_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "task_dependencies_depends_on_task_id_fkey"
+            columns: ["depends_on_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_dependencies_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
           actual_cost: number | null
+          approval_notes: string | null
+          approval_status: Database["public"]["Enums"]["approval_status"] | null
+          approved_at: string | null
+          approved_by: string | null
           assignee_id: string | null
           blocked_reason: string | null
           completed_at: string | null
@@ -692,11 +889,18 @@ export type Database = {
           project_id: string
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
+          task_type: Database["public"]["Enums"]["task_type"]
           title: string
           updated_at: string
         }
         Insert: {
           actual_cost?: number | null
+          approval_notes?: string | null
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          approved_at?: string | null
+          approved_by?: string | null
           assignee_id?: string | null
           blocked_reason?: string | null
           completed_at?: string | null
@@ -711,11 +915,18 @@ export type Database = {
           project_id: string
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          task_type?: Database["public"]["Enums"]["task_type"]
           title: string
           updated_at?: string
         }
         Update: {
           actual_cost?: number | null
+          approval_notes?: string | null
+          approval_status?:
+            | Database["public"]["Enums"]["approval_status"]
+            | null
+          approved_at?: string | null
+          approved_by?: string | null
           assignee_id?: string | null
           blocked_reason?: string | null
           completed_at?: string | null
@@ -730,10 +941,26 @@ export type Database = {
           project_id?: string
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
+          task_type?: Database["public"]["Enums"]["task_type"]
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tasks_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_invitations: {
         Row: {
@@ -778,7 +1005,22 @@ export type Database = {
           updated_at?: string
           used_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profiles: {
         Row: {
@@ -856,6 +1098,11 @@ export type Database = {
         | "commented"
         | "attachment_added"
         | "attachment_removed"
+      approval_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "revision_requested"
       attachment_entity_type:
         | "task"
         | "project"
@@ -924,6 +1171,7 @@ export type Database = {
       purchaser_type: "gc" | "pm" | "subcontractor"
       task_priority: "low" | "medium" | "high"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed"
+      task_type: "work" | "purchase" | "approval" | "admin"
       trade_type:
         | "general"
         | "electrical"
@@ -1087,6 +1335,12 @@ export const Constants = {
         "attachment_added",
         "attachment_removed",
       ],
+      approval_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "revision_requested",
+      ],
       attachment_entity_type: [
         "task",
         "project",
@@ -1161,6 +1415,7 @@ export const Constants = {
       purchaser_type: ["gc", "pm", "subcontractor"],
       task_priority: ["low", "medium", "high"],
       task_status: ["todo", "in_progress", "review", "blocked", "completed"],
+      task_type: ["work", "purchase", "approval", "admin"],
       trade_type: [
         "general",
         "electrical",

@@ -24,15 +24,28 @@ interface Task {
   project_id: string;
 }
 
+// Debug: Task context for pre-filling when opened from a task
+interface TaskContext {
+  taskId: string;
+  taskTitle: string;
+  projectId: string;
+  projectName?: string;
+}
+
 interface CreateExpenseModalProps {
   projects: Project[];
   tasks: Task[];
   onClose: () => void;
+  // Debug: Optional task context for pre-filling fields
+  taskContext?: TaskContext;
 }
 
-export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseModalProps) {
-  const [selectedProject, setSelectedProject] = useState<string>('');
-  const [selectedTask, setSelectedTask] = useState<string>('');
+export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: CreateExpenseModalProps) {
+  console.log('[CreateExpenseModal] Rendering with taskContext:', taskContext);
+
+  // Debug: Initialize with task context if provided
+  const [selectedProject, setSelectedProject] = useState<string>(taskContext?.projectId || '');
+  const [selectedTask, setSelectedTask] = useState<string>(taskContext?.taskId || '');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<string>('materials');
@@ -148,9 +161,23 @@ export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseMo
             <FileText className="h-6 w-6" />
             Submit Expense
           </DialogTitle>
-          <p className="text-sm text-gray-600">
-            Upload a receipt and let AI extract the details automatically
-          </p>
+          {/* Debug: Show task context info when opened from a task */}
+          {taskContext ? (
+            <div className="mt-2 p-3 bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Adding expense for task: <span className="font-bold text-construction-blue">{taskContext.taskTitle}</span>
+              </p>
+              {taskContext.projectName && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Project: {taskContext.projectName}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600">
+              Upload a receipt and let AI extract the details automatically
+            </p>
+          )}
         </DialogHeader>
 
         <div className="space-y-6">
@@ -259,8 +286,12 @@ export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseMo
                 <Label htmlFor="project" className="text-sm font-bold text-gray-700">
                   Project *
                 </Label>
-                <Select value={selectedProject} onValueChange={setSelectedProject}>
-                  <SelectTrigger id="project" className="border-2">
+                <Select
+                  value={selectedProject}
+                  onValueChange={setSelectedProject}
+                  disabled={!!taskContext}
+                >
+                  <SelectTrigger id="project" className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed' : ''}`}>
                     <SelectValue placeholder="Select a project" />
                   </SelectTrigger>
                   <SelectContent>
@@ -271,18 +302,21 @@ export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseMo
                     ))}
                   </SelectContent>
                 </Select>
+                {taskContext && (
+                  <p className="text-xs text-gray-500">Pre-filled from task</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="task" className="text-sm font-bold text-gray-700">
-                  Task (Optional)
+                  Task {taskContext ? '*' : '(Optional)'}
                 </Label>
                 <Select
                   value={selectedTask}
                   onValueChange={setSelectedTask}
-                  disabled={!selectedProject}
+                  disabled={!selectedProject || !!taskContext}
                 >
-                  <SelectTrigger id="task" className="border-2">
+                  <SelectTrigger id="task" className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed' : ''}`}>
                     <SelectValue placeholder="Select a task" />
                   </SelectTrigger>
                   <SelectContent>
@@ -294,6 +328,9 @@ export function CreateExpenseModal({ projects, tasks, onClose }: CreateExpenseMo
                     ))}
                   </SelectContent>
                 </Select>
+                {taskContext && (
+                  <p className="text-xs text-gray-500">Pre-filled from task</p>
+                )}
               </div>
             </div>
 

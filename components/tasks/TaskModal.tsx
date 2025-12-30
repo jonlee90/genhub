@@ -19,6 +19,12 @@ import {
   CheckCircle2,
   Sparkles,
   Package,
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  XCircle,
+  RotateCcw,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,11 +39,15 @@ import {
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { createTask, updateTask } from '@/app/actions/tasks';
+import { createTask, updateTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { TaskMaterialsManager } from './TaskMaterialsManager';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { CreatorBadge } from '@/components/ui/CreatorBadge';
+import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import type { Database } from '@/types/database.types';
+
+type TaskType = Database['public']['Enums']['task_type'];
+type ApprovalStatus = Database['public']['Enums']['approval_status'];
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
   assignee?: {
@@ -51,6 +61,12 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
     name: string;
   } | null;
   creator?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  approver?: {
     id: string;
     name: string;
     email: string;
@@ -163,8 +179,23 @@ function TaskModalForm({
   console.log('[TaskModalForm] Rendering in mode:', mode, {
     taskId: task?.id,
     taskTitle: task?.title,
+    taskType: task?.task_type,
+    approvalStatus: task?.approval_status,
     creator: task?.creator?.name,
   });
+
+  // Step state for create mode (Step 1: Select Type, Step 2: Fill Form)
+  const [currentStep, setCurrentStep] = useState<1 | 2>(mode === 'edit' ? 2 : 1);
+
+  // Task type state - for new tasks, null until selected; for edit, use existing
+  const [taskType, setTaskType] = useState<TaskType | null>(() => {
+    if (mode === 'edit' && task) return task.task_type;
+    return null;
+  });
+
+  // Approval workflow state
+  const [approvalNotes, setApprovalNotes] = useState('');
+  const [isApprovalPending, setIsApprovalPending] = useState(false);
 
   // Form state - initialized directly from task props for edit mode
   // Using function initializers ensures values are set on first render
@@ -186,6 +217,8 @@ function TaskModalForm({
   });
   const [priority, setPriority] = useState<string>(() => {
     if (mode === 'edit' && task) return task.priority;
+    // Admin tasks default to low priority
+    if (taskType === 'admin') return 'low';
     return 'medium';
   });
   const [phaseId, setPhaseId] = useState(() => {
@@ -220,6 +253,14 @@ function TaskModalForm({
     e.preventDefault();
     setError(null);
 
+    // DEBUG: Log form submission
+    console.log('[TaskModalForm] Submitting form', {
+      mode,
+      taskType,
+      title,
+      selectedProjectId,
+    });
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('description', description);
@@ -230,6 +271,12 @@ function TaskModalForm({
     formData.append('start_date', startDate);
     formData.append('due_date', dueDate);
     formData.append('planned_cost', plannedCost);
+
+    // Add task_type for new tasks
+    if (mode === 'create' && taskType) {
+      formData.append('task_type', taskType);
+      console.log('[TaskModalForm] Adding task_type to form:', taskType);
+    }
 
     if (mode === 'edit' && task) {
       formData.append('id', task.id);
@@ -257,6 +304,45 @@ function TaskModalForm({
       }
     });
   };
+
+  // Handler for approval status updates
+  const handleApprovalAction = async (newStatus: ApprovalStatus) => {
+    if (!task?.id) return;
+
+    console.log('[TaskModalForm] Updating approval status:', {
+      taskId: task.id,
+      newStatus,
+      approvalNotes,
+    });
+
+    setIsApprovalPending(true);
+    setError(null);
+
+    try {
+      const result = await updateApprovalStatus(task.id, newStatus, approvalNotes || undefined);
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setSuccess(true);
+        setTimeout(() => {
+          onSuccess?.();
+          onClose();
+          router.refresh();
+        }, 500);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred');
+    } finally {
+      setIsApprovalPending(false);
+    }
+  };
+
+  // Helper to determine if cost fields should be shown based on task type
+  const shouldShowCostFields = taskType !== 'approval';
+
+  // Helper to determine if materials section should be emphasized
+  const shouldEmphasizeMaterials = taskType === 'purchase';
 
   const getInitials = (name: string) => {
     return name
@@ -287,12 +373,24 @@ function TaskModalForm({
               )}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {mode === 'create' ? 'Create New Task' : 'Edit Task'}
-              </h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {mode === 'create'
+                    ? (currentStep === 1 ? 'Select Task Type' : 'Create New Task')
+                    : 'Edit Task'
+                  }
+                </h2>
+                {/* Show TaskTypeBadge in edit mode */}
+                {mode === 'edit' && task?.task_type && (
+                  <TaskTypeBadge type={task.task_type} />
+                )}
+              </div>
               <p className="text-sm text-gray-500 mt-0.5">
                 {mode === 'create'
-                  ? 'Add a new task to your project'
+                  ? (currentStep === 1
+                      ? 'Choose the type of task you want to create'
+                      : `Creating a ${taskType ? getTaskTypeInfo(taskType).label : ''} task`
+                    )
                   : 'Update task details and assignments'
                 }
               </p>
@@ -308,6 +406,32 @@ function TaskModalForm({
             <X className="h-5 w-5 text-gray-500" />
           </Button>
         </div>
+
+        {/* Step indicator for create mode */}
+        {mode === 'create' && (
+          <div className="flex items-center gap-2 mt-4">
+            <div className={cn(
+              'flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold transition-colors',
+              currentStep >= 1
+                ? 'bg-construction-blue text-white'
+                : 'bg-gray-200 text-gray-500'
+            )}>
+              1
+            </div>
+            <div className={cn(
+              'flex-1 h-1 rounded-full transition-colors',
+              currentStep >= 2 ? 'bg-construction-blue' : 'bg-gray-200'
+            )} />
+            <div className={cn(
+              'flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold transition-colors',
+              currentStep >= 2
+                ? 'bg-construction-blue text-white'
+                : 'bg-gray-200 text-gray-500'
+            )}>
+              2
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Form */}
@@ -341,6 +465,128 @@ function TaskModalForm({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Step 1: Task Type Selection (Create mode only) */}
+          {mode === 'create' && currentStep === 1 && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <TaskTypeSelector
+                selectedType={taskType}
+                onSelect={(type) => {
+                  console.log('[TaskModalForm] Task type selected:', type);
+                  setTaskType(type);
+                  // Set default priority for admin tasks
+                  if (type === 'admin') {
+                    setPriority('low');
+                  }
+                }}
+                disabled={isPending}
+              />
+            </motion.div>
+          )}
+
+          {/* Step 2: Form Fields (or Edit mode) */}
+          {(mode === 'edit' || currentStep === 2) && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-5"
+            >
+              {/* Approval Status Section - Only for approval-type tasks in edit mode */}
+              {mode === 'edit' && task?.task_type === 'approval' && (
+                <div className="p-4 rounded-xl border-2 border-amber-200 bg-amber-50">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ClipboardList className="w-5 h-5 text-amber-600" />
+                    <h3 className="text-sm font-bold text-amber-800">Approval Workflow</h3>
+                    {task.approval_status && (
+                      <span className={cn(
+                        'ml-auto px-2 py-0.5 rounded-full text-xs font-medium',
+                        task.approval_status === 'pending' && 'bg-amber-200 text-amber-800',
+                        task.approval_status === 'approved' && 'bg-emerald-200 text-emerald-800',
+                        task.approval_status === 'rejected' && 'bg-red-200 text-red-800',
+                        task.approval_status === 'revision_requested' && 'bg-orange-200 text-orange-800'
+                      )}>
+                        {task.approval_status.replace('_', ' ').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Approval Notes Input */}
+                  <div className="space-y-2 mb-3">
+                    <Label htmlFor="approval_notes" className="text-sm font-medium text-amber-700 flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Approval Notes
+                    </Label>
+                    <Textarea
+                      id="approval_notes"
+                      value={approvalNotes}
+                      onChange={(e) => setApprovalNotes(e.target.value)}
+                      placeholder="Add notes for this approval decision..."
+                      rows={2}
+                      disabled={isApprovalPending || task.approval_status === 'approved'}
+                      className="border-amber-200 focus:ring-amber-500/20 focus:border-amber-500 bg-white"
+                    />
+                  </div>
+
+                  {/* Approval Action Buttons */}
+                  {task.approval_status !== 'approved' && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => handleApprovalAction('approved')}
+                        disabled={isApprovalPending}
+                        className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                      >
+                        {isApprovalPending ? (
+                          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Check className="mr-1 h-4 w-4" />
+                        )}
+                        Approve
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleApprovalAction('revision_requested')}
+                        disabled={isApprovalPending}
+                        className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                      >
+                        <RotateCcw className="mr-1 h-4 w-4" />
+                        Request Revision
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleApprovalAction('rejected')}
+                        disabled={isApprovalPending}
+                        className="border-red-300 text-red-700 hover:bg-red-50"
+                      >
+                        <XCircle className="mr-1 h-4 w-4" />
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Show previous approval info if exists */}
+                  {task.approved_by && task.approved_at && (
+                    <div className="mt-3 pt-3 border-t border-amber-200 text-xs text-amber-700">
+                      Last updated: {new Date(task.approved_at).toLocaleDateString()}
+                      {task.approval_notes && (
+                        <p className="mt-1 italic">"{task.approval_notes}"</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
 
           {/* Title */}
           <div className="space-y-2">
@@ -530,62 +776,94 @@ function TaskModalForm({
             </div>
           </div>
 
-          {/* Costs Row */}
-          <div className={cn('grid gap-4', mode === 'edit' ? 'grid-cols-2' : 'grid-cols-1')}>
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-gray-400" />
-                Planned Cost
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={plannedCost}
-                onChange={(e) => setPlannedCost(e.target.value)}
-                placeholder="0.00"
-                disabled={isPending}
-                className="h-11 border-gray-200"
-              />
-            </div>
-
-            {mode === 'edit' && (
+          {/* Costs Row - Hidden for approval-type tasks */}
+          {shouldShowCostFields && (
+            <div className={cn('grid gap-4', mode === 'edit' ? 'grid-cols-2' : 'grid-cols-1')}>
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <DollarSign className={cn('h-4 w-4', theme.iconColor)} />
-                  Actual Cost
+                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  {taskType === 'purchase' ? 'Budget' : 'Planned Cost'}
                 </Label>
                 <Input
                   type="number"
                   min="0"
                   step="0.01"
-                  value={actualCost}
-                  onChange={(e) => setActualCost(e.target.value)}
+                  value={plannedCost}
+                  onChange={(e) => setPlannedCost(e.target.value)}
                   placeholder="0.00"
                   disabled={isPending}
-                  className="h-11 border-gray-200"
+                  className={cn(
+                    'h-11 border-gray-200',
+                    taskType === 'purchase' && 'border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500'
+                  )}
                 />
               </div>
-            )}
-          </div>
 
-                    {/* Materials Section - Full management with search and edit */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <Package className="h-4 w-4 text-construction-blue" />
-              <h3 className="text-sm font-bold text-gray-900">Materials</h3>
-              <p className="text-xs text-gray-500">
-                {mode === 'create'
-                  ? 'Add materials after creating task'
-                  : 'Search & manage task materials'}
-              </p>
+              {mode === 'edit' && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <DollarSign className={cn('h-4 w-4', theme.iconColor)} />
+                    Actual Cost
+                  </Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={actualCost}
+                    onChange={(e) => setActualCost(e.target.value)}
+                    placeholder="0.00"
+                    disabled={isPending}
+                    className="h-11 border-gray-200"
+                  />
+                </div>
+              )}
             </div>
-            <TaskMaterialsManager
-              taskId={task?.id}
-              projectId={selectedProjectId}
-              mode={mode}
-            />
-          </div>
+          )}
+
+              {/* Materials Section - Full management with search and edit */}
+              {/* Emphasized for purchase tasks, hidden for admin tasks (minimal fields) */}
+              {taskType !== 'admin' && (
+                <div className={cn(
+                  'space-y-3',
+                  shouldEmphasizeMaterials && 'p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50/50'
+                )}>
+                  <div className={cn(
+                    'flex items-center gap-2 pb-2',
+                    shouldEmphasizeMaterials ? 'border-b border-emerald-200' : 'border-b border-gray-200'
+                  )}>
+                    <Package className={cn(
+                      'h-4 w-4',
+                      shouldEmphasizeMaterials ? 'text-emerald-600' : 'text-construction-blue'
+                    )} />
+                    <h3 className={cn(
+                      'text-sm font-bold',
+                      shouldEmphasizeMaterials ? 'text-emerald-800' : 'text-gray-900'
+                    )}>
+                      Materials
+                      {shouldEmphasizeMaterials && (
+                        <span className="ml-2 text-xs font-normal text-emerald-600">
+                          (Required for Purchase Tasks)
+                        </span>
+                      )}
+                    </h3>
+                    <p className={cn(
+                      'text-xs ml-auto',
+                      shouldEmphasizeMaterials ? 'text-emerald-600' : 'text-gray-500'
+                    )}>
+                      {mode === 'create'
+                        ? 'Add materials after creating task'
+                        : 'Search & manage task materials'}
+                    </p>
+                  </div>
+                  <TaskMaterialsManager
+                    taskId={task?.id}
+                    projectId={selectedProjectId}
+                    mode={mode}
+                  />
+                </div>
+              )}
+            </motion.div>
+          )}
         </div>
 
         {/* Footer */}
@@ -597,48 +875,104 @@ function TaskModalForm({
               createdAt={task.created_at}
               variant="default"
             />
+          ) : mode === 'create' && currentStep === 2 && taskType ? (
+            // Show selected type badge in step 2
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Task Type:</span>
+              <TaskTypeBadge type={taskType} />
+            </div>
           ) : (
             <div></div>
           )}
           <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isPending}
-              className="h-10 px-5"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || !selectedProjectId || !title.trim()}
-              className={cn(
-                'h-10 px-6 font-semibold text-white',
-                theme.button
-              )}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {mode === 'create' ? 'Creating...' : 'Saving...'}
-                </>
-              ) : (
-                <>
-                  {mode === 'create' ? (
+            {/* Step 1: Cancel and Next buttons */}
+            {mode === 'create' && currentStep === 1 && (
+              <>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isPending}
+                  className="h-10 px-5"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={!taskType}
+                  onClick={() => {
+                    console.log('[TaskModalForm] Moving to step 2 with taskType:', taskType);
+                    setCurrentStep(2);
+                  }}
+                  className={cn(
+                    'h-10 px-6 font-semibold text-white',
+                    theme.button
+                  )}
+                >
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </>
+            )}
+
+            {/* Step 2 or Edit mode: Back (create only), Cancel, and Submit buttons */}
+            {(mode === 'edit' || currentStep === 2) && (
+              <>
+                {mode === 'create' && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      console.log('[TaskModalForm] Going back to step 1');
+                      setCurrentStep(1);
+                    }}
+                    disabled={isPending}
+                    className="h-10 px-4"
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isPending}
+                  className="h-10 px-5"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending || !selectedProjectId || !title.trim()}
+                  className={cn(
+                    'h-10 px-6 font-semibold text-white',
+                    theme.button
+                  )}
+                >
+                  {isPending ? (
                     <>
-                      <ClipboardList className="mr-2 h-4 w-4" />
-                      Create Task
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {mode === 'create' ? 'Creating...' : 'Saving...'}
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Save Changes
+                      {mode === 'create' ? (
+                        <>
+                          <ClipboardList className="mr-2 h-4 w-4" />
+                          Create Task
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Save Changes
+                        </>
+                      )}
                     </>
                   )}
-                </>
-              )}
-            </Button>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </form>

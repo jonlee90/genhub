@@ -11,6 +11,8 @@ type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
 type TaskUpdate = Database['public']['Tables']['tasks']['Update'];
 type TaskStatus = Database['public']['Enums']['task_status'];
 type TaskPriority = Database['public']['Enums']['task_priority'];
+type TaskType = Database['public']['Enums']['task_type'];
+type ApprovalStatus = Database['public']['Enums']['approval_status'];
 type ActivityAction = Database['public']['Enums']['activity_action'];
 
 // ============================================
@@ -27,6 +29,7 @@ const createTaskSchema = z.object({
   due_date: z.string().optional().nullable(),
   priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
+  task_type: z.enum(['work', 'purchase', 'approval', 'admin']).default('work'),
 }).refine(
   (data) => {
     // If both dates are provided, start_date must be <= due_date
@@ -80,6 +83,12 @@ const taskDependencySchema = z.object({
 const addCommentSchema = z.object({
   task_id: z.string().uuid('Invalid task ID'),
   comment: z.string().min(1, 'Comment is required').max(5000),
+});
+
+const updateApprovalStatusSchema = z.object({
+  task_id: z.string().uuid('Invalid task ID'),
+  approval_status: z.enum(['pending', 'approved', 'rejected', 'revision_requested']),
+  approval_notes: z.string().max(2000).optional().nullable(),
 });
 
 // ============================================
@@ -208,6 +217,8 @@ export async function createTask(prevState: any, formData: FormData) {
   const phaseId = formData.get('phase_id') as string;
   const assigneeId = formData.get('assignee_id') as string;
 
+  const taskType = formData.get('task_type') as string;
+
   const rawData = {
     title: formData.get('title'),
     project_id: formData.get('project_id'),
@@ -220,6 +231,9 @@ export async function createTask(prevState: any, formData: FormData) {
     planned_cost: formData.get('planned_cost')
       ? parseFloat(formData.get('planned_cost') as string)
       : null,
+    task_type: taskType && ['work', 'purchase', 'approval', 'admin'].includes(taskType)
+      ? taskType
+      : 'work',
   };
 
   // Validate input
@@ -236,7 +250,7 @@ export async function createTask(prevState: any, formData: FormData) {
     return { error: projectCheck.error };
   }
 
-  // Prepare task data
+  // Prepare task data with task_type support
   const taskData: TaskInsert = {
     project_id: data.project_id,
     phase_id: data.phase_id || null,
@@ -249,6 +263,9 @@ export async function createTask(prevState: any, formData: FormData) {
     planned_cost: data.planned_cost || null,
     status: 'todo',
     created_by: userId,
+    task_type: data.task_type as TaskType,
+    // Set approval_status to 'pending' for approval-type tasks
+    approval_status: data.task_type === 'approval' ? 'pending' : null,
   };
 
   // Insert task
@@ -787,6 +804,135 @@ export async function deleteTask(taskId: string) {
   revalidatePath(`/app/projects/${projectId}`);
 
   return { success: true };
+}
+
+/**
+ * Update approval status for an approval-type task
+ * Only applicable to tasks with task_type = 'approval'
+ */
+export async function updateApprovalStatus(
+  taskId: string,
+  approvalStatus: ApprovalStatus,
+  approvalNotes?: string
+) {
+  console.log('[updateApprovalStatus] Starting approval update for task:', taskId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, role, supabase } = userContext;
+
+  // Validate input
+  const validation = updateApprovalStatusSchema.safeParse({
+    task_id: taskId,
+    approval_status: approvalStatus,
+    approval_notes: approvalNotes,
+  });
+  if (!validation.success) {
+    console.error('[updateApprovalStatus] Validation failed:', validation.error);
+    return { error: 'Invalid input', fieldErrors: validation.error.flatten().fieldErrors };
+  }
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
+  if ('error' in taskCheck) {
+    return { error: taskCheck.error };
+  }
+
+  const { task: existingTask, projectId } = taskCheck;
+
+  // Verify task is an approval-type task
+  if (existingTask.task_type !== 'approval') {
+    console.error('[updateApprovalStatus] Task is not an approval type:', existingTask.task_type);
+    return { error: 'Only approval-type tasks can have their approval status updated' };
+  }
+
+  // Only GC Admin and PM can approve/reject tasks
+  if (role !== 'gc_admin' && role !== 'project_manager') {
+    return { error: 'Insufficient permissions to update approval status' };
+  }
+
+  // Prepare update
+  const taskUpdate: TaskUpdate = {
+    approval_status: approvalStatus,
+    approval_notes: approvalNotes || null,
+    approved_by: userId,
+    approved_at: new Date().toISOString(),
+  };
+
+  // If approved, also update task status to completed
+  if (approvalStatus === 'approved') {
+    taskUpdate.status = 'completed';
+    taskUpdate.completed_at = new Date().toISOString();
+  } else if (approvalStatus === 'rejected' || approvalStatus === 'revision_requested') {
+    // Keep task in review or blocked status for rejected/revision tasks
+    taskUpdate.status = 'blocked';
+    taskUpdate.blocked_reason = approvalStatus === 'rejected'
+      ? `Rejected: ${approvalNotes || 'No reason provided'}`
+      : `Revision requested: ${approvalNotes || 'No details provided'}`;
+  }
+
+  // Update task
+  const { data: task, error: updateError } = await supabase
+    .from('tasks')
+    .update(taskUpdate)
+    .eq('id', taskId)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error('[updateApprovalStatus] Error updating task:', updateError);
+    return { error: 'Failed to update approval status. Please try again.' };
+  }
+
+  console.log('[updateApprovalStatus] Task updated successfully:', task.id);
+
+  // Log activity
+  await logTaskActivity(
+    supabase,
+    taskId,
+    userId,
+    'status_changed',
+    existingTask.approval_status || 'pending',
+    approvalStatus,
+    approvalNotes
+  );
+
+  // Notify task creator and assignee about approval decision
+  const notifyUsers = new Set<string>();
+  if (existingTask.created_by && existingTask.created_by !== userId) {
+    notifyUsers.add(existingTask.created_by);
+  }
+  if (existingTask.assignee_id && existingTask.assignee_id !== userId) {
+    notifyUsers.add(existingTask.assignee_id);
+  }
+
+  const statusMessages: Record<ApprovalStatus, string> = {
+    pending: 'is pending approval',
+    approved: 'has been approved',
+    rejected: 'has been rejected',
+    revision_requested: 'requires revision',
+  };
+
+  for (const notifyUserId of notifyUsers) {
+    await supabase.from('notifications').insert({
+      user_id: notifyUserId,
+      type: 'system', // Using 'system' for approval workflow notifications
+      title: `Approval ${approvalStatus === 'approved' ? 'Granted' : 'Update'}`,
+      message: `Task "${existingTask.title}" ${statusMessages[approvalStatus]}`,
+      link: `/app/tasks/${taskId}`,
+    });
+  }
+
+  // Revalidate paths
+  revalidatePath('/app/tasks');
+  revalidatePath(`/app/tasks/${taskId}`);
+  revalidatePath(`/app/projects/${projectId}`);
+
+  return { success: true, task };
 }
 
 /**

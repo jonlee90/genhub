@@ -33,6 +33,11 @@ import {
   HardHat,
   Layers,
   Package,
+  RotateCcw,
+  Ban,
+  ThumbsUp,
+  MessageSquare,
+  Receipt,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -50,13 +55,49 @@ import { TaskActivityLog } from './TaskActivityLog';
 import { TaskDependencies } from './TaskDependencies';
 import { TaskMaterials } from './TaskMaterials';
 import { BlockedReasonModal } from './BlockedReasonModal';
-import { updateTask, updateTaskStatus, deleteTask } from '@/app/actions/tasks';
+import { TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
+import { updateTask, updateTaskStatus, deleteTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
 import type { Database } from '@/types/database.types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
 type TaskPriority = Database['public']['Enums']['task_priority'];
+type TaskType = Database['public']['Enums']['task_type'];
+type ApprovalStatus = Database['public']['Enums']['approval_status'];
 type UserRole = Database['public']['Enums']['user_role'];
+
+// Debug: Approval status configuration
+const APPROVAL_STATUS_CONFIG: Record<ApprovalStatus, {
+  label: string;
+  color: string;
+  bgColor: string;
+  icon: typeof CheckCircle2;
+}> = {
+  pending: {
+    label: 'Pending Approval',
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-100 border-amber-300',
+    icon: Clock,
+  },
+  approved: {
+    label: 'Approved',
+    color: 'text-green-700',
+    bgColor: 'bg-green-100 border-green-300',
+    icon: CheckCircle2,
+  },
+  rejected: {
+    label: 'Rejected',
+    color: 'text-red-700',
+    bgColor: 'bg-red-100 border-red-300',
+    icon: Ban,
+  },
+  revision_requested: {
+    label: 'Revision Requested',
+    color: 'text-orange-700',
+    bgColor: 'bg-orange-100 border-orange-300',
+    icon: RotateCcw,
+  },
+};
 
 interface TaskDetailProps {
   task: any;
@@ -133,6 +174,8 @@ export function TaskDetail({
   teamMembers,
   userRole,
 }: TaskDetailProps) {
+  console.log('[TaskDetail] Rendering task:', { id: task.id, task_type: task.task_type, approval_status: task.approval_status });
+
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -143,9 +186,24 @@ export function TaskDetail({
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'materials' | 'activity' | 'dependencies'>('overview');
 
+  // Debug: Approval workflow state
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [approvalAction, setApprovalAction] = useState<ApprovalStatus | null>(null);
+  const [approvalNotes, setApprovalNotes] = useState('');
+  const [isUpdatingApproval, setIsUpdatingApproval] = useState(false);
+
+  // Debug: Task type determination (default to 'work' for legacy tasks)
+  const taskType: TaskType = task.task_type || 'work';
+  const isApprovalTask = taskType === 'approval';
+  const isPurchaseTask = taskType === 'purchase';
+
+  // Debug: Determine if cost fields should be shown (not for approval tasks)
+  const showCostFields = !isApprovalTask;
+
   const canEdit = userRole === 'gc_admin' || userRole === 'project_manager' ||
                   task.assignee_id === task.created_by;
   const canDelete = userRole === 'gc_admin' || userRole === 'project_manager';
+  const canApprove = userRole === 'gc_admin' || userRole === 'project_manager';
 
   const isOverdue =
     task.due_date &&
@@ -214,6 +272,40 @@ export function TaskDetail({
     } else {
       router.push('/app/tasks');
     }
+  };
+
+  // Debug: Handle approval workflow actions
+  const handleApprovalAction = async (action: ApprovalStatus) => {
+    console.log('[TaskDetail] Approval action:', action);
+    setApprovalAction(action);
+
+    // For approved, execute immediately; for others, show notes modal
+    if (action === 'approved') {
+      await executeApproval(action, '');
+    } else {
+      setShowApprovalModal(true);
+    }
+  };
+
+  const executeApproval = async (status: ApprovalStatus, notes: string) => {
+    console.log('[TaskDetail] Executing approval:', { status, notes });
+    setIsUpdatingApproval(true);
+    setError(null);
+
+    const result = await updateApprovalStatus(task.id, status, notes);
+
+    if (result?.error) {
+      console.error('[TaskDetail] Approval error:', result.error);
+      setError(result.error);
+    } else {
+      setSuccessMessage(`Task ${status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'sent for revision'} successfully`);
+      setTimeout(() => setSuccessMessage(null), 3000);
+    }
+
+    setIsUpdatingApproval(false);
+    setShowApprovalModal(false);
+    setApprovalNotes('');
+    setApprovalAction(null);
   };
 
   const getInitials = (name: string) => {
@@ -287,8 +379,11 @@ export function TaskDetail({
           </div>
         </div>
 
-        {/* Status and Priority Badges */}
-        <div className="flex items-center gap-3">
+        {/* Task Type, Status and Priority Badges */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Debug: Task Type Badge - always show, read-only */}
+          <TaskTypeBadge type={taskType} />
+
           <Badge
             className={cn(
               'px-4 py-2 text-sm font-bold border-2 flex items-center gap-2',
@@ -308,6 +403,23 @@ export function TaskDetail({
           >
             {PRIORITY_CONFIG[task.priority as TaskPriority].label} Priority
           </Badge>
+
+          {/* Debug: Approval Status Badge for Approval Tasks */}
+          {isApprovalTask && task.approval_status && (
+            <Badge
+              className={cn(
+                'px-4 py-2 text-sm font-bold border-2 flex items-center gap-2',
+                APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].bgColor,
+                APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].color
+              )}
+            >
+              {(() => {
+                const Icon = APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].icon;
+                return <Icon className="h-4 w-4" />;
+              })()}
+              {APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].label}
+            </Badge>
+          )}
 
           {isOverdue && (
             <Badge
@@ -582,46 +694,49 @@ export function TaskDetail({
                           </div>
                         </div>
 
-                        {/* Cost Fields */}
-                        <div className="grid gap-6 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="planned_cost" className="text-sm font-bold text-gray-700">
-                              Planned Cost
-                            </Label>
-                            <div className="relative">
-                              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                              <Input
-                                id="planned_cost"
-                                name="planned_cost"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                defaultValue={task.planned_cost || ''}
-                                className="border-2 border-gray-200 focus:border-construction-blue font-medium pl-10"
-                                placeholder="0.00"
-                              />
+                        {/* Cost Fields - Hide for Approval tasks */}
+                        {showCostFields && (
+                          <div className="grid gap-6 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label htmlFor="planned_cost" className="text-sm font-bold text-gray-700">
+                                {isPurchaseTask ? 'Budget Estimate' : 'Planned Cost'}
+                              </Label>
+                              <div className="relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                <Input
+                                  id="planned_cost"
+                                  name="planned_cost"
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  defaultValue={task.planned_cost || ''}
+                                  className="border-2 border-gray-200 focus:border-construction-blue font-medium pl-10"
+                                  placeholder="0.00"
+                                />
+                              </div>
                             </div>
-                          </div>
 
-                          <div className="space-y-2">
-                            <Label htmlFor="actual_cost" className="text-sm font-bold text-gray-700">
-                              Actual Cost
-                            </Label>
-                            <div className="relative">
-                              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                              <Input
-                                id="actual_cost"
-                                name="actual_cost"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                defaultValue={task.actual_cost || ''}
-                                className="border-2 border-gray-200 focus:border-construction-blue font-medium pl-10"
-                                placeholder="0.00"
-                              />
+                            {/* Debug: Actual Cost - READ-ONLY (auto-calculated by trigger) */}
+                            <div className="space-y-2">
+                              <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                Actual Cost
+                                <span className="text-xs font-normal text-gray-400">(auto-calculated)</span>
+                              </Label>
+                              <div className="relative">
+                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                  type="text"
+                                  value={task.actual_cost ? formatCurrency(task.actual_cost) : '$0.00'}
+                                  disabled
+                                  className="border-2 border-gray-200 bg-gray-50 font-medium pl-10 cursor-not-allowed text-gray-600"
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                Calculated from materials + approved expenses
+                              </p>
                             </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Form Actions */}
                         <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-100">
@@ -867,6 +982,120 @@ export function TaskDetail({
             </CardContent>
           </Card>
 
+          {/* Debug: Approval Workflow Card - Only for approval-type tasks */}
+          {isApprovalTask && canApprove && task.approval_status === 'pending' && (
+            <Card className="border-2 border-amber-200 shadow-construction">
+              <CardHeader className="border-b-2 border-amber-100 bg-gradient-to-r from-amber-50 to-white">
+                <CardTitle className="text-sm font-black text-amber-700 uppercase tracking-wider flex items-center gap-2">
+                  <ThumbsUp className="h-4 w-4" />
+                  Approval Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                <p className="text-sm text-gray-600 mb-4">
+                  Review and take action on this approval request.
+                </p>
+                <Button
+                  onClick={() => handleApprovalAction('approved')}
+                  disabled={isUpdatingApproval}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-bold gap-2 h-11"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  Approve
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleApprovalAction('revision_requested')}
+                  disabled={isUpdatingApproval}
+                  className="w-full border-2 border-orange-300 text-orange-700 hover:bg-orange-50 font-bold gap-2 h-11"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  Request Revision
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleApprovalAction('rejected')}
+                  disabled={isUpdatingApproval}
+                  className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 font-bold gap-2 h-11"
+                >
+                  <Ban className="h-4 w-4" />
+                  Reject
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Debug: Approval Info Card - Show approval details when approved/rejected/revision */}
+          {isApprovalTask && task.approval_status && task.approval_status !== 'pending' && (
+            <Card className={cn(
+              'border-2 shadow-construction',
+              task.approval_status === 'approved' ? 'border-green-200' :
+              task.approval_status === 'rejected' ? 'border-red-200' :
+              'border-orange-200'
+            )}>
+              <CardHeader className={cn(
+                'border-b-2 bg-gradient-to-r to-white',
+                task.approval_status === 'approved' ? 'border-green-100 from-green-50' :
+                task.approval_status === 'rejected' ? 'border-red-100 from-red-50' :
+                'border-orange-100 from-orange-50'
+              )}>
+                <CardTitle className={cn(
+                  'text-sm font-black uppercase tracking-wider flex items-center gap-2',
+                  APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].color
+                )}>
+                  {(() => {
+                    const Icon = APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].icon;
+                    return <Icon className="h-4 w-4" />;
+                  })()}
+                  {APPROVAL_STATUS_CONFIG[task.approval_status as ApprovalStatus].label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-3">
+                {task.approved_by && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <User className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        {task.approval_status === 'approved' ? 'Approved By' : 'Reviewed By'}
+                      </div>
+                      <div className="text-sm font-bold text-gray-900 mt-0.5">
+                        {/* Would need to fetch user name */}
+                        Reviewer
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {task.approved_at && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <Calendar className="h-4 w-4 text-gray-500" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Date
+                      </div>
+                      <div className="text-sm font-bold text-gray-900 mt-0.5">
+                        {formatDate(task.approved_at)}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {task.approval_notes && (
+                  <div className="pt-3 border-t-2 border-gray-100">
+                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                      Notes
+                    </div>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                      {task.approval_notes}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Danger Zone */}
           {canDelete && (
             <Card className="border-2 border-red-200 shadow-construction">
@@ -923,6 +1152,71 @@ export function TaskDetail({
         }}
         onConfirm={handleBlockedConfirm}
       />
+
+      {/* Debug: Approval Notes Modal */}
+      <AlertDialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
+        <AlertDialogContent className="border-2">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-black text-gray-900">
+              {approvalAction === 'rejected' ? 'Reject Task' : 'Request Revision'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {approvalAction === 'rejected'
+                ? 'Please provide a reason for rejecting this approval request.'
+                : 'Please describe what changes are needed.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="approval-notes" className="text-sm font-bold text-gray-700">
+              {approvalAction === 'rejected' ? 'Rejection Reason' : 'Revision Notes'}
+              <span className="text-red-500 ml-1">*</span>
+            </Label>
+            <Textarea
+              id="approval-notes"
+              value={approvalNotes}
+              onChange={(e) => setApprovalNotes(e.target.value)}
+              placeholder={
+                approvalAction === 'rejected'
+                  ? 'Explain why this request is being rejected...'
+                  : 'Describe the changes or revisions needed...'
+              }
+              rows={4}
+              className="mt-2 border-2 border-gray-200 focus:border-construction-blue resize-none"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              className="border-2 font-bold"
+              onClick={() => {
+                setApprovalNotes('');
+                setApprovalAction(null);
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (approvalAction && approvalNotes.trim()) {
+                  executeApproval(approvalAction, approvalNotes);
+                }
+              }}
+              disabled={!approvalNotes.trim() || isUpdatingApproval}
+              className={cn(
+                'font-bold',
+                approvalAction === 'rejected'
+                  ? 'bg-red-600 hover:bg-red-700'
+                  : 'bg-orange-600 hover:bg-orange-700'
+              )}
+            >
+              {isUpdatingApproval
+                ? 'Processing...'
+                : approvalAction === 'rejected'
+                ? 'Reject'
+                : 'Request Revision'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

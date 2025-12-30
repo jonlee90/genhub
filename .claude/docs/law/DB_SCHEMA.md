@@ -149,6 +149,22 @@ CREATE TYPE task_priority AS ENUM (
   'high'
 );
 
+-- Task type (defines form fields and workflow)
+CREATE TYPE task_type AS ENUM (
+  'work',      -- Standard labor/work tasks
+  'purchase',  -- Buying materials/supplies (shows Materials step)
+  'approval',  -- Permits, sign-offs, inspections (has approval workflow)
+  'admin'      -- Administrative/overhead tasks
+);
+
+-- Approval status (for approval-type tasks)
+CREATE TYPE approval_status AS ENUM (
+  'pending',             -- Awaiting review
+  'approved',            -- Approved by reviewer
+  'rejected',            -- Rejected by reviewer
+  'revision_requested'   -- Sent back for changes
+);
+
 -- Activity actions
 CREATE TYPE activity_action AS ENUM (
   'created',
@@ -352,27 +368,35 @@ CREATE TABLE public.project_team (
 ### tasks
 ```sql
 CREATE TABLE public.tasks (
-  id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id     uuid NOT NULL REFERENCES projects(id),
-  phase_id       uuid REFERENCES project_phases(id),
-  title          text NOT NULL,
-  description    text,
-  status         task_status DEFAULT 'todo',
-  priority       task_priority DEFAULT 'medium',
-  assignee_id    uuid REFERENCES next_auth.users(id),
-  start_date     date,
-  due_date       date,
-  planned_cost   numeric,
-  actual_cost    numeric,
-  blocked_reason text,           -- Required when status = 'blocked'
-  completed_at   timestamptz,
-  created_by     uuid REFERENCES next_auth.users(id),
-  created_at     timestamptz DEFAULT now(),
-  updated_at     timestamptz DEFAULT now()
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id       uuid NOT NULL REFERENCES projects(id),
+  phase_id         uuid REFERENCES project_phases(id),
+  title            text NOT NULL,
+  description      text,
+  status           task_status DEFAULT 'todo',
+  priority         task_priority DEFAULT 'medium',
+  task_type        task_type NOT NULL DEFAULT 'work',      -- Type of task (work/purchase/approval/admin)
+  assignee_id      uuid REFERENCES next_auth.users(id),
+  start_date       date,
+  due_date         date,
+  planned_cost     numeric,
+  actual_cost      numeric,                                -- AUTO-CALCULATED by trigger
+  blocked_reason   text,                                   -- Required when status = 'blocked'
+  -- Approval workflow fields (only for task_type = 'approval')
+  approval_status  approval_status,                        -- Status of approval (pending/approved/rejected/revision_requested)
+  approval_notes   text,                                   -- Notes from approver (especially for rejection/revision)
+  approved_by      uuid REFERENCES next_auth.users(id),    -- Who approved/rejected
+  approved_at      timestamptz,                            -- When approval action was taken
+  completed_at     timestamptz,
+  created_by       uuid REFERENCES next_auth.users(id),
+  created_at       timestamptz DEFAULT now(),
+  updated_at       timestamptz DEFAULT now()
 );
+-- CONSTRAINT: approval_status IS NOT NULL when task_type = 'approval'
 -- TRIGGER: set_task_completed_at sets/clears completed_at on status change
 -- TRIGGER: update_phase_completion updates phase.completion_percentage
--- TRIGGER: update_task_costs updates actual_cost from materials + expenses
+-- TRIGGER: update_task_costs updates actual_cost from materials + approved expenses
+-- NOTE: actual_cost is read-only (auto-calculated), do not update manually
 ```
 
 ### task_dependencies
@@ -847,6 +871,7 @@ GROUP BY p.id, p.budget;
 | 20251209035356 | fix_all_rls_policies_using_helper_functions | Refactored all RLS to use helper functions |
 | 20251209074250 | add_start_date_to_tasks | Added start_date column to tasks |
 | 20251228000000 | add_top_team_members_function | Function for top team members by completed tasks |
+| 20251229000000 | add_task_type_and_approval_status | Added task_type enum, approval_status enum, and approval workflow columns to tasks |
 
 ---
 
