@@ -27,6 +27,37 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Safelist dynamic classes used in project-card-themes.ts
+  safelist: [
+    // Project type header backgrounds
+    'bg-teal-600',
+    'bg-slate-800',
+    'bg-construction-blue',
+    'bg-construction-accent',
+    // Project type icon backgrounds
+    'bg-white/10',
+    'bg-yellow-400/20',
+    'bg-cyan-400/20',
+    // Project type accent colors
+    'text-blue-200',
+    'text-yellow-400',
+    'text-teal-200',
+    'text-cyan-400',
+    // Project type border accents
+    'border-t-construction-blue',
+    'border-t-construction-accent',
+    'border-t-teal-600',
+    'border-t-slate-800',
+    // Project type gradients
+    'from-blue-600',
+    'to-blue-800',
+    'from-gray-600',
+    'to-gray-800',
+    'from-teal-600',
+    'to-teal-800',
+    'from-slate-700',
+    'to-slate-900',
+  ],
   theme: {
     extend: {
       colors: {

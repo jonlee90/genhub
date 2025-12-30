@@ -1,23 +1,547 @@
-# ProjectCard Component UI/UX Redesign Plan
+# ProjectCard Component UI/UX Redesign Plan - V2 (Hero Image Design)
+
+> **Updated**: 2024-12-30 - New design based on reference image with hero image and colored headers
 
 ## Overview
-Complete redesign of the ProjectCard component to display the most critical information that General Contractors and Project Owners need at a glance. This card appears in the project list view and serves as the primary navigation entry point to project details.
+Complete redesign of the ProjectCard component featuring:
+- **Colored header** with project type name and icon (color varies by project type)
+- **Hero image** showing the actual project site (auto-fetched from address)
+- **Clean stats layout** with client info, budget, progress, and team data
+- **Automatic image acquisition** from Google Street View → Mapillary → Placeholder
 
-## Research Findings
+---
 
-### What GCs/Owners Need at a Glance
-Based on construction industry best practices and existing dashboard patterns:
+## 1. Visual Design Analysis (From Reference Image)
 
-1. **Project Health** - Overall status indicator (most critical)
-2. **Budget Performance** - Planned vs actual spending
-3. **Schedule Status** - On-time, at-risk, or delayed
-4. **Progress** - Visual completion percentage
-5. **Recent Activity** - What changed recently
-6. **Team Status** - Who's assigned, crew size
-7. **Phase Information** - Current construction phase
-8. **Quick Metrics** - Task counts, material status, expenses
-9. **Risk Indicators** - Blockers, overdue items, budget overruns
-10. **Weather/Site Conditions** - (future consideration)
+### Card Structure (Top to Bottom)
+```
+┌─────────────────────────────────────────┐
+│  [COLORED HEADER - varies by type]      │
+│  PROJECT TYPE          [TYPE ICON]      │
+│  Project Name                           │
+├─────────────────────────────────────────┤
+│                                         │
+│           [HERO IMAGE]                  │
+│    (Street View / Mapillary / Placeholder) │
+│                                         │
+├─────────────────────────────────────────┤
+│  Client                      Budget     │
+│  {client_name}              ${amount}   │
+├─────────────────────────────────────────┤
+│  Status     Progress    Schedule        │
+│  {status}   {xx%}       {x days}        │
+│                                         │
+│  Members                  Health        │
+│  {count}                  {score}%      │
+├─────────────────────────────────────────┤
+│  Project ID: #{id}       ${actual_cost} │
+└─────────────────────────────────────────┘
+```
+
+### Color Themes by Project Type
+| Project Type | Header BG | Header Text | Icon BG | Accent |
+|--------------|-----------|-------------|---------|--------|
+| `residential` | `#001B51` (Navy) | White | White/10 | Blue-200 |
+| `industrial` | `#3C3C3C` (Dark Gray) | White | Yellow/20 | Yellow-400 + Hazard Border |
+| `restaurant_cafe` | `#0D7377` (Teal) | White | White/10 | Teal-200 |
+| `commercial_office` | `#1A1A2E` (Dark Navy) | White | Cyan/20 | Cyan-400 (Tech aesthetic) |
+
+---
+
+## 2. Database Schema Changes Required
+
+### Add `image_url` column to projects table
+```sql
+-- Migration: add_project_image_columns
+ALTER TABLE public.projects
+ADD COLUMN image_url text,
+ADD COLUMN latitude numeric,
+ADD COLUMN longitude numeric;
+
+COMMENT ON COLUMN public.projects.image_url IS 'Project site image URL (from Street View, Mapillary, or placeholder)';
+COMMENT ON COLUMN public.projects.latitude IS 'Geocoded latitude for project address';
+COMMENT ON COLUMN public.projects.longitude IS 'Geocoded longitude for project address';
+```
+
+---
+
+## 3. Automatic Image Acquisition Flow
+
+### Flow Diagram
+```
+[User enters address]
+        ↓
+[Geocode address → lat/lng]
+        ↓
+[Try Google Street View Static API]
+        ↓ (if fails or no imagery available)
+[Try Mapillary API]
+        ↓ (if fails)
+[Use placeholder image based on project_type]
+        ↓
+[Save image_url in project record]
+```
+
+### Implementation: Server Action
+Create `app/actions/project-image.ts`:
+```typescript
+'use server';
+
+import { createClient } from '@/utils/supabase/server';
+
+interface GeocodingResult {
+  lat: number;
+  lng: number;
+}
+
+// Placeholder images by project type
+const PLACEHOLDER_IMAGES: Record<string, string> = {
+  residential: '/images/placeholders/residential.jpg',
+  industrial: '/images/placeholders/industrial.jpg',
+  restaurant_cafe: '/images/placeholders/restaurant.jpg',
+  commercial_office: '/images/placeholders/commercial.jpg',
+};
+
+/**
+ * Geocode an address to coordinates using Google Maps Geocoding API
+ */
+async function geocodeAddress(address: string): Promise<GeocodingResult | null> {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    console.warn('[geocodeAddress] GOOGLE_MAPS_API_KEY not configured');
+    return null;
+  }
+
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results.length > 0) {
+      const location = data.results[0].geometry.location;
+      return { lat: location.lat, lng: location.lng };
+    }
+    return null;
+  } catch (error) {
+    console.error('[geocodeAddress] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get Google Street View image URL
+ */
+async function getStreetViewImage(lat: number, lng: number): Promise<string | null> {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) return null;
+
+  // Check if Street View imagery exists at this location
+  const metadataUrl = `https://maps.googleapis.com/maps/api/streetview/metadata?location=${lat},${lng}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(metadataUrl);
+    const data = await response.json();
+
+    if (data.status === 'OK') {
+      // Return the static image URL
+      return `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${lat},${lng}&fov=90&key=${apiKey}`;
+    }
+    return null;
+  } catch (error) {
+    console.error('[getStreetViewImage] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Get Mapillary image URL as fallback
+ */
+async function getMapillaryImage(lat: number, lng: number): Promise<string | null> {
+  const accessToken = process.env.MAPILLARY_ACCESS_TOKEN;
+  if (!accessToken) return null;
+
+  try {
+    // Search for images near the location
+    const url = `https://graph.mapillary.com/images?access_token=${accessToken}&fields=id,thumb_1024_url&bbox=${lng - 0.001},${lat - 0.001},${lng + 0.001},${lat + 0.001}&limit=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.data && data.data.length > 0) {
+      return data.data[0].thumb_1024_url;
+    }
+    return null;
+  } catch (error) {
+    console.error('[getMapillaryImage] Error:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch and save project image based on address
+ */
+export async function fetchProjectImage(
+  projectId: string,
+  address: string,
+  projectType: string
+): Promise<{ success: boolean; imageUrl: string }> {
+  const supabase = await createClient();
+  let imageUrl = PLACEHOLDER_IMAGES[projectType] || PLACEHOLDER_IMAGES.residential;
+  let latitude: number | null = null;
+  let longitude: number | null = null;
+
+  // 1. Geocode address
+  const coords = await geocodeAddress(address);
+
+  if (coords) {
+    latitude = coords.lat;
+    longitude = coords.lng;
+
+    // 2. Try Google Street View
+    const streetViewUrl = await getStreetViewImage(coords.lat, coords.lng);
+    if (streetViewUrl) {
+      imageUrl = streetViewUrl;
+    } else {
+      // 3. Try Mapillary
+      const mapillaryUrl = await getMapillaryImage(coords.lat, coords.lng);
+      if (mapillaryUrl) {
+        imageUrl = mapillaryUrl;
+      }
+    }
+  }
+
+  // 4. Update project with image URL and coordinates
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      image_url: imageUrl,
+      latitude,
+      longitude,
+    })
+    .eq('id', projectId);
+
+  if (error) {
+    console.error('[fetchProjectImage] Error updating project:', error);
+    return { success: false, imageUrl };
+  }
+
+  return { success: true, imageUrl };
+}
+```
+
+### Environment Variables Required
+```env
+# Google Maps APIs (for Geocoding & Street View)
+GOOGLE_MAPS_API_KEY=your_key_here
+
+# Mapillary (optional fallback)
+MAPILLARY_ACCESS_TOKEN=your_token_here
+```
+
+### Next.js Image Configuration
+```typescript
+// next.config.ts
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'maps.googleapis.com',
+        pathname: '/maps/api/streetview/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.mapillary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'scontent-*.mapillary.com',
+        pathname: '/**',
+      },
+    ],
+  },
+};
+```
+
+---
+
+## 4. Component Architecture
+
+### Project Type Theme System
+```typescript
+// lib/project-card-themes.ts
+
+import { Home, Factory, UtensilsCrossed, Building2 } from 'lucide-react';
+
+export const PROJECT_TYPE_THEMES = {
+  residential: {
+    icon: Home,
+    label: 'Residential',
+    labelFull: 'Residential Home',
+    headerBg: 'bg-construction-blue',
+    headerText: 'text-white',
+    iconBg: 'bg-white/10',
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-construction-blue',
+  },
+  industrial: {
+    icon: Factory,
+    label: 'Industrial',
+    labelFull: 'Industrial Warehouse',
+    headerBg: 'bg-construction-accent',
+    headerText: 'text-white',
+    iconBg: 'bg-yellow-400/20',
+    accentColor: 'text-yellow-400',
+    borderAccent: 'border-t-construction-accent',
+    hasHazardBorder: true, // Special caution stripe decoration
+  },
+  restaurant_cafe: {
+    icon: UtensilsCrossed,
+    label: 'Cafe',
+    labelFull: 'Cafe Renovation',
+    headerBg: 'bg-teal-600',
+    headerText: 'text-white',
+    iconBg: 'bg-white/10',
+    accentColor: 'text-teal-200',
+    borderAccent: 'border-t-teal-600',
+  },
+  commercial_office: {
+    icon: Building2,
+    label: 'Commercial',
+    labelFull: 'Commercial Office',
+    headerBg: 'bg-slate-800',
+    headerText: 'text-white',
+    iconBg: 'bg-cyan-400/20',
+    accentColor: 'text-cyan-400',
+    borderAccent: 'border-t-slate-800',
+  },
+} as const;
+```
+
+### Placeholder Images
+Create placeholder images for each project type:
+```
+public/images/placeholders/
+├── residential.jpg      # Modern house exterior
+├── industrial.jpg       # Warehouse/factory
+├── restaurant.jpg       # Restaurant interior/exterior
+├── commercial.jpg       # Office building
+└── default.jpg          # Generic construction site
+```
+
+### Component Structure
+```tsx
+// components/projects/ProjectCard.tsx
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { cn, formatBudget } from '@/lib/utils';
+import { PROJECT_TYPE_THEMES } from '@/lib/project-card-themes';
+import type { ProjectWithStats } from '@/app/actions/projects';
+
+interface ProjectCardProps {
+  project: ProjectWithStats;
+}
+
+export function ProjectCard({ project }: ProjectCardProps) {
+  const theme = PROJECT_TYPE_THEMES[project.project_type];
+  const TypeIcon = theme.icon;
+  const completionPercentage = project.completion_percentage || 0;
+
+  // Image source with fallback
+  const imageUrl = project.image_url || `/images/placeholders/${project.project_type}.jpg`;
+
+  return (
+    <Link href={`/app/projects/${project.id}`}>
+      <motion.div
+        whileHover={{ y: -4 }}
+        className="group rounded-lg overflow-hidden shadow-construction hover:shadow-construction-lg transition-all duration-300 bg-white"
+      >
+        {/* Header Section - Colored by project type */}
+        <div className={cn("px-4 py-3", theme.headerBg, theme.headerText)}>
+          <div className="flex items-start justify-between">
+            <div className="space-y-0.5">
+              <p className={cn("text-xs font-bold uppercase tracking-wider", theme.accentColor)}>
+                {theme.labelFull}
+              </p>
+              <h3 className="text-lg font-bold line-clamp-1">
+                {project.name}
+              </h3>
+            </div>
+            <div className={cn("p-2 rounded-lg", theme.iconBg)}>
+              <TypeIcon className="h-5 w-5" />
+            </div>
+          </div>
+        </div>
+
+        {/* Industrial Hazard Border (conditional) */}
+        {theme.hasHazardBorder && (
+          <div className="h-2 bg-[repeating-linear-gradient(45deg,#FBBF24,#FBBF24_10px,#1A1A2E_10px,#1A1A2E_20px)]" />
+        )}
+
+        {/* Hero Image */}
+        <div className="relative h-40 bg-gray-100">
+          <Image
+            src={imageUrl}
+            alt={project.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+          {/* Gradient overlay for better readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        </div>
+
+        {/* Content Section */}
+        <div className="p-4 space-y-3">
+          {/* Client & Budget Row */}
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide">Client</p>
+              <p className="font-semibold text-gray-900 line-clamp-1">{project.client_name}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wide">Budget</p>
+              <p className="font-bold text-construction-blue">{formatBudget(project.budget)}</p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-100" />
+
+          {/* Stats Grid - 2x2 */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Status */}
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase">Status</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {project.status === 'active' ? 'Active' : project.status}
+              </p>
+            </div>
+            {/* Progress */}
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase">Progress</p>
+              <p className="text-sm font-bold text-construction-blue">{completionPercentage}%</p>
+            </div>
+            {/* Schedule */}
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase">Schedule</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {project.stats?.schedule.daysRemaining || 0}d left
+              </p>
+            </div>
+            {/* Members */}
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase">Members</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {project.stats?.teamSize || 0}
+              </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-gray-100" />
+
+          {/* Footer - Project ID & Actual Cost */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-500">
+              Project ID: #{project.id.slice(0, 8)}
+            </span>
+            <span className="font-bold text-construction-blue">
+              {formatBudget(project.stats?.actualSpent || 0)}
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+```
+
+---
+
+## 5. Implementation Tasks
+
+### Phase 1: Database (backend-engineer)
+- [ ] Create migration to add `image_url`, `latitude`, `longitude` columns
+- [ ] Apply migration using MCP Supabase
+- [ ] Regenerate TypeScript types
+
+### Phase 2: Image Service (backend-engineer)
+- [ ] Create `app/actions/project-image.ts` with:
+  - [ ] `geocodeAddress()` function
+  - [ ] `getStreetViewImage()` function
+  - [ ] `getMapillaryImage()` function
+  - [ ] `fetchProjectImage()` server action
+- [ ] Update `createProject()` to call `fetchProjectImage()` after insert
+- [ ] Add placeholder images to `public/images/placeholders/`
+- [ ] Update `next.config.ts` for external image domains
+
+### Phase 3: UI Redesign (frontend-builder with frontend-design plugin)
+- [ ] Create `lib/project-card-themes.ts` theme system
+- [ ] Redesign `ProjectCard.tsx`:
+  - [ ] Colored header section with project type
+  - [ ] Hero image with Next.js Image component
+  - [ ] Client/Budget row
+  - [ ] 2x2 stats grid
+  - [ ] Footer with project ID and actual cost
+  - [ ] Industrial hazard border variant
+- [ ] Keep existing 3D tilt effect (optional)
+- [ ] Ensure mobile responsiveness
+- [ ] Add hover animations
+
+### Phase 4: Testing & Polish
+- [ ] Test with projects that have/don't have images
+- [ ] Test placeholder fallback
+- [ ] Verify responsive layouts on mobile/tablet/desktop
+- [ ] Optimize image loading performance
+
+---
+
+## 6. Questions for User Approval
+
+1. **API Keys**: Do you have Google Maps API key configured? (Required for geocoding & Street View)
+
+2. **Image Storage**: Should we:
+   - **Option A**: Store external URLs directly (faster, no storage cost, depends on external service)
+   - **Option B**: Download and store in Supabase Storage (more reliable, has storage cost)
+
+3. **Industrial Hazard Border**: The reference shows a yellow/black caution stripe for industrial projects. Should we implement this?
+
+4. **Existing 3D Tilt**: Keep or remove the existing 3D tilt hover effect?
+
+5. **Placeholder Images**: Should I source/create construction-themed placeholder images, or will you provide them?
+
+---
+
+## 7. Risk Considerations
+
+| Risk | Mitigation |
+|------|------------|
+| Google Street View API costs | Cache images in Supabase Storage; limit API calls |
+| Coverage gaps (no imagery) | Fallback chain: Street View → Mapillary → Placeholder |
+| API rate limits | Implement retry logic with exponential backoff |
+| Privacy (blurred images) | Accept as-is; can manually replace |
+| Slow image loading | Use Next.js Image with blur placeholder |
+
+---
+
+## Ready for Approval
+
+**Changes Summary**:
+1. Add 3 new DB columns: `image_url`, `latitude`, `longitude`
+2. Create automatic image acquisition service
+3. Complete visual redesign with hero image and colored headers
+4. Support 4 project type themes with distinct colors
+
+**Approval Checklist**:
+- [ ] Database schema changes approved
+- [ ] Image acquisition flow approved
+- [ ] Color theme system approved
+- [ ] UI layout approved
+- [ ] API key setup confirmed (or will use placeholders only)
 
 ## Current Implementation Analysis
 

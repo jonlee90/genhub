@@ -1,29 +1,28 @@
 "use client";
 
+/**
+ * ProjectCard Component - V2 Hero Image Design
+ *
+ * A modern project card with:
+ * - Color-coded header by project type
+ * - Hero image placeholder (gradient for now)
+ * - Client/Budget info row
+ * - 2x2 stats grid
+ * - Footer with project ID and spent amount
+ *
+ * Debug: Construction-themed design for GenHub PWA
+ */
+
 import Link from 'next/link';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import {
-  Building2,
-  Home,
-  UtensilsCrossed,
-  Factory,
-  Calendar,
-  DollarSign,
-  Users,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Package,
-  AlertTriangle,
-  Receipt,
-} from 'lucide-react';
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import Image from 'next/image';
+import { motion } from "framer-motion";
+import { Users, Calendar, TrendingUp, Hash } from 'lucide-react';
 import type { Database } from '@/types/database.types';
 import { cn, formatBudget } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
+import { getProjectTheme, PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
 
+// Debug: Type definitions
 type Project = Database['public']['Tables']['projects']['Row'] & {
   project_phases?: Array<{
     id: string;
@@ -36,335 +35,265 @@ interface ProjectCardProps {
   project: Project | ProjectWithStats;
 }
 
-const PROJECT_TYPE_CONFIG = {
-  residential: {
-    icon: Home,
-    label: 'Residential',
-  },
-  restaurant_cafe: {
-    icon: UtensilsCrossed,
-    label: 'Restaurant/Cafe',
-  },
-  commercial_office: {
-    icon: Building2,
-    label: 'Commercial',
-  },
-  industrial: {
-    icon: Factory,
-    label: 'Industrial',
-  },
-};
-
-const STATUS_CONFIG = {
-  active: {
-    label: 'Active',
-    icon: Clock,
-    color: 'text-construction-green border-construction-green',
-  },
-  on_hold: {
-    label: 'On Hold',
-    icon: AlertCircle,
-    color: 'text-yellow-600 border-yellow-400',
-  },
-  completed: {
-    label: 'Completed',
-    icon: CheckCircle2,
-    color: 'text-construction-blue border-construction-blue',
-  },
-  archived: {
-    label: 'Archived',
-    icon: Clock,
-    color: 'text-gray-500 border-gray-400',
-  },
-};
-
 export function ProjectCard({ project }: ProjectCardProps) {
-  const typeConfig = PROJECT_TYPE_CONFIG[project.project_type];
-  const statusConfig = STATUS_CONFIG[project.status];
-  const TypeIcon = typeConfig.icon;
-  const StatusIcon = statusConfig.icon;
-  const isMobile = useIsMobile();
-
-  // 3D Tilt effect - Aceternity UI style (disabled on mobile for performance)
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [8, -8]), {
-    stiffness: 400,
-    damping: 10,
-  });
-  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-8, 8]), {
-    stiffness: 400,
-    damping: 10,
-  });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Disable 3D tilt on mobile for better performance
-    if (isMobile) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) / (rect.width / 2));
-    y.set((e.clientY - centerY) / (rect.height / 2));
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  // Debug: Format start date
-  const formattedStartDate = project.start_date
-    ? new Date(project.start_date).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : 'Not set';
+  // Debug: Get theme configuration based on project type
+  const theme = getProjectTheme(project.project_type);
+  const TypeIcon = theme.icon;
+  const statusConfig = PROJECT_STATUS_CONFIG[project.status as keyof typeof PROJECT_STATUS_CONFIG];
 
   // Debug: Calculate completion percentage
   const completionPercentage = project.completion_percentage || 0;
 
+  // Debug: Get stats if available
+  const hasStats = 'stats' in project && project.stats;
+  const stats = hasStats ? project.stats : null;
+
+  // Debug: Get image URL or use placeholder gradient
+  const imageUrl = project.image_url;
+
   return (
-    <Link href={`/app/projects/${project.id}`}>
-      <motion.div
-        style={isMobile ? {} : {
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
+    <Link href={`/app/projects/${project.id}`} className="block h-full">
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -6 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className={cn(
-          "group relative cursor-pointer h-full rounded-lg",
-          "bg-white border-[1.5px] border-construction-blue",
-          "hover:border-construction-blue hover:shadow-lg",
-          "transition-all duration-200",
-          "overflow-hidden",
-          // Mobile: Add active state for touch feedback
-          "active:scale-[0.98] active:bg-gray-50"
+          "group relative h-full rounded-xl overflow-hidden",
+          "bg-white border border-gray-200",
+          "shadow-sm hover:shadow-xl",
+          "transition-shadow duration-300",
+          "cursor-pointer"
         )}
-        whileHover={isMobile ? {} : { scale: 1.01 }}
-        whileTap={{ scale: 0.98 }}
       >
-        {/* Debug: Card Content - Clean minimal design, responsive padding */}
-        <div className="p-4 md:p-5 space-y-3 md:space-y-4">
-          {/* Debug: Header Section - Icon, Name/Client, Status Badge */}
+        {/* Debug: Colored Header Section - Project Type */}
+        <header className={cn(
+          "relative px-4 py-3",
+          theme.headerBg,
+          theme.headerText
+        )}>
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-          
-
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-base md:text-lg line-clamp-1 text-gray-900 group-hover:text-construction-blue transition-colors">
-                  {project.name}
-                </h3>
-                <p className="text-xs md:text-sm text-gray-600 line-clamp-1 mt-0.5 md:mt-1">
-                  {project.client_name}
-                </p>
-              </div>
+            {/* Debug: Project Type Label & Name */}
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                "text-[10px] font-bold uppercase tracking-[0.15em] mb-0.5",
+                theme.accentColor
+              )}>
+                {theme.labelFull}
+              </p>
+              <h3 className="text-lg font-bold leading-tight line-clamp-1 tracking-tight">
+                {project.name}
+              </h3>
             </div>
 
-            {/* Status Badge */}
-            <Badge variant="outline" className={cn(
-              "flex items-center gap-1 md:gap-1.5 px-1.5 md:px-2 py-0.5 shrink-0 font-medium",
-              statusConfig.color
+            {/* Debug: Type Icon */}
+            <div className={cn(
+              "shrink-0 p-2.5 rounded-lg",
+              theme.iconBg
             )}>
-              <StatusIcon className="h-3 w-3" />
-              <span className="text-[10px] md:text-xs">{statusConfig.label}</span>
-            </Badge>
-          </div>
-
-          {/* Debug: Meta Row - Project Type & Start Date */}
-          <div className="flex items-center justify-between text-[10px] md:text-xs text-gray-500 pb-2 md:pb-3 border-b border-gray-100">
-            <span className="flex items-center gap-1 md:gap-1.5">
-              <TypeIcon className="h-3 w-3 md:h-3.5 md:w-3.5" />
-              <span>{typeConfig.label}</span>
-            </span>
-            <span className="flex items-center gap-1 md:gap-1.5">
-              <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5" />
-              <span>{formattedStartDate}</span>
-            </span>
-          </div>
-
-          {/* Debug: Progress Section - NEW HORIZONTAL LAYOUT */}
-          <div className="space-y-1.5 md:space-y-2">
-            {/* Progress Bar + Percentage (side by side) */}
-            <div className="flex items-center gap-2 md:gap-3">
-              <Progress
-                value={completionPercentage}
-                className="flex-1 h-1.5 md:h-2 bg-gray-100"
-              />
-              <span className="text-lg md:text-xl font-bold text-construction-blue shrink-0 min-w-[3rem] md:min-w-[3.5rem] text-right">
-                {completionPercentage}%
-              </span>
+              <TypeIcon className="h-5 w-5" strokeWidth={2} />
             </div>
-            {/* Small label below */}
-            <p className="text-[10px] md:text-xs text-gray-500">Overall Progress</p>
           </div>
 
-          {/* Debug: Budget & Schedule Grid - Clean 2-column layout */}
-          {'stats' in project && project.stats ? (
-            <>
-              <div className="grid grid-cols-2 gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-100">
-                {/* Budget Column */}
-                <div className="space-y-1.5 md:space-y-2">
-                  <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-2">
-                    <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-construction-accent" />
-                    <span className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                      Budget
-                    </span>
-                  </div>
-                  <div className="space-y-0.5 md:space-y-1">
-                    <div className="flex justify-between text-[10px] md:text-xs">
-                      <span className="text-gray-500">Plan</span>
-                      <span className="font-semibold text-gray-900">{formatBudget(project.budget)}</span>
-                    </div>
-                    <div className="flex justify-between text-[10px] md:text-xs">
-                      <span className="text-gray-500">Actual</span>
-                      <span className={cn(
-                        "font-bold",
-                        project.stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
-                      )}>
-                        {formatBudget(project.stats.actualSpent)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+          {/* Debug: Decorative bottom edge */}
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/10" />
+        </header>
 
-                {/* Schedule Column */}
-                <div className="space-y-1.5 md:space-y-2">
-                  <div className="flex items-center gap-1 md:gap-1.5 mb-1 md:mb-2">
-                    <Clock className="h-3.5 w-3.5 md:h-4 md:w-4 text-construction-accent" />
-                    <span className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase tracking-wide">
-                      Schedule
-                    </span>
-                  </div>
-                  <div className="space-y-0.5 md:space-y-1">
-                    <div className="flex justify-between text-[10px] md:text-xs">
-                      <span className="text-gray-500">Days</span>
-                      <span className="font-semibold text-construction-blue">
-                        {project.stats.schedule.daysRemaining}d
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-[10px] md:text-xs">
-                      <span className="text-gray-500">Status</span>
-                      <span className={cn(
-                        "font-bold",
-                        project.stats.schedule.status === 'on-time' && "text-construction-green",
-                        project.stats.schedule.status === 'at-risk' && "text-yellow-600",
-                        project.stats.schedule.status === 'delayed' && "text-construction-red"
-                      )}>
-                        {project.stats.schedule.status === 'on-time' && 'On Track'}
-                        {project.stats.schedule.status === 'at-risk' && 'At Risk'}
-                        {project.stats.schedule.status === 'delayed' && `${project.stats.schedule.daysBehind}d`}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Debug: Task Summary Pills - Horizontal colored pills */}
-              <div className="flex items-center gap-1 md:gap-2.5 flex-wrap pb-2 md:pb-3 border-b border-gray-100">
-                {/* Completed Tasks */}
-                <div className="flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-construction-green/10">
-                  <CheckCircle2 className="h-3 w-3 md:h-3.5 md:w-3.5 text-construction-green" />
-                  <span className="text-[10px] md:text-xs font-medium text-construction-green">
-                    {project.stats.taskCounts.completed}
-                  </span>
-                </div>
-
-                {/* Todo Tasks */}
-                <div className="flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-gray-100">
-                  <Package className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-600" />
-                  <span className="text-[10px] md:text-xs font-medium text-gray-600">
-                    {project.stats.taskCounts.todo}
-                  </span>
-                </div>
-
-                {/* Blocked Tasks (conditional) */}
-                {project.stats.taskCounts.blocked > 0 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-yellow-50">
-                    <AlertTriangle className="h-3 w-3 md:h-3.5 md:w-3.5 text-yellow-600" />
-                    <span className="text-[10px] md:text-xs font-medium text-yellow-600">
-                      {project.stats.taskCounts.blocked}
-                    </span>
-                  </div>
-                )}
-
-                {/* Overdue Tasks (conditional) */}
-                {project.stats.taskCounts.overdue > 0 && (
-                  <div className="flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full bg-red-50">
-                    <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-construction-red" />
-                    <span className="text-[10px] md:text-xs font-medium text-construction-red">
-                      {project.stats.taskCounts.overdue}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Debug: Footer - Team Size & Expenses */}
-              <div className="flex items-center justify-between text-[10px] md:text-xs">
-                <div className="flex items-center text-gray-500">
-                  <Users className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5" />
-                  <span className="font-medium">{project.stats.teamSize} members</span>
-                </div>
-
-                {/* Expense Indicator */}
-                {project.stats.expenses && project.stats.expenses.total > 0 && (
-                  <div className={cn(
-                    "flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full",
-                    // Warning if expenses approach or exceed budget
-                    project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
-                      ? project.stats.expenses.approvedAmount > (project.budget || 0)
-                        ? "bg-red-50"
-                        : "bg-yellow-50"
-                      : "bg-construction-blue/10"
-                  )}>
-                    <Receipt className={cn(
-                      "h-3 w-3 md:h-3.5 md:w-3.5",
-                      project.stats.expenses.approvedAmount > (project.budget || 0)
-                        ? "text-construction-red"
-                        : project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
-                          ? "text-yellow-600"
-                          : "text-construction-blue"
-                    )} />
-                    <span className={cn(
-                      "font-semibold",
-                      project.stats.expenses.approvedAmount > (project.budget || 0)
-                        ? "text-construction-red"
-                        : project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
-                          ? "text-yellow-600"
-                          : "text-construction-blue"
-                    )}>
-                      {formatBudget(project.stats.expenses.approvedAmount)}
-                    </span>
-                    {project.stats.expenses.pending > 0 && (
-                      <span className="text-gray-500">
-                        (+{project.stats.expenses.pending})
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            </>
+        {/* Debug: Hero Image / Placeholder Section */}
+        <div className="relative h-36 overflow-hidden">
+          {imageUrl ? (
+            // Debug: Actual image when available
+            <Image
+              src={imageUrl}
+              alt={`${project.name} site view`}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
           ) : (
-            /* Debug: Fallback for projects without stats */
-            <div className="grid grid-cols-2 gap-3 md:gap-4 pb-3 md:pb-4 border-b border-gray-100">
-              {project.budget && (
-                <div className="space-y-1 md:space-y-2">
-                  <div className="flex items-center gap-1 md:gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4 text-construction-accent" />
-                    <span className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase tracking-wide">Budget</span>
-                  </div>
-                  <p className="text-xs md:text-sm font-bold text-construction-blue">
-                    {formatBudget(project.budget)}
+            // Debug: Gradient placeholder with icon
+            <div className={cn(
+              "absolute inset-0 bg-gradient-to-br",
+              theme.placeholderGradient
+            )}>
+              {/* Debug: Blueprint grid pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-10"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+                  `,
+                  backgroundSize: '20px 20px'
+                }}
+              />
+
+              {/* Debug: Centered icon */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <TypeIcon
+                  className="h-16 w-16 text-white/20"
+                  strokeWidth={1}
+                />
+              </div>
+
+              {/* Debug: Address hint if available */}
+              {project.address && (
+                <div className="absolute bottom-2 left-3 right-3">
+                  <p className="text-[10px] text-white/60 truncate font-medium">
+                    {project.address}
+                    {project.city && `, ${project.city}`}
                   </p>
                 </div>
               )}
             </div>
           )}
+
+          {/* Debug: Gradient overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
         </div>
-      </motion.div>
+
+        {/* Debug: Content Section */}
+        <div className="p-4 space-y-3">
+          {/* Debug: Client & Budget Row */}
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+                Client
+              </p>
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {project.client_name}
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+                Budget
+              </p>
+              <p className="text-sm font-bold text-construction-blue">
+                {formatBudget(project.budget)}
+              </p>
+            </div>
+          </div>
+
+          {/* Debug: Divider */}
+          <div className="h-px bg-gray-100" />
+
+          {/* Debug: Stats Grid - 2x2 */}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {/* Status */}
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                Status
+              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={cn(
+                  "inline-block w-1.5 h-1.5 rounded-full",
+                  statusConfig?.dotColor || 'bg-gray-400'
+                )} />
+                <span className={cn(
+                  "text-sm font-semibold",
+                  statusConfig?.textColor || 'text-gray-700'
+                )}>
+                  {statusConfig?.label || project.status}
+                </span>
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                Progress
+              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-construction-blue rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${completionPercentage}%` }}
+                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+                  />
+                </div>
+                <span className="text-sm font-bold text-construction-blue shrink-0 tabular-nums">
+                  {completionPercentage}%
+                </span>
+              </div>
+            </div>
+
+            {/* Schedule */}
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                Schedule
+              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-sm font-semibold text-gray-700">
+                  {stats?.schedule.daysRemaining ?? '--'}
+                  <span className="text-gray-400 font-normal ml-0.5">days</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Members */}
+            <div>
+              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+                Team
+              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                <Users className="h-3.5 w-3.5 text-gray-400" />
+                <span className="text-sm font-semibold text-gray-700">
+                  {stats?.teamSize ?? project.project_team?.length ?? 0}
+                  <span className="text-gray-400 font-normal ml-0.5">members</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Debug: Divider */}
+          <div className="h-px bg-gray-100" />
+
+          {/* Debug: Footer - Project ID & Actual Spent */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1 text-gray-400">
+              <Hash className="h-3 w-3" />
+              <span className="text-[11px] font-mono tracking-tight">
+                {project.id.slice(0, 8).toUpperCase()}
+              </span>
+            </div>
+
+            {stats ? (
+              <div className="flex items-center gap-1">
+                <TrendingUp className={cn(
+                  "h-3.5 w-3.5",
+                  stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
+                )} />
+                <span className={cn(
+                  "text-sm font-bold",
+                  stats.isUnderBudget ? "text-construction-green" : "text-construction-red"
+                )}>
+                  {formatBudget(stats.actualSpent)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-[11px] text-gray-400 font-medium">
+                {project.start_date
+                  ? new Date(project.start_date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric'
+                    })
+                  : 'Not started'
+                }
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Debug: Hover indicator line at bottom */}
+        <div className={cn(
+          "absolute bottom-0 left-0 right-0 h-1",
+          "bg-gradient-to-r opacity-0 group-hover:opacity-100",
+          "transition-opacity duration-300",
+          theme.placeholderGradient
+        )} />
+      </motion.article>
     </Link>
   );
 }
