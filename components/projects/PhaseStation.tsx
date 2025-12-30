@@ -75,7 +75,7 @@ export function PhaseStation({
         <span className="font-black text-white">{phase.name}</span>
         <span className={cn(
           "text-sm font-black",
-          isCompleted && "text-construction-green",
+          isCompleted && "text-construction-blue",
           isInProgress && "text-construction-accent",
           !isCompleted && !isInProgress && "text-gray-400"
         )}>
@@ -124,7 +124,7 @@ export function PhaseStation({
   );
 
   return (
-    <AnimatedTooltip content={tooltipContent} side="top" delay={200}>
+    <AnimatedTooltip content={tooltipContent} side="right" delay={200}>
       <motion.button
       onClick={onClick}
       className="flex flex-col items-center gap-3 w-full group focus:outline-none focus-visible:outline-none"
@@ -139,7 +139,7 @@ export function PhaseStation({
           <motion.div
             className="absolute inset-0 rounded-full bg-construction-blue/40 blur-2xl -z-10"
             animate={{
-              scale: [1, 1.4, 1],
+              scale: [1, 1.2, 1],
               opacity: [0.4, 0.7, 0.4],
             }}
             transition={{
@@ -155,7 +155,7 @@ export function PhaseStation({
             'relative flex items-center justify-center rounded-full border-4 transition-all duration-300 shadow-construction',
             // Debug: Larger touch target on mobile (56x56px minimum)
             'w-20 h-20 md:w-20 md:h-20',
-            isCompleted && 'bg-gradient-to-br from-construction-green to-emerald-600 border-construction-green text-white shadow-emerald-200',
+            isCompleted && 'bg-gradient-to-br from-construction-blue to-emerald-600 border-construction-blue text-white shadow-emerald-200',
             isInProgress && 'bg-gradient-to-br from-construction-blue to-blue-700 border-construction-blue text-white shadow-construction-lg',
             !isCompleted && !isInProgress && 'bg-white border-gray-300 text-gray-400 shadow-gray-100',
             isCurrent && !isCompleted && 'ring-4 ring-construction-blue/30',

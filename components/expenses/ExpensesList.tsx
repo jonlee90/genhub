@@ -36,7 +36,7 @@ interface Expense {
   project: {
     id: string;
     name: string;
-  };
+  } | null;
   task?: {
     id: string;
     title: string;
@@ -91,7 +91,7 @@ export function ExpensesList({ expenses, projects, tasks }: ExpensesListProps) {
       expense.vendor_name?.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === 'all' || expense.status === statusFilter;
-    const matchesProject = projectFilter === 'all' || expense.project.id === projectFilter;
+    const matchesProject = projectFilter === 'all' || expense.project?.id === projectFilter;
 
     return matchesSearch && matchesStatus && matchesProject;
   });
@@ -242,7 +242,7 @@ export function ExpensesList({ expenses, projects, tasks }: ExpensesListProps) {
                           <div className="flex items-center gap-4 text-sm">
                             <div>
                               <span className="text-gray-600">Project:</span>{' '}
-                              <span className="font-semibold text-gray-900">{expense.project.name}</span>
+                              <span className="font-semibold text-gray-900">{expense.project?.name || 'N/A'}</span>
                             </div>
                             {expense.task && (
                               <>

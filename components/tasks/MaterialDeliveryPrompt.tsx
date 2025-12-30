@@ -1,0 +1,228 @@
+'use client';
+
+import { useState } from 'react';
+import { BaseModal } from '@/components/ui/BaseModal';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Truck, DollarSign, AlertTriangle, Package } from 'lucide-react';
+import { createExpenseFromMaterial } from '@/app/actions/expenses';
+
+// Debug: Material assignment interface matching TaskMaterialsList structure
+interface Material {
+  id: string;
+  product_name: string;
+  sku: string;
+  category: string;
+  unit_of_measure: string;
+  product_image_url: string | null;
+  stock_status: string | null;
+  home_depot_product_id: string | null;
+}
+
+interface MaterialAssignment {
+  id: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
+  purchaser_type: 'gc' | 'pm' | 'subcontractor';
+  notes: string | null;
+  created_at: string;
+  material: Material;
+}
+
+interface MaterialDeliveryPromptProps {
+  isOpen: boolean;
+  onClose: () => void;
+  materialAssignment: MaterialAssignment | null;
+  taskId: string;
+  projectId: string;
+  onExpenseCreated?: () => void;
+}
+
+/**
+ * MaterialDeliveryPrompt Component
+ *
+ * Prompts user to create an expense when material status changes to "delivered".
+ * Auto-fills expense data from material assignment.
+ *
+ * Features:
+ * - Confirmation dialog with material details
+ * - Auto-creates expense with material data
+ * - Shows loading state during creation
+ * - Error handling with retry
+ * - Construction-themed design (#001B51)
+ *
+ * Debug: Integrated with TaskMaterialsList for auto-prompt on delivery
+ *
+ * @component
+ */
+export function MaterialDeliveryPrompt({
+  isOpen,
+  onClose,
+  materialAssignment,
+  taskId,
+  projectId,
+  onExpenseCreated,
+}: MaterialDeliveryPromptProps) {
+  console.log('[MaterialDeliveryPrompt] Component mounted', {
+    isOpen,
+    materialAssignment: materialAssignment?.id,
+    taskId,
+    projectId,
+  });
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Debug: Early return if no material assignment
+  if (!materialAssignment) {
+    console.log('[MaterialDeliveryPrompt] No material assignment provided');
+    return null;
+  }
+
+  /**
+   * Debug: Handle expense creation from material
+   * Uses createExpenseFromMaterial action with correct signature
+   */
+  const handleCreateExpense = async () => {
+    console.log('[MaterialDeliveryPrompt] Creating expense from material', {
+      materialAssignmentId: materialAssignment.id,
+      taskId,
+      projectId,
+      amount: materialAssignment.total_cost,
+      description: materialAssignment.material.product_name,
+    });
+
+    setIsCreating(true);
+    setError(null);
+
+    try {
+      const result = await createExpenseFromMaterial({
+        material_assignment_id: materialAssignment.id,
+        task_id: taskId,
+        project_id: projectId,
+        amount: materialAssignment.total_cost,
+        description: `Material: ${materialAssignment.material.product_name}`,
+        category: 'materials',
+      });
+
+      console.log('[MaterialDeliveryPrompt] Expense creation result', result);
+
+      // Fix H2: Check success flag for consistency with server action pattern
+      if (!result.success || result.error) {
+        setError(result.error || 'Failed to create expense');
+        setIsCreating(false);
+        return;
+      }
+
+      // Success - close dialog and notify parent
+      console.log('[MaterialDeliveryPrompt] Expense created successfully');
+      onClose();
+      onExpenseCreated?.();
+    } catch (err) {
+      console.error('[MaterialDeliveryPrompt] Error creating expense', err);
+      setError(err instanceof Error ? err.message : 'Failed to create expense');
+      setIsCreating(false);
+    }
+  };
+
+  /**
+   * Debug: Handle dismissing the prompt
+   */
+  const handleDismiss = () => {
+    console.log('[MaterialDeliveryPrompt] User dismissed prompt');
+    onClose();
+  };
+
+  // Debug: Calculate total cost from material assignment
+  const totalCost = materialAssignment.total_cost || 0;
+
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleDismiss}
+      icon={Truck}
+      title="Material Delivered"
+      subtitle="Create an expense record for this delivery?"
+      maxWidth="md"
+      leftActions={
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleDismiss}
+          disabled={isCreating}
+          className="w-full sm:w-auto border-2"
+        >
+          Skip for Now
+        </Button>
+      }
+      rightActions={
+        <Button
+          type="button"
+          onClick={handleCreateExpense}
+          disabled={isCreating}
+          className="w-full sm:w-auto bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+        >
+          {isCreating ? (
+            <>
+              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Creating Expense...
+            </>
+          ) : (
+            <>
+              <DollarSign className="mr-2 h-4 w-4" />
+              Create Expense
+            </>
+          )}
+        </Button>
+      }
+    >
+      {/* Debug: Material Details */}
+      <div className="space-y-4">
+          {/* Material Info */}
+          <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4 space-y-2">
+            <div className="font-bold text-construction-blue">
+              {materialAssignment.material.product_name}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-gray-600">Quantity:</div>
+              <div className="font-medium text-gray-900">
+                {materialAssignment.quantity} {materialAssignment.material.unit_of_measure}
+              </div>
+
+              <div className="text-gray-600">Price/Unit:</div>
+              <div className="font-medium text-gray-900">
+                ${(materialAssignment.unit_cost || 0).toFixed(2)}
+              </div>
+
+              <div className="text-gray-600">Total Cost:</div>
+              <div className="font-black text-construction-blue">
+                ${totalCost.toFixed(2)}
+              </div>
+            </div>
+          </div>
+
+          {/* Debug: Info Alert */}
+          <Alert className="border-construction-blue/20 bg-construction-blue/5">
+            <DollarSign className="h-4 w-4 text-construction-blue" />
+            <AlertDescription className="text-sm text-gray-600">
+              An expense will be created for this material delivery.
+              It will be linked to this task and require approval.
+            </AlertDescription>
+          </Alert>
+
+          {/* Debug: Error Alert */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+    </BaseModal>
+  );
+}

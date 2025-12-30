@@ -24,6 +24,9 @@ interface TaskMaterialsManagerProps {
   projectId: string;        // Required for material assignment
   onMaterialsChange?: () => void; // Callback when materials are added/removed
   mode: 'create' | 'edit';  // Determines UI behavior
+  // Create mode: store materials temporarily
+  tempMaterials?: TempMaterial[];
+  onTempMaterialsChange?: (materials: TempMaterial[]) => void;
 }
 
 interface MaterialAssignment {
@@ -47,6 +50,19 @@ interface MaterialAssignment {
   };
 }
 
+// Debug: Temporary material for create mode (before task exists)
+export interface TempMaterial {
+  product_id: string;
+  product_name: string;
+  sku: string;
+  category: string;
+  price: number;
+  quantity: number;
+  unit_of_measure: string;
+  image_url: string | null;
+  stock_status: string;
+}
+
 // Debug: Tab type for interface
 type TabType = 'search' | 'assigned';
 
@@ -55,8 +71,15 @@ export function TaskMaterialsManager({
   projectId,
   onMaterialsChange,
   mode,
+  tempMaterials = [],
+  onTempMaterialsChange,
 }: TaskMaterialsManagerProps) {
-  console.log('[TaskMaterialsManager] Rendering with props:', { taskId, projectId, mode });
+  console.log('[TaskMaterialsManager] Rendering with props:', {
+    taskId,
+    projectId,
+    mode,
+    tempMaterialsCount: tempMaterials.length
+  });
 
   // Debug: State management
   const [activeTab, setActiveTab] = useState<TabType>(mode === 'edit' ? 'assigned' : 'search');
@@ -118,21 +141,13 @@ export function TaskMaterialsManager({
     onMaterialsChange?.();
   }, [loadMaterials, onMaterialsChange]);
 
-  // Debug: Calculate total cost
-  const totalCost = materials.reduce((sum, m) => sum + (m.total_cost || 0), 0);
+  // Debug: Calculate total cost (edit mode uses materials, create mode uses tempMaterials)
+  const totalCost = mode === 'edit'
+    ? materials.reduce((sum, m) => sum + (m.total_cost || 0), 0)
+    : tempMaterials.reduce((sum, m) => sum + (m.price * m.quantity), 0);
 
-  // Debug: Render create mode message
-  if (mode === 'create') {
-    return (
-      <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-        <Package className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-        <h4 className="text-sm font-bold text-gray-900 mb-1">Add Materials After Creating</h4>
-        <p className="text-xs text-gray-500">
-          Save the task first, then you can search and add materials from Home Depot.
-        </p>
-      </div>
-    );
-  }
+  // Debug: Get material count for badge
+  const materialCount = mode === 'edit' ? materials.length : tempMaterials.length;
 
   // Debug: Render main interface for edit mode
   return (
@@ -166,8 +181,8 @@ export function TaskMaterialsManager({
           )}
         >
           <Package className="h-4 w-4" />
-          Assigned
-          {materials.length > 0 && (
+          {mode === 'create' ? 'Selected' : 'Assigned'}
+          {materialCount > 0 && (
             <Badge
               variant="secondary"
               className={cn(
@@ -177,7 +192,7 @@ export function TaskMaterialsManager({
                   : 'bg-gray-200 text-gray-700'
               )}
             >
-              {materials.length}
+              {materialCount}
             </Badge>
           )}
         </button>
@@ -208,7 +223,7 @@ export function TaskMaterialsManager({
       {/* Tab Content */}
       {!isLoading && (
         <AnimatePresence mode="wait">
-          {activeTab === 'search' && taskId && (
+          {activeTab === 'search' && (
             <motion.div
               key="search"
               initial={{ opacity: 0, x: -10 }}
@@ -220,6 +235,13 @@ export function TaskMaterialsManager({
                 taskId={taskId}
                 projectId={projectId}
                 onMaterialAdded={handleMaterialAdded}
+                mode={mode}
+                tempMaterials={tempMaterials}
+                onTempMaterialAdd={(material) => {
+                  console.log('[TaskMaterialsManager] Adding temp material:', material);
+                  onTempMaterialsChange?.([...tempMaterials, material]);
+                  setActiveTab('assigned');
+                }}
               />
             </motion.div>
           )}
@@ -235,8 +257,27 @@ export function TaskMaterialsManager({
               <TaskMaterialsList
                 materials={materials}
                 totalCost={totalCost}
+                taskId={taskId || ''}
+                projectId={projectId}
                 onRemove={handleMaterialRemoved}
                 onQuantityUpdate={handleQuantityUpdated}
+                onStatusUpdate={handleQuantityUpdated}
+                mode={mode}
+                tempMaterials={tempMaterials}
+                onTempMaterialRemove={(productId) => {
+                  console.log('[TaskMaterialsManager] Removing temp material:', productId);
+                  onTempMaterialsChange?.(
+                    tempMaterials.filter(m => m.product_id !== productId)
+                  );
+                }}
+                onTempMaterialQuantityChange={(productId, quantity) => {
+                  console.log('[TaskMaterialsManager] Updating temp material quantity:', productId, quantity);
+                  onTempMaterialsChange?.(
+                    tempMaterials.map(m =>
+                      m.product_id === productId ? { ...m, quantity } : m
+                    )
+                  );
+                }}
               />
             </motion.div>
           )}

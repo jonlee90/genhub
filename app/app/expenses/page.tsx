@@ -56,15 +56,14 @@ async function getExpensesData() {
           *,
           project:projects!expenses_project_id_fkey (
             id,
-            name,
-            company_id
+            name
           ),
           task:tasks!expenses_task_id_fkey (
             id,
             title
           )
         `)
-        .eq('project.company_id', companyUser.company_id)
+        .eq('company_id', companyUser.company_id)
         .order('created_at', { ascending: false });
 
       // Calculate stats
@@ -136,15 +135,14 @@ async function getExpensesData() {
       *,
       project:projects!expenses_project_id_fkey (
         id,
-        name,
-        company_id
+        name
       ),
       task:tasks!expenses_task_id_fkey (
         id,
         title
       )
     `)
-    .eq('project.company_id', companyUser.company_id)
+    .eq('company_id', companyUser.company_id)
     .order('created_at', { ascending: false });
 
   // Calculate stats

@@ -171,7 +171,7 @@ export default async function ProjectsPage({
 
       {/* Project List with Filters */}
       <Suspense fallback={<ProjectListSkeleton />}>
-        <ProjectList initialProjects={projects} searchParams={searchParams} />
+        <ProjectList initialProjects={projects} searchParams={params} />
       </Suspense>
 
       {/* Decorative bottom border */}

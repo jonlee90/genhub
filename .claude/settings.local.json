@@ -59,7 +59,8 @@
       "Bash(xargs basename:*)",
       "Bash(pnpm run dev)",
       "Bash(npm run lint:ts:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Skill(kc:impl)"
     ],
     "deny": [],
     "ask": []

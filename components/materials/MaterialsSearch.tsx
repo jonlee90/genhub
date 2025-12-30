@@ -33,9 +33,9 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
   const handleSearch = () => {
     startTransition(async () => {
       const result = await searchProducts({
-        query: searchQuery || undefined,
+        query: searchQuery,
         category: category === 'all' ? undefined : category,
-        stockStatus: stockFilter === 'all' ? undefined : (stockFilter as any),
+        inStockOnly: stockFilter === 'in_stock' ? true : undefined,
       });
 
       if (result.success && result.data) {

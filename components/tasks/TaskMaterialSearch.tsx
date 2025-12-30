@@ -29,10 +29,15 @@ import { useToast } from '@/hooks/use-toast';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
 // Debug: Interface definitions
+import type { TempMaterial } from './TaskMaterialsManager';
+
 interface TaskMaterialSearchProps {
-  taskId: string;
+  taskId?: string;              // Optional for create mode
   projectId: string;
-  onMaterialAdded: () => void;
+  onMaterialAdded: () => void;  // Edit mode callback
+  mode?: 'create' | 'edit';     // Mode determines behavior
+  tempMaterials?: TempMaterial[];
+  onTempMaterialAdd?: (material: TempMaterial) => void;
 }
 
 // Debug: Stock status configuration
@@ -59,8 +64,11 @@ export function TaskMaterialSearch({
   taskId,
   projectId,
   onMaterialAdded,
+  mode = 'edit',
+  tempMaterials = [],
+  onTempMaterialAdd,
 }: TaskMaterialSearchProps) {
-  console.log('[TaskMaterialSearch] Rendering with taskId:', taskId, 'projectId:', projectId);
+  console.log('[TaskMaterialSearch] Rendering:', { taskId, projectId, mode, tempMaterialsCount: tempMaterials.length });
 
   // Debug: State management
   const [searchQuery, setSearchQuery] = useState('');
@@ -133,10 +141,62 @@ export function TaskMaterialSearch({
     setQuantities(prev => ({ ...prev, [productId]: newValue }));
   };
 
-  // Debug: Add product to task
+  // Debug: Add product to task (edit mode) or to temp list (create mode)
   const handleAddProduct = async (product: HomeDepotProduct) => {
     const quantity = getQuantity(product.id);
-    console.log('[TaskMaterialSearch] Adding product:', product.name, 'quantity:', quantity);
+    console.log('[TaskMaterialSearch] Adding product:', product.name, 'quantity:', quantity, 'mode:', mode);
+
+    // Create mode: add to temporary materials list
+    if (mode === 'create') {
+      // Check if product already in temp list
+      const existing = tempMaterials.find(m => m.product_id === product.id);
+      if (existing) {
+        toast({
+          title: 'Material Already Added',
+          description: `${product.name} is already in your selection`,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const tempMaterial: TempMaterial = {
+        product_id: product.id,
+        product_name: product.name,
+        sku: product.sku,
+        category: product.category,
+        price: product.price,
+        quantity,
+        unit_of_measure: product.unitOfMeasure,
+        image_url: product.imageUrl,
+        stock_status: product.stockStatus,
+      };
+
+      console.log('[TaskMaterialSearch] Adding to temp materials:', tempMaterial);
+      onTempMaterialAdd?.(tempMaterial);
+
+      // Reset quantity for this product
+      setQuantities(prev => {
+        const { [product.id]: _, ...rest } = prev;
+        return rest;
+      });
+
+      toast({
+        title: 'Material Selected',
+        description: `Added ${quantity}x ${product.name} to your selection`,
+      });
+
+      return;
+    }
+
+    // Edit mode: add directly to task
+    if (!taskId) {
+      toast({
+        title: 'Error',
+        description: 'Task ID is required',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setAddingProductId(product.id);
 

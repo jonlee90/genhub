@@ -4,14 +4,7 @@ import { useState, useActionState, useEffect, useCallback } from 'react';
 import { createSubcontractor, uploadSubcontractorDocument } from '@/app/actions/subcontractors';
 import { Database } from '@/types/database.types';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +30,7 @@ import {
   Upload,
   CheckCircle2,
   XCircle,
+  HardHat,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -237,20 +231,16 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-white border-2 border-gray-200 shadow-xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-construction-blue flex items-center gap-2">
-            <div className="h-8 w-1 bg-construction-blue rounded-full" />
-            Add Subcontractor
-          </DialogTitle>
-          <DialogDescription className="text-gray-600 mt-2">
-            Add a new subcontractor to your company directory. Fill in the required fields and
-            upload any relevant documents.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form action={formAction} className="space-y-6 mt-4">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      icon={HardHat}
+      title="Add Subcontractor"
+      subtitle="Add a new subcontractor to your company directory. Fill in the required fields and upload any relevant documents."
+      maxWidth="3xl"
+      showFooter={false}
+    >
+      <form action={formAction} className="space-y-6">
           {/* Success Message */}
           {state?.success && (
             <Alert className="bg-green-50 border-2 border-green-300 text-green-900">
@@ -579,7 +569,7 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
             />
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
             <Button
               type="button"
               variant="outline"
@@ -613,9 +603,8 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
                 'Add Subcontractor'
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </BaseModal>
   );
 }

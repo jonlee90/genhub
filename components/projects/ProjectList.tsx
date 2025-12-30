@@ -13,7 +13,7 @@ type Project = Database['public']['Tables']['projects']['Row'] & {
   project_phases?: Array<{
     id: string;
     status: string;
-    completion_percentage: number;
+    completion_percentage: number | null;
   }>;
 };
 

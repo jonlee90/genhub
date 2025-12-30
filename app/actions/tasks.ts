@@ -27,7 +27,7 @@ const createTaskSchema = z.object({
   assignee_id: z.string().uuid('Invalid assignee ID').optional().nullable(),
   start_date: z.string().optional().nullable(),
   due_date: z.string().optional().nullable(),
-  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
   task_type: z.enum(['work', 'purchase', 'approval', 'admin']).default('work'),
 }).refine(
@@ -51,7 +51,7 @@ const updateTaskSchema = z.object({
   assignee_id: z.string().uuid('Invalid assignee ID').optional().nullable(),
   start_date: z.string().optional().nullable(),
   due_date: z.string().optional().nullable(),
-  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
   actual_cost: z.number().min(0).optional().nullable(),
   phase_id: z.string().uuid('Invalid phase ID').optional().nullable(),

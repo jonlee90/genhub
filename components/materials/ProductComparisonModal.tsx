@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Package, X, CheckCircle2, AlertCircle, XCircle, ArrowRight } from 'lucide-react';
+import { BarChart, CheckCircle2, AlertCircle, XCircle, ArrowRight, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AssignMaterialModal } from './AssignMaterialModal';
 import Image from 'next/image';
@@ -68,21 +68,30 @@ export function ProductComparisonModal({
 
   return (
     <>
-      <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="text-3xl font-black text-construction-blue">
-                Product Comparison
-              </DialogTitle>
-              <Button variant="outline" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <p className="text-sm text-gray-600">
-              Compare up to 4 products side by side
-            </p>
-          </DialogHeader>
+      <BaseModal
+        isOpen={true}
+        onClose={onClose}
+        icon={BarChart}
+        title="Product Comparison"
+        subtitle="Compare up to 4 products side by side"
+        maxWidth="4xl"
+        leftActions={
+          <Button
+            variant="outline"
+            onClick={() => {
+              onClearSelection();
+              onClose();
+            }}
+          >
+            Clear Selection
+          </Button>
+        }
+        rightActions={
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        }
+      >
 
           <div className="grid gap-4" style={{
             gridTemplateColumns: `repeat(${products.length}, minmax(0, 1fr))`
@@ -185,24 +194,7 @@ export function ProductComparisonModal({
               );
             })}
           </div>
-
-          {/* Footer Actions */}
-          <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
-            <Button
-              variant="outline"
-              onClick={() => {
-                onClearSelection();
-                onClose();
-              }}
-            >
-              Clear Selection
-            </Button>
-            <Button variant="outline" onClick={onClose}>
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      </BaseModal>
 
       {/* Assign Material Modal */}
       {selectedProduct && (

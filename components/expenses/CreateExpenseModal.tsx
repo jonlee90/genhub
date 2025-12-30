@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useTransition, useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, Upload, Camera, X, FileText, Sparkles } from 'lucide-react';
+import { Loader2, Upload, Camera, X, FileText, Sparkles, Info, ArrowLeft } from 'lucide-react';
 import { createExpense, processReceiptOCR } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +41,17 @@ interface CreateExpenseModalProps {
 }
 
 export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: CreateExpenseModalProps) {
-  console.log('[CreateExpenseModal] Rendering with taskContext:', taskContext);
+  // Debug: Log task context when provided
+  if (taskContext) {
+    console.log('[CreateExpenseModal] Rendering with task context:', {
+      taskId: taskContext.taskId,
+      taskTitle: taskContext.taskTitle,
+      projectId: taskContext.projectId,
+      projectName: taskContext.projectName,
+    });
+  } else {
+    console.log('[CreateExpenseModal] Rendering without task context (standalone mode)');
+  }
 
   // Debug: Initialize with task context if provided
   const [selectedProject, setSelectedProject] = useState<string>(taskContext?.projectId || '');
@@ -122,6 +132,18 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
       return;
     }
 
+    // Debug: Log submission data
+    console.log('[CreateExpenseModal] Submitting expense with data:', {
+      project_id: selectedProject,
+      task_id: selectedTask && selectedTask !== 'no-task' ? selectedTask : undefined,
+      description,
+      amount: parseFloat(amount),
+      category,
+      expense_date: expenseDate,
+      vendor_name: vendorName || undefined,
+      fromTaskContext: !!taskContext,
+    });
+
     startTransition(async () => {
       // In a real implementation, upload the receipt to storage first
       // const receiptUrl = await uploadReceiptToStorage(receiptFile);
@@ -138,12 +160,21 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
       });
 
       if (result.success) {
-        toast({
-          title: 'Expense Submitted',
-          description: 'Your expense has been submitted for review.',
+        console.log('[CreateExpenseModal] Expense created successfully', {
+          expenseId: result.data?.id,
+          fromTaskContext: !!taskContext,
         });
+        toast({
+          title: 'Expense Added Successfully',
+          description: taskContext
+            ? `Expense added to task: ${taskContext.taskTitle}`
+            : 'Your expense has been added and is now under review.',
+        });
+        // Call onClose which triggers handleExpenseCreated in TaskExpensesSection
+        // This will close CreateExpenseModal and refresh the expense list in TaskModal
         onClose();
       } else {
+        console.error('[CreateExpenseModal] Failed to create expense:', result.error);
         toast({
           title: 'Error',
           description: result.error || 'Failed to submit expense',
@@ -153,34 +184,78 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
     });
   };
 
-  return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black text-construction-blue flex items-center gap-2">
-            <FileText className="h-6 w-6" />
-            Submit Expense
-          </DialogTitle>
-          {/* Debug: Show task context info when opened from a task */}
-          {taskContext ? (
-            <div className="mt-2 p-3 bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg">
-              <p className="text-sm text-gray-600">
-                Adding expense for task: <span className="font-bold text-construction-blue">{taskContext.taskTitle}</span>
-              </p>
-              {taskContext.projectName && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Project: {taskContext.projectName}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-600">
-              Upload a receipt and let AI extract the details automatically
-            </p>
-          )}
-        </DialogHeader>
+  // Validation state for submit button
+  const isValid = selectedProject && description && amount && parseFloat(amount) > 0;
 
-        <div className="space-y-6">
+  console.log('[CreateExpenseModal] Validation state:', {
+    selectedProject,
+    description,
+    amount,
+    isValid,
+  });
+
+  return (
+    <BaseModal
+      isOpen={true}
+      onClose={onClose}
+      icon={FileText}
+      title={taskContext ? 'Add Expense' : 'Submit Expense'}
+      subtitle={!taskContext ? 'Upload a receipt and let AI extract the details automatically' : undefined}
+      theme="default"
+      maxWidth="3xl"
+      leftActions={
+        taskContext ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              console.log('[CreateExpenseModal] Back button clicked - returning to TaskModal');
+              onClose();
+            }}
+            disabled={isPending}
+            className="h-10 px-4 font-medium text-[#001B51] hover:bg-[#001B51]/10 hover:text-[#001B51] transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Task
+          </Button>
+        ) : undefined
+      }
+      rightActions={
+        <Button
+          onClick={handleSubmit}
+          disabled={isPending || !isValid}
+          className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {taskContext ? 'Adding...' : 'Submitting...'}
+            </>
+          ) : (
+            taskContext ? 'Add Expense' : 'Submit Expense'
+          )}
+        </Button>
+      }
+    >
+      <div className="space-y-6">
+          {/* Task Context Info Banner - Positioned at top of form */}
+          {taskContext && (
+            <div className="bg-[#001B51]/10 border-l-4 border-[#001B51] p-4 rounded-r">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-[#001B51] mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-[#001B51]">
+                    Adding expense for task: {taskContext.taskTitle}
+                  </p>
+                  {taskContext.projectName && (
+                    <p className="text-sm text-gray-600">
+                      Project: {taskContext.projectName}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           {/* Receipt Upload Section */}
           <div className="space-y-4">
             <Label className="text-sm font-bold text-gray-700">Receipt Photo</Label>
@@ -288,10 +363,16 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                 </Label>
                 <Select
                   value={selectedProject}
-                  onValueChange={setSelectedProject}
+                  onValueChange={(value) => {
+                    console.log('[CreateExpenseModal] Project changed:', value);
+                    setSelectedProject(value);
+                  }}
                   disabled={!!taskContext}
                 >
-                  <SelectTrigger id="project" className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed' : ''}`}>
+                  <SelectTrigger
+                    id="project"
+                    className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
+                  >
                     <SelectValue placeholder="Select a project" />
                   </SelectTrigger>
                   <SelectContent>
@@ -303,7 +384,7 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                   </SelectContent>
                 </Select>
                 {taskContext && (
-                  <p className="text-xs text-gray-500">Pre-filled from task</p>
+                  <p className="text-xs text-gray-500 italic">Locked: Pre-filled from task context</p>
                 )}
               </div>
 
@@ -313,10 +394,16 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                 </Label>
                 <Select
                   value={selectedTask}
-                  onValueChange={setSelectedTask}
+                  onValueChange={(value) => {
+                    console.log('[CreateExpenseModal] Task changed:', value);
+                    setSelectedTask(value);
+                  }}
                   disabled={!selectedProject || !!taskContext}
                 >
-                  <SelectTrigger id="task" className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed' : ''}`}>
+                  <SelectTrigger
+                    id="task"
+                    className={`border-2 ${taskContext ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`}
+                  >
                     <SelectValue placeholder="Select a task" />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,7 +416,7 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                   </SelectContent>
                 </Select>
                 {taskContext && (
-                  <p className="text-xs text-gray-500">Pre-filled from task</p>
+                  <p className="text-xs text-gray-500 italic">Locked: Pre-filled from task context</p>
                 )}
               </div>
             </div>
@@ -416,29 +503,7 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
               />
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
-            <Button variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isPending || !selectedProject || !description || !amount || parseFloat(amount) <= 0}
-              className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                'Submit Expense'
-              )}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </BaseModal>
   );
 }

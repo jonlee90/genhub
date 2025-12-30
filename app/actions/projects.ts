@@ -36,6 +36,17 @@ export interface MaterialsStatus {
   delivered: number;
 }
 
+export interface ExpenseStats {
+  total: number;
+  approved: number;
+  pending: number;
+  rejected: number;
+  totalAmount: number;
+  approvedAmount: number;
+  pendingAmount: number;
+  rejectedAmount: number;
+}
+
 export interface ProjectStats {
   actualSpent: number;
   plannedCost: number;
@@ -45,6 +56,7 @@ export interface ProjectStats {
   schedule: ScheduleStatus;
   materials: MaterialsStatus;
   teamSize: number;
+  expenses: ExpenseStats;
 }
 
 export interface ProjectWithStats extends Project {
@@ -816,6 +828,19 @@ export async function getProjectsWithStats(): Promise<{
       // Continue with empty materials rather than failing
     }
 
+    // 4. Fetch expenses for all projects
+    const { data: expenses, error: expensesError } = await supabase
+      .from('expenses')
+      .select('id, project_id, amount, status')
+      .in('project_id', projectIds);
+
+    if (expensesError) {
+      console.error('[getProjectsWithStats] Error fetching expenses:', expensesError);
+      // Continue with empty expenses rather than failing
+    }
+
+    console.log(`[getProjectsWithStats] Fetched ${expenses?.length || 0} expenses across all projects`);
+
     // 4. Process and calculate stats for each project
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -863,9 +888,30 @@ export async function getProjectsWithStats(): Promise<{
         delivered: projectMaterials.filter(m => m.procurement_status === 'delivered').length,
       };
 
-      // Add material costs to actual spent
+      // Filter expenses for this project
+      const projectExpenses = expenses?.filter(e => e.project_id === project.id) || [];
+
+      // Calculate expense stats
+      const expenseStats: ExpenseStats = {
+        total: projectExpenses.length,
+        approved: projectExpenses.filter(e => e.status === 'approved').length,
+        pending: projectExpenses.filter(e => e.status === 'submitted').length,
+        rejected: projectExpenses.filter(e => e.status === 'rejected').length,
+        totalAmount: projectExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+        approvedAmount: projectExpenses
+          .filter(e => e.status === 'approved')
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+        pendingAmount: projectExpenses
+          .filter(e => e.status === 'submitted')
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+        rejectedAmount: projectExpenses
+          .filter(e => e.status === 'rejected')
+          .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+      };
+
+      // Add material costs and approved expenses to actual spent
       const materialCosts = projectMaterials.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0);
-      const totalActualSpent = actualSpent + materialCosts;
+      const totalActualSpent = actualSpent + materialCosts + expenseStats.approvedAmount;
 
       // Team size
       const teamSize = project.project_team?.length || 0;
@@ -879,6 +925,7 @@ export async function getProjectsWithStats(): Promise<{
         schedule,
         materials: materialsStatus,
         teamSize,
+        expenses: expenseStats,
       };
 
       console.log(`[getProjectsWithStats] Stats for "${project.name}":`, {
@@ -887,6 +934,9 @@ export async function getProjectsWithStats(): Promise<{
         actualSpent: totalActualSpent,
         scheduleStatus: schedule.status,
         materialsNeeded: materialsStatus.needed,
+        expensesTotal: expenseStats.total,
+        expensesApproved: expenseStats.approved,
+        expensesApprovedAmount: expenseStats.approvedAmount,
       });
 
       return {
@@ -961,7 +1011,15 @@ export async function getProjectWithStats(projectId: string): Promise<{
       .select('id, procurement_status, total_cost')
       .eq('project_id', projectId);
 
-    // 4. Calculate stats
+    // 4. Fetch expenses for this project
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('id, amount, status')
+      .eq('project_id', projectId);
+
+    console.log(`[getProjectWithStats] Fetched ${expenses?.length || 0} expenses for project`);
+
+    // 5. Calculate stats
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -998,8 +1056,28 @@ export async function getProjectWithStats(projectId: string): Promise<{
       delivered: projectMaterials.filter(m => m.procurement_status === 'delivered').length,
     };
 
+    const projectExpenses = expenses || [];
+
+    // Calculate expense stats
+    const expenseStats: ExpenseStats = {
+      total: projectExpenses.length,
+      approved: projectExpenses.filter(e => e.status === 'approved').length,
+      pending: projectExpenses.filter(e => e.status === 'submitted').length,
+      rejected: projectExpenses.filter(e => e.status === 'rejected').length,
+      totalAmount: projectExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+      approvedAmount: projectExpenses
+        .filter(e => e.status === 'approved')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+      pendingAmount: projectExpenses
+        .filter(e => e.status === 'submitted')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+      rejectedAmount: projectExpenses
+        .filter(e => e.status === 'rejected')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+    };
+
     const materialCosts = projectMaterials.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0);
-    const totalActualSpent = actualSpent + materialCosts;
+    const totalActualSpent = actualSpent + materialCosts + expenseStats.approvedAmount;
 
     const stats: ProjectStats = {
       actualSpent: totalActualSpent,
@@ -1010,6 +1088,7 @@ export async function getProjectWithStats(projectId: string): Promise<{
       schedule,
       materials: materialsStatus,
       teamSize: project.project_team?.length || 0,
+      expenses: expenseStats,
     };
 
     return {

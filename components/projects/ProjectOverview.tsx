@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, Building2, MapPin, FileText, DollarSign, Layers } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MetroJourney } from './MetroJourney';
+import { ProjectExpenseSummary } from './ProjectExpenseSummary';
 
 interface PhaseStats {
   phaseId: string;
@@ -12,6 +13,9 @@ interface PhaseStats {
   blockedTasks: number;
   overdueTasks: number;
 }
+
+// Fix C2: Import ExpenseStats instead of duplicating
+import type { ExpenseStats } from '@/app/actions/projects';
 
 interface ProjectOverviewProps {
   project: any;
@@ -31,9 +35,11 @@ interface ProjectOverviewProps {
     avatar_url: string | null;
   }>;
   phaseTaskStats?: PhaseStats[];
+  expenseStats?: ExpenseStats;
 }
 
-export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [] }: ProjectOverviewProps) {
+export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats }: ProjectOverviewProps) {
+  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats);
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'long',
@@ -311,6 +317,20 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Expense Summary Widget */}
+          {expenseStats && project.budget && project.budget > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+            >
+              <ProjectExpenseSummary
+                expenseStats={expenseStats}
+                budget={project.budget}
+              />
+            </motion.div>
           )}
         </motion.div>
       </div>

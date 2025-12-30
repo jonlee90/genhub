@@ -47,8 +47,8 @@ type Project = {
   id: string;
   name: string;
   status?: string;
-  health_score?: number;
-  completion_percentage?: number;
+  health_score?: number | null;
+  completion_percentage?: number | null;
   project_phases?: Phase[];
 };
 
@@ -429,6 +429,7 @@ export function TaskBoard({
         teamMembers={teamMembers}
         preselectedProjectId={projectId}
         onSuccess={handleModalSuccess}
+        tasks={initialTasks}
       />
     </div>
   );

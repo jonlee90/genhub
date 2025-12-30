@@ -9,7 +9,7 @@
  * Debug: Construction-themed with #001B51 primary, editable quantities
  */
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package,
@@ -19,6 +19,9 @@ import {
   Minus,
   Plus,
   AlertCircle,
+  Receipt,
+  Check,
+  ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,9 +36,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { removeMaterialFromTask, updateMaterialQuantity } from '@/app/actions/materials';
+import { removeMaterialFromTask, updateMaterialQuantity, updateMaterialAssignment } from '@/app/actions/materials';
+import { getMaterialExpenseLink } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
+import { MaterialDeliveryPrompt } from './MaterialDeliveryPrompt';
+import type { TempMaterial } from './TaskMaterialsManager';
 
 // Debug: Interface definitions
 interface Material {
@@ -64,8 +76,16 @@ interface MaterialAssignment {
 interface TaskMaterialsListProps {
   materials: MaterialAssignment[];
   totalCost: number;
+  taskId: string;  // Debug: Added for MaterialDeliveryPrompt
+  projectId: string;  // Debug: Added for MaterialDeliveryPrompt
   onRemove: () => void;
   onQuantityUpdate: () => void;
+  onStatusUpdate?: () => void;  // Debug: Added for status change refresh
+  // Create mode props
+  mode?: 'create' | 'edit';
+  tempMaterials?: TempMaterial[];
+  onTempMaterialRemove?: (productId: string) => void;
+  onTempMaterialQuantityChange?: (productId: string, quantity: number) => void;
 }
 
 // Debug: Procurement status configuration
@@ -95,16 +115,66 @@ const PROCUREMENT_STATUS_CONFIG = {
 export function TaskMaterialsList({
   materials,
   totalCost,
+  taskId,
+  projectId,
   onRemove,
   onQuantityUpdate,
+  onStatusUpdate,
+  mode = 'edit',
+  tempMaterials = [],
+  onTempMaterialRemove,
+  onTempMaterialQuantityChange,
 }: TaskMaterialsListProps) {
-  console.log('[TaskMaterialsList] Rendering with', materials.length, 'materials, totalCost:', totalCost);
+  console.log('[TaskMaterialsList] Rendering:', {
+    mode,
+    materialsCount: materials.length,
+    tempMaterialsCount: tempMaterials.length,
+    totalCost
+  });
 
   // Debug: State management
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+
+  // Debug: MaterialDeliveryPrompt state (Subtask 9.1)
+  const [deliveredMaterial, setDeliveredMaterial] = useState<MaterialAssignment | null>(null);
+  const [showDeliveryPrompt, setShowDeliveryPrompt] = useState(false);
+
+  // Debug: Expense link tracking (Subtask 9.4)
+  const [expenseLinks, setExpenseLinks] = useState<Record<string, boolean>>({});
+
+  // Debug: Check expense links on mount and when materials change (Subtask 9.4)
+  useEffect(() => {
+    const checkExpenseLinks = async () => {
+      if (materials.length === 0) return;
+
+      console.log('[TaskMaterialsList] Checking expense links for', materials.length, 'materials');
+
+      // Fix H1: Check links in parallel instead of sequential for better performance
+      const linkPromises = materials.map(async (material) => {
+        const result = await getMaterialExpenseLink(material.id);
+        if (result.success && result.expenseId) {
+          console.log('[TaskMaterialsList] Material', material.id, 'has linked expense:', result.expenseId);
+          return { id: material.id, hasLink: true };
+        }
+        return { id: material.id, hasLink: false };
+      });
+
+      const results = await Promise.all(linkPromises);
+      const links: Record<string, boolean> = {};
+      results.forEach(({ id, hasLink }) => {
+        if (hasLink) links[id] = true;
+      });
+
+      setExpenseLinks(links);
+      console.log('[TaskMaterialsList] Expense link check complete:', Object.keys(links).length, 'linked');
+    };
+
+    checkExpenseLinks();
+  }, [materials]);
 
   // Debug: Format currency
   const formatCurrency = (amount: number) => {
@@ -169,12 +239,74 @@ export function TaskMaterialsList({
     });
   };
 
-  // Debug: Empty state
-  if (materials.length === 0) {
+  // Debug: Handle status update (Subtask 9.2)
+  const handleStatusUpdate = async (
+    assignment: MaterialAssignment,
+    newStatus: 'needed' | 'ordered' | 'delivered' | 'installed'
+  ) => {
+    console.log('[TaskMaterialsList] Updating status for', assignment.id, 'to', newStatus);
+    setUpdatingStatusId(assignment.id);
+
+    startTransition(async () => {
+      const result = await updateMaterialAssignment({
+        id: assignment.id,
+        procurement_status: newStatus,
+      });
+
+      if (result.success) {
+        console.log('[TaskMaterialsList] Status updated successfully to:', newStatus);
+
+        // Fix H3: Check expense link BEFORE showing success toast to prevent race conditions
+        if (newStatus === 'delivered') {
+          console.log('[TaskMaterialsList] Material delivered, checking for expense link');
+          const expenseLink = await getMaterialExpenseLink(assignment.id);
+
+          if (expenseLink.success && !expenseLink.expenseId) {
+            console.log('[TaskMaterialsList] No expense linked, showing delivery prompt');
+            setDeliveredMaterial(assignment);
+            setShowDeliveryPrompt(true);
+          } else if (expenseLink.success && expenseLink.expenseId) {
+            console.log('[TaskMaterialsList] Expense already linked, skipping prompt');
+          }
+        }
+
+        // Show toast after expense check completes
+        toast({
+          title: 'Status Updated',
+          description: `Material marked as ${newStatus}`,
+        });
+
+        // Refresh the list
+        if (onStatusUpdate) {
+          onStatusUpdate();
+        } else {
+          onQuantityUpdate(); // Fallback to existing refresh
+        }
+      } else {
+        console.error('[TaskMaterialsList] Failed to update status:', result.error);
+        toast({
+          title: 'Failed to Update Status',
+          description: result.error || 'An error occurred',
+          variant: 'destructive',
+        });
+      }
+
+      setUpdatingStatusId(null);
+    });
+  };
+
+  // Debug: Empty state (check both materials and tempMaterials)
+  const isEmpty = mode === 'edit'
+    ? materials.length === 0
+    : tempMaterials.length === 0;
+
+  if (isEmpty) {
     return (
       <div className="py-8 text-center">
         <Package className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-        <p className="text-sm font-semibold text-gray-900">No Materials Assigned</p>
+        <p className="text-sm font-semibold text-gray-900">
+          {mode === 'create' ? 'No Materials Selected' : 'No Materials Assigned'}
+        </p>
         <p className="text-xs text-gray-500 mt-1">
           Search and add materials from the "Search Products" tab
         </p>
@@ -184,10 +316,11 @@ export function TaskMaterialsList({
 
   return (
     <div className="space-y-3">
-      {/* Materials List */}
-      <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
-        <AnimatePresence mode="popLayout">
-          {materials.map((assignment, index) => {
+      {/* Materials List - Edit Mode */}
+      {mode === 'edit' && (
+        <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
+          <AnimatePresence mode="popLayout">
+            {materials.map((assignment, index) => {
             const statusConfig = PROCUREMENT_STATUS_CONFIG[assignment.procurement_status];
             const isRemoving = removingId === assignment.id;
             const isUpdating = updatingId === assignment.id;
@@ -227,13 +360,55 @@ export function TaskMaterialsList({
                       {formatCurrency(assignment.unit_cost)} / {assignment.material.unit_of_measure}
                     </span>
                     <span className="text-gray-300">|</span>
-                    <Badge
-                      variant="outline"
-                      className={cn('text-[10px] px-1.5 py-0 border', statusConfig.color)}
-                    >
-                      <span className={cn('w-1.5 h-1.5 rounded-full mr-1', statusConfig.dotColor)} />
-                      {statusConfig.label}
-                    </Badge>
+
+                    {/* Debug: Status Dropdown (Subtask 9.2) */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          disabled={isUpdating || isRemoving || updatingStatusId === assignment.id}
+                          className={cn(
+                            'flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] transition-colors',
+                            statusConfig.color,
+                            'hover:opacity-80 disabled:opacity-50'
+                          )}
+                        >
+                          <span className={cn('w-1.5 h-1.5 rounded-full', statusConfig.dotColor)} />
+                          {statusConfig.label}
+                          {updatingStatusId !== assignment.id && <ChevronDown className="h-3 w-3 ml-0.5" />}
+                          {updatingStatusId === assignment.id && <Loader2 className="h-3 w-3 ml-0.5 animate-spin" />}
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-[160px]">
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'needed')}>
+                          <span className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
+                          Need to Order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'ordered')}>
+                          <span className="w-2 h-2 rounded-full bg-construction-blue mr-2" />
+                          Ordered
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'delivered')}>
+                          <span className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
+                          Delivered
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'installed')}>
+                          <span className="w-2 h-2 rounded-full bg-construction-green mr-2" />
+                          Installed
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* Debug: Expense Linked Indicator (Subtask 9.4) */}
+                    {expenseLinks[assignment.id] && (
+                      <div
+                        className="flex items-center gap-0.5 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200"
+                        title="Expense created for this material"
+                      >
+                        <Receipt className="w-3 h-3" />
+                        <Check className="w-2.5 h-2.5" />
+                      </div>
+                    )}
                   </div>
 
                   {/* Quantity Controls & Total */}
@@ -327,7 +502,105 @@ export function TaskMaterialsList({
             );
           })}
         </AnimatePresence>
-      </div>
+        </div>
+      )}
+
+      {/* Materials List - Create Mode (Temporary) */}
+      {mode === 'create' && (
+        <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
+          <AnimatePresence mode="popLayout">
+            {tempMaterials.map((material, index) => {
+              return (
+                <motion.div
+                  key={material.product_id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ delay: index * 0.03 }}
+                  className="flex items-start gap-3 p-3 bg-emerald-50/50 border-2 border-emerald-200 rounded-lg hover:border-emerald-300 transition-all"
+                >
+                  {/* Material Image */}
+                  <div className="shrink-0 w-12 h-12 rounded-md border border-emerald-200 overflow-hidden bg-white flex items-center justify-center">
+                    {material.image_url ? (
+                      <img
+                        src={material.image_url}
+                        alt={material.product_name}
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <Package className="h-5 w-5 text-emerald-600" />
+                    )}
+                  </div>
+
+                  {/* Material Info */}
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    <h4 className="text-sm font-bold text-emerald-800 line-clamp-1">
+                      {material.product_name}
+                    </h4>
+                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                      <span className="text-emerald-700">
+                        {formatCurrency(material.price)} / {material.unit_of_measure}
+                      </span>
+                      <span className="text-emerald-300">|</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border bg-white/50 text-emerald-700 border-emerald-300">
+                        Will be added on save
+                      </Badge>
+                    </div>
+                    {material.sku && (
+                      <p className="text-[10px] text-emerald-600">SKU: {material.sku}</p>
+                    )}
+                  </div>
+
+                  {/* Quantity Controls */}
+                  <div className="shrink-0 flex flex-col items-end gap-2">
+                    {/* Quantity Control */}
+                    <div className="flex items-center gap-1 border-2 border-emerald-300 rounded-md bg-white">
+                      <button
+                        type="button"
+                        onClick={() => onTempMaterialQuantityChange?.(material.product_id, Math.max(1, material.quantity - 1))}
+                        disabled={material.quantity <= 1}
+                        className="p-1 hover:bg-emerald-50 disabled:opacity-50 rounded-l transition-colors"
+                      >
+                        <Minus className="h-3 w-3 text-emerald-700" />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={material.quantity}
+                        onChange={(e) => onTempMaterialQuantityChange?.(material.product_id, Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-10 h-6 text-center text-sm font-bold border-x-2 border-emerald-300 focus:outline-none focus:bg-emerald-50"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => onTempMaterialQuantityChange?.(material.product_id, material.quantity + 1)}
+                        className="p-1 hover:bg-emerald-50 rounded-r transition-colors"
+                      >
+                        <Plus className="h-3 w-3 text-emerald-700" />
+                      </button>
+                    </div>
+
+                    {/* Total */}
+                    <div className="text-xs font-bold text-emerald-800">
+                      {formatCurrency(material.price * material.quantity)}
+                    </div>
+
+                    {/* Remove Button */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onTempMaterialRemove?.(material.product_id)}
+                      className="h-6 px-2 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
 
       {/* Total Cost Summary */}
       <div className="flex items-center justify-between p-3 bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg">
@@ -339,6 +612,36 @@ export function TaskMaterialsList({
           {formatCurrency(totalCost)}
         </span>
       </div>
+
+      {/* Debug: Material Delivery Expense Prompt (Subtask 9.3) */}
+      <MaterialDeliveryPrompt
+        isOpen={showDeliveryPrompt}
+        onClose={() => {
+          console.log('[TaskMaterialsList] Closing delivery prompt');
+          setShowDeliveryPrompt(false);
+          setDeliveredMaterial(null);
+        }}
+        materialAssignment={deliveredMaterial}
+        taskId={taskId}
+        projectId={projectId}
+        onExpenseCreated={async () => {
+          console.log('[TaskMaterialsList] Expense created, refreshing data');
+          setShowDeliveryPrompt(false);
+          setDeliveredMaterial(null);
+
+          // Refresh expense links to show indicator
+          if (deliveredMaterial) {
+            setExpenseLinks(prev => ({ ...prev, [deliveredMaterial.id]: true }));
+          }
+
+          // Refresh the materials list
+          if (onStatusUpdate) {
+            onStatusUpdate();
+          } else {
+            onQuantityUpdate();
+          }
+        }}
+      />
     </div>
   );
 }

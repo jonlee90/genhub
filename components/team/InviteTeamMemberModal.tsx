@@ -3,14 +3,7 @@
 import { useState, useActionState, useEffect, useCallback } from 'react';
 import { inviteTeamMember } from '@/app/actions/team';
 import { Database } from '@/types/database.types';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, User, Shield, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Mail, User, Shield, CheckCircle2, XCircle, UserPlus } from 'lucide-react';
 
 type UserRole = Database['public']['Enums']['user_role'];
 
@@ -93,19 +86,16 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
   }, [onClose]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] bg-white border-2 border-gray-200 shadow-xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-[#001B51] flex items-center gap-2">
-            <div className="h-8 w-1 bg-[#001B51] rounded-full" />
-            Invite Team Member
-          </DialogTitle>
-          <DialogDescription className="text-gray-600 mt-2">
-            Send an invitation to a new team member. They will receive an email with instructions to join your company.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form action={formAction} className="space-y-6 mt-4">
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      icon={UserPlus}
+      title="Invite Team Member"
+      subtitle="Send an invitation to a new team member. They will receive an email with instructions to join your company."
+      maxWidth="2xl"
+      showFooter={false}
+    >
+      <form action={formAction} className="space-y-6">
           {/* Success Message */}
           {state?.success && (
             <Alert className="bg-green-50 border-2 border-green-300 text-green-900">
@@ -229,7 +219,7 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -242,7 +232,7 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
             <Button
               type="submit"
               disabled={isPending || state?.success}
-              className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50"
+              className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50"
             >
               {isPending ? (
                 <>
@@ -258,9 +248,8 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
                 'Send Invitation'
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </BaseModal>
   );
 }

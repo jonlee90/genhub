@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,7 +27,7 @@ interface Expense {
   project: {
     id: string;
     name: string;
-  };
+  } | null;
   task?: {
     id: string;
     title: string;
@@ -171,22 +171,59 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
   };
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-black text-construction-blue flex items-center gap-2">
-              <Receipt className="h-6 w-6" />
-              Expense Details
-            </DialogTitle>
-            <Badge className={cn('font-semibold border-2 px-3 py-2', statusConfig.color)}>
-              <StatusIcon className="h-4 w-4 mr-1" />
-              {statusConfig.label}
-            </Badge>
-          </div>
-        </DialogHeader>
-
-        <div className="space-y-6">
+    <BaseModal
+      isOpen={true}
+      onClose={onClose}
+      icon={Receipt}
+      title="Expense Details"
+      badges={
+        <Badge className={cn('font-semibold border-2 px-3 py-2', statusConfig.color)}>
+          <StatusIcon className="h-4 w-4 mr-1" />
+          {statusConfig.label}
+        </Badge>
+      }
+      theme="default"
+      maxWidth="4xl"
+      leftActions={
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          {canDelete && !showDeleteConfirm && !showReviewForm && (
+            <Button
+              onClick={() => setShowDeleteConfirm(true)}
+              variant="outline"
+              className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          )}
+        </>
+      }
+      rightActions={
+        canReview && !showReviewForm && !showDeleteConfirm ? (
+          <>
+            <Button
+              onClick={() => handleReview('reject')}
+              variant="outline"
+              className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+            >
+              <XCircle className="h-4 w-4 mr-2" />
+              Reject
+            </Button>
+            <Button
+              onClick={() => handleReview('approve')}
+              className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+            >
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Approve
+            </Button>
+          </>
+        ) : undefined
+      }
+    >
+      <div className="space-y-6">
           {/* Receipt Image */}
           {expense.receipt_url && (
             <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
@@ -241,7 +278,7 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
 
               <div>
                 <Label className="text-sm font-bold text-gray-600">Project</Label>
-                <p className="text-base font-semibold text-gray-900 mt-1">{expense.project.name}</p>
+                <p className="text-base font-semibold text-gray-900 mt-1">{expense.project?.name || 'N/A'}</p>
               </div>
 
               {expense.task && (
@@ -424,46 +461,7 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
             </motion.div>
           )}
 
-          {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t-2 border-gray-200">
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={onClose}>
-                Close
-              </Button>
-              {canDelete && !showDeleteConfirm && !showReviewForm && (
-                <Button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  variant="outline"
-                  className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              )}
-            </div>
-
-            {canReview && !showReviewForm && !showDeleteConfirm && (
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handleReview('reject')}
-                  variant="outline"
-                  className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Reject
-                </Button>
-                <Button
-                  onClick={() => handleReview('approve')}
-                  className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Approve
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </BaseModal>
   );
 }

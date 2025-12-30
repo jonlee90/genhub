@@ -69,13 +69,6 @@ export function TaskTypeSelector({
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="text-center space-y-1">
-        <h3 className="text-lg font-semibold text-foreground">Select Task Type</h3>
-        <p className="text-sm text-muted-foreground">
-          Choose the type of task you want to create
-        </p>
-      </div>
 
       {/* Task Type Cards Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">

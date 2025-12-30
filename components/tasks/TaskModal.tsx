@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import React, { useState, useTransition, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X,
   ClipboardList,
   Pencil,
   Loader2,
@@ -40,11 +39,16 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { createTask, updateTask, updateApprovalStatus } from '@/app/actions/tasks';
-import { TaskMaterialsManager } from './TaskMaterialsManager';
-import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { TaskMaterialsManager, type TempMaterial } from './TaskMaterialsManager';
 import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
+import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
+import { TaskExpensesSection, type TaskExpense } from './TaskExpensesSection';
+import { getTaskExpenses } from '@/app/actions/expenses';
+import { addProductToTask } from '@/app/actions/materials';
+import { BaseModal } from '@/components/ui/BaseModal';
 import type { Database } from '@/types/database.types';
+import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
 type TaskType = Database['public']['Enums']['task_type'];
 type ApprovalStatus = Database['public']['Enums']['approval_status'];
@@ -78,8 +82,8 @@ interface Project {
   id: string;
   name: string;
   status?: string;
-  health_score?: number;
-  completion_percentage?: number;
+  health_score?: number | null;
+  completion_percentage?: number | null;
   project_phases?: Array<{
     id: string;
     name: string;
@@ -104,6 +108,7 @@ interface TaskModalProps {
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   onSuccess?: () => void;
+  tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
 }
 
 // Priority color configuration for dynamic theming
@@ -159,6 +164,21 @@ const getTheme = (mode: 'create' | 'edit', priority: string) => {
   return PRIORITY_CONFIG[priority as PriorityKey] || DEFAULT_THEME;
 };
 
+// Helper to map priority to BaseModal theme name
+const getPriorityTheme = (priority?: string): 'low' | 'medium' | 'high' | 'default' => {
+  if (!priority) return 'default';
+  switch (priority) {
+    case 'low':
+      return 'low';
+    case 'medium':
+      return 'medium';
+    case 'high':
+      return 'high';
+    default:
+      return 'default';
+  }
+};
+
 // Inner form component that gets remounted when task changes via key prop
 function TaskModalForm({
   mode,
@@ -169,11 +189,19 @@ function TaskModalForm({
   preselectedPhaseId,
   onClose,
   onSuccess,
+  tasks = [], // Default to empty array
 }: Omit<TaskModalProps, 'isOpen'>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Debug: Expense state for TaskExpensesSection (Subtask 5.2)
+  const [expenses, setExpenses] = useState<TaskExpense[]>([]);
+  const [expensesLoading, setExpensesLoading] = useState(false);
+
+  // Debug: Temporary materials for create mode (will be associated after task creation)
+  const [tempMaterials, setTempMaterials] = useState<TempMaterial[]>([]);
 
   // DEBUG: Log modal rendering
   console.log('[TaskModalForm] Rendering in mode:', mode, {
@@ -192,6 +220,16 @@ function TaskModalForm({
     if (mode === 'edit' && task) return task.task_type;
     return null;
   });
+
+  // DEBUG: Get field visibility config based on task type and mode
+  const config = useMemo(() => {
+    const cfg = getTaskTypeConfig(taskType);
+    console.log('[TaskModalForm] Field config for task type:', taskType, {
+      mode,
+      config: cfg,
+    });
+    return cfg;
+  }, [taskType, mode]);
 
   // Approval workflow state
   const [approvalNotes, setApprovalNotes] = useState('');
@@ -217,9 +255,11 @@ function TaskModalForm({
   });
   const [priority, setPriority] = useState<string>(() => {
     if (mode === 'edit' && task) return task.priority;
-    // Admin tasks default to low priority
-    if (taskType === 'admin') return 'low';
-    return 'medium';
+    // Use config defaults for priority
+    const cfg = getTaskTypeConfig(taskType);
+    const defaultPriority = cfg.defaults.priority || 'medium';
+    console.log('[TaskModalForm] Setting default priority for taskType:', taskType, 'to', defaultPriority);
+    return defaultPriority;
   });
   const [phaseId, setPhaseId] = useState(() => {
     if (mode === 'edit' && task) return task.phase_id || 'none';
@@ -227,6 +267,13 @@ function TaskModalForm({
   });
   const [startDate, setStartDate] = useState(() => {
     if (mode === 'edit' && task && task.start_date) return task.start_date.split('T')[0];
+    // Use config defaults for start date
+    const cfg = getTaskTypeConfig(taskType);
+    if (cfg.defaults.startDate === 'today') {
+      const today = new Date().toISOString().split('T')[0];
+      console.log('[TaskModalForm] Setting default start date to today:', today);
+      return today;
+    }
     return '';
   });
   const [dueDate, setDueDate] = useState(() => {
@@ -248,6 +295,53 @@ function TaskModalForm({
   // Get phases for selected project
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const phases = selectedProject?.project_phases || [];
+
+  // Debug: Fetch expenses for task (Subtask 5.2)
+  const fetchExpenses = async () => {
+    if (!task?.id) {
+      console.log('[TaskModalForm] No task ID, skipping expense fetch');
+      return;
+    }
+
+    console.log('[TaskModalForm] Fetching expenses for task:', task.id);
+    setExpensesLoading(true);
+
+    try {
+      const result = await getTaskExpenses(task.id);
+      if (result.success && result.data) {
+        setExpenses(result.data);
+        console.log('[TaskModalForm] Loaded expenses:', result.data.length);
+      } else {
+        console.error('[TaskModalForm] Failed to load expenses:', result.error);
+        setExpenses([]);
+      }
+    } catch (error) {
+      console.error('[TaskModalForm] Error fetching expenses:', error);
+      setExpenses([]);
+    } finally {
+      setExpensesLoading(false);
+    }
+  };
+
+  // Debug: Fetch expenses when modal opens in edit mode (Subtask 5.2)
+  // fetchExpenses is excluded from deps as it's a stable function reference
+  // task.id and mode changes trigger refetch when modal opens in edit mode
+  useEffect(() => {
+    if (task?.id && mode === 'edit') {
+      console.log('[TaskModalForm] Modal opened in edit mode, fetching expenses');
+      fetchExpenses();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [task?.id, mode]);
+
+  // Debug: Callback for expense added (Subtask 5.4)
+  // CRITICAL: Only refresh expenses, do NOT call onSuccess (which closes the modal)
+  const handleExpenseAdded = async () => {
+    console.log('[TaskModalForm] Expense added successfully, refreshing expense list');
+    await fetchExpenses();
+    // NOTE: Do NOT call onSuccess() here - that would close the TaskModal
+    // We only want to refresh the expense list so user can see the new expense
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -292,6 +386,46 @@ function TaskModalForm({
         if (result?.error) {
           setError(result.error);
         } else {
+          // Debug: If creating task with temp materials, associate them now
+          if (mode === 'create' && result?.task && tempMaterials.length > 0) {
+            console.log('[TaskModalForm] Task created, associating', tempMaterials.length, 'temp materials');
+
+            try {
+              // Associate all temp materials with the newly created task
+              const materialPromises = tempMaterials.map(async (tempMaterial) => {
+                const product: HomeDepotProduct = {
+                  id: tempMaterial.product_id,
+                  name: tempMaterial.product_name,
+                  sku: tempMaterial.sku,
+                  category: tempMaterial.category,
+                  price: tempMaterial.price,
+                  unitOfMeasure: tempMaterial.unit_of_measure,
+                  imageUrl: tempMaterial.image_url || '',
+                  stockStatus: (tempMaterial.stock_status as HomeDepotProduct['stockStatus']) || 'in_stock',
+                  description: '',
+                  manufacturer: '',
+                  productUrl: '',
+                  leadTimeDays: 0,
+                  specifications: {},
+                };
+
+                return addProductToTask(
+                  product,
+                  result.task.id,
+                  result.task.project_id,
+                  tempMaterial.quantity
+                );
+              });
+
+              await Promise.all(materialPromises);
+              console.log('[TaskModalForm] All temp materials associated successfully');
+            } catch (materialError) {
+              console.error('[TaskModalForm] Error associating materials:', materialError);
+              // Don't fail the task creation, just log the error
+              // Materials can be added manually after
+            }
+          }
+
           setSuccess(true);
           setTimeout(() => {
             onSuccess?.();
@@ -338,12 +472,6 @@ function TaskModalForm({
     }
   };
 
-  // Helper to determine if cost fields should be shown based on task type
-  const shouldShowCostFields = taskType !== 'approval';
-
-  // Helper to determine if materials section should be emphasized
-  const shouldEmphasizeMaterials = taskType === 'purchase';
-
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -353,90 +481,163 @@ function TaskModalForm({
       .slice(0, 2);
   };
 
-  return (
-    <div className="relative bg-white rounded-2xl shadow-2xl overflow-hidden">
-      {/* Top accent - uses priority color in edit mode */}
-      <div className={cn('h-1.5 bg-gradient-to-r', theme.gradient)} />
-
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-100">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <div className={cn(
-              'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg',
-              theme.iconBg
-            )}>
-              {mode === 'create' ? (
-                <ClipboardList className="w-6 h-6 text-white" />
-              ) : (
-                <Pencil className="w-6 h-6 text-white" />
-              )}
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {mode === 'create'
-                    ? (currentStep === 1 ? 'Select Task Type' : 'Create New Task')
-                    : 'Edit Task'
-                  }
-                </h2>
-                {/* Show TaskTypeBadge in edit mode */}
-                {mode === 'edit' && task?.task_type && (
-                  <TaskTypeBadge type={task.task_type} />
-                )}
-              </div>
-              <p className="text-sm text-gray-500 mt-0.5">
-                {mode === 'create'
-                  ? (currentStep === 1
-                      ? 'Choose the type of task you want to create'
-                      : `Creating a ${taskType ? getTaskTypeInfo(taskType).label : ''} task`
-                    )
-                  : 'Update task details and assignments'
-                }
-              </p>
-            </div>
-          </div>
-
+  // Render Step 1: Task Type Selection (Create mode only)
+  if (mode === 'create' && currentStep === 1) {
+    return (
+      <BaseModal
+        isOpen={true}
+        onClose={onClose}
+        icon={ClipboardList}
+        title="Select Task Type"
+        subtitle="Choose the type of task you want to create"
+        theme="default"
+        maxWidth="2xl"
+        rightActions={
           <Button
-            onClick={onClose}
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10 rounded-xl hover:bg-gray-100"
+            type="button"
+            disabled={!taskType}
+            onClick={() => {
+              console.log('[TaskModalForm] Moving to step 2 with taskType:', taskType);
+              setCurrentStep(2);
+            }}
+            className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            Next
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-        </div>
+        }
+      >
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          transition={{ duration: 0.2 }}
+        >
+          <TaskTypeSelector
+            selectedType={taskType}
+            onSelect={(type) => {
+              console.log('[TaskModalForm] Task type selected:', type);
+              setTaskType(type);
 
-        {/* Step indicator for create mode */}
-        {mode === 'create' && (
-          <div className="flex items-center gap-2 mt-4">
-            <div className={cn(
-              'flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold transition-colors',
-              currentStep >= 1
-                ? 'bg-construction-blue text-white'
-                : 'bg-gray-200 text-gray-500'
-            )}>
-              1
-            </div>
-            <div className={cn(
-              'flex-1 h-1 rounded-full transition-colors',
-              currentStep >= 2 ? 'bg-construction-blue' : 'bg-gray-200'
-            )} />
-            <div className={cn(
-              'flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold transition-colors',
-              currentStep >= 2
-                ? 'bg-construction-blue text-white'
-                : 'bg-gray-200 text-gray-500'
-            )}>
-              2
-            </div>
-          </div>
-        )}
-      </div>
+              // Apply task type defaults (Subtask 2.6)
+              const cfg = getTaskTypeConfig(type);
+              console.log('[TaskModalForm] Applying defaults for type:', type, cfg.defaults);
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        <div className="px-6 py-5 max-h-[calc(100vh-280px)] overflow-y-auto space-y-5">
+              // Apply default priority
+              if (cfg.defaults.priority) {
+                setPriority(cfg.defaults.priority);
+                console.log('[TaskModalForm] Set priority to:', cfg.defaults.priority);
+              }
+
+              // Apply default start date
+              if (cfg.defaults.startDate === 'today') {
+                const today = new Date().toISOString().split('T')[0];
+                setStartDate(today);
+                console.log('[TaskModalForm] Set start date to today:', today);
+              }
+            }}
+            disabled={isPending}
+          />
+        </motion.div>
+      </BaseModal>
+    );
+  }
+
+  // Render Step 2 (Create mode) or Edit mode
+  const modalIcon = mode === 'create' ? ClipboardList : Pencil;
+  const modalTitle = mode === 'create' ? 'Create New Task' : 'Edit Task';
+  const modalSubtitle = mode === 'create'
+    ? `Creating a ${taskType ? getTaskTypeInfo(taskType).label : ''} task`
+    : 'Update task details and assignments';
+
+  // Get task type badge for header
+  const headerBadges = (
+    <>
+      {task?.task_type && <TaskTypeBadge type={task.task_type} />}
+      {/* Show Approval Status Badge for approval tasks (Subtask 2.10) */}
+      {mode === 'edit' && task?.task_type === 'approval' && task.approval_status && config.styling.headerBadge === 'approval_status' && (
+        <span className={cn(
+          'px-2.5 py-1 rounded-full text-xs font-semibold',
+          task.approval_status === 'pending' && 'bg-amber-100 text-amber-800',
+          task.approval_status === 'approved' && 'bg-emerald-100 text-emerald-800',
+          task.approval_status === 'rejected' && 'bg-red-100 text-red-800',
+          task.approval_status === 'revision_requested' && 'bg-orange-100 text-orange-800'
+        )}>
+          {task.approval_status.replace('_', ' ').toUpperCase()}
+        </span>
+      )}
+    </>
+  );
+
+  return (
+    <BaseModal
+      isOpen={true}
+      onClose={onClose}
+      icon={modalIcon}
+      title={modalTitle}
+      subtitle={modalSubtitle}
+      badges={mode === 'edit' ? headerBadges : (taskType ? <TaskTypeBadge type={taskType} /> : undefined)}
+      theme={mode === 'edit' ? getPriorityTheme(task?.priority) : 'default'}
+      maxWidth="2xl"
+      formKey={mode === 'edit' && task ? `edit-${task.id}` : 'create'}
+      leftActions={
+        mode === 'create' ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              console.log('[TaskModalForm] Going back to step 1');
+              setCurrentStep(1);
+            }}
+            disabled={isPending}
+            className="h-10 px-4"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        ) : task?.creator ? (
+          <CreatorBadge
+            creatorName={task.creator.name}
+            createdAt={task.created_at}
+            variant="default"
+          />
+        ) : null
+      }
+      rightActions={
+        <Button
+          type="submit"
+          form="task-form"
+          disabled={isPending || !selectedProjectId || !title.trim()}
+          className={cn(
+            'h-10 px-6 font-semibold text-white',
+            theme.button
+          )}
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {mode === 'create' ? 'Creating...' : 'Saving...'}
+            </>
+          ) : (
+            <>
+              {mode === 'create' ? (
+                <>
+                  <ClipboardList className="mr-2 h-4 w-4" />
+                  Create Task
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
+            </>
+          )}
+        </Button>
+      }
+    >
+      <form id="task-form" onSubmit={handleSubmit}>
+        <div className="space-y-5">
 
           {/* Error/Success Messages */}
           <AnimatePresence mode="wait">
@@ -479,9 +680,22 @@ function TaskModalForm({
                 onSelect={(type) => {
                   console.log('[TaskModalForm] Task type selected:', type);
                   setTaskType(type);
-                  // Set default priority for admin tasks
-                  if (type === 'admin') {
-                    setPriority('low');
+
+                  // Apply task type defaults (Subtask 2.6)
+                  const cfg = getTaskTypeConfig(type);
+                  console.log('[TaskModalForm] Applying defaults for type:', type, cfg.defaults);
+
+                  // Apply default priority
+                  if (cfg.defaults.priority) {
+                    setPriority(cfg.defaults.priority);
+                    console.log('[TaskModalForm] Set priority to:', cfg.defaults.priority);
+                  }
+
+                  // Apply default start date
+                  if (cfg.defaults.startDate === 'today') {
+                    const today = new Date().toISOString().split('T')[0];
+                    setStartDate(today);
+                    console.log('[TaskModalForm] Set start date to today:', today);
                   }
                 }}
                 disabled={isPending}
@@ -489,17 +703,16 @@ function TaskModalForm({
             </motion.div>
           )}
 
-          {/* Step 2: Form Fields (or Edit mode) */}
-          {(mode === 'edit' || currentStep === 2) && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              {/* Approval Status Section - Only for approval-type tasks in edit mode */}
-              {mode === 'edit' && task?.task_type === 'approval' && (
+          {/* Form Fields (Step 2 or Edit mode) */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-5"
+          >
+              {/* Approval Status Section - Conditional rendering based on task type (Subtask 2.9) */}
+              {isFieldVisible(taskType, 'approvalWorkflow', mode) && task && (
                 <div className="p-4 rounded-xl border-2 border-amber-200 bg-amber-50">
                   <div className="flex items-center gap-2 mb-3">
                     <ClipboardList className="w-5 h-5 text-amber-600" />
@@ -622,8 +835,11 @@ function TaskModalForm({
             />
           </div>
 
-          {/* Project & Phase Row */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Project & Phase Row - Phase conditional (Subtask 2.2) */}
+          <div className={cn(
+            'grid gap-4',
+            isFieldVisible(taskType, 'phase', mode) ? 'grid-cols-2' : 'grid-cols-1'
+          )}>
             <div className="space-y-2">
               <Label htmlFor="project" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <FolderOpen className="h-4 w-4 text-gray-400" />
@@ -647,31 +863,34 @@ function TaskModalForm({
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phase" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Layers className="h-4 w-4 text-gray-400" />
-                Phase
-              </Label>
-              <Select
-                value={phaseId}
-                onValueChange={setPhaseId}
-                disabled={isPending || !selectedProjectId}
-              >
-                <SelectTrigger id="phase" className="h-11 border-gray-200">
-                  <SelectValue placeholder="Select phase" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">No phase</SelectItem>
-                  {phases
-                    .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
-                    .map((phase) => (
-                      <SelectItem key={phase.id} value={phase.id}>
-                        {phase.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Phase field - Hidden for admin tasks (Subtask 2.2) */}
+            {isFieldVisible(taskType, 'phase', mode) && (
+              <div className="space-y-2">
+                <Label htmlFor="phase" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-gray-400" />
+                  Phase
+                </Label>
+                <Select
+                  value={phaseId}
+                  onValueChange={setPhaseId}
+                  disabled={isPending || !selectedProjectId}
+                >
+                  <SelectTrigger id="phase" className="h-11 border-gray-200">
+                    <SelectValue placeholder="Select phase" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No phase</SelectItem>
+                    {phases
+                      .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                      .map((phase) => (
+                        <SelectItem key={phase.id} value={phase.id}>
+                          {phase.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {/* Assignee & Priority Row */}
@@ -737,28 +956,34 @@ function TaskModalForm({
             </div>
           </div>
 
-          {/* Date Range Row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-400" />
-                Start Date
-              </Label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => {
-                  const newStartDate = e.target.value;
-                  setStartDate(newStartDate);
-                  // If start date is after due date, update due date to match
-                  if (dueDate && newStartDate > dueDate) {
-                    setDueDate(newStartDate);
-                  }
-                }}
-                disabled={isPending}
-                className="h-11 border-gray-200"
-              />
-            </div>
+          {/* Date Range Row - Start Date conditional (Subtask 2.3) */}
+          <div className={cn(
+            'grid gap-4',
+            isFieldVisible(taskType, 'startDate', mode) ? 'grid-cols-2' : 'grid-cols-1'
+          )}>
+            {/* Start Date - Hidden for admin tasks (Subtask 2.3) */}
+            {isFieldVisible(taskType, 'startDate', mode) && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  Start Date
+                </Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    const newStartDate = e.target.value;
+                    setStartDate(newStartDate);
+                    // If start date is after due date, update due date to match
+                    if (dueDate && newStartDate > dueDate) {
+                      setDueDate(newStartDate);
+                    }
+                  }}
+                  disabled={isPending}
+                  className="h-11 border-gray-200"
+                />
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
@@ -776,13 +1001,17 @@ function TaskModalForm({
             </div>
           </div>
 
-          {/* Costs Row - Hidden for approval-type tasks */}
-          {shouldShowCostFields && (
-            <div className={cn('grid gap-4', mode === 'edit' ? 'grid-cols-2' : 'grid-cols-1')}>
+          {/* Costs Row - Conditional rendering and dynamic labels (Subtasks 2.4, 2.5) */}
+          {isFieldVisible(taskType, 'plannedCost', mode) && (
+            <div className={cn(
+              'grid gap-4',
+              isFieldVisible(taskType, 'actualCost', mode) ? 'grid-cols-2' : 'grid-cols-1'
+            )}>
+              {/* Planned Cost with dynamic label (Subtask 2.5) */}
               <div className="space-y-2">
                 <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-gray-400" />
-                  {taskType === 'purchase' ? 'Budget' : 'Planned Cost'}
+                  {config.labels.plannedCost}
                 </Label>
                 <Input
                   type="number"
@@ -799,7 +1028,8 @@ function TaskModalForm({
                 />
               </div>
 
-              {mode === 'edit' && (
+              {/* Actual Cost - Edit mode only (Subtask 2.4) */}
+              {isFieldVisible(taskType, 'actualCost', mode) && (
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <DollarSign className={cn('h-4 w-4', theme.iconColor)} />
@@ -820,38 +1050,17 @@ function TaskModalForm({
             </div>
           )}
 
-              {/* Materials Section - Full management with search and edit */}
-              {/* Emphasized for purchase tasks, hidden for admin tasks (minimal fields) */}
-              {taskType !== 'admin' && (
-                <div className={cn(
-                  'space-y-3',
-                  shouldEmphasizeMaterials && 'p-4 rounded-xl border-2 border-emerald-200 bg-emerald-50/50'
-                )}>
-                  <div className={cn(
-                    'flex items-center gap-2 pb-2',
-                    shouldEmphasizeMaterials ? 'border-b border-emerald-200' : 'border-b border-gray-200'
-                  )}>
-                    <Package className={cn(
-                      'h-4 w-4',
-                      shouldEmphasizeMaterials ? 'text-emerald-600' : 'text-construction-blue'
-                    )} />
-                    <h3 className={cn(
-                      'text-sm font-bold',
-                      shouldEmphasizeMaterials ? 'text-emerald-800' : 'text-gray-900'
-                    )}>
+              {/* Materials Section - Conditional rendering with emphasis (Subtasks 2.7, 2.8) */}
+              {isFieldVisible(taskType, 'materialsSection', mode) && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+                    <Package className="h-4 w-4 text-construction-blue" />
+                    <h3 className="text-sm font-bold text-gray-900">
                       Materials
-                      {shouldEmphasizeMaterials && (
-                        <span className="ml-2 text-xs font-normal text-emerald-600">
-                          (Required for Purchase Tasks)
-                        </span>
-                      )}
                     </h3>
-                    <p className={cn(
-                      'text-xs ml-auto',
-                      shouldEmphasizeMaterials ? 'text-emerald-600' : 'text-gray-500'
-                    )}>
+                    <p className="text-xs ml-auto text-gray-500">
                       {mode === 'create'
-                        ? 'Add materials after creating task'
+                        ? `${tempMaterials.length} material${tempMaterials.length !== 1 ? 's' : ''} selected`
                         : 'Search & manage task materials'}
                     </p>
                   </div>
@@ -859,129 +1068,42 @@ function TaskModalForm({
                     taskId={task?.id}
                     projectId={selectedProjectId}
                     mode={mode}
+                    tempMaterials={tempMaterials}
+                    onTempMaterialsChange={setTempMaterials}
                   />
                 </div>
               )}
-            </motion.div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-          {/* Creator Badge - Only show in edit mode */}
-          {mode === 'edit' && task ? (
-            <CreatorBadge
-              creatorName={task.creator?.name || 'Unknown User'}
-              createdAt={task.created_at}
-              variant="default"
-            />
-          ) : mode === 'create' && currentStep === 2 && taskType ? (
-            // Show selected type badge in step 2
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Task Type:</span>
-              <TaskTypeBadge type={taskType} />
-            </div>
-          ) : (
-            <div></div>
-          )}
-          <div className="flex items-center gap-3">
-            {/* Step 1: Cancel and Next buttons */}
-            {mode === 'create' && currentStep === 1 && (
-              <>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={isPending}
-                  className="h-10 px-5"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="button"
-                  disabled={!taskType}
-                  onClick={() => {
-                    console.log('[TaskModalForm] Moving to step 2 with taskType:', taskType);
-                    setCurrentStep(2);
-                  }}
-                  className={cn(
-                    'h-10 px-6 font-semibold text-white',
-                    theme.button
-                  )}
-                >
-                  Next
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </>
-            )}
-
-            {/* Step 2 or Edit mode: Back (create only), Cancel, and Submit buttons */}
-            {(mode === 'edit' || currentStep === 2) && (
-              <>
-                {mode === 'create' && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      console.log('[TaskModalForm] Going back to step 1');
-                      setCurrentStep(1);
-                    }}
-                    disabled={isPending}
-                    className="h-10 px-4"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={isPending}
-                  className="h-10 px-5"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isPending || !selectedProjectId || !title.trim()}
-                  className={cn(
-                    'h-10 px-6 font-semibold text-white',
-                    theme.button
-                  )}
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {mode === 'create' ? 'Creating...' : 'Saving...'}
-                    </>
+              {/* Expenses Section - Conditional rendering (Subtask 5.1) */}
+              {isFieldVisible(taskType, 'expensesSection', mode) && mode === 'edit' && task && (
+                <div className="space-y-2">
+                  {expensesLoading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-[#001B51]" />
+                    </div>
                   ) : (
-                    <>
-                      {mode === 'create' ? (
-                        <>
-                          <ClipboardList className="mr-2 h-4 w-4" />
-                          Create Task
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Save Changes
-                        </>
-                      )}
-                    </>
+                    <TaskExpensesSection
+                      taskId={task.id}
+                      taskTitle={task.title}
+                      projectId={task.project_id}
+                      projectName={projects.find(p => p.id === task.project_id)?.name || ''}
+                      expenses={expenses}
+                      projects={projects}
+                      tasks={tasks}
+                      onExpenseAdded={handleExpenseAdded}
+                    />
                   )}
-                </Button>
-              </>
-            )}
-          </div>
+                </div>
+              )}
+          </motion.div>
         </div>
       </form>
-    </div>
+    </BaseModal>
   );
 }
 
-// Main modal component - handles open/close and remounts form on task change
-// Debug: Uses BottomSheet behavior on mobile, centered modal on desktop
+// Main modal component - handles open/close and passes props to form
+// BaseModal now handles responsive behavior (bottom sheet on mobile, centered on desktop)
 export function TaskModal({
   isOpen,
   onClose,
@@ -992,91 +1114,34 @@ export function TaskModal({
   preselectedProjectId,
   preselectedPhaseId,
   onSuccess,
+  tasks = [], // Default to empty array
 }: TaskModalProps) {
   // Generate a unique key for the form based on mode and task ID
   // This forces React to remount the form component with fresh state
   const formKey = mode === 'edit' && task ? `edit-${task.id}` : 'create';
 
-  // Debug: Detect mobile for bottom sheet behavior
-  const isMobile = useMediaQuery('(max-width: 767px)');
+  // DEBUG: Log modal state
+  console.log('[TaskModal] Rendering modal:', {
+    isOpen,
+    mode,
+    taskId: task?.id,
+    formKey,
+  });
+
+  if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
-          />
-
-          {/* Debug: Mobile - Bottom Sheet behavior */}
-          {isMobile ? (
-            <motion.div
-              className="fixed inset-x-0 bottom-0 z-50"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              style={{
-                paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-              }}
-            >
-              <div
-                className="relative bg-white rounded-t-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Debug: Drag handle indicator */}
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="w-10 h-1 rounded-full bg-gray-300" />
-                </div>
-
-                {/* Key forces remount when switching between tasks */}
-                <TaskModalForm
-                  key={formKey}
-                  mode={mode}
-                  task={task}
-                  projects={projects}
-                  teamMembers={teamMembers}
-                  preselectedProjectId={preselectedProjectId}
-                  preselectedPhaseId={preselectedPhaseId}
-                  onClose={onClose}
-                  onSuccess={onSuccess}
-                />
-              </div>
-            </motion.div>
-          ) : (
-            /* Debug: Desktop - Centered Modal behavior */
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="relative w-full max-w-2xl pointer-events-auto"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Key forces remount when switching between tasks */}
-                <TaskModalForm
-                  key={formKey}
-                  mode={mode}
-                  task={task}
-                  projects={projects}
-                  teamMembers={teamMembers}
-                  preselectedProjectId={preselectedProjectId}
-                  preselectedPhaseId={preselectedPhaseId}
-                  onClose={onClose}
-                  onSuccess={onSuccess}
-                />
-              </motion.div>
-            </div>
-          )}
-        </>
-      )}
-    </AnimatePresence>
+    <TaskModalForm
+      key={formKey}
+      mode={mode}
+      task={task}
+      projects={projects}
+      teamMembers={teamMembers}
+      preselectedProjectId={preselectedProjectId}
+      preselectedPhaseId={preselectedPhaseId}
+      onClose={onClose}
+      onSuccess={onSuccess}
+      tasks={tasks}
+    />
   );
 }

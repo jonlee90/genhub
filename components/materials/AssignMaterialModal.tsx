@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ interface Project {
 interface Task {
   id: string;
   title: string;
-  phase_id: string;
+  phase_id: string | null;
 }
 
 interface Phase {
@@ -221,16 +221,35 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
   };
 
   return (
-    <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-black text-construction-blue flex items-center gap-2">
-            <Package className="h-6 w-6" />
-            Assign Material to Task
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-6">
+    <BaseModal
+      isOpen={true}
+      onClose={onClose}
+      icon={Package}
+      title="Assign Material to Task"
+      maxWidth="2xl"
+      leftActions={
+        <Button variant="outline" onClick={onClose} disabled={isPending}>
+          Cancel
+        </Button>
+      }
+      rightActions={
+        <Button
+          onClick={handleAssign}
+          disabled={isPending || !selectedProject || !selectedTask || selectedTask === '_empty' || !quantity || parseFloat(quantity) <= 0}
+          className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Assigning...
+            </>
+          ) : (
+            'Assign Material'
+          )}
+        </Button>
+      }
+    >
+      <div className="space-y-6">
           {/* Product Summary */}
           <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
             <h3 className="font-bold text-construction-blue mb-2">{product.name}</h3>
@@ -381,29 +400,7 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
               </div>
             )}
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
-            <Button variant="outline" onClick={onClose} disabled={isPending}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssign}
-              disabled={isPending || !selectedProject || !selectedTask || selectedTask === '_empty' || !quantity || parseFloat(quantity) <= 0}
-              className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Assigning...
-                </>
-              ) : (
-                'Assign Material'
-              )}
-            </Button>
-          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </BaseModal>
   );
 }

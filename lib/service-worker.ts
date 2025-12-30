@@ -10,6 +10,8 @@
  * @module lib/service-worker
  */
 
+import React from 'react';
+
 export type ServiceWorkerStatus =
   | 'unsupported'
   | 'registering'
@@ -251,7 +253,8 @@ export async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegis
   }
 
   try {
-    return await navigator.serviceWorker.getRegistration();
+    const registration = await navigator.serviceWorker.getRegistration();
+    return registration || null;
   } catch (error) {
     console.error('[SW] Failed to get registration:', error);
     return null;

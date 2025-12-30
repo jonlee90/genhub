@@ -88,7 +88,7 @@ export async function BillingInfo() {
 	}
 
 	const { data: userData, error: userError } = await supabase
-		.from('users')
+		.from('user_profiles')
 		.select('*')
 		.eq('id', userId)
 		.single();
@@ -214,12 +214,12 @@ export async function BillingInfo() {
 				</div>
 			</div>
 
-			{userData.image && (
+			{userData.avatar_url && (
 				<div>
 					<h2 className="text-xl font-semibold mb-4">Profile Image</h2>
-					{userData.image ? (
+					{userData.avatar_url ? (
 						<img
-							src={userData.image}
+							src={userData.avatar_url}
 							alt="User avatar"
 							className="w-20 h-20 rounded-full"
 						/>

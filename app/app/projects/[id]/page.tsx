@@ -82,6 +82,8 @@ async function getProjectData(id: string) {
         description,
         status,
         priority,
+        task_type,
+        approval_status,
         phase_id,
         assignee_id,
         start_date,
@@ -90,6 +92,7 @@ async function getProjectData(id: string) {
         actual_cost,
         project_id,
         blocked_reason,
+        created_by,
         created_at
       )
     `)
@@ -254,7 +257,39 @@ async function getProjectData(id: string) {
     };
   });
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies };
+  // Fetch expense stats for this project
+  const { data: expenses, error: expensesError } = await supabase
+    .from('expenses')
+    .select('id, amount, status')
+    .eq('project_id', id);
+
+  // Fix H2: Add error handling for expense query
+  if (expensesError) {
+    console.error('[getProjectData] Error fetching expenses:', expensesError);
+  }
+
+  // Fix C3: Safe default for null expenses (already handled)
+  const projectExpenses = expenses || [];
+  const expenseStats = {
+    total: projectExpenses.length,
+    approved: projectExpenses.filter(e => e.status === 'approved').length,
+    pending: projectExpenses.filter(e => e.status === 'submitted').length,
+    rejected: projectExpenses.filter(e => e.status === 'rejected').length,
+    totalAmount: projectExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+    approvedAmount: projectExpenses
+      .filter(e => e.status === 'approved')
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+    pendingAmount: projectExpenses
+      .filter(e => e.status === 'submitted')
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+    rejectedAmount: projectExpenses
+      .filter(e => e.status === 'rejected')
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+  };
+
+  console.log('[getProjectData] Expense stats:', expenseStats);
+
+  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -278,7 +313,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies } = data;
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats } = data;
+
+  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -323,6 +360,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           teamMembers={teamMembers}
           phaseTaskStats={phaseTaskStats || []}
           taskDependencies={taskDependencies || []}
+          expenseStats={expenseStats}
         />
       </div>
     </div>

@@ -596,3 +596,189 @@ export async function matchLineItemToMaterial(
     return { success: false, error: 'Failed to match line item' };
   }
 }
+
+// ============================================
+// Task-Expense Integration
+// ============================================
+
+/**
+ * Debug: Get all expenses for a specific task
+ * Used in TaskExpensesSection to display task-linked expenses
+ */
+export async function getTaskExpenses(taskId: string) {
+  try {
+    // Debug: Validate taskId
+    if (!taskId) {
+      console.error('Debug: getTaskExpenses - taskId is required');
+      return { success: false, error: 'Task ID is required' };
+    }
+
+    // Debug: Check authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      console.error('Debug: getTaskExpenses - unauthorized');
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    console.log('Debug: getTaskExpenses - fetching expenses for task:', taskId);
+
+    const supabase = await createClient();
+
+    // Debug: Query expenses for this task
+    const { data: expenses, error } = await supabase
+      .from('expenses')
+      .select('id, description, amount, status, expense_date, vendor_name, category')
+      .eq('task_id', taskId)
+      .order('expense_date', { ascending: false });
+
+    if (error) {
+      console.error('Debug: getTaskExpenses - query error:', error);
+      return { success: false, error: 'Failed to fetch task expenses' };
+    }
+
+    console.log('Debug: getTaskExpenses - found expenses:', expenses?.length || 0);
+
+    return {
+      success: true,
+      data: expenses || [],
+    };
+  } catch (error) {
+    console.error('Debug: getTaskExpenses - unexpected error:', error);
+    return { success: false, error: 'Failed to fetch task expenses' };
+  }
+}
+
+/**
+ * Debug: Create expense from material purchase (auto-link)
+ * When a material is delivered, prompt user to create expense
+ */
+export async function createExpenseFromMaterial(data: {
+  material_assignment_id: string;
+  task_id: string;
+  project_id: string;
+  amount: number;
+  description: string;
+  category: 'materials';
+}) {
+  try {
+    // Debug: Check authentication
+    const session = await auth();
+    if (!session?.user?.id) {
+      console.error('Debug: createExpenseFromMaterial - unauthorized');
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    console.log('Debug: createExpenseFromMaterial - creating expense from material', data);
+
+    const supabase = await createClient();
+
+    // Debug: Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      console.error('Debug: createExpenseFromMaterial - company error:', companyError);
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    // Debug: Check if material assignment already has linked expense
+    const { data: existingLink } = await supabase
+      .from('expense_line_items')
+      .select('expense_id')
+      .eq('material_assignment_id', data.material_assignment_id)
+      .single();
+
+    if (existingLink) {
+      console.log('Debug: createExpenseFromMaterial - material already has linked expense');
+      return { success: true, alreadyLinked: true };
+    }
+
+    // Debug: Create expense
+    const { data: expense, error: expenseError } = await supabase
+      .from('expenses')
+      .insert({
+        company_id: companyUser.company_id,
+        project_id: data.project_id,
+        task_id: data.task_id,
+        description: data.description,
+        amount: data.amount,
+        category: data.category,
+        expense_date: new Date().toISOString().split('T')[0],
+        submitted_by: session.user.id,
+        status: 'submitted',
+      })
+      .select()
+      .single();
+
+    if (expenseError) {
+      console.error('Debug: createExpenseFromMaterial - expense creation error:', expenseError);
+      return { success: false, error: 'Failed to create expense' };
+    }
+
+    // Debug: Create expense line item linking to material assignment
+    const { error: lineItemError } = await supabase
+      .from('expense_line_items')
+      .insert({
+        expense_id: expense.id,
+        material_assignment_id: data.material_assignment_id,
+        description: data.description,
+        quantity: 1,
+        unit_price: data.amount,
+      });
+
+    if (lineItemError) {
+      console.error('Debug: createExpenseFromMaterial - line item error:', lineItemError);
+      return { success: false, error: 'Failed to link expense to material' };
+    }
+
+    console.log('Debug: createExpenseFromMaterial - expense created successfully:', expense.id);
+
+    // Debug: Revalidate paths
+    revalidatePath('/app/expenses');
+    revalidatePath(`/app/tasks/${data.task_id}`);
+    revalidatePath(`/app/projects/${data.project_id}`);
+
+    return { success: true, expense };
+  } catch (error) {
+    console.error('Debug: createExpenseFromMaterial - unexpected error:', error);
+    return { success: false, error: 'Failed to create expense from material' };
+  }
+}
+
+/**
+ * Debug: Check if material assignment has linked expense
+ * Used to show "Expense Linked" indicator and prevent duplicate expense creation
+ */
+export async function getMaterialExpenseLink(materialAssignmentId: string) {
+  try {
+    console.log('Debug: getMaterialExpenseLink - checking for material:', materialAssignmentId);
+
+    const supabase = await createClient();
+
+    const { data, error } = await supabase
+      .from('expense_line_items')
+      .select('expense_id')
+      .eq('material_assignment_id', materialAssignmentId)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116 is "not found" error, which is expected
+      console.error('Debug: getMaterialExpenseLink - query error:', error);
+      return { success: false, error: 'Failed to check material expense link' };
+    }
+
+    console.log('Debug: getMaterialExpenseLink - linked expense:', data?.expense_id || null);
+
+    return {
+      success: true,
+      expenseId: data?.expense_id || null,
+    };
+  } catch (error) {
+    console.error('Debug: getMaterialExpenseLink - unexpected error:', error);
+    return { success: false, error: 'Failed to check material expense link' };
+  }
+}

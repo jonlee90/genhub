@@ -16,6 +16,7 @@ import {
   Clock,
   Package,
   AlertTriangle,
+  Receipt,
 } from 'lucide-react';
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import type { Database } from '@/types/database.types';
@@ -301,10 +302,49 @@ export function ProjectCard({ project }: ProjectCardProps) {
                 )}
               </div>
 
-              {/* Debug: Footer - Team Size */}
-              <div className="flex items-center text-[10px] md:text-xs text-gray-500">
-                <Users className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5" />
-                <span className="font-medium">{project.stats.teamSize} members</span>
+              {/* Debug: Footer - Team Size & Expenses */}
+              <div className="flex items-center justify-between text-[10px] md:text-xs">
+                <div className="flex items-center text-gray-500">
+                  <Users className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1 md:mr-1.5" />
+                  <span className="font-medium">{project.stats.teamSize} members</span>
+                </div>
+
+                {/* Expense Indicator */}
+                {project.stats.expenses && project.stats.expenses.total > 0 && (
+                  <div className={cn(
+                    "flex items-center gap-1 px-2 py-0.5 md:px-2.5 md:py-1 rounded-full",
+                    // Warning if expenses approach or exceed budget
+                    project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
+                      ? project.stats.expenses.approvedAmount > (project.budget || 0)
+                        ? "bg-red-50"
+                        : "bg-yellow-50"
+                      : "bg-construction-blue/10"
+                  )}>
+                    <Receipt className={cn(
+                      "h-3 w-3 md:h-3.5 md:w-3.5",
+                      project.stats.expenses.approvedAmount > (project.budget || 0)
+                        ? "text-construction-red"
+                        : project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
+                          ? "text-yellow-600"
+                          : "text-construction-blue"
+                    )} />
+                    <span className={cn(
+                      "font-semibold",
+                      project.stats.expenses.approvedAmount > (project.budget || 0)
+                        ? "text-construction-red"
+                        : project.stats.expenses.approvedAmount > (project.budget || 0) * 0.8
+                          ? "text-yellow-600"
+                          : "text-construction-blue"
+                    )}>
+                      {formatBudget(project.stats.expenses.approvedAmount)}
+                    </span>
+                    {project.stats.expenses.pending > 0 && (
+                      <span className="text-gray-500">
+                        (+{project.stats.expenses.pending})
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (
@@ -318,17 +358,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   </div>
                   <p className="text-xs md:text-sm font-bold text-construction-blue">
                     {formatBudget(project.budget)}
-                  </p>
-                </div>
-              )}
-              {project.project_team && (
-                <div className="space-y-1 md:space-y-2">
-                  <div className="flex items-center gap-1 md:gap-1.5">
-                    <Users className="h-3.5 w-3.5 md:h-4 md:w-4 text-construction-accent" />
-                    <span className="text-[10px] md:text-xs font-semibold text-gray-700 uppercase tracking-wide">Team</span>
-                  </div>
-                  <p className="text-xs md:text-sm font-bold text-construction-blue">
-                    {Array.isArray(project.project_team) ? project.project_team.length : 0} members
                   </p>
                 </div>
               )}

@@ -60,7 +60,7 @@ async function getTask(taskId: string) {
   }
 
   // Fetch assignee and creator profiles separately
-  const userIds = [task.assignee_id, task.created_by].filter(Boolean);
+  const userIds = [task.assignee_id, task.created_by].filter((id): id is string => Boolean(id));
   if (userIds.length > 0) {
     const { data: users } = await supabase
       .from('user_profiles')

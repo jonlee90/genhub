@@ -39,6 +39,9 @@ interface PhaseStats {
   overdueTasks: number;
 }
 
+// Fix C1: Import ExpenseStats instead of duplicating
+import type { ExpenseStats } from '@/app/actions/projects';
+
 interface ProjectDetailContentProps {
   project: any;
   projects: Array<{
@@ -58,6 +61,7 @@ interface ProjectDetailContentProps {
   }>;
   phaseTaskStats: PhaseStats[];
   taskDependencies?: any[];
+  expenseStats?: ExpenseStats;
 }
 
 const STATUS_CONFIG = {
@@ -89,7 +93,10 @@ export function ProjectDetailContent({
   teamMembers,
   phaseTaskStats,
   taskDependencies = [],
+  expenseStats,
 }: ProjectDetailContentProps) {
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats);
+
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'settings'>('overview');
 
   const statusConfig = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
@@ -466,6 +473,7 @@ export function ProjectDetailContent({
               projects={projects}
               teamMembers={teamMembers}
               phaseTaskStats={phaseTaskStats}
+              expenseStats={expenseStats}
             />
           </motion.div>
         )}

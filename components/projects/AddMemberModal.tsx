@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -189,19 +189,46 @@ export function AddMemberModal({
   const selectedUser = filteredUsers.find((u) => u.id === selectedUserId);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg border-2 border-gray-200 shadow-construction">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-black text-construction-blue flex items-center gap-2">
-            <UserPlus className="h-5 w-5" />
-            Add Team Member
-          </DialogTitle>
-          <DialogDescription className="font-medium text-gray-600">
-            Select a user from your company and assign them a role on this project.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="py-4 space-y-4">
+    <BaseModal
+      isOpen={open}
+      onClose={() => onOpenChange(false)}
+      icon={UserPlus}
+      title="Add Team Member"
+      subtitle="Select a user from your company and assign them a role on this project."
+      maxWidth="lg"
+      leftActions={
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onOpenChange(false)}
+          disabled={submitting}
+          className="font-bold"
+        >
+          Cancel
+        </Button>
+      }
+      rightActions={
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting || !selectedUserId || loading || success}
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold gap-2"
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Adding...
+            </>
+          ) : (
+            <>
+              <UserPlus className="h-4 w-4" />
+              Add Member
+            </>
+          )}
+        </Button>
+      }
+    >
+      <div className="space-y-4">
           {/* Debug: Search input */}
           <div className="space-y-2">
             <Label htmlFor="search" className="font-bold text-gray-700">
@@ -332,37 +359,6 @@ export function AddMemberModal({
             </motion.div>
           )}
         </div>
-
-        <DialogFooter className="border-t-2 border-gray-100 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={submitting}
-            className="font-bold"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting || !selectedUserId || loading || success}
-            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold gap-2"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              <>
-                <UserPlus className="h-4 w-4" />
-                Add Member
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    </BaseModal>
   );
 }

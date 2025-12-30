@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ClipboardList } from 'lucide-react';
-import { CreateTaskForm } from './CreateTaskForm.tsx';
+import { CreateTaskForm } from './CreateTaskForm';
 import { Button } from '@/components/ui/button';
 
 interface TaskFormModalProps {
