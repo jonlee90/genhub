@@ -56,7 +56,9 @@
       "mcp__supabase__get_advisors",
       "Bash(pnpm run lint:ts:*)",
       "Bash(npm run lint)",
-      "Bash(xargs basename:*)"
+      "Bash(xargs basename:*)",
+      "Bash(pnpm run dev)",
+      "Bash(npm run lint:ts:*)"
     ],
     "deny": [],
     "ask": []

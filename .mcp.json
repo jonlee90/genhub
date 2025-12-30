@@ -9,8 +9,7 @@
       "args": [
         "@playwright/mcp@0.0.52", 
         "--config",
-        "./playwright-mcp-config.json",
-        "--vision"
+        "./playwright-mcp-config.json"
       ]
     }
   }

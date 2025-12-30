@@ -46,23 +46,41 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createSupabaseClient();
 
   // Load tasks when project is selected
   useEffect(() => {
     if (selectedProject) {
+      console.log('[CreateExpenseModal] Loading tasks for project:', selectedProject);
       setIsLoadingTasks(true);
       setSelectedTask('');
 
-      supabase
-        .from('tasks')
-        .select('id, title, phase_id')
-        .eq('project_id', selectedProject)
-        .order('created_at')
-        .then(({ data }) => {
-          setTasks(data || []);
+      // Fetch tasks for the selected project
+      (async () => {
+        try {
+          const supabase = await createSupabaseClient();
+          const { data, error } = await supabase
+            .from('tasks')
+            .select('id, title, phase_id')
+            .eq('project_id', selectedProject)
+            .order('created_at');
+
+          if (error) {
+            console.error('[CreateExpenseModal] Error loading tasks:', error);
+            toast({
+              title: 'Error',
+              description: 'Failed to load tasks',
+              variant: 'destructive',
+            });
+          } else {
+            console.log('[CreateExpenseModal] Tasks loaded:', data);
+            setTasks(data || []);
+          }
+        } catch (err) {
+          console.error('[CreateExpenseModal] Exception loading tasks:', err);
+        } finally {
           setIsLoadingTasks(false);
-        });
+        }
+      })();
     } else {
       setTasks([]);
     }
@@ -129,7 +147,7 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
 
       const result = await createExpense({
         project_id: selectedProject,
-        task_id: selectedTask || undefined,
+        task_id: selectedTask && selectedTask !== 'no-task' ? selectedTask : undefined,
         description,
         amount: parseFloat(amount),
         category: category as any,
@@ -300,7 +318,7 @@ export function CreateExpenseModal({ projects, onClose }: CreateExpenseModalProp
                     <SelectValue placeholder={isLoadingTasks ? "Loading tasks..." : "Select a task"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No task</SelectItem>
+                    <SelectItem value="no-task">No task</SelectItem>
                     {tasks.map((task) => (
                       <SelectItem key={task.id} value={task.id}>
                         {task.title}

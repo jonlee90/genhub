@@ -40,24 +40,14 @@ async function getExpensesData() {
         .from('expenses')
         .select(`
           *,
-          project:projects!inner (
+          project:projects!expenses_project_id_fkey (
             id,
             name,
             company_id
           ),
-          task:tasks (
+          task:tasks!expenses_task_id_fkey (
             id,
             title
-          ),
-          submitter:user_profiles!expenses_submitted_by_fkey (
-            id,
-            name,
-            email
-          ),
-          reviewer:user_profiles!expenses_reviewed_by_fkey (
-            id,
-            name,
-            email
           )
         `)
         .eq('project.company_id', companyUser.company_id)
@@ -115,24 +105,14 @@ async function getExpensesData() {
     .from('expenses')
     .select(`
       *,
-      project:projects!inner (
+      project:projects!expenses_project_id_fkey (
         id,
         name,
         company_id
       ),
-      task:tasks (
+      task:tasks!expenses_task_id_fkey (
         id,
         title
-      ),
-      submitter:user_profiles!expenses_submitted_by_fkey (
-        id,
-        name,
-        email
-      ),
-      reviewer:user_profiles!expenses_reviewed_by_fkey (
-        id,
-        name,
-        email
       )
     `)
     .eq('project.company_id', companyUser.company_id)

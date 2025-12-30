@@ -21,10 +21,6 @@
       "isMobile": false
     }
   },
-  "server": {
-    "port": 8033,
-    "host": "localhost"
-  },
   "capabilities": [
     "core",
     "tabs",
@@ -35,5 +31,4 @@
   ],
   "outputDir": "./output",
   "vision": true
-  
 }

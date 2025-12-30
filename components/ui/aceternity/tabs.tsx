@@ -18,13 +18,13 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
   return (
-    <div className="relative flex items-center gap-2 p-1 bg-gray-100 rounded-lg border-2 border-gray-200">
+    <div className="relative flex items-center gap-2 p-1 bg-gray-100 rounded-lg border-2 border-gray-200 overflow-x-auto flex-nowrap scrollbar-hide scroll-smooth">
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => onChange(tab.id)}
           className={cn(
-            "relative z-10 px-4 py-2 text-sm font-bold transition-colors duration-200 rounded-md",
+            "relative z-10 px-4 py-2 text-sm font-bold transition-colors duration-200 rounded-md flex-shrink-0",
             activeTab === tab.id
               ? "text-white"
               : "text-gray-600 hover:text-gray-900"

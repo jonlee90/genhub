@@ -25,7 +25,7 @@ interface Expense {
   expense_date: string;
   vendor_name: string | null;
   receipt_url: string | null;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected';
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
   created_at: string;
   project: {
     id: string;
@@ -63,6 +63,10 @@ const STATUS_CONFIG = {
   rejected: {
     label: 'Rejected',
     color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
+  },
+  paid: {
+    label: 'Paid',
+    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
   },
 };
 
@@ -140,6 +144,7 @@ export function ExpensesList({ expenses, projects }: ExpensesListProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
                 <SelectItem value="submitted">Submitted</SelectItem>
                 <SelectItem value="under_review">Under Review</SelectItem>
                 <SelectItem value="approved">Approved</SelectItem>

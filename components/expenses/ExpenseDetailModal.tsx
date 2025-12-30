@@ -21,7 +21,7 @@ interface Expense {
   expense_date: string;
   vendor_name: string | null;
   receipt_url: string | null;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected';
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
   created_at: string;
   project: {
     id: string;
@@ -68,6 +68,11 @@ const STATUS_CONFIG = {
     label: 'Rejected',
     color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
     icon: XCircle,
+  },
+  paid: {
+    label: 'Paid',
+    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+    icon: CheckCircle2,
   },
 };
 
