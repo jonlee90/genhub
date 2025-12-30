@@ -29,6 +29,7 @@ export interface ChatRoomWithUnread extends ChatRoom {
   unread_count: number;
   last_message?: MessageWithSender;
   participant_count: number;
+  muted_until?: string | null;  // From current user's participant record
 }
 
 export interface ChatRoomWithParticipants extends ChatRoom {

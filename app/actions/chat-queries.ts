@@ -78,6 +78,30 @@ async function verifyChatRoomAccess(
 // ============================================
 
 /**
+ * Get current user context (userId and companyId)
+ * Used by client-side hooks for real-time subscriptions
+ */
+export async function getCurrentUserContext(): Promise<{
+  success?: boolean;
+  userId?: string;
+  companyId?: string;
+  error?: string;
+}> {
+  console.log('[getCurrentUserContext] Getting user context...');
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  return {
+    success: true,
+    userId: userContext.userId,
+    companyId: userContext.companyId,
+  };
+}
+
+/**
  * Get all chat rooms that the current user participates in
  * Includes unread count and last message preview
  * Ordered by most recent activity first
@@ -105,7 +129,8 @@ export async function getChatRooms(): Promise<{
       *,
       chat_participants!inner (
         user_id,
-        last_read_at
+        last_read_at,
+        muted_until
       )
     `)
     .eq('company_id', companyId)
@@ -157,11 +182,17 @@ export async function getChatRooms(): Promise<{
         .select('*', { count: 'exact', head: true })
         .eq('chat_room_id', room.id);
 
+      // Get current user's participant record for muted_until
+      const participantRecord = (room.chat_participants as Array<{ user_id: string; muted_until: string | null }>)?.find(
+        (p) => p.user_id === userId
+      );
+
       return {
         ...room,
         unread_count: unreadCount as number,
         last_message: lastMessageData ? (lastMessageData as unknown as MessageWithSender) : undefined,
         participant_count: participantCount || 0,
+        muted_until: participantRecord?.muted_until || null,
       };
     })
   );
@@ -287,5 +318,64 @@ export async function getMessages(
     success: true,
     messages: messagesWithCounts as unknown as MessageWithSender[],
     nextCursor,
+  };
+}
+
+/**
+ * Get a single message by ID with full sender info
+ * Used by real-time hook to fetch complete message data after INSERT event
+ */
+export async function getMessageById(
+  messageId: string
+): Promise<{
+  success?: boolean;
+  message?: MessageWithSender;
+  error?: string;
+}> {
+  console.log('[getMessageById] Fetching message:', messageId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { supabase } = userContext;
+
+  // Fetch message with sender info
+  const { data: message, error: messageError } = await supabase
+    .from('messages')
+    .select(`
+      *,
+      sender:user_profiles!messages_sender_id_fkey (
+        id,
+        name,
+        email,
+        avatar_url
+      ),
+      reply_to:messages!messages_reply_to_id_fkey (
+        id,
+        content,
+        created_at,
+        sender:user_profiles!messages_sender_id_fkey (
+          id,
+          name,
+          avatar_url
+        )
+      )
+    `)
+    .eq('id', messageId)
+    .single();
+
+  if (messageError) {
+    console.error('[getMessageById] Error fetching message:', messageError);
+    return { error: 'Failed to load message' };
+  }
+
+  console.log('[getMessageById] Message fetched successfully');
+
+  return {
+    success: true,
+    message: message as unknown as MessageWithSender,
   };
 }

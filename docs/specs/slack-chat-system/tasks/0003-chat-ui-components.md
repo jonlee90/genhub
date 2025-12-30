@@ -1,5 +1,7 @@
 # Task 0003: Chat UI Components
 
+## Status: ✅ COMPLETED (2025-12-30)
+
 ## Phase
 Phase 1: Core Chat (MVP)
 
@@ -69,13 +71,47 @@ Build the core UI components for the chat interface including layout, room list,
 - Task 0002: Server Actions for Basic Messaging
 
 ## Acceptance Criteria
-- [ ] Chat page loads and displays room list
-- [ ] Clicking a room shows messages in that room
-- [ ] Messages display sender info, content, and timestamp
-- [ ] Message input sends messages successfully
-- [ ] Mobile layout works with full-screen room view
-- [ ] Unread badges display correctly
+- [x] Chat page loads and displays room list
+- [x] Clicking a room shows messages in that room
+- [x] Messages display sender info, content, and timestamp
+- [x] Message input sends messages successfully
+- [x] Mobile layout works with full-screen room view
+- [x] Unread badges display correctly
+
+## Implementation Summary
+
+**Files Created:**
+- `app/app/chat/page.tsx` - Server component with loading/error states
+- `components/chat/ChatLayout.tsx` - Responsive layout with sidebar toggle
+- `components/chat/ChatRoomList.tsx` - Room list with sections
+- `components/chat/ChatRoomItem.tsx` - Individual room with unread badges
+- `components/chat/MessageList.tsx` - Virtualized list with infinite scroll
+- `components/chat/MessageItem.tsx` - Message with hover actions
+- `components/chat/MessageInput.tsx` - Auto-resizing textarea
+- `components/chat/ChatErrorState.tsx` - Client error component
+
+**Key Features:**
+- ✅ Industrial Blueprint aesthetic with construction theme
+- ✅ @tanstack/react-virtual for message virtualization
+- ✅ Dynamic size estimation for messages
+- ✅ Responsive design (mobile sidebar toggle)
+- ✅ Framer Motion animations
+- ✅ useSession for own message detection
+- ✅ ARIA labels for accessibility
+- ✅ Debug console.log throughout
+
+**Dependencies Added:**
+- `@tanstack/react-virtual` - Message list virtualization
+
+**Code Review Fixes Applied:**
+- Added `muted_until` to ChatRoomWithUnread type
+- Fixed hydration mismatch (window check)
+- Implemented isOwnMessage with useSession
+- Created client error component
+- Added ARIA labels
+- Dynamic virtualization sizing
 
 ## References
 - Requirements: Req 1.4, Req 1.7-1.8, Req 7.5-7.6, Req 14.1-14.6, Req 15.2-15.3
 - Design: Components section
+- UI Plan: `.claude/docs/ui-plans/chat-ui-components.md`
