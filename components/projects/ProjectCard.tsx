@@ -240,7 +240,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               <div className="flex items-center gap-1 mt-0.5">
                 <Users className="h-3.5 w-3.5 text-gray-400" />
                 <span className="text-sm font-semibold text-gray-700">
-                  {stats?.teamSize ?? project.project_team?.length ?? 0}
+                  {stats?.teamSize ?? 0}
                   <span className="text-gray-400 font-normal ml-0.5">members</span>
                 </span>
               </div>

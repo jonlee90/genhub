@@ -245,6 +245,10 @@ body {
 | `progress.tsx` | Radix UI | Progress bars |
 | `scroll-area.tsx` | Radix UI | Scrollable areas |
 | `alert-dialog.tsx` | Radix UI | Confirmation dialogs |
+| `alert.tsx` | shadcn/ui | Alert banners |
+| `bottom-sheet.tsx` | Custom | Mobile bottom sheet |
+| `label.tsx` | shadcn/ui | Form labels |
+| `CreatorBadge.tsx` | Custom | Metadata display (creator/date) |
 
 ### Aceternity UI Components (`components/ui/aceternity/`)
 
@@ -257,8 +261,8 @@ body {
 | `background-boxes.tsx` | Animated background |
 | `hero-highlight.tsx` | Text highlights |
 | `animated-tooltip.tsx` | Tooltips with animation |
-| `placeholders-vanish-input.tsx` | Animated search |
-| `text-generate-effect.tsx` | Typing effect |
+| `placeholders-vanish-input.tsx` | Animated search input |
+| `text-generate-effect.tsx` | Typing text animation |
 
 ### Button Variants
 ```tsx

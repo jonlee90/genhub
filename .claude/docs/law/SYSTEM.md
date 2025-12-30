@@ -23,7 +23,7 @@
 ### Core Framework
 | Technology | Version | Purpose |
 |------------|---------|---------|
-| Next.js | 15.1.7 | App Router, Server Components, Server Actions |
+| Next.js | 15.5.9 | App Router, Server Components, Server Actions |
 | React | 19.0.0 | UI Framework |
 | TypeScript | 5.x | Type Safety |
 | Tailwind CSS | 3.4.1 | Styling |
@@ -32,7 +32,7 @@
 | Technology | Purpose |
 |------------|---------|
 | Supabase | PostgreSQL Database, RLS, Real-time |
-| NextAuth | 5.0.0-beta.25 | Authentication |
+| NextAuth | 5.0.0-beta.30 | Authentication |
 | @auth/supabase-adapter | 1.7.4 | NextAuth Supabase Integration |
 
 ### UI Libraries
@@ -142,6 +142,9 @@ next-saas-starter/
 │   │   ├── button.tsx
 │   │   ├── card.tsx
 │   │   ├── dialog.tsx
+│   │   ├── progress.tsx
+│   │   ├── bottom-sheet.tsx     # Mobile bottom sheet
+│   │   ├── CreatorBadge.tsx     # Metadata display component
 │   │   └── aceternity/         # Aceternity UI components
 │   │       ├── sidebar.tsx
 │   │       ├── tabs.tsx
@@ -367,9 +370,10 @@ mcp__supabase__generate_typescript_types
 
 | Client | File | Use Case | RLS |
 |--------|------|----------|-----|
-| `createClient()` | server.ts | Server Actions, API routes | Bypassed (admin) |
-| `createAdminClient()` | server.ts | Pre-auth operations, system tasks | Bypassed |
-| `createUserClient()` | server.ts | User-scoped operations | Should respect RLS |
+| `createClient()` | server.ts | Server Actions, API routes (DEPRECATED) | Bypassed |
+| `createAdminClient()` | server.ts | Pre-auth operations, webhooks, system tasks | Bypassed |
+| `createUserClient()` | server.ts | User-scoped server operations (PREFERRED) | Bypassed (TODO: true RLS) |
+| `getSupabaseClient()` | server.ts | Legacy (DEPRECATED) | Bypassed |
 
 > **⚠️ CRITICAL: Client Components**
 >

@@ -77,6 +77,9 @@ GenHub uses **Supabase** (PostgreSQL) with two schemas:
 │  SYSTEM:                                                         │
 │    notifications     - In-app notifications                      │
 │    attachments       - File attachments                          │
+│                                                                  │
+│  BILLING:                                                        │
+│    stripe_customers  - Stripe subscription management            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -323,6 +326,9 @@ CREATE TABLE public.projects (
   budget                numeric,
   health_score          integer DEFAULT 100,      -- 0-100
   completion_percentage integer DEFAULT 0,        -- 0-100
+  image_url             text,                     -- Project site image URL
+  latitude              numeric,                  -- Geocoded latitude
+  longitude             numeric,                  -- Geocoded longitude
   created_by            uuid REFERENCES next_auth.users(id),
   created_at            timestamptz DEFAULT now(),
   updated_at            timestamptz DEFAULT now()
@@ -608,6 +614,22 @@ CREATE TABLE public.attachments (
 -- RLS: Anyone can view, users can manage their own uploads
 ```
 
+### stripe_customers
+```sql
+CREATE TABLE public.stripe_customers (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id             uuid NOT NULL DEFAULT next_auth.uid() REFERENCES next_auth.users(id),
+  stripe_customer_id  text NOT NULL UNIQUE,
+  plan_active         boolean DEFAULT false,
+  plan_expires        bigint,
+  subscription_id     text,
+  created_at          timestamptz DEFAULT now(),
+  updated_at          timestamptz DEFAULT now()
+);
+-- COMMENT: Stores Stripe customer information for subscription management
+-- RLS: Users can only view their own data
+```
+
 ---
 
 ## Relationships
@@ -770,6 +792,19 @@ RETURNS TABLE (
 -- Usage: SELECT * FROM get_top_team_members_by_completed_tasks('company-uuid', 5);
 ```
 
+### get_unread_count()
+```sql
+-- Returns count of unread messages in a chat room for a user
+CREATE FUNCTION get_unread_count(
+  p_chat_room_id uuid,
+  p_user_id uuid
+)
+RETURNS bigint;
+-- Usage: SELECT get_unread_count('room-uuid', 'user-uuid');
+-- Counts messages created after user's last_read_at
+-- Excludes soft-deleted messages (deleted_at IS NULL)
+```
+
 ---
 
 ## Database Triggers
@@ -798,6 +833,34 @@ Updates `projects.completion_percentage` when phase completion changes.
 
 ### update_task_costs
 Updates `tasks.actual_cost` when material_assignments or expenses change.
+
+### create_project_chat_room
+Auto-creates a chat room when a project is created.
+```sql
+-- Trigger: on_project_created_create_chat_room (AFTER INSERT on projects)
+-- Creates chat_room with type='project', name=project.name
+```
+
+### add_chat_participant_on_team_join
+Auto-adds user to project chat room when added to project_team.
+```sql
+-- Trigger: on_project_team_member_added (AFTER INSERT on project_team)
+-- Maps role: 'gc_admin'/'project_manager' → 'admin', others → 'member'
+-- Uses ON CONFLICT DO NOTHING for idempotency
+```
+
+### remove_chat_participant_on_team_leave
+Auto-removes user from project chat room when removed from project_team.
+```sql
+-- Trigger: on_project_team_member_removed (AFTER DELETE on project_team)
+-- Deletes from chat_participants where chat_room.project_id matches
+```
+
+### update_chat_updated_at
+Updates `updated_at` for chat_rooms and chat_participants.
+```sql
+-- Applied to: chat_rooms, chat_participants
+```
 
 ---
 
@@ -856,6 +919,61 @@ WHERE p.id = $1
 GROUP BY p.id, p.budget;
 ```
 
+### chat_rooms
+```sql
+CREATE TABLE public.chat_rooms (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id         uuid NOT NULL REFERENCES companies(id),
+  project_id         uuid REFERENCES projects(id),
+  type               text NOT NULL CHECK (type IN ('project', 'dm')),
+  name               text,
+  description        text,
+  created_at         timestamptz DEFAULT now(),
+  updated_at         timestamptz DEFAULT now()
+);
+-- COMMENT: Chat rooms for project communication and direct messages
+-- RLS: Users can view rooms they participate in, create DM rooms
+-- TRIGGER: Auto-created when project is created
+```
+
+### chat_participants
+```sql
+CREATE TABLE public.chat_participants (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  chat_room_id       uuid NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  user_id            uuid NOT NULL REFERENCES next_auth.users(id),
+  role               text DEFAULT 'member' CHECK (role IN ('admin', 'member')),
+  last_read_at       timestamptz DEFAULT now(),
+  muted_until        timestamptz,
+  joined_at          timestamptz DEFAULT now(),
+  created_at         timestamptz DEFAULT now(),
+  updated_at         timestamptz DEFAULT now(),
+
+  UNIQUE(chat_room_id, user_id)
+);
+-- COMMENT: Participants in chat rooms with read tracking and mute settings
+-- TRIGGER: Auto-managed when project team members are added/removed
+```
+
+### messages
+```sql
+CREATE TABLE public.messages (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  chat_room_id       uuid NOT NULL REFERENCES chat_rooms(id) ON DELETE CASCADE,
+  sender_id          uuid NOT NULL REFERENCES next_auth.users(id),
+  content            text NOT NULL,
+  reply_to_id        uuid REFERENCES messages(id),
+  entity_references  jsonb DEFAULT '[]',
+  edited_at          timestamptz,
+  deleted_at         timestamptz,
+  created_at         timestamptz DEFAULT now(),
+  updated_at         timestamptz DEFAULT now()
+);
+-- COMMENT: Chat messages with support for threads, mentions, and soft delete
+-- REALTIME: Enabled via supabase_realtime publication
+-- INDEX: (chat_room_id, created_at DESC), (sender_id), (reply_to_id)
+```
+
 ---
 
 ## Migration History
@@ -870,8 +988,12 @@ GROUP BY p.id, p.budget;
 | 20251209034916 | fix_company_users_rls_complete | Complete RLS fix with helper functions |
 | 20251209035356 | fix_all_rls_policies_using_helper_functions | Refactored all RLS to use helper functions |
 | 20251209074250 | add_start_date_to_tasks | Added start_date column to tasks |
-| 20251228000000 | add_top_team_members_function | Function for top team members by completed tasks |
-| 20251229000000 | add_task_type_and_approval_status | Added task_type enum, approval_status enum, and approval workflow columns to tasks |
+| 20251228092306 | add_top_team_members_function | Function for top team members by completed tasks |
+| 20251229015123 | add_subcontractor_to_tasks | Added subcontractor reference to tasks |
+| 20251230034957 | add_task_type_and_approval_status | Added task_type enum, approval_status enum, and approval workflow columns to tasks |
+| 20251230043428 | add_stripe_customers_table | Added stripe_customers table for subscription management |
+| 20251230103624 | add_project_image_columns | Added image_url, latitude, longitude columns to projects |
+| 20251230_chat | chat_system_tables_triggers_rls | Created chat_rooms, chat_participants, messages with RLS, triggers, and Realtime |
 
 ---
 

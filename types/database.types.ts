@@ -50,6 +50,98 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_participants: {
+        Row: {
+          chat_room_id: string
+          created_at: string
+          id: string
+          joined_at: string
+          last_read_at: string
+          muted_until: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chat_room_id: string
+          created_at?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string
+          muted_until?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chat_room_id?: string
+          created_at?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string
+          muted_until?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_participants_chat_room_id_fkey"
+            columns: ["chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_rooms: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string | null
+          project_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          project_id?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          project_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_rooms_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_rooms_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -479,6 +571,60 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          chat_room_id: string
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          entity_references: Json
+          id: string
+          reply_to_id: string | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          chat_room_id: string
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          entity_references?: Json
+          id?: string
+          reply_to_id?: string | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          chat_room_id?: string
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          entity_references?: Json
+          id?: string
+          reply_to_id?: string | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_room_id_fkey"
+            columns: ["chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -626,6 +772,9 @@ export type Database = {
           end_date: string | null
           health_score: number | null
           id: string
+          image_url: string | null
+          latitude: number | null
+          longitude: number | null
           name: string
           project_type: Database["public"]["Enums"]["project_type"]
           start_date: string | null
@@ -649,6 +798,9 @@ export type Database = {
           end_date?: string | null
           health_score?: number | null
           id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           name: string
           project_type?: Database["public"]["Enums"]["project_type"]
           start_date?: string | null
@@ -672,6 +824,9 @@ export type Database = {
           end_date?: string | null
           health_score?: number | null
           id?: string
+          image_url?: string | null
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           project_type?: Database["public"]["Enums"]["project_type"]
           start_date?: string | null
@@ -1084,6 +1239,10 @@ export type Database = {
           id: string
           name: string
         }[]
+      }
+      get_unread_count: {
+        Args: { p_chat_room_id: string; p_user_id: string }
+        Returns: number
       }
       get_user_company_id: { Args: { p_user_id: string }; Returns: string }
       is_user_gc_admin: { Args: { p_user_id: string }; Returns: boolean }
