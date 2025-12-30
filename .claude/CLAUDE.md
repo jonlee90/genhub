@@ -44,6 +44,28 @@ This ensures high-quality, construction-themed, production-grade interfaces.
 - `mcp__supabase__get_logs` - Debug issues
 - `mcp__supabase__generate_typescript_types` - Update types
 
+### Supabase Client Architecture
+
+> **⚠️ CRITICAL: DO NOT import Supabase clients in client components (`'use client'`)**
+
+| Component Type | Data Fetching | Mutations |
+|---------------|---------------|-----------|
+| Server Component | `createClient()` from `server.ts` | N/A |
+| Client Component | **Props from parent** | **Server Actions** |
+| API Route | `createClient()` from `server.ts` | Same |
+
+**Why?** `client.ts` imports `auth` → imports `nodemailer` (server-only) → build errors.
+
+**Correct patterns:**
+```tsx
+// Server component fetches data, passes to client
+const data = await supabase.from('tasks').select('*');
+return <ClientComponent tasks={data} />;
+
+// Client component uses server action for mutations
+const result = await createTask(formData);
+```
+
 ## Agent Structure (Optimized)
 
 ### Primary Agents (4 Core Agents)
