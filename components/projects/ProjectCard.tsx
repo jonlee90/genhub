@@ -254,21 +254,27 @@ export function ProjectCard({ project }: ProjectCardProps) {
           <div className="flex items-center justify-between">
             {/* Debug: If address exists, show clickable Google Maps link */}
             {project.address ? (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  `${project.address}${project.city ? `, ${project.city}` : ''}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
                 onClick={(e) => {
                   // Debug: Prevent parent Link navigation
+                  e.preventDefault();
                   e.stopPropagation();
                   console.log('[ProjectCard] Opening Google Maps for address:', project.address);
+                  // Open Google Maps in new tab
+                  window.open(
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      `${project.address}${project.city ? `, ${project.city}` : ''}`
+                    )}`,
+                    '_blank',
+                    'noopener,noreferrer'
+                  );
                 }}
                 className={cn(
                   "flex items-center gap-1.5 group/link",
                   "text-construction-blue hover:text-construction-blue/80",
-                  "transition-colors duration-200"
+                  "transition-colors duration-200",
+                  "bg-transparent border-none cursor-pointer p-0"
                 )}
               >
                 <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -276,7 +282,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   {project.address}
                   {project.city && `, ${project.city}`}
                 </span>
-              </a>
+              </button>
             ) : (
               // Debug: Fallback when no address is available
               <div className="flex items-center gap-1.5 text-gray-300">
