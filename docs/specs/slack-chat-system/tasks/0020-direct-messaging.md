@@ -1,5 +1,7 @@
 # Task 0020: Direct Messaging
 
+**Status:** ✅ COMPLETED (2025-12-30)
+
 ## Phase
 Phase 6: Advanced Features
 
@@ -36,12 +38,27 @@ Implement private 1:1 direct messaging between company users.
 - Task 0001-0004: Core Chat MVP
 
 ## Acceptance Criteria
-- [ ] Users can start DM with any company member
-- [ ] Existing DM rooms are found instead of duplicated
-- [ ] DMs display separately from project chats
-- [ ] DM rooms show recipient's avatar and name
-- [ ] New Message button opens user search
+- [x] Users can start DM with any company member
+- [x] Existing DM rooms are found instead of duplicated
+- [x] DMs display separately from project chats
+- [x] DM rooms show recipient's avatar and name
+- [x] New Message button opens user search
+
+## Security Fixes Applied
+After implementation, 2 critical and 2 high-priority security vulnerabilities were identified and fixed:
+
+- **C1: Authorization Bypass** - Fixed `find_dm_room` RPC function to verify caller is a participant (prevents DM enumeration)
+- **C2: Race Condition** - Implemented PostgreSQL advisory locks to prevent duplicate DM creation
+- **H1: Rollback Failures** - Improved error handling when rolling back failed room creation
+- **H2: Null Validation** - Added companyId null checks to prevent authorization bypass
+
+**Documentation:** See [SECURITY-FIXES-TASK-0020.md](../../SECURITY-FIXES-TASK-0020.md) for complete details.
+
+## Database Migrations Created
+- Migration 032: `find_dm_room` RPC function with authorization checks
+- Migration 033: Advisory locks and duplicate detection trigger
 
 ## References
 - Requirements: Req 7.1-7.8
 - Design: Direct Messaging section
+- Security Fixes: SECURITY-FIXES-TASK-0020.md

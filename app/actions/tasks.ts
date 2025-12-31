@@ -292,6 +292,28 @@ export async function createTask(prevState: any, formData: FormData) {
       message: `You have been assigned to: ${data.title}`,
       link: `/app/tasks/${task.id}`,
     });
+
+    // Send AlimTalk notification to assignee (Task 0018)
+    try {
+      const { KakaoService } = await import('@/lib/services/kakao');
+      const { data: project } = await supabase
+        .from('projects')
+        .select('name')
+        .eq('id', data.project_id)
+        .single();
+
+      await KakaoService.sendAlimTalk(data.assignee_id, {
+        template: 'task_assignment',
+        params: {
+          taskTitle: data.title,
+          dueDate: data.due_date || 'Not set',
+          projectName: project?.name || 'Unknown Project',
+        },
+      });
+    } catch (error) {
+      console.error('[createTask] Error sending AlimTalk:', error);
+      // Don't fail task creation if AlimTalk fails
+    }
   }
 
   // Revalidate paths

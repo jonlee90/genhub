@@ -974,6 +974,24 @@ CREATE TABLE public.messages (
 -- INDEX: (chat_room_id, created_at DESC), (sender_id), (reply_to_id)
 ```
 
+### message_reactions
+```sql
+CREATE TABLE public.message_reactions (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id  uuid NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  user_id     uuid NOT NULL REFERENCES next_auth.users(id) ON DELETE CASCADE,
+  emoji       text NOT NULL CHECK (char_length(emoji) > 0 AND char_length(emoji) <= 10),
+  created_at  timestamptz DEFAULT now(),
+
+  CONSTRAINT message_reactions_unique UNIQUE (message_id, user_id, emoji)
+);
+-- COMMENT: Emoji reactions to messages. One reaction type per user per message.
+--          No notifications generated (silent acknowledgment per requirements).
+-- RLS: Users can view reactions in their accessible rooms, manage their own reactions
+-- INDEX: (message_id), (user_id), (message_id, user_id, emoji)
+-- TRIGGER: Updates message.updated_at on reaction insert/delete
+```
+
 ---
 
 ## Migration History
@@ -994,6 +1012,8 @@ CREATE TABLE public.messages (
 | 20251230043428 | add_stripe_customers_table | Added stripe_customers table for subscription management |
 | 20251230103624 | add_project_image_columns | Added image_url, latitude, longitude columns to projects |
 | 20251230_chat | chat_system_tables_triggers_rls | Created chat_rooms, chat_participants, messages with RLS, triggers, and Realtime |
+| 20251230112532 | add_message_reply_index | Added indexes for threaded replies performance (reply_to_id) |
+| 027 | create_message_reactions | Created message_reactions table for emoji reactions on messages |
 
 ---
 

@@ -1,0 +1,208 @@
+KakaoTalk Integration UI - Component Tree
+==========================================
+
+Settings Page (/app/app/settings/page.tsx)
+│
+├── Page Header (Blueprint style)
+│   ├── Settings icon (yellow badge)
+│   ├── "System Settings" title
+│   └── Grid pattern background
+│
+├── Notifications Section
+│   └── ChatNotificationPreferences
+│
+├── KakaoTalk Integration Section [NEW]
+│   ├── Section Header
+│   │   ├── MessageCircle icon (yellow badge)
+│   │   ├── "KakaoTalk Integration" title
+│   │   └── Description text
+│   │
+│   └── KakaoTalkSettings Component
+│       ├── Riveted Border (top/bottom)
+│       ├── Component Header
+│       │   ├── MessageCircle icon (yellow, rotated)
+│       │   ├── "KakaoTalk Integration" title
+│       │   └── Subtitle (MESSAGING CONTROL)
+│       │
+│       └── [STATE: Connected or Disconnected]
+│
+│           ┌─────────────────────────────────────┐
+│           │  CONNECTED STATE                    │
+│           ├─────────────────────────────────────┤
+│           │ ✅ Status Badge                     │
+│           │    ├── Animated CheckCircle         │
+│           │    ├── "Connection Active" text     │
+│           │    └── "System operational" subtext │
+│           │                                      │
+│           │ 📋 Connection Details               │
+│           │    ├── KakaoTalk User ID (blue box) │
+│           │    └── Sendbird User ID (gray box)  │
+│           │                                      │
+│           │ ⚡ Two-Way Sync Toggle               │
+│           │    ├── Hazard stripe border         │
+│           │    ├── Zap icon                     │
+│           │    ├── Toggle description           │
+│           │    └── Animated Switch               │
+│           │       ├── Green (ON) / Gray (OFF)   │
+│           │       └── Icon inside knob          │
+│           │                                      │
+│           │ 🔌 Disconnect Section               │
+│           │    └── [Confirmation Dialog or Button]
+│           │        │                             │
+│           │        ├── Button State             │
+│           │        │   └── "Disconnect KakaoTalk"│
+│           │        │                             │
+│           │        └── Confirmation State       │
+│           │            ├── Warning icon         │
+│           │            ├── Confirmation text    │
+│           │            ├── "Confirm Disconnect" │
+│           │            └── "Cancel" button      │
+│           └─────────────────────────────────────┘
+│
+│           ┌─────────────────────────────────────┐
+│           │  DISCONNECTED STATE                 │
+│           ├─────────────────────────────────────┤
+│           │ ❌ Status Badge                     │
+│           │    ├── XCircle icon                 │
+│           │    ├── "Not Connected" text         │
+│           │    └── "No active integration"      │
+│           │                                      │
+│           │ ℹ️ Info Panel                        │
+│           │    ├── Yellow border                │
+│           │    ├── MessageCircle icon           │
+│           │    ├── "Connect KakaoTalk" title    │
+│           │    └── Benefits list (3 items)      │
+│           │       ├── Sync messages             │
+│           │       ├── Receive notifications     │
+│           │       └── Two-way communication     │
+│           │                                      │
+│           │ 🔗 Connect Button                   │
+│           │    ├── Navy blue gradient           │
+│           │    ├── Yellow border                │
+│           │    ├── Link2 icon                   │
+│           │    ├── "Connect KakaoTalk Account"  │
+│           │    └── ChevronRight icon            │
+│           └─────────────────────────────────────┘
+│
+├── Profile Settings Section (placeholder)
+│
+└── Company Settings Section (placeholder)
+
+
+KakaoSyncIndicator Component (/components/chat/KakaoSyncIndicator.tsx)
+│
+└── [Used in chat message components]
+    │
+    ├── Synced TO KakaoTalk
+    │   ├── Green circle badge
+    │   ├── MessageCircle icon
+    │   ├── CheckCheck overlay (bottom-right)
+    │   └── Tooltip: "Synced to KakaoTalk"
+    │
+    └── FROM KakaoTalk (external)
+        ├── Yellow circle badge
+        ├── MessageCircle icon
+        ├── ArrowDownToLine overlay (bottom-right)
+        └── Tooltip: "From KakaoTalk"
+
+
+Design Elements
+===============
+
+Riveted Border:
+┌─[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]─┐
+│  Gradient: #3C3C3C → #7A7A7A → #3C3C3C                      │
+│  Small circular rivets evenly spaced                        │
+└─[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]──[●]─┘
+
+Hazard Stripes:
+╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱
+  Yellow (#FFB627) / Black diagonal repeating pattern
+╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱╱
+
+Animated Switch:
+OFF: [○────────] Gray background, knob left
+ON:  [────────●] Green background, knob right
+     ^ Smooth spring animation between states
+
+
+Color Usage Map
+===============
+
+#001B51 (Navy Blue):
+  - Primary buttons
+  - Main headings
+  - Icons in badges
+  - Tooltip backgrounds
+
+#3C3C3C (Dark Gray):
+  - Border (riveted effect)
+  - Secondary icons
+  - Technical text
+
+#7A7A7A (Mid Gray):
+  - Rivet highlights
+  - Descriptions
+  - Secondary text
+
+#FFB627 (Safety Yellow):
+  - Section header icon backgrounds
+  - Sync toggle border (hazard)
+  - Primary button borders
+  - Warning accents
+
+#059669 (Green):
+  - Connected status badge
+  - Success states
+  - Sync toggle (enabled)
+
+#DC2626 (Red):
+  - Disconnect button/confirmation
+  - Error states
+  - Warning dialogs
+
+
+Animation Timeline
+==================
+
+Component Mount:
+0ms    → Opacity 0, Y offset +20px
+400ms  → Opacity 1, Y offset 0 (spring)
+
+Status Badge:
+0ms    → Scale 1, opacity 0
+100ms  → Scale 1, opacity 1 (stagger delay)
+Loop   → Pulse: 1 → 1.2 → 1 (2s ease)
+
+Sync Toggle:
+Click  → Loading spinner shows
+API    → Server action completes
+Success → Switch animates (500ms spring)
+        → Color transition (300ms)
+        → Icon fade (200ms)
+
+State Transition (Connect/Disconnect):
+0ms    → Current state scale 1, opacity 1
+300ms  → Fade out: scale 0.95, opacity 0
+300ms  → Fade in: scale 0.95 → 1, opacity 0 → 1
+
+
+Responsive Breakpoints
+======================
+
+Mobile (< 640px):
+  - Full width buttons
+  - Stacked badges
+  - Smaller icon sizes (h-4 w-4)
+  - Reduced padding (p-4)
+
+Tablet (640px - 1024px):
+  - Standard layout
+  - Icon sizes (h-5 w-5)
+  - Medium padding (p-6)
+
+Desktop (> 1024px):
+  - Max width container
+  - Larger icons (h-6 w-6)
+  - Generous padding (p-8)
+  - Transform hover effects enabled

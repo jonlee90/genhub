@@ -4,13 +4,24 @@ import { Tables } from './database.types';
 export type ChatRoom = Tables<'chat_rooms'>;
 export type ChatParticipant = Tables<'chat_participants'>;
 export type Message = Tables<'messages'>;
+export type MessageReaction = Tables<'message_reactions'>;
 
 // Entity reference types for @mentions
-export type EntityReferenceType = 'user' | 'task' | 'project' | 'material' | 'expense';
+export type EntityType = 'user' | 'task' | 'project' | 'material' | 'expense';
+export type EntityReferenceType = EntityType; // Alias for backwards compatibility
 
 export interface EntityReference {
-  type: EntityReferenceType;
+  type: EntityType;
   id: string;
+  displayName?: string; // Optional for display in UI
+}
+
+// Search result type for autocomplete
+export interface SearchResult {
+  id: string;
+  name: string;
+  type: EntityType;
+  metadata?: Record<string, any>; // Type-specific data (e.g., status, price, etc.)
 }
 
 // Extended types with relationships
@@ -23,6 +34,28 @@ export interface MessageWithSender extends Message {
     email: string;
   };
   reply_to?: MessageWithSender;  // For threaded replies
+  reactions?: MessageReactionGroup[];  // Grouped reactions
+}
+
+// Reaction types
+
+export interface MessageReactionGroup {
+  emoji: string;
+  count: number;
+  hasReacted: boolean;  // Whether current user has reacted with this emoji
+  users: Array<{
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  }>;
+}
+
+export interface MessageReactionWithUser extends MessageReaction {
+  user: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  };
 }
 
 export interface ChatRoomWithUnread extends ChatRoom {
@@ -114,3 +147,21 @@ export interface ChatParticipantRealtimePayload {
   new: ChatParticipant;
   old: ChatParticipant;
 }
+
+// Construction-themed emoji reactions
+// These are curated emojis that align with the construction industry theme
+
+export const CONSTRUCTION_EMOJIS = [
+  { emoji: '👍', label: 'Thumbs up', category: 'general' },
+  { emoji: '✅', label: 'Check mark', category: 'general' },
+  { emoji: '🏗️', label: 'Construction site', category: 'construction' },
+  { emoji: '🔨', label: 'Hammer', category: 'tools' },
+  { emoji: '🔧', label: 'Wrench', category: 'tools' },
+  { emoji: '⚠️', label: 'Warning', category: 'safety' },
+  { emoji: '🚧', label: 'Construction sign', category: 'construction' },
+  { emoji: '📋', label: 'Clipboard', category: 'planning' },
+  { emoji: '💰', label: 'Money', category: 'finance' },
+  { emoji: '🏢', label: 'Building', category: 'construction' },
+] as const;
+
+export type ConstructionEmoji = typeof CONSTRUCTION_EMOJIS[number]['emoji'];

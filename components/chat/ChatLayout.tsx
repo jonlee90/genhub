@@ -17,7 +17,11 @@ import { ChatRoomList } from './ChatRoomList';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { ConnectionStatus, CompactConnectionStatus } from './ConnectionStatus';
-import { ArrowLeft, Users, Settings, MoreVertical } from 'lucide-react';
+import { PushPermissionPrompt } from './PushPermissionPrompt';
+import { MuteRoomDropdown } from './MuteRoomDropdown';
+import { SearchMessages } from './SearchMessages';
+import { ChatSettings } from './ChatSettings';
+import { ArrowLeft, Users, Settings, MoreVertical, Search } from 'lucide-react';
 import { ChatRoomWithUnread, MessageWithSender } from '@/types/chat.types';
 import { useChatRooms } from '@/lib/hooks/useChatRooms';
 import { getCurrentUserContext } from '@/app/actions/chat-queries';
@@ -32,6 +36,8 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [userContext, setUserContext] = useState<{
     userId: string;
     companyId: string;
@@ -131,8 +137,12 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
       : 'connecting';
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* Debug: Sidebar - Desktop: always visible, Mobile: conditional */}
+    <>
+      {/* Debug: Push Permission Prompt - Show on first visit */}
+      <PushPermissionPrompt />
+
+      <div className="flex h-screen bg-gray-50 overflow-hidden">
+        {/* Debug: Sidebar - Desktop: always visible, Mobile: conditional */}
       <AnimatePresence mode="wait">
         {(isMobileSidebarOpen || !isMobile) && (
           <motion.div
@@ -208,15 +218,38 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
 
               {/* Debug: Room actions */}
               <div className="flex items-center gap-2">
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <Users className="h-5 w-5 text-gray-600" />
+                {/* Debug: Search messages button */}
+                <button
+                  onClick={() => {
+                    console.log('[ChatLayout] Opening search');
+                    setIsSearchOpen(true);
+                  }}
+                  className="p-2 hover:bg-construction-blue/10 rounded-lg transition-colors group"
+                  title="Search messages"
+                >
+                  <Search className="h-5 w-5 text-gray-600 group-hover:text-construction-blue transition-colors" />
                 </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <Settings className="h-5 w-5 text-gray-600" />
-                </button>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <MoreVertical className="h-5 w-5 text-gray-600" />
-                </button>
+
+                {/* Debug: Mute room dropdown */}
+                <MuteRoomDropdown
+                  chatRoomId={activeRoomId}
+                  isMuted={!!(activeRoom.muted_until && new Date(activeRoom.muted_until) > new Date())}
+                  mutedUntil={activeRoom.muted_until}
+                />
+
+                {/* Debug: Settings button (only for project rooms) */}
+                {activeRoom.type === 'project' && (
+                  <button
+                    onClick={() => {
+                      console.log('[ChatLayout] Opening settings');
+                      setIsSettingsOpen(true);
+                    }}
+                    className="p-2 hover:bg-construction-blue/10 rounded-lg transition-colors group"
+                    title="Room settings"
+                  >
+                    <Settings className="h-5 w-5 text-gray-600 group-hover:text-construction-blue transition-colors" />
+                  </button>
+                )}
               </div>
             </motion.div>
 
@@ -259,6 +292,27 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
           </motion.div>
         )}
       </div>
-    </div>
+      </div>
+
+      {/* Debug: Search Messages Modal */}
+      <SearchMessages
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        currentRoomId={activeRoomId || undefined}
+        currentRoomName={activeRoom?.name}
+      />
+
+      {/* Debug: Chat Settings Modal (only for project rooms) */}
+      {activeRoom && activeRoom.type === 'project' && (
+        <ChatSettings
+          isOpen={isSettingsOpen}
+          onClose={() => setIsSettingsOpen(false)}
+          roomId={activeRoomId!}
+          roomType={activeRoom.type}
+          initialName={activeRoom.name}
+          initialDescription={activeRoom.description}
+        />
+      )}
+    </>
   );
 }

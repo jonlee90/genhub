@@ -60,7 +60,8 @@
       "Bash(pnpm run dev)",
       "Bash(npm run lint:ts:*)",
       "Bash(rm:*)",
-      "Skill(kc:impl)"
+      "Skill(kc:impl)",
+      "mcp__supabase__search_docs"
     ],
     "deny": [],
     "ask": []

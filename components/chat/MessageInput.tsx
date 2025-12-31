@@ -4,23 +4,45 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { sendMessage } from '@/app/actions/chat';
-import { MessageWithSender } from '@/types/chat.types';
+import { MessageWithSender, EntityReference } from '@/types/chat.types';
 import { Reply, X, Paperclip, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { FileUploader } from './FileUploader';
+import { useTypingIndicator } from '@/lib/hooks/useTypingIndicator';
+import { EntityAutocomplete } from './EntityAutocomplete';
+import { EntityMention } from './EntityMention';
 
 interface MessageInputProps {
   chatRoomId: string;
   replyTo?: MessageWithSender | null;
   onCancelReply?: () => void;
+  userId: string;
+  userName: string;
 }
 
-// Debug: Message input with auto-resize textarea and send button
-export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInputProps) {
+// Debug: Message input with auto-resize textarea, @mention autocomplete, and send button
+export function MessageInput({ chatRoomId, replyTo, onCancelReply, userId, userName }: MessageInputProps) {
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [pendingMessageId, setPendingMessageId] = useState<string | null>(null);
+  const [entityReferences, setEntityReferences] = useState<EntityReference[]>([]);
+
+  // Debug: Autocomplete state
+  const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [autocompleteQuery, setAutocompleteQuery] = useState('');
+  const [autocompletePosition, setAutocompletePosition] = useState({ x: 0, y: 0 });
+  const [atTriggerIndex, setAtTriggerIndex] = useState(-1);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  console.log('[MessageInput] Rendering for room:', chatRoomId, 'Reply to:', replyTo?.id);
+  console.log('[MessageInput] Rendering for room:', chatRoomId, 'Reply to:', replyTo?.id, 'Entity refs:', entityReferences.length);
+
+  // Debug: Typing indicator hook
+  const { startTyping, stopTyping } = useTypingIndicator({
+    roomId: chatRoomId,
+    userId,
+    userName,
+  });
 
   // Debug: Auto-resize textarea on content change
   useEffect(() => {
@@ -46,6 +68,95 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
     textareaRef.current?.focus();
   }, [replyTo]);
 
+  // Debug: Detect @ trigger and show autocomplete
+  useEffect(() => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const cursorPosition = textarea.selectionStart;
+    const textBeforeCursor = content.slice(0, cursorPosition);
+
+    // Find last @ symbol before cursor
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+    // Check if we should show autocomplete
+    if (lastAtIndex !== -1 && lastAtIndex < cursorPosition) {
+      const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+
+      // Show autocomplete if:
+      // 1. @ is at start OR preceded by whitespace
+      // 2. No whitespace after @ (query is continuous)
+      const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : ' ';
+      const isValidTrigger = /\s/.test(charBeforeAt) || lastAtIndex === 0;
+      const hasWhitespace = /\s/.test(textAfterAt);
+
+      if (isValidTrigger && !hasWhitespace) {
+        console.log('[MessageInput] Detected @ trigger, query:', textAfterAt);
+
+        // Calculate autocomplete position
+        const rect = textarea.getBoundingClientRect();
+        const lineHeight = 24; // Approximate line height
+        const lines = textBeforeCursor.split('\n').length;
+        const yOffset = (lines - 1) * lineHeight;
+
+        setAtTriggerIndex(lastAtIndex);
+        setAutocompleteQuery(textAfterAt);
+        setAutocompletePosition({
+          x: rect.left + 16, // Offset by padding
+          y: rect.top - yOffset - 300, // Above input, adjusted for scroll
+        });
+        setShowAutocomplete(true);
+      } else {
+        setShowAutocomplete(false);
+      }
+    } else {
+      setShowAutocomplete(false);
+    }
+  }, [content]);
+
+  // Debug: Handle input change with typing indicator
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+
+    // Start typing indicator if content is not empty
+    if (newContent.trim()) {
+      startTyping();
+    } else {
+      stopTyping();
+    }
+  };
+
+  // Debug: Handle entity selection from autocomplete
+  const handleEntitySelect = (entity: { type: any; id: string; displayName: string }) => {
+    console.log('[MessageInput] Entity selected:', entity);
+
+    // Replace @trigger text with formatted token
+    const beforeTrigger = content.slice(0, atTriggerIndex);
+    const afterCursor = content.slice(textareaRef.current?.selectionStart || content.length);
+    const token = `@[${entity.type}:${entity.id}:${entity.displayName}]`;
+
+    const newContent = beforeTrigger + token + ' ' + afterCursor;
+    setContent(newContent);
+
+    // Add to entity references
+    setEntityReferences(prev => [
+      ...prev,
+      { type: entity.type, id: entity.id, displayName: entity.displayName },
+    ]);
+
+    // Close autocomplete
+    setShowAutocomplete(false);
+
+    // Focus textarea
+    textareaRef.current?.focus();
+  };
+
+  // Debug: Remove entity reference
+  const handleRemoveEntity = (index: number) => {
+    console.log('[MessageInput] Removing entity at index:', index);
+    setEntityReferences(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Debug: Send message handler
   const handleSend = async () => {
     if (!content.trim() || isSending) {
@@ -53,8 +164,11 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
       return;
     }
 
-    console.log('[MessageInput] Sending message, length:', content.length);
+    console.log('[MessageInput] Sending message, length:', content.length, 'Entity refs:', entityReferences.length);
     setIsSending(true);
+
+    // Stop typing indicator
+    stopTyping();
 
     const formData = new FormData();
     formData.append('chatRoomId', chatRoomId);
@@ -63,11 +177,24 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
       formData.append('replyToId', replyTo.id);
     }
 
+    // Add entity references if any
+    if (entityReferences.length > 0) {
+      formData.append('entityReferences', JSON.stringify(entityReferences));
+      console.log('[MessageInput] Attaching entity references:', entityReferences);
+    }
+
     const result = await sendMessage(formData);
 
     if (result.success) {
       console.log('[MessageInput] Message sent successfully');
+
+      // Store message ID for file uploads
+      if (result.message?.id) {
+        setPendingMessageId(result.message.id);
+      }
+
       setContent('');
+      setEntityReferences([]);
       onCancelReply?.();
       textareaRef.current?.focus();
       toast.success('Message sent');
@@ -77,6 +204,12 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
     }
 
     setIsSending(false);
+  };
+
+  // Debug: Handle file upload complete
+  const handleFileUpload = (attachment: any) => {
+    console.log('[MessageInput] File uploaded:', attachment);
+    toast.success('File attached to message');
   };
 
   // Debug: Handle keyboard events
@@ -91,7 +224,20 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
   };
 
   return (
-    <div className="border-t-2 border-gray-200 bg-white p-4 shrink-0">
+    <div className="relative border-t-2 border-gray-200 bg-white p-4 shrink-0">
+      {/* Debug: Autocomplete dropdown */}
+      <AnimatePresence>
+        {showAutocomplete && (
+          <EntityAutocomplete
+            query={autocompleteQuery}
+            position={autocompletePosition}
+            chatRoomId={chatRoomId}
+            onSelect={handleEntitySelect}
+            onClose={() => setShowAutocomplete(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Debug: Reply-to preview with industrial style */}
       <AnimatePresence>
         {replyTo && (
@@ -123,24 +269,44 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply }: MessageInpu
         )}
       </AnimatePresence>
 
+      {/* Debug: Entity mention badges */}
+      {entityReferences.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          transition={{ duration: 0.2 }}
+          className="mb-3 flex flex-wrap gap-2"
+        >
+          {entityReferences.map((entity, index) => (
+            <EntityMention
+              key={`${entity.type}-${entity.id}-${index}`}
+              type={entity.type}
+              id={entity.id}
+              displayName={entity.displayName || ''}
+              onRemove={() => handleRemoveEntity(index)}
+            />
+          ))}
+        </motion.div>
+      )}
+
       {/* Debug: Input area with construction-themed styling */}
       <div className="flex items-end gap-2">
-        {/* Attachment button (placeholder for Phase 2) */}
-        <button
-          className="p-2.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 disabled:opacity-40 disabled:cursor-not-allowed"
-          title="Attach file (coming soon)"
-          disabled
-        >
-          <Paperclip className="h-5 w-5" />
-        </button>
+        {/* File uploader */}
+        {pendingMessageId && (
+          <FileUploader
+            messageId={pendingMessageId}
+            onUploadComplete={handleFileUpload}
+          />
+        )}
 
         {/* Textarea with blueprint-inspired border */}
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => handleContentChange(e.target.value)}
             onKeyDown={handleKeyDown}
+            onBlur={stopTyping}
             placeholder="Type a message..."
             disabled={isSending}
             className={cn(

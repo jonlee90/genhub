@@ -223,6 +223,22 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
         message: `Your expense "${currentExpense.description}" has been ${validated.status}`,
         link: `/app/expenses/${validated.id}`,
       });
+
+      // Send AlimTalk notification to submitter (Task 0018)
+      try {
+        const { KakaoService } = await import('@/lib/services/kakao');
+        await KakaoService.sendAlimTalk(currentExpense.submitted_by, {
+          template: 'expense_status',
+          params: {
+            status: validated.status === 'approved' ? 'Approved' : 'Rejected',
+            amount: `$${expense.amount.toFixed(2)}`,
+            comment: validated.approval_notes || 'No comment provided',
+          },
+        });
+      } catch (error) {
+        console.error('[reviewExpense] Error sending AlimTalk:', error);
+        // Don't fail expense review if AlimTalk fails
+      }
     }
 
     revalidatePath('/app/expenses');

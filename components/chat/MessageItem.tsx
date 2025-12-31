@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageWithSender } from '@/types/chat.types';
-import { Reply, Copy, Pencil, Trash2, Ban, Check, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { MessageWithSender, EntityReference } from '@/types/chat.types';
+import { Reply, Copy, Pencil, Trash2, Ban, Check, Loader2, AlertCircle, RefreshCw, Smile, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import type { MessageStatus } from '@/lib/hooks/useMessages';
+import { MessageReactions, MessageReactionGroup } from './MessageReactions';
+import { ReactionPicker } from './ReactionPicker';
+import { FilePreview, MessageAttachment } from './FilePreview';
+import { EntityPreview } from './EntityPreview';
+import { EditMessageForm } from './EditMessageForm';
+import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { getMessageReplyCounts, getMessagesReactions, getMessagesAttachments, toggleReaction } from '@/app/actions/chat';
 
 interface MessageItemProps {
   message: MessageWithSender;
@@ -16,6 +23,7 @@ interface MessageItemProps {
   onEdit?: (message: MessageWithSender) => void;
   onDelete?: (messageId: string) => void;
   onRetry?: () => void;
+  onOpenThread?: (messageId: string) => void;
   // Optimistic UI props
   isOptimistic?: boolean;
   status?: MessageStatus;
@@ -29,12 +37,19 @@ export function MessageItem({
   onEdit,
   onDelete,
   onRetry,
+  onOpenThread,
   isOptimistic,
   status,
   error,
 }: MessageItemProps) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [reactions, setReactions] = useState<MessageReactionGroup[]>([]);
+  const [replyCount, setReplyCount] = useState(0);
+  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { data: session } = useSession();
 
   console.log(
@@ -54,6 +69,54 @@ export function MessageItem({
   // Debug: Determine if message is in a pending state
   const isSending = isOptimistic && status === 'sending';
   const hasFailed = isOptimistic && status === 'error';
+
+  // Debug: Fetch reactions, reply counts, and attachments
+  useEffect(() => {
+    if (!message.id || isOptimistic) return;
+
+    async function fetchMessageData() {
+      console.log('[MessageItem] Fetching reactions, replies, and attachments for message:', message.id);
+
+      // Fetch all data in parallel
+      const [reactionsResult, replyCountResult, attachmentsResult] = await Promise.all([
+        getMessagesReactions([message.id]),
+        getMessageReplyCounts([message.id]),
+        getMessagesAttachments([message.id]),
+      ]);
+
+      if (reactionsResult.success) {
+        setReactions(reactionsResult.reactionsMap?.[message.id] || []);
+      }
+
+      if (replyCountResult.success) {
+        setReplyCount(replyCountResult.counts?.[message.id] || 0);
+      }
+
+      if (attachmentsResult.success) {
+        setAttachments(attachmentsResult.attachmentsMap?.[message.id] || []);
+      }
+    }
+
+    fetchMessageData();
+  }, [message.id, isOptimistic]);
+
+  // Debug: Handle reaction change
+  const handleReactionChange = async () => {
+    console.log('[MessageItem] Reaction changed, refreshing reactions...');
+    const result = await getMessagesReactions([message.id]);
+    if (result.success) {
+      setReactions(result.reactionsMap?.[message.id] || []);
+    }
+  };
+
+  // Debug: Handle attachment deletion
+  const handleAttachmentDelete = async () => {
+    console.log('[MessageItem] Attachment deleted, refreshing attachments...');
+    const result = await getMessagesAttachments([message.id]);
+    if (result.success) {
+      setAttachments(result.attachmentsMap?.[message.id] || []);
+    }
+  };
 
   // Debug: Handle copy to clipboard
   const handleCopy = async () => {
@@ -134,18 +197,30 @@ export function MessageItem({
               </motion.div>
             )}
 
-            {/* Debug: Message content with blueprint-style container */}
+            {/* Debug: Message content with blueprint-style container or edit form */}
             <div className="relative">
-              <div
-                className={cn(
-                  'text-sm whitespace-pre-wrap break-words leading-relaxed',
-                  isSending && 'text-gray-500',
-                  hasFailed && 'text-gray-800',
-                  !isOptimistic && 'text-gray-800'
-                )}
-              >
-                {message.content}
-              </div>
+              {isEditing ? (
+                <EditMessageForm
+                  messageId={message.id}
+                  currentContent={message.content}
+                  onSave={() => {
+                    setIsEditing(false);
+                    // Optionally refresh message data here
+                  }}
+                  onCancel={() => setIsEditing(false)}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    'text-sm whitespace-pre-wrap break-words leading-relaxed',
+                    isSending && 'text-gray-500',
+                    hasFailed && 'text-gray-800',
+                    !isOptimistic && 'text-gray-800'
+                  )}
+                >
+                  {message.content}
+                </div>
+              )}
 
               {/* Debug: Optimistic UI - Sending indicator */}
               {isSending && (
@@ -179,72 +254,164 @@ export function MessageItem({
             </div>
           </div>
 
-          {/* Debug: Hover actions menu with industrial stamped metal style */}
-          <motion.div
-            initial={false}
-            animate={{
-              opacity: showActions ? 1 : 0,
-              scale: showActions ? 1 : 0.95,
-              y: showActions ? 0 : -5,
-            }}
-            transition={{ duration: 0.15 }}
-            className={cn(
-              'absolute top-0 right-2 flex items-center gap-0.5',
-              'bg-white border-2 border-gray-200 rounded-lg shadow-lg p-1',
-              'transition-opacity',
-              showActions ? 'pointer-events-auto' : 'pointer-events-none'
-            )}
-          >
-            {/* Reply button */}
-            <button
-              onClick={() => onReply?.(message)}
-              className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
-              title="Reply"
-              aria-label="Reply to message"
-            >
-              <Reply className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
-            </button>
+          {/* Debug: File attachments */}
+          {attachments.length > 0 && (
+            <FilePreview
+              attachments={attachments}
+              canDelete={isOwnMessage}
+              onDelete={handleAttachmentDelete}
+            />
+          )}
 
-            {/* Copy button */}
+          {/* Debug: Entity previews */}
+          {message.entity_references && Array.isArray(message.entity_references) && message.entity_references.length > 0 && (
+            <div className="space-y-3 mt-3">
+              {(message.entity_references as unknown as EntityReference[]).map((ref, index) => (
+                <EntityPreview
+                  key={`${ref.type}-${ref.id}-${index}`}
+                  type={ref.type}
+                  id={ref.id}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Debug: Reactions */}
+          {reactions.length > 0 && (
+            <MessageReactions
+              messageId={message.id}
+              reactions={reactions}
+              onReactionChange={handleReactionChange}
+            />
+          )}
+
+          {/* Debug: Reply count badge */}
+          {replyCount > 0 && (
             <button
-              onClick={handleCopy}
-              className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
-              title="Copy"
-              aria-label="Copy message to clipboard"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-construction-green" />
-              ) : (
-                <Copy className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
+              onClick={() => onOpenThread?.(message.id)}
+              className={cn(
+                'flex items-center gap-1.5 mt-2',
+                'px-2.5 py-1.5 bg-construction-blue/5 hover:bg-construction-blue/10',
+                'border-2 border-construction-blue/20 hover:border-construction-blue/40',
+                'rounded-lg transition-all duration-200',
+                'group'
               )}
+            >
+              <MessageSquare className="h-3.5 w-3.5 text-construction-blue" />
+              <span className="text-xs font-mono font-bold text-construction-blue">
+                {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+              </span>
             </button>
+          )}
 
-            {/* Edit button (only for own messages) */}
-            {isOwnMessage && (
+          {/* Debug: Hover actions menu with industrial stamped metal style */}
+          <div className="relative">
+            <motion.div
+              initial={false}
+              animate={{
+                opacity: showActions ? 1 : 0,
+                scale: showActions ? 1 : 0.95,
+                y: showActions ? 0 : -5,
+              }}
+              transition={{ duration: 0.15 }}
+              className={cn(
+                'absolute top-0 right-2 flex items-center gap-0.5',
+                'bg-white border-2 border-gray-200 rounded-lg shadow-lg p-1',
+                'transition-opacity',
+                showActions ? 'pointer-events-auto' : 'pointer-events-none'
+              )}
+            >
+              {/* React button */}
               <button
-                onClick={() => onEdit?.(message)}
+                onClick={() => setShowReactionPicker(!showReactionPicker)}
                 className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
-                title="Edit"
-                aria-label="Edit message"
+                title="React"
+                aria-label="React to message"
               >
-                <Pencil className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
+                <Smile className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
               </button>
-            )}
 
-            {/* Delete button (only for own messages) */}
-            {isOwnMessage && (
+              {/* Reply button */}
               <button
-                onClick={() => onDelete?.(message.id)}
-                className="p-1.5 hover:bg-red-50 rounded transition-colors group/btn"
-                title="Delete"
-                aria-label="Delete message"
+                onClick={() => onReply?.(message)}
+                className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
+                title="Reply"
+                aria-label="Reply to message"
               >
-                <Trash2 className="h-4 w-4 text-gray-600 group-hover/btn:text-red-600 transition-colors" />
+                <Reply className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
               </button>
-            )}
-          </motion.div>
+
+              {/* Copy button */}
+              <button
+                onClick={handleCopy}
+                className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
+                title="Copy"
+                aria-label="Copy message to clipboard"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-construction-green" />
+                ) : (
+                  <Copy className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
+                )}
+              </button>
+
+              {/* Edit button (only for own messages) */}
+              {isOwnMessage && !isEditing && (
+                <button
+                  onClick={() => {
+                    console.log('[MessageItem] Edit button clicked');
+                    setIsEditing(true);
+                    setShowActions(false);
+                  }}
+                  className="p-1.5 hover:bg-construction-blue/10 rounded transition-colors group/btn"
+                  title="Edit"
+                  aria-label="Edit message"
+                >
+                  <Pencil className="h-4 w-4 text-gray-600 group-hover/btn:text-construction-blue transition-colors" />
+                </button>
+              )}
+
+              {/* Delete button (only for own messages) */}
+              {isOwnMessage && !isEditing && (
+                <button
+                  onClick={() => {
+                    console.log('[MessageItem] Delete button clicked');
+                    setShowDeleteDialog(true);
+                    setShowActions(false);
+                  }}
+                  className="p-1.5 hover:bg-red-50 rounded transition-colors group/btn"
+                  title="Delete"
+                  aria-label="Delete message"
+                >
+                  <Trash2 className="h-4 w-4 text-gray-600 group-hover/btn:text-red-600 transition-colors" />
+                </button>
+              )}
+            </motion.div>
+
+            {/* Debug: Reaction picker */}
+            <ReactionPicker
+              messageId={message.id}
+              isOpen={showReactionPicker}
+              onSelect={async (emoji) => {
+                await toggleReaction(message.id, emoji);
+                handleReactionChange();
+              }}
+              onClose={() => setShowReactionPicker(false)}
+            />
+          </div>
         </div>
       )}
+
+      {/* Debug: Delete confirmation dialog */}
+      <DeleteConfirmDialog
+        isOpen={showDeleteDialog}
+        messageId={message.id}
+        onConfirm={() => {
+          setShowDeleteDialog(false);
+          // Optionally refresh message list here
+        }}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
     </motion.div>
   );
 }
