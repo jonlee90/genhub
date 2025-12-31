@@ -70,6 +70,7 @@ next-saas-starter/
 │   │   ├── team/               # Team & subcontractor management
 │   │   ├── reports/            # Daily site reports
 │   │   ├── analytics/          # Dashboards & charts
+│   │   ├── chat/               # Real-time messaging
 │   │   ├── settings/           # User/company settings
 │   │   └── profile/            # User profile
 │   │
@@ -84,7 +85,12 @@ next-saas-starter/
 │   │   ├── subcontractors.ts   # Subcontractor CRUD
 │   │   ├── phases.ts           # Phase management
 │   │   ├── accept-invite.ts    # Invitation acceptance
-│   │   └── stripe.ts           # Stripe payment actions
+│   │   ├── stripe.ts           # Stripe payment actions
+│   │   ├── chat.ts             # Chat room/message CRUD
+│   │   ├── chat-queries.ts     # Chat query helpers
+│   │   ├── chat-search.ts      # Chat message search
+│   │   ├── push.ts             # Push notification management
+│   │   └── kakao.ts            # KakaoTalk integration
 │   │
 │   ├── api/                    # API routes
 │   │   ├── auth/[...nextauth]/ # NextAuth handlers
@@ -135,6 +141,13 @@ next-saas-starter/
 │   ├── team/                   # Team management
 │   ├── materials/              # Materials management
 │   ├── expenses/               # Expense management
+│   ├── chat/                   # Chat components
+│   │   ├── ChatLayout.tsx      # Main chat layout with sidebar
+│   │   ├── ChatRoomList.tsx    # Room list with unread counts
+│   │   ├── MessageList.tsx     # Virtualized message list
+│   │   ├── MessageItem.tsx     # Individual message with reactions
+│   │   ├── MessageInput.tsx    # Message composer with attachments
+│   │   └── ...
 │   ├── pwa/                    # PWA components
 │   ├── stripe/                 # Stripe components
 │   │
@@ -157,6 +170,15 @@ next-saas-starter/
 │   ├── auth.ts                 # NextAuth configuration
 │   ├── auth.config.ts          # Auth providers config
 │   ├── hooks/                  # Custom React hooks
+│   │   ├── useAuth.ts          # Authentication hook
+│   │   ├── useChatRooms.ts     # Chat rooms with realtime
+│   │   ├── useMessages.ts      # Messages with optimistic updates
+│   │   ├── useRealtimeConnection.ts # Supabase realtime status
+│   │   ├── useTypingIndicator.ts # Typing indicator
+│   │   ├── usePresence.ts      # User presence tracking
+│   │   ├── usePushNotifications.ts # Push notification setup
+│   │   ├── useBadgeCount.ts    # Unread badge count
+│   │   └── useMediaQuery.ts    # Responsive breakpoints
 │   ├── utils.ts                # Utility functions (cn, etc.)
 │   └── mail.ts                 # Email utilities
 │

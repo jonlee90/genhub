@@ -893,6 +893,122 @@ import { CreatorBadge } from '@/components/ui/CreatorBadge';
 </Dialog>
 ```
 
+### Chat Room List
+```tsx
+// Sidebar list of chat rooms with unread counts
+<div className="flex flex-col h-full bg-white border-r border-gray-200">
+  {/* Header */}
+  <div className="flex items-center justify-between p-4 border-b">
+    <h2 className="text-lg font-bold text-construction-blue">Messages</h2>
+    <Button size="icon" variant="ghost">
+      <MessageSquarePlus className="h-5 w-5" />
+    </Button>
+  </div>
+
+  {/* Room List */}
+  <ScrollArea className="flex-1">
+    {rooms.map(room => (
+      <button
+        key={room.id}
+        className={cn(
+          "w-full flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors",
+          isActive && "bg-construction-blue/5 border-l-4 border-l-construction-blue"
+        )}
+      >
+        <Avatar className="h-10 w-10" />
+        <div className="flex-1 min-w-0 text-left">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-gray-900 truncate">{room.name}</span>
+            <span className="text-xs text-gray-500">{formatTime(room.lastMessage?.created_at)}</span>
+          </div>
+          <p className="text-sm text-gray-600 truncate">{room.lastMessage?.content}</p>
+        </div>
+        {room.unread_count > 0 && (
+          <Badge className="bg-construction-blue text-white">{room.unread_count}</Badge>
+        )}
+      </button>
+    ))}
+  </ScrollArea>
+</div>
+```
+
+### Message Item
+```tsx
+// Individual chat message with reactions
+<div className={cn(
+  "flex gap-3 p-2 rounded-lg",
+  isOwnMessage ? "flex-row-reverse" : "flex-row"
+)}>
+  {!isOwnMessage && <Avatar className="h-8 w-8 shrink-0" />}
+
+  <div className={cn(
+    "max-w-[70%] space-y-1",
+    isOwnMessage && "items-end"
+  )}>
+    {/* Sender name (for others' messages) */}
+    {!isOwnMessage && (
+      <span className="text-xs font-medium text-gray-600">{sender.name}</span>
+    )}
+
+    {/* Message bubble */}
+    <div className={cn(
+      "px-4 py-2 rounded-2xl",
+      isOwnMessage
+        ? "bg-construction-blue text-white rounded-br-md"
+        : "bg-gray-100 text-gray-900 rounded-bl-md"
+    )}>
+      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+    </div>
+
+    {/* Reactions */}
+    {reactions.length > 0 && (
+      <div className="flex gap-1">
+        {reactions.map(reaction => (
+          <button className="flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+            <span>{reaction.emoji}</span>
+            <span className="text-gray-600">{reaction.count}</span>
+          </button>
+        ))}
+      </div>
+    )}
+
+    {/* Timestamp */}
+    <span className="text-xs text-gray-500">{formatTime(message.created_at)}</span>
+  </div>
+</div>
+```
+
+### Message Input
+```tsx
+// Message composer with attachment support
+<div className="border-t bg-white p-4">
+  <div className="flex items-end gap-2">
+    {/* Attachment button */}
+    <Button size="icon" variant="ghost" className="shrink-0">
+      <Paperclip className="h-5 w-5 text-gray-500" />
+    </Button>
+
+    {/* Input area */}
+    <div className="flex-1 relative">
+      <Textarea
+        placeholder="Type a message..."
+        className="min-h-[44px] max-h-32 resize-none pr-12"
+        rows={1}
+      />
+      {/* Emoji picker */}
+      <Button size="icon" variant="ghost" className="absolute right-2 bottom-2">
+        <Smile className="h-5 w-5 text-gray-500" />
+      </Button>
+    </div>
+
+    {/* Send button */}
+    <Button size="icon" className="shrink-0 bg-construction-blue">
+      <Send className="h-5 w-5" />
+    </Button>
+  </div>
+</div>
+```
+
 ### Progress Bar (Construction Theme)
 ```tsx
 // Fixed progress bar with construction-themed colors

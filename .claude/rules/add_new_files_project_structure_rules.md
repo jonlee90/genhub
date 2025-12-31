@@ -63,11 +63,18 @@ All example/demo folders (like `notes/`, `dashboard/`) are replaced with GenHub'
 │   │   ├── projects.ts
 │   │   ├── tasks.ts
 │   │   ├── bids.ts
-│   │   ├── chat.ts
+│   │   ├── chat.ts                 # Chat room/message CRUD
+│   │   ├── chat-queries.ts         # Chat query helpers
+│   │   ├── chat-search.ts          # Message search
+│   │   ├── push.ts                 # Push notifications
+│   │   ├── kakao.ts                # KakaoTalk integration
 │   │   ├── materials.ts
 │   │   ├── expenses.ts
 │   │   ├── reports.ts
 │   │   ├── team.ts
+│   │   ├── subcontractors.ts
+│   │   ├── phases.ts
+│   │   ├── accept-invite.ts
 │   │   ├── notifications.ts
 │   │   └── changeOrders.ts
 │   │
@@ -96,7 +103,7 @@ All example/demo folders (like `notes/`, `dashboard/`) are replaced with GenHub'
 │   ├── projects/                   # Project-related UI (MetroStepper, ProjectCard)
 │   ├── tasks/                      # Task board, Kanban, TaskCard, TaskDetail
 │   ├── bids/                       # BidTable, BidInviteModal, BidAward
-│   ├── chat/                       # ChatRoom, MessageBubble, KakaoSync
+│   ├── chat/                       # ChatLayout, ChatRoomList, MessageList, MessageItem, MessageInput
 │   ├── materials/                  # MaterialSearch, MaterialCard, ReceiptUpload
 │   ├── expenses/                   # ExpenseForm, ExpenseTable
 │   ├── reports/                    # ReportForm, ReportSummary
@@ -113,7 +120,16 @@ All example/demo folders (like `notes/`, `dashboard/`) are replaced with GenHub'
 │   └── [shared components...]
 │
 ├── lib/
-│   ├── hooks/                      # Custom React hooks (useProjects, useTasks, etc.)
+│   ├── hooks/                      # Custom React hooks
+│   │   ├── useAuth.ts              # Authentication state
+│   │   ├── useChatRooms.ts         # Chat rooms with realtime
+│   │   ├── useMessages.ts          # Messages with optimistic updates
+│   │   ├── useRealtimeConnection.ts # Supabase realtime status
+│   │   ├── useTypingIndicator.ts   # Typing indicator
+│   │   ├── usePresence.ts          # User presence
+│   │   ├── usePushNotifications.ts # FCM push notifications
+│   │   ├── useBadgeCount.ts        # Unread badge count
+│   │   └── useMediaQuery.ts        # Responsive breakpoints
 │   ├── auth.config.ts
 │   ├── auth.ts
 │   ├── mail.ts

@@ -77,6 +77,17 @@ GenHub uses **Supabase** (PostgreSQL) with two schemas:
 │  SYSTEM:                                                         │
 │    notifications     - In-app notifications                      │
 │    attachments       - File attachments                          │
+│    push_subscriptions - Push notification tokens (FCM)           │
+│                                                                  │
+│  CHAT:                                                           │
+│    chat_rooms        - Project/DM chat rooms                     │
+│    chat_participants - Room membership & read tracking           │
+│    messages          - Chat messages with threads                │
+│    message_reactions - Emoji reactions on messages               │
+│    message_attachments - File attachments for messages           │
+│                                                                  │
+│  INTEGRATIONS:                                                   │
+│    kakao_connections - KakaoTalk/Sendbird integration            │
 │                                                                  │
 │  BILLING:                                                        │
 │    stripe_customers  - Stripe subscription management            │
@@ -992,6 +1003,64 @@ CREATE TABLE public.message_reactions (
 -- TRIGGER: Updates message.updated_at on reaction insert/delete
 ```
 
+### message_attachments
+```sql
+CREATE TABLE public.message_attachments (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id    uuid NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  file_name     text NOT NULL,
+  file_url      text NOT NULL,
+  file_type     text NOT NULL,
+  file_size     integer NOT NULL CHECK (file_size > 0 AND file_size <= 10485760),
+  thumbnail_url text,
+  created_at    timestamptz DEFAULT now(),
+  updated_at    timestamptz DEFAULT now()
+);
+-- COMMENT: File and photo attachments for chat messages.
+--          Max file size: 10MB (10485760 bytes)
+--          Supported types: images (jpg, png, gif, webp), documents (pdf, doc, docx, xls, xlsx), archives (zip)
+-- RLS: Users can view attachments in their accessible rooms
+```
+
+### push_subscriptions
+```sql
+CREATE TABLE public.push_subscriptions (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid NOT NULL REFERENCES next_auth.users(id),
+  endpoint     text NOT NULL,
+  platform     text NOT NULL CHECK (platform IN ('web', 'ios', 'android')),
+  p256dh_key   text NOT NULL,
+  auth_key     text NOT NULL,
+  user_agent   text,
+  last_used_at timestamptz DEFAULT now(),
+  created_at   timestamptz DEFAULT now(),
+  updated_at   timestamptz DEFAULT now()
+);
+-- COMMENT: Stores push notification subscriptions (FCM tokens) for each user device/platform
+-- RLS: Users can only manage their own subscriptions
+```
+
+### kakao_connections
+```sql
+CREATE TABLE public.kakao_connections (
+  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id         uuid NOT NULL UNIQUE REFERENCES next_auth.users(id),
+  kakao_user_id   text NOT NULL,
+  sendbird_user_id text NOT NULL,
+  two_way_sync    boolean DEFAULT false,
+  connected_at    timestamptz DEFAULT now(),
+  disconnected_at timestamptz,
+  access_token    text NOT NULL,
+  refresh_token   text NOT NULL,
+  created_at      timestamptz DEFAULT now(),
+  updated_at      timestamptz DEFAULT now()
+);
+-- COMMENT: Stores KakaoTalk account connections via Sendbird integration
+--          with encrypted access tokens for two-way messaging sync.
+--          two_way_sync enables GenHub ↔ KakaoTalk message synchronization.
+-- RLS: Users can only view/manage their own connection
+```
+
 ---
 
 ## Migration History
@@ -1011,9 +1080,14 @@ CREATE TABLE public.message_reactions (
 | 20251230034957 | add_task_type_and_approval_status | Added task_type enum, approval_status enum, and approval workflow columns to tasks |
 | 20251230043428 | add_stripe_customers_table | Added stripe_customers table for subscription management |
 | 20251230103624 | add_project_image_columns | Added image_url, latitude, longitude columns to projects |
-| 20251230_chat | chat_system_tables_triggers_rls | Created chat_rooms, chat_participants, messages with RLS, triggers, and Realtime |
-| 20251230112532 | add_message_reply_index | Added indexes for threaded replies performance (reply_to_id) |
-| 027 | create_message_reactions | Created message_reactions table for emoji reactions on messages |
+| 20251230122249 | create_chat_tables | Created chat_rooms, chat_participants, messages tables |
+| 20251230122306 | chat_rls_policies | Added RLS policies for chat system |
+| 20251230122328 | chat_triggers_and_functions | Created chat triggers and helper functions |
+| 20251230224246 | 032_find_dm_room_function | Function to find existing DM rooms between users |
+| 20251230224346 | 033_dm_room_constraints | Constraints for DM room uniqueness |
+| 20251230225030 | 032_find_dm_room_function_search_path | Fixed search path for DM room function |
+| 20251230225049 | 033_dm_room_constraints_search_path | Fixed search path for DM constraints |
+| 20251230225339 | 034_messages_fts_index | Full-text search index for messages |
 
 ---
 
