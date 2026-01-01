@@ -1,8 +1,8 @@
 ---
 name: frontend-builder
 description: Use this agent to implement frontend UI components, pages, and features. ALWAYS uses the frontend-design plugin for high-quality, construction-themed output. Use after frontend-architect creates a plan, or for straightforward UI tasks.
-model: sonnet
 tools: Skill, Read, Edit, Write, Glob, Grep, Bash
+model: opus
 color: purple
 ---
 

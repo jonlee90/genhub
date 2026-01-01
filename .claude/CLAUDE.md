@@ -29,6 +29,22 @@
 - **Icons**: Construction-themed (Lucide icons with construction context)
 - **Aesthetic**: Professional, trustworthy, industrial strength
 
+### Standard Page Layout (REQUIRED)
+
+**All `/app/*` pages MUST follow this consistent layout:**
+
+| Element | Implementation |
+|---------|----------------|
+| **Blueprint Grid** | Fixed background, 0.03 opacity, 40px grid |
+| **Industrial Header** | h-1 construction-blue border + UPPERCASE font-black title |
+| **Page Container** | `flex-1 space-y-4 md:space-y-6 p-4 md:p-8` |
+| **Section Headers** | Icon in blue bg + bold title + description |
+| **Card Styling** | `border-2 border-gray-200 shadow-construction` |
+
+**DO NOT use:** Riveted borders, hazard stripes, heavy gradients, custom fonts
+
+> See **UI_RULES.md** for complete patterns and code examples.
+
 ## Critical Integration Requirements
 
 ### UI/UX Design

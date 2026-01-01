@@ -1,119 +1,98 @@
 import { ChatNotificationPreferences } from '@/components/settings/ChatNotificationPreferences';
 import { KakaoTalkSettings } from '@/components/settings/KakaoTalkSettings';
-import { Settings, Bell, User, Building2, MessageCircle } from 'lucide-react';
+import { SettingsSectionHeader } from '@/components/settings/SettingsSectionHeader';
+import { Bell, MessageCircle, User, Building2 } from 'lucide-react';
 
 /**
- * Settings Page - Construction-themed control panel
- * Includes notification preferences and other app settings
+ * Settings Page - Redesigned to match Projects/Tasks layout patterns
+ * Uses construction-themed design with blueprint grid background
+ * Server Component - child components handle client-side interactivity
  */
 export default function SettingsPage() {
   console.log('[SettingsPage] Rendering settings page');
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Page Header - Blueprint style */}
-        <div className="relative overflow-hidden rounded-lg border-4 border-[#001B51] bg-gradient-to-br from-[#001B51] via-[#003080] to-[#001B51] p-8 shadow-xl">
-          {/* Grid pattern background */}
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `
-                linear-gradient(white 1px, transparent 1px),
-                linear-gradient(90deg, white 1px, transparent 1px)
-              `,
-              backgroundSize: '30px 30px'
-            }}
-          />
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+      {/* Blueprint Grid Background - Fixed, low opacity */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px',
+            color: '#001B51',
+          }}
+        />
+      </div>
 
-          <div className="relative z-10">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="p-3 bg-[#FFB627] rounded-lg shadow-lg">
-                <Settings className="h-8 w-8 text-[#001B51]" />
-              </div>
-              <div>
-                <h1 className="text-4xl font-black text-white uppercase tracking-wide font-['Work_Sans']">
-                  System Settings
-                </h1>
-                <p className="text-sm text-blue-100 font-['IBM_Plex_Mono'] mt-1">
-                  CONTROL PANEL • Configure application preferences
-                </p>
-              </div>
-            </div>
-          </div>
+      {/* Page Header - Industrial Typography */}
+      <div className="relative">
+        {/* Construction border line */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+
+        <div className="pt-2 md:pt-4">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
+            SETTINGS
+          </h1>
+          <p className="mt-2 text-sm md:text-base text-gray-500">
+            Configure your account preferences and integrations
+          </p>
         </div>
+      </div>
 
+      {/* Settings Sections Container */}
+      <div className="space-y-6 md:space-y-8 relative z-10">
+        {/* ============================================ */}
         {/* Notifications Section */}
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <div className="p-2 bg-[#001B51] rounded">
-              <Bell className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#001B51] uppercase tracking-wide font-['Work_Sans']">
-                Notifications
-              </h2>
-              <p className="text-sm text-[#7A7A7A] font-['IBM_Plex_Mono']">
-                Manage how you receive job site alerts and updates
-              </p>
-            </div>
-          </div>
-
+        {/* ============================================ */}
+        <section className="space-y-4">
+          <SettingsSectionHeader
+            icon={Bell}
+            title="Notifications"
+            description="Manage how you receive job site alerts and updates"
+          />
           <ChatNotificationPreferences />
         </section>
 
+        {/* ============================================ */}
         {/* KakaoTalk Integration Section */}
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <div className="p-2 bg-[#FFB627] rounded">
-              <MessageCircle className="h-5 w-5 text-[#001B51]" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#001B51] uppercase tracking-wide font-['Work_Sans']">
-                KakaoTalk Integration
-              </h2>
-              <p className="text-sm text-[#7A7A7A] font-['IBM_Plex_Mono']">
-                Connect your KakaoTalk account for notifications and message sync
-              </p>
-            </div>
-          </div>
-
+        {/* ============================================ */}
+        <section className="space-y-4">
+          <SettingsSectionHeader
+            icon={MessageCircle}
+            title="KakaoTalk Integration"
+            description="Connect your KakaoTalk account for notifications and message sync"
+          />
           <KakaoTalkSettings />
         </section>
 
-        {/* Future Settings Sections (placeholders) */}
-        <section className="opacity-50">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="p-2 bg-[#3C3C3C] rounded">
-              <User className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#3C3C3C] uppercase tracking-wide font-['Work_Sans']">
-                Profile Settings
-              </h2>
-              <p className="text-sm text-[#7A7A7A] font-['IBM_Plex_Mono']">
-                Coming soon...
-              </p>
-            </div>
-          </div>
+        {/* ============================================ */}
+        {/* Future Settings Sections (Disabled/Coming Soon) */}
+        {/* ============================================ */}
+        <section className="space-y-4">
+          <SettingsSectionHeader
+            icon={User}
+            title="Profile Settings"
+            description="Coming soon..."
+            disabled
+          />
         </section>
 
-        <section className="opacity-50">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="p-2 bg-[#3C3C3C] rounded">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-black text-[#3C3C3C] uppercase tracking-wide font-['Work_Sans']">
-                Company Settings
-              </h2>
-              <p className="text-sm text-[#7A7A7A] font-['IBM_Plex_Mono']">
-                Coming soon...
-              </p>
-            </div>
-          </div>
+        <section className="space-y-4">
+          <SettingsSectionHeader
+            icon={Building2}
+            title="Company Settings"
+            description="Coming soon..."
+            disabled
+          />
         </section>
       </div>
+
+      {/* Decorative bottom border */}
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 ---
 name: frontend-architect
 description: Use this agent for UI/UX planning, component architecture, and Aceternity UI research. This agent ONLY creates implementation plans - it does NOT write code. Use for complex UI features requiring research before implementation.
-model: sonnet
 tools: Read, Glob, Grep, WebFetch, Write
+model: opus
 color: purple
 ---
 

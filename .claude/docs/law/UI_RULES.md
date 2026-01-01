@@ -8,6 +8,9 @@
 2. [Color System](#color-system)
 3. [Typography](#typography)
 4. [Spacing & Layout](#spacing--layout)
+   - [Standard Page Layout (REQUIRED)](#standard-page-layout-required)
+   - [Section Header Pattern](#section-header-pattern)
+   - [Standard Card Pattern](#standard-card-pattern)
 5. [Component Library](#component-library)
 6. [Icon System](#icon-system)
 7. [Animation & Motion](#animation--motion)
@@ -15,6 +18,19 @@
 9. [PWA Guidelines](#pwa-guidelines)
 10. [Component Patterns](#component-patterns)
 11. [Code Examples](#code-examples)
+
+---
+
+## Quick Reference: Page Layout Checklist
+
+When building any `/app/*` page, ensure:
+
+- [ ] **Blueprint Grid Background** - Fixed, 0.03 opacity, 40px grid
+- [ ] **Industrial Header** - h-1 construction-blue border + UPPERCASE font-black title
+- [ ] **Page Container** - `flex-1 space-y-4 md:space-y-6 p-4 md:p-8`
+- [ ] **Section Headers** - Use `SectionHeader` component pattern
+- [ ] **Card Styling** - `border-2 border-gray-200 shadow-construction`
+- [ ] **No Heavy Decorations** - No riveted borders, hazard stripes, or custom fonts
 
 ---
 
@@ -191,20 +207,116 @@ body {
 </div>
 ```
 
-#### Page Layout
+#### Standard Page Layout (REQUIRED)
+
+**All app pages MUST follow this consistent layout pattern:**
+
 ```tsx
-// Standard page with padding
-<div className="p-4 md:p-6 lg:p-8 space-y-6">
-  {/* Page Header */}
-  <div className="flex items-center justify-between">
-    <h1 className="text-2xl font-bold text-gray-900">Page Title</h1>
-    <Button>Action</Button>
+// Standard page container (Projects, Tasks, Settings, etc.)
+<div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+
+  {/* 1. Blueprint Grid Background (fixed, low opacity) */}
+  <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
+    <div className="absolute inset-0" style={{
+      backgroundImage: `
+        linear-gradient(to right, currentColor 1px, transparent 1px),
+        linear-gradient(to bottom, currentColor 1px, transparent 1px)
+      `,
+      backgroundSize: '40px 40px',
+      color: '#001B51'
+    }} />
   </div>
 
-  {/* Content */}
-  <Card>...</Card>
+  {/* 2. Industrial Header */}
+  <div className="relative">
+    {/* Construction border - h-1 construction-blue */}
+    <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+
+    <div className="flex items-start justify-between pt-2 md:pt-4 gap-3">
+      {/* Title - UPPERCASE, font-black, tracking-tighter */}
+      <div>
+        <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
+          PAGE TITLE
+        </h1>
+        <p className="mt-2 text-sm md:text-base text-gray-500">
+          Optional page description
+        </p>
+      </div>
+      {/* Optional action button on right */}
+      <Button>Action</Button>
+    </div>
+  </div>
+
+  {/* 3. Page Content */}
+  <div className="space-y-6">
+    {/* Sections with SectionHeader pattern */}
+  </div>
+
+  {/* 4. Decorative Bottom Border (optional) */}
+  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
 </div>
 ```
+
+#### Section Header Pattern
+
+**For pages with multiple sections, use consistent section headers:**
+
+```tsx
+interface SectionHeaderProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  disabled?: boolean; // For "coming soon" sections
+}
+
+function SectionHeader({ icon: Icon, title, description, disabled }: SectionHeaderProps) {
+  return (
+    <div className={cn(
+      "flex items-start gap-3 md:gap-4 px-3 md:px-4 py-2 md:py-3",
+      "bg-gradient-to-r from-construction-blue/5 to-transparent",
+      "rounded-lg border-l-4 border-construction-blue",
+      disabled && "opacity-50"
+    )}>
+      <div className="p-2 md:p-2.5 bg-construction-blue rounded-lg shrink-0">
+        <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+      </div>
+      <div>
+        <h2 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight">
+          {title}
+        </h2>
+        <p className="text-xs md:text-sm text-gray-500">{description}</p>
+        {disabled && (
+          <span className="text-xs text-gray-400 italic">Coming Soon</span>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+#### Standard Card Pattern
+
+**All content cards MUST use this consistent styling:**
+
+```tsx
+<Card className="border-2 border-gray-200 shadow-construction hover:border-construction-blue/30 transition-colors">
+  <CardContent className="p-4 md:p-6">
+    {/* Content */}
+  </CardContent>
+</Card>
+```
+
+**DO NOT use:**
+- Riveted border effects
+- Diagonal hazard stripes
+- Heavy gradient decorations
+- Custom font families (Work Sans, IBM Plex Mono, etc.)
+
+**DO use:**
+- Clean, minimal backgrounds
+- `shadow-construction` for elevation
+- `border-2 border-gray-200` for borders
+- Standard system fonts
 
 #### Grid Layouts
 ```tsx
