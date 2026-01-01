@@ -8,6 +8,7 @@
  * - Update unread counts when new messages arrive
  * - Re-sort rooms by last message activity
  * - Handle room additions/removals in real-time
+ * - FIXED: Stable connection state to prevent flickering
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -23,6 +24,12 @@ interface UseChatRoomsOptions {
   onUnreadChange?: (roomId: string, count: number) => void;
   onNewRoom?: (room: ChatRoomWithUnread) => void;
 }
+
+// Debug: Track if this is first render to avoid re-subscription loops
+type CallbackRefs = {
+  onUnreadChange?: (roomId: string, count: number) => void;
+  onNewRoom?: (room: ChatRoomWithUnread) => void;
+};
 
 interface UseChatRoomsReturn {
   rooms: ChatRoomWithUnread[];
@@ -50,17 +57,70 @@ export function useChatRooms({
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
+  // Debug: Track individual channel states to prevent flickering
+  const [participantsConnected, setParticipantsConnected] = useState(false);
+  const [messagesConnected, setMessagesConnected] = useState(false);
+
   // Debug: Refs for cleanup
   const participantsChannelRef = useRef<RealtimeChannel | null>(null);
   const messagesChannelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef(getBrowserClient());
+  const connectionStabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debug: CRITICAL FIX - Store callbacks in ref to prevent effect re-runs
+  // This prevents the infinite "CONNECTING..." loop caused by inline arrow functions
+  const callbacksRef = useRef<CallbackRefs>({ onUnreadChange, onNewRoom });
+
+  // Update callbacks ref on every render (but don't trigger effects)
+  useEffect(() => {
+    callbacksRef.current = { onUnreadChange, onNewRoom };
+  });
 
   console.log('[useChatRooms] Hook initialized for user:', userId);
+
+  // Debug: Stabilize connection state - only update after both channels are stable
+  useEffect(() => {
+    // Clear any pending timeout
+    if (connectionStabilityTimeoutRef.current) {
+      clearTimeout(connectionStabilityTimeoutRef.current);
+    }
+
+    // Debug: Wait for both channels to connect, with debounce
+    if (participantsConnected && messagesConnected) {
+      // Both connected - debounce to prevent flickering
+      connectionStabilityTimeoutRef.current = setTimeout(() => {
+        console.log('[useChatRooms] Connection stable - both channels connected');
+        setIsConnected(true);
+        setConnectionError(null);
+      }, 300); // 300ms debounce
+    } else if (!participantsConnected || !messagesConnected) {
+      // At least one disconnected
+      connectionStabilityTimeoutRef.current = setTimeout(() => {
+        const bothDisconnected = !participantsConnected && !messagesConnected;
+        console.log('[useChatRooms] Connection unstable:', {
+          participants: participantsConnected,
+          messages: messagesConnected,
+        });
+        
+        // Only set to disconnected if both are disconnected
+        if (bothDisconnected) {
+          setIsConnected(false);
+        }
+      }, 300);
+    }
+
+    return () => {
+      if (connectionStabilityTimeoutRef.current) {
+        clearTimeout(connectionStabilityTimeoutRef.current);
+      }
+    };
+  }, [participantsConnected, messagesConnected]);
 
   // Debug: Calculate total unread count
   const totalUnread = rooms.reduce((sum, room) => sum + (room.unread_count || 0), 0);
 
   // Debug: Handle participant changes (room joined/left)
+  // FIXED: Removed onNewRoom from deps - use callbacksRef instead to prevent re-subscription loops
   const handleParticipantChange = useCallback(
     async (payload: RealtimePostgresChangesPayload<{ [key: string]: unknown }>) => {
       console.log('[useChatRooms] Participant change event:', payload);
@@ -71,20 +131,26 @@ export function useChatRooms({
         console.log('[useChatRooms] Refreshed rooms after participant change');
         setRooms(result.rooms);
 
-        // Debug: Notify about new rooms
+        // Debug: Notify about new rooms (using ref to avoid stale closure)
         if (payload.eventType === 'INSERT') {
           const newRecord = payload.new as { chat_room_id: string };
           const newRoom = result.rooms.find((r) => r.id === newRecord.chat_room_id);
           if (newRoom) {
-            onNewRoom?.(newRoom);
+            callbacksRef.current.onNewRoom?.(newRoom);
           }
         }
       }
     },
-    [onNewRoom]
+    [] // Empty deps - callbacks accessed via ref
   );
 
   // Debug: Handle new message - update unread count and last message
+  // FIXED: Store userId in ref to avoid re-subscription when it changes
+  const userIdRef = useRef(userId);
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
+
   const handleNewMessage = useCallback(
     async (payload: RealtimePostgresChangesPayload<{ [key: string]: unknown }>) => {
       console.log('[useChatRooms] New message event:', payload);
@@ -101,18 +167,19 @@ export function useChatRooms({
         return;
       }
 
-      // Debug: Update room state with new message info
+      // Debug: Update room state with new message info (using refs to avoid stale closures)
       setRooms((prev) => {
+        const currentUserId = userIdRef.current;
         const updatedRooms = prev.map((room) => {
           if (room.id === newMessage.chat_room_id) {
             // Debug: Increment unread if message is from someone else
-            const incrementUnread = newMessage.sender_id !== userId;
+            const incrementUnread = newMessage.sender_id !== currentUserId;
             const newUnread = incrementUnread
               ? (room.unread_count || 0) + 1
               : room.unread_count;
 
             if (incrementUnread) {
-              onUnreadChange?.(room.id, newUnread);
+              callbacksRef.current.onUnreadChange?.(room.id, newUnread);
             }
 
             // Debug: Update last message preview (we don't have sender name here)
@@ -134,7 +201,7 @@ export function useChatRooms({
         });
       });
     },
-    [userId, onUnreadChange]
+    [] // Empty deps - all values accessed via refs
   );
 
   // Debug: Ref to track current rooms for message filtering
@@ -170,8 +237,15 @@ export function useChatRooms({
       )
       .subscribe((status, err) => {
         console.log('[useChatRooms] Participants subscription status:', status);
-        if (status === 'CHANNEL_ERROR') {
+        
+        if (status === 'SUBSCRIBED') {
+          setParticipantsConnected(true);
+        } else if (status === 'CHANNEL_ERROR') {
+          setParticipantsConnected(false);
+          setConnectionError(err?.message || 'Connection error');
           console.error('[useChatRooms] Participants channel error:', err);
+        } else if (status === 'CLOSED') {
+          setParticipantsConnected(false);
         }
       });
 
@@ -201,14 +275,13 @@ export function useChatRooms({
         console.log('[useChatRooms] Messages subscription status:', status);
 
         if (status === 'SUBSCRIBED') {
-          setIsConnected(true);
-          setConnectionError(null);
+          setMessagesConnected(true);
         } else if (status === 'CHANNEL_ERROR') {
-          setIsConnected(false);
+          setMessagesConnected(false);
           setConnectionError(err?.message || 'Connection error');
           console.error('[useChatRooms] Messages channel error:', err);
         } else if (status === 'CLOSED') {
-          setIsConnected(false);
+          setMessagesConnected(false);
         }
       });
 
@@ -217,6 +290,15 @@ export function useChatRooms({
     // Debug: Cleanup on unmount
     return () => {
       console.log('[useChatRooms] Cleaning up subscriptions');
+      
+      // Clear stability timeout
+      if (connectionStabilityTimeoutRef.current) {
+        clearTimeout(connectionStabilityTimeoutRef.current);
+      }
+      
+      // Reset connection states
+      setParticipantsConnected(false);
+      setMessagesConnected(false);
       if (participantsChannelRef.current) {
         supabase.removeChannel(participantsChannelRef.current);
         participantsChannelRef.current = null;
@@ -226,7 +308,10 @@ export function useChatRooms({
         messagesChannelRef.current = null;
       }
     };
-  }, [userId, companyId, handleParticipantChange, handleNewMessage]); // Removed rooms from deps
+  // FIXED: Removed handleParticipantChange and handleNewMessage from deps
+  // They now use refs internally, so they won't cause re-subscription loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, companyId]);
 
   // Debug: Refresh rooms from server
   const refreshRooms = useCallback(async () => {

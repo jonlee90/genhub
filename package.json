@@ -14,7 +14,13 @@
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook/stripe",
     "db:diagnose": "node scripts/diagnose-db.mjs",
     "db:setup": "node scripts/setup-test-data.mjs",
-    "db:test": "node scripts/test-projects-connection.mjs"
+    "db:test": "node scripts/test-projects-connection.mjs",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:chat": "playwright test tests/chat.spec.ts",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.7.4",
@@ -68,6 +74,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.57.0",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",
     "@types/react": "^19",

@@ -6,6 +6,7 @@ import { createUserClient, createAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import type { Database } from '@/types/database.types';
 import { randomUUID } from 'crypto';
+import { sendTeamInvitationEmail } from './team-email-helper';
 
 type UserRole = Database['public']['Enums']['user_role'];
 type MemberStatus = Database['public']['Enums']['member_status'];
@@ -187,11 +188,37 @@ export async function inviteTeamMember(formData: FormData) {
 
     const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invite?token=${invitationToken}`;
 
-    // TODO: Send invitation email
-    // When email service is configured, send invitation email to data.email
-    // with invitationLink and company details
-    console.log('TODO: Send invitation email to:', data.email);
-    console.log('Invitation link:', invitationLink);
+    // Get company name for the email
+    const { data: company } = await supabase
+      .from('companies')
+      .select('name')
+      .eq('id', companyId)
+      .single();
+
+    // Get inviter's name for the email
+    const { data: inviterProfile } = await supabase
+      .from('user_profiles')
+      .select('name')
+      .eq('id', userId)
+      .single();
+
+    // Send invitation email
+    console.log('[TEAM_INVITE] Sending invitation email to:', data.email);
+    const emailResult = await sendTeamInvitationEmail(
+      data.email,
+      data.name,
+      invitationLink,
+      inviterProfile?.name || 'A team member',
+      company?.name || 'your company'
+    );
+
+    if (!emailResult.success) {
+      console.error('[TEAM_INVITE] Email sending failed:', emailResult.error);
+      // Note: We still return success since the invitation was created
+      // The user can still share the link manually
+    } else {
+      console.log('[TEAM_INVITE] Email sent successfully to:', data.email);
+    }
 
     // Revalidate paths
     revalidatePath('/app/team');
@@ -199,7 +226,10 @@ export async function inviteTeamMember(formData: FormData) {
 
     return {
       success: true,
-      message: `Invitation sent to ${data.email}`,
+      message: emailResult.success
+        ? `Invitation email sent to ${data.email}`
+        : `Invitation created for ${data.email}. Email could not be sent - please share the link manually.`,
+      emailSent: emailResult.success,
       invitationLink,
       invitation,
     };
