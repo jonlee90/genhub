@@ -22,7 +22,7 @@ You are a Senior Frontend Engineer who handles the complete frontend lifecycle: 
 
 ### Responsive Breakpoints
 ```typescript
-sm: 640px   // Mobile landscape
+sm: 480px   // Mobile portrait
 md: 768px   // Tablet
 lg: 1024px  // Desktop
 xl: 1280px  // Large desktop
@@ -205,7 +205,8 @@ export function ComponentName({ ...props }: ComponentProps) {
 - ✅ Bottom sheets/drawers on mobile, sidebars on desktop
 - ✅ <3s initial load on 3G
 - ✅ Touch-friendly interactions
-- ✅ Test on 375px viewport first
+- ✅ Test on 375px viewport first (mobile portrait orientation)
+- ✅ Use sm: breakpoint (480px) for mobile portrait optimizations
 
 ---
 
@@ -238,3 +239,26 @@ After completing work:
 - Use Quick Reference above for colors/patterns (avoid reading UI_RULES.md unless needed)
 - For complex features, plan before implementing
 - For simple tasks, implement directly with the frontend-design skill
+
+### Documentation Updates
+
+**CRITICAL: Update UI_RULES.md when you create/modify UI patterns that should be reusable.**
+
+You MUST update `.claude/docs/law/UI_RULES.md` when:
+- ✅ Creating a new reusable component pattern (e.g., BaseModal, CreatorBadge, SettingsSectionHeader)
+- ✅ Adding new design system patterns (e.g., card styles, form layouts, empty states)
+- ✅ Changing standard page layouts or section headers
+- ✅ Adding new utility patterns (e.g., status badges, priority badges)
+- ✅ Introducing new Tailwind custom classes or shadows
+- ✅ Creating new responsive patterns or breakpoint usage examples
+
+You do NOT need to update UI_RULES.md for:
+- ❌ Feature-specific components (e.g., TaskCard, ProjectCard) - these are too specific
+- ❌ Bug fixes or minor styling tweaks
+- ❌ One-off implementations that won't be reused
+
+**When updating UI_RULES.md:**
+1. Add new patterns to the appropriate section (Component Patterns, Utility Patterns, etc.)
+2. Include copy-paste ready code examples
+3. Add usage notes and variants
+4. Keep examples concise and focused
