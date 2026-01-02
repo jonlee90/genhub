@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ProjectCard } from './ProjectCard';
 import { ProjectFilters } from './ProjectFilters';
+import { CreateProjectModal } from './CreateProjectModal';
 import { Button } from '@/components/ui/button';
 import { HardHat, X, Wrench, Hammer, ShieldAlert } from 'lucide-react';
-import Link from 'next/link';
 import type { Database } from '@/types/database.types';
 
 type Project = Database['public']['Tables']['projects']['Row'] & {
@@ -27,6 +27,7 @@ export function ProjectList({ initialProjects, searchParams }: ProjectListProps)
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('created_at');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   // Apply filters and sorting
   const filteredProjects = useMemo(() => {
@@ -143,13 +144,18 @@ export function ProjectList({ initialProjects, searchParams }: ProjectListProps)
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.6 }}
           >
-            <Link href="/app/projects/new">
-              <Button size="lg" className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white">
-                <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
-                <HardHat className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
-                START PROJECT
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              onClick={() => {
+                console.log('[ProjectList] Opening create project modal from empty state');
+                setIsCreateModalOpen(true);
+              }}
+              className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white"
+            >
+              <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
+              <HardHat className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
+              START PROJECT
+            </Button>
           </motion.div>
 
           {/* Industrial Process Steps */}
@@ -182,18 +188,19 @@ export function ProjectList({ initialProjects, searchParams }: ProjectListProps)
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      {/* Filters */}
-      <ProjectFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-      />
+    <>
+      <div className="space-y-4 md:space-y-6">
+        {/* Filters */}
+        <ProjectFilters
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          statusFilter={statusFilter}
+          onStatusChange={setStatusFilter}
+          typeFilter={typeFilter}
+          onTypeChange={setTypeFilter}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+        />
 
       {/* Results count - Industrial Style */}
       <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
@@ -269,6 +276,20 @@ export function ProjectList({ initialProjects, searchParams }: ProjectListProps)
           ))}
         </div>
       )}
-    </div>
+      </div>
+
+      {/* Create Project Modal */}
+      <CreateProjectModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          console.log('[ProjectList] Closing create project modal');
+          setIsCreateModalOpen(false);
+        }}
+        onSuccess={() => {
+          console.log('[ProjectList] Project created successfully from empty state');
+          // Modal will auto-close and refresh will happen
+        }}
+      />
+    </>
   );
 }

@@ -58,28 +58,31 @@ export function BaseModalHeader({
           </div>
         )}
 
-        {/* Title, subtitle, badges - all in one row */}
-        <div className="flex items-center gap-3 min-w-0 flex-wrap">
-          {/* Title */}
-          <h2
-            className="text-xl font-bold tracking-tight leading-tight shrink-0"
-            style={{ color: theme.primary }}
-          >
-            {title}
-          </h2>
+        {/* Title, badges, and subtitle - multi-row layout */}
+        <div className="flex flex-col gap-2 min-w-0 flex-1">
+          {/* Row 1: Title and badges */}
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            {/* Title */}
+            <h2
+              className="text-xl font-bold tracking-tight leading-tight shrink-0"
+              style={{ color: theme.primary }}
+            >
+              {title}
+            </h2>
 
-          {/* Subtitle */}
+            {/* Badges slot */}
+            {badges && (
+              <div className="flex items-center gap-2 shrink-0">
+                {badges}
+              </div>
+            )}
+          </div>
+
+          {/* Row 2: Subtitle */}
           {subtitle && (
-            <p className="text-sm text-gray-600 leading-snug flex-1 min-w-0 truncate">
+            <p className="text-sm text-gray-600 leading-snug">
               {subtitle}
             </p>
-          )}
-
-          {/* Badges slot */}
-          {badges && (
-            <div className="flex items-center gap-2 shrink-0">
-              {badges}
-            </div>
           )}
         </div>
       </div>

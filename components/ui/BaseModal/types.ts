@@ -23,7 +23,7 @@ export interface ModalTheme {
   iconGradientTo: string;
 }
 
-export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl';
+export type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
 
 export interface BaseModalProps {
   // Core
@@ -151,4 +151,7 @@ export const MODAL_MAX_WIDTHS: Record<ModalSize, string> = {
   '2xl': 'max-w-2xl', // 672px
   '3xl': 'max-w-3xl', // 768px
   '4xl': 'max-w-4xl', // 896px
+  '5xl': 'max-w-5xl', // 1024px
+  '6xl': 'max-w-6xl', // 1152px
+  '7xl': 'max-w-7xl', // 1280px
 } as const;

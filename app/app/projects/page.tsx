@@ -1,10 +1,8 @@
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { HardHat, TrendingUp, Clock, AlertTriangle } from 'lucide-react';
-import Link from 'next/link';
 import { ProjectList } from '@/components/projects/ProjectList';
 import { ProjectListSkeleton } from '@/components/projects/ProjectListSkeleton';
+import { ProjectsPageClient } from '@/components/projects/ProjectsPageClient';
 import { auth } from '@/lib/auth';
 import { getProjectsWithStats } from '@/app/actions/projects';
 import { createClient } from '@/utils/supabase/server';
@@ -91,16 +89,7 @@ export default async function ProjectsPage({
           </div>
 
           {/* Action Button with Construction Theme */}
-          {(role === 'gc_admin' || role === 'project_manager') && (
-            <Link href="/app/projects/new">
-              <Button size="lg" className="relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white">
-                <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-10 transition-opacity" />
-                <HardHat className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
-                <span className="font-black text-sm md:text-base">NEW</span>
-                <span className="hidden sm:inline font-black text-sm md:text-base ml-1">PROJECT</span>
-              </Button>
-            </Link>
-          )}
+          <ProjectsPageClient role={role} />
         </div>
       </div>
 
