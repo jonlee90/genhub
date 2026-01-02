@@ -1,15 +1,34 @@
 import { ChatNotificationPreferences } from '@/components/settings/ChatNotificationPreferences';
 import { KakaoTalkSettings } from '@/components/settings/KakaoTalkSettings';
 import { SettingsSectionHeader } from '@/components/settings/SettingsSectionHeader';
-import { Bell, MessageCircle, User, Building2 } from 'lucide-react';
+import { ProjectConfigurationSection } from '@/components/settings/ProjectConfigurationSection';
+import { Bell, MessageCircle, User, Building2, Wrench } from 'lucide-react';
+import { auth } from '@/lib/auth';
+import { createClient } from '@/utils/supabase/server';
 
 /**
  * Settings Page - Redesigned to match Projects/Tasks layout patterns
  * Uses construction-themed design with blueprint grid background
  * Server Component - child components handle client-side interactivity
  */
-export default function SettingsPage() {
+export default async function SettingsPage() {
   console.log('[SettingsPage] Rendering settings page');
+
+  // Check user role for Project Configuration section
+  const session = await auth();
+  let isGcAdmin = false;
+
+  if (session?.user?.id) {
+    const supabase = await createClient();
+    const { data: companyUser } = await supabase
+      .from('company_users')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    isGcAdmin = companyUser?.role === 'gc_admin';
+  }
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
@@ -45,6 +64,20 @@ export default function SettingsPage() {
 
       {/* Settings Sections Container */}
       <div className="space-y-6 md:space-y-8 relative z-10">
+        {/* ============================================ */}
+        {/* Project Configuration - GC Admin Only */}
+        {/* ============================================ */}
+        {isGcAdmin && (
+          <section className="space-y-4">
+            <SettingsSectionHeader
+              icon={Wrench}
+              title="Project Configuration"
+              description="Manage project types, task types, and workflow templates"
+            />
+            <ProjectConfigurationSection />
+          </section>
+        )}
+
         {/* ============================================ */}
         {/* Notifications Section */}
         {/* ============================================ */}

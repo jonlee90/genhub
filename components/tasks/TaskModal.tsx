@@ -165,20 +165,8 @@ const getTheme = (mode: 'create' | 'edit', priority: string) => {
   return PRIORITY_CONFIG[priority as PriorityKey] || DEFAULT_THEME;
 };
 
-// Helper to map priority to BaseModal theme name
-const getPriorityTheme = (priority?: string): 'low' | 'medium' | 'high' | 'default' => {
-  if (!priority) return 'default';
-  switch (priority) {
-    case 'low':
-      return 'low';
-    case 'medium':
-      return 'medium';
-    case 'high':
-      return 'high';
-    default:
-      return 'default';
-  }
-};
+// Note: Priority-based theming removed - all modals now use 'default' theme
+// to maintain consistent construction blue (#001B51) branding
 
 // Inner form component that gets remounted when task changes via key prop
 function TaskModalForm({
@@ -559,28 +547,28 @@ function TaskModalForm({
 
   // Render Step 2 (Create mode) or Edit mode
   const modalIcon = mode === 'create' ? ClipboardList : Pencil;
-  const modalTitle = mode === 'create' ? 'Create New Task' : 'Edit Task';
-  const modalSubtitle = mode === 'create'
-    ? `Creating a ${taskType ? getTaskTypeInfo(taskType).label : ''} task`
-    : 'Update task details and assignments';
+  const modalTitleText = mode === 'create' ? 'Create New Task' : 'Edit Task';
 
-  // Get task type badge for header
-  const headerBadges = (
-    <>
-      {task?.task_type && <TaskTypeBadge type={task.task_type} />}
-      {/* Show Approval Status Badge for approval tasks (Subtask 2.10) */}
-      {mode === 'edit' && task?.task_type === 'approval' && task.approval_status && config.styling.headerBadge === 'approval_status' && (
-        <span className={cn(
-          'px-2.5 py-1 rounded-full text-xs font-semibold',
-          task.approval_status === 'pending' && 'bg-amber-100 text-amber-800',
-          task.approval_status === 'approved' && 'bg-emerald-100 text-emerald-800',
-          task.approval_status === 'rejected' && 'bg-red-100 text-red-800',
-          task.approval_status === 'revision_requested' && 'bg-orange-100 text-orange-800'
-        )}>
-          {task.approval_status.replace('_', ' ').toUpperCase()}
-        </span>
-      )}
-    </>
+  // Create title with inline task type badge
+  const modalTitle = (
+    <div className="flex items-center gap-2">
+      <span>{modalTitleText}</span>
+      {mode === 'edit' && task?.task_type && <TaskTypeBadge type={task.task_type} />}
+      {mode === 'create' && taskType && <TaskTypeBadge type={taskType} />}
+    </div>
+  );
+
+  // Get approval status badge only (task type badge is now in title)
+  const approvalBadge = mode === 'edit' && task?.task_type === 'approval' && task.approval_status && config.styling.headerBadge === 'approval_status' && (
+    <span className={cn(
+      'px-2.5 py-1 rounded-full text-xs font-semibold',
+      task.approval_status === 'pending' && 'bg-amber-100 text-amber-800',
+      task.approval_status === 'approved' && 'bg-emerald-100 text-emerald-800',
+      task.approval_status === 'rejected' && 'bg-red-100 text-red-800',
+      task.approval_status === 'revision_requested' && 'bg-orange-100 text-orange-800'
+    )}>
+      {task.approval_status.replace('_', ' ').toUpperCase()}
+    </span>
   );
 
   return (
@@ -589,9 +577,8 @@ function TaskModalForm({
       onClose={onClose}
       icon={modalIcon}
       title={modalTitle}
-      subtitle={modalSubtitle}
-      badges={mode === 'edit' ? headerBadges : (taskType ? <TaskTypeBadge type={taskType} /> : undefined)}
-      theme={mode === 'edit' ? getPriorityTheme(task?.priority) : 'default'}
+      badges={approvalBadge || undefined}
+      theme="default"
       maxWidth="2xl"
       formKey={mode === 'edit' && task ? `edit-${task.id}` : 'create'}
       leftActions={
@@ -623,8 +610,7 @@ function TaskModalForm({
           form="task-form"
           disabled={isPending || !selectedProjectId || !title.trim()}
           className={cn(
-            'h-10 px-6 font-semibold text-white',
-            theme.button
+            'h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700'
           )}
         >
           {isPending ? (

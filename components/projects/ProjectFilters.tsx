@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, RotateCcw, Home, UtensilsCrossed, Building2, Factory } from 'lucide-react';
+import { Filter, RotateCcw, Home, UtensilsCrossed, Coffee, Building2, Factory } from 'lucide-react';
 import { Tabs } from '@/components/ui/aceternity/tabs';
 import { PlaceholdersVanishInput } from '@/components/ui/aceternity/placeholders-vanish-input';
 
@@ -93,10 +93,16 @@ export function ProjectFilters({
                 <span className="font-medium">Residential</span>
               </span>
             </SelectItem>
-            <SelectItem value="restaurant_cafe">
+            <SelectItem value="restaurant">
               <span className="flex items-center gap-2">
                 <UtensilsCrossed className="w-4 h-4 text-amber-600" />
-                <span className="font-medium">Restaurant/Cafe</span>
+                <span className="font-medium">Restaurant</span>
+              </span>
+            </SelectItem>
+            <SelectItem value="cafe">
+              <span className="flex items-center gap-2">
+                <Coffee className="w-4 h-4 text-amber-500" />
+                <span className="font-medium">Cafe</span>
               </span>
             </SelectItem>
             <SelectItem value="commercial_office">

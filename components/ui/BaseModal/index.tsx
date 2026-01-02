@@ -1,16 +1,17 @@
 /**
  * BaseModal Component
  * Production-grade modal system with construction-themed design
+ * Built on Radix UI Dialog with custom construction theme
  * Responsive: Bottom sheet on mobile, centered modal on desktop
  */
 
 'use client';
 
 import { useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { getModalTheme } from '@/lib/config/modal-themes';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 import { BaseModalHeader } from './BaseModalHeader';
 import { BaseModalFooter } from './BaseModalFooter';
@@ -18,7 +19,6 @@ import { StepIndicator } from './StepIndicator';
 
 import {
   BaseModalProps,
-  MODAL_ANIMATIONS,
   MODAL_MAX_WIDTHS,
 } from './types';
 
@@ -55,6 +55,8 @@ export function BaseModal({
     maxWidth,
     hasSteps: !!steps,
     currentStep,
+    closeOnBackdropClick,
+    closeOnEscape,
   });
 
   // Get theme configuration
@@ -65,171 +67,138 @@ export function BaseModal({
 
   console.log('[BaseModal] Device detection:', { isMobile });
 
-  // Handle escape key
-  useEffect(() => {
-    if (!isOpen || !closeOnEscape) return;
+  // Handle dialog state changes
+  const handleOpenChange = (newOpen: boolean) => {
+    console.log('[BaseModal] Dialog state change:', { newOpen });
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        console.log('[BaseModal] Escape key pressed, closing modal');
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, closeOnEscape, onClose]);
-
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      console.log('[BaseModal] Preventing body scroll');
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Handle backdrop click
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (closeOnBackdropClick && e.target === e.currentTarget) {
-      console.log('[BaseModal] Backdrop clicked, closing modal');
+    if (!newOpen) {
       onClose();
     }
   };
 
   return (
-    <AnimatePresence mode="wait">
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            onClick={handleBackdropClick}
-            {...MODAL_ANIMATIONS.backdrop}
-            aria-hidden="true"
-          />
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className={cn(
+          'bg-white shadow-2xl flex flex-col p-0 gap-0 border-0 z-50',
+          // Mobile: Bottom sheet styles
+          isMobile && [
+            'rounded-t-3xl',
+            'max-h-[90vh]',
+            'w-full',
+            'fixed inset-x-0 bottom-0 top-auto left-0 right-0',
+            'translate-x-0 translate-y-0',
+          ],
+          // Desktop: Centered modal styles - let Radix UI handle centering
+          !isMobile && [
+            'rounded-2xl',
+            'max-h-[90vh]',
+            MODAL_MAX_WIDTHS[maxWidth],
+          ],
+          className
+        )}
+        aria-label={ariaLabel || title}
+        aria-describedby={ariaDescribedBy}
+        onPointerDownOutside={(e) => {
+          if (!closeOnBackdropClick) {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          if (!closeOnEscape) {
+            e.preventDefault();
+          }
+        }}
+      >
+        {/* DialogTitle for accessibility - hidden visually but available to screen readers */}
+        <DialogTitle className="sr-only">{title}</DialogTitle>
 
-          {/* Modal container */}
+        {/* Hide the built-in X close button from DialogContent (keep custom rounded button in header) */}
+        <style>{`
+          /* Hide the default close button with the X icon (absolute right-4 top-4) */
+          button.absolute.right-4.top-4 {
+            display: none !important;
+            visibility: hidden !important;
+          }
+        `}</style>
+        {/* Top accent gradient strip */}
+        <div
+          className={cn(
+            'h-1.5 w-full',
+            isMobile ? 'rounded-t-3xl' : 'rounded-t-2xl'
+          )}
+          style={{
+            background: `linear-gradient(90deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+          }}
+          aria-hidden="true"
+        >
+          {/* Animated shimmer effect */}
           <div
-            className={cn(
-              'fixed z-50',
-              isMobile
-                ? 'inset-x-0 bottom-0' // Bottom sheet positioning
-                : 'inset-0 flex items-center justify-center p-4' // Centered modal
-            )}
-            role="dialog"
-            aria-modal="true"
-            aria-label={ariaLabel || title}
-            aria-describedby={ariaDescribedBy}
-          >
-            <motion.div
-              className={cn(
-                'bg-white shadow-2xl relative',
-                'flex flex-col',
-                // Mobile: Bottom sheet styles
-                isMobile && [
-                  'rounded-t-3xl',
-                  'max-h-[90vh]',
-                  'w-full',
-                ],
-                // Desktop: Centered modal styles
-                !isMobile && [
-                  'rounded-2xl',
-                  'max-h-[90vh]',
-                  'w-full',
-                  MODAL_MAX_WIDTHS[maxWidth],
-                ],
-                className
-              )}
-              {...(isMobile ? MODAL_ANIMATIONS.mobile : MODAL_ANIMATIONS.desktop)}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Top accent gradient strip */}
-              <div
-                className={cn(
-                  'h-1.5 w-full',
-                  isMobile ? 'rounded-t-3xl' : 'rounded-t-2xl'
-                )}
-                style={{
-                  background: `linear-gradient(90deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
-                }}
-                aria-hidden="true"
-              >
-                {/* Animated shimmer effect */}
-                <div
-                  className="h-full w-full opacity-40"
-                  style={{
-                    background: `linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)`,
-                    backgroundSize: '200% 100%',
-                    animation: 'shimmer 3s infinite',
-                  }}
-                />
-              </div>
+            className="h-full w-full opacity-40"
+            style={{
+              background: `linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)`,
+              backgroundSize: '200% 100%',
+              animation: 'shimmer 3s infinite',
+            }}
+          />
+        </div>
 
-              {/* Mobile: Drag handle */}
-              {isMobile && (
-                <div className="flex justify-center pt-3 pb-2" aria-hidden="true">
-                  <div className="h-1.5 w-12 bg-gray-300 rounded-full" />
-                </div>
-              )}
-
-              {/* Header */}
-              <BaseModalHeader
-                icon={icon}
-                title={title}
-                subtitle={subtitle}
-                badges={badges}
-                onClose={onClose}
-                theme={theme}
-                className={headerClassName}
-              />
-
-              {/* Step indicator */}
-              {steps && steps.length > 0 && (
-                <StepIndicator
-                  steps={steps}
-                  currentStep={currentStep}
-                  theme={theme}
-                />
-              )}
-
-              {/* Scrollable content area */}
-              <div
-                className={cn(
-                  'flex-1 overflow-y-auto overflow-x-hidden',
-                  'px-6 py-4',
-                  // Custom scrollbar styling
-                  'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
-                  contentClassName
-                )}
-                style={{
-                  maxHeight: isMobile ? 'calc(90vh - 280px)' : 'calc(90vh - 280px)',
-                }}
-              >
-                {/* Key prop for form remounting */}
-                <div key={formKey}>
-                  {children}
-                </div>
-              </div>
-
-              {/* Footer */}
-              {showFooter && (leftActions || rightActions) && (
-                <BaseModalFooter
-                  leftActions={leftActions}
-                  rightActions={rightActions}
-                  className={footerClassName}
-                />
-              )}
-            </motion.div>
+        {/* Mobile: Drag handle */}
+        {isMobile && (
+          <div className="flex justify-center pt-3 pb-2" aria-hidden="true">
+            <div className="h-1.5 w-12 bg-gray-300 rounded-full" />
           </div>
-        </>
-      )}
-    </AnimatePresence>
+        )}
+
+        {/* Header */}
+        <BaseModalHeader
+          icon={icon}
+          title={title}
+          subtitle={subtitle}
+          badges={badges}
+          onClose={onClose}
+          theme={theme}
+          className={headerClassName}
+        />
+
+        {/* Step indicator */}
+        {steps && steps.length > 0 && (
+          <StepIndicator
+            steps={steps}
+            currentStep={currentStep}
+            theme={theme}
+          />
+        )}
+
+        {/* Scrollable content area */}
+        <div
+          className={cn(
+            'flex-1 overflow-y-auto overflow-x-hidden',
+            'px-6 py-4',
+            // Custom scrollbar styling
+            'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
+            contentClassName
+          )}
+          style={{
+            maxHeight: isMobile ? 'calc(90vh - 280px)' : 'calc(90vh - 280px)',
+          }}
+        >
+          {/* Key prop for form remounting */}
+          <div key={formKey}>
+            {children}
+          </div>
+        </div>
+
+        {/* Footer */}
+        {showFooter && (leftActions || rightActions) && (
+          <BaseModalFooter
+            leftActions={leftActions}
+            rightActions={rightActions}
+            className={footerClassName}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

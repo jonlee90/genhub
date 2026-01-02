@@ -4,7 +4,7 @@
  * Used by ProjectCard component to render type-specific styling
  */
 
-import { Home, Factory, UtensilsCrossed, Building2, type LucideIcon } from 'lucide-react';
+import { Home, Factory, UtensilsCrossed, Coffee, Building2, type LucideIcon } from 'lucide-react';
 
 export interface ProjectTypeTheme {
   icon: LucideIcon;
@@ -41,10 +41,21 @@ export const PROJECT_TYPE_THEMES: Record<string, ProjectTypeTheme> = {
     borderAccent: 'border-t-construction-accent',
     placeholderGradient: 'from-gray-600 to-gray-800',
   },
-  restaurant_cafe: {
+  restaurant: {
     icon: UtensilsCrossed,
+    label: 'Restaurant',
+    labelFull: 'Restaurant',
+    headerBg: 'bg-amber-600',
+    headerText: 'text-white',
+    iconBg: 'bg-white/10',
+    accentColor: 'text-amber-200',
+    borderAccent: 'border-t-amber-600',
+    placeholderGradient: 'from-amber-600 to-amber-800',
+  },
+  cafe: {
+    icon: Coffee,
     label: 'Cafe',
-    labelFull: 'Restaurant / Cafe',
+    labelFull: 'Cafe',
     headerBg: 'bg-teal-600',
     headerText: 'text-white',
     iconBg: 'bg-white/10',

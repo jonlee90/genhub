@@ -77,7 +77,10 @@
       "mcp__playwright__browser_run_code",
       "mcp__playwright__browser_type",
       "Bash(cmd /c \"taskkill /F /PID 29072\")",
-      "Bash(cmd /c \"taskkill /F /PID 31016\")"
+      "Bash(cmd /c \"taskkill /F /PID 31016\")",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(done)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

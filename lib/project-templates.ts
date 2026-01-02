@@ -52,9 +52,9 @@ export const PROJECT_TYPE_TEMPLATES = {
     estimatedDuration: '3-12 months',
   },
 
-  restaurant_cafe: {
-    name: 'Restaurant/Cafe',
-    description: 'Restaurants, cafes, food service establishments',
+  restaurant: {
+    name: 'Restaurant',
+    description: 'Full-service restaurants, dining establishments',
     phases: [
       'Initiation',
       'Pre-Construction',
@@ -72,12 +72,15 @@ export const PROJECT_TYPE_TEMPLATES = {
       'Pre-Construction': [
         'Obtain building permits',
         'Health department approval',
+        'Fire code compliance review',
         'Kitchen equipment planning',
         'HVAC requirements assessment',
         'Finalize design plans',
       ],
       'Procurement': [
-        'Kitchen equipment ordering',
+        'Commercial kitchen equipment ordering',
+        'Refrigeration units',
+        'Cooking ranges',
         'Furniture procurement',
         'Specialty finishes selection',
         'Point of sale system setup',
@@ -86,6 +89,7 @@ export const PROJECT_TYPE_TEMPLATES = {
         'Demolition (if applicable)',
         'Electrical upgrade for kitchen',
         'Plumbing for food service',
+        'Grease trap installation',
         'HVAC installation',
         'Kitchen hood and fire suppression',
         'Floor drainage installation',
@@ -100,8 +104,61 @@ export const PROJECT_TYPE_TEMPLATES = {
         'Grand opening preparation',
       ],
     },
-    defaultBudgetRange: { min: 100000, max: 1000000 },
-    estimatedDuration: '2-6 months',
+    defaultBudgetRange: { min: 150000, max: 1500000 },
+    estimatedDuration: '3-8 months',
+  },
+
+  cafe: {
+    name: 'Cafe',
+    description: 'Coffee shops, cafes, small eateries',
+    phases: [
+      'Initiation',
+      'Pre-Construction',
+      'Procurement',
+      'Construction',
+      'Post-Construction',
+    ],
+    suggestedTasks: {
+      'Initiation': [
+        'Initial client meeting',
+        'Concept development',
+        'Health department pre-consultation',
+        'Preliminary budget review',
+      ],
+      'Pre-Construction': [
+        'Obtain building permits',
+        'Health department approval',
+        'Water line upgrades planning',
+        'Equipment electrical requirements',
+        'Finalize design plans',
+      ],
+      'Procurement': [
+        'Espresso machine and grinder',
+        'Coffee brewing equipment',
+        'Pastry display case',
+        'Refrigeration units',
+        'Furniture procurement',
+        'Point of sale system setup',
+      ],
+      'Construction': [
+        'Demolition (if applicable)',
+        'Coffee bar plumbing',
+        'Electrical for espresso equipment',
+        'HVAC modifications',
+        'Water filtration system',
+        'Display case installation',
+        'Interior buildout',
+      ],
+      'Post-Construction': [
+        'Health department final inspection',
+        'Espresso machine installation',
+        'Barista equipment training',
+        'Final cleaning',
+        'Soft opening preparation',
+      ],
+    },
+    defaultBudgetRange: { min: 75000, max: 500000 },
+    estimatedDuration: '2-4 months',
   },
 
   commercial_office: {

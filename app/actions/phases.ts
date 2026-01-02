@@ -420,3 +420,346 @@ export async function completeCurrentPhase(projectId: string, startNext: boolean
 
   return { success: true };
 }
+
+// ============================================
+// Project-Level Phase CRUD Operations
+// (For gc_admin and project_manager)
+// ============================================
+
+const createPhaseSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  description: z.string().max(500).optional(),
+});
+
+const updatePhaseNameSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100).optional(),
+  description: z.string().max(500).optional(),
+  order_index: z.number().int().min(0).optional(),
+});
+
+/**
+ * Check if user has permission to manage phases within a project
+ * gc_admin and project_manager (with project access) can manage phases
+ */
+async function checkProjectPhasePermission(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  companyId: string,
+  role: string,
+  projectId: string
+): Promise<{ hasPermission: boolean; error?: string }> {
+  // gc_admin has full access
+  if (role === 'gc_admin') {
+    return { hasPermission: true };
+  }
+
+  // project_manager needs to verify they have access to this project
+  if (role === 'project_manager') {
+    // Check if project belongs to user's company
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id, company_id')
+      .eq('id', projectId)
+      .eq('company_id', companyId)
+      .maybeSingle();
+
+    if (projectError || !project) {
+      return { hasPermission: false, error: 'Project not found' };
+    }
+
+    // Check if user is on the project team
+    const { data: teamMember } = await supabase
+      .from('project_team')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (teamMember) {
+      return { hasPermission: true };
+    }
+
+    return {
+      hasPermission: false,
+      error: 'You do not have access to this project',
+    };
+  }
+
+  return {
+    hasPermission: false,
+    error: 'Insufficient permissions. Only GC Admin and Project Manager can manage phases.',
+  };
+}
+
+/**
+ * Create a new phase within a project
+ * Accessible to gc_admin and project_manager (with project access)
+ */
+export async function createPhase(
+  projectId: string,
+  formData: FormData
+): Promise<{
+  success?: boolean;
+  phase?: Database['public']['Tables']['project_phases']['Row'];
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+}> {
+  console.log('[createPhase] Creating new phase for project:', projectId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, role, supabase } = userContext;
+
+  // Check permission
+  const permissionCheck = await checkProjectPhasePermission(
+    supabase,
+    userId,
+    companyId,
+    role,
+    projectId
+  );
+  if (!permissionCheck.hasPermission) {
+    return { error: permissionCheck.error || 'Insufficient permissions' };
+  }
+
+  // Parse and validate
+  const rawData = {
+    name: formData.get('name'),
+    description: formData.get('description') || undefined,
+  };
+
+  const validation = createPhaseSchema.safeParse(rawData);
+  if (!validation.success) {
+    console.error('[createPhase] Validation failed:', validation.error);
+    return {
+      error: 'Validation failed',
+      fieldErrors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  // Get max order_index for this project
+  const { data: maxOrder } = await supabase
+    .from('project_phases')
+    .select('order_index')
+    .eq('project_id', projectId)
+    .order('order_index', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const newOrderIndex = (maxOrder?.order_index ?? -1) + 1;
+
+  // Insert
+  const { data: phase, error } = await supabase
+    .from('project_phases')
+    .insert({
+      project_id: projectId,
+      ...validation.data,
+      order_index: newOrderIndex,
+      status: 'not_started',
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[createPhase] Error:', error);
+    return { error: 'Failed to create phase' };
+  }
+
+  console.log('[createPhase] Phase created:', phase.id);
+  revalidatePath(`/app/projects/${projectId}`);
+  return { success: true, phase };
+}
+
+/**
+ * Update an existing project phase (name, description, order)
+ * Accessible to gc_admin and project_manager (with project access)
+ */
+export async function updatePhaseName(
+  phaseId: string,
+  formData: FormData
+): Promise<{
+  success?: boolean;
+  phase?: Database['public']['Tables']['project_phases']['Row'];
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+}> {
+  console.log('[updatePhaseName] Updating phase:', phaseId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, role, supabase } = userContext;
+
+  // Get phase to find project ID
+  const { data: existingPhase } = await supabase
+    .from('project_phases')
+    .select('id, project_id')
+    .eq('id', phaseId)
+    .maybeSingle();
+
+  if (!existingPhase) {
+    return { error: 'Phase not found' };
+  }
+
+  // Check permission
+  const permissionCheck = await checkProjectPhasePermission(
+    supabase,
+    userId,
+    companyId,
+    role,
+    existingPhase.project_id
+  );
+  if (!permissionCheck.hasPermission) {
+    return { error: permissionCheck.error || 'Insufficient permissions' };
+  }
+
+  const rawData = {
+    name: formData.get('name') || undefined,
+    description: formData.get('description') || undefined,
+    order_index: formData.get('order_index')
+      ? parseInt(formData.get('order_index') as string)
+      : undefined,
+  };
+
+  const validation = updatePhaseNameSchema.safeParse(rawData);
+  if (!validation.success) {
+    console.error('[updatePhaseName] Validation failed:', validation.error);
+    return {
+      error: 'Validation failed',
+      fieldErrors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  // Update
+  const { data: phase, error } = await supabase
+    .from('project_phases')
+    .update(validation.data)
+    .eq('id', phaseId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[updatePhaseName] Error:', error);
+    return { error: 'Failed to update phase' };
+  }
+
+  console.log('[updatePhaseName] Phase updated:', phase.id);
+  revalidatePath(`/app/projects/${existingPhase.project_id}`);
+  return { success: true, phase };
+}
+
+/**
+ * Delete a project phase with task handling options
+ * Accessible to gc_admin and project_manager (with project access)
+ *
+ * @param phaseId - ID of the phase to delete
+ * @param taskHandling - 'move' to move tasks to another phase, 'delete' to delete tasks
+ * @param targetPhaseId - Required if taskHandling is 'move'
+ */
+export async function deletePhase(
+  phaseId: string,
+  taskHandling: 'move' | 'delete',
+  targetPhaseId?: string
+): Promise<{
+  success?: boolean;
+  error?: string;
+}> {
+  console.log('[deletePhase] Deleting phase:', phaseId, 'taskHandling:', taskHandling);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, role, supabase } = userContext;
+
+  // Get phase to find project ID
+  const { data: existingPhase } = await supabase
+    .from('project_phases')
+    .select('id, project_id')
+    .eq('id', phaseId)
+    .maybeSingle();
+
+  if (!existingPhase) {
+    return { error: 'Phase not found' };
+  }
+
+  // Check permission
+  const permissionCheck = await checkProjectPhasePermission(
+    supabase,
+    userId,
+    companyId,
+    role,
+    existingPhase.project_id
+  );
+  if (!permissionCheck.hasPermission) {
+    return { error: permissionCheck.error || 'Insufficient permissions' };
+  }
+
+  // Handle tasks based on taskHandling option
+  if (taskHandling === 'move') {
+    if (!targetPhaseId) {
+      return { error: 'Target phase ID is required when moving tasks' };
+    }
+
+    // Verify target phase exists and belongs to same project
+    const { data: targetPhase } = await supabase
+      .from('project_phases')
+      .select('id, project_id')
+      .eq('id', targetPhaseId)
+      .eq('project_id', existingPhase.project_id)
+      .maybeSingle();
+
+    if (!targetPhase) {
+      return { error: 'Target phase not found or does not belong to the same project' };
+    }
+
+    // Move all tasks to target phase
+    const { error: moveError } = await supabase
+      .from('tasks')
+      .update({ phase_id: targetPhaseId })
+      .eq('phase_id', phaseId);
+
+    if (moveError) {
+      console.error('[deletePhase] Error moving tasks:', moveError);
+      return { error: 'Failed to move tasks to target phase' };
+    }
+
+    console.log('[deletePhase] Tasks moved to phase:', targetPhaseId);
+  } else if (taskHandling === 'delete') {
+    // Delete all tasks in this phase
+    const { error: deleteTasksError } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('phase_id', phaseId);
+
+    if (deleteTasksError) {
+      console.error('[deletePhase] Error deleting tasks:', deleteTasksError);
+      return { error: 'Failed to delete tasks in phase' };
+    }
+
+    console.log('[deletePhase] Tasks deleted from phase:', phaseId);
+  } else {
+    return { error: 'Invalid task handling option. Use "move" or "delete"' };
+  }
+
+  // Delete the phase
+  const { error } = await supabase
+    .from('project_phases')
+    .delete()
+    .eq('id', phaseId);
+
+  if (error) {
+    console.error('[deletePhase] Error:', error);
+    return { error: 'Failed to delete phase' };
+  }
+
+  console.log('[deletePhase] Phase deleted:', phaseId);
+  revalidatePath(`/app/projects/${existingPhase.project_id}`);
+  return { success: true };
+}

@@ -59,7 +59,7 @@ export function BaseModalHeader({
         )}
 
         {/* Title, subtitle, badges */}
-        <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex-row min-w-0 space-y-2">
           {/* Title */}
           <h2
             className="text-xl font-bold tracking-tight leading-tight"

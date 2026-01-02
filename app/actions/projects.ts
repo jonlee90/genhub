@@ -88,7 +88,7 @@ const createProjectSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z.enum(['residential', 'restaurant_cafe', 'commercial_office', 'industrial']),
+  project_type: z.enum(['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial']),
   description: z.string().optional(),
   start_date: z.string().min(1, 'Start date is required'), // ISO date string
   end_date: z.string().optional().or(z.literal('')),
@@ -105,7 +105,7 @@ const updateProjectSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z.enum(['residential', 'restaurant_cafe', 'commercial_office', 'industrial']).optional(),
+  project_type: z.enum(['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial']).optional(),
   description: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional().or(z.literal('')),

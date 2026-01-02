@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Building2, Home, UtensilsCrossed, Factory, AlertCircle, MapPin, DollarSign, Calendar, Users, HardHat, FileText, Check } from 'lucide-react';
+import { Loader2, Building2, Home, UtensilsCrossed, Coffee, Factory, AlertCircle, MapPin, DollarSign, Calendar, Users, HardHat, FileText, Check } from 'lucide-react';
 import { Stepper } from '@/components/ui/aceternity/stepper';
 import { TextGenerateEffect } from '@/components/ui/aceternity/text-generate-effect';
 import { cn } from '@/lib/utils';
@@ -23,10 +23,16 @@ const PROJECT_TYPES = [
     description: 'Single-family homes, apartments, condos',
   },
   {
-    value: 'restaurant_cafe',
-    label: 'Restaurant/Cafe',
+    value: 'restaurant',
+    label: 'Restaurant',
     icon: UtensilsCrossed,
-    description: 'Restaurants, cafes, food service',
+    description: 'Full-service restaurants, dining establishments',
+  },
+  {
+    value: 'cafe',
+    label: 'Cafe',
+    icon: Coffee,
+    description: 'Coffee shops, cafes, small eateries',
   },
   {
     value: 'commercial_office',

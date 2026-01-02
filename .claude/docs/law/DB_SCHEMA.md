@@ -123,7 +123,8 @@ CREATE TYPE member_status AS ENUM (
 -- Project types
 CREATE TYPE project_type AS ENUM (
   'residential',
-  'restaurant_cafe',
+  'restaurant',
+  'cafe',
   'commercial_office',
   'industrial'
 );
