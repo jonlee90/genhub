@@ -404,6 +404,8 @@ CREATE TABLE public.tasks (
   approval_notes   text,                                   -- Notes from approver (especially for rejection/revision)
   approved_by      uuid REFERENCES next_auth.users(id),    -- Who approved/rejected
   approved_at      timestamptz,                            -- When approval action was taken
+  -- Receipt documentation
+  receipt_photo_url text,                                  -- Receipt photo for task documentation (especially for purchase tasks)
   completed_at     timestamptz,
   created_by       uuid REFERENCES next_auth.users(id),
   created_at       timestamptz DEFAULT now(),
@@ -1088,6 +1090,7 @@ CREATE TABLE public.kakao_connections (
 | 20251230225030 | 032_find_dm_room_function_search_path | Fixed search path for DM room function |
 | 20251230225049 | 033_dm_room_constraints_search_path | Fixed search path for DM constraints |
 | 20251230225339 | 034_messages_fts_index | Full-text search index for messages |
+| 20260101XXXXXX | add_receipt_photo_to_tasks | Added receipt_photo_url column to tasks table |
 
 ---
 

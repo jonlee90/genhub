@@ -1193,6 +1193,53 @@ function PriorityBadge({ priority }: { priority: TaskPriority }) {
 }
 ```
 
+### Task Type Badge
+```tsx
+import { Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
+
+const TASK_TYPE_CONFIG = {
+  work: {
+    label: 'Work',
+    icon: Hammer,
+    color: 'bg-construction-blue text-white',
+    description: 'Labor/Work Task',
+  },
+  purchase: {
+    label: 'Purchase',
+    icon: ShoppingCart,
+    color: 'bg-[#059669] text-white',
+    description: 'Material Purchase',
+  },
+  approval: {
+    label: 'Approval',
+    icon: ClipboardCheck,
+    color: 'bg-[#FFB627] text-white',
+    description: 'Permit/Inspection',
+  },
+  admin: {
+    label: 'Admin',
+    icon: FileText,
+    color: 'bg-construction-accent text-white',
+    description: 'Administrative Task',
+  },
+};
+
+function TaskTypeBadge({ type }: { type: TaskType }) {
+  const config = TASK_TYPE_CONFIG[type];
+  const Icon = config.icon;
+
+  return (
+    <div className={cn(
+      "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold",
+      config.color
+    )}>
+      <Icon className="h-3 w-3" />
+      <span>{config.label}</span>
+    </div>
+  );
+}
+```
+
 ### Construction-Themed Box Shadow
 ```tsx
 // tailwind.config.ts

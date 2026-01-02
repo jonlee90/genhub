@@ -50,8 +50,10 @@
 |---------|---------|
 | Stripe | Payments (optional, feature-flagged) |
 | Nodemailer/Resend | Email delivery |
-| Vercel Blob | File storage |
+| Vercel Blob | File storage (receipts, attachments) |
 | Zod | Schema validation |
+| SerpAPI | Home Depot product search integration |
+| Firebase Cloud Messaging | Push notifications (web, iOS, Android) |
 
 ---
 
@@ -131,6 +133,7 @@ next-saas-starter/
 │   │   ├── TaskMaterialsManager.tsx # Tabbed interface for task materials
 │   │   ├── TaskMaterialSearch.tsx   # Home Depot product search for tasks
 │   │   ├── TaskMaterialsList.tsx    # Assigned materials list with CRUD
+│   │   ├── TaskReceiptUpload.tsx    # Receipt photo upload for purchase tasks
 │   │   ├── DashboardStats.tsx  # Stats cards (totals, budget, variance)
 │   │   ├── TopProjectsCard.tsx # Top projects by task completion
 │   │   ├── TopTeamMembersCard.tsx # Top team members by completed tasks
@@ -687,21 +690,43 @@ code-reviewer  # Final review
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SECRET_KEY=
+SUPABASE_JWT_SECRET=
 
 # NextAuth
 AUTH_SECRET=
 AUTH_GOOGLE_ID=
 AUTH_GOOGLE_SECRET=
 
-# Email
-EMAIL_SERVER_HOST=
-EMAIL_SERVER_PORT=
+# Email (Gmail SMTP or Resend)
+EMAIL_SERVER_HOST=smtp.gmail.com
+EMAIL_SERVER_PORT=587
 EMAIL_SERVER_USER=
 EMAIL_SERVER_PASSWORD=
 EMAIL_FROM=
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=
+MAIL_PASS=
+MAIL_FROM=
 
-# Stripe (optional)
+# Stripe (optional, feature-flagged)
 STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
+
+# Feature Flags
+NEXT_PUBLIC_PAYMENTS_ENABLED=false
+
+# Home Depot Product Search (SerpAPI)
+SERPAPI_API_KEY=
+
+# Firebase Cloud Messaging (Push Notifications)
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=
+FCM_SERVER_KEY=
 ```
