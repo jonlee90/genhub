@@ -30,6 +30,7 @@ const createTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
   task_type: z.enum(['work', 'purchase', 'approval', 'admin']).default('work'),
+  receipt_photo_url: z.string().url('Invalid receipt photo URL').optional().nullable(),
 }).refine(
   (data) => {
     // If both dates are provided, start_date must be <= due_date
@@ -55,6 +56,7 @@ const updateTaskSchema = z.object({
   planned_cost: z.number().min(0).optional().nullable(),
   actual_cost: z.number().min(0).optional().nullable(),
   phase_id: z.string().uuid('Invalid phase ID').optional().nullable(),
+  receipt_photo_url: z.string().url('Invalid receipt photo URL').optional().nullable(),
 }).refine(
   (data) => {
     // If both dates are provided, start_date must be <= due_date
@@ -234,6 +236,7 @@ export async function createTask(prevState: any, formData: FormData) {
     task_type: taskType && ['work', 'purchase', 'approval', 'admin'].includes(taskType)
       ? taskType
       : 'work',
+    receipt_photo_url: formData.get('receipt_photo_url') || null,
   };
 
   // Validate input
@@ -266,6 +269,7 @@ export async function createTask(prevState: any, formData: FormData) {
     task_type: data.task_type as TaskType,
     // Set approval_status to 'pending' for approval-type tasks
     approval_status: data.task_type === 'approval' ? 'pending' : null,
+    receipt_photo_url: data.receipt_photo_url || null,
   };
 
   // Insert task

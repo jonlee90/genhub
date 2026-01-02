@@ -22,9 +22,13 @@ const handler = NextAuth({
 			server: {
 				host: process.env.EMAIL_SERVER_HOST,
 				port: Number(process.env.EMAIL_SERVER_PORT),
+				secure: Number(process.env.EMAIL_SERVER_PORT) === 465, // Use SSL for port 465
 				auth: {
 					user: process.env.EMAIL_SERVER_USER,
-					pass: process.env.EMAIL_SERVER_PASSWORD
+					pass: process.env.EMAIL_SERVER_PASSWORD?.replace(/\s/g, '') // Remove spaces from app password
+				},
+				tls: {
+					rejectUnauthorized: false // For development
 				}
 			},
 			from: process.env.EMAIL_FROM,

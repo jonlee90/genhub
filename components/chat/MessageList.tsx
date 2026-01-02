@@ -26,10 +26,16 @@ interface MessageListProps {
   chatRoomId: string;
   onReply?: (message: MessageWithSender) => void;
   onNewMessage?: (message: MessageWithSender) => void;
+  // Expose optimistic UI functions to parent
+  onOptimisticFunctionsReady?: (functions: {
+    addOptimisticMessage: (message: any) => void;
+    confirmMessage: (tempId: string, realMessage: MessageWithSender) => void;
+    failMessage: (tempId: string, error: string) => void;
+  }) => void;
 }
 
 // Debug: Virtualized message list with real-time updates
-export function MessageList({ chatRoomId, onReply, onNewMessage }: MessageListProps) {
+export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFunctionsReady }: MessageListProps) {
   const [initialMessages, setInitialMessages] = useState<MessageWithSender[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -40,6 +46,33 @@ export function MessageList({ chatRoomId, onReply, onNewMessage }: MessageListPr
   const isAtBottomRef = useRef(true);
 
   console.log('[MessageList] Rendering for room:', chatRoomId);
+
+  // Debug: Stable callback for new messages to prevent infinite re-subscriptions
+  const handleNewMessage = useCallback(
+    (message: MessageWithSender) => {
+      console.log('[MessageList] New message received:', message.id);
+      onNewMessage?.(message);
+
+      // Auto-scroll to bottom if user was at bottom
+      if (isAtBottomRef.current && scrollContainerRef.current) {
+        setTimeout(() => {
+          scrollContainerRef.current?.scrollTo({
+            top: scrollContainerRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }, 100);
+      }
+
+      // Mark as read
+      markMessagesAsRead(chatRoomId);
+    },
+    [chatRoomId, onNewMessage]
+  );
+
+  // Debug: Stable callback for message updates
+  const handleMessageUpdate = useCallback((message: MessageWithSender) => {
+    console.log('[MessageList] Message updated:', message.id);
+  }, []);
 
   // Debug: Load initial messages
   useEffect(() => {
@@ -76,44 +109,33 @@ export function MessageList({ chatRoomId, onReply, onNewMessage }: MessageListPr
     loadMessages();
   }, [chatRoomId]);
 
-  // Debug: Use real-time messages hook
+  // Debug: Use real-time messages hook with stable callbacks
   const {
     messages,
     isConnected,
     connectionError,
     setMessages,
+    addOptimisticMessage,
+    confirmMessage,
+    failMessage,
   } = useMessages({
     roomId: chatRoomId,
     initialMessages,
-    onNewMessage: (message) => {
-      console.log('[MessageList] New message received:', message.id);
-      onNewMessage?.(message);
-
-      // Auto-scroll to bottom if user was at bottom
-      if (isAtBottomRef.current && scrollContainerRef.current) {
-        setTimeout(() => {
-          scrollContainerRef.current?.scrollTo({
-            top: scrollContainerRef.current.scrollHeight,
-            behavior: 'smooth',
-          });
-        }, 100);
-      }
-
-      // Mark as read
-      markMessagesAsRead(chatRoomId);
-    },
-    onMessageUpdate: (message) => {
-      console.log('[MessageList] Message updated:', message.id);
-    },
+    onNewMessage: handleNewMessage,
+    onMessageUpdate: handleMessageUpdate,
   });
 
-  // Debug: Sync initial messages to hook when they load
+  // Debug: Expose optimistic UI functions to parent
   useEffect(() => {
-    if (initialMessages.length > 0 && !isLoading) {
-      console.log('[MessageList] Syncing initial messages to hook');
-      setMessages(initialMessages);
+    if (onOptimisticFunctionsReady) {
+      console.log('[MessageList] Providing optimistic functions to parent');
+      onOptimisticFunctionsReady({
+        addOptimisticMessage,
+        confirmMessage,
+        failMessage,
+      });
     }
-  }, [initialMessages, isLoading, setMessages]);
+  }, [addOptimisticMessage, confirmMessage, failMessage, onOptimisticFunctionsReady]);
 
   // Debug: Auto-scroll to bottom on initial load
   useEffect(() => {
@@ -206,17 +228,17 @@ export function MessageList({ chatRoomId, onReply, onNewMessage }: MessageListPr
   }
 
   return (
-    <div className="flex-1 overflow-hidden relative bg-white">
-      {/* Debug: Connection status indicator */}
+    <div className="flex-1 overflow-hidden relative bg-white min-h-0">
+      {/* Debug: Connection status indicator - only show errors */}
       <AnimatePresence>
-        {connectionState !== 'connected' && (
+        {connectionError && (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-2 left-1/2 -translate-x-1/2 z-20"
           >
-            <ConnectionStatus state={connectionState} />
+            <ConnectionStatus state="disconnected" />
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,7 +2,7 @@
 name: kiro-plan
 description: Use this agent when you need to create actionable implementation task lists from approved feature designs. This agent should be called after a design document has been created and approved, to break down the design into specific coding tasks and implementation steps. Examples: <example>Context: User has approved a feature design document and needs implementation tasks created. user: "I've approved the login system design document. Can you create the implementation tasks?" assistant: "I'll use the implementation-task-planner agent to create actionable coding tasks based on your approved design." <commentary>Since the user has an approved design and needs implementation tasks, use the implementation-task-planner agent to break down the design into specific coding tasks.</commentary></example> <example>Context: User wants to move from design phase to implementation phase. user: "The API design looks good. What are the next steps to build this?" assistant: "Let me use the implementation-task-planner agent to create a detailed task list for implementing this API design." <commentary>The user is ready to move from design to implementation, so use the implementation-task-planner agent to create actionable tasks.</commentary></example>
 tools: Glob, Grep, LS, ExitPlanMode, Read, NotebookRead, WebFetch, TodoWrite, WebSearch, Edit, MultiEdit, Write, NotebookEdit
-model: opus
+model: sonnet
 color: blue
 ---
 

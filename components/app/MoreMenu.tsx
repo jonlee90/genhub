@@ -8,14 +8,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
   Receipt,
-  FileText,
-  BarChart3,
   Users,
   Settings,
   Bell,
   LogOut,
   HardHat,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { signOut, useSession } from 'next-auth/react';
@@ -24,9 +23,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 // Debug: Secondary navigation items for More menu
 const moreNavItems = [
   { name: 'Expenses', href: '/app/expenses', icon: Receipt, description: 'Track project expenses' },
-  { name: 'Reports', href: '/app/reports', icon: FileText, description: 'Daily site reports' },
-  { name: 'Analytics', href: '/app/analytics', icon: BarChart3, description: 'Project analytics' },
+  { name: 'Chat', href: '/app/chat', icon: MessageSquare, description: 'Team communication' },
   { name: 'Team', href: '/app/team', icon: Users, description: 'Manage team members' },
+  { name: 'Subcontractors', href: '/app/team/subcontractors', icon: HardHat, description: 'Manage subcontractors' },
   { name: 'Notifications', href: '/app/notifications', icon: Bell, description: 'View all notifications' },
   { name: 'Settings', href: '/app/settings', icon: Settings, description: 'App settings' },
 ];

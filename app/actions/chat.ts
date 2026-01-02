@@ -213,8 +213,8 @@ export async function sendMessage(formData: FormData) {
 
   console.log('[sendMessage] User has access, inserting message...');
 
-  // Insert message
-  const { data: message, error: insertError } = await supabase
+  // Insert message (without nested relationship to avoid FK errors)
+  const { data: messageData, error: insertError } = await supabase
     .from('messages')
     .insert({
       chat_room_id: data.chatRoomId,
@@ -223,15 +223,7 @@ export async function sendMessage(formData: FormData) {
       reply_to_id: data.replyToId || null,
       entity_references: data.entityReferences || [],
     })
-    .select(`
-      *,
-      sender:user_profiles!messages_sender_id_fkey (
-        id,
-        name,
-        email,
-        avatar_url
-      )
-    `)
+    .select('*')
     .single();
 
   if (insertError) {
@@ -239,7 +231,20 @@ export async function sendMessage(formData: FormData) {
     return { error: 'Failed to send message. Please try again.' };
   }
 
-  console.log('[sendMessage] Message sent successfully:', message.id);
+  console.log('[sendMessage] Message sent successfully:', messageData.id);
+
+  // Fetch sender profile separately (avoid FK relationship issues)
+  const { data: senderProfile } = await supabase
+    .from('user_profiles')
+    .select('id, name, email, avatar_url')
+    .eq('id', userId)
+    .single();
+
+  // Combine message with sender profile
+  const message = {
+    ...messageData,
+    sender: senderProfile || null,
+  };
 
   // ============================================
   // Task 0019: Two-Way Sync to KakaoTalk
@@ -511,7 +516,7 @@ export async function getThreadMessages(parentMessageId: string) {
     .from('messages')
     .select(`
       *,
-      sender:user_profiles!messages_sender_id_fkey (
+      sender:user_profiles (
         id,
         name,
         email,
@@ -540,7 +545,7 @@ export async function getThreadMessages(parentMessageId: string) {
     .from('messages')
     .select(`
       *,
-      sender:user_profiles!messages_sender_id_fkey (
+      sender:user_profiles (
         id,
         name,
         email,
@@ -806,7 +811,7 @@ export async function getMessageReactions(messageId: string) {
       emoji,
       created_at,
       user_id,
-      user:user_profiles!message_reactions_user_id_fkey (
+      user:user_profiles (
         id,
         name,
         avatar_url
@@ -898,7 +903,7 @@ export async function getMessagesReactions(messageIds: string[]) {
       emoji,
       user_id,
       created_at,
-      user:user_profiles!message_reactions_user_id_fkey (
+      user:user_profiles (
         id,
         name,
         avatar_url
@@ -1223,7 +1228,7 @@ export async function deleteAttachment(attachmentId: string) {
     .from('message_attachments')
     .select(`
       *,
-      message:messages!message_attachments_message_id_fkey (
+      message:messages (
         id,
         sender_id,
         chat_room_id
@@ -1476,50 +1481,49 @@ export async function createDMRoom(recipientUserId: string) {
     return { error: 'User not in your company' };
   }
 
-  // SECURITY (C2 Fix): Acquire advisory lock to prevent race conditions
-  // This ensures only one DM room can be created between two users at a time
-  console.log('[chat-actions] Acquiring advisory lock for DM creation...');
-  const { data: lockId, error: lockError } = await supabase
-    .rpc('acquire_dm_lock', {
-      user1_id: userId,
-      user2_id: recipientUserId,
-    });
-
-  if (lockError) {
-    console.error('[chat-actions] Error acquiring lock:', lockError);
-    return { error: 'Failed to acquire lock for DM creation' };
-  }
-
-  console.log('[chat-actions] Acquired advisory lock:', lockId);
-
-  // Check for existing DM room using RPC function
+  // Check for existing DM room using direct query
+  // (RPC functions require JWT token which isn't available in server actions)
   console.log('[chat-actions] Checking for existing DM room...');
-  const { data: existingRoomId, error: rpcError } = await supabase
-    .rpc('find_dm_room', {
-      user1_id: userId,
-      user2_id: recipientUserId,
-    });
 
-  if (rpcError) {
-    console.error('[chat-actions] Error calling find_dm_room:', rpcError);
+  // Find chat room where both users are participants and it's a DM type
+  const { data: existingRooms, error: findError } = await supabase
+    .from('chat_rooms')
+    .select(`
+      id,
+      chat_participants!inner (user_id)
+    `)
+    .eq('type', 'dm')
+    .is('project_id', null);
+
+  if (findError) {
+    console.error('[chat-actions] Error finding existing DM rooms:', findError);
     return { error: 'Failed to check for existing DM' };
   }
+
+  // Find a room where both users are participants
+  let existingRoomId: string | null = null;
+
+  if (existingRooms && existingRooms.length > 0) {
+    // For each potential DM room, check if both users are participants
+    for (const room of existingRooms) {
+      const participantIds = (room.chat_participants as Array<{ user_id: string }>).map(p => p.user_id);
+      if (participantIds.includes(userId) && participantIds.includes(recipientUserId)) {
+        existingRoomId = room.id;
+        break;
+      }
+    }
+  }
+
+  console.log('[chat-actions] Existing room check result:', existingRoomId);
 
   // If DM room exists, return it
   if (existingRoomId) {
     console.log('[chat-actions] Found existing DM room:', existingRoomId);
 
+    // Fetch room data
     const { data: room, error: fetchError } = await supabase
       .from('chat_rooms')
-      .select(`
-        *,
-        participants:chat_participants(
-          id,
-          user_id,
-          role,
-          user:user_profiles(id, name, avatar_url)
-        )
-      `)
+      .select('*')
       .eq('id', existingRoomId)
       .single();
 
@@ -1528,7 +1532,42 @@ export async function createDMRoom(recipientUserId: string) {
       return { error: 'Failed to fetch DM room' };
     }
 
-    return { success: true, room };
+    // Fetch participants separately
+    const { data: participants, error: participantsError } = await supabase
+      .from('chat_participants')
+      .select('id, user_id, role')
+      .eq('chat_room_id', existingRoomId);
+
+    if (participantsError) {
+      console.error('[chat-actions] Error fetching participants:', participantsError);
+      return { error: 'Failed to fetch DM participants' };
+    }
+
+    // Fetch user profiles for participants
+    const userIds = participants?.map(p => p.user_id) || [];
+    const { data: userProfiles, error: profilesError } = await supabase
+      .from('user_profiles')
+      .select('id, name, avatar_url')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('[chat-actions] Error fetching user profiles:', profilesError);
+      return { error: 'Failed to fetch user profiles' };
+    }
+
+    // Combine participants with their profiles
+    const participantsWithProfiles = participants?.map(p => ({
+      ...p,
+      user_profiles: userProfiles?.find(up => up.id === p.user_id),
+    }));
+
+    return {
+      success: true,
+      room: {
+        ...room,
+        participants: participantsWithProfiles,
+      }
+    };
   }
 
   // Create new DM room
@@ -1590,18 +1629,10 @@ export async function createDMRoom(recipientUserId: string) {
 
   console.log('[chat-actions] Added participants to DM room');
 
-  // Fetch full room data with participants
+  // Fetch full room data
   const { data: fullRoom, error: fetchError } = await supabase
     .from('chat_rooms')
-    .select(`
-      *,
-      participants:chat_participants(
-        id,
-        user_id,
-        role,
-        user:user_profiles(id, name, avatar_url)
-      )
-    `)
+    .select('*')
     .eq('id', newRoom.id)
     .single();
 
@@ -1610,12 +1641,47 @@ export async function createDMRoom(recipientUserId: string) {
     return { error: 'Failed to fetch DM room' };
   }
 
+  // Fetch participants
+  const { data: participants, error: fetchParticipantsError } = await supabase
+    .from('chat_participants')
+    .select('id, user_id, role')
+    .eq('chat_room_id', newRoom.id);
+
+  if (fetchParticipantsError) {
+    console.error('[chat-actions] Error fetching participants:', fetchParticipantsError);
+    return { error: 'Failed to fetch DM participants' };
+  }
+
+  // Fetch user profiles for participants
+  const userIds = participants?.map(p => p.user_id) || [];
+  const { data: userProfiles, error: profilesError } = await supabase
+    .from('user_profiles')
+    .select('id, name, avatar_url')
+    .in('id', userIds);
+
+  if (profilesError) {
+    console.error('[chat-actions] Error fetching user profiles:', profilesError);
+    return { error: 'Failed to fetch user profiles' };
+  }
+
+  // Combine participants with their profiles
+  const participantsWithProfiles = participants?.map(p => ({
+    ...p,
+    user_profiles: userProfiles?.find(up => up.id === p.user_id),
+  }));
+
   console.log('[chat-actions] Successfully created DM room');
 
   // Revalidate chat paths
   revalidatePath('/app/chat');
 
-  return { success: true, room: fullRoom };
+  return {
+    success: true,
+    room: {
+      ...fullRoom,
+      participants: participantsWithProfiles,
+    }
+  };
 }
 
 // ============================================
@@ -1671,7 +1737,7 @@ export async function editMessage(messageId: string, newContent: string) {
     .is('deleted_at', null) // Cannot edit deleted messages
     .select(`
       *,
-      sender:user_profiles!messages_sender_id_fkey (
+      sender:user_profiles (
         id,
         name,
         avatar_url
@@ -1950,7 +2016,7 @@ export async function exportTranscript(roomId: string) {
       deleted_at,
       reply_to_id,
       entity_references,
-      sender:user_profiles!messages_sender_id_fkey (
+      sender:user_profiles (
         id,
         name,
         email
@@ -2079,7 +2145,7 @@ export async function getChatRoomParticipants(roomId: string) {
       user_id,
       role,
       joined_at,
-      user_profiles!chat_participants_user_id_fkey (
+      user_profiles (
         id,
         name,
         email,

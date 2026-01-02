@@ -26,7 +26,7 @@ interface ChatRoomListProps {
 
 // Debug: Chat room list with project/DM sections
 export function ChatRoomList({ rooms, activeRoomId, onRoomSelect, totalUnread, companyUsers = [] }: ChatRoomListProps) {
-  console.log('[ChatRoomList] Rendering with rooms:', rooms.length, 'Total unread:', totalUnread);
+  console.log('[ChatRoomList] Rendering with rooms:', rooms.length, 'Company users:', companyUsers.length, 'Total unread:', totalUnread);
 
   // Debug: State for New DM Modal
   const [showNewDMModal, setShowNewDMModal] = useState(false);

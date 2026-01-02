@@ -236,6 +236,32 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
       return { success: false, error: 'Failed to verify membership. Please try again.' };
     }
 
+    // CRITICAL FIX: Ensure user exists in user_profiles table before creating company_users entry
+    // This prevents foreign key constraint violations when new users sign in via email
+    // NOTE: A database trigger should auto-create user_profiles on signup, but we upsert as a safety measure
+    console.log('[ACCEPT_INVITE] Creating/updating user profile for user:', authenticatedUserId);
+    const { data: profileData, error: profileError } = await supabase
+      .from('user_profiles')
+      .upsert({
+        id: authenticatedUserId,
+        email: authenticatedEmail,
+        name: session.user.name || invitation.name, // Use NextAuth name or invitation name
+        avatar_url: session.user.image || null,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'id',
+        ignoreDuplicates: false, // Update existing profile if it exists
+      })
+      .select()
+      .single();
+
+    if (profileError) {
+      console.error('[ACCEPT_INVITE] Error creating/updating user profile:', profileError);
+      return { success: false, error: `Failed to create user profile: ${profileError.message}` };
+    }
+
+    console.log('[ACCEPT_INVITE] User profile created/updated successfully:', profileData);
+
     if (existingMember) {
       if (existingMember.status === 'active') {
         return { success: false, error: 'You are already an active member of this company.' };
@@ -258,7 +284,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
       }
     } else {
       // Create new company_users entry with REAL user ID from next-auth
-      const { error: createError } = await supabase
+      console.log('[ACCEPT_INVITE] Creating company_users entry for:', { userId: authenticatedUserId, companyId: invitation.companyId, role: invitation.role });
+      const { data: companyUserData, error: createError } = await supabase
         .from('company_users')
         .insert({
           company_id: invitation.companyId,
@@ -268,10 +295,13 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
           activated_at: new Date().toISOString(),
           invited_by: null, // Could fetch from team_invitations if needed
           invited_at: null,
-        });
+        })
+        .select()
+        .single();
 
       if (createError) {
-        console.error('Error creating company user:', createError);
+        console.error('[ACCEPT_INVITE] Error creating company user:', createError);
+        console.error('[ACCEPT_INVITE] Error details:', JSON.stringify(createError, null, 2));
 
         // Rollback: Mark invitation as unused if company_users creation fails
         await supabase
@@ -279,8 +309,10 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
           .update({ used_at: null })
           .eq('id', invitation.invitationId);
 
-        return { success: false, error: 'Failed to activate account. Please try again.' };
+        return { success: false, error: `Failed to activate account: ${createError.message}` };
       }
+
+      console.log('[ACCEPT_INVITE] Company user created successfully:', companyUserData);
     }
 
     // Create welcome notification

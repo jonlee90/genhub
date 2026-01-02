@@ -1,0 +1,20 @@
+==========================================
+PATCH FOR app/actions/team.ts
+==========================================
+
+Step 1: Add import at line 9
+   import { sendTeamInvitationEmail } from "./team-email-helper";
+
+Step 2: Replace lines 188-194 (the TODO section) with the code in team-email-helper.ts usage example
+
+Files created:
+- app/actions/team-email-helper.ts (email sending function)
+- TEAM_INVITE_FIX.md (instructions)
+- TEAM_INVITE_PATCH.txt (this file)
+
+Next steps:
+1. Update .env.local with MAIL_* variables
+2. Add import to team.ts
+3. Call sendTeamInvitationEmail() instead of TODO
+4. Restart dev server
+5. Test invitation flow

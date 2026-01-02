@@ -1,24 +1,44 @@
 import { Suspense } from 'react';
-import { getChatRooms } from '@/app/actions/chat-queries';
+import { getChatRooms, getCompanyUsers, getCurrentUserContext } from '@/app/actions/chat-queries';
 import { ChatLayout } from '@/components/chat/ChatLayout';
 import { ChatErrorState } from '@/components/chat/ChatErrorState';
 import { Loader2 } from 'lucide-react';
 
-// Debug: Chat page - Server component that fetches initial room data
+// Debug: Chat page - Server component that fetches initial room data and company users
 export default async function ChatPage() {
   console.log('[ChatPage] Rendering chat page');
 
-  const { rooms, error } = await getChatRooms();
+  // Fetch rooms, users, and user context in parallel
+  const [roomsResult, usersResult, userContextResult] = await Promise.all([
+    getChatRooms(),
+    getCompanyUsers(),
+    getCurrentUserContext(),
+  ]);
 
-  console.log('[ChatPage] Fetched rooms:', rooms?.length || 0, 'Error:', error);
+  console.log('[ChatPage] Fetched rooms:', roomsResult.rooms?.length || 0, 'Error:', roomsResult.error);
+  console.log('[ChatPage] Fetched users:', usersResult.users?.length || 0, 'Error:', usersResult.error);
+  console.log('[ChatPage] User context:', userContextResult.userId, 'Error:', userContextResult.error);
 
-  if (error) {
-    return <ChatErrorState error={error} />;
+  if (roomsResult.error) {
+    return <ChatErrorState error={roomsResult.error} />;
+  }
+
+  // Check user context
+  if (userContextResult.error || !userContextResult.userId) {
+    return <ChatErrorState error={userContextResult.error || 'Failed to load user context'} />;
   }
 
   return (
     <Suspense fallback={<ChatLoadingSkeleton />}>
-      <ChatLayout initialRooms={rooms || []} />
+      <ChatLayout
+        initialRooms={roomsResult.rooms || []}
+        companyUsers={usersResult.users || []}
+        userContext={{
+          userId: userContextResult.userId,
+          userName: userContextResult.userName || 'User',
+          companyId: userContextResult.companyId || '',
+        }}
+      />
     </Suspense>
   );
 }

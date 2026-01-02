@@ -84,12 +84,11 @@ const result = await createTask(formData);
 
 ## Agent Structure (Optimized)
 
-### Primary Agents (4 Core Agents)
+### Primary Agents (3 Core Agents)
 
 | Agent | Purpose | When to Use |
 |-------|---------|-------------|
-| **frontend-architect** | UI planning & Aceternity research | Before complex UI features. Creates plans, does NOT implement. |
-| **frontend-builder** | UI implementation | Implements UI using `frontend-design` plugin. Use after architect creates plan or for simple UI. |
+| **frontend-engineer** | Full frontend lifecycle | All UI work - research, planning, and implementation. Uses `frontend-design` plugin. Plans first for complex features, implements directly for simple tasks. |
 | **backend-engineer** | Supabase + Next.js server | Database, Server Actions, API routes, auth. ALWAYS uses MCP Supabase. |
 | **code-reviewer** | Review, debug, test, security | After implementations. Reviews code, fixes issues, runs checks. |
 
@@ -97,12 +96,11 @@ const result = await createTask(formData);
 
 ```
 Complex UI Feature:
-1. frontend-architect → Creates plan in .claude/docs/ui-plans/
-2. frontend-builder → Implements using frontend-design plugin
-3. code-reviewer → Reviews and fixes issues
+1. frontend-engineer → Plans architecture, then implements using frontend-design plugin
+2. code-reviewer → Reviews and fixes issues
 
 Simple UI Change:
-1. frontend-builder → Direct implementation with plugin
+1. frontend-engineer → Direct implementation with plugin
 2. code-reviewer → Quick review
 
 Backend Work:
@@ -114,7 +112,6 @@ Backend Work:
 
 | Agent | Purpose |
 |-------|---------|
-| **supabase-nextjs-expert** | Supabase + Next.js integration |
 | **vercel-ai-sdk-v5-expert** | AI SDK integration tasks |
 | **kiro-requirement** | Requirements analysis |
 | **kiro-design** | Feature design documents |
@@ -126,7 +123,6 @@ Backend Work:
 
 | Skill | Purpose |
 |-------|---------|
-| `/kc:nextjs` | Next.js development, optimization, and PWA |
 | `/kc:impl [task]` | Implement task from specs |
 | `/kc:build` | Build and verify project |
 | `/kc:db-check` | Database health check |

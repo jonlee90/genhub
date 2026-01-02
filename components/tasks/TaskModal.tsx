@@ -44,6 +44,7 @@ import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
 import { TaskExpensesSection, type TaskExpense } from './TaskExpensesSection';
+import { TaskReceiptUpload } from './TaskReceiptUpload';
 import { getTaskExpenses } from '@/app/actions/expenses';
 import { addProductToTask } from '@/app/actions/materials';
 import { BaseModal } from '@/components/ui/BaseModal';
@@ -202,6 +203,13 @@ function TaskModalForm({
 
   // Debug: Temporary materials for create mode (will be associated after task creation)
   const [tempMaterials, setTempMaterials] = useState<TempMaterial[]>([]);
+
+  // Debug: Receipt photo state
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(() => {
+    if (mode === 'edit' && task?.receipt_photo_url) return task.receipt_photo_url;
+    return null;
+  });
 
   // DEBUG: Log modal rendering
   console.log('[TaskModalForm] Rendering in mode:', mode, {
@@ -365,6 +373,12 @@ function TaskModalForm({
     formData.append('start_date', startDate);
     formData.append('due_date', dueDate);
     formData.append('planned_cost', plannedCost);
+
+    // Add receipt photo URL if available
+    if (receiptPreview) {
+      formData.append('receipt_photo_url', receiptPreview);
+      console.log('[TaskModalForm] Adding receipt_photo_url to form');
+    }
 
     // Add task_type for new tasks
     if (mode === 'create' && taskType) {
@@ -1049,6 +1063,19 @@ function TaskModalForm({
               )}
             </div>
           )}
+
+          {/* Receipt Photo Upload - For all task types (especially useful for purchase tasks) */}
+          <TaskReceiptUpload
+            receiptUrl={receiptPreview}
+            onReceiptChange={(file, preview) => {
+              console.log('[TaskModal] Receipt changed:', { hasFile: !!file, hasPreview: !!preview });
+              setReceiptFile(file);
+              setReceiptPreview(preview);
+            }}
+            disabled={isPending}
+            showLabel={true}
+            compact={false}
+          />
 
               {/* Materials Section - Conditional rendering with emphasis (Subtasks 2.7, 2.8) */}
               {isFieldVisible(taskType, 'materialsSection', mode) && (

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createTask } from '@/app/actions/tasks';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { TaskMaterialsManager } from './TaskMaterialsManager';
+import { TaskReceiptUpload } from './TaskReceiptUpload';
 import type { Database } from '@/types/database.types';
 
 type TaskType = Database['public']['Enums']['task_type'];
@@ -98,6 +99,10 @@ export function CreateTaskForm({
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTaskType, setSelectedTaskType] = useState<TaskType | null>(null);
   const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
+
+  // Debug: Receipt photo state
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
   // Debug: Calculate total steps based on task type
   const totalSteps = getStepCount(selectedTaskType);
@@ -454,6 +459,23 @@ export function CreateTaskForm({
                       className="border-2 border-gray-200 focus:border-construction-blue"
                     />
                   </div>
+                )}
+
+                {/* Receipt Photo Upload - especially useful for purchase tasks */}
+                <TaskReceiptUpload
+                  receiptUrl={receiptPreview}
+                  onReceiptChange={(file, preview) => {
+                    console.log('[CreateTaskForm] Receipt changed:', { hasFile: !!file, hasPreview: !!preview });
+                    setReceiptFile(file);
+                    setReceiptPreview(preview);
+                  }}
+                  disabled={isPending}
+                  showLabel={true}
+                />
+
+                {/* Hidden field for receipt URL (will be set after upload in real implementation) */}
+                {receiptPreview && (
+                  <input type="hidden" name="receipt_photo_url" value={receiptPreview} />
                 )}
 
                 {/* Debug: Navigation for Step 2 */}

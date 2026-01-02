@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, User, Shield, CheckCircle2, XCircle, UserPlus } from 'lucide-react';
+import { Loader2, Mail, User, Shield, CheckCircle2, XCircle, UserPlus, Copy, Check, Link2, Share2 } from 'lucide-react';
 
 type UserRole = Database['public']['Enums']['user_role'];
 
@@ -60,30 +60,63 @@ const ROLE_OPTIONS = [
 
 export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeamMemberModalProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>('field_worker');
+  const [copied, setCopied] = useState(false);
+
+  // Debug: Track modal state
+  console.log('[InviteTeamMemberModal] Rendering modal');
 
   // Use useActionState hook for form submission
   const [state, formAction, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
+      console.log('[InviteTeamMemberModal] Submitting invitation...');
       const result = await inviteTeamMember(formData);
+      console.log('[InviteTeamMemberModal] Invitation result:', result);
       return result;
     },
     null
   );
 
-  // Reset form and close modal on success
-  useEffect(() => {
-    if (state?.success) {
-      const timer = setTimeout(() => {
-        handleClose();
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [state?.success]);
+  // Debug: Don't auto-close on success - let user copy link first
+  // Removed auto-close timer to allow user to copy the invite link
 
   const handleClose = useCallback(() => {
+    console.log('[InviteTeamMemberModal] Closing modal');
     setSelectedRole('field_worker');
+    setCopied(false);
     onClose();
   }, [onClose]);
+
+  // Debug: Copy invitation link to clipboard
+  const handleCopyLink = useCallback(async () => {
+    if (state?.invitationLink) {
+      try {
+        await navigator.clipboard.writeText(state.invitationLink);
+        setCopied(true);
+        console.log('[InviteTeamMemberModal] Link copied to clipboard');
+        // Reset copied state after 3 seconds
+        setTimeout(() => setCopied(false), 3000);
+      } catch (err) {
+        console.error('[InviteTeamMemberModal] Failed to copy link:', err);
+      }
+    }
+  }, [state?.invitationLink]);
+
+  // Debug: Share link using Web Share API (if available)
+  const handleShareLink = useCallback(async () => {
+    if (state?.invitationLink && navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Team Invitation - GenHub',
+          text: 'You have been invited to join our team on GenHub!',
+          url: state.invitationLink,
+        });
+        console.log('[InviteTeamMemberModal] Link shared successfully');
+      } catch (err) {
+        // User cancelled or share failed
+        console.log('[InviteTeamMemberModal] Share cancelled or failed:', err);
+      }
+    }
+  }, [state?.invitationLink]);
 
   return (
     <BaseModal
@@ -96,14 +129,80 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
       showFooter={false}
     >
       <form action={formAction} className="space-y-6">
-          {/* Success Message */}
+          {/* Success Message with Shareable Link */}
           {state?.success && (
-            <Alert className="bg-green-50 border-2 border-green-300 text-green-900">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <AlertDescription className="ml-2 font-semibold">
-                {state.message}
-              </AlertDescription>
-            </Alert>
+            <div className="space-y-4">
+              <Alert className="bg-green-50 border-2 border-green-300 text-green-900">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                <AlertDescription className="ml-2 font-semibold">
+                  {state.message}
+                </AlertDescription>
+              </Alert>
+
+              {/* Invitation Link Box */}
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Link2 className="h-5 w-5 text-construction-blue" />
+                  <span className="font-semibold text-gray-900">Invitation Link</span>
+                  {!state.emailSent && (
+                    <span className="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-medium">
+                      Email not sent - share manually
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-sm text-gray-600">
+                  Share this link with your team member to complete their registration:
+                </p>
+
+                {/* Link Display and Copy */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-white border-2 border-gray-300 rounded-md px-3 py-2 text-sm font-mono text-gray-700 truncate">
+                    {state.invitationLink}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyLink}
+                    className={`shrink-0 border-2 transition-all duration-200 ${
+                      copied
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-300 hover:border-construction-blue hover:bg-construction-blue/5'
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                  {/* Share button - only show if Web Share API is available */}
+                  {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleShareLink}
+                      className="shrink-0 border-2 border-gray-300 hover:border-construction-blue hover:bg-construction-blue/5"
+                    >
+                      <Share2 className="h-4 w-4 mr-1" />
+                      Share
+                    </Button>
+                  )}
+                </div>
+
+                <p className="text-xs text-gray-500">
+                  This link expires in 7 days for security reasons.
+                </p>
+              </div>
+            </div>
           )}
 
           {/* Error Message */}
@@ -220,34 +319,58 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isPending}
-              className="border-2 border-gray-300 hover:bg-gray-50"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isPending || state?.success}
-              className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Sending Invitation...
-                </>
-              ) : state?.success ? (
-                <>
+            {state?.success ? (
+              <>
+                {/* After success: Show invite another and done buttons */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    // Reset state to invite another member
+                    window.location.reload();
+                  }}
+                  className="border-2 border-gray-300 hover:bg-gray-50"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Invite Another
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleClose}
+                  className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg"
+                >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Invitation Sent!
-                </>
-              ) : (
-                'Send Invitation'
-              )}
-            </Button>
+                  Done
+                </Button>
+              </>
+            ) : (
+              <>
+                {/* Before success: Show cancel and submit buttons */}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={isPending}
+                  className="border-2 border-gray-300 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending Invitation...
+                    </>
+                  ) : (
+                    'Send Invitation'
+                  )}
+                </Button>
+              </>
+            )}
           </div>
         </form>
     </BaseModal>

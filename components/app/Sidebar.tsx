@@ -11,14 +11,13 @@ import {
   Package,
   Receipt,
   Users,
-  FileText,
-  BarChart3,
   Settings,
   Bell,
   Menu,
   X,
   ChevronDown,
-  HardHat
+  HardHat,
+  MessageSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,16 +37,9 @@ const navigation: NavigationItem[] = [
   { name: "Tasks", href: "/app/tasks", icon: CheckSquare },
   { name: "Materials", href: "/app/materials", icon: Package },
   { name: "Expenses", href: "/app/expenses", icon: Receipt },
-  {
-    name: "Team",
-    href: "/app/team",
-    icon: Users,
-    children: [
-      { name: "Subcontractors", href: "/app/team/subcontractors", icon: HardHat }
-    ]
-  },
-  { name: "Reports", href: "/app/reports", icon: FileText },
-  { name: "Analytics", href: "/app/analytics", icon: BarChart3 },
+  { name: "Chat", href: "/app/chat", icon: MessageSquare },
+  { name: "Team", href: "/app/team", icon: Users },
+  { name: "Subcontractors", href: "/app/team/subcontractors", icon: HardHat },
   { name: "Settings", href: "/app/settings", icon: Settings },
 ];
 

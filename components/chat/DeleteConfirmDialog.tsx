@@ -63,13 +63,14 @@ export function DeleteConfirmDialog({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Debug: Backdrop with warning tint */}
+          {/* Debug: Backdrop with warning tint - clicks close the dialog */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={onCancel}
+            onClick={!isDeleting ? onCancel : undefined}
             className="fixed inset-0 bg-construction-red/10 backdrop-blur-sm z-[100]"
+            aria-hidden="true"
           />
 
           {/* Debug: Confirmation modal with industrial warning design */}
@@ -86,6 +87,9 @@ export function DeleteConfirmDialog({
               'border-4 border-construction-red/30',
               'overflow-hidden'
             )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
           >
             {/* Debug: Warning header with diagonal stripes (construction zone pattern) */}
             <div className="relative bg-gradient-to-r from-construction-red to-red-600 px-6 py-4">
@@ -108,7 +112,7 @@ export function DeleteConfirmDialog({
                   <AlertTriangle className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-lg font-black text-white tracking-tight uppercase">
+                  <h2 id="delete-dialog-title" className="text-lg font-black text-white tracking-tight uppercase">
                     Delete Message
                   </h2>
                   <p className="text-xs font-mono text-white/80 mt-0.5">

@@ -41,6 +41,7 @@ Read the spec/requirements and identify work categories:
 - Business logic implementation
 - Authentication and authorization
 - Data processing and validation
+- Realtime subscriptions
 
 **Database Work**:
 - Schema design and migrations
@@ -60,42 +61,33 @@ Use the Task tool to delegate work to the appropriate agents:
 
 #### Frontend Work
 
-**For Complex UI (needs planning)**:
+**For All UI Work (simple or complex)**:
 ```
 Task tool:
-subagent_type: "frontend-architect"
-prompt: "Create implementation plan for [feature] based on spec at [path]"
+subagent_type: "frontend-engineer"
+prompt: "Implement [feature] according to spec at [path]. [Add context: complexity level, whether planning is needed first]"
 ```
 
-Then after plan is created:
-```
-Task tool:
-subagent_type: "frontend-builder"
-prompt: "Implement [feature] following plan at .claude/docs/ui-plans/[feature].md"
-```
-
-**For Simple UI (direct implementation)**:
-```
-Task tool:
-subagent_type: "frontend-builder"
-prompt: "Implement [feature] according to spec at [path]"
-```
+The frontend-engineer agent will:
+- Plan first for complex features (5+ files, new pages, major components)
+- Implement directly for simple tasks
+- Always use frontend-design plugin for code generation
 
 #### Backend Work
 
-**For Supabase + Next.js Integration**:
-```
-Task tool:
-subagent_type: "supabase-nextjs-expert"
-prompt: "Implement [feature] with Supabase integration per spec at [path]"
-```
-
-**For Database Schema/Migrations**:
+**For All Backend/Database Work**:
 ```
 Task tool:
 subagent_type: "backend-engineer"
-prompt: "Create database schema and migrations for [feature] per spec at [path]"
+prompt: "Implement [feature] with database schema, Server Actions, and Supabase integration per spec at [path]"
 ```
+
+The backend-engineer agent handles:
+- Database schema and migrations via MCP Supabase
+- RLS policies and security
+- Server Actions and API routes
+- Authentication and session management
+- Realtime subscriptions
 
 #### Next.js Specific Work
 
@@ -130,10 +122,9 @@ For complex features requiring multiple agents:
 
 3. Delegate in order:
    a) Database schema (backend-engineer)
-   b) Server Actions/API (supabase-nextjs-expert)
-   c) UI planning (frontend-architect) if complex
-   d) UI implementation (frontend-builder)
-   e) Code review (code-reviewer)
+   b) Server Actions/API (backend-engineer)
+   c) UI implementation (frontend-engineer)
+   d) Code review (code-reviewer)
 
 4. Validate against spec after each step
 ```
@@ -166,12 +157,12 @@ For complex features requiring multiple agents:
 
 ## Delegation Reference
 
-| Work Type | Primary Agent | When to Use |
-|-----------|---------------|-------------|
-| UI Planning | frontend-architect | Complex UI, needs research |
-| UI Implementation | frontend-builder | All UI work (always uses frontend-design plugin) |
-| Database Schema | backend-engineer | Tables, RLS, migrations |
-| Supabase Integration | supabase-nextjs-expert | Auth, data fetching, real-time |
+| Work Type | Agent | Capabilities |
+|-----------|-------|--------------|
+| All Frontend/UI | frontend-engineer | Planning + implementation, uses frontend-design plugin |
+| Database Schema | backend-engineer | Tables, RLS, migrations via MCP Supabase |
+| Server Actions/API | backend-engineer | Auth, data fetching, realtime, webhooks |
+| Supabase Integration | backend-engineer | Full Supabase + Next.js patterns |
 | Next.js Features | /kc:nextjs skill | App Router, PWA, Server Components |
 | Code Review | code-reviewer | After any implementation |
 
@@ -194,23 +185,24 @@ After orchestrating implementation:
 4. **Validation**: How implementation matches spec
 5. **Remaining Work**: Any incomplete items or follow-ups
 
-## Frontend Complexity Rules (MANDATORY)
+## Frontend Complexity Guide
 
-A UI task is considered COMPLEX if it includes ANY of:
+The frontend-engineer agent will automatically determine complexity, but here's a reference:
+
+**Complex (agent will plan first)**:
 - New page or route
 - New reusable component
 - Form with conditional fields
 - Interaction with expenses, tasks, or workflow logic
 - Mobile + desktop behavior differences
 - State-driven UI
+- 5+ files affected
 
-If COMPLEX → MUST call frontend-architect first.
-
-## STRICT FRONTEND SEQUENCE RULE
-If frontend-architect is used:
-- frontend-builder MUST NOT be called
-- until the architect plan exists on disk
-- and its path is explicitly referenced
+**Simple (agent will implement directly)**:
+- Styling updates
+- Single component modifications
+- Bug fixes
+- Adding props or minor features
 
 ## Rules
 
@@ -218,7 +210,7 @@ If frontend-architect is used:
 - ALWAYS read the spec document completely before starting
 - ALWAYS use Task tool to delegate work
 - ALWAYS validate output against original specifications
-- Use frontend-design plugin through frontend-builder for all UI
-- Use MCP Supabase through backend-engineer/supabase-nextjs-expert for database
+- Use frontend-engineer for ALL UI work (it handles planning internally)
+- Use backend-engineer for ALL database/server work (includes Supabase expertise)
 - Coordinate between agents for complex features
 - Run code-reviewer after implementations

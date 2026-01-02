@@ -37,7 +37,7 @@ export function BottomNavigation() {
 
   // Debug: Check if "More" menu items are active
   const isMoreActive = () => {
-    const moreRoutes = ['/app/expenses', '/app/reports', '/app/analytics', '/app/team', '/app/settings', '/app/notifications'];
+    const moreRoutes = ['/app/expenses', '/app/chat', '/app/team', '/app/settings', '/app/notifications'];
     return moreRoutes.some(route => pathname.startsWith(route));
   };
 

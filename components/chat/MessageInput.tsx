@@ -18,10 +18,23 @@ interface MessageInputProps {
   onCancelReply?: () => void;
   userId: string;
   userName: string;
+  // Optimistic UI functions
+  addOptimisticMessage: (message: any) => void;
+  confirmMessage: (tempId: string, realMessage: MessageWithSender) => void;
+  failMessage: (tempId: string, error: string) => void;
 }
 
 // Debug: Message input with auto-resize textarea, @mention autocomplete, and send button
-export function MessageInput({ chatRoomId, replyTo, onCancelReply, userId, userName }: MessageInputProps) {
+export function MessageInput({
+  chatRoomId,
+  replyTo,
+  onCancelReply,
+  userId,
+  userName,
+  addOptimisticMessage,
+  confirmMessage,
+  failMessage
+}: MessageInputProps) {
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [pendingMessageId, setPendingMessageId] = useState<string | null>(null);
@@ -157,7 +170,7 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply, userId, userN
     setEntityReferences(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Debug: Send message handler
+  // Debug: Send message handler with optimistic UI
   const handleSend = async () => {
     if (!content.trim() || isSending) {
       console.log('[MessageInput] Cannot send - empty or already sending');
@@ -170,36 +183,78 @@ export function MessageInput({ chatRoomId, replyTo, onCancelReply, userId, userN
     // Stop typing indicator
     stopTyping();
 
+    // Generate temporary ID for optimistic message
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    console.log('[MessageInput] Creating optimistic message with tempId:', tempId);
+
+    // Create optimistic message
+    const optimisticMessage = {
+      id: tempId,
+      chat_room_id: chatRoomId,
+      sender_id: userId,
+      content: content.trim(),
+      created_at: new Date().toISOString(),
+      edited_at: null,
+      deleted_at: null,
+      reply_to_id: replyTo?.id || null,
+      entity_references: entityReferences || [],
+      sender: {
+        id: userId,
+        name: userName,
+        email: '',
+        avatar_url: null,
+      },
+      _optimistic: true,
+      _status: 'sending' as const,
+      _tempId: tempId,
+    };
+
+    // Add to UI immediately
+    addOptimisticMessage(optimisticMessage);
+
+    // Clear input immediately for better UX
+    const messageContent = content.trim();
+    const messageReplyTo = replyTo;
+    const messageEntityRefs = entityReferences;
+
+    setContent('');
+    setEntityReferences([]);
+    onCancelReply?.();
+    textareaRef.current?.focus();
+
+    // Prepare FormData
     const formData = new FormData();
     formData.append('chatRoomId', chatRoomId);
-    formData.append('content', content.trim());
-    if (replyTo) {
-      formData.append('replyToId', replyTo.id);
+    formData.append('content', messageContent);
+    if (messageReplyTo) {
+      formData.append('replyToId', messageReplyTo.id);
     }
 
     // Add entity references if any
-    if (entityReferences.length > 0) {
-      formData.append('entityReferences', JSON.stringify(entityReferences));
-      console.log('[MessageInput] Attaching entity references:', entityReferences);
+    if (messageEntityRefs.length > 0) {
+      formData.append('entityReferences', JSON.stringify(messageEntityRefs));
+      console.log('[MessageInput] Attaching entity references:', messageEntityRefs);
     }
 
+    // Send to server
     const result = await sendMessage(formData);
 
-    if (result.success) {
-      console.log('[MessageInput] Message sent successfully');
+    if (result.success && result.message) {
+      console.log('[MessageInput] Message sent successfully, confirming optimistic message');
+
+      // Confirm optimistic message with real message
+      confirmMessage(tempId, result.message);
 
       // Store message ID for file uploads
-      if (result.message?.id) {
+      if (result.message.id) {
         setPendingMessageId(result.message.id);
       }
-
-      setContent('');
-      setEntityReferences([]);
-      onCancelReply?.();
-      textareaRef.current?.focus();
-      toast.success('Message sent');
     } else {
       console.error('[MessageInput] Failed to send message:', result.error);
+
+      // Mark optimistic message as failed
+      failMessage(tempId, result.error || 'Failed to send message');
+
       toast.error(result.error || 'Failed to send message');
     }
 

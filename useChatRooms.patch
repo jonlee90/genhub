@@ -1,0 +1,117 @@
+--- lib/hooks/useChatRooms.ts.backup
++++ lib/hooks/useChatRooms.ts
+@@ -7,6 +7,7 @@
+  * - Update unread counts when new messages arrive
+  * - Re-sort rooms by last message activity
+  * - Handle room additions/removals in real-time
++ * - FIXED: Stable connection state to prevent flickering
+  */
+ 
+ import { useState, useEffect, useCallback, useRef } from 'react';
+@@ -51,10 +52,48 @@
+   const [isConnected, setIsConnected] = useState(false);
+   const [connectionError, setConnectionError] = useState<string | null>(null);
+ 
++  // Debug: Track individual channel states to prevent flickering
++  const [participantsConnected, setParticipantsConnected] = useState(false);
++  const [messagesConnected, setMessagesConnected] = useState(false);
++
+   // Debug: Refs for cleanup
+   const participantsChannelRef = useRef<RealtimeChannel | null>(null);
+   const messagesChannelRef = useRef<RealtimeChannel | null>(null);
+   const supabaseRef = useRef(getBrowserClient());
++  const connectionStabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
++
++  console.log('[useChatRooms] Hook initialized for user:', userId);
++
++  // Debug: Stabilize connection state - only update after both channels are stable
++  useEffect(() => {
++    // Clear any pending timeout
++    if (connectionStabilityTimeoutRef.current) {
++      clearTimeout(connectionStabilityTimeoutRef.current);
++    }
++
++    // Debug: Wait for both channels to connect, with debounce
++    if (participantsConnected && messagesConnected) {
++      // Both connected - debounce to prevent flickering
++      connectionStabilityTimeoutRef.current = setTimeout(() => {
++        console.log('[useChatRooms] Connection stable - both channels connected');
++        setIsConnected(true);
++        setConnectionError(null);
++      }, 300); // 300ms debounce
++    } else if (!participantsConnected || !messagesConnected) {
++      // At least one disconnected
++      connectionStabilityTimeoutRef.current = setTimeout(() => {
++        const bothDisconnected = !participantsConnected && !messagesConnected;
++        console.log('[useChatRooms] Connection unstable:', {
++          participants: participantsConnected,
++          messages: messagesConnected,
++        });
++        
++        // Only set to disconnected if both are disconnected
++        if (bothDisconnected) {
++          setIsConnected(false);
++        }
++      }, 300);
++    }
+ 
+-  console.log('[useChatRooms] Hook initialized for user:', userId);
++    return () => {
++      if (connectionStabilityTimeoutRef.current) {
++        clearTimeout(connectionStabilityTimeoutRef.current);
++      }
++    };
++  }, [participantsConnected, messagesConnected]);
+ 
+   // Debug: Calculate total unread count
+@@ -172,11 +211,13 @@
+       .subscribe((status, err) => {
+         console.log('[useChatRooms] Participants subscription status:', status);
+-        if (status === 'CHANNEL_ERROR') {
++        
++        if (status === 'SUBSCRIBED') {
++          setParticipantsConnected(true);
++        } else if (status === 'CHANNEL_ERROR') {
++          setParticipantsConnected(false);
++          setConnectionError(err?.message || 'Connection error');
+           console.error('[useChatRooms] Participants channel error:', err);
++        } else if (status === 'CLOSED') {
++          setParticipantsConnected(false);
+         }
+       });
+ 
+@@ -201,11 +242,13 @@
+       .subscribe((status, err) => {
+         console.log('[useChatRooms] Messages subscription status:', status);
+ 
+         if (status === 'SUBSCRIBED') {
+-          setIsConnected(true);
+-          setConnectionError(null);
++          setMessagesConnected(true);
+         } else if (status === 'CHANNEL_ERROR') {
+-          setIsConnected(false);
++          setMessagesConnected(false);
+           setConnectionError(err?.message || 'Connection error');
+           console.error('[useChatRooms] Messages channel error:', err);
+         } else if (status === 'CLOSED') {
+-          setIsConnected(false);
++          setMessagesConnected(false);
+         }
+       });
+ 
+@@ -214,6 +257,14 @@
+     // Debug: Cleanup on unmount
+     return () => {
+       console.log('[useChatRooms] Cleaning up subscriptions');
++      
++      // Clear stability timeout
++      if (connectionStabilityTimeoutRef.current) {
++        clearTimeout(connectionStabilityTimeoutRef.current);
++      }
++      
++      // Reset connection states
++      setParticipantsConnected(false);
++      setMessagesConnected(false);
++      
++      // Remove channels
+       if (participantsChannelRef.current) {

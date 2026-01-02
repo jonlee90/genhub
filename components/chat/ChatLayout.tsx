@@ -24,23 +24,41 @@ import { ChatSettings } from './ChatSettings';
 import { ArrowLeft, Users, Settings, MoreVertical, Search } from 'lucide-react';
 import { ChatRoomWithUnread, MessageWithSender } from '@/types/chat.types';
 import { useChatRooms } from '@/lib/hooks/useChatRooms';
-import { getCurrentUserContext } from '@/app/actions/chat-queries';
+
+interface CompanyUser {
+  id: string;
+  name: string;
+  email?: string;
+  avatar_url?: string;
+  role?: string;
+}
 
 interface ChatLayoutProps {
   initialRooms: ChatRoomWithUnread[];
+  companyUsers?: CompanyUser[];
+  userContext: {
+    userId: string;
+    userName: string;
+    companyId: string;
+  };
 }
 
 // Debug: Main chat layout with responsive sidebar and message area
-export function ChatLayout({ initialRooms }: ChatLayoutProps) {
+export function ChatLayout({ initialRooms, companyUsers = [], userContext }: ChatLayoutProps) {
+  console.log('[ChatLayout] Received companyUsers:', companyUsers.length);
+  console.log('[ChatLayout] User context:', userContext.userId, userContext.userName);
   const [activeRoomId, setActiveRoomId] = useState<string | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const [replyTo, setReplyTo] = useState<MessageWithSender | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [userContext, setUserContext] = useState<{
-    userId: string;
-    companyId: string;
+
+  // Debug: Store optimistic UI functions from MessageList
+  const [optimisticFunctions, setOptimisticFunctions] = useState<{
+    addOptimisticMessage: (message: any) => void;
+    confirmMessage: (tempId: string, realMessage: MessageWithSender) => void;
+    failMessage: (tempId: string, error: string) => void;
   } | null>(null);
 
   // Debug: Handle mobile detection (avoids hydration mismatch)
@@ -54,24 +72,6 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Debug: Get user context for real-time subscriptions
-  useEffect(() => {
-    async function fetchUserContext() {
-      console.log('[ChatLayout] Fetching user context...');
-      const result = await getCurrentUserContext();
-      if (result.userId && result.companyId) {
-        console.log('[ChatLayout] User context loaded:', result.userId);
-        setUserContext({
-          userId: result.userId,
-          companyId: result.companyId,
-        });
-      } else {
-        console.error('[ChatLayout] Failed to get user context:', result.error);
-      }
-    }
-    fetchUserContext();
-  }, []);
-
   // Debug: Use real-time chat rooms hook
   const {
     rooms,
@@ -80,8 +80,8 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
     connectionError,
     updateRoomUnread,
   } = useChatRooms({
-    userId: userContext?.userId || '',
-    companyId: userContext?.companyId || '',
+    userId: userContext.userId,
+    companyId: userContext.companyId,
     initialRooms,
     onUnreadChange: (roomId, count) => {
       console.log('[ChatLayout] Unread changed for room:', roomId, 'count:', count);
@@ -141,7 +141,7 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
       {/* Debug: Push Permission Prompt - Show on first visit */}
       <PushPermissionPrompt />
 
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <div className="flex h-full bg-gray-50 overflow-hidden">
         {/* Debug: Sidebar - Desktop: always visible, Mobile: conditional */}
       <AnimatePresence mode="wait">
         {(isMobileSidebarOpen || !isMobile) && (
@@ -158,10 +158,10 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
               'relative before:absolute before:inset-0 before:bg-[linear-gradient(rgba(0,27,81,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(0,27,81,0.02)_1px,transparent_1px)] before:bg-[size:20px_20px] before:pointer-events-none'
             )}
           >
-            {/* Debug: Connection status at top of sidebar */}
-            {connectionState !== 'connected' && (
+            {/* Debug: Connection status at top of sidebar - only show errors */}
+            {connectionError && (
               <div className="px-4 pt-2">
-                <ConnectionStatus state={connectionState} />
+                <ConnectionStatus state="disconnected" />
               </div>
             )}
 
@@ -170,6 +170,7 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
               activeRoomId={activeRoomId}
               onRoomSelect={handleRoomSelect}
               totalUnread={totalUnread}
+              companyUsers={companyUsers}
             />
           </motion.div>
         )}
@@ -202,8 +203,8 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
                 </button>
 
                 <div className="flex items-center gap-2">
-                  {/* Debug: Compact connection status */}
-                  <CompactConnectionStatus state={connectionState} />
+                  {/* Debug: Compact connection status - only show errors */}
+                  {connectionError && <CompactConnectionStatus state="disconnected" />}
                   <div>
                     <h2 className="text-lg font-bold text-construction-blue">
                       {activeRoom.name}
@@ -258,14 +259,22 @@ export function ChatLayout({ initialRooms }: ChatLayoutProps) {
               chatRoomId={activeRoomId}
               onReply={handleReply}
               onNewMessage={handleNewMessage}
+              onOptimisticFunctionsReady={setOptimisticFunctions}
             />
 
             {/* Debug: Message Input */}
-            <MessageInput
-              chatRoomId={activeRoomId}
-              replyTo={replyTo}
-              onCancelReply={() => setReplyTo(null)}
-            />
+            {optimisticFunctions && (
+              <MessageInput
+                chatRoomId={activeRoomId}
+                replyTo={replyTo}
+                onCancelReply={() => setReplyTo(null)}
+                userId={userContext.userId}
+                userName={userContext.userName}
+                addOptimisticMessage={optimisticFunctions.addOptimisticMessage}
+                confirmMessage={optimisticFunctions.confirmMessage}
+                failMessage={optimisticFunctions.failMessage}
+              />
+            )}
           </>
         ) : (
           // Debug: Empty state when no room selected

@@ -65,7 +65,6 @@ export function useChatRooms({
   const participantsChannelRef = useRef<RealtimeChannel | null>(null);
   const messagesChannelRef = useRef<RealtimeChannel | null>(null);
   const supabaseRef = useRef(getBrowserClient());
-  const connectionStabilityTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Debug: CRITICAL FIX - Store callbacks in ref to prevent effect re-runs
   // This prevents the infinite "CONNECTING..." loop caused by inline arrow functions
@@ -80,40 +79,26 @@ export function useChatRooms({
 
   // Debug: Stabilize connection state - only update after both channels are stable
   useEffect(() => {
-    // Clear any pending timeout
-    if (connectionStabilityTimeoutRef.current) {
-      clearTimeout(connectionStabilityTimeoutRef.current);
-    }
-
-    // Debug: Wait for both channels to connect, with debounce
+    // Debug: Update connection state immediately (no debounce)
+    // Debounce was causing issues with React Strict Mode re-renders clearing the timeout
     if (participantsConnected && messagesConnected) {
-      // Both connected - debounce to prevent flickering
-      connectionStabilityTimeoutRef.current = setTimeout(() => {
-        console.log('[useChatRooms] Connection stable - both channels connected');
-        setIsConnected(true);
-        setConnectionError(null);
-      }, 300); // 300ms debounce
-    } else if (!participantsConnected || !messagesConnected) {
-      // At least one disconnected
-      connectionStabilityTimeoutRef.current = setTimeout(() => {
-        const bothDisconnected = !participantsConnected && !messagesConnected;
-        console.log('[useChatRooms] Connection unstable:', {
+      // Both connected - set immediately
+      console.log('[useChatRooms] Connection stable - both channels connected');
+      setIsConnected(true);
+      setConnectionError(null);
+    } else {
+      // At least one disconnected - only disconnect if BOTH are disconnected
+      const bothDisconnected = !participantsConnected && !messagesConnected;
+      if (bothDisconnected) {
+        console.log('[useChatRooms] Connection lost - both channels disconnected');
+        setIsConnected(false);
+      } else {
+        console.log('[useChatRooms] Partial connection:', {
           participants: participantsConnected,
           messages: messagesConnected,
         });
-        
-        // Only set to disconnected if both are disconnected
-        if (bothDisconnected) {
-          setIsConnected(false);
-        }
-      }, 300);
-    }
-
-    return () => {
-      if (connectionStabilityTimeoutRef.current) {
-        clearTimeout(connectionStabilityTimeoutRef.current);
       }
-    };
+    }
   }, [participantsConnected, messagesConnected]);
 
   // Debug: Calculate total unread count
@@ -290,12 +275,7 @@ export function useChatRooms({
     // Debug: Cleanup on unmount
     return () => {
       console.log('[useChatRooms] Cleaning up subscriptions');
-      
-      // Clear stability timeout
-      if (connectionStabilityTimeoutRef.current) {
-        clearTimeout(connectionStabilityTimeoutRef.current);
-      }
-      
+
       // Reset connection states
       setParticipantsConnected(false);
       setMessagesConnected(false);

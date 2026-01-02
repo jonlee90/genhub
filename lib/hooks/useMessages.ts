@@ -216,11 +216,31 @@ export function useMessages({
     };
   }, [roomId, handleInsert, handleUpdate]);
 
-  // Debug: Reset messages when room changes
+  // Debug: Sync initialMessages only when they FIRST load (not on every reference change)
+  // This prevents wiping out realtime messages when parent re-renders
+  const prevInitialLengthRef = useRef(0);
   useEffect(() => {
-    console.log('[useMessages] Room changed, resetting messages');
-    setMessages(initialMessages);
-  }, [roomId]); // eslint-disable-line react-hooks/exhaustive-deps
+    const prevLength = prevInitialLengthRef.current;
+    const currentLength = initialMessages.length;
+
+    // Only sync when initial messages first load (0 -> N) or when loading more (pagination)
+    if (prevLength === 0 && currentLength > 0) {
+      console.log('[useMessages] Initial messages first loaded, syncing to state');
+      setMessages(initialMessages);
+    } else if (prevLength > 0 && currentLength > prevLength) {
+      console.log('[useMessages] More messages loaded (pagination), syncing to state');
+      setMessages(initialMessages);
+    }
+
+    prevInitialLengthRef.current = currentLength;
+  }, [initialMessages, setMessages]);
+
+  // Debug: Reset initial messages tracking when room changes
+  useEffect(() => {
+    console.log('[useMessages] Room changed, resetting tracking');
+    prevInitialLengthRef.current = 0;
+    setMessages([]);
+  }, [roomId, setMessages]);
 
   // Debug: Optimistic UI - Add message immediately
   const addOptimisticMessage = useCallback((tempMessage: OptimisticMessage) => {
