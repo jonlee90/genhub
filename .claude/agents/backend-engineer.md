@@ -341,13 +341,20 @@ types/
 
 ---
 
-## Output Requirements
+## Output Requirements (CONCISE)
 
-After completing work:
-1. List all database changes (tables, policies, indexes)
-2. List all files created/modified
-3. Confirm RLS policies verified
-4. Recommend code-reviewer for security audit
+**Skip verbose logging:**
+- ❌ NO mid-task migration summaries or SQL explanations
+- ❌ NO detailed step-by-step progress updates
+- ✅ Only report final results
+
+**After completing work:**
+1. List database changes (table names only, not full SQL)
+2. List files created/modified (paths only)
+3. Confirm RLS policies verified (yes/no)
+4. Recommend code-reviewer only for new tables or security-critical changes
+
+**DO NOT regenerate database types unless schema changed.**
 
 ---
 

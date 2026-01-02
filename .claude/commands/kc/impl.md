@@ -14,12 +14,35 @@ Implement task specifications from design documents with proper agent delegation
 ## Usage
 
 ```
-/kc:impl [task-number]
+/kc:impl [task-specification]
 ```
 
 ## Arguments
 
-- `task-number` - Task number (e.g., 0001, 0002, etc.) or task file path.
+- `task-specification` - Can be:
+  - Single task: `0001` or `P3.1`
+  - Multiple tasks: `P3.1-P3.9` or `0001,0002,0003`
+  - Phase reference: `phase 3 in docs/specs/3d-spatial-viewer/tasks.md`
+  - All tasks in spec: `all tasks in docs/specs/feature/tasks.md`
+
+## CRITICAL: Single Agent Session Rule
+
+**ALWAYS launch a single agent session with ALL tasks specified.**
+
+```
+# ✅ CORRECT - Single session
+Task(frontend-engineer, "Implement P3.1-P3.9: all tasks...")
+
+# ❌ WRONG - Multiple sessions (wastes tokens)
+Task(frontend-engineer, "P3.1-P3.4")  # Session 1
+Resume(agent_id, "P3.5-P3.7")         # Session 2 (context reload!)
+Resume(agent_id, "P3.8-P3.9")         # Session 3 (context reload!)
+```
+
+**Resuming is ONLY for:**
+- User explicitly requesting to continue previous work
+- Critical errors requiring restart
+- Agent reached token limit mid-task
 
 ## Agent Selection Guide
 
@@ -28,7 +51,7 @@ Implement task specifications from design documents with proper agent delegation
 | Agent | Use For |
 |-------|---------|
 | **@agent-frontend-engineer** | All UI work - planning, research, and implementation. Uses `frontend-design` plugin. Plans first for complex features, implements directly for simple tasks. |
-| **@agent-backend-engineer** | Supabase database, Server Actions, API routes, authentication, RLS policies, realtime subscriptions. ALWAYS uses MCP Supabase. |
+| **@agent-backend-engineer** | Supabase database, Server Actions, API routes, authentication, RLS policies, realtime subscriptions. |
 | **@agent-code-reviewer** | Code review, debugging, testing, security audits. Run AFTER implementations. |
 
 ### Specialized Agents (Use When Needed)

@@ -10,6 +10,8 @@ Build the Next.js project and report any TypeScript or build errors for fixing.
 
 ## Execution
 
+**IMPORTANT:** Do NOT regenerate database types during build verification. Types should only be regenerated when database schema actually changes (after applying migrations). Never use `mcp__supabase__generate_typescript_types` in /kc:build.
+
 1. Run TypeScript check:
 ```bash
 npm run lint:ts
@@ -29,25 +31,19 @@ npm run build
 - If all pass: "Build successful! Ready for deployment."
 - If errors: List each error with file path and line number for fixing.
 
-## Output Format
+## Output Format (CONCISE)
+
+**Only report:**
+- Pass/Fail status for each check
+- Error count (not full error text unless critical)
+- First 5-10 errors only if there are many
 
 ```markdown
 # Build Report
 
-## TypeScript Check
-- Status: PASS/FAIL
-- Errors: [list if any]
+**TypeScript:** PASS/FAIL (X errors)
+**ESLint:** PASS/FAIL (X warnings)
+**Build:** PASS/FAIL
 
-## ESLint
-- Status: PASS/FAIL
-- Warnings: [count]
-- Errors: [list if any]
-
-## Production Build
-- Status: PASS/FAIL
-- Build time: [time]
-- Errors: [list if any]
-
-## Next Steps
-[Recommendations based on results]
+[If errors: List first 5-10 with file:line only]
 ```

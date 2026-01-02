@@ -222,12 +222,19 @@ npm run dev
 
 ---
 
-## Output Requirements
+## Output Requirements (CONCISE)
 
-After completing work:
-1. **List all files** created/modified
-2. **Note any issues** or remaining tasks
-3. **Recommend code-reviewer** for significant changes
+**Skip verbose logging:**
+- ❌ NO mid-task implementation summaries or progress updates
+- ❌ NO detailed file-by-file explanations during work
+- ❌ NO extensive debug console.log explanations in code
+- ✅ Only add minimal debug logs (e.g., `console.log('[Component] Action')`)
+- ✅ Only report final results
+
+**After completing work:**
+1. **List files** created/modified (names only, no descriptions)
+2. **Note issues** or remaining tasks (bullet points)
+3. **Recommend code-reviewer** only for security-critical or complex work
 
 ---
 

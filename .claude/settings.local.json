@@ -83,7 +83,9 @@
       "Bash(curl:*)",
       "Bash(npx npm run lint:ts:*)",
       "Bash(npm install:*)",
-      "Bash(npm run test:ifc:*)"
+      "Bash(npm run test:ifc:*)",
+      "Bash(npx next build --no-lint)",
+      "Skill(kc:build)"
     ],
     "deny": [],
     "ask": []
