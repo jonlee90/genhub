@@ -361,3 +361,52 @@ After completing work:
 - ALWAYS add indexes for RLS columns
 - ALWAYS regenerate types after schema changes
 - ALWAYS save migrations locally after applying
+
+---
+
+## Documentation Updates
+
+**CRITICAL: Update DB_SCHEMA.md and SYSTEM.md when you make architectural or schema changes.**
+
+### Update `.claude/docs/law/DB_SCHEMA.md` when:
+- ✅ Creating new tables or modifying table structure
+- ✅ Adding/modifying enums (user_role, task_status, etc.)
+- ✅ Creating new RLS policies or helper functions
+- ✅ Adding indexes for performance optimization
+- ✅ Changing foreign key relationships
+- ✅ Adding new database triggers or functions
+
+You do NOT need to update DB_SCHEMA.md for:
+- ❌ Inserting/updating data rows
+- ❌ Minor query optimizations
+- ❌ Temporary debugging changes
+
+**When updating DB_SCHEMA.md:**
+1. Add new tables to the appropriate category in Schema Overview
+2. Add new enums to the Enums section (organized by category)
+3. Update RLS patterns if introducing new security patterns
+4. Add helper functions to the Helper Functions section
+5. Include table comments and column descriptions
+6. Keep examples concise and copy-paste ready
+
+### Update `.claude/docs/law/SYSTEM.md` when:
+- ✅ Adding new services or integrations (Stripe, FCM, etc.)
+- ✅ Changing authentication flow or middleware patterns
+- ✅ Introducing new architectural patterns (Server Actions, API routes)
+- ✅ Adding new data flow patterns or validation strategies
+- ✅ Changing security models or RLS verification approaches
+- ✅ Updating technology versions (Next.js, Supabase, etc.)
+- ✅ Reorganizing project structure
+
+You do NOT need to update SYSTEM.md for:
+- ❌ Feature-specific implementations
+- ❌ Bug fixes that don't change architecture
+- ❌ Minor refactoring within existing patterns
+
+**When updating SYSTEM.md:**
+1. Update Technology Stack section for version changes
+2. Update Project Structure if adding new folders/patterns
+3. Add new services to the appropriate sections
+4. Update Auth flow if changing authentication
+5. Document new data flow patterns
+6. Keep architecture diagrams and examples current
