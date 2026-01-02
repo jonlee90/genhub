@@ -212,7 +212,7 @@ import {
 
 ### Breakpoints
 ```
-sm:  640px   (Mobile landscape)
+sm:  480px   (Mobile portrait)
 md:  768px   (Tablet)
 lg:  1024px  (Desktop)
 xl:  1280px  (Large desktop)
