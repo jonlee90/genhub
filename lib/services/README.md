@@ -1,8 +1,40 @@
-# Home Depot API Service - SerpAPI Integration
+# GenHub Services
 
 ## Overview
 
-The Home Depot API service provides real-time product search, pricing, and availability data from Home Depot using the SerpAPI Home Depot Search API. This integration is used for the Materials Management feature (Requirement 19) in the GenHub PWA.
+This directory contains business logic services used throughout the GenHub application.
+
+---
+
+## Services
+
+### 1. IFC Conversion Service (`ifc-conversion-service.ts`)
+
+Converts IFC (Industry Foundation Classes) BIM files to XKT format for 3D visualization.
+
+**Status:** ⚠️ **PLACEHOLDER IMPLEMENTATION** (MVP)
+
+See detailed documentation: [3D Viewer Phase 2 Implementation](../../.claude/docs/specs/3d-viewer-phase2-p24-conversion-service.md)
+
+**Quick Usage:**
+```typescript
+import { convertIFCtoXKT } from '@/lib/services/ifc-conversion-service';
+
+const result = await convertIFCtoXKT('/path/to/input.ifc', '/path/to/output.xkt');
+```
+
+**Testing:**
+```bash
+npm run test:ifc
+```
+
+---
+
+### 2. Home Depot API Service (`home-depot-api.ts`)
+
+Real-time product search, pricing, and availability data from Home Depot using SerpAPI.
+
+**Status:** ✅ **PRODUCTION** - Used for Materials Management
 
 ## Documentation
 

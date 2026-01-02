@@ -1092,6 +1092,10 @@ CREATE TABLE public.kakao_connections (
 | 20251230225049 | 033_dm_room_constraints_search_path | Fixed search path for DM constraints |
 | 20251230225339 | 034_messages_fts_index | Full-text search index for messages |
 | 20260101XXXXXX | add_receipt_photo_to_tasks | Added receipt_photo_url column to tasks table |
+| 20260102004741 | create_projects_3d_models | Created projects_3d_models table with versioning and LOD support |
+| 20260102004742 | create_spatial_markers | Created spatial_markers table for 3D space annotations |
+| 20260102004743 | create_marker_content | Created marker_content table for photos/files/notes on markers |
+| 20260102004744 | create_model_elements | Created model_elements table for IFC element metadata |
 
 ---
 

@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "app/api/spatial/convert-model/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}

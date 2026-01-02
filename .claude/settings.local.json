@@ -81,7 +81,9 @@
       "Bash(pnpm exec tsc:*)",
       "Bash(done)",
       "Bash(curl:*)",
-      "Bash(npx pnpm run lint:ts:*)"
+      "Bash(npx pnpm run lint:ts:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npm run test:ifc:*)"
     ],
     "deny": [],
     "ask": []
