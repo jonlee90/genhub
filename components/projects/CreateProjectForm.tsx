@@ -4,16 +4,20 @@ import { useActionState, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createProject } from '@/app/actions/projects';
+import { getPhaseTemplates } from '@/app/actions/phase-templates';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Building2, Home, UtensilsCrossed, Coffee, Factory, AlertCircle, MapPin, DollarSign, Calendar, Users, HardHat, FileText, Check } from 'lucide-react';
+import { Loader2, Building2, Home, UtensilsCrossed, Coffee, Factory, AlertCircle, MapPin, DollarSign, Calendar, Users, HardHat, FileText, Check, ChevronDown, ChevronRight, Layers } from 'lucide-react';
 import { Stepper } from '@/components/ui/aceternity/stepper';
 import { TextGenerateEffect } from '@/components/ui/aceternity/text-generate-effect';
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
+import type { Database } from '@/types/database.types';
+
+type PhaseTemplate = Database['public']['Tables']['phase_templates']['Row'];
 
 const PROJECT_TYPES = [
   {
@@ -106,6 +110,11 @@ export function CreateProjectForm() {
   const [projectType, setProjectType] = useState<string>('residential');
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+
+  // Debug: Phase template preview state (Task 0039)
+  const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
+  const [phaseTemplatesLoading, setPhaseTemplatesLoading] = useState(false);
+  const [showPhasePreview, setShowPhasePreview] = useState(true);
 
   // Track all form values across steps
   const [formValues, setFormValues] = useState({
@@ -419,6 +428,40 @@ export function CreateProjectForm() {
     // Let the form action handle submission
   };
 
+  // Debug: Fetch phase templates when project type changes (Task 0039)
+  useEffect(() => {
+    const fetchPhaseTemplates = async () => {
+      if (!formValues.project_type) {
+        console.log('[CreateProjectForm] No project type selected, skipping phase template fetch');
+        return;
+      }
+
+      console.log('[CreateProjectForm] Fetching phase templates for project type:', formValues.project_type);
+      setPhaseTemplatesLoading(true);
+
+      try {
+        // Find the project type config ID from the project type value
+        // For now, we'll fetch all templates - in production, map project type to config ID
+        const result = await getPhaseTemplates();
+
+        if (result.success && result.phaseTemplates) {
+          setPhaseTemplates(result.phaseTemplates);
+          console.log('[CreateProjectForm] Loaded', result.phaseTemplates.length, 'phase templates');
+        } else {
+          console.warn('[CreateProjectForm] Failed to fetch phase templates:', result.error);
+          setPhaseTemplates([]);
+        }
+      } catch (error) {
+        console.error('[CreateProjectForm] Error fetching phase templates:', error);
+        setPhaseTemplates([]);
+      } finally {
+        setPhaseTemplatesLoading(false);
+      }
+    };
+
+    fetchPhaseTemplates();
+  }, [formValues.project_type]);
+
   // Update formValues when projectType changes
   const handleProjectTypeChange = (value: string) => {
     setProjectType(value);
@@ -541,6 +584,92 @@ export function CreateProjectForm() {
                       );
                     })}
                   </div>
+
+                  {/* Debug: Phase Preview Section (Task 0039) */}
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3, delay: 0.2 }}
+                    className="mt-6 pt-6 border-t-2 border-dashed border-gray-200"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setShowPhasePreview(!showPhasePreview)}
+                      className="flex items-center gap-2 mb-4 text-construction-blue hover:text-blue-700 transition-colors font-bold group"
+                    >
+                      {showPhasePreview ? (
+                        <ChevronDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
+                      ) : (
+                        <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+                      )}
+                      <Layers className="h-5 w-5" />
+                      <span>Phase Preview</span>
+                      {phaseTemplates.length > 0 && (
+                        <span className="ml-auto px-2 py-0.5 bg-construction-blue/10 text-construction-blue rounded-full text-xs font-semibold">
+                          {phaseTemplates.length} phases
+                        </span>
+                      )}
+                    </button>
+
+                    <AnimatePresence>
+                      {showPhasePreview && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="space-y-3"
+                        >
+                          {phaseTemplatesLoading ? (
+                            <div className="flex items-center justify-center py-8">
+                              <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
+                              <span className="ml-2 text-sm text-gray-600">Loading phase templates...</span>
+                            </div>
+                          ) : phaseTemplates.length === 0 ? (
+                            <div className="flex items-center gap-3 p-4 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+                              <AlertCircle className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-gray-600">
+                                  No templates configured. Default phases will be used.
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Standard construction phases will be created automatically for this project type.
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {phaseTemplates.map((template, index) => (
+                                <motion.div
+                                  key={template.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                                  className="flex items-center gap-3 p-3 bg-construction-blue/5 border-l-4 border-construction-blue rounded-lg hover:bg-construction-blue/10 transition-colors"
+                                >
+                                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-construction-blue text-white font-bold text-sm flex-shrink-0">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-gray-900 text-sm">
+                                      {template.name}
+                                    </p>
+                                    {template.description && (
+                                      <p className="text-xs text-gray-600 mt-0.5 line-clamp-1">
+                                        {template.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <Check className="h-5 w-5 text-construction-green flex-shrink-0" />
+                                </motion.div>
+                              ))}
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
               )}
 

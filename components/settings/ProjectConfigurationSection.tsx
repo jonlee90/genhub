@@ -3,6 +3,9 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectTypeManager } from './ProjectTypeManager';
+import { TaskTypeManager } from './TaskTypeManager';
+import { PhaseTemplateManager } from './PhaseTemplateManager';
+import { TaskTemplateManager } from './TaskTemplateManager';
 import { Wrench, Tag, Route, ListChecks } from 'lucide-react';
 
 /**
@@ -26,21 +29,18 @@ export function ProjectConfigurationSection() {
       label: 'Task Types',
       icon: Tag,
       description: 'Categorize work types',
-      comingSoon: true,
     },
     {
       id: 'phase-templates' as const,
       label: 'Phase Templates',
       icon: Route,
       description: 'Auto-populate project phases',
-      comingSoon: true,
     },
     {
       id: 'task-templates' as const,
       label: 'Task Templates',
       icon: ListChecks,
       description: 'Pre-built task checklists',
-      comingSoon: true,
     },
   ];
 
@@ -81,36 +81,9 @@ export function ProjectConfigurationSection() {
       {/* Debug: Tab content area */}
       <div className="p-4 md:p-6">
         {activeTab === 'project-types' && <ProjectTypeManager />}
-
-        {activeTab === 'task-types' && (
-          <div className="text-center py-12">
-            <Tag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Task Types</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Task type management coming soon. Define custom task categories for your construction workflows.
-            </p>
-          </div>
-        )}
-
-        {activeTab === 'phase-templates' && (
-          <div className="text-center py-12">
-            <Route className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Phase Templates</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Phase template management coming soon. Create reusable phase structures for different project types.
-            </p>
-          </div>
-        )}
-
-        {activeTab === 'task-templates' && (
-          <div className="text-center py-12">
-            <ListChecks className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Task Templates</h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Task template management coming soon. Build pre-configured task checklists for each phase.
-            </p>
-          </div>
-        )}
+        {activeTab === 'task-types' && <TaskTypeManager />}
+        {activeTab === 'phase-templates' && <PhaseTemplateManager />}
+        {activeTab === 'task-templates' && <TaskTemplateManager />}
       </div>
     </div>
   );

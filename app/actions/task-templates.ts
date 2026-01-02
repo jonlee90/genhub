@@ -24,6 +24,7 @@ const createTaskTemplateSchema = z.object({
   description: z.string().max(2000).optional(),
   default_task_type: z.string().default('work'),
   default_priority: z.enum(['low', 'medium', 'high']).default('medium'),
+  days_offset: z.coerce.number().int().min(0).max(365).optional().nullable(),
 });
 
 const updateTaskTemplateSchema = z.object({
@@ -32,6 +33,7 @@ const updateTaskTemplateSchema = z.object({
   default_task_type: z.string().optional(),
   default_priority: z.enum(['low', 'medium', 'high']).optional(),
   is_active: z.boolean().optional(),
+  days_offset: z.coerce.number().int().min(0).max(365).optional().nullable(),
 });
 
 // ============================================

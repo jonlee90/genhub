@@ -58,11 +58,11 @@ export function BaseModalHeader({
           </div>
         )}
 
-        {/* Title, subtitle, badges */}
-        <div className="flex-row min-w-0 space-y-2">
+        {/* Title, subtitle, badges - all in one row */}
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
           {/* Title */}
           <h2
-            className="text-xl font-bold tracking-tight leading-tight"
+            className="text-xl font-bold tracking-tight leading-tight shrink-0"
             style={{ color: theme.primary }}
           >
             {title}
@@ -70,14 +70,14 @@ export function BaseModalHeader({
 
           {/* Subtitle */}
           {subtitle && (
-            <p className="text-sm text-gray-600 leading-snug max-w-xl">
+            <p className="text-sm text-gray-600 leading-snug flex-1 min-w-0 truncate">
               {subtitle}
             </p>
           )}
 
           {/* Badges slot */}
           {badges && (
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 shrink-0">
               {badges}
             </div>
           )}

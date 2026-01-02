@@ -1,12 +1,16 @@
 'use client';
 
-import { X, CheckCircle2, Clock, AlertTriangle, Ban, Calendar } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { X, CheckCircle2, Clock, AlertTriangle, Ban, Calendar, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { applyTaskTemplates } from '@/app/actions/phases';
 import type { Database } from '@/types/database.types';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
+import { toast } from 'sonner';
 
 type Phase = Database['public']['Tables']['project_phases']['Row'];
 type Task = Database['public']['Tables']['tasks']['Row'];
@@ -65,6 +69,10 @@ export function PhaseDetailPanel({
   projects,
   teamMembers,
 }: PhaseDetailPanelProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [applyingTemplates, setApplyingTemplates] = useState(false);
+
   const statusConfig = {
     not_started: { label: 'Not Started', color: 'bg-gray-100 text-gray-800' },
     in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
@@ -72,6 +80,33 @@ export function PhaseDetailPanel({
   };
 
   const phaseStatus = statusConfig[phase.status as keyof typeof statusConfig];
+
+  // Debug: Handle apply task templates (Task 0042)
+  const handleApplyTemplates = async () => {
+    console.log('[PhaseDetailPanel] Applying task templates to phase:', phase.id);
+    setApplyingTemplates(true);
+
+    // For now, use placeholder phase template ID - in production, map phase to template
+    const phaseTemplateId = 'placeholder-template-id';
+
+    startTransition(async () => {
+      try {
+        const result = await applyTaskTemplates(phase.id, phaseTemplateId);
+
+        if (result.success && result.tasksCreated) {
+          toast.success(`${result.tasksCreated} tasks created from templates`);
+          router.refresh();
+        } else if (result.error) {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        console.error('[PhaseDetailPanel] Error applying templates:', error);
+        toast.error('Failed to apply task templates');
+      } finally {
+        setApplyingTemplates(false);
+      }
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -150,17 +185,39 @@ export function PhaseDetailPanel({
 
       {/* Tasks List */}
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <h4 className="text-sm font-medium">Tasks</h4>
-          <TaskModalTrigger
-            projects={projects}
-            teamMembers={teamMembers}
-            preselectedProjectId={projectId}
-            preselectedPhaseId={phase.id}
-            variant="outline"
-            size="sm"
-            label="Add Task"
-          />
+          <div className="flex items-center gap-2">
+            {/* Debug: Apply Task Templates Button (Task 0042) */}
+            <Button
+              onClick={handleApplyTemplates}
+              disabled={applyingTemplates || isPending}
+              variant="outline"
+              size="sm"
+              className="border-construction-blue/30 text-construction-blue hover:bg-construction-blue/10"
+            >
+              {applyingTemplates ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Applying...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Apply Templates
+                </>
+              )}
+            </Button>
+            <TaskModalTrigger
+              projects={projects}
+              teamMembers={teamMembers}
+              preselectedProjectId={projectId}
+              preselectedPhaseId={phase.id}
+              variant="outline"
+              size="sm"
+              label="Add Task"
+            />
+          </div>
         </div>
 
         {tasks.length === 0 ? (

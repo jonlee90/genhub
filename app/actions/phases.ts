@@ -763,3 +763,128 @@ export async function deletePhase(
   revalidatePath(`/app/projects/${existingPhase.project_id}`);
   return { success: true };
 }
+
+/**
+ * Apply task templates to a phase
+ * Creates tasks from templates in the specified phase
+ * Prevents duplicates by checking if task with same title already exists
+ *
+ * @param phaseId - ID of the phase to create tasks in
+ * @param phaseTemplateId - ID of the phase template to get task templates from
+ */
+export async function applyTaskTemplates(
+  phaseId: string,
+  phaseTemplateId: string
+): Promise<{
+  success?: boolean;
+  tasksCreated?: number;
+  error?: string;
+}> {
+  console.log('[applyTaskTemplates] Applying task templates to phase:', phaseId, 'from template:', phaseTemplateId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, supabase } = userContext;
+
+  // Get phase to find project ID and verify access
+  const { data: phase } = await supabase
+    .from('project_phases')
+    .select('id, project_id, name')
+    .eq('id', phaseId)
+    .maybeSingle();
+
+  if (!phase) {
+    return { error: 'Phase not found' };
+  }
+
+  // Verify project access and get start_date for task scheduling
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, company_id, start_date')
+    .eq('id', phase.project_id)
+    .maybeSingle();
+
+  if (!project || project.company_id !== companyId) {
+    return { error: 'Insufficient permissions to access this project' };
+  }
+
+  // Get task templates for this phase template
+  const { data: taskTemplates, error: templatesError } = await supabase
+    .from('task_templates')
+    .select('*')
+    .eq('phase_template_id', phaseTemplateId)
+    .eq('is_active', true)
+    .order('order_index', { ascending: true });
+
+  if (templatesError) {
+    console.error('[applyTaskTemplates] Error fetching task templates:', templatesError);
+    return { error: 'Failed to fetch task templates' };
+  }
+
+  if (!taskTemplates || taskTemplates.length === 0) {
+    return { error: 'No task templates found for this phase' };
+  }
+
+  // Get existing tasks in this phase to check for duplicates
+  const { data: existingTasks } = await supabase
+    .from('tasks')
+    .select('title')
+    .eq('phase_id', phaseId);
+
+  const existingTitles = new Set(existingTasks?.map(t => t.title.toLowerCase()) || []);
+
+  // Create tasks from templates (skip duplicates)
+  const tasksToCreate = taskTemplates
+    .filter(template => !existingTitles.has(template.title.toLowerCase()))
+    .map(template => {
+      // Calculate start_date and due_date based on days_offset if provided
+      let start_date: string | null = null;
+      let due_date: string | null = null;
+
+      if (template.days_offset !== null && template.days_offset !== undefined && project.start_date) {
+        const projectStartDate = new Date(project.start_date);
+        const taskStartDate = new Date(projectStartDate);
+        taskStartDate.setDate(taskStartDate.getDate() + template.days_offset);
+        start_date = taskStartDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+        // Set due_date to same as start_date by default (can be adjusted later)
+        due_date = start_date;
+      }
+
+      return {
+        project_id: phase.project_id,
+        phase_id: phaseId,
+        title: template.title,
+        description: template.description,
+        task_type: template.default_task_type as Database['public']['Enums']['task_type'],
+        priority: template.default_priority as Database['public']['Enums']['task_priority'],
+        status: 'todo' as Database['public']['Enums']['task_status'],
+        created_by: userId,
+        start_date,
+        due_date,
+      };
+    });
+
+  if (tasksToCreate.length === 0) {
+    return { error: 'All tasks from templates already exist in this phase' };
+  }
+
+  // Insert tasks
+  const { data: createdTasks, error: insertError } = await supabase
+    .from('tasks')
+    .insert(tasksToCreate)
+    .select();
+
+  if (insertError) {
+    console.error('[applyTaskTemplates] Error creating tasks:', insertError);
+    return { error: 'Failed to create tasks from templates' };
+  }
+
+  const tasksCreated = createdTasks?.length || 0;
+  console.log('[applyTaskTemplates] Created', tasksCreated, 'tasks from templates');
+
+  revalidatePath(`/app/projects/${phase.project_id}`);
+  return { success: true, tasksCreated };
+}

@@ -37,6 +37,11 @@ export function ChatSettings({
   initialName,
   initialDescription,
 }: ChatSettingsProps) {
+  // Debug: Only show for project rooms - MUST be before any hooks
+  if (roomType !== 'project') {
+    return null;
+  }
+
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription || '');
   const [members, setMembers] = useState<ChatMember[]>([]);
@@ -51,11 +56,6 @@ export function ChatSettings({
     roomType,
     isGcAdminOrPm,
   });
-
-  // Debug: Only show for project rooms
-  if (roomType !== 'project') {
-    return null;
-  }
 
   // Debug: Fetch members and check user role
   useEffect(() => {

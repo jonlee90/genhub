@@ -1285,6 +1285,7 @@ export type Database = {
         Row: {
           company_id: string
           created_at: string | null
+          days_offset: number | null
           default_priority: string | null
           default_task_type: string | null
           description: string | null
@@ -1298,6 +1299,7 @@ export type Database = {
         Insert: {
           company_id: string
           created_at?: string | null
+          days_offset?: number | null
           default_priority?: string | null
           default_task_type?: string | null
           description?: string | null
@@ -1311,6 +1313,7 @@ export type Database = {
         Update: {
           company_id?: string
           created_at?: string | null
+          days_offset?: number | null
           default_priority?: string | null
           default_task_type?: string | null
           description?: string | null

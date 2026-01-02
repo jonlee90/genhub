@@ -239,79 +239,215 @@ export async function createProject(formData: FormData) {
     };
   }
 
-  // Create default tasks based on project type
-  // Note: Phases are automatically created by database trigger 'create_project_phases'
+  // Apply phase and task templates from database if available
+  // This replaces the database trigger approach with template-based phase creation
   try {
-    const template = getProjectTemplate(data.project_type as ProjectType);
-    console.log(`Fetching phases for project ${project.id} to create default tasks`);
+    console.log(`[createProject] Applying templates for project type: ${data.project_type}`);
 
-    // Query for phases created by the database trigger
-    const { data: existingPhases, error: phasesQueryError } = await supabase
-      .from('project_phases')
-      .select('id, name, order_index')
-      .eq('project_id', project.id)
-      .order('order_index');
+    // Helper function to map enum project_type to project_type_configs name
+    const mapProjectTypeToConfigName = (projectType: string): string => {
+      const mapping: Record<string, string> = {
+        'residential': 'Residential',
+        'restaurant': 'Restaurant',
+        'cafe': 'Cafe',
+        'commercial_office': 'Commercial Office',
+        'industrial': 'Industrial',
+        // Legacy mapping for restaurant_cafe (will match Restaurant or Cafe)
+        'restaurant_cafe': 'Restaurant',
+      };
+      return mapping[projectType] || projectType;
+    };
 
-    if (phasesQueryError) {
-      console.error('❌ PHASE QUERY FAILED:', phasesQueryError);
-    } else if (existingPhases && existingPhases.length > 0) {
-      console.log(`Found ${existingPhases.length} phases created by trigger`);
+    const projectTypeConfigName = mapProjectTypeToConfigName(data.project_type);
+    console.log(`[createProject] Looking for project_type_config with name: ${projectTypeConfigName}`);
 
-      // Create tasks for each phase
-      const allTasks: Array<{
-        project_id: string;
-        phase_id: string;
-        title: string;
-        description: string | null;
-        status: 'todo';
-        created_by: string;
-      }> = [];
+    // Step 1: Look up project_type_config by name
+    const { data: projectTypeConfig, error: typeConfigError } = await supabase
+      .from('project_type_configs')
+      .select('id')
+      .eq('company_id', companyId)
+      .eq('name', projectTypeConfigName)
+      .eq('is_active', true)
+      .maybeSingle();
 
-      // Match existing phases with templates to create tasks
-      for (const phase of existingPhases) {
-        const phaseTemplate = template.phases.find(
-          p => p.order_index === phase.order_index
-        );
+    if (typeConfigError) {
+      console.error('[createProject] Error fetching project type config:', typeConfigError);
+    }
 
-        if (phaseTemplate) {
-          const phaseTasks = phaseTemplate.tasks.map(task => ({
-            project_id: project.id,
-            phase_id: phase.id,
-            title: task.title,
-            description: task.description || null,
-            status: 'todo' as const,
-            created_by: userId,
-          }));
+    let templatesApplied = false;
 
-          allTasks.push(...phaseTasks);
-        }
-      }
+    // Step 2: If project type config found, fetch and apply templates
+    if (projectTypeConfig) {
+      console.log(`[createProject] Found project_type_config: ${projectTypeConfig.id}`);
 
-      if (allTasks.length > 0) {
-        console.log(`Attempting to create ${allTasks.length} tasks`);
-        const { error: tasksError } = await supabase
-          .from('tasks')
-          .insert(allTasks);
+      // Import getPhaseTemplates dynamically to avoid circular dependency
+      const { getPhaseTemplates } = await import('./phase-templates');
+      const { phaseTemplates, error: templatesError } = await getPhaseTemplates(projectTypeConfig.id);
 
-        if (tasksError) {
-          console.error('❌ TASK INSERT FAILED:', tasksError);
-          console.error('Task error details:', {
-            code: tasksError.code,
-            message: tasksError.message,
-            details: tasksError.details,
-            hint: tasksError.hint,
-          });
-        } else {
-          console.log(`✅ Successfully created ${allTasks.length} tasks across ${existingPhases.length} phases`);
+      if (templatesError) {
+        console.error('[createProject] Error fetching phase templates:', templatesError);
+      } else if (phaseTemplates && phaseTemplates.length > 0) {
+        console.log(`[createProject] Found ${phaseTemplates.length} phase templates`);
+
+        // Step 3: Create phases from templates
+        const phasesToCreate = phaseTemplates.map(template => ({
+          project_id: project.id,
+          name: template.name,
+          description: template.description || null,
+          order_index: template.order_index || 0,
+          status: 'not_started' as const,
+        }));
+
+        const { data: createdPhases, error: phasesError } = await supabase
+          .from('project_phases')
+          .insert(phasesToCreate)
+          .select('id, name, order_index');
+
+        if (phasesError) {
+          console.error('[createProject] Error creating phases from templates:', phasesError);
+        } else if (createdPhases && createdPhases.length > 0) {
+          console.log(`[createProject] ✅ Created ${createdPhases.length} phases from templates`);
+
+          // Step 4: Create tasks from task templates
+          const allTasks: Array<{
+            project_id: string;
+            phase_id: string;
+            title: string;
+            description: string | null;
+            task_type: string;
+            priority: string;
+            status: 'todo';
+            created_by: string;
+          }> = [];
+
+          // Map created phases back to their templates by order_index
+          for (const createdPhase of createdPhases) {
+            const phaseTemplate = phaseTemplates.find(
+              t => t.order_index === createdPhase.order_index
+            );
+
+            if (phaseTemplate?.task_templates && phaseTemplate.task_templates.length > 0) {
+              const phaseTasks = phaseTemplate.task_templates.map(taskTemplate => {
+                // Calculate start_date and due_date based on days_offset if provided
+                let start_date: string | null = null;
+                let due_date: string | null = null;
+
+                if (taskTemplate.days_offset !== null && taskTemplate.days_offset !== undefined && project.start_date) {
+                  const projectStartDate = new Date(project.start_date);
+                  const taskStartDate = new Date(projectStartDate);
+                  taskStartDate.setDate(taskStartDate.getDate() + taskTemplate.days_offset);
+                  start_date = taskStartDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+                  // Set due_date to same as start_date by default (can be adjusted later)
+                  due_date = start_date;
+                }
+
+                return {
+                  project_id: project.id,
+                  phase_id: createdPhase.id,
+                  title: taskTemplate.title,
+                  description: taskTemplate.description || null,
+                  task_type: taskTemplate.default_task_type || 'general',
+                  priority: taskTemplate.default_priority || 'medium',
+                  status: 'todo' as const,
+                  created_by: userId,
+                  start_date,
+                  due_date,
+                };
+              });
+
+              allTasks.push(...phaseTasks);
+            }
+          }
+
+          if (allTasks.length > 0) {
+            console.log(`[createProject] Creating ${allTasks.length} tasks from templates`);
+            const { error: tasksError } = await supabase
+              .from('tasks')
+              .insert(allTasks);
+
+            if (tasksError) {
+              console.error('[createProject] ❌ Error creating tasks from templates:', tasksError);
+            } else {
+              console.log(`[createProject] ✅ Created ${allTasks.length} tasks from templates`);
+              templatesApplied = true;
+            }
+          } else {
+            console.log('[createProject] No task templates found');
+            templatesApplied = true; // Phases were created successfully
+          }
         }
       } else {
-        console.log('No tasks to create from template');
+        console.log('[createProject] No phase templates found for project type');
       }
     } else {
-      console.log('No phases found for project - trigger may not have fired');
+      console.log('[createProject] No project_type_config found, falling back to defaults');
+    }
+
+    // Step 5: Fallback to hardcoded defaults if templates were not applied
+    if (!templatesApplied) {
+      console.log('[createProject] Applying hardcoded default phases and tasks');
+      const template = getProjectTemplate(data.project_type as ProjectType);
+
+      // Query for phases created by the database trigger (if any)
+      const { data: existingPhases, error: phasesQueryError } = await supabase
+        .from('project_phases')
+        .select('id, name, order_index')
+        .eq('project_id', project.id)
+        .order('order_index');
+
+      if (phasesQueryError) {
+        console.error('[createProject] ❌ Error querying existing phases:', phasesQueryError);
+      } else if (existingPhases && existingPhases.length > 0) {
+        console.log(`[createProject] Found ${existingPhases.length} phases from trigger`);
+
+        // Create tasks for each phase using hardcoded template
+        const allTasks: Array<{
+          project_id: string;
+          phase_id: string;
+          title: string;
+          description: string | null;
+          status: 'todo';
+          created_by: string;
+        }> = [];
+
+        for (const phase of existingPhases) {
+          const phaseTemplate = template.phases.find(
+            p => p.order_index === phase.order_index
+          );
+
+          if (phaseTemplate) {
+            const phaseTasks = phaseTemplate.tasks.map(task => ({
+              project_id: project.id,
+              phase_id: phase.id,
+              title: task.title,
+              description: task.description || null,
+              status: 'todo' as const,
+              created_by: userId,
+            }));
+
+            allTasks.push(...phaseTasks);
+          }
+        }
+
+        if (allTasks.length > 0) {
+          console.log(`[createProject] Creating ${allTasks.length} tasks from hardcoded template`);
+          const { error: tasksError } = await supabase
+            .from('tasks')
+            .insert(allTasks);
+
+          if (tasksError) {
+            console.error('[createProject] ❌ Error creating tasks:', tasksError);
+          } else {
+            console.log(`[createProject] ✅ Created ${allTasks.length} tasks from hardcoded template`);
+          }
+        }
+      } else {
+        console.log('[createProject] No existing phases found - trigger may not have fired');
+      }
     }
   } catch (templateError) {
-    console.error('Error creating default tasks:', templateError);
+    console.error('[createProject] Error in template application:', templateError);
+    // Don't fail project creation if templates fail
   }
 
   // Revalidate projects list and related caches

@@ -186,41 +186,143 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
       maxWidth="4xl"
       leftActions={
         <>
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-          {canDelete && !showDeleteConfirm && !showReviewForm && (
-            <Button
-              onClick={() => setShowDeleteConfirm(true)}
-              variant="outline"
-              className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+          {/* Review Notes Input (in footer when reviewing) */}
+          {showReviewForm && reviewAction && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex-1 space-y-2"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
+              <Label htmlFor="notes" className={cn(
+                "text-sm font-bold",
+                reviewAction === 'approve' ? 'text-construction-green' : 'text-construction-red'
+              )}>
+                {reviewAction === 'approve' ? 'Approval Notes (Optional)' : 'Rejection Notes (Optional)'}
+              </Label>
+              <Textarea
+                id="notes"
+                value={reviewNotes}
+                onChange={(e) => setReviewNotes(e.target.value)}
+                className={cn(
+                  "border-2 min-h-[80px] resize-none",
+                  reviewAction === 'approve'
+                    ? 'border-construction-green/30 focus:border-construction-green'
+                    : 'border-construction-red/30 focus:border-construction-red'
+                )}
+                placeholder={reviewAction === 'approve'
+                  ? 'Add any approval notes...'
+                  : 'Provide a reason for rejection...'
+                }
+                rows={2}
+              />
+            </motion.div>
+          )}
+
+          {/* Standard buttons when not in review mode */}
+          {!showReviewForm && (
+            <>
+              <Button variant="outline" onClick={onClose}>
+                Close
+              </Button>
+              {canDelete && !showDeleteConfirm && (
+                <Button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  variant="outline"
+                  className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              )}
+            </>
+          )}
+
+          {/* Show Cancel button when in review or delete mode */}
+          {(showReviewForm || showDeleteConfirm) && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (showReviewForm) {
+                  setShowReviewForm(false);
+                  setReviewAction(null);
+                  setReviewNotes('');
+                } else {
+                  setShowDeleteConfirm(false);
+                }
+              }}
+              disabled={isPending}
+              className="ml-auto"
+            >
+              Cancel
             </Button>
           )}
         </>
       }
       rightActions={
-        canReview && !showReviewForm && !showDeleteConfirm ? (
-          <>
+        <>
+          {/* Initial review buttons */}
+          {canReview && !showReviewForm && !showDeleteConfirm && (
+            <>
+              <Button
+                onClick={() => handleReview('reject')}
+                variant="outline"
+                className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+              >
+                <XCircle className="h-4 w-4 mr-2" />
+                Reject
+              </Button>
+              <Button
+                onClick={() => handleReview('approve')}
+                className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+              >
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                Approve
+              </Button>
+            </>
+          )}
+          {/* Confirm review action button */}
+          {showReviewForm && reviewAction && (
             <Button
-              onClick={() => handleReview('reject')}
-              variant="outline"
-              className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
+              onClick={handleSubmitReview}
+              disabled={isPending}
+              className={cn(
+                "text-white font-bold",
+                reviewAction === 'approve'
+                  ? 'bg-construction-green hover:bg-construction-green/90'
+                  : 'bg-construction-red hover:bg-construction-red/90'
+              )}
             >
-              <XCircle className="h-4 w-4 mr-2" />
-              Reject
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Confirm ${reviewAction === 'approve' ? 'Approval' : 'Rejection'}`
+              )}
             </Button>
+          )}
+          {/* Confirm delete button */}
+          {showDeleteConfirm && (
             <Button
-              onClick={() => handleReview('approve')}
-              className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+              onClick={handleDelete}
+              disabled={isPending}
+              className="bg-construction-red hover:bg-construction-red/90 text-white font-bold"
             >
-              <CheckCircle2 className="h-4 w-4 mr-2" />
-              Approve
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Permanently
+                </>
+              )}
             </Button>
-          </>
-        ) : undefined
+          )}
+        </>
       }
     >
       <div className="space-y-6">
@@ -337,87 +439,6 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
             )}
           </div>
 
-          {/* Review Form (if reviewing) */}
-          {showReviewForm && reviewAction && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "border-2 rounded-lg p-6 space-y-4",
-                reviewAction === 'approve'
-                  ? 'bg-construction-green/5 border-construction-green/30'
-                  : 'bg-construction-red/5 border-construction-red/30'
-              )}
-            >
-              <h3 className={cn(
-                "font-bold text-lg flex items-center gap-2",
-                reviewAction === 'approve' ? 'text-construction-green' : 'text-construction-red'
-              )}>
-                {reviewAction === 'approve' ? (
-                  <>
-                    <CheckCircle2 className="h-5 w-5" />
-                    Approve Expense
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5" />
-                    Reject Expense
-                  </>
-                )}
-              </h3>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes" className="text-sm font-bold text-gray-700">
-                  Notes (Optional)
-                </Label>
-                <Textarea
-                  id="notes"
-                  value={reviewNotes}
-                  onChange={(e) => setReviewNotes(e.target.value)}
-                  className="border-2"
-                  placeholder={reviewAction === 'approve'
-                    ? 'Add any approval notes...'
-                    : 'Provide a reason for rejection...'
-                  }
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowReviewForm(false);
-                    setReviewAction(null);
-                    setReviewNotes('');
-                  }}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmitReview}
-                  disabled={isPending}
-                  className={cn(
-                    "text-white font-bold",
-                    reviewAction === 'approve'
-                      ? 'bg-construction-green hover:bg-construction-green/90'
-                      : 'bg-construction-red hover:bg-construction-red/90'
-                  )}
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    `Confirm ${reviewAction === 'approve' ? 'Approval' : 'Rejection'}`
-                  )}
-                </Button>
-              </div>
-            </motion.div>
-          )}
-
           {/* Delete Confirmation */}
           {showDeleteConfirm && (
             <motion.div
@@ -432,32 +453,9 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
               <p className="text-gray-700">
                 Are you sure you want to delete this expense? This action cannot be undone.
               </p>
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  disabled={isPending}
-                  className="bg-construction-red hover:bg-construction-red/90 text-white font-bold"
-                >
-                  {isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Permanently
-                    </>
-                  )}
-                </Button>
-              </div>
+              <p className="text-sm text-gray-600 italic">
+                Click "Delete Permanently" in the footer to confirm deletion.
+              </p>
             </motion.div>
           )}
 

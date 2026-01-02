@@ -1,13 +1,30 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Hammer, ShoppingCart, ClipboardCheck, FileText, Check } from 'lucide-react';
+import {  Hammer, ShoppingCart, ClipboardCheck, FileText, Check, Loader2, Wrench, Package, Users, HardHat, Truck, AlertTriangle } from 'lucide-react';
+import { getTaskTypes } from '@/app/actions/task-types';
 import type { Database } from '@/types/database.types';
 
 type TaskType = Database['public']['Enums']['task_type'];
+type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
 
-// Task type configuration with icons, colors, and descriptions
-const TASK_TYPES: Array<{
+// Debug: Icon mapping helper (Task 0040)
+const ICON_MAP: Record<string, typeof Hammer> = {
+  Hammer,
+  ShoppingCart,
+  ClipboardCheck,
+  FileText,
+  Wrench,
+  Package,
+  Users,
+  HardHat,
+  Truck,
+  AlertTriangle,
+};
+
+// Debug: Default fallback task types (Task 0040)
+const DEFAULT_TASK_TYPES: Array<{
   type: TaskType;
   label: string;
   description: string;
@@ -54,6 +71,23 @@ const TASK_TYPES: Array<{
   },
 ];
 
+// Debug: Convert database config to display format (Task 0040)
+function convertTaskTypeConfig(config: TaskTypeConfig) {
+  const IconComponent = ICON_MAP[config.icon_name] || Hammer;
+  const color = config.color || '#001B51';
+
+  return {
+    type: 'general' as TaskType, // Placeholder - adjust based on your enum
+    label: config.name,
+    description: config.description || '',
+    icon: IconComponent,
+    color: `text-[${color}]`,
+    bgColor: `bg-[${color}]/10 hover:bg-[${color}]/20`,
+    borderColor: `border-[${color}]/30 data-[selected=true]:border-[${color}]`,
+    hexColor: color,
+  };
+}
+
 interface TaskTypeSelectorProps {
   selectedType: TaskType | null;
   onSelect: (type: TaskType) => void;
@@ -67,12 +101,54 @@ export function TaskTypeSelector({
 }: TaskTypeSelectorProps) {
   console.log('[TaskTypeSelector] Rendering with selectedType:', selectedType);
 
+  // Debug: Fetch task types from database (Task 0040)
+  const [taskTypes, setTaskTypes] = useState(DEFAULT_TASK_TYPES);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTaskTypes = async () => {
+      console.log('[TaskTypeSelector] Fetching task types from database...');
+      setIsLoading(true);
+
+      try {
+        const result = await getTaskTypes();
+
+        if (result.success && result.taskTypes && result.taskTypes.length > 0) {
+          console.log('[TaskTypeSelector] Loaded', result.taskTypes.length, 'task types from database');
+          // TODO: Map database types to display format - for now use defaults
+          // const mappedTypes = result.taskTypes.map(convertTaskTypeConfig);
+          // setTaskTypes(mappedTypes);
+          setTaskTypes(DEFAULT_TASK_TYPES);
+        } else {
+          console.warn('[TaskTypeSelector] Using default task types - no database types found');
+          setTaskTypes(DEFAULT_TASK_TYPES);
+        }
+      } catch (error) {
+        console.error('[TaskTypeSelector] Error fetching task types, using defaults:', error);
+        setTaskTypes(DEFAULT_TASK_TYPES);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTaskTypes();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
+        <span className="ml-2 text-sm text-gray-600">Loading task types...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
 
       {/* Task Type Cards Grid */}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        {TASK_TYPES.map((taskType, index) => {
+        {taskTypes.map((taskType, index) => {
           const Icon = taskType.icon;
           const isSelected = selectedType === taskType.type;
 
@@ -168,7 +244,7 @@ export function TaskTypeSelector({
 
 // Helper function to get task type display info
 export function getTaskTypeInfo(type: TaskType) {
-  return TASK_TYPES.find((t) => t.type === type) || TASK_TYPES[0];
+  return DEFAULT_TASK_TYPES.find((t) => t.type === type) || DEFAULT_TASK_TYPES[0];
 }
 
 // Task Type Badge component for displaying type in lists/details

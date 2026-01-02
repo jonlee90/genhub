@@ -2,8 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { PhaseStation } from './PhaseStation';
 import { PhaseDetailPanel } from './PhaseDetailPanel';
+import { ManagePhasesModal } from './ManagePhasesModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -48,6 +51,9 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
   const [showRightFade, setShowRightFade] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  // Debug: Manage phases modal state (Task 0041)
+  const [showManagePhasesModal, setShowManagePhasesModal] = useState(false);
+
   const selectedPhase = phases.find((p) => p.id === selectedPhaseId);
   const selectedPhaseTasks = tasks.filter((t) => t.phase_id === selectedPhaseId);
   const selectedPhaseStats = phaseStats.find((s) => s.phaseId === selectedPhaseId);
@@ -80,27 +86,40 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
       <CardContent className="pt-8 pb-6">
         {/* Enhanced Title Section with Construction Theme */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            {/* Construction-themed accent bar */}
-            <div className="relative h-8 w-1.5 rounded-full overflow-hidden">
-              <div className="absolute inset-0 bg-construction-blue " />
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-transparent"
-                animate={{
-                  y: ['-100%', '100%'],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              {/* Construction-themed accent bar */}
+              <div className="relative h-8 w-1.5 rounded-full overflow-hidden">
+                <div className="absolute inset-0 bg-construction-blue " />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-b from-transparent via-white/40 to-transparent"
+                  animate={{
+                    y: ['-100%', '100%'],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-xl font-black text-foreground">
+                  Project Journey
+                </h3>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-xl font-black text-foreground">
-                Project Journey
-              </h3>
-            </div>
+
+            {/* Debug: Manage Phases Button (Task 0041) - Only for GC Admin/PM */}
+            <Button
+              onClick={() => setShowManagePhasesModal(true)}
+              variant="outline"
+              size="sm"
+              className="border-construction-blue/30 text-construction-blue hover:bg-construction-blue/10"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Manage Phases
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground ml-5 font-medium">
             Track progress through each phase
@@ -354,6 +373,14 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Debug: Manage Phases Modal (Task 0041) */}
+        <ManagePhasesModal
+          isOpen={showManagePhasesModal}
+          onClose={() => setShowManagePhasesModal(false)}
+          projectId={projectId}
+          phases={phases}
+        />
       </CardContent>
     </Card>
   );
