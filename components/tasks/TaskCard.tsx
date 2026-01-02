@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon } from 'lucide-react';
+import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import type { Database } from '@/types/database.types';
@@ -64,6 +64,34 @@ const PRIORITY_CONFIG = {
     label: 'High',
     color: 'bg-[#DC2626]/10 text-[#DC2626]', // Status badge color - red
     border: 'border-l-4 border-construction-blue', // Construction theme border
+  },
+};
+
+// Debug: Task type config - industrial construction-themed badges
+const TASK_TYPE_CONFIG = {
+  work: {
+    label: 'Work',
+    icon: Hammer,
+    color: 'bg-construction-blue text-white',
+    description: 'Labor/Work Task',
+  },
+  purchase: {
+    label: 'Purchase',
+    icon: ShoppingCart,
+    color: 'bg-[#059669] text-white',
+    description: 'Material Purchase',
+  },
+  approval: {
+    label: 'Approval',
+    icon: ClipboardCheck,
+    color: 'bg-[#FFB627] text-white',
+    description: 'Permit/Inspection',
+  },
+  admin: {
+    label: 'Admin',
+    icon: FileText,
+    color: 'bg-construction-accent text-white',
+    description: 'Administrative Task',
   },
 };
 
@@ -132,6 +160,13 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
   };
 
   const hasMaterials = task.materialStats && task.materialStats.count > 0;
+
+  // Debug: Get task type configuration with fallback to 'work'
+  const taskTypeConfig = TASK_TYPE_CONFIG[task.task_type as keyof typeof TASK_TYPE_CONFIG] || TASK_TYPE_CONFIG.work;
+  const TaskTypeIcon = taskTypeConfig.icon;
+
+  // Debug: Log task type for visibility
+  console.log('[TaskCard] Task type for', task.title, ':', task.task_type, '- Config:', taskTypeConfig.label);
 
   return (
     <motion.div
@@ -230,6 +265,23 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
               </div>
             </motion.div>
           )}
+
+          {/* Task Type Badge - Industrial Construction Theme */}
+          <div className="mb-2">
+            <div
+              className={cn(
+                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2',
+                taskTypeConfig.color,
+                'border-black/10'
+              )}
+              title={taskTypeConfig.description}
+            >
+              <TaskTypeIcon className="h-3 w-3 drop-shadow-sm" strokeWidth={2.5} />
+              <span className="text-[10px] font-black tracking-wide uppercase leading-none">
+                {taskTypeConfig.label}
+              </span>
+            </div>
+          </div>
 
           {/* Title and Priority */}
           <div className="space-y-2">
