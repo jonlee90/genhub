@@ -33,7 +33,7 @@ get supabase $PROJECT_REF  from NEXT_PUBLIC_SUPABASE_URL
 
 ```shell
 #Install the Supabase CLI and
-pnpm add supabase@">=1.8.1" --save-dev
+npm add supabase@">=1.8.1" --save-dev
 #Login with your Personal Access Token:
 
 npx supabase login

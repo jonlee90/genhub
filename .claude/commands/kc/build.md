@@ -12,17 +12,17 @@ Build the Next.js project and report any TypeScript or build errors for fixing.
 
 1. Run TypeScript check:
 ```bash
-pnpm run lint:ts
+npm run lint:ts
 ```
 
 2. Run ESLint:
 ```bash
-pnpm run lint
+npm run lint
 ```
 
 3. Run production build:
 ```bash
-pnpm run build
+npm run build
 ```
 
 4. Report results:

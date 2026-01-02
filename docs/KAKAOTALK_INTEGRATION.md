@@ -165,7 +165,7 @@ Copy output to `KAKAO_ENCRYPTION_KEY` in `.env.local`.
 
 ### 4. Test Connection
 
-1. Run app: `pnpm dev`
+1. Run app: `npm dev`
 2. Go to Settings → Integrations → KakaoTalk
 3. Click "Connect KakaoTalk"
 4. Authorize with KakaoTalk account

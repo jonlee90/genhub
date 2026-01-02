@@ -1147,7 +1147,7 @@ const taskStats = useMemo(() => ({
 ### NEW (Need to Install)
 - `date-fns` - For `formatDistanceToNow()` (alternative to moment.js)
   ```bash
-  pnpm add date-fns
+  npm add date-fns
   ```
 
 ## Construction Theme Integration

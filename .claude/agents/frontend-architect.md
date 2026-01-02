@@ -118,7 +118,7 @@ npx aceternity@latest add https://ui.aceternity.com/registry/[component].json
 
 Most Aceternity components need:
 ```bash
-pnpm add framer-motion clsx tailwind-merge
+npm add framer-motion clsx tailwind-merge
 ```
 
 ## Output Format
@@ -133,7 +133,7 @@ Example: "I've created the implementation plan at `.claude/docs/ui-plans/kanban-
 ## Rules
 
 - NEVER write implementation code
-- NEVER run npm/pnpm commands
+- NEVER run npm/npm commands
 - ALWAYS save plans to `.claude/docs/ui-plans/`
 - ALWAYS research components at ui.aceternity.com before recommending
-- We use pnpm, NOT npm or bun
+- We use npm, NOT npm or bun

@@ -365,13 +365,13 @@ Phase 3 will implement the remaining features:
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
 # Run dev server
-pnpm run dev
+npm run dev
 
 # Type check
-pnpm run lint:ts
+npm run lint:ts
 ```
 
 ---

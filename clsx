@@ -1,1 +1,1 @@
- ERR_PNPM_MISSING_PACKAGE_NAME  `pnpm add` requires the package name
+ ERR_npm_MISSING_PACKAGE_NAME  `npm add` requires the package name

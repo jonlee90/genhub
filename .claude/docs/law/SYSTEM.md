@@ -1,288 +1,137 @@
-# GenHub PWA - System Architecture Rules
+# GenHub PWA - System Architecture
 
-> **CRITICAL**: This document is the authoritative source for all architectural decisions. All agents MUST follow these rules exactly.
+> **Quick Reference** for architectural patterns. Read sections as needed.
 
-## Table of Contents
+## Core Rules
 
-1. [Technology Stack](#technology-stack)
-2. [Project Structure](#project-structure)
-3. [Routing Conventions](#routing-conventions)
-4. [Authentication Architecture](#authentication-architecture)
-5. [Data Flow Patterns](#data-flow-patterns)
-6. [Database Access Patterns](#database-access-patterns)
-7. [State Management](#state-management)
-8. [Error Handling](#error-handling)
-9. [Security Patterns](#security-patterns)
-10. [Agent Workflow Rules](#agent-workflow-rules)
-11. [Code Organization Best Practices](#code-organization-best-practices)
+- **Auth**: NextAuth + Supabase adapter (`next_auth` schema)
+- **Database**: Always use MCP Supabase (`mcp__supabase__*`)
+- **Client Components**: Never import Supabase clients (causes build errors)
+- **Data Flow**: Server Actions (preferred) or API routes
+- **Validation**: Zod schemas for all user input
+- **RLS**: Manual verification (server client bypasses RLS)
+
+## Quick Navigation
+
+- [Stack](#technology-stack) - Tech versions
+- [Structure](#project-structure) - Folder organization
+- [Auth](#authentication) - NextAuth + Supabase
+- [Data Flow](#data-flow) - Server Actions pattern
+- [Database](#database-access) - MCP Supabase usage
+- [Security](#security) - RLS, validation, roles
+- [Agents](#agent-workflow) - Which agent to use
 
 ---
 
 ## Technology Stack
 
-### Core Framework
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 15.5.9 | App Router, Server Components, Server Actions |
-| React | 19.0.0 | UI Framework |
-| TypeScript | 5.x | Type Safety |
-| Tailwind CSS | 3.4.1 | Styling |
+**Core**
+- Next.js 15.5.9 (App Router, Server Components)
+- React 19.0.0
+- TypeScript 5.x
+- Tailwind CSS 3.4.1
 
-### Backend & Database
-| Technology | Purpose |
-|------------|---------|
-| Supabase | PostgreSQL Database, RLS, Real-time |
-| NextAuth | 5.0.0-beta.30 | Authentication |
-| @auth/supabase-adapter | 1.7.4 | NextAuth Supabase Integration |
+**Backend**
+- Supabase (PostgreSQL + RLS + Realtime)
+- NextAuth 5.0.0-beta.30
+- @auth/supabase-adapter 1.7.4
 
-### UI Libraries
-| Library | Purpose |
-|---------|---------|
-| Aceternity UI | Modern UI components with animations |
-| Radix UI | Accessible primitives (Dialog, Dropdown, etc.) |
-| Lucide React | Icon library (construction-themed) |
-| Framer Motion | Animations |
-| class-variance-authority | Component variants |
-| tailwind-merge | Class merging utilities |
+**UI**
+- Aceternity UI (modern components)
+- Radix UI (accessible primitives)
+- Lucide React (icons)
+- Framer Motion (animations)
 
-### Additional Services
-| Service | Purpose |
-|---------|---------|
-| Stripe | Payments (optional, feature-flagged) |
-| Nodemailer/Resend | Email delivery |
-| Vercel Blob | File storage (receipts, attachments) |
-| Zod | Schema validation |
-| SerpAPI | Home Depot product search integration |
-| Firebase Cloud Messaging | Push notifications (web, iOS, Android) |
+**Services**
+- Stripe (payments, feature-flagged)
+- Nodemailer/Resend (email)
+- Vercel Blob (file storage)
+- Zod (validation)
+- SerpAPI (Home Depot search)
+- FCM (push notifications)
 
 ---
 
 ## Project Structure
 
 ```
-next-saas-starter/
-├── app/
-│   ├── app/                    # Authenticated routes (protected by middleware)
-│   │   ├── layout.tsx          # App shell: Sidebar, Header, PWA components
-│   │   ├── page.tsx            # Dashboard
-│   │   ├── projects/           # Project management
-│   │   ├── tasks/              # Task management (Kanban/List/Gantt)
-│   │   ├── materials/          # Materials management
-│   │   ├── expenses/           # Expense tracking
-│   │   ├── team/               # Team & subcontractor management
-│   │   ├── reports/            # Daily site reports
-│   │   ├── analytics/          # Dashboards & charts
-│   │   ├── chat/               # Real-time messaging
-│   │   ├── settings/           # User/company settings
-│   │   └── profile/            # User profile
-│   │
-│   ├── actions/                # Server Actions (grouped by feature)
-│   │   ├── auth.ts             # Authentication actions
-│   │   ├── projects.ts         # Project CRUD + addProjectTeamMember
-│   │   ├── tasks.ts            # Task CRUD
-│   │   ├── materials.ts        # Material search, assignment, CRUD
-│   │   │   └── getTaskMaterials, addProductToTask, removeMaterialFromTask, updateMaterialQuantity
-│   │   ├── expenses.ts         # Expense CRUD
-│   │   ├── team.ts             # Team management
-│   │   ├── subcontractors.ts   # Subcontractor CRUD
-│   │   ├── phases.ts           # Phase management
-│   │   ├── accept-invite.ts    # Invitation acceptance
-│   │   ├── stripe.ts           # Stripe payment actions
-│   │   ├── chat.ts             # Chat room/message CRUD
-│   │   ├── chat-queries.ts     # Chat query helpers
-│   │   ├── chat-search.ts      # Chat message search
-│   │   ├── push.ts             # Push notification management
-│   │   └── kakao.ts            # KakaoTalk integration
-│   │
-│   ├── api/                    # API routes
-│   │   ├── auth/[...nextauth]/ # NextAuth handlers
-│   │   ├── profile/            # Profile API
-│   │   ├── webhook/stripe/     # Stripe webhooks
-│   │   ├── (payment)/          # Payment routes
-│   │   └── companies/[companyId]/users/ # Company users for team management
-│   │
-│   ├── accept-invite/          # Public invitation flow
-│   ├── success/                # Payment success page
-│   ├── ~offline/               # PWA offline page
-│   ├── layout.tsx              # Root layout
-│   ├── page.tsx                # Landing page (public)
-│   └── globals.css             # Global styles & CSS variables
+app/
+├── app/                    # Protected routes
+│   ├── layout.tsx          # App shell (Sidebar, Header)
+│   ├── page.tsx            # Dashboard
+│   ├── projects/           # Project management
+│   ├── tasks/              # Kanban/List/Gantt
+│   ├── materials/          # Materials + Home Depot
+│   ├── expenses/           # Expense tracking
+│   ├── team/               # Team management
+│   ├── chat/               # Real-time messaging
+│   └── settings/
 │
-├── components/
-│   ├── app/                    # App shell components
-│   │   ├── Sidebar.tsx
-│   │   ├── Header.tsx
-│   │   └── profile/
-│   │
-│   ├── projects/               # Project components
-│   │   ├── ProjectList.tsx
-│   │   ├── ProjectCard.tsx
-│   │   ├── ProjectDetailContent.tsx # Project detail with tabs
-│   │   ├── ProjectTeam.tsx     # Team management tab
-│   │   ├── AddMemberModal.tsx  # Add team member modal with search
-│   │   ├── MetroJourney.tsx    # Phase visualization
-│   │   └── ...
-│   │
-│   ├── tasks/                  # Task components
-│   │   ├── KanbanBoard.tsx
-│   │   ├── TaskCard.tsx
-│   │   ├── TaskList.tsx
-│   │   ├── TaskBoard.tsx       # Main task board with filters, views, stats
-│   │   ├── TaskFilters.tsx     # Task filtering UI
-│   │   ├── TaskModal.tsx       # Create/Edit task modal with materials section
-│   │   ├── TaskMaterialsManager.tsx # Tabbed interface for task materials
-│   │   ├── TaskMaterialSearch.tsx   # Home Depot product search for tasks
-│   │   ├── TaskMaterialsList.tsx    # Assigned materials list with CRUD
-│   │   ├── TaskReceiptUpload.tsx    # Receipt photo upload for purchase tasks
-│   │   ├── DashboardStats.tsx  # Stats cards (totals, budget, variance)
-│   │   ├── TopProjectsCard.tsx # Top projects by task completion
-│   │   ├── TopTeamMembersCard.tsx # Top team members by completed tasks
-│   │   ├── KanbanColumn.tsx    # Individual kanban column (no height limit)
-│   │   ├── gantt/              # Gantt chart components
-│   │   └── ...
-│   │
-│   ├── team/                   # Team management
-│   ├── materials/              # Materials management
-│   ├── expenses/               # Expense management
-│   ├── chat/                   # Chat components
-│   │   ├── ChatLayout.tsx      # Main chat layout with sidebar
-│   │   ├── ChatRoomList.tsx    # Room list with unread counts
-│   │   ├── MessageList.tsx     # Virtualized message list
-│   │   ├── MessageItem.tsx     # Individual message with reactions
-│   │   ├── MessageInput.tsx    # Message composer with attachments
-│   │   └── ...
-│   ├── pwa/                    # PWA components
-│   ├── stripe/                 # Stripe components
-│   │
-│   ├── ui/                     # Base UI components
-│   │   ├── button.tsx
-│   │   ├── card.tsx
-│   │   ├── dialog.tsx
-│   │   ├── progress.tsx
-│   │   ├── bottom-sheet.tsx     # Mobile bottom sheet
-│   │   ├── CreatorBadge.tsx     # Metadata display component
-│   │   └── aceternity/         # Aceternity UI components
-│   │       ├── sidebar.tsx
-│   │       ├── tabs.tsx
-│   │       ├── stepper.tsx
-│   │       └── ...
-│   │
-│   └── user/                   # User components
+├── actions/                # Server Actions (by feature)
+│   ├── projects.ts         # Project CRUD
+│   ├── tasks.ts            # Task CRUD
+│   ├── materials.ts        # Material search/assignment
+│   ├── expenses.ts         # Expense CRUD
+│   ├── chat.ts             # Chat operations
+│   └── ...
 │
-├── lib/
-│   ├── auth.ts                 # NextAuth configuration
-│   ├── auth.config.ts          # Auth providers config
-│   ├── hooks/                  # Custom React hooks
-│   │   ├── useAuth.ts          # Authentication hook
-│   │   ├── useChatRooms.ts     # Chat rooms with realtime
-│   │   ├── useMessages.ts      # Messages with optimistic updates
-│   │   ├── useRealtimeConnection.ts # Supabase realtime status
-│   │   ├── useTypingIndicator.ts # Typing indicator
-│   │   ├── usePresence.ts      # User presence tracking
-│   │   ├── usePushNotifications.ts # Push notification setup
-│   │   ├── useBadgeCount.ts    # Unread badge count
-│   │   └── useMediaQuery.ts    # Responsive breakpoints
-│   ├── utils.ts                # Utility functions (cn, etc.)
-│   └── mail.ts                 # Email utilities
+├── api/                    # API routes
+│   ├── auth/[...nextauth]/ # NextAuth
+│   └── webhook/stripe/     # Webhooks
 │
-├── types/
-│   ├── database.types.ts       # Supabase generated types
-│   └── next-auth.d.ts          # NextAuth type extensions
-│
-├── utils/
-│   └── supabase/
-│       ├── client.ts           # Server-side client with auth (NOT for client components!)
-│       ├── server.ts           # Admin clients (bypasses RLS)
-│       └── user.ts             # User utilities
-│
-├── supabase/
-│   └── migrations/             # Database migrations
-│
-├── public/                     # Static assets, PWA manifest
-├── middleware.ts               # Auth middleware
-├── config.ts                   # App configuration
-├── tailwind.config.ts          # Tailwind configuration
-└── package.json
+├── layout.tsx              # Root layout
+└── page.tsx                # Public landing
+
+components/
+├── app/                    # App shell (Sidebar, Header)
+├── projects/               # Project components
+├── tasks/                  # Task board, Kanban
+├── materials/              # Material search/cards
+├── chat/                   # Chat UI
+├── ui/                     # Base components
+│   ├── button.tsx
+│   ├── card.tsx
+│   └── aceternity/         # Aceternity UI
+└── user/
+
+lib/
+├── auth.ts                 # NextAuth config
+├── hooks/                  # React hooks
+│   ├── useChatRooms.ts
+│   ├── useMessages.ts
+│   └── usePushNotifications.ts
+└── utils.ts
+
+utils/supabase/
+├── client.ts               # ❌ DO NOT use in client components
+├── server.ts               # ✅ Server Actions, API routes
+└── user.ts
+
+types/
+├── database.types.ts       # Supabase types
+└── next-auth.d.ts          # Session extensions
 ```
 
 ---
 
-## Routing Conventions
+## Authentication
 
-### Route Groups
-- `app/app/*` - Protected authenticated routes
-- `app/api/*` - API routes
-- `app/(payment)/*` - Grouped payment routes
-
-### Dynamic Routes
+### Flow
 ```
-/app/projects/[id]      # Project detail
-/app/tasks/[id]         # Task detail
-/app/team/subcontractors # Nested route
+User → Middleware → NextAuth (Google/Magic Link)
+     → SupabaseAdapter (stores in next_auth schema)
+     → user_profiles + company_users (public schema)
 ```
 
-### Middleware Protection
-```typescript
-// middleware.ts - Protects /app/* routes
-export const config = {
-  matcher: ["/app/:path*"],
-};
-```
-
-### Loading & Error States
-Every route should have:
-- `loading.tsx` - Loading skeleton
-- `error.tsx` - Error boundary
-
----
-
-## Authentication Architecture
-
-### NextAuth + Supabase Integration
-
-```
-User Request
-    │
-    ▼
-┌─────────────┐
-│  Middleware │ ─── Checks auth, redirects if needed
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│  NextAuth   │ ─── Google OAuth / Magic Link (Nodemailer/Resend)
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│  Supabase   │ ─── SupabaseAdapter stores sessions in next_auth schema
-│  Adapter    │
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│  User Data  │ ─── user_profiles, company_users in public schema
-└─────────────┘
-```
-
-### Auth Configuration (`lib/auth.config.ts`)
-```typescript
-// Providers: Google OAuth, Nodemailer (Magic Link)
-// Adapter: SupabaseAdapter with schema: 'next_auth'
-// Callbacks: session callback adds user.id
-```
-
-### Getting User in Server Actions
+### Get User in Server Actions
 ```typescript
 import { auth } from '@/lib/auth';
+import { createClient } from '@/utils/supabase/server';
 
 async function getUserContext() {
   const session = await auth();
-  if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
-  }
+  if (!session?.user?.id) return { error: 'Not authenticated' };
 
-  // Get company and role from company_users
   const supabase = await createClient();
   const { data: companyUser } = await supabase
     .from('company_users')
@@ -291,183 +140,233 @@ async function getUserContext() {
     .eq('status', 'active')
     .single();
 
-  return { userId: session.user.id, companyId, role, supabase };
-}
-```
-
-### Session Type Extension
-```typescript
-// types/next-auth.d.ts
-declare module "next-auth" {
-  interface Session {
-    supabaseAccessToken?: string
-    user: {
-      address: string
-    } & DefaultSession["user"]
-  }
+  return { userId: session.user.id, companyId: companyUser.company_id, role: companyUser.role, supabase };
 }
 ```
 
 ---
 
-## Data Flow Patterns
+## Data Flow
 
-### Server Actions (Preferred)
+### Server Action Pattern (Preferred)
 ```typescript
-// app/actions/tasks.ts
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
 
-// 1. Schema validation
-const createTaskSchema = z.object({
+// 1. Schema
+const schema = z.object({
   title: z.string().min(1).max(500),
   project_id: z.string().uuid(),
-  // ...
 });
 
 // 2. Server Action
-export async function createTask(prevState: any, formData: FormData) {
+export async function createTask(formData: FormData) {
   // Get user context
-  const userContext = await getUserContext();
-  if ('error' in userContext) return { error: userContext.error };
+  const { userId, companyId, supabase } = await getUserContext();
+  if (!supabase) return { error: 'Not authenticated' };
 
-  // Validate input
-  const validation = createTaskSchema.safeParse(rawData);
+  // Validate
+  const validation = schema.safeParse(Object.fromEntries(formData));
   if (!validation.success) return { error: 'Validation failed' };
 
-  // Verify access (company ownership)
-  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
-  if ('error' in projectCheck) return { error: projectCheck.error };
+  // Verify company ownership
+  const { data: project } = await supabase
+    .from('projects')
+    .select('company_id')
+    .eq('id', validation.data.project_id)
+    .single();
 
-  // Perform operation
-  const { data, error } = await supabase.from('tasks').insert(...);
+  if (project?.company_id !== companyId) {
+    return { error: 'Insufficient permissions' };
+  }
 
-  // Revalidate cache
+  // Execute
+  const { data, error } = await supabase.from('tasks').insert({
+    ...validation.data,
+    created_by: userId,
+  }).select().single();
+
+  if (error) return { error: 'Failed to create task' };
+
+  // Revalidate
   revalidatePath('/app/tasks');
-
-  return { success: true, task };
+  return { success: true, task: data };
 }
 ```
 
-### API Routes (When Needed)
+### API Routes (Only When Needed)
 Use for:
 - Webhooks (Stripe)
 - External integrations
 - File uploads
 
-### Client-Side Data Fetching
-- Use Server Components for initial data
-- Use `useSession` from next-auth/react for client auth state
-
 ---
 
-## Database Access Patterns
+## Database Access
 
-### CRITICAL: MCP Supabase Integration
+### ⚠️ CRITICAL: MCP Supabase
 
 **ALWAYS use MCP Supabase for database operations:**
 
 ```bash
-# List tables
-mcp__supabase__list_tables
-
-# Execute queries (SELECT, INSERT, UPDATE, DELETE)
-mcp__supabase__execute_sql
-
-# Apply migrations (DDL: CREATE TABLE, ALTER TABLE, etc.)
-mcp__supabase__apply_migration
-
-# Security/performance checks
-mcp__supabase__get_advisors
-
-# Debug issues
-mcp__supabase__get_logs
-
-# Update TypeScript types
-mcp__supabase__generate_typescript_types
+mcp__supabase__list_tables                    # List tables
+mcp__supabase__execute_sql                    # Run queries
+mcp__supabase__apply_migration                # Apply DDL
+mcp__supabase__get_advisors type:"security"   # Security check
+mcp__supabase__get_logs service:"postgres"    # Debug
+mcp__supabase__generate_typescript_types      # Update types
 ```
 
 ### Supabase Client Selection
 
-| Client | File | Use Case | RLS |
-|--------|------|----------|-----|
-| `createClient()` | server.ts | Server Actions, API routes (DEPRECATED) | Bypassed |
-| `createAdminClient()` | server.ts | Pre-auth operations, webhooks, system tasks | Bypassed |
-| `createUserClient()` | server.ts | User-scoped server operations (PREFERRED) | Bypassed (TODO: true RLS) |
-| `getSupabaseClient()` | server.ts | Legacy (DEPRECATED) | Bypassed |
+| Use Case | Client | File | RLS |
+|----------|--------|------|-----|
+| Server Actions | `createClient()` | server.ts | Bypassed |
+| Pre-auth ops | `createAdminClient()` | server.ts | Bypassed |
+| User-scoped | `createUserClient()` | server.ts | Bypassed (TODO) |
 
-> **⚠️ CRITICAL: Client Components**
->
-> **DO NOT import any Supabase client in client components (`'use client'`).**
->
-> - `client.ts` imports `auth` from `lib/auth`, which imports `nodemailer` (server-only)
-> - Using `client.ts` in client components causes build errors (missing `child_process`, `dns`, `fs`, `net`)
->
-> **Instead:**
-> - Server Components: Fetch data server-side, pass as props
-> - Client Components: Use Server Actions for all database operations
+### ⚠️ Client Components
 
-### Server-Side Pattern
+**DO NOT import ANY Supabase client in client components (`'use client'`).**
+
+❌ **Wrong:**
 ```typescript
-import { createClient } from '@/utils/supabase/server';
-
-// In Server Actions
-const supabase = await createClient();
-const { data, error } = await supabase
-  .from('tasks')
-  .select('*, assignee:user_profiles(*)')
-  .eq('project_id', projectId);
+'use client';
+import { createClient } from '@/utils/supabase/client'; // Build error!
 ```
 
-### Authorization Pattern (Manual)
-Since server client bypasses RLS, manually verify:
-1. User is authenticated
+✅ **Correct:**
+```typescript
+// Server Component (parent)
+async function Page() {
+  const supabase = await createClient();
+  const { data } = await supabase.from('tasks').select('*');
+  return <ClientComponent tasks={data} />;
+}
+
+// Client Component (child)
+'use client';
+export function ClientComponent({ tasks }) {
+  // Use Server Action for mutations
+  const handleCreate = async () => {
+    await createTask(formData);
+  };
+}
+```
+
+### Manual Authorization (RLS Bypassed)
+
+Always verify:
+1. User authenticated
 2. User belongs to company
 3. Resource belongs to user's company
 
 ```typescript
-// Always verify company ownership
-if (project.company_id !== userContext.companyId) {
+if (resource.company_id !== userContext.companyId) {
   return { error: 'Insufficient permissions' };
 }
 ```
 
 ---
 
-## State Management
+## Security
 
-### Server State (Primary)
-- Server Components for data fetching
-- Server Actions for mutations
-- `revalidatePath()` / `revalidateTag()` for cache invalidation
+### RLS Helpers
+```sql
+next_auth.uid() -> uuid                           -- Current user
+get_user_company_id(user_id) -> uuid              -- User's company
+is_user_gc_admin(user_id) -> boolean              -- Check admin
+```
 
-### Client State (Minimal)
-- React `useState` for UI state (modals, filters)
-- `usePathname()` for navigation state
-- Form state with React 19 `useFormState`
+### Role Hierarchy
+```
+gc_admin         -> Full company access
+project_manager  -> Manage projects/tasks/team
+foreman          -> Manage assigned tasks/workers
+field_worker     -> View/update assigned tasks
+subcontractor    -> Limited to assigned work
+client           -> Read-only project visibility
+```
 
-### URL State
-- Search params for shareable filters
-- Dynamic route segments for resource IDs
+### Input Validation
+```typescript
+const schema = z.object({
+  title: z.string().min(1).max(500),
+  priority: z.enum(['low', 'medium', 'high']),
+  due_date: z.string().date().optional(),
+});
+
+const result = schema.safeParse(input);
+if (!result.success) {
+  return { error: 'Validation failed', fieldErrors: result.error.flatten() };
+}
+```
+
+---
+
+## Agent Workflow
+
+### Primary Agents
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| **frontend-engineer** | UI work (all stages) | Research → Plan → Implement. Uses `frontend-design` plugin. |
+| **backend-engineer** | Database + Server | Database, Server Actions, API. ALWAYS uses MCP Supabase. |
+| **code-reviewer** | Review + debug | After implementations. Fast, focused reviews. |
+
+### Workflow
+
+```
+Complex UI:
+1. frontend-engineer → Plans + implements with plugin
+2. code-reviewer → Reviews
+
+Simple UI:
+1. frontend-engineer → Direct implementation
+2. code-reviewer → Quick review
+
+Backend:
+1. backend-engineer → MCP Supabase implementation
+2. code-reviewer → Security audit
+```
+
+### Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `/kc:impl` | Implement from specs |
+| `/kc:build` | Build verification |
+| `/kc:db-check` | Database health |
+| `/kc:review` | Code review |
+| `/kc:bug-fix` | Debug & fix |
+
+### Critical Rules
+
+1. ✅ **Always use MCP Supabase** for database
+2. ✅ **Always use frontend-design plugin** for UI
+3. ✅ **Never import Supabase in client components**
+4. ✅ **Run `/kc:build`** before completion
+5. ✅ **Update session context files** after work
 
 ---
 
 ## Error Handling
 
-### Server Action Pattern
+### Server Action
 ```typescript
-export async function createTask(formData: FormData) {
+export async function action(formData: FormData) {
   try {
-    // ... operation
-    if (insertError) {
-      console.error('Error creating task:', insertError);
-      return { error: 'Failed to create task. Please try again.' };
+    const { data, error } = await supabase.from('table').insert(data);
+
+    if (error) {
+      console.error('Error:', error);
+      return { error: 'Failed to create record' };
     }
-    return { success: true, task };
+
+    return { success: true, data };
   } catch (error) {
     console.error('Unexpected error:', error);
     return { error: 'An unexpected error occurred' };
@@ -475,170 +374,26 @@ export async function createTask(formData: FormData) {
 }
 ```
 
-### Error Boundaries
-```typescript
-// app/app/projects/error.tsx
-'use client';
-
-export default function Error({ error, reset }) {
-  return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button onClick={() => reset()}>Try again</button>
-    </div>
-  );
-}
-```
-
 ### Toast Notifications
 ```typescript
 import { toast } from 'sonner';
 
-// Success
-toast.success('Task created successfully');
-
-// Error
+toast.success('Task created');
 toast.error('Failed to create task');
 ```
 
 ---
 
-## Security Patterns
-
-### Row Level Security (RLS)
-All tables have RLS enabled with policies based on:
-- `next_auth.uid()` - Current user's UUID
-- Company membership via `company_users` table
-- Role-based access (`gc_admin`, `project_manager`, etc.)
-
-### Helper Functions
-```sql
--- Get user's company ID
-get_user_company_id(p_user_id uuid) -> uuid
-
--- Check if user is GC Admin
-is_user_gc_admin(p_user_id uuid) -> boolean
-```
-
-### Role Hierarchy
-```
-gc_admin         -> Full access to company data
-project_manager  -> Manage projects, tasks, team
-foreman          -> Manage assigned tasks, workers
-field_worker     -> View/update assigned tasks
-subcontractor    -> Limited access to assigned work
-client           -> Read-only project visibility
-```
-
-### Input Validation
-Always use Zod schemas:
-```typescript
-const schema = z.object({
-  title: z.string().min(1).max(500),
-  project_id: z.string().uuid(),
-});
-
-const validation = schema.safeParse(input);
-if (!validation.success) {
-  return { error: 'Validation failed', fieldErrors: validation.error.flatten() };
-}
-```
-
-### CSRF Protection
-- Server Actions have built-in CSRF protection
-- API routes should validate origin headers for webhooks
-
----
-
-## Agent Workflow Rules
-
-### Primary Agents
-
-| Agent | Purpose | When to Use |
-|-------|---------|-------------|
-| **frontend-architect** | UI planning, Aceternity research | Before complex UI. Creates plans, does NOT implement. |
-| **frontend-builder** | UI implementation | Implements with `frontend-design` plugin. Use after architect. |
-| **backend-engineer** | Supabase + Next.js server | Database, Server Actions, API. ALWAYS uses MCP Supabase. |
-| **code-reviewer** | Review, debug, test | After implementations. |
-
-### Agent Workflow
-
-```
-Complex UI Feature:
-1. frontend-architect -> Creates plan in .claude/docs/ui-plans/
-2. frontend-builder -> Implements using frontend-design plugin
-3. code-reviewer -> Reviews and fixes issues
-
-Simple UI Change:
-1. frontend-builder -> Direct implementation
-2. code-reviewer -> Quick review
-
-Backend Work:
-1. backend-engineer -> Implements with MCP Supabase
-2. code-reviewer -> Security audit
-```
-
-### Skills (Slash Commands)
-
-| Skill | Purpose |
-|-------|---------|
-| `/kc:nextjs` | Next.js optimization, PWA |
-| `/kc:impl` | Implement from specs |
-| `/kc:build` | Build and verify |
-| `/kc:db-check` | Database health check |
-| `/kc:review` | Quick code review |
-| `/kc:bug-fix` | Debug and fix bugs |
-
-### CRITICAL Rules
-
-1. **Always use MCP Supabase** for database operations
-2. **Always use frontend-design plugin** for UI work
-3. **Check session context files** before starting work
-4. **Update session files** after completing work
-5. **Run `/kc:build`** before considering work complete
-
----
-
-## Code Organization Best Practices
+## Code Organization
 
 ### File Naming
-- Components: PascalCase (`TaskCard.tsx`)
-- Utilities: camelCase (`utils.ts`)
-- Server Actions: feature-grouped (`actions/tasks.ts`)
-
-### Component Structure
-```typescript
-'use client'; // Only if needed
-
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-
-// Debug: Component description
-interface Props {
-  // ...
-}
-
-export function ComponentName({ prop }: Props) {
-  // Debug: State management
-  const [state, setState] = useState();
-
-  // Debug: Event handlers
-  const handleClick = () => {
-    console.log('Debug: Click handler triggered');
-  };
-
-  return (
-    <div className={cn('base-classes', conditionalClasses)}>
-      {/* Debug: Render content */}
-    </div>
-  );
-}
-```
+- Components: `PascalCase.tsx`
+- Utilities: `camelCase.ts`
+- Server Actions: `feature.ts` (e.g., `tasks.ts`)
 
 ### Import Order
 ```typescript
-// 1. React/Next.js
+// 1. React/Next
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -646,7 +401,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { z } from 'zod';
 
-// 3. Internal - absolute imports
+// 3. Internal
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -655,7 +410,6 @@ import type { Task } from '@/types/database.types';
 ```
 
 ### Debug Comments
-Always add debug comments for major features:
 ```typescript
 // Debug: Kanban drag-and-drop initialization
 // Debug: Form validation logic
@@ -664,26 +418,10 @@ Always add debug comments for major features:
 
 ---
 
-## Quick Reference
+## Environment Variables
 
-### Creating New Features
-
-1. **Database**: Use `mcp__supabase__apply_migration`
-2. **Types**: Run `mcp__supabase__generate_typescript_types`
-3. **Server Action**: Create in `app/actions/`
-4. **Components**: Create in `components/[feature]/`
-5. **Pages**: Create in `app/app/[feature]/`
-6. **Tests**: Run `/kc:build` to verify
-
-### Before Deployment
-
-```bash
-/kc:build      # Verify build
-/kc:db-check   # Database security
-code-reviewer  # Final review
-```
-
-### Environment Variables Required
+<details>
+<summary><strong>Required Variables</strong></summary>
 
 ```env
 # Supabase
@@ -697,19 +435,14 @@ AUTH_SECRET=
 AUTH_GOOGLE_ID=
 AUTH_GOOGLE_SECRET=
 
-# Email (Gmail SMTP or Resend)
+# Email (Gmail or Resend)
 EMAIL_SERVER_HOST=smtp.gmail.com
 EMAIL_SERVER_PORT=587
 EMAIL_SERVER_USER=
 EMAIL_SERVER_PASSWORD=
 EMAIL_FROM=
-MAIL_HOST=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USER=
-MAIL_PASS=
-MAIL_FROM=
 
-# Stripe (optional, feature-flagged)
+# Stripe (optional)
 STRIPE_SECRET_KEY=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 STRIPE_WEBHOOK_SECRET=
@@ -717,16 +450,35 @@ STRIPE_WEBHOOK_SECRET=
 # Feature Flags
 NEXT_PUBLIC_PAYMENTS_ENABLED=false
 
-# Home Depot Product Search (SerpAPI)
+# SerpAPI (Home Depot)
 SERPAPI_API_KEY=
 
-# Firebase Cloud Messaging (Push Notifications)
+# Firebase (Push Notifications)
 NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
 NEXT_PUBLIC_FIREBASE_VAPID_KEY=
 FCM_SERVER_KEY=
+```
+</details>
+
+---
+
+## Quick Reference
+
+### New Feature Checklist
+
+1. **Database**: `mcp__supabase__apply_migration`
+2. **Types**: `mcp__supabase__generate_typescript_types`
+3. **Server Action**: `app/actions/[feature].ts`
+4. **Components**: `components/[feature]/`
+5. **Pages**: `app/app/[feature]/`
+6. **Test**: `/kc:build`
+
+### Before Deployment
+
+```bash
+/kc:build      # Verify build passes
+/kc:db-check   # Database security check
+code-reviewer  # Final review
 ```

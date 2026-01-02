@@ -46,7 +46,7 @@ mcp__supabase__get_advisors type: "security"
 
 ### 3. Run static analysis
 ```bash
-pnpm run lint:ts
+npm run lint:ts
 ```
 
 ## Output Format

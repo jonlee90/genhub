@@ -408,7 +408,7 @@ const getMessagePreview = (message?: MessageWithSender) => {
 
 **Dependencies:**
 ```bash
-pnpm add @tanstack/react-virtual
+npm add @tanstack/react-virtual
 ```
 
 **Props Interface:**
@@ -1029,7 +1029,7 @@ className="p-3 md:p-4"
 ### Required Packages
 
 ```bash
-pnpm add @tanstack/react-virtual
+npm add @tanstack/react-virtual
 ```
 
 ### Already Available

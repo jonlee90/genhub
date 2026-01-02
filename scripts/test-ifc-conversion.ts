@@ -4,7 +4,7 @@
  * This script tests the IFC conversion service with a sample IFC file.
  *
  * Usage:
- *   pnpm tsx scripts/test-ifc-conversion.ts [path-to-ifc-file]
+ *   npm tsx scripts/test-ifc-conversion.ts [path-to-ifc-file]
  *
  * If no IFC file is provided, creates a minimal test IFC file.
  */

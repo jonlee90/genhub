@@ -371,8 +371,8 @@
 3. **Test thoroughly:**
    - [ ] Browser dev tools responsive mode
    - [ ] Real device testing
-   - [ ] Run `pnpm run lint:ts`
-   - [ ] Run `pnpm run build`
+   - [ ] Run `npm run lint:ts`
+   - [ ] Run `npm run build`
 
 4. **Code review:**
    - [ ] Request review from `code-reviewer`

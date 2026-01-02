@@ -848,8 +848,8 @@ Add `SECURITY DEFINER` and `search_path` to all helper functions to satisfy data
 - [ ] User acceptance testing with construction workers
 
 **Deployment Prerequisites:**
-- [ ] Run `pnpm run lint:ts` (verify no TypeScript errors)
-- [ ] Run `pnpm run build` (verify successful build)
+- [ ] Run `npm run lint:ts` (verify no TypeScript errors)
+- [ ] Run `npm run build` (verify successful build)
 - [ ] Run `mcp__supabase__get_advisors type:"security"` (review warnings)
 - [ ] Test all CRUD operations end-to-end
 - [ ] Verify RLS policies in production environment

@@ -2,7 +2,7 @@
 /node_modules
 /.pnp
 .pnp.js
-.pnpm-debug.log*
+.npm-debug.log*
 
 # testing
 /coverage

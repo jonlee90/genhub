@@ -409,7 +409,7 @@ SELECT * FROM pg_indexes WHERE tablename = 'kakao_connections';
 4. **Verify Deployment:**
    ```bash
    # Build check
-   pnpm build
+   npm build
 
    # Test endpoints
    curl https://yourdomain.com/api/kakao/connect

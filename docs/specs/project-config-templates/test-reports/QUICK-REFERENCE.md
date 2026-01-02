@@ -110,8 +110,8 @@
 - [ ] Test on real iPhone SE (375px)
 - [ ] Test on real Android phone
 - [ ] Verify no horizontal scroll
-- [ ] Run `pnpm run lint:ts`
-- [ ] Run `pnpm run build`
+- [ ] Run `npm run lint:ts`
+- [ ] Run `npm run build`
 - [ ] Deploy to staging
 - [ ] **DO NOT SHIP TO PRODUCTION WITHOUT THIS**
 

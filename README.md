@@ -15,7 +15,7 @@ A modern SaaS starter kit built with Next.js, featuring authentication, payments
 1. Clone the repository
 2. Install dependencies:
 ```bash
-pnpm install
+npm install
 ```
 
 3.  cp  .env.example  to .env.local ,
@@ -58,7 +58,7 @@ AUTH_SECRET=your_auth_secret
 1. Set up all environment variables as described above
 2. Run the development server:
 ```bash
-pnpm dev
+npm dev
 ```
 
 3. Open [http://localhost:3000](http://localhost:3000) in your browser
