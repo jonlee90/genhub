@@ -788,6 +788,7 @@ export function TaskTemplateManager() {
               type="number"
               min="0"
               max="365"
+              defaultValue="30"
               placeholder="e.g., 0, 7, 30"
               className="border-2 border-gray-200 focus:border-construction-blue"
             />

@@ -154,6 +154,7 @@ export async function createTaskTemplate(formData: FormData): Promise<{
     description: formData.get('description') || undefined,
     default_task_type: formData.get('default_task_type') || 'work',
     default_priority: formData.get('default_priority') || 'medium',
+    days_offset: formData.get('days_offset') || undefined, // ✅ Extract days_offset for due date calculation
   };
 
   const validation = createTaskTemplateSchema.safeParse(rawData);
@@ -236,6 +237,7 @@ export async function updateTaskTemplate(
     default_task_type: formData.get('default_task_type') || undefined,
     default_priority: formData.get('default_priority') || undefined,
     is_active: formData.get('is_active') === 'true',
+    days_offset: formData.get('days_offset') || undefined, // ✅ Extract days_offset for due date calculation
   };
 
   const validation = updateTaskTemplateSchema.safeParse(rawData);

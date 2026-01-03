@@ -92,7 +92,10 @@
       "Bash(npx tsx:*)",
       "Bash(brew list:*)",
       "Bash(/opt/homebrew/opt/postgresql@14/bin/psql:*)",
-      "Bash(/opt/homebrew/Cellar/postgresql@15/15.15_1/bin/psql:*)"
+      "Bash(/opt/homebrew/Cellar/postgresql@15/15.15_1/bin/psql:*)",
+      "Bash(brew install:*)",
+      "Bash(export PATH=\"/opt/homebrew/opt/postgresql@15/bin:$PATH\")",
+      "Bash(node scripts/apply-migration-management-api.mjs:*)"
     ],
     "deny": [],
     "ask": []

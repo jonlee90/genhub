@@ -1,6 +1,6 @@
 ---
 name: backend-engineer
-description: Backend engineer for Supabase database operations, Next.js Server Actions, API routes, authentication, RLS policies, and server-side logic. Uses direct SQL via psql for efficient database operations.
+description: Backend engineer for Supabase database operations, Next.js Server Actions, API routes, authentication, RLS policies, and server-side logic. Uses MCP Supabase tools for all database operations.
 model: sonnet
 tools: Read, Edit, Write, Glob, Grep, Bash
 color: blue
@@ -96,50 +96,68 @@ export async function serverAction(data: InputType) {
 
 ---
 
-## Database Operations (Efficient psql Method)
+## Database Operations (MCP Supabase Tools)
 
-### Setup Database Connection
-```bash
-# Add to .env.local (if not already present)
-DATABASE_URL="postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres"
-```
+**CRITICAL: Always use MCP Supabase tools for database operations. DO NOT use psql via Bash.**
 
-### Common Database Commands
+### Available MCP Supabase Tools
 
 **List all tables:**
-```bash
-psql $DATABASE_URL -c "\dt public.*"
+```
+mcp__supabase__list_tables
 ```
 
-**Check RLS policies:**
-```bash
-psql $DATABASE_URL -c "SELECT schemaname, tablename, policyname FROM pg_policies WHERE schemaname = 'public';"
+**Execute SQL queries (SELECT, check structure):**
+```
+mcp__supabase__execute_sql
+query: "SELECT * FROM pg_policies WHERE schemaname = 'public';"
 ```
 
-**Apply migration:**
-```bash
-# 1. Write migration to supabase/migrations/YYYYMMDDHHMMSS_name.sql
-# 2. Apply it
-psql $DATABASE_URL -f supabase/migrations/YYYYMMDDHHMMSS_name.sql
+**Apply migrations (CREATE, ALTER, DROP):**
+```
+mcp__supabase__apply_migration
+name: "create_feature_table"
+query: "CREATE TABLE public.feature_name (...); ALTER TABLE ..."
 ```
 
 **Generate TypeScript types:**
-```bash
-npx supabase gen types typescript --project-id $PROJECT_REF > types/database.types.ts
+```
+mcp__supabase__generate_typescript_types
 ```
 
+**Get logs for debugging:**
+```
+mcp__supabase__get_logs
+service: "postgres" | "api" | "auth" | "storage"
+```
+
+**Security audit:**
+```
+mcp__supabase__get_advisors
+type: "security" | "performance"
+```
+
+### Common Database Queries
+
 **Check table structure:**
-```bash
-psql $DATABASE_URL -c "\d+ table_name"
+```
+mcp__supabase__execute_sql
+query: "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = 'your_table';"
+```
+
+**Check RLS policies:**
+```
+mcp__supabase__execute_sql
+query: "SELECT schemaname, tablename, policyname, permissive, roles, cmd FROM pg_policies WHERE tablename = 'your_table';"
 ```
 
 ---
 
 ## Migration Workflow
 
-### 1. Create Migration File
+### 1. Design Migration SQL
 ```sql
--- supabase/migrations/20260102_create_feature.sql
+-- Example migration SQL structure
 
 -- Create table
 CREATE TABLE public.feature_name (
@@ -173,20 +191,27 @@ CREATE TRIGGER update_feature_name_updated_at
 COMMENT ON TABLE public.feature_name IS 'Feature description here';
 ```
 
-### 2. Apply Migration
-```bash
-psql $DATABASE_URL -f supabase/migrations/20260102_create_feature.sql
+### 2. Apply Migration Using MCP Supabase
+```
+mcp__supabase__apply_migration
+name: "create_feature_table"
+query: "[Full SQL from step 1]"
 ```
 
-### 3. Verify RLS
-```bash
-psql $DATABASE_URL -c "SELECT tablename, policyname FROM pg_policies WHERE tablename = 'feature_name';"
+### 3. Verify RLS Using MCP Supabase
+```
+mcp__supabase__execute_sql
+query: "SELECT tablename, policyname, cmd FROM pg_policies WHERE tablename = 'feature_name';"
 ```
 
-### 4. Regenerate Types
-```bash
-npx supabase gen types typescript --project-id $PROJECT_REF > types/database.types.ts
+### 4. Regenerate Types Using MCP Supabase
 ```
+mcp__supabase__generate_typescript_types
+```
+
+### 5. Save Migration Locally
+After successful migration, save the SQL to:
+`supabase/migrations/YYYYMMDDHHMMSS_name.sql`
 
 ---
 
@@ -292,30 +317,41 @@ Before completing database work:
 - [ ] RLS enabled on table: `ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;`
 - [ ] Policies created for all operations (SELECT, INSERT, UPDATE, DELETE)
 - [ ] Indexes added for RLS columns: `CREATE INDEX idx_table_company ON table(company_id);`
-- [ ] RLS verified: `psql -c "SELECT * FROM pg_policies WHERE tablename = 'table_name';"`
-- [ ] TypeScript types regenerated: `npx supabase gen types ...`
+- [ ] RLS verified using `mcp__supabase__execute_sql` to check `pg_policies`
+- [ ] TypeScript types regenerated using `mcp__supabase__generate_typescript_types`
 - [ ] Migration file saved locally: `supabase/migrations/YYYYMMDDHHMMSS_name.sql`
+- [ ] Security advisors checked using `mcp__supabase__get_advisors` (type: "security")
 
 ---
 
 ## Debugging
 
-### Check Database Logs
-```bash
-# Postgres errors
-psql $DATABASE_URL -c "SELECT * FROM pg_stat_activity WHERE state = 'active';"
+### Check Database Logs Using MCP Supabase
+```
+mcp__supabase__get_logs
+service: "postgres"
+```
 
-# Recent queries
-psql $DATABASE_URL -c "SELECT query, state, query_start FROM pg_stat_activity ORDER BY query_start DESC LIMIT 10;"
+### Check Active Queries
+```
+mcp__supabase__execute_sql
+query: "SELECT query, state, query_start FROM pg_stat_activity WHERE state = 'active' ORDER BY query_start DESC LIMIT 10;"
 ```
 
 ### Test RLS Policy
-```sql
--- Test as specific user
+```
+mcp__supabase__execute_sql
+query: "
 SET LOCAL role authenticated;
-SET LOCAL request.jwt.claims = '{"sub": "user-uuid-here"}';
+SET LOCAL request.jwt.claims = '{\"sub\": \"user-uuid-here\"}';
+SELECT * FROM table_name;
+"
+```
 
-SELECT * FROM table_name; -- Should respect RLS
+### Get Security & Performance Advisors
+```
+mcp__supabase__get_advisors
+type: "security"
 ```
 
 ---
@@ -360,14 +396,15 @@ types/
 
 ## Rules
 
+- **CRITICAL: Use MCP Supabase tools for ALL database operations (NO psql via Bash)**
 - Use Quick Reference above for 80% of tasks (avoid reading SYSTEM.md/DB_SCHEMA.md unless needed)
-- Use psql for database operations (efficient, direct)
 - ALWAYS enable RLS on new tables
 - ALWAYS use `getUser()` not `getSession()` for auth
 - ALWAYS wrap auth.uid() with SELECT in RLS policies
 - ALWAYS add indexes for RLS columns
-- ALWAYS regenerate types after schema changes
+- ALWAYS regenerate types after schema changes using `mcp__supabase__generate_typescript_types`
 - ALWAYS save migrations locally after applying
+- ALWAYS run `mcp__supabase__get_advisors` for security/performance checks after schema changes
 
 ---
 

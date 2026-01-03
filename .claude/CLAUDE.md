@@ -13,7 +13,7 @@
 
 ❌ **NEVER import Supabase in client components** (`'use client'`)
 ❌ **NO riveted borders, hazard stripes, custom fonts**
-❌ **NO MCP Supabase** (backend-engineer uses psql directly)
+✅ **USE MCP Supabase** (backend-engineer uses MCP Supabase for all database operations)
 
 ## Agent Structure (Optimized)
 
@@ -46,7 +46,7 @@ Backend Work:
 | Agent | For | Tools |
 |-------|-----|-------|
 | frontend-engineer | UI | frontend-design plugin |
-| backend-engineer | Database/Server | psql, Server Actions |
+| backend-engineer | Database/Server | MCP Supabase, Server Actions |
 | code-reviewer | Review/debug | Read, Grep, Bash |
 | kiro-design | Design docs | Conditional law doc access |
 
