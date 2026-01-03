@@ -2,11 +2,28 @@
 
 // Debug: Core 3D viewer canvas component with xeokit integration
 // P2.2 - 3DViewerCanvas with model loading, camera state, and responsive resize
+// P5.5 - Performance optimization integration
+// P5.6 - Mobile optimization integration
+// P5.7 - Memory management integration
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { viewerManager } from '@/lib/xeokit/viewer-manager';
 import { cn } from '@/lib/utils';
+import {
+  optimizeViewer,
+  getDefaultConfig,
+  FPSCounter,
+  getPerformanceStats,
+} from '@/lib/xeokit/performance-optimizer';
+import {
+  applyMobileOptimizations,
+  detectDevice,
+} from '@/lib/xeokit/mobile-optimizer';
+import {
+  fullCleanup,
+  startMemoryMonitoring,
+} from '@/lib/xeokit/memory-manager';
 
 // Debug: Camera state interface
 export interface CameraState {
@@ -46,11 +63,104 @@ export function ThreeDViewerCanvas({
   const viewerRef = useRef<Viewer | null>(null);
   const modelRef = useRef<any>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const fpsCounterRef = useRef<FPSCounter | null>(null);
+  const memoryMonitorCleanupRef = useRef<(() => void) | null>(null);
+
+  // FIX: Store prop callbacks in refs to prevent infinite re-initialization
+  const onReadyRef = useRef(onReady);
+  const onErrorRef = useRef(onError);
+  const initialCameraRef = useRef(initialCamera);
+
+  // FIX: Update refs when props change, but don't trigger re-initialization
+  useEffect(() => {
+    onReadyRef.current = onReady;
+    onErrorRef.current = onError;
+    initialCameraRef.current = initialCamera;
+  }, [onReady, onError, initialCamera]);
 
   // Debug: Loading state
   const [isLoading, setIsLoading] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState<Error | null>(null);
+
+  // Debug: Performance state (P5.5)
+  const [fps, setFps] = useState(0);
+  const [showDebugOverlay, setShowDebugOverlay] = useState(false);
+
+  // Debug: Setup resize observer for responsive canvas
+  const setupResizeObserver = useCallback((canvas: HTMLCanvasElement) => {
+    console.log('[3DViewerCanvas] Setting up resize observer');
+
+    // Debug: Create resize observer
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        console.log('[3DViewerCanvas] Canvas resized', { width, height });
+
+        // Debug: Update canvas size
+        if (canvas) {
+          canvas.width = width * window.devicePixelRatio;
+          canvas.height = height * window.devicePixelRatio;
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+        }
+      }
+    });
+
+    resizeObserver.observe(canvas.parentElement!);
+    resizeObserverRef.current = resizeObserver;
+  }, []);
+
+  // Debug: Unload current model
+  const unloadModel = useCallback(() => {
+    console.log('[3DViewerCanvas] Unloading model');
+
+    if (modelRef.current && typeof modelRef.current.destroy === 'function') {
+      modelRef.current.destroy();
+      modelRef.current = null;
+      console.log('[3DViewerCanvas] Model unloaded');
+    }
+  }, []);
+
+  // Debug: Cleanup viewer and resources
+  const cleanup = useCallback(() => {
+    console.log('[3DViewerCanvas] Cleanup started');
+
+    // Debug: Stop FPS counter
+    const viewer = viewerRef.current;
+    if (viewer && (viewer as any)._fpsInterval) {
+      clearInterval((viewer as any)._fpsInterval);
+      console.log('[3DViewerCanvas] FPS counter stopped');
+    }
+
+    // Debug: Stop memory monitoring (P5.7)
+    if (memoryMonitorCleanupRef.current) {
+      memoryMonitorCleanupRef.current();
+      memoryMonitorCleanupRef.current = null;
+      console.log('[3DViewerCanvas] Memory monitoring stopped');
+    }
+
+    // Debug: Disconnect resize observer
+    if (resizeObserverRef.current) {
+      resizeObserverRef.current.disconnect();
+      resizeObserverRef.current = null;
+      console.log('[3DViewerCanvas] Resize observer disconnected');
+    }
+
+    // Debug: Unload model
+    unloadModel();
+
+    // Debug: P5.7 - Full cleanup (viewer, textures, geometry, WebGL context)
+    if (viewerRef.current) {
+      fullCleanup(viewerRef.current);
+    }
+
+    // Debug: Destroy viewer
+    viewerManager.destroyViewer(projectId);
+    viewerRef.current = null;
+
+    console.log('[3DViewerCanvas] Cleanup complete');
+  }, [projectId, unloadModel]);
 
   // Debug: Initialize viewer on mount
   useEffect(() => {
@@ -79,27 +189,67 @@ export function ThreeDViewerCanvas({
       viewerRef.current = viewer;
       console.log('[3DViewerCanvas] Viewer initialized');
 
+      // Debug: P5.5 - Apply performance optimizations
+      const deviceProfile = detectDevice();
+      const perfConfig = getDefaultConfig(deviceProfile.isMobile);
+      optimizeViewer(viewer, perfConfig);
+      console.log('[3DViewerCanvas] Performance optimizations applied');
+
+      // Debug: P5.6 - Apply mobile optimizations if needed
+      if (deviceProfile.isMobile) {
+        applyMobileOptimizations(viewer);
+        console.log('[3DViewerCanvas] Mobile optimizations applied');
+      }
+
+      // Debug: P5.7 - Start memory monitoring
+      const stopMemoryMonitoring = startMemoryMonitoring(
+        viewer,
+        10000, // Check every 10 seconds
+        (stats) => {
+          console.warn('[3DViewerCanvas] Memory warning:', stats);
+        },
+        (stats) => {
+          console.error('[3DViewerCanvas] Memory critical:', stats);
+        }
+      );
+      memoryMonitorCleanupRef.current = stopMemoryMonitoring;
+
+      // Debug: P5.5 - Start FPS counter
+      fpsCounterRef.current = new FPSCounter();
+      const fpsInterval = setInterval(() => {
+        if (fpsCounterRef.current) {
+          const currentFps = fpsCounterRef.current.update();
+          setFps(currentFps);
+        }
+      }, 1000);
+
+      // Store interval for cleanup
+      (viewer as any)._fpsInterval = fpsInterval;
+
       // Debug: Set initial camera if provided
-      if (initialCamera) {
-        viewer.camera.eye = initialCamera.eye;
-        viewer.camera.look = initialCamera.look;
-        viewer.camera.up = initialCamera.up;
-        console.log('[3DViewerCanvas] Initial camera set', initialCamera);
+      // FIX: Use ref instead of direct prop to prevent re-initialization
+      if (initialCameraRef.current) {
+        viewer.camera.eye = initialCameraRef.current.eye;
+        viewer.camera.look = initialCameraRef.current.look;
+        viewer.camera.up = initialCameraRef.current.up;
+        console.log('[3DViewerCanvas] Initial camera set', initialCameraRef.current);
       }
 
       // Debug: Setup resize observer for responsive canvas
       setupResizeObserver(canvasRef.current);
 
       // Debug: Notify ready
-      if (onReady) {
-        onReady(viewer);
+      // FIX: Use ref to avoid infinite re-initialization
+      if (onReadyRef.current) {
+        onReadyRef.current(viewer);
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error('[3DViewerCanvas] Initialization error', error);
       setError(error);
-      if (onError) {
-        onError(error);
+      // FIX: Use ref instead of direct prop
+      if (onErrorRef.current) {
+        onErrorRef.current(error);
       }
     }
 
@@ -108,7 +258,7 @@ export function ThreeDViewerCanvas({
       console.log('[3DViewerCanvas] Cleanup on unmount');
       cleanup();
     };
-  }, [projectId]); // Only re-initialize if projectId changes
+  }, [projectId, setupResizeObserver, cleanup]); // FIX: Include all dependencies properly
 
   // Debug: Load model when URL changes
   useEffect(() => {
@@ -127,33 +277,9 @@ export function ThreeDViewerCanvas({
         unloadModel();
       }
     };
-  }, [modelUrl]);
+  }, [modelUrl, unloadModel]); // FIX: Add unloadModel to deps
 
-  // Debug: Setup resize observer for responsive canvas
-  const setupResizeObserver = useCallback((canvas: HTMLCanvasElement) => {
-    console.log('[3DViewerCanvas] Setting up resize observer');
-
-    // Debug: Create resize observer
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        console.log('[3DViewerCanvas] Canvas resized', { width, height });
-
-        // Debug: Update canvas size
-        if (canvas) {
-          canvas.width = width * window.devicePixelRatio;
-          canvas.height = height * window.devicePixelRatio;
-          canvas.style.width = `${width}px`;
-          canvas.style.height = `${height}px`;
-        }
-      }
-    });
-
-    resizeObserver.observe(canvas.parentElement!);
-    resizeObserverRef.current = resizeObserver;
-  }, []);
-
-  // Debug: Load XKT model
+  // Debug: Load model (supports both XKT and IFC formats)
   const loadModel = useCallback(async (url: string) => {
     console.log('[3DViewerCanvas] Loading model from URL', url);
 
@@ -167,116 +293,197 @@ export function ThreeDViewerCanvas({
     setError(null);
 
     try {
-      // Debug: Dynamic import XKTLoaderPlugin
-      const { XKTLoaderPlugin } = await import('@xeokit/xeokit-sdk');
+      // Detect file type from URL
+      const isIFCFile = url.toLowerCase().endsWith('.ifc');
+      console.log('[3DViewerCanvas] File type detected:', isIFCFile ? 'IFC' : 'XKT');
 
-      // Debug: Create loader
-      const xktLoader = new XKTLoaderPlugin(viewerRef.current, {
-        objectDefaults: {
-          IfcSpace: {
-            visible: false, // Hide spaces by default
-            pickable: false,
-          },
-        },
-      });
+      let model: any;
 
-      console.log('[3DViewerCanvas] XKT loader created');
+      if (isIFCFile) {
+        // Debug: Load IFC file using WebIFCLoaderPlugin
+        const { WebIFCLoaderPlugin } = await import('@xeokit/xeokit-sdk');
 
-      // Debug: Load model with progress tracking
-      const model = xktLoader.load({
-        id: `model-${Date.now()}`,
-        src: url,
-        edges: true, // Show edges for better visualization
-      });
+        // Import web-ifc library (required by WebIFCLoaderPlugin)
+        const WebIFC = await import('web-ifc');
 
-      // Debug: Track loading progress
-      let downloadProgress = 0;
-      const progressInterval = setInterval(() => {
-        // Simulate download progress (0-50%)
-        if (downloadProgress < 50) {
-          downloadProgress += 5;
-          setLoadProgress(downloadProgress);
-          if (onProgress) {
-            onProgress(downloadProgress);
-          }
-        }
-      }, 100);
+        // Initialize web-ifc API
+        const IfcAPI = new (WebIFC as any).IfcAPI();
 
-      // Debug: Wait for model to load
-      model.on('loaded', () => {
-        clearInterval(progressInterval);
-        console.log('[3DViewerCanvas] Model loaded successfully');
+        // Set absolute path to WASM files with trailing slash
+        // Second parameter 'true' indicates this is an absolute path
+        IfcAPI.SetWasmPath('/web-ifc/', true);
 
-        // Complete progress (50-100% for parsing)
-        setLoadProgress(100);
-        if (onProgress) {
-          onProgress(100);
-        }
-
-        // Debug: Fit model to view
-        const scene = viewerRef.current!.scene;
-        const aabb = scene.getAABB();
-        viewerRef.current!.cameraFlight.flyTo({
-          aabb,
-          duration: 1.0,
+        // Instantiate WebIFCLoaderPlugin with the IfcAPI
+        const webIFCLoaderPlugin = new WebIFCLoaderPlugin({
+          IfcAPI: IfcAPI,
         });
 
-        setIsLoading(false);
-        modelRef.current = model;
-      });
-
-      model.on('error', (err: any) => {
-        clearInterval(progressInterval);
-        console.error('[3DViewerCanvas] Model load error', err);
-        const error = new Error(`Failed to load model: ${err}`);
-        setError(error);
-        setIsLoading(false);
-        if (onError) {
-          onError(error);
+        // Install the plugin into the viewer (with proper validation)
+        if (!viewerRef.current) {
+          throw new Error('Viewer not initialized when installing WebIFC plugin');
         }
-      });
+
+        if (!viewerRef.current.pluginManager) {
+          throw new Error('pluginManager not available on viewer instance');
+        }
+
+        if (typeof viewerRef.current.pluginManager.install !== 'function') {
+          throw new Error('pluginManager.install is not a valid function');
+        }
+
+        viewerRef.current.pluginManager.install(webIFCLoaderPlugin);
+        console.log('[3DViewerCanvas] WebIFC plugin installed successfully');
+
+        // Create the model loader
+        const loader = webIFCLoaderPlugin.WebIFCLoaderPlugin;
+
+        console.log('[3DViewerCanvas] WebIFC loader created');
+
+        // Load IFC model
+        model = loader.load({
+          id: `model-${Date.now()}`,
+          src: url,
+          edges: true,
+        });
+
+        // Debug: Track loading progress
+        let downloadProgress = 0;
+        const progressInterval = setInterval(() => {
+          // Simulate download progress (0-50%)
+          if (downloadProgress < 50) {
+            downloadProgress += 5;
+            setLoadProgress(downloadProgress);
+            if (onProgress) {
+              onProgress(downloadProgress);
+            }
+          }
+        }, 100);
+
+        // Debug: Wait for model to load
+        model.on('loaded', () => {
+          clearInterval(progressInterval);
+          console.log('[3DViewerCanvas] IFC Model loaded successfully');
+
+          // Complete progress (50-100% for parsing)
+          setLoadProgress(100);
+          if (onProgress) {
+            onProgress(100);
+          }
+
+          // Debug: Fit model to view
+          const scene = viewerRef.current!.scene;
+          const aabb = scene.getAABB();
+          viewerRef.current!.cameraFlight.flyTo({
+            aabb,
+            duration: 1.0,
+          });
+
+          setIsLoading(false);
+          modelRef.current = model;
+        });
+
+        model.on('error', (err: any) => {
+          clearInterval(progressInterval);
+          console.error('[3DViewerCanvas] IFC Model load error', err);
+          const error = new Error(`Failed to load IFC model: ${err}`);
+          setError(error);
+          setIsLoading(false);
+          if (onErrorRef.current) {
+            onErrorRef.current(error);
+          }
+        });
+      } else {
+        // Debug: Load XKT file using XKTLoaderPlugin
+        const { XKTLoaderPlugin } = await import('@xeokit/xeokit-sdk');
+
+        // Instantiate XKTLoaderPlugin
+        const xktLoaderPlugin = new XKTLoaderPlugin();
+
+        // Install the plugin into the viewer (with proper validation)
+        if (!viewerRef.current) {
+          throw new Error('Viewer not initialized when installing XKT plugin');
+        }
+
+        if (!viewerRef.current.pluginManager) {
+          throw new Error('pluginManager not available on viewer instance');
+        }
+
+        if (typeof viewerRef.current.pluginManager.install !== 'function') {
+          throw new Error('pluginManager.install is not a valid function');
+        }
+
+        viewerRef.current.pluginManager.install(xktLoaderPlugin);
+        console.log('[3DViewerCanvas] XKT plugin installed successfully');
+
+        // Create the model loader
+        const xktLoader = xktLoaderPlugin.XKTLoader;
+
+        console.log('[3DViewerCanvas] XKT loader created');
+
+        // Load XKT model
+        model = xktLoader.load({
+          id: `model-${Date.now()}`,
+          src: url,
+          edges: true, // Show edges for better visualization
+        });
+
+        // Debug: Track loading progress
+        let downloadProgress = 0;
+        const progressInterval = setInterval(() => {
+          // Simulate download progress (0-50%)
+          if (downloadProgress < 50) {
+            downloadProgress += 5;
+            setLoadProgress(downloadProgress);
+            if (onProgress) {
+              onProgress(downloadProgress);
+            }
+          }
+        }, 100);
+
+        // Debug: Wait for model to load
+        model.on('loaded', () => {
+          clearInterval(progressInterval);
+          console.log('[3DViewerCanvas] Model loaded successfully');
+
+          // Complete progress (50-100% for parsing)
+          setLoadProgress(100);
+          if (onProgress) {
+            onProgress(100);
+          }
+
+          // Debug: Fit model to view
+          const scene = viewerRef.current!.scene;
+          const aabb = scene.getAABB();
+          viewerRef.current!.cameraFlight.flyTo({
+            aabb,
+            duration: 1.0,
+          });
+
+          setIsLoading(false);
+          modelRef.current = model;
+        });
+
+        model.on('error', (err: any) => {
+          clearInterval(progressInterval);
+          console.error('[3DViewerCanvas] Model load error', err);
+          const error = new Error(`Failed to load model: ${err}`);
+          setError(error);
+          setIsLoading(false);
+          if (onErrorRef.current) {
+            onErrorRef.current(error);
+          }
+        });
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error('[3DViewerCanvas] Model loading error', error);
       setError(error);
       setIsLoading(false);
-      if (onError) {
-        onError(error);
+      if (onErrorRef.current) {
+        onErrorRef.current(error);
       }
     }
-  }, [onProgress, onError]);
-
-  // Debug: Unload current model
-  const unloadModel = useCallback(() => {
-    console.log('[3DViewerCanvas] Unloading model');
-
-    if (modelRef.current && typeof modelRef.current.destroy === 'function') {
-      modelRef.current.destroy();
-      modelRef.current = null;
-      console.log('[3DViewerCanvas] Model unloaded');
-    }
-  }, []);
-
-  // Debug: Cleanup viewer and resources
-  const cleanup = useCallback(() => {
-    console.log('[3DViewerCanvas] Cleanup started');
-
-    // Debug: Disconnect resize observer
-    if (resizeObserverRef.current) {
-      resizeObserverRef.current.disconnect();
-      resizeObserverRef.current = null;
-      console.log('[3DViewerCanvas] Resize observer disconnected');
-    }
-
-    // Debug: Unload model
-    unloadModel();
-
-    // Debug: Destroy viewer
-    viewerManager.destroyViewer(projectId);
-    viewerRef.current = null;
-
-    console.log('[3DViewerCanvas] Cleanup complete');
-  }, [projectId, unloadModel]);
+  }, [onProgress]);
 
   return (
     <div className={cn('relative w-full h-full bg-gray-100', className)}>
@@ -286,28 +493,28 @@ export function ThreeDViewerCanvas({
         className="w-full h-full touch-none"
         style={{
           display: 'block',
-          cursor: isLoading ? 'wait' : 'default',
+          width: '100%',
+          height: '100%',
         }}
       />
 
-      {/* Debug: Loading overlay */}
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-construction-blue/5 backdrop-blur-sm">
-          <div className="bg-white border-2 border-construction-blue rounded-lg p-6 shadow-construction max-w-sm w-full mx-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 border-4 border-construction-blue border-t-transparent rounded-full animate-spin" />
-              <div>
-                <p className="font-bold text-construction-blue">Loading Model</p>
-                <p className="text-sm text-gray-600">
-                  {loadProgress < 50 ? 'Downloading' : 'Processing'}... {loadProgress}%
-                </p>
-              </div>
-            </div>
+      {/* Debug: Debug overlay (P5.5) */}
+      {showDebugOverlay && (
+        <div className="absolute top-4 left-4 bg-black/80 text-white p-4 rounded font-mono text-xs pointer-events-none">
+          <p>FPS: {fps.toFixed(1)}</p>
+          <p>Project: {projectId}</p>
+          <p>Canvas: {canvasRef.current?.width}x{canvasRef.current?.height}</p>
+        </div>
+      )}
 
-            {/* Debug: Progress bar */}
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+      {/* Debug: Loading indicator */}
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none">
+          <div className="bg-white rounded-lg p-6 shadow-lg">
+            <div className="text-sm font-mono text-gray-600">Loading: {loadProgress}%</div>
+            <div className="mt-2 w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-construction-blue transition-all duration-300"
+                className="h-full bg-construction-blue transition-all"
                 style={{ width: `${loadProgress}%` }}
               />
             </div>
@@ -315,12 +522,12 @@ export function ThreeDViewerCanvas({
         </div>
       )}
 
-      {/* Debug: Error overlay */}
+      {/* Debug: Error indicator */}
       {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-red-50/90">
-          <div className="bg-white border-2 border-red-500 rounded-lg p-6 shadow-construction max-w-sm w-full mx-4">
-            <p className="font-bold text-red-600 mb-2">Failed to Load Model</p>
-            <p className="text-sm text-gray-600">{error.message}</p>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none">
+          <div className="bg-red-100 border-2 border-red-600 rounded-lg p-6 shadow-lg max-w-md">
+            <p className="text-sm font-bold text-red-600 mb-2">Error</p>
+            <p className="text-sm text-red-800">{error.message}</p>
           </div>
         </div>
       )}
