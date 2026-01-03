@@ -24,3 +24,13 @@ export type { InteractionLayerProps } from './InteractionLayer';
 // Complete integration
 export { SpatialViewer } from './SpatialViewer';
 export type { SpatialViewerProps } from './SpatialViewer';
+
+// Phase 4 - GenHub Integration
+export { PhaseFilter } from './PhaseFilter';
+export { TaskLinker } from './TaskLinker';
+export { PhotoLocationSuggester } from './PhotoLocationSuggester';
+export {
+  MaterialMarkerBadge,
+  MaterialMarkerListItem,
+  MaterialStatusLegend,
+} from './MaterialMarkers';

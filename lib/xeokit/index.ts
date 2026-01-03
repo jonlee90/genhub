@@ -29,6 +29,7 @@ export function initXeokit(
   try {
     // Debug: Dynamic import xeokit (browser-only)
     // Note: This is synchronous in the browser, but we need to handle it carefully
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Viewer } = require('@xeokit/xeokit-sdk');
 
     // Debug: Create viewer with default config + user options

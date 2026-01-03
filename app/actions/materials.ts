@@ -908,3 +908,167 @@ export async function addProductToTask(
     return { success: false, error: 'Failed to add product to task' };
   }
 }
+
+// ============================================
+// P4.5 - SPATIAL MARKER INTEGRATION
+// ============================================
+
+/**
+ * Link a material assignment to a spatial marker
+ * @param assignmentId - Material assignment UUID
+ * @param markerId - Spatial marker UUID
+ */
+export async function linkMaterialToMarker(
+  assignmentId: string,
+  markerId: string
+) {
+  console.log('[linkMaterialToMarker] Linking material assignment:', assignmentId, 'to marker:', markerId);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Verify assignment exists and get its project
+    const { data: assignment, error: assignmentError } = await supabase
+      .from('material_assignments')
+      .select('id, project_id')
+      .eq('id', assignmentId)
+      .single();
+
+    if (assignmentError || !assignment) {
+      return { success: false, error: 'Material assignment not found' };
+    }
+
+    // Verify marker exists and belongs to same project
+    const { data: marker, error: markerError } = await supabase
+      .from('spatial_markers')
+      .select('id, project_id')
+      .eq('id', markerId)
+      .single();
+
+    if (markerError || !marker) {
+      return { success: false, error: 'Spatial marker not found' };
+    }
+
+    if (marker.project_id !== assignment.project_id) {
+      return { success: false, error: 'Material assignment and marker must belong to the same project' };
+    }
+
+    // Update assignment with spatial_marker_id
+    const { data: updatedAssignment, error: updateError } = await supabase
+      .from('material_assignments')
+      .update({ spatial_marker_id: markerId })
+      .eq('id', assignmentId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('[linkMaterialToMarker] Error:', updateError);
+      return { success: false, error: 'Failed to link material to marker' };
+    }
+
+    // Revalidate paths
+    revalidatePath('/app/materials');
+    revalidatePath(`/app/projects/${assignment.project_id}`);
+    revalidatePath(`/app/projects/${assignment.project_id}/spatial`);
+
+    console.log('[linkMaterialToMarker] Material linked successfully');
+    return { success: true, data: updatedAssignment };
+  } catch (error) {
+    console.error('[linkMaterialToMarker] Unexpected error:', error);
+    return { success: false, error: 'Failed to link material to marker' };
+  }
+}
+
+/**
+ * Get all material assignments linked to a spatial marker
+ * @param markerId - Spatial marker UUID
+ */
+export async function getMaterialsByMarker(markerId: string) {
+  console.log('[getMaterialsByMarker] Fetching materials for marker:', markerId);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Verify marker access by checking project access
+    const { data: marker, error: markerError } = await supabase
+      .from('spatial_markers')
+      .select('id, project_id')
+      .eq('id', markerId)
+      .single();
+
+    if (markerError || !marker) {
+      return { success: false, error: 'Spatial marker not found' };
+    }
+
+    // Get user's company to verify project access
+    const { data: companyUser } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (!companyUser) {
+      return { success: false, error: 'No active company found' };
+    }
+
+    // Verify project belongs to user's company
+    const { data: project } = await supabase
+      .from('projects')
+      .select('id, company_id')
+      .eq('id', marker.project_id)
+      .eq('company_id', companyUser.company_id)
+      .single();
+
+    if (!project) {
+      return { success: false, error: 'Project not found or access denied' };
+    }
+
+    // Fetch material assignments linked to this marker
+    const { data: assignments, error } = await supabase
+      .from('material_assignments')
+      .select(`
+        *,
+        material:materials (
+          id,
+          product_name,
+          product_description,
+          sku,
+          category,
+          unit_price,
+          unit_of_measure,
+          product_image_url,
+          stock_status,
+          home_depot_product_id
+        ),
+        task:tasks (
+          id,
+          title,
+          status
+        )
+      `)
+      .eq('spatial_marker_id', markerId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[getMaterialsByMarker] Error:', error);
+      return { success: false, error: 'Failed to fetch materials' };
+    }
+
+    console.log('[getMaterialsByMarker] Found', assignments?.length || 0, 'material assignments');
+    return { success: true, data: assignments || [] };
+  } catch (error) {
+    console.error('[getMaterialsByMarker] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch materials' };
+  }
+}

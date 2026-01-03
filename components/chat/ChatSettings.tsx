@@ -37,11 +37,7 @@ export function ChatSettings({
   initialName,
   initialDescription,
 }: ChatSettingsProps) {
-  // Debug: Only show for project rooms - MUST be before any hooks
-  if (roomType !== 'project') {
-    return null;
-  }
-
+  // Debug: ALL Hooks MUST be called before any conditional returns
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription || '');
   const [members, setMembers] = useState<ChatMember[]>([]);
@@ -50,16 +46,9 @@ export function ChatSettings({
   const [isExporting, setIsExporting] = useState(false);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
 
-  console.log('[ChatSettings] Rendering:', {
-    isOpen,
-    roomId,
-    roomType,
-    isGcAdminOrPm,
-  });
-
   // Debug: Fetch members and check user role
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || roomType !== 'project') return;
 
     async function fetchData() {
       console.log('[ChatSettings] Fetching members and user role...');
@@ -89,7 +78,7 @@ export function ChatSettings({
     }
 
     fetchData();
-  }, [isOpen, roomId]);
+  }, [isOpen, roomId, roomType]);
 
   // Debug: Reset form when modal closes
   useEffect(() => {
@@ -98,6 +87,18 @@ export function ChatSettings({
       setDescription(initialDescription || '');
     }
   }, [isOpen, initialName, initialDescription]);
+
+  // Debug: Only show for project rooms - AFTER all hooks
+  if (roomType !== 'project') {
+    return null;
+  }
+
+  console.log('[ChatSettings] Rendering:', {
+    isOpen,
+    roomId,
+    roomType,
+    isGcAdminOrPm,
+  });
 
   // Debug: Handle save
   const handleSave = async () => {

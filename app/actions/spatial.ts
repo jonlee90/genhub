@@ -628,3 +628,177 @@ export async function deleteMarkerContent(contentId: string) {
   console.log('[deleteMarkerContent] Content deleted:', contentId);
   return { success: true };
 }
+
+// ============================================================================
+// P4.1 - PHASE INTEGRATION
+// ============================================================================
+
+/**
+ * Get markers filtered by phase
+ */
+export async function getMarkersByPhase(projectId: string, phaseId: string) {
+  console.log('[getMarkersByPhase] Fetching markers for project:', projectId, 'phase:', phaseId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { error: userContext.error };
+
+  const { supabase, companyId } = userContext;
+
+  // Debug: Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { error: projectCheck.error };
+
+  // Debug: Fetch markers filtered by phase
+  const { data: markers, error } = await supabase
+    .from('spatial_markers')
+    .select('*')
+    .eq('project_id', projectId)
+    .eq('phase_id', phaseId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[getMarkersByPhase] Error:', error);
+    return { error: error.message };
+  }
+
+  return { success: true, data: markers };
+}
+
+// ============================================================================
+// P4.3 - PHOTO INTEGRATION (GPS-BASED MARKER DISCOVERY)
+// ============================================================================
+
+/**
+ * Calculate distance between two GPS coordinates using Haversine formula
+ * Returns distance in meters
+ */
+function calculateHaversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371e3; // Earth's radius in meters
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // Distance in meters
+}
+
+/**
+ * Find nearest marker to GPS coordinates (for photo geo-tagging)
+ * @param projectId - Project UUID
+ * @param latitude - GPS latitude
+ * @param longitude - GPS longitude
+ * @param radiusMeters - Search radius in meters (default 50m)
+ */
+export async function findNearestMarker(
+  projectId: string,
+  latitude: number,
+  longitude: number,
+  radiusMeters: number = 50
+) {
+  console.log('[findNearestMarker] Searching for markers near GPS:', latitude, longitude);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { error: userContext.error };
+
+  const { supabase, companyId } = userContext;
+
+  // Debug: Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { error: projectCheck.error };
+
+  // Debug: Get project coordinates to validate GPS is within project bounds
+  const { data: project } = await supabase
+    .from('projects')
+    .select('latitude, longitude')
+    .eq('id', projectId)
+    .single();
+
+  if (!project || !project.latitude || !project.longitude) {
+    return { error: 'Project does not have GPS coordinates set' };
+  }
+
+  // Debug: Fetch all markers for this project (with GPS metadata in content)
+  // Note: This is a simplified implementation. For production, consider adding
+  // GPS columns to spatial_markers or using PostGIS for spatial queries.
+  const { data: markers, error } = await supabase
+    .from('spatial_markers')
+    .select(`
+      id,
+      title,
+      description,
+      position_x,
+      position_y,
+      position_z,
+      type,
+      status,
+      created_at,
+      marker_content (
+        id,
+        type,
+        photo_exif
+      )
+    `)
+    .eq('project_id', projectId);
+
+  if (error) {
+    console.error('[findNearestMarker] Error:', error);
+    return { error: error.message };
+  }
+
+  // Debug: Calculate distances for markers that have GPS data in photo_exif
+  let nearestMarker: any = null;
+  let minDistance = Infinity;
+
+  for (const marker of markers || []) {
+    // Check if marker has any photo content with GPS data
+    const markerContent = marker.marker_content as any[];
+    if (!markerContent || markerContent.length === 0) continue;
+
+    for (const content of markerContent) {
+      if (content.type === 'photo' && content.photo_exif) {
+        const exif = content.photo_exif as any;
+        const markerLat = exif.GPSLatitude;
+        const markerLon = exif.GPSLongitude;
+
+        if (markerLat && markerLon) {
+          const distance = calculateHaversineDistance(
+            latitude,
+            longitude,
+            markerLat,
+            markerLon
+          );
+
+          if (distance <= radiusMeters && distance < minDistance) {
+            minDistance = distance;
+            nearestMarker = {
+              ...marker,
+              distance,
+            };
+          }
+        }
+      }
+    }
+  }
+
+  if (!nearestMarker) {
+    return {
+      success: true,
+      data: null,
+      message: `No markers found within ${radiusMeters}m radius`,
+    };
+  }
+
+  console.log('[findNearestMarker] Found marker:', nearestMarker.id, 'distance:', minDistance.toFixed(2), 'm');
+  return { success: true, data: nearestMarker };
+}

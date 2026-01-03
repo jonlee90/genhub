@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
+import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText, MapPin, Box } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import type { Database } from '@/types/database.types';
@@ -161,12 +161,15 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
 
   const hasMaterials = task.materialStats && task.materialStats.count > 0;
 
+  // Debug: P4.7 - Check if task has 3D location
+  const has3DLocation = !!task.spatial_marker_id;
+
   // Debug: Get task type configuration with fallback to 'work'
   const taskTypeConfig = TASK_TYPE_CONFIG[task.task_type as keyof typeof TASK_TYPE_CONFIG] || TASK_TYPE_CONFIG.work;
   const TaskTypeIcon = taskTypeConfig.icon;
 
   // Debug: Log task type for visibility
-  console.log('[TaskCard] Task type for', task.title, ':', task.task_type, '- Config:', taskTypeConfig.label);
+  console.log('[TaskCard] Task type for', task.title, ':', task.task_type, '- Config:', taskTypeConfig.label, 'Has 3D location:', has3DLocation);
 
   return (
     <motion.div
@@ -348,6 +351,32 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
                       {formatCurrency(task.materialStats!.totalCost)}
                     </span>
                   </div>
+                )}
+
+                {/* P4.7 - 3D Location Badge */}
+                {has3DLocation && task.project?.id && (
+                  <a
+                    href={`/app/projects/${task.project.id}/spatial?marker=${task.spatial_marker_id}`}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent task card click
+                      console.log('[TaskCard] Navigating to 3D view for marker:', task.spatial_marker_id);
+                    }}
+                    className={cn(
+                      'flex items-center gap-1.5 px-2 py-1',
+                      'bg-gradient-to-r from-construction-blue/10 to-construction-blue/5',
+                      'border border-construction-blue/30',
+                      'rounded-md',
+                      'hover:bg-construction-blue/20 hover:border-construction-blue/50',
+                      'transition-all duration-200',
+                      'group/location'
+                    )}
+                    title="View in 3D"
+                  >
+                    <Box className="h-3 w-3 text-construction-blue group-hover/location:scale-110 transition-transform" />
+                    <span className="hidden sm:inline text-[11px] font-black text-construction-blue tracking-tight">
+                      3D
+                    </span>
+                  </a>
                 )}
               </div>
 

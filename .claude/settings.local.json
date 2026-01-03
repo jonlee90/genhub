@@ -85,7 +85,8 @@
       "Bash(npm install:*)",
       "Bash(npm run test:ifc:*)",
       "Bash(npx next build --no-lint)",
-      "Skill(kc:build)"
+      "Skill(kc:build)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

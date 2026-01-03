@@ -42,3 +42,14 @@ Check `.claude/tasks/context_session_x.md` before/after work
 - `docs/law/SYSTEM.md` - Architecture
 - `docs/law/DB_SCHEMA.md` - Database
 - `docs/law/UI_RULES.md` - Design system
+
+## Token Optimization (MANDATORY)
+
+**CRITICAL:** Follow `.claude/rules/token_optimization.md` for ALL operations.
+
+**Quick Rules:**
+1. Use Grep instead of Read for searches (90% savings)
+2. Use `head_limit` in Grep (90% savings)
+3. Use offset/limit in Read for large files (90% savings)
+4. Filter build output with grep/tail (90% savings)
+5. Concise documentation - bullet points only (70% savings)
