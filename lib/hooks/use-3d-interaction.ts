@@ -135,6 +135,39 @@ export function use3DInteraction(
     []
   );
 
+  // Debug: Get canvas element safely
+  const getCanvasElement = useCallback((): HTMLCanvasElement | null => {
+    try {
+      const viewer = viewerRef.current;
+      if (!viewer) {
+        console.warn('[use3DInteraction] Viewer reference is null');
+        return null;
+      }
+      
+      // Safely navigate the chain
+      if (!viewer.scene) {
+        console.warn('[use3DInteraction] Viewer.scene is null');
+        return null;
+      }
+      
+      if (!viewer.scene.canvas) {
+        console.warn('[use3DInteraction] Viewer.scene.canvas is null');
+        return null;
+      }
+      
+      const canvas = viewer.scene.canvas.canvas;
+      if (!canvas) {
+        console.warn('[use3DInteraction] Canvas element is null');
+        return null;
+      }
+      
+      return canvas;
+    } catch (error) {
+      console.error('[use3DInteraction] Error accessing canvas:', error);
+      return null;
+    }
+  }, []);
+
   // Debug: Handle click on canvas
   const handleClick = useCallback(
     (event: MouseEvent | TouchEvent) => {
@@ -149,7 +182,7 @@ export function use3DInteraction(
       lastClickTimeRef.current = now;
 
       // Debug: Get canvas position
-      const canvas = viewerRef.current?.scene.canvas.canvas;
+      const canvas = getCanvasElement();
       if (!canvas) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -219,12 +252,12 @@ export function use3DInteraction(
         }
       }
     },
-    [pickObject, highlightElement, onElementClick, onSurfaceClick]
+    [pickObject, highlightElement, onElementClick, onSurfaceClick, getCanvasElement]
   );
 
   // Debug: Handle mouse move for hover (desktop only)
   const handleMouseMove = useCallback((event: MouseEvent) => {
-    const canvas = viewerRef.current?.scene.canvas.canvas;
+    const canvas = getCanvasElement();
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -246,7 +279,7 @@ export function use3DInteraction(
     } else {
       setHoveredElement(null);
     }
-  }, [pickObject]);
+  }, [pickObject, getCanvasElement]);
 
   // Debug: Handle touch start (for touch-hold detection)
   const handleTouchStart = useCallback((event: TouchEvent) => {
@@ -259,7 +292,7 @@ export function use3DInteraction(
       console.log('[use3DInteraction] Touch hold detected');
 
       // Debug: Show element info (similar to hover on desktop)
-      const canvas = viewerRef.current?.scene.canvas.canvas;
+      const canvas = getCanvasElement();
       if (!canvas || event.touches.length === 0) return;
 
       const rect = canvas.getBoundingClientRect();
@@ -287,7 +320,7 @@ export function use3DInteraction(
         }, 2000);
       }
     }, touchHoldDuration);
-  }, [pickObject, touchHoldDuration]);
+  }, [pickObject, touchHoldDuration, getCanvasElement]);
 
   // Debug: Handle touch end (clear touch-hold)
   const handleTouchEnd = useCallback(() => {
@@ -309,6 +342,12 @@ export function use3DInteraction(
   const setupInteraction = useCallback(
     (viewer: Viewer) => {
       console.log('[use3DInteraction] Setting up interaction listeners');
+
+      // Guard: Validate viewer and canvas chain
+      if (!viewer || !viewer.scene || !viewer.scene.canvas || !viewer.scene.canvas.canvas) {
+        console.error('[use3DInteraction] Invalid viewer or canvas, cannot setup interaction');
+        return;
+      }
 
       viewerRef.current = viewer;
       const canvas = viewer.scene.canvas.canvas;
@@ -337,15 +376,32 @@ export function use3DInteraction(
   const clearInteraction = useCallback(() => {
     console.log('[use3DInteraction] Clearing interaction listeners');
 
-    const canvas = viewerRef.current?.scene.canvas.canvas;
-    if (!canvas) return;
+    // Guard: Early return if no viewer
+    if (!viewerRef.current) {
+      console.log('[use3DInteraction] No viewer reference, skipping cleanup');
+      return;
+    }
 
-    canvas.removeEventListener('click', handleClick as EventListener);
-    canvas.removeEventListener('touchend', handleClick as EventListener);
-    canvas.removeEventListener('mousemove', handleMouseMove);
-    canvas.removeEventListener('touchstart', handleTouchStart);
-    canvas.removeEventListener('touchend', handleTouchEnd);
+    try {
+      // Safely get canvas element
+      const canvas = getCanvasElement();
+      
+      if (canvas) {
+        // Remove all event listeners
+        canvas.removeEventListener('click', handleClick as EventListener);
+        canvas.removeEventListener('touchend', handleClick as EventListener);
+        canvas.removeEventListener('mousemove', handleMouseMove);
+        canvas.removeEventListener('touchstart', handleTouchStart);
+        canvas.removeEventListener('touchend', handleTouchEnd);
+        console.log('[use3DInteraction] Event listeners removed from canvas');
+      } else {
+        console.warn('[use3DInteraction] Canvas element not found during cleanup');
+      }
+    } catch (error) {
+      console.error('[use3DInteraction] Error during canvas cleanup:', error);
+    }
 
+    // Clear timeouts
     clearHighlightTimeout();
 
     if (touchHoldTimeoutRef.current) {
@@ -353,10 +409,11 @@ export function use3DInteraction(
       touchHoldTimeoutRef.current = null;
     }
 
+    // Clear viewer reference
     viewerRef.current = null;
 
     console.log('[use3DInteraction] Interaction listeners cleared');
-  }, [handleClick, handleMouseMove, handleTouchStart, handleTouchEnd, clearHighlightTimeout]);
+  }, [handleClick, handleMouseMove, handleTouchStart, handleTouchEnd, clearHighlightTimeout, getCanvasElement]);
 
   return {
     hoveredElement,
