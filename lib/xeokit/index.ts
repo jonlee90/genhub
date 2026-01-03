@@ -63,15 +63,17 @@ export function initXeokit(
     }
 
     // Debug: Add WebGL context lost handler
-    const canvas = viewer.scene.canvas.canvas;
-    canvas.addEventListener('webglcontextlost', (event: Event) => {
-      console.error('[xeokit] WebGL context lost', event);
-      event.preventDefault();
-    });
+    if (viewer.scene?.canvas?.canvas) {
+      const canvas = viewer.scene.canvas.canvas;
+      canvas.addEventListener('webglcontextlost', (event: Event) => {
+        console.error('[xeokit] WebGL context lost', event);
+        event.preventDefault();
+      });
 
-    canvas.addEventListener('webglcontextrestored', () => {
-      console.log('[xeokit] WebGL context restored');
-    });
+      canvas.addEventListener('webglcontextrestored', () => {
+        console.log('[xeokit] WebGL context restored');
+      });
+    }
 
     console.log('[xeokit] Viewer initialized successfully');
     return viewer;
@@ -126,9 +128,14 @@ export function destroyXeokit(viewer: Viewer | null): void {
     }
 
     // Debug: Destroy viewer (releases WebGL context)
-    if (typeof viewer.destroy === 'function') {
-      viewer.destroy();
-      console.log('[xeokit] Viewer destroyed successfully');
+    if (viewer && typeof viewer.destroy === 'function') {
+      try {
+        viewer.destroy();
+        console.log('[xeokit] Viewer destroyed successfully');
+      } catch (destroyError) {
+        // Viewer.destroy() can throw internal errors if scene is partially destroyed
+        console.warn('[xeokit] Error during viewer.destroy() - continuing cleanup', destroyError);
+      }
     }
   } catch (error) {
     console.error('[xeokit] Error during cleanup', error);

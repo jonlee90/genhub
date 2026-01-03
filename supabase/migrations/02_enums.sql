@@ -58,7 +58,8 @@ CREATE TYPE public.trade_type AS ENUM (
 -- Project type enum
 CREATE TYPE public.project_type AS ENUM (
   'residential',
-  'restaurant_cafe',
+  'restaurant',
+  'cafe',
   'commercial_office',
   'industrial'
 );

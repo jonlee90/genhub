@@ -167,7 +167,7 @@ CREATE INDEX idx_feature_name_company ON public.feature_name(company_id);
 CREATE TRIGGER update_feature_name_updated_at
   BEFORE UPDATE ON public.feature_name
   FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at();
+  EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Table comment
 COMMENT ON TABLE public.feature_name IS 'Feature description here';

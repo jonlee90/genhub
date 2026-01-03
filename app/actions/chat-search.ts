@@ -112,17 +112,20 @@ async function getUserContext() {
   const supabase = await createClient();
 
   // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
+  const companyUserResult = await supabase
     .from('company_users')
     .select('company_id, role, status')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
     .single();
 
-  if (companyError || !companyUser) {
-    console.error('[getUserContext] No active company found:', companyError);
+  if (companyUserResult.error || !companyUserResult.data) {
+    console.error('[getUserContext] No active company found:', companyUserResult.error);
     return { error: 'No active company found for user' };
   }
+
+  type CompanyUserData = { company_id: string; role: string; status: string };
+  const companyUser = companyUserResult.data as unknown as CompanyUserData;
 
   console.log('[getUserContext] User context loaded:', {
     userId: session.user.id,
@@ -191,7 +194,7 @@ export async function searchProjects(query: string) {
 
   return {
     success: true,
-    results: (projects || []) as ProjectSearchResult[],
+    results: (projects || []) as unknown as ProjectSearchResult[],
   };
 }
 
@@ -260,7 +263,10 @@ export async function searchTasks(query: string, projectId?: string | null) {
   console.log('[searchTasks] Found', tasks?.length || 0, 'tasks');
 
   // Remove the joined projects field from results
-  const results = (tasks || []).map(({ projects, ...task }) => task) as TaskSearchResult[];
+  const results = (tasks || []).map((item: any) => {
+    const { projects, ...task } = item;
+    return task;
+  }) as unknown as TaskSearchResult[];
 
   return {
     success: true,

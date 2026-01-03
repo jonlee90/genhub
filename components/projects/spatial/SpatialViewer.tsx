@@ -3,7 +3,7 @@
 // Debug: Complete spatial 3D viewer integration example
 // Combines all Phase 2 components: Canvas, Loader, Camera, LOD, Interaction
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { ThreeDViewerCanvas } from './3DViewerCanvas';
 import { ModelLoader } from './ModelLoader';
@@ -12,14 +12,16 @@ import { LODManager } from './LODManager';
 import { InteractionLayer } from './InteractionLayer';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';
 import { cn } from '@/lib/utils';
+import { createDefaultModel } from '@/lib/xeokit/default-models';
 
 // Debug: Component props
 export interface SpatialViewerProps {
   projectId: string;
-  modelHighURL: string;
+  modelHighURL?: string | null;
   modelMediumURL?: string;
   modelLowURL?: string;
   thumbnailURL?: string;
+  projectType?: string; // For loading default models when no user model exists
   onMarkerPlacement?: (position: { x: number; y: number; z: number }, normal: { x: number; y: number; z: number }) => void;
   className?: string;
 }
@@ -39,6 +41,7 @@ export function SpatialViewer({
   modelMediumURL,
   modelLowURL,
   thumbnailURL,
+  projectType,
   onMarkerPlacement,
   className,
 }: SpatialViewerProps) {
@@ -47,18 +50,45 @@ export function SpatialViewer({
     modelHighURL,
     modelMediumURL,
     modelLowURL,
+    projectType,
   });
 
   // Debug: Viewer state
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [isModelReady, setIsModelReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [hasDefaultModel, setHasDefaultModel] = useState(false);
+
+  // Determine if we should use default model
+  // Check if the modelHighURL is a placeholder (starts with 'defaults/')
+  const isPlaceholderURL = modelHighURL?.startsWith('defaults/') || modelHighURL?.startsWith('/defaults/');
+  const hasValidProjectType = ['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial'].includes(projectType || '');
+  const shouldUseDefaultModel = (!modelHighURL || isPlaceholderURL) && hasValidProjectType;
 
   // Debug: Handle viewer ready
   const handleViewerReady = useCallback((viewerInstance: Viewer) => {
     console.log('[SpatialViewer] Viewer ready', viewerInstance);
     setViewer(viewerInstance);
   }, []);
+
+  // Debug: Load default model when viewer is ready and no user model exists
+  useEffect(() => {
+    if (viewer && shouldUseDefaultModel && !hasDefaultModel) {
+      console.log(`[SpatialViewer] Loading default ${projectType} model`);
+
+      // Use async IIFE to handle async createDefaultModel
+      (async () => {
+        try {
+          await createDefaultModel(viewer, projectType!);
+          setIsModelReady(true);
+          setHasDefaultModel(true);
+        } catch (err) {
+          console.error('[SpatialViewer] Failed to load default model:', err);
+          setError(err as Error);
+        }
+      })();
+    }
+  }, [viewer, shouldUseDefaultModel, projectType, hasDefaultModel]);
 
   // Debug: Handle model load error
   const handleModelError = useCallback((err: Error) => {
@@ -102,14 +132,14 @@ export function SpatialViewer({
       {/* Debug: 3D Viewer Canvas (base layer) */}
       <ThreeDViewerCanvas
         projectId={projectId}
-        modelUrl={modelHighURL}
+        modelUrl={shouldUseDefaultModel ? undefined : modelHighURL}
         onReady={handleViewerReady}
         onError={handleModelError}
         className="absolute inset-0"
       />
 
-      {/* Debug: Model Loader (overlay during loading) */}
-      {!isModelReady && (
+      {/* Debug: Model Loader (overlay during loading) - only for user models */}
+      {!isModelReady && !shouldUseDefaultModel && modelHighURL && (
         <div className="absolute inset-0 z-30">
           <ModelLoader
             modelUrl={modelHighURL}
@@ -117,6 +147,18 @@ export function SpatialViewer({
             onLoadSuccess={handleModelSuccess}
             onLoadError={handleModelError}
           />
+        </div>
+      )}
+
+      {/* Debug: Default model indicator */}
+      {shouldUseDefaultModel && isModelReady && (
+        <div className="absolute top-4 left-4 z-20 bg-blue-500/90 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Default Residential Model</span>
+          </div>
         </div>
       )}
 

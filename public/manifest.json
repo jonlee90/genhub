@@ -29,5 +29,42 @@
   ],
   "lang": "en-US",
   "dir": "ltr",
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "features": [
+    "3d-model-viewer",
+    "offline-support",
+    "spatial-markers",
+    "background-sync"
+  ],
+  "permissions": [
+    "storage",
+    "background-sync"
+  ],
+  "related_applications": [],
+  "shortcuts": [
+    {
+      "name": "View Projects",
+      "short_name": "Projects",
+      "description": "View all construction projects",
+      "url": "/app/projects",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "3D Viewer",
+      "short_name": "3D Viewer",
+      "description": "View 3D models with spatial markers",
+      "url": "/app/projects?tab=3d",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
 }

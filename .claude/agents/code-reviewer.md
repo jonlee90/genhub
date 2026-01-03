@@ -1,8 +1,8 @@
 ---
 name: code-reviewer
 description: Fast code review, debugging, and testing. Reviews code quality, security, and performance. Run after implementations or when debugging issues.
-model: sonnet
 tools: Read, Glob, Grep, Bash
+model: haiku
 color: red
 ---
 

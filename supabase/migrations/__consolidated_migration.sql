@@ -163,7 +163,8 @@ CREATE TYPE public.trade_type AS ENUM (
 -- Project type enum
 CREATE TYPE public.project_type AS ENUM (
   'residential',
-  'restaurant_cafe',
+  'restaurant',
+  'cafe',
   'commercial_office',
   'industrial'
 );
@@ -1386,6 +1387,6 @@ CREATE TRIGGER set_completed_at_on_task_complete
 -- - 12 Application tables (companies, user_profiles, company_users, subcontractors, projects, project_phases, project_team, tasks, task_dependencies, task_activity, notifications, attachments)
 -- - 12 Tables with RLS enabled
 -- - 48 RLS Policies
--- - 5 Trigger functions (update_updated_at, create_default_phases, update_phase_completion, update_project_completion, set_task_completed_at)
+-- - 5 Trigger functions (update_updated_at_column, create_default_phases, update_phase_completion, update_project_completion, set_task_completed_at)
 -- - 13 Triggers
 -- ============================================

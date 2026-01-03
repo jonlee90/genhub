@@ -72,16 +72,7 @@ export async function validateInvitationToken(token: string): Promise<ValidateTo
     // Find team_invitations entry with this token
     const { data: invitation, error: invitationError } = await supabase
       .from('team_invitations')
-      .select(`
-        id,
-        company_id,
-        email,
-        name,
-        role,
-        invitation_token,
-        expires_at,
-        used_at
-      `)
+      .select('id, company_id, email, name, role, invitation_token, expires_at, used_at')
       .eq('invitation_token', token)
       .maybeSingle();
 
@@ -90,8 +81,11 @@ export async function validateInvitationToken(token: string): Promise<ValidateTo
       return { success: false, error: 'Invalid invitation token' };
     }
 
+    // Cast to any to avoid TypeScript inference issues with multi-line select
+    const inv = invitation as any;
+
     // Check if token has expired
-    const expiresAt = new Date(invitation.expires_at);
+    const expiresAt = new Date(inv.expires_at);
     const now = new Date();
 
     if (now > expiresAt) {
@@ -102,7 +96,7 @@ export async function validateInvitationToken(token: string): Promise<ValidateTo
     }
 
     // Check if token has already been used
-    if (invitation.used_at !== null) {
+    if (inv.used_at !== null) {
       return {
         success: false,
         error: 'This invitation has already been used. If you need access, please contact your administrator.'
@@ -113,7 +107,7 @@ export async function validateInvitationToken(token: string): Promise<ValidateTo
     const { data: company, error: companyError } = await supabase
       .from('companies')
       .select('id, name')
-      .eq('id', invitation.company_id)
+      .eq('id', inv.company_id)
       .single();
 
     if (companyError || !company) {
@@ -121,16 +115,19 @@ export async function validateInvitationToken(token: string): Promise<ValidateTo
       return { success: false, error: 'Company not found' };
     }
 
+    // Cast to any to avoid TypeScript inference issues
+    const comp = company as any;
+
     // Return invitation data
     const invitationData: InvitationData = {
-      email: invitation.email,
-      name: invitation.name,
-      role: invitation.role,
-      companyName: company.name,
-      companyId: company.id,
-      invitationId: invitation.id,
-      expiresAt: invitation.expires_at,
-      usedAt: invitation.used_at,
+      email: inv.email,
+      name: inv.name,
+      role: inv.role,
+      companyName: comp.name,
+      companyId: comp.id,
+      invitationId: inv.id,
+      expiresAt: inv.expires_at,
+      usedAt: inv.used_at,
     };
 
     return { success: true, invitation: invitationData };
@@ -263,7 +260,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
     console.log('[ACCEPT_INVITE] User profile created/updated successfully:', profileData);
 
     if (existingMember) {
-      if (existingMember.status === 'active') {
+      const member = existingMember as any;
+      if (member.status === 'active') {
         return { success: false, error: 'You are already an active member of this company.' };
       }
 
@@ -276,7 +274,7 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
           activated_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
-        .eq('id', existingMember.id);
+        .eq('id', member.id);
 
       if (reactivateError) {
         console.error('Error reactivating member:', reactivateError);

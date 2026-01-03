@@ -198,7 +198,7 @@ CREATE INDEX idx_feature_name_user_id ON public.feature_name(user_id);
 CREATE TRIGGER update_feature_name_updated_at
   BEFORE UPDATE ON public.feature_name
   FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at();
+  EXECUTE FUNCTION public.update_updated_at_column();
 ```
 
 ### Applying via MCP

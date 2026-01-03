@@ -26,7 +26,7 @@ export function CreateProjectModal({
   const router = useRouter();
   const [formKey, setFormKey] = useState(0);
 
-  console.log('[CreateProjectModal] Rendering:', { isOpen });
+  console.log('[CreateProjectModal] Rendering:', { isOpen, formKey });
 
   // Reset form when modal opens
   useEffect(() => {
@@ -56,8 +56,7 @@ export function CreateProjectModal({
     onSuccess?.();
   };
 
-  if (!isOpen) return null;
-
+  // Always render the form, let BaseModal handle visibility
   return (
     <CreateProjectForm
       key={formKey}

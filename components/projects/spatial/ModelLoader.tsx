@@ -3,7 +3,7 @@
 // Debug: Model loading UI with progress, errors, and retry
 // P2.5 - ModelLoader component
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, AlertCircle, RotateCw, X, HardHat } from 'lucide-react';
 import { useModelLoading } from '@/lib/hooks/use-model-loading';
@@ -38,18 +38,41 @@ export function ModelLoader({
 
   // Debug: Use loading hook
   const { state, progress, error, retryCount, loadModel, retry, cancel } = useModelLoading();
+  const isMountedRef = useRef(true);
+
+  // FIX: Track mount/unmount and cleanup properly
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      console.log('[ModelLoader] Component unmounting');
+      isMountedRef.current = false;
+      // Cancel any in-flight loads
+      if (state === 'downloading' || state === 'parsing') {
+        cancel();
+      }
+    };
+  }, [state, cancel]);
 
   // Debug: Auto-load when URL changes
   useEffect(() => {
-    if (modelUrl) {
+    if (modelUrl && isMountedRef.current) {
       console.log('[ModelLoader] Auto-loading model', modelUrl);
       loadModel(modelUrl, onLoadSuccess);
     }
-  }, [modelUrl]);
+
+    // FIX: Return cleanup to cancel if URL changes while loading
+    return () => {
+      if (state === 'downloading' || state === 'parsing') {
+        console.log('[ModelLoader] URL changed during load, cancelling');
+        cancel();
+      }
+    };
+  }, [modelUrl]); // Only depend on modelUrl, not loadModel/cancel to prevent infinite loops
 
   // Debug: Notify error callback
   useEffect(() => {
-    if (error && onLoadError) {
+    if (error && onLoadError && isMountedRef.current) {
       onLoadError(error);
     }
   }, [error, onLoadError]);

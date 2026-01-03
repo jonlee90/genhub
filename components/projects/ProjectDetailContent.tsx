@@ -62,6 +62,7 @@ interface ProjectDetailContentProps {
   phaseTaskStats: PhaseStats[];
   taskDependencies?: any[];
   expenseStats?: ExpenseStats;
+  activeModel?: any;
 }
 
 const STATUS_CONFIG = {
@@ -94,6 +95,7 @@ export function ProjectDetailContent({
   phaseTaskStats,
   taskDependencies = [],
   expenseStats,
+  activeModel,
 }: ProjectDetailContentProps) {
   console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats);
 
@@ -474,6 +476,7 @@ export function ProjectDetailContent({
               teamMembers={teamMembers}
               phaseTaskStats={phaseTaskStats}
               expenseStats={expenseStats}
+              activeModel={activeModel}
             />
           </motion.div>
         )}

@@ -4,6 +4,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
+import { queueIFCConversion, processIFCFile } from '@/lib/ifc-converter';
 import type {
   Project3DModel,
   Project3DModelInsert,
@@ -66,6 +67,93 @@ async function verifyProjectAccess(
 // ============================================================================
 // P1.5 - 3D MODEL CRUD OPERATIONS
 // ============================================================================
+
+/**
+ * Upload IFC file to Supabase Storage and create model record
+ */
+export async function uploadIFCFile(projectId: string, formData: FormData) {
+  console.log('[uploadIFCFile] Starting upload for project:', projectId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { error: userContext.error };
+
+  const { supabase, companyId } = userContext;
+
+  // Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { error: projectCheck.error };
+
+  const file = formData.get('file') as File;
+  if (!file) {
+    return { error: 'No file provided' };
+  }
+
+  // Validate file
+  if (!file.name.toLowerCase().endsWith('.ifc')) {
+    return { error: 'Only .IFC files are supported' };
+  }
+
+  const maxSize = 500 * 1024 * 1024; // 500MB
+  if (file.size > maxSize) {
+    return { error: 'File size must be less than 500MB' };
+  }
+
+  try {
+    // Generate unique file path
+    const timestamp = Date.now();
+    const fileName = `${projectId}/${timestamp}_${file.name}`;
+
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('ifc-models')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[uploadIFCFile] Upload error:', uploadError);
+      return { error: `Upload failed: ${uploadError.message}` };
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('ifc-models')
+      .getPublicUrl(fileName);
+
+    // Create model record
+    const modelResult = await createModelRecord(projectId, {
+      fileName: file.name,
+      originalFileUrl: urlData.publicUrl,
+      fileSizeBytes: file.size,
+    });
+
+    if ('error' in modelResult) {
+      // Cleanup uploaded file on error
+      await supabase.storage.from('ifc-models').remove([fileName]);
+      return { error: modelResult.error };
+    }
+
+    // Wait for IFC to XKT conversion to complete
+    if (modelResult.data?.id) {
+      console.log('[uploadIFCFile] Starting IFC to XKT conversion:', modelResult.data.id);
+      try {
+        await processIFCFile(modelResult.data.id);
+        console.log('[uploadIFCFile] Conversion completed successfully');
+      } catch (conversionError) {
+        console.error('[uploadIFCFile] Conversion failed:', conversionError);
+        return { error: 'Model uploaded but conversion failed. Please try again.' };
+      }
+    }
+
+    console.log('[uploadIFCFile] Upload complete:', modelResult.data?.id);
+    revalidatePath(`/app/projects/${projectId}`);
+    return { success: true, data: modelResult.data };
+  } catch (err: any) {
+    console.error('[uploadIFCFile] Unexpected error:', err);
+    return { error: `Upload failed: ${err.message}` };
+  }
+}
 
 /**
  * Create a new 3D model record with processing_status='pending'
@@ -305,6 +393,7 @@ export async function setActiveModelVersion(projectId: string, modelId: string) 
 
 /**
  * Delete a model version
+ * Removes the model from database and cleans up storage files
  */
 export async function deleteModelVersion(modelId: string) {
   console.log('[deleteModelVersion] Deleting model:', modelId);
@@ -317,7 +406,7 @@ export async function deleteModelVersion(modelId: string) {
   // Debug: Get model to verify and for revalidation
   const { data: model } = await supabase
     .from('projects_3d_models')
-    .select('id, project_id, is_active')
+    .select('id, project_id, is_active, original_file_url, xkt_file_url, lod_medium_url, lod_low_url, thumbnail_url')
     .eq('id', modelId)
     .single();
 
@@ -329,7 +418,7 @@ export async function deleteModelVersion(modelId: string) {
     return { error: 'Cannot delete active model. Set another version as active first.' };
   }
 
-  // Debug: Delete model (cascades to model_elements)
+  // Debug: Delete model (cascades to model_elements and spatial_markers)
   const { error } = await supabase
     .from('projects_3d_models')
     .delete()
@@ -340,9 +429,99 @@ export async function deleteModelVersion(modelId: string) {
     return { error: error.message };
   }
 
+  // Cleanup storage files (best effort - don't fail if cleanup fails)
+  try {
+    const filesToDelete: string[] = [];
+
+    // Extract file paths from URLs
+    if (model.original_file_url) {
+      const match = model.original_file_url.match(/ifc-models\/(.+)$/);
+      if (match) filesToDelete.push(match[1]);
+    }
+    if (model.xkt_file_url) {
+      const match = model.xkt_file_url.match(/ifc-models\/(.+)$/);
+      if (match) filesToDelete.push(match[1]);
+    }
+    if (model.lod_medium_url) {
+      const match = model.lod_medium_url.match(/ifc-models\/(.+)$/);
+      if (match) filesToDelete.push(match[1]);
+    }
+    if (model.lod_low_url) {
+      const match = model.lod_low_url.match(/ifc-models\/(.+)$/);
+      if (match) filesToDelete.push(match[1]);
+    }
+    if (model.thumbnail_url) {
+      const match = model.thumbnail_url.match(/ifc-models\/(.+)$/);
+      if (match) filesToDelete.push(match[1]);
+    }
+
+    if (filesToDelete.length > 0) {
+      console.log('[deleteModelVersion] Cleaning up files:', filesToDelete);
+      await supabase.storage.from('ifc-models').remove(filesToDelete);
+    }
+  } catch (cleanupError) {
+    console.error('[deleteModelVersion] Storage cleanup error (non-fatal):', cleanupError);
+  }
+
   console.log('[deleteModelVersion] Model deleted:', modelId);
-  revalidatePath(`/app/projects/${model.project_id}/spatial`);
+  revalidatePath(`/app/projects/${model.project_id}`);
   return { success: true };
+}
+
+/**
+ * Replace the active model with a new file upload
+ * Deactivates current active model and uploads new one
+ */
+export async function replaceActiveModel(projectId: string, file: File) {
+  console.log('[replaceActiveModel] Replacing active model for project:', projectId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { error: userContext.error };
+
+  const { supabase, companyId } = userContext;
+
+  // Debug: Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { error: projectCheck.error };
+
+  // Debug: Get current active model
+  const { data: currentActiveModel } = await supabase
+    .from('projects_3d_models')
+    .select('id, version')
+    .eq('project_id', projectId)
+    .eq('is_active', true)
+    .single();
+
+  // Debug: Deactivate current active model if exists
+  if (currentActiveModel) {
+    const { error: deactivateError } = await supabase
+      .from('projects_3d_models')
+      .update({ is_active: false })
+      .eq('id', currentActiveModel.id);
+
+    if (deactivateError) {
+      console.error('[replaceActiveModel] Error deactivating old model:', deactivateError);
+      return { error: 'Failed to deactivate current model' };
+    }
+  }
+
+  // Debug: Upload new file using existing upload logic
+  const uploadResult = await uploadIFCModel(projectId, file);
+
+  if ('error' in uploadResult) {
+    // Re-activate old model on failure
+    if (currentActiveModel) {
+      await supabase
+        .from('projects_3d_models')
+        .update({ is_active: true })
+        .eq('id', currentActiveModel.id);
+    }
+    return { error: uploadResult.error };
+  }
+
+  console.log('[replaceActiveModel] Model replaced successfully');
+  revalidatePath(`/app/projects/${projectId}`);
+  return { success: true, modelId: uploadResult.modelId };
 }
 
 // ============================================================================
@@ -351,6 +530,7 @@ export async function deleteModelVersion(modelId: string) {
 
 /**
  * Create a spatial marker with 3D coordinates
+ * Security: Verifies project access before creation
  */
 export async function createMarker(data: SpatialMarkerInsert) {
   console.log('[createMarker] Creating marker for project:', data.project_id);
@@ -360,11 +540,14 @@ export async function createMarker(data: SpatialMarkerInsert) {
 
   const { supabase, companyId, userId } = userContext;
 
-  // Debug: Verify project access
+  // Security: Verify project access
   const projectCheck = await verifyProjectAccess(supabase, data.project_id, companyId);
   if ('error' in projectCheck) return { error: projectCheck.error };
 
-  // Debug: Insert marker
+  // Security: Validate file upload quotas (if has attachments)
+  // TODO: Implement quota check when storage is configured
+
+  // Insert marker
   const { data: marker, error } = await supabase
     .from('spatial_markers')
     .insert({
@@ -453,6 +636,7 @@ export async function getMarkerById(markerId: string) {
 
 /**
  * Update a spatial marker
+ * Security: RLS enforces creator/GC admin check
  */
 export async function updateMarker(markerId: string, data: SpatialMarkerUpdate) {
   console.log('[updateMarker] Updating marker:', markerId);
@@ -460,9 +644,30 @@ export async function updateMarker(markerId: string, data: SpatialMarkerUpdate) 
   const userContext = await getUserContext();
   if ('error' in userContext) return { error: userContext.error };
 
-  const { supabase } = userContext;
+  const { supabase, userId, role } = userContext;
 
-  // Debug: Update marker
+  // Security: Check marker exists and user has permission
+  const { data: existingMarker } = await supabase
+    .from('spatial_markers')
+    .select('id, created_by, project_id')
+    .eq('id', markerId)
+    .single();
+
+  if (!existingMarker) {
+    return { error: 'Marker not found or no permission to update' };
+  }
+
+  // Additional check: Only creator or GC/PM can update
+  const canUpdate =
+    existingMarker.created_by === userId ||
+    role === 'gc_admin' ||
+    role === 'pm';
+
+  if (!canUpdate) {
+    return { error: 'Permission denied: Only marker creator or GC/PM can update' };
+  }
+
+  // Update marker
   const { data: marker, error } = await supabase
     .from('spatial_markers')
     .update(data)
@@ -482,6 +687,7 @@ export async function updateMarker(markerId: string, data: SpatialMarkerUpdate) 
 
 /**
  * Delete a spatial marker (cascades to content)
+ * Security: RLS enforces creator/GC admin check
  */
 export async function deleteMarker(markerId: string) {
   console.log('[deleteMarker] Deleting marker:', markerId);
@@ -489,12 +695,12 @@ export async function deleteMarker(markerId: string) {
   const userContext = await getUserContext();
   if ('error' in userContext) return { error: userContext.error };
 
-  const { supabase } = userContext;
+  const { supabase, userId, role } = userContext;
 
-  // Debug: Get marker for revalidation
+  // Security: Get marker and check permission
   const { data: marker } = await supabase
     .from('spatial_markers')
-    .select('id, project_id')
+    .select('id, project_id, created_by')
     .eq('id', markerId)
     .single();
 
@@ -502,7 +708,16 @@ export async function deleteMarker(markerId: string) {
     return { error: 'Marker not found' };
   }
 
-  // Debug: Delete marker (cascades to marker_content)
+  // Additional check: Only creator or GC admin can delete
+  const canDelete =
+    marker.created_by === userId ||
+    role === 'gc_admin';
+
+  if (!canDelete) {
+    return { error: 'Permission denied: Only marker creator or GC admin can delete' };
+  }
+
+  // Delete marker (cascades to marker_content)
   const { error } = await supabase
     .from('spatial_markers')
     .delete()

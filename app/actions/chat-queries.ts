@@ -44,18 +44,18 @@ async function getUserContext() {
     return { error: 'No active company found for user' };
   }
 
-  const userName = profileResult.data?.name || session.user.name || 'User';
+  const userName = (profileResult.data as any)?.name || session.user.name || 'User';
 
   console.log('[chat-queries] User context loaded:', {
     userId: session.user.id,
     userName,
-    companyId: companyUserResult.data.company_id,
+    companyId: (companyUserResult.data as any).company_id,
   });
 
   return {
     userId: session.user.id,
     userName,
-    companyId: companyUserResult.data.company_id,
+    companyId: (companyUserResult.data as any).company_id,
     supabase,
   };
 }
@@ -148,7 +148,7 @@ export async function getChatRooms(): Promise<{
     `)
     .eq('company_id', companyId)
     .eq('chat_participants.user_id', userId)
-    .order('updated_at', { ascending: false });
+    .order('updated_at', { ascending: false }) as { data: any[] | null; error: any };
 
   if (roomsError) {
     console.error('[getChatRooms] Error fetching rooms:', roomsError);
@@ -175,11 +175,11 @@ export async function getChatRooms(): Promise<{
       const { data: lastMessageData } = await supabase
         .from('messages')
         .select('*')
-        .eq('chat_room_id', room.id)
+        .eq('chat_room_id', (room as any).id)
         .is('deleted_at', null)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .single() as { data: any | null; error: any };
 
       // Fetch sender profile if message exists
       let lastMessage = null;
@@ -187,11 +187,11 @@ export async function getChatRooms(): Promise<{
         const { data: senderProfile } = await supabase
           .from('user_profiles')
           .select('id, name, email, avatar_url')
-          .eq('id', lastMessageData.sender_id)
-          .single();
+          .eq('id', (lastMessageData as any).sender_id)
+          .single() as { data: any | null; error: any };
 
         lastMessage = {
-          ...lastMessageData,
+          ...(lastMessageData as any),
           sender: senderProfile || null,
         };
       }
@@ -200,15 +200,15 @@ export async function getChatRooms(): Promise<{
       const { count: participantCount } = await supabase
         .from('chat_participants')
         .select('*', { count: 'exact', head: true })
-        .eq('chat_room_id', room.id);
+        .eq('chat_room_id', (room as any).id);
 
       // Get current user's participant record for muted_until
-      const participantRecord = (room.chat_participants as Array<{ user_id: string; muted_until: string | null }>)?.find(
+      const participantRecord = ((room as any).chat_participants as Array<{ user_id: string; muted_until: string | null }>)?.find(
         (p) => p.user_id === userId
       );
 
       return {
-        ...room,
+        ...(room as any),
         unread_count: unreadCount as number,
         last_message: lastMessage ? (lastMessage as unknown as MessageWithSender) : undefined,
         participant_count: participantCount || 0,
@@ -274,7 +274,7 @@ export async function getMessages(
     query = query.lt('created_at', cursor);
   }
 
-  const { data: messagesData, error: messagesError } = await query;
+  const { data: messagesData, error: messagesError } = await query as { data: any[] | null; error: any };
 
   if (messagesError) {
     const errorDetail = messagesError.message || JSON.stringify(messagesError);
@@ -297,7 +297,7 @@ export async function getMessages(
   const senderIds = new Set<string>();
   const replyToIds = new Set<string>();
 
-  messages.forEach(msg => {
+  messages.forEach((msg: any) => {
     if (msg.sender_id) senderIds.add(msg.sender_id);
     if (msg.reply_to_id) replyToIds.add(msg.reply_to_id);
   });
@@ -306,7 +306,7 @@ export async function getMessages(
   const { data: userProfiles, error: profilesError } = await supabase
     .from('user_profiles')
     .select('id, name, email, avatar_url')
-    .in('id', Array.from(senderIds));
+    .in('id', Array.from(senderIds)) as { data: any[] | null; error: any };
 
   if (profilesError) {
     console.error('[getMessages] Error fetching user profiles:', profilesError);
@@ -319,7 +319,7 @@ export async function getMessages(
     const { data: replies, error: repliesError } = await supabase
       .from('messages')
       .select('id, content, created_at, sender_id')
-      .in('id', Array.from(replyToIds));
+      .in('id', Array.from(replyToIds)) as { data: any[] | null; error: any };
 
     if (repliesError) {
       console.error('[getMessages] Error fetching reply messages:', repliesError);
@@ -328,14 +328,14 @@ export async function getMessages(
 
       // Add reply senders to profiles if not already fetched
       const replySenderIds = replyToMessages
-        .map(r => r.sender_id)
+        .map((r: any) => r.sender_id)
         .filter(id => id && !senderIds.has(id));
 
       if (replySenderIds.length > 0) {
         const { data: replyProfiles } = await supabase
           .from('user_profiles')
           .select('id, name, avatar_url')
-          .in('id', replySenderIds);
+          .in('id', replySenderIds) as { data: any[] | null; error: any };
 
         if (replyProfiles) {
           userProfiles?.push(...replyProfiles);
@@ -345,12 +345,12 @@ export async function getMessages(
   }
 
   // Create lookup maps
-  const profilesMap = new Map(userProfiles?.map(p => [p.id, p]) || []);
-  const repliesMap = new Map(replyToMessages.map(r => [r.id, r]));
+  const profilesMap = new Map(userProfiles?.map((p: any) => [p.id, p]) || []);
+  const repliesMap = new Map(replyToMessages.map((r: any) => [r.id, r]));
 
   // Combine data and get counts
   const messagesWithData = await Promise.all(
-    messages.map(async (message) => {
+    messages.map(async (message: any) => {
       // Count replies to this message
       const { count: replyCount } = await supabase
         .from('messages')
@@ -437,7 +437,7 @@ export async function getCompanyUsers(): Promise<{
     `)
     .eq('company_id', companyId)
     .eq('status', 'active')
-    .neq('user_id', userId); // Exclude current user
+    .neq('user_id', userId) as { data: any[] | null; error: any }; // Exclude current user
 
   if (usersError) {
     console.error('[getCompanyUsers] Error fetching users:', usersError);
@@ -447,7 +447,7 @@ export async function getCompanyUsers(): Promise<{
   console.log('[getCompanyUsers] Found', companyUsers?.length || 0, 'users');
 
   // Map to expected format
-  const users = (companyUsers || []).map((cu) => {
+  const users = (companyUsers || []).map((cu: any) => {
     const profile = cu.user_profiles as unknown as {
       id: string;
       name: string;
@@ -492,7 +492,7 @@ export async function getMessageById(
     .from('messages')
     .select('*')
     .eq('id', messageId)
-    .single();
+    .single() as { data: any | null; error: any };
 
   if (messageError || !messageData) {
     console.error('[getMessageById] Error fetching message:', messageError);
@@ -503,8 +503,8 @@ export async function getMessageById(
   const { data: senderProfile, error: senderError } = await supabase
     .from('user_profiles')
     .select('id, name, email, avatar_url')
-    .eq('id', messageData.sender_id)
-    .single();
+    .eq('id', (messageData as any).sender_id)
+    .single() as { data: any | null; error: any };
 
   if (senderError) {
     console.error('[getMessageById] Error fetching sender profile:', senderError);
@@ -513,12 +513,12 @@ export async function getMessageById(
 
   // Fetch reply-to message if exists
   let reply_to = null;
-  if (messageData.reply_to_id) {
+  if ((messageData as any).reply_to_id) {
     const { data: replyMessage, error: replyError } = await supabase
       .from('messages')
       .select('id, content, created_at, sender_id')
-      .eq('id', messageData.reply_to_id)
-      .single();
+      .eq('id', (messageData as any).reply_to_id)
+      .single() as { data: any | null; error: any };
 
     if (replyError) {
       console.error('[getMessageById] Error fetching reply message:', replyError);
@@ -527,13 +527,13 @@ export async function getMessageById(
       const { data: replySenderProfile } = await supabase
         .from('user_profiles')
         .select('id, name, avatar_url')
-        .eq('id', replyMessage.sender_id)
-        .single();
+        .eq('id', (replyMessage as any).sender_id)
+        .single() as { data: any | null; error: any };
 
       reply_to = {
-        id: replyMessage.id,
-        content: replyMessage.content,
-        created_at: replyMessage.created_at,
+        id: (replyMessage as any).id,
+        content: (replyMessage as any).content,
+        created_at: (replyMessage as any).created_at,
         sender: replySenderProfile || null,
       };
     }
@@ -551,7 +551,7 @@ export async function getMessageById(
   return {
     success: true,
     message: {
-      ...messageData,
+      ...(messageData as any),
       sender: senderProfile || null,
       reply_to,
       reply_count: replyCount || 0,

@@ -450,6 +450,68 @@ export async function createProject(formData: FormData) {
     // Don't fail project creation if templates fail
   }
 
+  // ============================================================================
+  // NEW: Assign default 3D model and create pre-configured markers
+  // ============================================================================
+  try {
+    console.log('[createProject] Attempting to assign default 3D model');
+
+    // Import default model functions
+    const { assignDefaultModel, createMarkersFromDefaultConfigs } = await import('./default-models');
+
+    // Step 1: Assign default model to project
+    const defaultModel = await assignDefaultModel(project.id, data.project_type);
+
+    if (defaultModel) {
+      console.log('[createProject] ✅ Assigned default model:', defaultModel.id);
+
+      // Step 2: Fetch all created tasks for marker auto-linking
+      const { data: createdTasks, error: tasksError } = await supabase
+        .from('tasks')
+        .select('id, title, phase_id')
+        .eq('project_id', project.id);
+
+      if (tasksError) {
+        console.error('[createProject] Error fetching tasks for marker creation:', tasksError);
+      } else if (createdTasks && createdTasks.length > 0) {
+        console.log('[createProject] Fetched tasks for marker linking:', createdTasks.length);
+
+        // Step 3: Create markers from default configs with auto-linking
+        const createdMarkers = await createMarkersFromDefaultConfigs(
+          project.id,
+          defaultModel.id,
+          createdTasks
+        );
+
+        if (createdMarkers && createdMarkers.length > 0) {
+          const matchStats = {
+            total: createdMarkers.length,
+            matched: createdMarkers.filter((m: any) => m.task_id).length,
+            unmatched: createdMarkers.filter((m: any) => !m.task_id).length,
+          };
+
+          console.log(`[createProject] ✅ Created markers from default configs: ${matchStats.total} (${matchStats.matched} auto-linked to tasks, ${matchStats.unmatched} unlinked)`);
+
+          if (matchStats.unmatched > 0) {
+            console.warn(
+              `[createProject] ⚠️ Marker auto-linking incomplete. Matched: ${matchStats.matched}/${matchStats.total}. ` +
+              `Review task template titles in default marker configs.`
+            );
+          }
+        } else {
+          console.log('[createProject] No markers created from default configs');
+        }
+      } else {
+        console.log('[createProject] No tasks found for marker linking');
+      }
+    } else {
+      console.log('[createProject] No default model available for project type:', data.project_type);
+    }
+  } catch (defaultModelError) {
+    console.error('[createProject] Error in default model assignment:', defaultModelError);
+    // Don't fail project creation if default model fails
+  }
+
   // Revalidate projects list and related caches
   revalidatePath('/app/projects');
   revalidatePath('/app');

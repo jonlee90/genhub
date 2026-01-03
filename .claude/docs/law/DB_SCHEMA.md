@@ -40,7 +40,7 @@
 | **System** | notifications, attachments, push_subscriptions |
 | **Integrations** | kakao_connections |
 | **Billing** | stripe_customers |
-| **3D Spatial** | projects_3d_models, spatial_markers, marker_content, model_elements |
+| **3D Spatial** | projects_3d_models, default_3d_models, spatial_markers, marker_content, model_elements |
 
 ---
 
@@ -59,9 +59,9 @@
 <summary><strong>Project Enums</strong></summary>
 
 ```sql
--- project_type: residential, restaurant, cafe, commercial_office, industrial
+-- project_type: residential, cafe, restaurant, commercial_office, industrial
 -- project_status: active, on_hold, completed, archived
--- phase_status: not_started, in_progress, completed, on_hold
+-- phase_status: not_started, in_progress, completed
 ```
 </details>
 
@@ -120,7 +120,8 @@ id uuid PK (→ next_auth.users), name text, email text, avatar_url, phone, crea
 **company_users**
 ```sql
 id uuid PK, company_id uuid FK, user_id uuid FK, role user_role, status member_status,
-invited_by uuid FK, invitation_token uuid UNIQUE, activated_at, created_at, updated_at
+invited_by uuid FK, invited_at, joined_at, created_at, updated_at
+-- UNIQUE(company_id, user_id)
 -- RLS: GC Admin manage, members view
 ```
 
@@ -129,27 +130,31 @@ invited_by uuid FK, invitation_token uuid UNIQUE, activated_at, created_at, upda
 **projects**
 ```sql
 id uuid PK, company_id uuid FK, name text, client_name, client_email, client_phone,
-address, city, state, zip_code, project_type, status, description, start_date, end_date,
-budget numeric, health_score int (0-100), completion_percentage int (0-100),
-image_url, latitude, longitude, created_by uuid FK, created_at, updated_at
+address, city, state, zip_code, project_type, status project_status, description,
+start_date date, end_date date, budget decimal(12,2), actual_cost decimal(12,2),
+health_score int (0-100), completion_percentage int (0-100),
+created_by uuid FK, created_at, updated_at
 -- Trigger: Creates 5 default phases on insert
 -- RLS: Members view, GC/PM create/update
 ```
 
 **project_phases**
 ```sql
-id uuid PK, project_id uuid FK, name text, order_index int, status phase_status,
-completion_percentage int, started_at, completed_at, notes, created_at, updated_at
+id uuid PK, project_id uuid FK, name text, display_order int, status phase_status,
+completion_percentage int (0-100), start_date date, end_date date, description text,
+created_at, updated_at
 -- Default phases: Initiation(0), Pre-Construction(1), Procurement(2), Construction(3), Post-Construction(4)
 -- Trigger: Updates project.completion_percentage
+-- UNIQUE(project_id, name), UNIQUE(project_id, display_order)
 ```
 
 **project_team**
 ```sql
 id uuid PK, project_id uuid FK, user_id uuid FK, subcontractor_id uuid FK,
 role user_role, assigned_at, assigned_by uuid FK
--- Trigger: Auto-adds to chat_participants
+-- Trigger: Auto-adds to chat_participants (if chat system enabled)
 -- RLS: Members view, GC/PM manage
+-- CHECK: Either user_id OR subcontractor_id must be set
 ```
 
 ### Task Tables
@@ -157,12 +162,11 @@ role user_role, assigned_at, assigned_by uuid FK
 **tasks**
 ```sql
 id uuid PK, project_id uuid FK, phase_id uuid FK, title text, description,
-status task_status, priority task_priority, task_type, assignee_id uuid FK,
-start_date, due_date, planned_cost numeric, actual_cost numeric (AUTO-CALC),
-blocked_reason text,
--- Approval workflow (task_type='approval'):
-approval_status, approval_notes, approved_by uuid FK, approved_at,
-receipt_photo_url, completed_at, created_by uuid FK, created_at, updated_at
+status task_status, priority task_priority (low, medium, high),
+assignee_id uuid FK, subcontractor_id uuid FK,
+due_date date, planned_cost decimal(10,2), actual_cost decimal(10,2) (AUTO-CALC),
+blocker_reason text, display_order int, created_by uuid FK,
+completed_at timestamptz, created_at, updated_at
 -- Trigger: Updates actual_cost from materials + expenses
 -- Trigger: Sets completed_at on status change
 -- Trigger: Updates phase completion
@@ -330,11 +334,26 @@ access_token, refresh_token, created_at, updated_at
 **projects_3d_models**
 ```sql
 id uuid PK, project_id uuid FK, version int, name, description,
-model_type ('ifc'|'obj'|'gltf'), file_url, file_size_bytes bigint,
+model_type ('ifc'|'obj'|'gltf'), xkt_file_url text, glb_file_url text,
+ifc_file_url text, file_size_bytes bigint,
 lod_level ('lod100'|'lod200'|'lod300'|'lod400'|'lod500'),
-is_primary bool, coordinate_system jsonb, uploaded_by uuid FK,
-processed bool, processing_error text, created_at, updated_at
-UNIQUE(project_id, version)
+is_active bool (only one per project), bounds jsonb, floors jsonb,
+processing_status ('pending'|'processing'|'ready'|'failed'),
+uploaded_by uuid FK, is_default bool, default_model_id uuid FK,
+created_at, updated_at
+-- UNIQUE(project_id, version)
+-- is_default: true if created from default_3d_models template
+```
+
+**default_3d_models**
+```sql
+id uuid PK, project_type enum, name text, description,
+model_id text (e.g., 'default-residential-layout'),
+xkt_file_url text, thumbnail_url text, is_active bool,
+metadata jsonb, created_at, updated_at
+-- System-wide default models for each project type
+-- UNIQUE(project_type) WHERE is_active = true
+-- Used when user creates new project with no uploaded model
 ```
 
 **spatial_markers**

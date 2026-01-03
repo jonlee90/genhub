@@ -11,7 +11,6 @@ import {
   updateMarker,
   deleteMarker,
   attachContentToMarker,
-  updateMarkerContent,
   deleteMarkerContent,
 } from '@/app/actions/spatial';
 import type {
@@ -36,6 +35,12 @@ export interface UseUpdateMarkerReturn {
   isLoading: boolean;
   error: string | null;
   reset: () => void;
+}
+
+export interface UseMarkerContentReturn {
+  createNote: (markerId: string, data: MarkerContentInsert) => Promise<MarkerContent | null>;
+  updateContent: (markerId: string, contentId: number, data: MarkerContentUpdate) => Promise<boolean>;
+  deleteContent: (contentId: string) => Promise<boolean>;
 }
 
 export interface UseDeleteMarkerReturn {
@@ -279,11 +284,11 @@ export function useMarkerMutations() {
   const { toast } = useToast();
 
   const createNote = useCallback(
-    async (data: MarkerContentInsert): Promise<MarkerContent | null> => {
+    async (markerId: string, data: MarkerContentInsert): Promise<MarkerContent | null> => {
       console.log('[useMarkerMutations] Creating note:', data);
 
       try {
-        const result = await attachContentToMarker(data);
+        const result = await attachContentToMarker(markerId, data);
 
         if (result.error) {
           console.error('[useMarkerMutations] Create error:', result.error);
@@ -318,46 +323,22 @@ export function useMarkerMutations() {
   );
 
   const updateContent = useCallback(
-    async (contentId: number, data: MarkerContentUpdate): Promise<MarkerContent | null> => {
-      console.log('[useMarkerMutations] Updating content:', contentId, data);
+    async (_markerId: string, contentId: number, _data: MarkerContentUpdate): Promise<boolean> => {
+      console.log('[useMarkerMutations] Update content not yet implemented:', contentId);
 
-      try {
-        const result = await updateMarkerContent(contentId, data);
-
-        if (result.error) {
-          console.error('[useMarkerMutations] Update error:', result.error);
-          toast({
-            title: 'Failed to update',
-            description: result.error,
-            variant: 'destructive',
-          });
-          return null;
-        }
-
-        console.log('[useMarkerMutations] Content updated:', result.data);
-        toast({
-          title: 'Updated',
-          description: 'Changes saved successfully',
-        });
-
-        router.refresh();
-        return result.data!;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unknown error';
-        console.error('[useMarkerMutations] Exception:', err);
-        toast({
-          title: 'Failed to update',
-          description: message,
-          variant: 'destructive',
-        });
-        return null;
-      }
+      // TODO: Implement updateMarkerContent server action
+      toast({
+        title: 'Not implemented',
+        description: 'Content update functionality coming soon',
+        variant: 'destructive',
+      });
+      return false;
     },
-    [router, toast]
+    [toast]
   );
 
   const deleteContent = useCallback(
-    async (contentId: number): Promise<boolean> => {
+    async (contentId: string): Promise<boolean> => {
       console.log('[useMarkerMutations] Deleting content:', contentId);
 
       try {

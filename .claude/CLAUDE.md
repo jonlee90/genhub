@@ -15,6 +15,32 @@
 ❌ **NO riveted borders, hazard stripes, custom fonts**
 ❌ **NO MCP Supabase** (backend-engineer uses psql directly)
 
+## Agent Structure (Optimized)
+
+### Primary Agents (3 Core Agents)
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| **frontend-engineer** | Full frontend lifecycle | All UI work - research, planning, and implementation. Uses `frontend-design` plugin. Plans first for complex features, implements directly for simple tasks. |
+| **backend-engineer** | Supabase + Next.js server | Database, Server Actions, API routes, auth. |
+| **code-reviewer** | Review, debug, test, security | After implementations. Reviews code, fixes issues, runs checks. |
+
+### Agent Workflow
+
+```
+Complex UI Feature:
+1. frontend-engineer → Plans architecture, then implements using frontend-design plugin
+2. code-reviewer → Reviews and fixes issues
+
+Simple UI Change:
+1. frontend-engineer → Direct implementation with plugin
+2. code-reviewer → Quick review
+
+Backend Work:
+1. backend-engineer → Implements database API Supabase
+2. code-reviewer → Security audit
+```
+
 ## Agent Quick Reference
 
 | Agent | For | Tools |
@@ -44,8 +70,6 @@ Check `.claude/tasks/context_session_x.md` before/after work
 - `docs/law/UI_RULES.md` - Design system
 
 ## Token Optimization (MANDATORY)
-
-**CRITICAL:** Follow `.claude/rules/token_optimization.md` for ALL operations.
 
 **Quick Rules:**
 1. Use Grep instead of Read for searches (90% savings)

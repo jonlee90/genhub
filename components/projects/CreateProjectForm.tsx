@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { StateSelect } from '@/components/ui/StateSelect';
 import {
   AlertCircle,
   MapPin,
@@ -490,7 +491,9 @@ export function CreateProjectForm({
     return subtitles[currentStep];
   }, [currentStep]);
 
-  if (!isOpen) return null;
+  // Note: Do NOT return null when !isOpen
+  // BaseModal handles visibility internally via Radix Dialog
+  // This component must always render to allow Dialog state management
 
   return (
     <BaseModal
@@ -923,14 +926,13 @@ export function CreateProjectForm({
                   <Label htmlFor="state" className="text-sm font-semibold text-gray-700">
                     State
                   </Label>
-                  <Input
+                  <StateSelect
                     id="state"
                     name="state"
-                    placeholder="State"
+                    placeholder="Select state"
                     disabled={isPending}
-                    className="h-11 border-gray-200"
-                    defaultValue={formValues.state}
-                    onChange={(e) => setFormValues({ ...formValues, state: e.target.value })}
+                    value={formValues.state}
+                    onValueChange={(value) => setFormValues({ ...formValues, state: value })}
                   />
                 </div>
               </div>

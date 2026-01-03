@@ -289,7 +289,18 @@ async function getProjectData(id: string) {
 
   console.log('[getProjectData] Expense stats:', expenseStats);
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats };
+  // Fetch active 3D model for this project
+  const { data: activeModel } = await supabase
+    .from('projects_3d_models')
+    .select('*')
+    .eq('project_id', id)
+    .eq('is_active', true)
+    .eq('processing_status', 'ready')
+    .maybeSingle();
+
+  console.log('[getProjectData] Active 3D model:', activeModel);
+
+  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, activeModel };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -313,7 +324,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats } = data;
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, activeModel } = data;
 
   console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats);
 
@@ -361,6 +372,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           phaseTaskStats={phaseTaskStats || []}
           taskDependencies={taskDependencies || []}
           expenseStats={expenseStats}
+          activeModel={activeModel || null}
         />
       </div>
     </div>

@@ -82,8 +82,8 @@ export function useMarkerFiltering(
       // Extract content notes if available
       const contentNotes = 'content' in marker && Array.isArray(marker.content)
         ? marker.content
-            .filter((c) => c.content_type === 'note')
-            .map((c) => c.text_content || '')
+            .filter((c: any) => c.content_type === 'note')
+            .map((c: any) => c.text_content || '')
             .join(' ')
         : '';
 

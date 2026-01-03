@@ -307,7 +307,7 @@ USING (
 ```
 
 ### Triggers
-- **update_updated_at**: Auto-update `updated_at` on changes
+- **update_updated_at_column**: Auto-update `updated_at` on changes
 - **on_message_attachment_change**: Update parent `message.updated_at` when attachments change
 
 ## Optional Features

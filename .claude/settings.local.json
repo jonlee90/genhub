@@ -86,7 +86,13 @@
       "Bash(npm run test:ifc:*)",
       "Bash(npx next build --no-lint)",
       "Skill(kc:build)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(git restore:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx tsx:*)",
+      "Bash(brew list:*)",
+      "Bash(/opt/homebrew/opt/postgresql@14/bin/psql:*)",
+      "Bash(/opt/homebrew/Cellar/postgresql@15/15.15_1/bin/psql:*)"
     ],
     "deny": [],
     "ask": []

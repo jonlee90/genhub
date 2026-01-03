@@ -46,12 +46,16 @@ export function useModelLoading(): UseModelLoadingReturn {
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastUrlRef = useRef<string | null>(null);
   const onSuccessCallbackRef = useRef<((data: any) => void) | null>(null);
+  const parseIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
 
   /**
    * Load model from URL with progress tracking
+   * FIX: Remove retryCount from dependencies to prevent infinite recreation
+   * Use retryCountRef instead to access current value without dependency
    */
   const loadModel = useCallback(async (url: string, onSuccess?: (data: any) => void) => {
-    console.log('[useModelLoading] Loading model', { url, retryCount });
+    console.log('[useModelLoading] Loading model', { url, retryAttempt: retryCountRef.current });
 
     // Debug: Store URL and callback for retry
     lastUrlRef.current = url;
@@ -110,6 +114,14 @@ export function useModelLoading(): UseModelLoadingReturn {
       const chunks: Uint8Array[] = [];
 
       while (true) {
+        // FIX: Check for abort before reading
+        if (signal.aborted) {
+          console.log('[useModelLoading] Load cancelled during download');
+          setState('idle');
+          setProgress(0);
+          return;
+        }
+
         const { done, value } = await reader.read();
 
         if (done) break;
@@ -127,6 +139,14 @@ export function useModelLoading(): UseModelLoadingReturn {
             progress: downloadProgress,
           });
         }
+      }
+
+      // FIX: Check if cancelled before parsing
+      if (signal.aborted) {
+        console.log('[useModelLoading] Load cancelled before parsing');
+        setState('idle');
+        setProgress(0);
+        return;
       }
 
       // Debug: Combine chunks into single array buffer
@@ -147,10 +167,25 @@ export function useModelLoading(): UseModelLoadingReturn {
 
       // Debug: Simulate parsing progress (50-100%)
       // In real implementation, xeokit would provide parse progress
-      const parseInterval = setInterval(() => {
+      if (parseIntervalRef.current) {
+        clearInterval(parseIntervalRef.current);
+      }
+
+      parseIntervalRef.current = setInterval(() => {
+        if (signal.aborted) {
+          if (parseIntervalRef.current) {
+            clearInterval(parseIntervalRef.current);
+            parseIntervalRef.current = null;
+          }
+          return;
+        }
+
         setProgress((prev) => {
           if (prev >= 95) {
-            clearInterval(parseInterval);
+            if (parseIntervalRef.current) {
+              clearInterval(parseIntervalRef.current);
+              parseIntervalRef.current = null;
+            }
             return 95;
           }
           return prev + 5;
@@ -162,20 +197,27 @@ export function useModelLoading(): UseModelLoadingReturn {
         onSuccess(arrayBuffer.buffer);
       }
 
-      clearInterval(parseInterval);
-
       // Debug: Complete
       setState('ready');
       setProgress(100);
       setRetryCount(0);
+      retryCountRef.current = 0;
 
       console.log('[useModelLoading] Model loaded successfully');
     } catch (err) {
       console.error('[useModelLoading] Load error', err);
 
-      // Debug: Handle abort
+      // FIX: Check abort status first with proper error handling
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        console.log('[useModelLoading] Load cancelled by user');
+        setState('idle');
+        setProgress(0);
+        return;
+      }
+
+      // Also check signal.aborted for redundant safety
       if (signal.aborted) {
-        console.log('[useModelLoading] Load cancelled');
+        console.log('[useModelLoading] Load cancelled (signal check)');
         setState('idle');
         setProgress(0);
         return;
@@ -203,7 +245,7 @@ export function useModelLoading(): UseModelLoadingReturn {
       setState('error');
       setError(modelError);
     }
-  }, [retryCount]);
+  }, []);
 
   /**
    * Retry loading with exponential backoff
@@ -231,11 +273,18 @@ export function useModelLoading(): UseModelLoadingReturn {
     const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
     console.log('[useModelLoading] Retrying in', delay, 'ms');
 
-    setRetryCount((prev) => prev + 1);
+    setRetryCount((prev) => {
+      const next = prev + 1;
+      retryCountRef.current = next;
+      return next;
+    });
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       loadModel(lastUrlRef.current!, onSuccessCallbackRef.current || undefined);
     }, delay);
+
+    // Return cleanup function
+    return () => clearTimeout(timeoutId);
   }, [retryCount, error, loadModel]);
 
   /**
@@ -243,6 +292,11 @@ export function useModelLoading(): UseModelLoadingReturn {
    */
   const cancel = useCallback(() => {
     console.log('[useModelLoading] Cancelling load');
+
+    if (parseIntervalRef.current) {
+      clearInterval(parseIntervalRef.current);
+      parseIntervalRef.current = null;
+    }
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -262,6 +316,7 @@ export function useModelLoading(): UseModelLoadingReturn {
 
     cancel();
     setRetryCount(0);
+    retryCountRef.current = 0;
     lastUrlRef.current = null;
     onSuccessCallbackRef.current = null;
   }, [cancel]);
