@@ -64,7 +64,7 @@ export function initXeokit(
 
     // Debug: Add WebGL context lost handler
     const canvas = viewer.scene.canvas.canvas;
-    canvas.addEventListener('webglcontextlost', (event) => {
+    canvas.addEventListener('webglcontextlost', (event: Event) => {
       console.error('[xeokit] WebGL context lost', event);
       event.preventDefault();
     });
@@ -84,6 +84,7 @@ export function initXeokit(
 /**
  * Cleanup xeokit viewer and release WebGL resources
  * CRITICAL: Always call this on unmount to prevent memory leaks
+ * Fixed: Proper null/undefined checks for scene.models
  */
 export function destroyXeokit(viewer: Viewer | null): void {
   if (!viewer) {
@@ -94,20 +95,41 @@ export function destroyXeokit(viewer: Viewer | null): void {
   console.log('[xeokit] Destroying viewer and releasing WebGL resources');
 
   try {
-    // Debug: Destroy all models first
-    if (viewer.scene && viewer.scene.modelIds) {
-      viewer.scene.modelIds.forEach((modelId) => {
-        const model = viewer.scene.models[modelId];
-        if (model && typeof model.destroy === 'function') {
-          console.log('[xeokit] Destroying model', modelId);
-          model.destroy();
+    // Debug: Safely check if scene exists and has models
+    if (viewer && viewer.scene) {
+      try {
+        // Get models object safely - may be undefined if scene is partially destroyed
+        const models = viewer.scene.models;
+        
+        if (models && typeof models === 'object') {
+          // Use Object.keys to safely get model IDs
+          const modelIds = Object.keys(models);
+          console.log('[xeokit] Found models to destroy:', modelIds.length);
+          
+          modelIds.forEach((modelId) => {
+            try {
+              const model = models[modelId];
+              if (model && typeof model.destroy === 'function') {
+                console.log('[xeokit] Destroying model', modelId);
+                model.destroy();
+              }
+            } catch (modelError) {
+              console.warn('[xeokit] Error destroying individual model', modelId, modelError);
+            }
+          });
+        } else {
+          console.log('[xeokit] No models object or already destroyed');
         }
-      });
+      } catch (sceneError) {
+        console.warn('[xeokit] Error accessing scene models during cleanup', sceneError);
+      }
     }
 
     // Debug: Destroy viewer (releases WebGL context)
-    viewer.destroy();
-    console.log('[xeokit] Viewer destroyed successfully');
+    if (typeof viewer.destroy === 'function') {
+      viewer.destroy();
+      console.log('[xeokit] Viewer destroyed successfully');
+    }
   } catch (error) {
     console.error('[xeokit] Error during cleanup', error);
   }
