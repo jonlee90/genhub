@@ -8,7 +8,8 @@ Production-grade modal system with construction-themed design for GenHub PWA.
 - **Construction Theme**: Industrial aesthetics with blueprint grid patterns
 - **Multi-step Support**: Built-in step indicator for wizard flows
 - **Priority Themes**: Pre-configured color schemes for low/medium/high priority
-- **Flexible Footer**: Left and right action slots
+- **Flexible Footer**: Left and right action slots with automatic construction-themed styling
+- **Auto-styled Buttons**: Right action buttons automatically receive construction-blue theme styling
 - **Form Remounting**: Support for resetting forms via `formKey` prop
 - **Accessibility**: ARIA attributes, keyboard navigation, focus management
 - **Animations**: Smooth Framer Motion transitions
@@ -279,6 +280,61 @@ const customTheme: ModalTheme = {
 - Fully rounded corners (`rounded-2xl`)
 - No drag handle
 - Max height: 90vh
+
+## Automatic Button Styling
+
+Buttons placed in the `rightActions` prop automatically receive construction-themed styling:
+
+### Default Styling Applied
+```tsx
+// The footer automatically applies these classes to buttons in rightActions:
+className="text-white bg-construction-blue hover:bg-construction-blue/90"
+```
+
+### Example
+```tsx
+<BaseModal
+  rightActions={
+    <>
+      <Button variant="outline">Cancel</Button>
+      <Button>Save</Button>  {/* Automatically styled with construction theme */}
+    </>
+  }
+>
+  {/* Content */}
+</BaseModal>
+```
+
+### Override Styling
+If you need custom button styling, simply add your own `className` - it will be merged with the default styling:
+
+```tsx
+<BaseModal
+  rightActions={
+    <Button className="bg-red-600 hover:bg-red-700">
+      Delete  {/* Custom styling takes precedence */}
+    </Button>
+  }
+>
+  {/* Content */}
+</BaseModal>
+```
+
+### Left Actions
+The `leftActions` prop does NOT receive automatic styling, allowing for secondary/ghost button styles:
+
+```tsx
+<BaseModal
+  leftActions={
+    <Button variant="ghost">Cancel</Button>  {/* Keeps ghost variant */}
+  }
+  rightActions={
+    <Button>Create</Button>  {/* Auto-styled with construction theme */}
+  }
+>
+  {/* Content */}
+</BaseModal>
+```
 
 ## Architecture
 

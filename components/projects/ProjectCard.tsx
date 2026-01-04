@@ -4,13 +4,15 @@
  * ProjectCard Component - V2 Hero Image Design
  *
  * A modern project card with:
- * - Color-coded header by project type
- * - Hero image placeholder (gradient for now)
+ * - Consistent construction-blue header (all card types)
+ * - Color-coded project type icon (unique per type)
+ * - Hero image placeholder (neutral gradient)
  * - Client/Budget info row
  * - 2x2 stats grid
- * - Footer with project ID and spent amount
+ * - Footer with address and start date
  *
  * Debug: Construction-themed design for GenHub PWA
+ * Updated: Unified card styling with color differentiation via icons only
  */
 
 import Link from 'next/link';
@@ -66,7 +68,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
           "cursor-pointer"
         )}
       >
-        {/* Debug: Colored Header Section - Project Type */}
+        {/* Debug: Unified Header Section - Construction Blue */}
         <header className={cn(
           "relative px-4 py-3",
           theme.headerBg,
@@ -86,12 +88,15 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </h3>
             </div>
 
-            {/* Debug: Type Icon */}
+            {/* Debug: Color-Coded Type Icon (unique per project type) */}
             <div className={cn(
-              "shrink-0 p-2.5 rounded-lg",
-              theme.iconBg
+              "shrink-0 p-2.5 rounded-lg bg-white/95 backdrop-blur-sm",
+              "border border-white/20 shadow-sm"
             )}>
-              <TypeIcon className="h-5 w-5" strokeWidth={2} />
+              <TypeIcon
+                className={cn("h-5 w-5", theme.iconColor)}
+                strokeWidth={2.5}
+              />
             </div>
           </div>
 
@@ -111,35 +116,40 @@ export function ProjectCard({ project }: ProjectCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            // Debug: Gradient placeholder with icon
+            // Debug: Neutral gradient placeholder with blueprint grid
             <div className={cn(
               "absolute inset-0 bg-gradient-to-br",
               theme.placeholderGradient
             )}>
               {/* Debug: Blueprint grid pattern overlay */}
               <div
-                className="absolute inset-0 opacity-10"
+                className="absolute inset-0 opacity-30"
                 style={{
                   backgroundImage: `
-                    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+                    linear-gradient(rgba(0,27,81,0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0,27,81,0.1) 1px, transparent 1px)
                   `,
                   backgroundSize: '20px 20px'
                 }}
               />
 
-              {/* Debug: Centered icon */}
+              {/* Debug: Centered icon with project-specific color */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <TypeIcon
-                  className="h-16 w-16 text-white/20"
-                  strokeWidth={1}
-                />
+                <div className={cn(
+                  "p-4 rounded-xl",
+                  theme.iconBg
+                )}>
+                  <TypeIcon
+                    className={cn("h-12 w-12", theme.iconColor, "opacity-40")}
+                    strokeWidth={1.5}
+                  />
+                </div>
               </div>
 
               {/* Debug: Address hint if available */}
               {project.address && (
                 <div className="absolute bottom-2 left-3 right-3">
-                  <p className="text-[10px] text-white/60 truncate font-medium">
+                  <p className="text-[10px] text-gray-600 truncate font-medium">
                     {project.address}
                     {project.city && `, ${project.city}`}
                   </p>
@@ -148,8 +158,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </div>
           )}
 
-          {/* Debug: Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          {/* Debug: Subtle gradient overlay for depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent" />
         </div>
 
         {/* Debug: Content Section */}
@@ -304,12 +314,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
           </div>
         </div>
 
-        {/* Debug: Hover indicator line at bottom */}
+        {/* Debug: Hover indicator line at bottom - project type color accent */}
         <div className={cn(
           "absolute bottom-0 left-0 right-0 h-1",
-          "bg-gradient-to-r opacity-0 group-hover:opacity-100",
+          "opacity-0 group-hover:opacity-100",
           "transition-opacity duration-300",
-          theme.placeholderGradient
+          theme.borderAccent.replace('border-t-', 'bg-')
         )} />
       </motion.article>
     </Link>

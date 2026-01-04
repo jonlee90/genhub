@@ -2,6 +2,9 @@
  * Project Card Theme System
  * Defines color themes and configurations for different project types
  * Used by ProjectCard component to render type-specific styling
+ *
+ * Updated: All cards now use consistent construction-blue headers
+ * Color differentiation moved to project type icons only
  */
 
 import { Home, Factory, UtensilsCrossed, Coffee, Building2, type LucideIcon } from 'lucide-react';
@@ -10,12 +13,13 @@ export interface ProjectTypeTheme {
   icon: LucideIcon;
   label: string;
   labelFull: string;
-  headerBg: string;
-  headerText: string;
-  iconBg: string;
-  accentColor: string;
-  borderAccent: string;
-  placeholderGradient: string;
+  headerBg: string;        // All cards use same header background
+  headerText: string;      // All cards use same header text color
+  iconBg: string;          // Icon background with project-specific color
+  iconColor: string;       // Icon color (project-specific)
+  accentColor: string;     // Accent text color
+  borderAccent: string;    // Border accent (subtle)
+  placeholderGradient: string; // Placeholder gradient (neutral)
 }
 
 export const PROJECT_TYPE_THEMES: Record<string, ProjectTypeTheme> = {
@@ -23,56 +27,61 @@ export const PROJECT_TYPE_THEMES: Record<string, ProjectTypeTheme> = {
     icon: Home,
     label: 'Residential',
     labelFull: 'Residential Home',
-    headerBg: 'bg-construction-blue',
-    headerText: 'text-white',
-    iconBg: 'bg-white/10',
+    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-[#001B51]/10',          // Blue tint background
+    iconColor: 'text-[#001B51]',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-construction-blue',
-    placeholderGradient: 'from-blue-600 to-blue-800',
+    borderAccent: 'border-t-[#001B51]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
   },
   industrial: {
     icon: Factory,
     label: 'Industrial',
     labelFull: 'Industrial Warehouse',
-    headerBg: 'bg-construction-accent',
-    headerText: 'text-white',
-    iconBg: 'bg-yellow-400/20',
-    accentColor: 'text-yellow-400',
-    borderAccent: 'border-t-construction-accent',
-    placeholderGradient: 'from-gray-600 to-gray-800',
+    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-[#001B51]/10',          // Blue tint background
+    iconColor: 'text-[#001B51]',         // Blue icon
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-[#001B51]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
   },
   restaurant: {
     icon: UtensilsCrossed,
     label: 'Restaurant',
     labelFull: 'Restaurant',
-    headerBg: 'bg-amber-600',
-    headerText: 'text-white',
-    iconBg: 'bg-white/10',
-    accentColor: 'text-amber-200',
-    borderAccent: 'border-t-amber-600',
-    placeholderGradient: 'from-amber-600 to-amber-800',
+    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-[#001B51]/10',          // Blue tint background
+    iconColor: 'text-[#001B51]',         // Blue icon
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-[#001B51]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
   },
   cafe: {
     icon: Coffee,
     label: 'Cafe',
     labelFull: 'Cafe',
-    headerBg: 'bg-teal-600',
-    headerText: 'text-white',
-    iconBg: 'bg-white/10',
-    accentColor: 'text-teal-200',
-    borderAccent: 'border-t-teal-600',
-    placeholderGradient: 'from-teal-600 to-teal-800',
+    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-[#001B51]/10',          // Blue tint background
+    iconColor: 'text-[#001B51]',         // Blue icon
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-[#001B51]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
   },
   commercial_office: {
     icon: Building2,
     label: 'Commercial',
     labelFull: 'Commercial Office',
-    headerBg: 'bg-slate-800',
-    headerText: 'text-white',
-    iconBg: 'bg-cyan-400/20',
-    accentColor: 'text-cyan-400',
-    borderAccent: 'border-t-slate-800',
-    placeholderGradient: 'from-slate-700 to-slate-900',
+    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-[#001B51]/10',          // Blue tint background
+    iconColor: 'text-[#001B51]',         // Blue icon
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-[#001B51]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
   },
 } as const;
 

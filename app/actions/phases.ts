@@ -14,7 +14,7 @@ type PhaseStatus = Database['public']['Enums']['phase_status'];
 
 const updatePhaseStatusSchema = z.object({
   phaseId: z.string().uuid('Invalid phase ID'),
-  status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']),
+  status: z.enum(['not_started', 'in_progress', 'completed']),
 });
 
 const updatePhaseSchema = z.object({

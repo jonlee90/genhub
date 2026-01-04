@@ -1,6 +1,6 @@
 # GenHub PWA - UI Design System
 
-> **Quick Reference** for UI/UX. Read sections as needed. **Always use `frontend-design:frontend-design` plugin for UI work.**
+> **Quick Reference** for UI/UX. Read sections as needed.
 
 ## Core Design Principles
 
@@ -18,6 +18,26 @@
 - [Icons](#icon-system) - Lucide icons with construction context
 - [Patterns](#component-patterns) - Common UI patterns
 - [Responsive](#responsive-design) - Breakpoints & mobile
+
+---
+
+## Quick Lookup by Task Type
+
+| Working On | Read Sections | Key Patterns |
+|------------|---------------|--------------|
+| **New Page** | Standard Page Layout, Page Layout Checklist | Blueprint grid, industrial header, page container |
+| **Cards** | Component Patterns (Task Card, Project Card, Dashboard Stats) | border-2, shadow-construction, hover states |
+| **Modals** | Component Patterns (BaseModal) | BaseModal component, multi-step, themes |
+| **Forms** | Component Patterns (Form Layout), Component Library | grid layout, Label/Input, button placement |
+| **Badges/Status** | Utility Patterns | StatusBadge, PriorityBadge, TaskTypeBadge |
+| **Icons** | Icon System | Lucide imports, sizing (w-4/5/6), colors |
+| **Buttons** | Component Library (Button Variants) | variants, sizes, icon buttons |
+| **Responsive** | Responsive Design, Mobile-First Patterns | breakpoints, grid patterns, spacing |
+| **Animations** | Animation & Motion | Framer Motion, Tailwind animations |
+| **Empty States** | Component Patterns (Empty State) | centered layout, icon + text + action |
+| **PWA/Offline** | PWA Guidelines | OfflineBanner, loading states |
+
+**Tip:** Most patterns are in collapsible `<details>` tags - expand only what you need.
 
 ---
 
@@ -579,18 +599,6 @@ components/pwa/
 <Skeleton className="h-4 w-full" />
 <div className="skeleton-construction h-20 rounded-lg" />
 ```
-
----
-
-## CRITICAL: Frontend Design Plugin
-
-**ALWAYS use the `frontend-design:frontend-design` plugin for UI work.**
-
-This ensures:
-- High-quality, construction-themed interfaces
-- Consistent design language
-- Production-grade code
-- Avoids generic AI aesthetics
 
 ### Debug Comments
 ```tsx

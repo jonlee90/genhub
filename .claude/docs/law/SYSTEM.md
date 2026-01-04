@@ -23,6 +23,26 @@
 
 ---
 
+## Quick Lookup by Task Type
+
+| Working On | Read Sections | Key Info |
+|------------|---------------|----------|
+| **Auth Issues** | Authentication, Security | `auth()`, `getUserContext()`, role hierarchy |
+| **Server Actions** | Data Flow, Error Handling | Zod validation, revalidatePath, try/catch |
+| **Database Ops** | Database Access | MCP Supabase tools, client selection, RLS bypass |
+| **API Routes** | Data Flow (API Routes) | Webhooks, external integrations, file uploads |
+| **Client vs Server** | Database Access (Client Components) | Never import Supabase in 'use client' |
+| **Roles/Permissions** | Security (Role Hierarchy) | gc_admin → client hierarchy |
+| **Input Validation** | Security (Input Validation) | Zod schema patterns |
+| **New Feature** | Quick Reference (New Feature Checklist) | Migration → Types → Action → Components → Pages |
+| **Agent Selection** | Agent Workflow | frontend/backend/code-reviewer workflows |
+| **Project Layout** | Project Structure | Folder organization, file locations |
+| **Environment Setup** | Environment Variables | Required env vars by service |
+
+**Tip:** Most agents have embedded quick references - only read SYSTEM.md for complex patterns.
+
+---
+
 ## Technology Stack
 
 **Core**

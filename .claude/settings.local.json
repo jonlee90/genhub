@@ -95,7 +95,10 @@
       "Bash(/opt/homebrew/Cellar/postgresql@15/15.15_1/bin/psql:*)",
       "Bash(brew install:*)",
       "Bash(export PATH=\"/opt/homebrew/opt/postgresql@15/bin:$PATH\")",
-      "Bash(node scripts/apply-migration-management-api.mjs:*)"
+      "Bash(node scripts/apply-migration-management-api.mjs:*)",
+      "Bash(source ~/.zshrc)",
+      "Bash(restart3000)",
+      "Bash(mcp__supabase__execute_sql:*)"
     ],
     "deny": [],
     "ask": []

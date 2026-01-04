@@ -48,15 +48,9 @@ Backend Work:
 | frontend-engineer | UI | frontend-design plugin |
 | backend-engineer | Database/Server | MCP Supabase, Server Actions |
 | code-reviewer | Review/debug | Read, Grep, Bash |
-| kiro-design | Design docs | Conditional law doc access |
 
-**Workflow**: frontend/backend → code-reviewer → /kc:build
+**Workflow**: /kc:impl → frontend/backend → code-reviewer → /kc:build
 
-## Skills
-
-- `/kc:build` - Verify build
-- `/kc:db-check` - Database security
-- `/kc:review` - Quick review
 
 ## Session Context
 
@@ -68,12 +62,22 @@ Check `.claude/tasks/context_session_x.md` before/after work
 - `docs/law/SYSTEM.md` - Architecture
 - `docs/law/DB_SCHEMA.md` - Database
 - `docs/law/UI_RULES.md` - Design system
+- `docs/law/SPATIAL_VIEW.md` - components/projects/spatial (Only read this if task involves spatial and need more information)
 
-## Token Optimization (MANDATORY)
+## Token Discipline (ALL AGENTS)
 
-**Quick Rules:**
-1. Use Grep instead of Read for searches (90% savings)
-2. Use `head_limit` in Grep (90% savings)
-3. Use offset/limit in Read for large files (90% savings)
-4. Filter build output with grep/tail (90% savings)
-5. Concise documentation - bullet points only (70% savings)
+### Core Principle
+**"Grep → Locate → Read with Context"** (never read-everything-first)
+
+### Patterns
+1. **Grep before Read**: `Grep → pattern` → `Read (offset=line-5, limit=30)`
+2. **Filter build output**: `npm run build 2>&1 | grep -E "error|Error" -A 3`
+3. **Parallel tool calls**: Batch independent Reads in single message
+4. **Full Read only**: Small files (<200 lines), configs, migrations
+
+### Agent Budgets
+| Agent | Simple | Complex | Max |
+|-------|--------|---------|-----|
+| backend-engineer | 3-8k | 10-20k | 25k |
+| frontend-engineer | 5-10k | 12-25k | 35k |
+| code-reviewer | 2-4k | 6-12k | 15k |

@@ -22,6 +22,23 @@
 
 ---
 
+## Quick Lookup by Task Type
+
+| Working On | Read Sections | Related Tables |
+|------------|---------------|----------------|
+| **Tasks** | Task Tables, Project Tables | tasks → projects, project_phases, material_assignments, expenses |
+| **Projects** | Project Tables, Core Tables | projects → company_users, project_phases, project_team, tasks |
+| **Materials** | Material Tables, Task Tables | materials → material_assignments → tasks, expense_line_items |
+| **Expenses** | Material Tables (Expenses) | expenses → projects, tasks, expense_line_items → materials |
+| **Chat** | Chat Tables | chat_rooms → projects, chat_participants, messages |
+| **Team** | Team Tables, Core Tables | subcontractors, company_users, team_invitations, project_team |
+| **3D Spatial** | 3D Spatial Tables (independent) | projects_3d_models, spatial_markers, marker_content, model_elements |
+| **Notifications** | System Tables | notifications → users (independent) |
+
+**Tip:** Check [Relationships](#relationships) diagram at bottom for full connection map.
+
+---
+
 ## Schema Overview
 
 **next_auth** (managed by @auth/supabase-adapter - DO NOT modify):
@@ -59,7 +76,7 @@
 <summary><strong>Project Enums</strong></summary>
 
 ```sql
--- project_type: residential, cafe, restaurant, commercial_office, industrial
+-- project_type_old: residential, restaurant_cafe, commercial_office, industrial, restaurant, cafe
 -- project_status: active, on_hold, completed, archived
 -- phase_status: not_started, in_progress, completed
 ```

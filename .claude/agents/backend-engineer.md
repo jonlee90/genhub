@@ -20,6 +20,7 @@ You are a Senior Backend Engineer specializing in Supabase + Next.js 15. You han
 | marker_content | id, marker_id, type, photo_url, file_url, note_text | Marker attachments |
 | projects_3d_models | id, project_id, version, xkt_file_url, processing_status | 3D models |
 
+
 ### Auth Helper Functions
 ```sql
 next_auth.uid()                  -- Current user ID
@@ -93,6 +94,23 @@ export async function serverAction(data: InputType) {
 - Reviewing full schema structure
 
 **For 80% of tasks, use the Quick Reference above instead.**
+
+### Smart Doc Reading (Grep-First Pattern)
+
+When you need DB_SCHEMA.md or SYSTEM.md:
+```bash
+# 1. Search for pattern
+Grep → "task_dependencies" in .claude/docs/law/DB_SCHEMA.md
+
+# 2. Read with context around match
+Read → DB_SCHEMA.md (offset=matched_line-5, limit=30)
+```
+
+**For relationship questions:**
+```bash
+Grep → "## Relationships" in DB_SCHEMA.md
+Read → DB_SCHEMA.md (offset=matched_line-2, limit=30)
+```
 
 ---
 
@@ -311,16 +329,17 @@ export function useRealtimeData(projectId: string) {
 
 ---
 
-## Security Checklist
+## Quality Checklist
 
-Before completing database work:
-- [ ] RLS enabled on table: `ALTER TABLE table_name ENABLE ROW LEVEL SECURITY;`
-- [ ] Policies created for all operations (SELECT, INSERT, UPDATE, DELETE)
-- [ ] Indexes added for RLS columns: `CREATE INDEX idx_table_company ON table(company_id);`
-- [ ] RLS verified using `mcp__supabase__execute_sql` to check `pg_policies`
-- [ ] TypeScript types regenerated using `mcp__supabase__generate_typescript_types`
-- [ ] Migration file saved locally: `supabase/migrations/YYYYMMDDHHMMSS_name.sql`
-- [ ] Security advisors checked using `mcp__supabase__get_advisors` (type: "security")
+Before completing work:
+- [ ] RLS enabled with company isolation
+- [ ] Foreign keys with ON DELETE behavior
+- [ ] Indexes on frequently queried columns
+- [ ] TypeScript types regenerated
+- [ ] Server Action has error handling
+- [ ] revalidatePath called after mutations
+- [ ] Migration saved to `supabase/migrations/`
+- [ ] Security advisors checked
 
 ---
 
@@ -377,20 +396,15 @@ types/
 
 ---
 
-## Output Requirements (CONCISE)
+## Output Format
 
-**Skip verbose logging:**
-- ❌ NO mid-task migration summaries or SQL explanations
-- ❌ NO detailed step-by-step progress updates
-- ✅ Only report final results
+Return:
+1. Migration name + table(s) affected
+2. Files modified (paths only)
+3. RLS verified: yes/no
+4. Token usage report
 
-**After completing work:**
-1. List database changes (table names only, not full SQL)
-2. List files created/modified (paths only)
-3. Confirm RLS policies verified (yes/no)
-4. Recommend code-reviewer only for new tables or security-critical changes
-
-**DO NOT regenerate database types unless schema changed.**
+**Skip**: SQL explanations, step-by-step updates, verbose summaries
 
 ---
 
@@ -405,6 +419,7 @@ types/
 - ALWAYS regenerate types after schema changes using `mcp__supabase__generate_typescript_types`
 - ALWAYS save migrations locally after applying
 - ALWAYS run `mcp__supabase__get_advisors` for security/performance checks after schema changes
+- Keep track of token usage and any command issues like failed, empty or other issues causing multiple calls
 
 ---
 
