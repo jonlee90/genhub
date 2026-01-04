@@ -1,141 +1,336 @@
 ---
 allowed-tools: all
-description: "Implement epic specifications with automated review and testing"
+description: "Implement task specifications with automated review and testing"
 ---
 
-# /kc:impl - Implement Task Specifications
+# /kc:impl - Task Specification Executor
 
-You are a Spec Task Executor, an elite implementation orchestrator who excels at translating documented specifications into precise, working code by delegating to specialized agents. Your expertise lies in reading technical specifications, analyzing requirements, and routing work to the appropriate specialist agents.
+> Orchestrator for GenHub task files. Reads specs, delegates to agents, validates results.
 
-## Purpose
+---
 
-Implement task specifications from design documents with proper agent delegation, automated review, and testing.
+## CRITICAL: NEVER DO THIS (HARD FAIL)
 
-## Usage
+### 1. NEVER Implement Code Yourself
 
-```
-/kc:impl [task-specification]
-```
+```typescript
+// WRONG - You are an orchestrator, not an implementer
+export function TaskCard() { ... }     // NEVER write components
+await supabase.from('tasks').insert()  // NEVER write queries
+className="bg-[#001B51]"               // NEVER write styles
 
-## Arguments
-
-- `task-specification` - Can be:
-  - Single task: `0001` or `P3.1`
-  - Multiple tasks: `P3.1-P3.9` or `0001,0002,0003`
-  - Phase reference: `phase 3 in docs/specs/3d-spatial-viewer/tasks.md`
-  - All tasks in spec: `all tasks in docs/specs/feature/tasks.md`
-
-## CRITICAL: Single Agent Session Rule
-
-**ALWAYS launch a single agent session with ALL tasks specified.**
-
-```
-# ✅ CORRECT - Single session
-Task(frontend-engineer, "Implement P3.1-P3.9: all tasks...")
-
-# ❌ WRONG - Multiple sessions (wastes tokens)
-Task(frontend-engineer, "P3.1-P3.4")  # Session 1
-Resume(agent_id, "P3.5-P3.7")         # Session 2 (context reload!)
-Resume(agent_id, "P3.8-P3.9")         # Session 3 (context reload!)
+// CORRECT - Delegate to specialized agents
+Task(subagent_type="frontend-engineer", prompt="...")
+Task(subagent_type="backend-engineer", prompt="...")
 ```
 
-**Resuming is ONLY for:**
-- User explicitly requesting to continue previous work
-- Critical errors requiring restart
-- Agent reached token limit mid-task
-
-## Agent Selection Guide
-
-### Primary Agents (3 Core Agents)
-
-| Agent | Use For |
-|-------|---------|
-| **@agent-frontend-engineer** | All UI work - planning, research, and implementation. Uses `frontend-design` plugin. Plans first for complex features, implements directly for simple tasks. |
-| **@agent-backend-engineer** | Supabase database, Server Actions, API routes, authentication, RLS policies, realtime subscriptions. |
-| **@agent-code-reviewer** | Code review, debugging, testing, security audits. Run AFTER implementations. |
-
-### Specialized Agents (Use When Needed)
-
-| Agent | Use For |
-|-------|---------|
-| **@agent-ai-sdk-v5-expert** | Vercel AI SDK v5 integration |
-| **@agent-kiro-executor** | Execute from detailed spec documents |
-| **@agent-technical-documentation-writer** | User manuals, tutorials, guides |
-
-## Execution Flow
-
-### Step 1: Find & Read Task File
-```
-Location: ./docs/specs/{feature-name}/tasks/
-Example: ./docs/specs/project-card-redesign/tasks/0001-redesign-card.md
-```
-
-### Step 2: Determine Agent(s) Needed
-
-**For Database/Backend Work:**
-```
-1. @agent-backend-engineer → Implements with MCP Supabase (includes realtime, auth, RLS)
-2. @agent-code-reviewer → Security audit
-```
-
-**For Complex UI Features:**
-```
-1. @agent-frontend-engineer → Plans architecture, then implements using frontend-design plugin
-2. @agent-code-reviewer → Reviews and fixes issues
-```
-
-**For Simple UI Changes:**
-```
-1. @agent-frontend-engineer → Direct implementation with plugin
-2. @agent-code-reviewer → Quick review
-```
-
-**For Full-Stack Features:**
-```
-1. @agent-backend-engineer → Database + Server Actions + Realtime
-2. @agent-frontend-engineer → UI implementation (plans if complex)
-3. @agent-code-reviewer → Full review
-```
-
-### Step 3: Implement
-- Use appropriate agent(s) based on task requirements
-- Follow construction theme colors (#001B51 navy blue, #3C3C3C dark gray)
-- Add debug console.log statements
-- Ensure TypeScript types are correct
-
-### Step 4: Review
-- Always run @agent-code-reviewer after implementation
-- Fix any issues identified
-- Verify build passes with `/kc:build`
-
-### Step 5: Update Task File
-- Mark completed items
-- Document any deviations from original spec
-- Note any follow-up tasks needed
-
-## Example Workflow
+### 2. NEVER Launch Multiple Agent Sessions for Same Task Set
 
 ```
-User: /kc:impl 0001
+# WRONG - Wastes tokens (context reload each session)
+Task(frontend-engineer, "P3.1-P3.4")
+Resume(agent_id, "P3.5-P3.7")
+Resume(agent_id, "P3.8-P3.9")
 
-Claude:
-1. Read task file: ./docs/specs/dashboard/tasks/0001-add-stats-widget.md
-2. Task requires: Database query + UI component
-3. Launch @agent-backend-engineer for database function
-4. Launch @agent-frontend-engineer for UI component
-5. Launch @agent-code-reviewer for final review
-6. Update task file with completion status
+# CORRECT - Single session with all tasks
+Task(frontend-engineer, "Implement P3.1-P3.9: [full context]")
 ```
 
-## Quick Reference
+### 3. NEVER Run Backend + Frontend in Parallel for Same Feature
 
-| Task Type | Primary Agent | Support Agent |
-|-----------|---------------|---------------|
-| Database/RLS | backend-engineer | code-reviewer |
-| Server Actions | backend-engineer | code-reviewer |
-| Realtime Subscriptions | backend-engineer | code-reviewer |
-| Complex UI | frontend-engineer | code-reviewer |
-| Simple UI | frontend-engineer | code-reviewer |
-| API Routes | backend-engineer | code-reviewer |
-| Auth/Security | backend-engineer | code-reviewer |
-| Documentation | technical-documentation-writer | - |
+```
+# WRONG - Creates type mismatches
+Task(backend-engineer, "Create API")
+Task(frontend-engineer, "Build form")  // Parallel = broken types
+
+# CORRECT - Sequential with handoff
+1. backend-engineer → Server Action with types
+2. frontend-engineer → UI using those types
+```
+
+### 4. NEVER Skip Task File Validation
+
+```
+# WRONG
+"Let me start implementing task 0001..."
+
+# CORRECT
+1. Verify file exists: ./docs/specs/{feature}/tasks/0001-*.md
+2. Read task file completely
+3. Then delegate
+```
+
+---
+
+## YOUR AUTHORITY (What You CAN Do)
+
+| Allowed | Examples |
+|---------|----------|
+| Read task specs | `./docs/specs/{feature}/tasks/*.md` |
+| Analyze requirements | Categorize as backend/frontend/both |
+| Delegate to agents | Task() calls to specialized agents |
+| Coordinate handoffs | Pass Server Action paths to frontend |
+| Validate completion | Check task requirements are met |
+| Update task file | Mark checkboxes, add notes |
+
+---
+
+## USAGE
+
+```
+/kc:impl [task-reference]
+```
+
+### Supported Formats
+
+| Format | Example | Meaning |
+|--------|---------|---------|
+| Task ID | `0001` | Single task file `./docs/specs/*/tasks/0001-*.md` |
+| Task range | `0001-0005` | Tasks 0001 through 0005 |
+| Task list | `0001,0003,0007` | Specific tasks |
+| Phase ref | `P3.1` or `P3.1-P3.9` | Phase-numbered tasks |
+| Path | `docs/specs/auth/tasks/` | All tasks in directory |
+| Explicit | `phase 3 in docs/specs/feature/tasks.md` | Natural language |
+
+---
+
+## EXECUTION WORKFLOW
+
+### Step 1: Find & Validate Task File
+
+```
+Location pattern: ./docs/specs/{feature-name}/tasks/
+File pattern: {NNNN}-{slug}.md (e.g., 0001-redesign-card.md)
+
+IF file not found:
+  → List available specs: ls ./docs/specs/
+  → Ask user to clarify
+  → STOP
+
+IF file empty or malformed:
+  → Report issue
+  → STOP
+```
+
+### Step 2: Categorize Work
+
+Read the task file and classify each requirement:
+
+```
+Backend work (→ backend-engineer):
+- [ ] Database schema changes
+- [ ] Server Actions (app/actions/*.ts)
+- [ ] API routes (app/api/*.ts)
+- [ ] RLS policies
+- [ ] Auth logic
+
+Frontend work (→ frontend-engineer):
+- [ ] UI components
+- [ ] Styling/layout
+- [ ] Client state
+- [ ] Form handling
+
+Review work (→ code-reviewer):
+- [ ] Security audit
+- [ ] Type validation
+- [ ] Build verification
+```
+
+### Step 3: Select Agent(s)
+
+```
+DECISION TREE:
+
+Is this pure backend work?
+├─ YES → backend-engineer only
+│        Then code-reviewer
+│
+└─ NO → Is this pure frontend work?
+        ├─ YES → frontend-engineer only
+        │        Then code-reviewer
+        │
+        └─ NO → Full-stack feature
+                 1. backend-engineer (database + Server Actions)
+                 2. frontend-engineer (UI using backend types)
+                 3. code-reviewer (full review)
+```
+
+### Step 4: Delegate with Full Context
+
+**Single-Agent Pattern (most tasks):**
+
+```
+Task(
+  subagent_type="frontend-engineer",
+  prompt="Implement tasks P3.1-P3.9 from spec at docs/specs/feature/tasks/0001.md
+
+  Requirements:
+  1. [Requirement from spec]
+  2. [Requirement from spec]
+
+  Context:
+  - Server Action available at: app/actions/feature.ts
+  - Use frontend-design plugin
+
+  Complete ALL tasks in this single session."
+)
+```
+
+**Multi-Agent Pattern (full-stack):**
+
+```
+# Step 1: Backend first
+Task(
+  subagent_type="backend-engineer",
+  prompt="Per spec at docs/specs/feature/tasks/0001.md, implement:
+  1. Database migration for [table]
+  2. Server Actions: [list specific actions]
+
+  Return: File paths and function signatures for frontend handoff"
+)
+
+# Step 2: Frontend uses backend output
+Task(
+  subagent_type="frontend-engineer",
+  prompt="Per spec at docs/specs/feature/tasks/0001.md, implement:
+  1. [UI requirement]
+  2. [UI requirement]
+
+  Backend provides:
+  - Server Action: app/actions/feature.ts
+  - Types: CreateFeatureInput, Feature
+
+  Use frontend-design plugin."
+)
+
+# Step 3: Review
+Task(
+  subagent_type="code-reviewer",
+  prompt="Review implementation against spec at docs/specs/feature/tasks/0001.md
+
+  Files changed:
+  - [list from previous steps]
+
+  Verify: Types match, build passes, spec requirements met"
+)
+```
+
+### Step 5: Validate & Update Task File
+
+```
+After agent completion:
+1. Verify build: /kc:build
+2. Update task file:
+   - [x] Mark completed items
+   - Add "Implemented: [date]" note
+   - Document any deviations
+3. Report results
+```
+
+---
+
+## AGENT REFERENCE
+
+### Core Agents
+
+| Agent | Authority | When to Use |
+|-------|-----------|-------------|
+| `backend-engineer` | Database, Server Actions, API, Auth, RLS | Any data layer work |
+| `frontend-engineer` | UI components, styling, client state | Any presentation work |
+| `code-reviewer` | Review, testing, security, fixes | ALWAYS after implementation |
+
+### Specialized Agents (Use Sparingly)
+
+| Agent | Use When |
+|-------|----------|
+| `kiro-executor` | Ad-hoc spec docs NOT in `./docs/specs/*/tasks/` format |
+| `ai-sdk-v5-expert` | Vercel AI SDK v5 integration specifically |
+| `technical-documentation-writer` | User manuals, tutorials (not code docs) |
+
+---
+
+## TOKEN BUDGET
+
+**Cap: 20k tokens (typical: 5-15k)**
+
+Orchestration should be lightweight. Most tokens go to delegated agents.
+
+### Efficiency Rules
+
+1. Read task file ONCE, extract all requirements
+2. Delegate with FULL context (minimize agent re-reads)
+3. Single agent session per task set
+4. Pass file PATHS, not file CONTENTS
+5. Sequential agents, not parallel
+
+### Resume ONLY When
+
+- User explicitly requests to continue previous work
+- Agent hit token limit mid-task (unexpected)
+- Critical error requiring restart
+
+---
+
+## OUTPUT FORMAT
+
+```
+## /kc:impl Execution Complete
+
+### Task Reference
+Spec: [path to task file]
+Tasks: [IDs implemented]
+
+### Agent Execution
+| Agent | Work Done | Status |
+|-------|-----------|--------|
+| backend-engineer | [summary] | [pass/skip] |
+| frontend-engineer | [summary] | [pass/skip] |
+| code-reviewer | [summary] | [pass/fail] |
+
+### Files Changed
+- `[path]`: [description]
+- `[path]`: [description]
+
+### Task File Updated
+- [x] [Requirement 1]
+- [x] [Requirement 2]
+- [ ] [Requirement 3] - Deferred: [reason]
+
+### Build Status
+[pass/fail]
+
+### Next Steps
+[if any follow-up needed]
+```
+
+---
+
+## STOP CONDITIONS
+
+Halt and request guidance if:
+
+- Task file not found at expected path
+- Task requirements are ambiguous or conflicting
+- Backend/frontend boundary unclear for a requirement
+- Agent reports handoff needed outside its authority
+- Build fails after code-reviewer pass
+- Approaching 20k tokens
+
+---
+
+## QUICK DECISION GUIDE
+
+```
+User says: /kc:impl 0001
+
+You do:
+1. Find: ./docs/specs/*/tasks/0001-*.md
+2. Read task file
+3. Classify: backend? frontend? both?
+4. Delegate (sequential if both)
+5. Run code-reviewer
+6. Update task file
+7. Report results
+
+Total time: < 20k tokens
+```
