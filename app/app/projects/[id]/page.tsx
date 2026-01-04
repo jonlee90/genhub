@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProjectDetailContent } from '@/components/projects/ProjectDetailContent';
 import type { Database } from '@/types/database.types';
+import type { TaskStats } from '@/app/actions/projects';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -289,6 +290,109 @@ async function getProjectData(id: string) {
 
   console.log('[getProjectData] Expense stats:', expenseStats);
 
+  // Calculate task stats
+  const projectTasks = project?.tasks || [];
+  const now = new Date();
+
+  // Query tasks with assignee info for workload distribution
+  const { data: tasksWithAssignees } = await supabase
+    .from('tasks')
+    .select(`
+      id,
+      status,
+      assignee_id,
+      user_profiles!tasks_assignee_id_fkey (
+        id,
+        name,
+        avatar_url
+      )
+    `)
+    .eq('project_id', id)
+    .not('status', 'eq', 'completed');
+
+  // Query material assignments for material cost
+  const { data: materialAssignments, error: materialAssignmentsError } = await supabase
+    .from('material_assignments')
+    .select('task_id, total_cost')
+    .eq('project_id', id);
+
+  if (materialAssignmentsError) {
+    console.error('[ProjectDetailPage] Error fetching material assignments:', materialAssignmentsError);
+  }
+
+  const materialCostByTask = new Map<string, number>();
+  const tasksWithMaterialsSet = new Set<string>();
+
+  materialAssignments?.forEach(ma => {
+    if (ma.task_id) {
+      tasksWithMaterialsSet.add(ma.task_id);
+      const current = materialCostByTask.get(ma.task_id) || 0;
+      materialCostByTask.set(ma.task_id, current + (Number(ma.total_cost) || 0));
+    }
+  });
+
+  // Calculate task counts
+  const total = projectTasks.length;
+  const completed = projectTasks.filter(t => t.status === 'completed').length;
+  const inProgress = projectTasks.filter(t => t.status === 'in_progress').length;
+  const blocked = projectTasks.filter(t => t.status === 'blocked').length;
+  const overdue = projectTasks.filter(t =>
+    t.due_date && new Date(t.due_date) < now && t.status !== 'completed'
+  ).length;
+
+  // Calculate budget stats
+  const totalPlannedCost = projectTasks.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
+  const totalActualCost = projectTasks.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
+  const budgetVariance = totalPlannedCost - totalActualCost; // positive = under budget
+  const budgetUtilization = totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
+
+  // Calculate workload distribution
+  const assigneeTaskCounts = new Map<string, { id: string; name: string; avatar_url: string | null; taskCount: number }>();
+
+  tasksWithAssignees?.forEach(task => {
+    if (task.assignee_id && task.user_profiles) {
+      const current = assigneeTaskCounts.get(task.assignee_id);
+      if (current) {
+        current.taskCount++;
+      } else {
+        assigneeTaskCounts.set(task.assignee_id, {
+          id: task.user_profiles.id,
+          name: task.user_profiles.name || 'Unknown',
+          avatar_url: task.user_profiles.avatar_url,
+          taskCount: 1,
+        });
+      }
+    }
+  });
+
+  const topAssignees = Array.from(assigneeTaskCounts.values())
+    .sort((a, b) => b.taskCount - a.taskCount)
+    .slice(0, 3);
+
+  const unassignedCount = tasksWithAssignees?.filter(t => !t.assignee_id).length || 0;
+
+  // Calculate material impact
+  const tasksWithMaterials = tasksWithMaterialsSet.size;
+  const totalMaterialCost = Array.from(materialCostByTask.values()).reduce((sum, cost) => sum + cost, 0);
+
+  const taskStats: TaskStats = {
+    total,
+    completed,
+    inProgress,
+    blocked,
+    overdue,
+    totalPlannedCost,
+    totalActualCost,
+    budgetVariance,
+    budgetUtilization,
+    unassignedCount,
+    topAssignees,
+    tasksWithMaterials,
+    totalMaterialCost,
+  };
+
+  console.log('[getProjectData] Task stats:', taskStats);
+
   // Fetch active 3D model for this project
   const { data: activeModel } = await supabase
     .from('projects_3d_models')
@@ -300,7 +404,7 @@ async function getProjectData(id: string) {
 
   console.log('[getProjectData] Active 3D model:', activeModel);
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, activeModel };
+  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -324,9 +428,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, activeModel } = data;
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel } = data;
 
-  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats);
+  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'and task stats:', taskStats);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -372,6 +476,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           phaseTaskStats={phaseTaskStats || []}
           taskDependencies={taskDependencies || []}
           expenseStats={expenseStats}
+          taskStats={taskStats}
           activeModel={activeModel || null}
         />
       </div>

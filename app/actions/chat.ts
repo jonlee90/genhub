@@ -89,12 +89,12 @@ async function getUserContext() {
   const supabase = await createClient();
 
   // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
+  const { data: companyUser, error: companyError } = (await supabase
     .from('company_users')
     .select('company_id, role, status')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
-    .single();
+    .single()) as { data: any; error: any };
 
   if (companyError || !companyUser) {
     console.error('[getUserContext] No active company found:', companyError);
@@ -128,12 +128,12 @@ async function verifyChatRoomAccess(
   console.log('[verifyChatRoomAccess] Verifying access for user:', userId, 'to room:', chatRoomId);
 
   // Check if user is a participant in the chat room
-  const { data: participant, error } = await supabase
+  const { data: participant, error } = (await supabase
     .from('chat_participants')
     .select('id, role')
     .eq('chat_room_id', chatRoomId)
     .eq('user_id', userId)
-    .single();
+    .single()) as { data: any; error: any };
 
   if (error || !participant) {
     console.error('[verifyChatRoomAccess] Access denied:', error);
@@ -214,8 +214,8 @@ export async function sendMessage(formData: FormData) {
   console.log('[sendMessage] User has access, inserting message...');
 
   // Insert message (without nested relationship to avoid FK errors)
-  const { data: messageData, error: insertError } = await supabase
-    .from('messages')
+  const { data: messageData, error: insertError } = (await (supabase
+    .from('messages') as any)
     .insert({
       chat_room_id: data.chatRoomId,
       sender_id: userId,
@@ -224,7 +224,7 @@ export async function sendMessage(formData: FormData) {
       entity_references: data.entityReferences || [],
     })
     .select('*')
-    .single();
+    .single()) as { data: any; error: any };
 
   if (insertError) {
     console.error('[sendMessage] Error inserting message:', insertError);
@@ -275,11 +275,11 @@ export async function sendMessage(formData: FormData) {
   // }
 
   // Get chat room details for push notifications
-  const { data: chatRoom } = await supabase
+  const { data: chatRoom } = (await supabase
     .from('chat_rooms')
     .select('id, name, type')
     .eq('id', data.chatRoomId)
-    .single();
+    .single()) as { data: any; error: any };
 
   // Create mention notifications for @user references
   if (data.entityReferences && data.entityReferences.length > 0) {
@@ -302,8 +302,8 @@ export async function sendMessage(formData: FormData) {
         }));
 
       if (mentionNotifications.length > 0) {
-        const { error: notificationError } = await supabase
-          .from('notifications')
+        const { error: notificationError } = await (supabase
+          .from('notifications') as any)
           .insert(mentionNotifications);
 
         if (notificationError) {
@@ -321,18 +321,18 @@ export async function sendMessage(formData: FormData) {
     console.log('[sendMessage] Creating notification for reply to message:', data.replyToId);
 
     // Get the parent message to find the author
-    const { data: parentMessage, error: parentError } = await supabase
+    const { data: parentMessage, error: parentError } = (await supabase
       .from('messages')
       .select('sender_id')
       .eq('id', data.replyToId)
-      .single();
+      .single()) as { data: any; error: any };
 
     if (!parentError && parentMessage && parentMessage.sender_id !== userId) {
       // Don't notify if replying to your own message
       console.log('[sendMessage] Creating notification for user:', parentMessage.sender_id);
 
-      const { error: notificationError } = await supabase
-        .from('notifications')
+      const { error: notificationError } = await (supabase
+        .from('notifications') as any)
         .insert({
           user_id: parentMessage.sender_id,
           type: 'mention', // Using 'mention' type for thread replies
@@ -356,11 +356,11 @@ export async function sendMessage(formData: FormData) {
   console.log('[sendMessage] Triggering push notifications for offline recipients...');
 
   // Get all participants in the chat room (excluding sender)
-  const { data: participants } = await supabase
+  const { data: participants } = (await supabase
     .from('chat_participants')
     .select('user_id, muted_until')
     .eq('chat_room_id', data.chatRoomId)
-    .neq('user_id', userId);
+    .neq('user_id', userId)) as { data: any; error: any };
 
   if (participants && participants.length > 0) {
     console.log('[sendMessage] Found', participants.length, 'potential recipients');
@@ -476,8 +476,8 @@ export async function markMessagesAsRead(chatRoomId: string) {
   console.log('[markMessagesAsRead] Updating last_read_at timestamp...');
 
   // Update last_read_at for the user's participant record
-  const { error: updateError } = await supabase
-    .from('chat_participants')
+  const { error: updateError } = await (supabase
+    .from('chat_participants') as any)
     .update({ last_read_at: new Date().toISOString() })
     .eq('chat_room_id', chatRoomId)
     .eq('user_id', userId);
@@ -512,7 +512,7 @@ export async function getThreadMessages(parentMessageId: string) {
   const { userId, supabase } = userContext;
 
   // Get the parent message first
-  const { data: parentMessage, error: parentError } = await supabase
+  const { data: parentMessage, error: parentError } = (await supabase
     .from('messages')
     .select(`
       *,
@@ -525,7 +525,7 @@ export async function getThreadMessages(parentMessageId: string) {
     `)
     .eq('id', parentMessageId)
     .is('deleted_at', null)
-    .single();
+    .single()) as { data: any; error: any };
 
   if (parentError) {
     console.error('[getThreadMessages] Error fetching parent message:', parentError);
@@ -751,15 +751,15 @@ export async function toggleReaction(messageId: string, emoji: string) {
     // Reaction doesn't exist, add it
     console.log('[toggleReaction] Adding new reaction');
 
-    const { data: newReaction, error: insertError } = await supabase
-      .from('message_reactions')
+    const { data: newReaction, error: insertError } = (await (supabase
+      .from('message_reactions') as any)
       .insert({
         message_id: data.messageId,
         user_id: userId,
         emoji: data.emoji,
       })
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (insertError) {
       console.error('[toggleReaction] Error adding reaction:', insertError);
@@ -1099,8 +1099,8 @@ export async function uploadAttachment(formData: FormData) {
     }
 
     // Create attachment record in database
-    const { data: attachment, error: insertError } = await supabase
-      .from('message_attachments')
+    const { data: attachment, error: insertError } = (await (supabase
+      .from('message_attachments') as any)
       .insert({
         message_id: messageId,
         file_name: file.name,
@@ -1110,7 +1110,7 @@ export async function uploadAttachment(formData: FormData) {
         thumbnail_url: thumbnailUrl,
       })
       .select()
-      .single();
+      .single()) as { data: any; error: any };
 
     if (insertError) {
       console.error('[uploadAttachment] Error creating attachment record:', insertError);
@@ -1573,8 +1573,8 @@ export async function createDMRoom(recipientUserId: string) {
   // Create new DM room
   console.log('[chat-actions] Creating new DM room...');
 
-  const { data: newRoom, error: createError } = await supabase
-    .from('chat_rooms')
+  const { data: newRoom, error: createError } = (await (supabase
+    .from('chat_rooms') as any)
     .insert({
       name: `DM: ${recipient.name}`, // DM room name (not displayed in UI)
       type: 'dm',
@@ -1582,7 +1582,7 @@ export async function createDMRoom(recipientUserId: string) {
       project_id: null, // DMs are not project-specific
     })
     .select()
-    .single();
+    .single()) as { data: any; error: any };
 
   if (createError || !newRoom) {
     console.error('[chat-actions] Error creating DM room:', createError);
@@ -1592,8 +1592,8 @@ export async function createDMRoom(recipientUserId: string) {
   console.log('[chat-actions] Created new DM room:', newRoom.id);
 
   // Add both users as participants with 'member' role
-  const { error: participantsError } = await supabase
-    .from('chat_participants')
+  const { error: participantsError } = await (supabase
+    .from('chat_participants') as any)
     .insert([
       {
         chat_room_id: newRoom.id,

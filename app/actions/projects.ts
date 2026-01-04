@@ -47,6 +47,34 @@ export interface ExpenseStats {
   rejectedAmount: number;
 }
 
+export interface TaskStats {
+  // Core Counts
+  total: number;
+  completed: number;
+  inProgress: number;
+  blocked: number;
+  overdue: number;
+
+  // Budget (Primary Focus)
+  totalPlannedCost: number;
+  totalActualCost: number;
+  budgetVariance: number;        // planned - actual (positive = under budget)
+  budgetUtilization: number;     // actual / planned * 100
+
+  // Workload Distribution
+  unassignedCount: number;
+  topAssignees: Array<{
+    id: string;
+    name: string;
+    avatar_url: string | null;
+    taskCount: number;
+  }>;
+
+  // Material Impact
+  tasksWithMaterials: number;
+  totalMaterialCost: number;
+}
+
 export interface ProjectStats {
   actualSpent: number;
   plannedCost: number;

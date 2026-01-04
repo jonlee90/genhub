@@ -354,7 +354,7 @@ The Service Worker environment variable injection system is now fully implemente
 
 ---
 
-**Fixed by:** backend-engineer agent
-**Reviewed by:** code-reviewer agent
+**Fixed by:** agent-backend-engineer agent
+**Reviewed by:** agent-code-reviewer agent
 **Date:** 2025-12-30
 **Version:** 1.0.0

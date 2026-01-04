@@ -67,7 +67,7 @@ Add:
 - [x] Create manifest.json
 - [x] Generate PWA icons (icons already existed, created apple-touch-icon)
 - [x] Update root layout
-- [x] Review implementation with code-reviewer agent
+- [x] Review implementation with agent-code-reviewer agent
 - [x] Fix config.ts branding issue
 - [x] Update task file
 

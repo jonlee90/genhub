@@ -2,6 +2,15 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { MaterialsSearch } from '@/components/materials/MaterialsSearch';
+import { MaterialSummary } from '@/components/materials/MaterialSummary';
+import { TrackedMaterialsCarousel } from '@/components/materials/TrackedMaterialsCarousel';
+import { MaterialsList } from '@/components/materials/MaterialsList';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import {
+  getTaskLinkedMaterials,
+  getTrackedMaterials,
+  getMaterialSummaryStats,
+} from '@/app/actions/materials';
 import { Package, Boxes, DollarSign, TrendingUp } from 'lucide-react';
 
 async function getMaterialsData() {
@@ -124,8 +133,34 @@ async function getMaterialsData() {
   };
 }
 
-export default async function MaterialsPage() {
+export default async function MaterialsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
+  console.log('[MaterialsPage] Rendering with searchParams:', params);
+
+  const page = parseInt(params.page || '1');
   const { projects, totalMaterials, totalCost, pendingOrders } = await getMaterialsData();
+
+  // Parallel data fetching for new components
+  const [materialsResult, trackedResult, statsResult] = await Promise.all([
+    getTaskLinkedMaterials(page, 12),
+    getTrackedMaterials(),
+    getMaterialSummaryStats(),
+  ]);
+
+  // Handle errors from server actions
+  if (materialsResult.error) {
+    console.error('[MaterialsPage] Error fetching materials:', materialsResult.error);
+  }
+  if (trackedResult.error) {
+    console.error('[MaterialsPage] Error fetching tracked materials:', trackedResult.error);
+  }
+  if (statsResult.error) {
+    console.error('[MaterialsPage] Error fetching summary stats:', statsResult.error);
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -241,6 +276,39 @@ export default async function MaterialsPage() {
 
       {/* Materials Search Interface */}
       <MaterialsSearch projects={projects} />
+
+      {/* New Materials Enhancement Section */}
+      <div className="space-y-4 md:space-y-6">
+        {/* MaterialSummary - 5-card grid with stats */}
+        <ErrorBoundary>
+          {statsResult.data ? (
+            <MaterialSummary
+              stats={statsResult.data}
+              trackedCount={trackedResult.data?.length || 0}
+            />
+          ) : (
+            <div className="text-sm text-gray-500 text-center py-4">
+              Unable to load summary stats
+            </div>
+          )}
+        </ErrorBoundary>
+
+        {/* TrackedMaterialsCarousel - horizontal scroll */}
+        <ErrorBoundary>
+          <TrackedMaterialsCarousel
+            materials={trackedResult.data || []}
+          />
+        </ErrorBoundary>
+
+        {/* MaterialsList - paginated grid */}
+        <ErrorBoundary>
+          <MaterialsList
+            initialMaterials={materialsResult.data?.materials || []}
+            initialPage={page}
+            initialTotalPages={materialsResult.data?.totalPages || 1}
+          />
+        </ErrorBoundary>
+      </div>
 
       {/* Decorative bottom border */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />

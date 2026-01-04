@@ -5,6 +5,7 @@ import { Calendar, Building2, MapPin, DollarSign, Box, User, Mail, Phone } from 
 import { motion } from 'framer-motion';
 import { MetroJourney } from './MetroJourney';
 import { ProjectExpenseSummary } from './ProjectExpenseSummary';
+import { ProjectTaskSummary } from './ProjectTaskSummary';
 import { IFCUploader } from './spatial/IFCUploader';
 import { ModelManagementPanel } from './spatial/ModelManagementPanel';
 import { ViewerToolbar } from './spatial/ViewerToolbar';
@@ -31,7 +32,7 @@ interface PhaseStats {
 }
 
 // Fix C2: Import ExpenseStats instead of duplicating
-import type { ExpenseStats } from '@/app/actions/projects';
+import type { ExpenseStats, TaskStats } from '@/app/actions/projects';
 
 interface ProjectOverviewProps {
   project: any;
@@ -52,11 +53,12 @@ interface ProjectOverviewProps {
   }>;
   phaseTaskStats?: PhaseStats[];
   expenseStats?: ExpenseStats;
+  taskStats?: TaskStats;
   activeModel?: any;
 }
 
-export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, activeModel }: ProjectOverviewProps) {
-  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats);
+export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, taskStats, activeModel }: ProjectOverviewProps) {
+  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats, 'and task stats:', taskStats);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
@@ -214,11 +216,19 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
             </motion.div>
           )}
 
+          {/* Task Summary Widget */}
+          {taskStats && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.6 }}
+            >
+              <ProjectTaskSummary
+                taskStats={taskStats}
+              />
+            </motion.div>
+          )}
 
-   
-
-   
-        
         </motion.div>
 
         {/* Sidebar Column - 1/3 */}
@@ -258,107 +268,34 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
                   show: !!project.client_phone,
                 },
               ]}
+              footerContent={
+                (project.created_at || project.updated_at) && (
+                  <div className="border-t-2 border-gray-100 pt-4 mt-4 space-y-3 col-span-full">
+                    {project.created_at && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Created
+                        </div>
+                        <div className="text-xs font-medium text-gray-600">
+                          {formatDate(project.created_at)}
+                        </div>
+                      </div>
+                    )}
+                    {project.updated_at && (
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                          Last Updated
+                        </div>
+                        <div className="text-xs font-medium text-gray-600">
+                          {formatDate(project.updated_at)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
             />
           )}
-
-           {/* Project Details Card */}
-           <InfoCard
-            headerIcon={Building2}
-            headerTitle="Project Details"
-            headerDescription="Core information"
-            columns={1}
-            fields={[
-              {
-                label: 'Budget',
-                value: <span className="text-lg">{formatCurrency(project.budget)}</span>,
-                icon: DollarSign,
-                show: project.budget && project.budget > 0,
-              },
-              {
-                label: 'Health Score',
-                value: project.health,
-                isProgressBar: true,
-                progressValue: project.health,
-                progressColor: project.health >= 75
-                  ? 'bg-[#059669]'
-                  : project.health >= 50
-                  ? 'bg-[#FFB627]'
-                  : 'bg-[#DC2626]',
-                show: typeof project.health === 'number',
-              },
-              {
-                label: 'Completion',
-                value: project.completion_percentage,
-                isProgressBar: true,
-                progressValue: project.completion_percentage,
-                progressColor: 'bg-[#001B51]',
-                show: typeof project.completion_percentage === 'number',
-              },
-              {
-                label: 'Status',
-                value: (
-                  <>
-                    <div className={`w-2 h-2 rounded-full ${
-                      project.status === 'active'
-                        ? 'bg-[#059669]'
-                        : project.status === 'completed'
-                        ? 'bg-[#001B51]'
-                        : project.status === 'on_hold'
-                        ? 'bg-[#FFB627]'
-                        : 'bg-gray-400'
-                    }`} />
-                    {project.status?.replace('_', ' ')}
-                  </>
-                ),
-                isBadge: true,
-                show: !!project.status,
-              },
-              {
-                label: 'Start Date',
-                value: formatDate(project.start_date),
-                icon: Calendar,
-                show: !!project.start_date,
-              },
-              {
-                label: 'Target Completion',
-                value: formatDate(project.end_date),
-                icon: Calendar,
-                show: !!project.end_date,
-              },
-              {
-                label: 'Location',
-                value: project.location,
-                icon: MapPin,
-                show: !!project.location,
-              },
-            ]}
-            footerContent={
-              (project.created_at || project.updated_at) && (
-                <div className="border-t-2 border-gray-100 pt-4 mt-4 space-y-3 col-span-full">
-                  {project.created_at && (
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Created
-                      </div>
-                      <div className="text-xs font-medium text-gray-600">
-                        {formatDate(project.created_at)}
-                      </div>
-                    </div>
-                  )}
-                  {project.updated_at && (
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Last Updated
-                      </div>
-                      <div className="text-xs font-medium text-gray-600">
-                        {formatDate(project.updated_at)}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            }
-          />
 
         </motion.div>
       </div>

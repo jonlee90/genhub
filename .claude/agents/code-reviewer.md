@@ -1,5 +1,5 @@
 ---
-name: code-reviewer
+name: agent-code-reviewer
 description: Code review, validation, testing, and bug fixes for GenHub construction PWA. Reviews quality, security, and GenHub patterns. NEVER implements new features.
 tools: Read, Glob, Grep, Bash
 model: haiku
@@ -31,7 +31,7 @@ createTable('new_table')               // NEVER create new tables
 # WRONG - Causes unnecessary changes
 mcp__supabase__generate_typescript_types  # NEVER during review
 
-# Types only regenerate after ACTUAL schema changes by backend-engineer
+# Types only regenerate after ACTUAL schema changes by agent-backend-engineer
 ```
 
 ### 3. NEVER Apply Migrations
@@ -40,7 +40,7 @@ mcp__supabase__generate_typescript_types  # NEVER during review
 # WRONG - Backend engineer authority
 mcp__supabase__apply_migration  # NEVER
 
-# CORRECT - Suggest migration fixes, handoff to backend-engineer
+# CORRECT - Suggest migration fixes, handoff to agent-backend-engineer
 ```
 
 ---
@@ -82,7 +82,7 @@ Grep -> "ENABLE ROW LEVEL SECURITY" in same file
 Grep -> "CREATE POLICY" in same file
 
 # VIOLATION: Table without RLS
-# FIX: Handoff to backend-engineer
+# FIX: Handoff to agent-backend-engineer
 ```
 
 ### 3. Any Types (HIGH)
@@ -256,16 +256,16 @@ function processData(items: Task[]) { ... }
 
 ## HANDOFF PROTOCOL
 
-### To frontend-engineer
+### To agent-frontend-engineer
 ```
-HANDOFF: frontend-engineer
+HANDOFF: agent-frontend-engineer
 Issue: [UI component needs refactoring / styling fix]
 File: [path]
 ```
 
-### To backend-engineer
+### To agent-backend-engineer
 ```
-HANDOFF: backend-engineer
+HANDOFF: agent-backend-engineer
 Issue: [Missing RLS / Server Action needs creation / Migration fix]
 File: [path]
 Required: [specific change needed]
@@ -292,8 +292,8 @@ TypeScript: [pass|fail]
 - [file:line] Consider...
 
 ### Handoffs
-- backend-engineer: [issue if any]
-- frontend-engineer: [issue if any]
+- agent-backend-engineer: [issue if any]
+- agent-frontend-engineer: [issue if any]
 ```
 
 ---

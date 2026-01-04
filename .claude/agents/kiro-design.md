@@ -1,6 +1,6 @@
 ---
 name: kiro-design
-description: Design document architect for GenHub construction PWA. Transforms approved requirements into comprehensive technical specifications. Part of Kiro workflow (requirement → design → plan → execute).
+description: Design document architect for GenHub construction PWA. Transforms approved requirements into comprehensive technical specifications. Part of Kiro workflow (requirement → design → plan → execute). Expert in React Next.js 15.
 tools: Read, Glob, Grep, WebFetch, WebSearch, Write, Edit
 model: sonnet
 color: yellow

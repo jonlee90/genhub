@@ -77,7 +77,7 @@ CREATE TABLE materials ( ... )               // NEVER write migrations
 | Read law docs | DB_SCHEMA for data model, SYSTEM for patterns |
 | Create task files | `docs/specs/{feature}/tasks.md` or `tasks/*.md` |
 | Break down work | Decompose design into atomic tasks |
-| Assign agent type | backend-engineer, frontend-engineer |
+| Assign agent type | agent-backend-engineer, agent-frontend-engineer |
 | Sequence tasks | Backend first, then frontend |
 
 ---
@@ -88,9 +88,9 @@ CREATE TABLE materials ( ... )               // NEVER write migrations
 
 | Agent | Assign When Task Involves |
 |-------|---------------------------|
-| `backend-engineer` | Database, migrations, RLS, Server Actions, API routes |
-| `frontend-engineer` | UI components, styling, client state, forms |
-| `code-reviewer` | Review, testing (always after implementation) |
+| `agent-backend-engineer` | Database, migrations, RLS, Server Actions, API routes |
+| `agent-frontend-engineer` | UI components, styling, client state, forms |
+| `agent-code-reviewer` | Review, testing (always after implementation) |
 
 ### GenHub Workflow (Task Order)
 
@@ -98,9 +98,9 @@ CREATE TABLE materials ( ... )               // NEVER write migrations
 CRITICAL: Backend types must exist before frontend uses them
 
 Order:
-1. backend-engineer → Database + Server Actions (creates types)
-2. frontend-engineer → UI components (uses those types)
-3. code-reviewer → Validates all work
+1. agent-backend-engineer → Database + Server Actions (creates types)
+2. agent-frontend-engineer → UI components (uses those types)
+3. agent-code-reviewer → Validates all work
 
 Tasks MUST respect this sequence in the task file.
 ```
@@ -111,7 +111,7 @@ Tasks MUST respect this sequence in the task file.
 |-------|------------|-------------------|
 | Frontend | Next.js 14+, Tailwind | Separate client vs server component tasks |
 | Backend | Supabase MCP | Database tasks use MCP tools |
-| Auth | NextAuth | Auth tasks go to backend-engineer |
+| Auth | NextAuth | Auth tasks go to agent-backend-engineer |
 | Icons | Lucide only | Mention in UI tasks |
 
 ---
@@ -200,7 +200,7 @@ Dependencies must be explicit:
 ```
 Each task must have:
 - [ ] Clear objective (what to build)
-- Agent assignment (backend-engineer OR frontend-engineer)
+- Agent assignment (agent-backend-engineer OR agent-frontend-engineer)
 - Files to create/modify
 - Specific requirements from design
 - Acceptance criteria
@@ -228,14 +228,14 @@ Compatible with: /kc:impl command
 
 | Task Type | Agent | Example |
 |-----------|-------|---------|
-| CREATE TABLE | backend-engineer | Migration for materials table |
-| RLS policy | backend-engineer | Company isolation policy |
-| Server Action | backend-engineer | getMaterials, createMaterial |
-| API route | backend-engineer | Webhook handler |
-| Page component | frontend-engineer | /app/materials/page.tsx |
-| Client component | frontend-engineer | MaterialCard, MaterialList |
-| Styling | frontend-engineer | Layout, responsive design |
-| Form handling | frontend-engineer | Validation, submission |
+| CREATE TABLE | agent-backend-engineer | Migration for materials table |
+| RLS policy | agent-backend-engineer | Company isolation policy |
+| Server Action | agent-backend-engineer | getMaterials, createMaterial |
+| API route | agent-backend-engineer | Webhook handler |
+| Page component | agent-frontend-engineer | /app/materials/page.tsx |
+| Client component | agent-frontend-engineer | MaterialCard, MaterialList |
+| Styling | agent-frontend-engineer | Layout, responsive design |
+| Form handling | agent-frontend-engineer | Validation, submission |
 
 ### Reference Format
 
@@ -299,7 +299,7 @@ Agent breakdown: X backend, Y frontend
 ## Phase 1: Database
 
 ### 1.1 Create {table_name} table migration
-- **Agent**: backend-engineer
+- **Agent**: agent-backend-engineer
 - **Files**: `supabase/migrations/YYYYMMDDHHMMSS_{name}.sql`
 - **Requirements**:
   - [ ] Create table with columns per design
@@ -313,7 +313,7 @@ Agent breakdown: X backend, Y frontend
 ## Phase 2: Backend
 
 ### 2.1 Implement get{Feature} Server Action
-- **Agent**: backend-engineer
+- **Agent**: agent-backend-engineer
 - **Files**: `app/actions/{feature}.ts`
 - **Requirements**:
   - [ ] Query with proper joins
@@ -327,7 +327,7 @@ Agent breakdown: X backend, Y frontend
 ## Phase 3: Frontend
 
 ### 3.1 Build {Feature}List component
-- **Agent**: frontend-engineer
+- **Agent**: agent-frontend-engineer
 - **Files**: `components/{feature}/{Feature}List.tsx`
 - **Requirements**:
   - [ ] Receive data as props (Server Component pattern)
@@ -342,7 +342,7 @@ Agent breakdown: X backend, Y frontend
 ## Phase 4: Testing & Review
 
 ### 4.1 Code review and build verification
-- **Agent**: code-reviewer
+- **Agent**: agent-code-reviewer
 - **Files**: All changed files
 - **Requirements**:
   - [ ] No Supabase in client components

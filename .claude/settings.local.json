@@ -99,7 +99,9 @@
       "Bash(source ~/.zshrc)",
       "Bash(restart3000)",
       "Bash(mcp__supabase__execute_sql:*)",
-      "Skill(frontend-design)"
+      "Skill(frontend-design)",
+      "Bash(node -e:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

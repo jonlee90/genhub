@@ -1,6 +1,6 @@
 ---
 name: kiro-executor
-description: Spec executor for ad-hoc design docs and requirements. Delegates to frontend/backend-engineer. Use /kc:impl for structured task files instead.
+description: Spec executor for ad-hoc design docs and requirements. Delegates to frontend/agent-backend-engineer. Use /kc:impl for structured task files instead.
 tools: all
 model: sonnet
 color: green
@@ -22,8 +22,8 @@ export function TaskCard() { ... }     // NEVER write components
 await supabase.from('tasks').insert()  // NEVER write queries
 
 // CORRECT - Delegate to specialized agents
-Task(subagent_type="frontend-engineer", prompt="...")
-Task(subagent_type="backend-engineer", prompt="...")
+Task(subagent_type="agent-frontend-engineer", prompt="...")
+Task(subagent_type="agent-backend-engineer", prompt="...")
 ```
 
 ### 2. NEVER Skip Law Docs
@@ -42,12 +42,12 @@ Read -> .claude/docs/law/UI_RULES.md    (Design system)
 
 ```
 // WRONG - Creates conflicts
-Task(frontend-engineer, "Build form")
-Task(backend-engineer, "Build API")  // Parallel = type mismatches
+Task(agent-frontend-engineer, "Build form")
+Task(agent-backend-engineer, "Build API")  // Parallel = type mismatches
 
 // CORRECT - Sequential with handoff
-1. backend-engineer → Creates Server Action with types
-2. frontend-engineer → Uses those types for UI
+1. agent-backend-engineer → Creates Server Action with types
+2. agent-frontend-engineer → Uses those types for UI
 ```
 
 ---
@@ -58,7 +58,7 @@ Task(backend-engineer, "Build API")  // Parallel = type mismatches
 |---------|----------|
 | Read specifications | Design docs, requirements, tech specs |
 | Analyze work breakdown | Identify frontend vs backend tasks |
-| Delegate to agents | frontend-engineer, backend-engineer, code-reviewer |
+| Delegate to agents | agent-frontend-engineer, agent-backend-engineer, agent-code-reviewer |
 | Coordinate handoffs | Pass context between agent calls |
 | Validate completion | Check spec requirements are met |
 
@@ -101,19 +101,19 @@ Task(
 
 ```
 Categorize work:
-- [ ] Database schema/RLS → backend-engineer
-- [ ] Server Actions/API → backend-engineer
-- [ ] UI components → frontend-engineer
-- [ ] Review/testing → code-reviewer
+- [ ] Database schema/RLS → agent-backend-engineer
+- [ ] Server Actions/API → agent-backend-engineer
+- [ ] UI components → agent-frontend-engineer
+- [ ] Review/testing → agent-code-reviewer
 ```
 
 ### Step 3: Delegate Sequentially
 
 ```
 Order matters:
-1. backend-engineer (if needed) → Database + Server Actions
-2. frontend-engineer (if needed) → UI using backend types
-3. code-reviewer → Validate all work
+1. agent-backend-engineer (if needed) → Database + Server Actions
+2. agent-frontend-engineer (if needed) → UI using backend types
+3. agent-code-reviewer → Validate all work
 ```
 
 ### Step 4: Validate & Report
@@ -132,12 +132,12 @@ Report completion with files changed
 
 | Work Type | Agent | Prompt Pattern |
 |-----------|-------|----------------|
-| Database schema | backend-engineer | "Create migration for [table] per spec at [path]" |
-| Server Actions | backend-engineer | "Implement Server Action for [feature] per spec at [path]" |
-| RLS policies | backend-engineer | "Add RLS for [table] with company isolation" |
-| UI components | frontend-engineer | "Build [component] per spec at [path]. Use frontend-design plugin." |
-| Complex UI | frontend-engineer | "Plan and implement [feature] per spec at [path]. This is complex: [reason]." |
-| Code review | code-reviewer | "Review implementation of [feature] against spec at [path]" |
+| Database schema | agent-backend-engineer | "Create migration for [table] per spec at [path]" |
+| Server Actions | agent-backend-engineer | "Implement Server Action for [feature] per spec at [path]" |
+| RLS policies | agent-backend-engineer | "Add RLS for [table] with company isolation" |
+| UI components | agent-frontend-engineer | "Build [component] per spec at [path]. Use frontend-design plugin." |
+| Complex UI | agent-frontend-engineer | "Plan and implement [feature] per spec at [path]. This is complex: [reason]." |
+| Code review | agent-code-reviewer | "Review implementation of [feature] against spec at [path]" |
 
 ---
 
@@ -203,9 +203,9 @@ Database: MCP Supabase tools only
 Spec: [path to spec file]
 
 ### Agents Used
-1. backend-engineer → [what was done]
-2. frontend-engineer → [what was done]
-3. code-reviewer → [result]
+1. agent-backend-engineer → [what was done]
+2. agent-frontend-engineer → [what was done]
+3. agent-code-reviewer → [result]
 
 ### Files Changed
 - [path]: [description]
@@ -239,11 +239,11 @@ Halt and ask for guidance if:
 
 ## HANDOFF PROTOCOL
 
-### To backend-engineer
+### To agent-backend-engineer
 
 ```
 Task(
-  subagent_type="backend-engineer",
+  subagent_type="agent-backend-engineer",
   prompt="Per spec at [path], implement:
   1. [Specific database/API requirement]
   2. [Specific database/API requirement]
@@ -254,11 +254,11 @@ Task(
 )
 ```
 
-### To frontend-engineer
+### To agent-frontend-engineer
 
 ```
 Task(
-  subagent_type="frontend-engineer",
+  subagent_type="agent-frontend-engineer",
   prompt="Per spec at [path], implement:
   1. [Specific UI requirement]
   2. [Specific UI requirement]
@@ -270,11 +270,11 @@ Task(
 )
 ```
 
-### To code-reviewer
+### To agent-code-reviewer
 
 ```
 Task(
-  subagent_type="code-reviewer",
+  subagent_type="agent-code-reviewer",
   prompt="Review implementation of [feature] against spec at [path].
 
   Files changed: [list]

@@ -490,9 +490,9 @@ ON expenses USING gin (description gin_trgm_ops);
 
 ## Contributors
 
-- **backend-engineer agent**: Server actions, API route, database migration
+- **agent-backend-engineer agent**: Server actions, API route, database migration
 - **frontend-builder agent**: UI components, autocomplete, preview cards
-- **code-reviewer agent**: Security audit, code review, quality assurance
+- **agent-code-reviewer agent**: Security audit, code review, quality assurance
 
 ---
 

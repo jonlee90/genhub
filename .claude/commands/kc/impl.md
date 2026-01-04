@@ -20,32 +20,32 @@ await supabase.from('tasks').insert()  // NEVER write queries
 className="bg-[#001B51]"               // NEVER write styles
 
 // CORRECT - Delegate to specialized agents
-Task(subagent_type="frontend-engineer", prompt="...")
-Task(subagent_type="backend-engineer", prompt="...")
+Task(subagent_type="agent-frontend-engineer", prompt="...")
+Task(subagent_type="agent-backend-engineer", prompt="...")
 ```
 
 ### 2. NEVER Launch Multiple Agent Sessions for Same Task Set
 
 ```
 # WRONG - Wastes tokens (context reload each session)
-Task(frontend-engineer, "P3.1-P3.4")
+Task(agent-frontend-engineer, "P3.1-P3.4")
 Resume(agent_id, "P3.5-P3.7")
 Resume(agent_id, "P3.8-P3.9")
 
 # CORRECT - Single session with all tasks
-Task(frontend-engineer, "Implement P3.1-P3.9: [full context]")
+Task(agent-frontend-engineer, "Implement P3.1-P3.9: [full context]")
 ```
 
 ### 3. NEVER Run Backend + Frontend in Parallel for Same Feature
 
 ```
 # WRONG - Creates type mismatches
-Task(backend-engineer, "Create API")
-Task(frontend-engineer, "Build form")  // Parallel = broken types
+Task(agent-backend-engineer, "Create API")
+Task(agent-frontend-engineer, "Build form")  // Parallel = broken types
 
 # CORRECT - Sequential with handoff
-1. backend-engineer → Server Action with types
-2. frontend-engineer → UI using those types
+1. agent-backend-engineer → Server Action with types
+2. agent-frontend-engineer → UI using those types
 ```
 
 ### 4. NEVER Skip Task File Validation
@@ -117,20 +117,20 @@ IF file empty or malformed:
 Read the task file and classify each requirement:
 
 ```
-Backend work (→ backend-engineer):
+Backend work (→ agent-backend-engineer):
 - [ ] Database schema changes
 - [ ] Server Actions (app/actions/*.ts)
 - [ ] API routes (app/api/*.ts)
 - [ ] RLS policies
 - [ ] Auth logic
 
-Frontend work (→ frontend-engineer):
+Frontend work (→ agent-frontend-engineer):
 - [ ] UI components
 - [ ] Styling/layout
 - [ ] Client state
 - [ ] Form handling
 
-Review work (→ code-reviewer):
+Review work (→ agent-code-reviewer):
 - [ ] Security audit
 - [ ] Type validation
 - [ ] Build verification
@@ -142,17 +142,17 @@ Review work (→ code-reviewer):
 DECISION TREE:
 
 Is this pure backend work?
-├─ YES → backend-engineer only
-│        Then code-reviewer
+├─ YES → agent-backend-engineer only
+│        Then agent-code-reviewer
 │
 └─ NO → Is this pure frontend work?
-        ├─ YES → frontend-engineer only
-        │        Then code-reviewer
+        ├─ YES → agent-frontend-engineer only
+        │        Then agent-code-reviewer
         │
         └─ NO → Full-stack feature
-                 1. backend-engineer (database + Server Actions)
-                 2. frontend-engineer (UI using backend types)
-                 3. code-reviewer (full review)
+                 1. agent-backend-engineer (database + Server Actions)
+                 2. agent-frontend-engineer (UI using backend types)
+                 3. agent-code-reviewer (full review)
 ```
 
 ### Step 4: Delegate with Full Context
@@ -161,7 +161,7 @@ Is this pure backend work?
 
 ```
 Task(
-  subagent_type="frontend-engineer",
+  subagent_type="agent-frontend-engineer",
   prompt="Implement tasks P3.1-P3.9 from spec at docs/specs/feature/tasks/0001.md
 
   Requirements:
@@ -181,7 +181,7 @@ Task(
 ```
 # Step 1: Backend first
 Task(
-  subagent_type="backend-engineer",
+  subagent_type="agent-backend-engineer",
   prompt="Per spec at docs/specs/feature/tasks/0001.md, implement:
   1. Database migration for [table]
   2. Server Actions: [list specific actions]
@@ -191,7 +191,7 @@ Task(
 
 # Step 2: Frontend uses backend output
 Task(
-  subagent_type="frontend-engineer",
+  subagent_type="agent-frontend-engineer",
   prompt="Per spec at docs/specs/feature/tasks/0001.md, implement:
   1. [UI requirement]
   2. [UI requirement]
@@ -205,7 +205,7 @@ Task(
 
 # Step 3: Review
 Task(
-  subagent_type="code-reviewer",
+  subagent_type="agent-code-reviewer",
   prompt="Review implementation against spec at docs/specs/feature/tasks/0001.md
 
   Files changed:
@@ -235,9 +235,9 @@ After agent completion:
 
 | Agent | Authority | When to Use |
 |-------|-----------|-------------|
-| `backend-engineer` | Database, Server Actions, API, Auth, RLS | Any data layer work |
-| `frontend-engineer` | UI components, styling, client state | Any presentation work |
-| `code-reviewer` | Review, testing, security, fixes | ALWAYS after implementation |
+| `agent-backend-engineer` | Database, Server Actions, API, Auth, RLS | Any data layer work |
+| `agent-frontend-engineer` | UI components, styling, client state | Any presentation work |
+| `agent-code-reviewer` | Review, testing, security, fixes | ALWAYS after implementation |
 
 ### Specialized Agents (Use Sparingly)
 
@@ -283,9 +283,9 @@ Tasks: [IDs implemented]
 ### Agent Execution
 | Agent | Work Done | Status |
 |-------|-----------|--------|
-| backend-engineer | [summary] | [pass/skip] |
-| frontend-engineer | [summary] | [pass/skip] |
-| code-reviewer | [summary] | [pass/fail] |
+| agent-backend-engineer | [summary] | [pass/skip] |
+| agent-frontend-engineer | [summary] | [pass/skip] |
+| agent-code-reviewer | [summary] | [pass/fail] |
 
 ### Files Changed
 - `[path]`: [description]
@@ -313,7 +313,7 @@ Halt and request guidance if:
 - Task requirements are ambiguous or conflicting
 - Backend/frontend boundary unclear for a requirement
 - Agent reports handoff needed outside its authority
-- Build fails after code-reviewer pass
+- Build fails after agent-code-reviewer pass
 - Approaching 20k tokens
 
 ---
@@ -328,7 +328,7 @@ You do:
 2. Read task file
 3. Classify: backend? frontend? both?
 4. Delegate (sequential if both)
-5. Run code-reviewer
+5. Run agent-code-reviewer
 6. Update task file
 7. Report results
 

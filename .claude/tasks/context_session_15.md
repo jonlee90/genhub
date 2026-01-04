@@ -154,9 +154,9 @@ Once Firebase is configured and migrations are applied:
    - Industrial design elements (riveted borders, diagonal stripes, metal textures)
 
 4. **Agent Delegation Pattern**
-   - `backend-engineer` for all database and server-side work
+   - `agent-backend-engineer` for all database and server-side work
    - `frontend-builder` for all UI implementation (uses `frontend-design` plugin)
-   - `code-reviewer` for security audits and bug detection
+   - `agent-code-reviewer` for security audits and bug detection
    - All agents use MCP Supabase for database operations
 
 ---

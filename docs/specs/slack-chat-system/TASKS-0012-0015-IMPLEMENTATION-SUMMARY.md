@@ -654,9 +654,9 @@ npx supabase secrets set FCM_SERVER_KEY=your_fcm_server_key
 
 ## Contributors
 
-- **backend-engineer agent**: Database, server actions, Edge Function, Service Worker, React hooks
+- **agent-backend-engineer agent**: Database, server actions, Edge Function, Service Worker, React hooks
 - **frontend-builder agent**: UI components, notification preferences, mute controls
-- **code-reviewer agent**: Security audit, performance analysis, code review
+- **agent-code-reviewer agent**: Security audit, performance analysis, code review
 
 ---
 

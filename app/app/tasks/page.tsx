@@ -3,6 +3,8 @@ import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
+import { getTaskAnalytics } from '@/app/actions/tasks';
+import type { TaskAnalytics } from '@/types/analytics';
 
 interface TasksPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -314,6 +316,31 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
   // Get view mode from URL or default to kanban
   const viewMode = (params.view as string) || 'kanban';
 
+  // Fetch task analytics for the dashboard
+  let analytics: TaskAnalytics | undefined;
+  let analyticsError: string | undefined;
+
+  const session = await auth();
+  if (session?.user?.id) {
+    const supabase = await createClient();
+    const { data: companyUser } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (companyUser?.company_id) {
+      const analyticsResult = await getTaskAnalytics('all', companyUser.company_id);
+      if (analyticsResult.error) {
+        console.error('[TasksPage] Analytics fetch failed:', analyticsResult.error);
+        analyticsError = analyticsResult.error;
+      } else {
+        analytics = analyticsResult.data;
+      }
+    }
+  }
+
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
@@ -349,7 +376,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
         </div>
       </div>
 
-      {/* Task Board with Dashboard Stats */}
+      {/* Task Board with Analytics */}
       <TaskBoard
         initialTasks={tasks}
         taskDependencies={taskDependencies}
@@ -357,6 +384,8 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
         teamMembers={teamMembers}
         initialView={viewMode as 'kanban' | 'list'}
         topTeamMembers={topTeamMembers}
+        analytics={analytics}
+        analyticsError={analyticsError}
       />
 
       {/* Decorative bottom border */}

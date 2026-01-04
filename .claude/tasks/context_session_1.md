@@ -797,7 +797,7 @@ Visual hierarchy improvements:
 
 ## Projects Module Code Review - COMPLETED
 **Date**: 2025-12-05
-**Reviewer**: code-reviewer agent
+**Reviewer**: agent-code-reviewer agent
 
 ### Review Summary
 Comprehensive code review completed for Epic 2: Projects Module. Overall grade: **B+ (85/100)**.
@@ -2579,7 +2579,7 @@ All documentation files are now in sync with codebase reality (2025-12-06).
 
 ## Code Review - Epic 4, Task 1: Team Member Management
 **Date**: 2025-12-06
-**Reviewer**: code-reviewer agent
+**Reviewer**: agent-code-reviewer agent
 **Review Document**: `.claude/tasks/epic4_task1_code_review.md`
 
 ### Review Summary

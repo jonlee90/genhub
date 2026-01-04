@@ -2,7 +2,7 @@
 ## Project Configuration Templates Feature
 
 **Date:** 2026-01-01  
-**Reviewer:** code-reviewer (Claude Sonnet 4.5)  
+**Reviewer:** agent-code-reviewer (Claude Sonnet 4.5)  
 **Feature Version:** v1.0 (Initial Implementation)  
 **Status:** ⚠️ **PASS with CRITICAL FIXES REQUIRED**
 
@@ -918,7 +918,7 @@ Add `SECURITY DEFINER` and `search_path` to all helper functions to satisfy data
 
 ---
 
-**Reviewed By:** code-reviewer (Claude Sonnet 4.5)  
+**Reviewed By:** agent-code-reviewer (Claude Sonnet 4.5)  
 **Review Date:** 2026-01-01  
 **Next Review:** After responsive fixes implemented
 

@@ -3,5 +3,15 @@
     "app/api/spatial/convert-model/route.ts": {
       "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/update-material-prices",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-price-history",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }

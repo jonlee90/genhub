@@ -7,18 +7,19 @@ import { TaskList } from './TaskList';
 import { TaskFilters } from './TaskFilters';
 import { TaskModal } from './TaskModal';
 import { GanttChart } from './gantt/GanttChart';
-import { DashboardStats } from './DashboardStats';
+import { TaskAnalyticsSection } from './TaskAnalyticsSection';
 import { TopProjectsCard } from './TopProjectsCard';
 import { TopTeamMembersCard } from './TopTeamMembersCard';
 import { transformTasksForGantt } from './gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LayoutGrid, List, Plus } from 'lucide-react';
+import { LayoutGrid, List, Plus, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/types/database.types';
+import type { TaskAnalytics } from '@/types/analytics';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
   assignee?: {
@@ -82,6 +83,10 @@ interface TaskBoardProps {
   showNewTaskButton?: boolean;
   /** Top 5 team members by completed tasks (for dashboard stats) */
   topTeamMembers?: TopTeamMember[];
+  /** Task analytics data (Tasks page only) */
+  analytics?: TaskAnalytics;
+  /** Analytics error message (if fetch failed) */
+  analyticsError?: string;
 }
 
 export function TaskBoard({
@@ -94,7 +99,14 @@ export function TaskBoard({
   phases,
   showNewTaskButton,
   topTeamMembers = [],
+  analytics,
+  analyticsError,
 }: TaskBoardProps) {
+  console.log('[TaskBoard] Rendering', {
+    isProjectContext: !!projectId,
+    hasAnalytics: !!analytics,
+    analyticsError
+  });
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -189,6 +201,40 @@ export function TaskBoard({
     }
   };
 
+  // Handle analytics filter change (click-to-filter from analytics cards)
+  const handleAnalyticsFilterChange = (filter: {
+    status?: string;
+    assignee?: string;
+    priority?: string;
+    materialStatus?: string;
+  }) => {
+    console.log('[TaskBoard] Analytics filter change:', filter);
+
+    // Apply assignee filter
+    if (filter.assignee !== undefined) {
+      setAssigneeFilter(filter.assignee); // 'unassigned' or UUID
+    }
+
+    // Apply priority filter
+    if (filter.priority !== undefined) {
+      setPriorityFilter(filter.priority); // 'high', 'medium', 'low'
+    }
+
+    // Analytics-specific status filters (overdue, at-risk, blocked)
+    // These are calculated states, not direct task.status values
+    // For MVP: Log to console (future: implement custom filter logic)
+    if (filter.status !== undefined) {
+      console.log('[TaskBoard] Analytics status filter (not yet implemented):', filter.status);
+      // TODO: Implement custom filtering for 'overdue', 'at-risk', 'blocked'
+    }
+
+    // Material status filter
+    if (filter.materialStatus !== undefined) {
+      console.log('[TaskBoard] Material status filter (not yet implemented):', filter.materialStatus);
+      // TODO: Implement material status filter
+    }
+  };
+
   // Transform tasks for Gantt chart
   const ganttTasks = useMemo(() => transformTasksForGantt(filteredTasks), [filteredTasks]);
 
@@ -238,13 +284,28 @@ export function TaskBoard({
         </motion.div>
       )}
 
-      {/* Dashboard Stats - Only show on Tasks page (not in project context) */}
-      {!isProjectContext && initialTasks.length > 0 && (
-        <DashboardStats
-          tasks={filteredTasks}
-          projectFilter={projectFilter}
-          projects={projects}
-        />
+      {/* Task Analytics Section - Only show on Tasks page (not in project context) */}
+      {!isProjectContext && (
+        analyticsError ? (
+          // Error banner if analytics fetch failed
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-lg"
+          >
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <div>
+              <p className="text-sm font-bold text-red-900">Analytics Unavailable</p>
+              <p className="text-xs text-red-700">{analyticsError}</p>
+            </div>
+          </motion.div>
+        ) : analytics ? (
+          // Task Analytics Section (replaces DashboardStats)
+          <TaskAnalyticsSection
+            analytics={analytics}
+            onFilterChange={handleAnalyticsFilterChange}
+          />
+        ) : null
       )}
 
       {/* Gantt Chart Timeline - Above Task Board */}

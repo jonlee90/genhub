@@ -436,5 +436,5 @@ The only blocker for deployment is adding RLS policies to the migration files, w
 ---
 
 **Report Generated:** 2026-01-02
-**Reviewed By:** code-reviewer agent (acca7b5)
-**Implemented By:** backend-engineer (aaacb21) + frontend-engineer (a1b9e7a)
+**Reviewed By:** agent-code-reviewer agent (acca7b5)
+**Implemented By:** agent-backend-engineer (aaacb21) + agent-frontend-engineer (a1b9e7a)

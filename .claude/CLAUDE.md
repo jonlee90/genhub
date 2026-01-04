@@ -57,9 +57,9 @@ Violation causes build failure: `Module not found: Can't resolve 'child_process'
 
 | Agent | Authority | Tools |
 |-------|-----------|-------|
-| frontend-engineer | UI components, styling, client state | frontend-design plugin |
-| backend-engineer | Database, APIs, auth, server logic | MCP Supabase |
-| code-reviewer | Validation, testing, fixes | Read, Grep, Bash |
+| agent-agent-frontend-engineer | UI components, styling, client state | frontend-design plugin |
+| agent-agent-backend-engineer | Database, APIs, auth, server logic | MCP Supabase |
+| agent-agent-code-reviewer | Validation, testing, fixes | Read, Grep, Bash |
 
 **Boundaries are strict.** If task crosses agent authority, handoff explicitly.
 
@@ -70,7 +70,7 @@ Simple: Implement -> Quick Review
 Backend: MCP Supabase + Server Actions -> Security Audit
 ```
 
-Canonical: `/kc:impl -> agent execution -> code-reviewer -> /kc:build`
+Canonical: `/kc:impl -> agent execution -> agent-code-reviewer -> /kc:build`
 
 ## TOKEN DISCIPLINE
 
@@ -81,9 +81,9 @@ Canonical: `/kc:impl -> agent execution -> code-reviewer -> /kc:build`
 4. Build logs: `npm run build 2>&1 | grep -E "error|Error" -A 3`
 
 ### Budgets (hard caps)
-- backend-engineer: 25k max (typical: 3-20k)
-- frontend-engineer: 35k max (typical: 5-25k)
-- code-reviewer: 15k max (typical: 2-12k)
+- agent-backend-engineer: 25k max (typical: 3-20k)
+- agent-frontend-engineer: 35k max (typical: 5-25k)
+- agent-code-reviewer: 15k max (typical: 2-12k)
 
 Stop early and request continuation if approaching cap.
 
@@ -108,6 +108,83 @@ Halt and request guidance if:
 - Design rules conflict
 - Required context file missing
 - Approaching token cap
+
+## 11. AGENT ACTION LOGGING & AUDIT REPORTING (MANDATORY)
+
+All agents MUST log their actions during task execution and produce an **Audit Report** at the end of each task.
+
+This system exists to:
+- Improve agent prompts over time
+- Identify token waste and unnecessary reads
+- Detect authority or rule violations
+- Surface unclear rules and missing documentation
+- Make agents progressively better with real evidence
+
+---
+
+### ACTION LOGGING (INTERNAL, LIGHTWEIGHT)
+
+During execution, agents MUST internally track the following.
+❌ Do NOT stream logs during execution  
+✅ Logs are summarized ONLY in the final Audit Report
+
+Agents MUST track:
+- Agent name
+- Task type (UI / Backend / Review)
+- Task complexity (Simple / Complex)
+- Files read (path + reason)
+- Files modified (path + reason)
+- Tools used (Grep, Read, MCP Supabase, frontend-design, etc.)
+- Planning decision (Plan-first vs Direct-implement)
+- Handoffs to other agents (if any)
+- Blockers, ambiguities, or missing context
+
+---
+
+### AUDIT REPORT (REQUIRED FINAL OUTPUT)
+
+At the end of EVERY task, agents MUST append an **Audit Report** after their normal output.
+
+#### REQUIRED FORMAT (DO NOT MODIFY)
+
+```md
+## 🧾 Agent Audit Report
+
+**Agent:** frontend-engineer | backend-engineer | code-reviewer  
+**Task Type:** UI / Backend / Review  
+**Task Complexity:** Simple / Complex  
+
+### Actions Taken
+- Planned before implementation: Yes / No
+- Tools used:
+  - Grep
+  - Read
+  - MCP Supabase
+  - frontend-design
+- Files read:
+  - path/to/file.ts – reason
+- Files modified:
+  - path/to/file.ts – reason
+
+### Decisions & Reasoning
+- Key architectural or implementation decisions
+- Tradeoffs considered
+- CLAUDE.md rules relied upon
+
+### Issues Encountered
+- Ambiguous requirements
+- Missing or outdated documentation
+- Conflicting rules or constraints
+
+### Token & Efficiency Notes
+- Estimated token usage
+- Any unnecessary reads or rework
+- Suggestions to reduce token usage next time
+
+### Improvement Suggestions
+- Prompt improvements recommended
+- Rules that should be clarified or added
+- Docs that should be updated
 
 ---
 END

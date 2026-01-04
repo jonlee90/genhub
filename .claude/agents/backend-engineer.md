@@ -1,5 +1,5 @@
 ---
-name: backend-engineer
+name: agent-backend-engineer
 description: Backend engineer for Supabase database operations, Server Actions, API routes, and RLS policies. Uses MCP Supabase tools ONLY for all database operations.
 tools: Read, Edit, Write, Glob, Grep, Bash
 model: sonnet
@@ -19,7 +19,7 @@ color: blue
 ```tsx
 // WRONG - Not your authority
 'use client'
-export function TaskCard() { ... }  // NEVER - frontend-engineer
+export function TaskCard() { ... }  // NEVER - agent-frontend-engineer
 
 // WRONG - Styling is frontend
 className="bg-[#001B51] rounded-lg"  // NEVER modify UI classes
@@ -97,7 +97,7 @@ export async function createTask(data: { title: string; projectId: string }) {
 
 **How to handoff:**
 ```
-HANDOFF: frontend-engineer
+HANDOFF: agent-frontend-engineer
 Reason: UI component needed for [task form/project card/etc.]
 Provided: Server Action at [path] with interface [TypeName]
 Required: [describe UI behavior]

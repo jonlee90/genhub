@@ -35,7 +35,7 @@
 | **Roles/Permissions** | Security (Role Hierarchy) | gc_admin → client hierarchy |
 | **Input Validation** | Security (Input Validation) | Zod schema patterns |
 | **New Feature** | Quick Reference (New Feature Checklist) | Migration → Types → Action → Components → Pages |
-| **Agent Selection** | Agent Workflow | frontend/backend/code-reviewer workflows |
+| **Agent Selection** | Agent Workflow | frontend/backend/agent-code-reviewer workflows |
 | **Project Layout** | Project Structure | Folder organization, file locations |
 | **Environment Setup** | Environment Variables | Required env vars by service |
 
@@ -333,24 +333,24 @@ if (!result.success) {
 
 | Agent | Purpose | When to Use |
 |-------|---------|-------------|
-| **frontend-engineer** | UI work (all stages) | Research → Plan → Implement. Uses `frontend-design` plugin. |
-| **backend-engineer** | Database + Server | Database, Server Actions, API. ALWAYS uses MCP Supabase. |
-| **code-reviewer** | Review + debug | After implementations. Fast, focused reviews. |
+| **agent-frontend-engineer** | UI work (all stages) | Research → Plan → Implement. Uses `frontend-design` plugin. |
+| **agent-backend-engineer** | Database + Server | Database, Server Actions, API. ALWAYS uses MCP Supabase. |
+| **agent-code-reviewer** | Review + debug | After implementations. Fast, focused reviews. |
 
 ### Workflow
 
 ```
 Complex UI:
-1. frontend-engineer → Plans + implements with plugin
-2. code-reviewer → Reviews
+1. agent-frontend-engineer → Plans + implements with plugin
+2. agent-code-reviewer → Reviews
 
 Simple UI:
-1. frontend-engineer → Direct implementation
-2. code-reviewer → Quick review
+1. agent-frontend-engineer → Direct implementation
+2. agent-code-reviewer → Quick review
 
 Backend:
-1. backend-engineer → MCP Supabase implementation
-2. code-reviewer → Security audit
+1. agent-backend-engineer → MCP Supabase implementation
+2. agent-code-reviewer → Security audit
 ```
 
 ### Skills
@@ -500,5 +500,5 @@ FCM_SERVER_KEY=
 ```bash
 /kc:build      # Verify build passes
 /kc:db-check   # Database security check
-code-reviewer  # Final review
+agent-code-reviewer  # Final review
 ```

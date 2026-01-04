@@ -641,9 +641,9 @@ All feature documentation available in:
 
 ## Contributors
 
-- **backend-engineer agent**: Database migrations, server actions, React hooks
+- **agent-backend-engineer agent**: Database migrations, server actions, React hooks
 - **frontend-builder agent**: UI components, Aceternity integration, construction theme
-- **code-reviewer agent**: Security audit, code review, quality assurance
+- **agent-code-reviewer agent**: Security audit, code review, quality assurance
 
 ---
 

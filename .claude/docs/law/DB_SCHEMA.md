@@ -182,7 +182,7 @@ id uuid PK, project_id uuid FK, phase_id uuid FK, title text, description,
 status task_status, priority task_priority (low, medium, high),
 assignee_id uuid FK, subcontractor_id uuid FK,
 due_date date, planned_cost decimal(10,2), actual_cost decimal(10,2) (AUTO-CALC),
-blocker_reason text, display_order int, created_by uuid FK,
+blocked_reason text, display_order int, created_by uuid FK,
 completed_at timestamptz, created_at, updated_at
 -- Trigger: Updates actual_cost from materials + expenses
 -- Trigger: Sets completed_at on status change

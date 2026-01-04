@@ -159,10 +159,6 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
 
   return (
     <div className="relative">
-      {/* Industrial Grid Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
-        <BackgroundBoxes boxSize={40} className="text-[#001B51]" />
-      </div>
 
       <DndContext
         id={dndContextId}

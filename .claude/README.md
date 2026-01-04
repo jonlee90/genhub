@@ -271,7 +271,7 @@ components/
 - `aceternity-ui-expert` - UI component building
 - `frontend-expert` - Frontend development
 - `supabase-nextjs-expert` - Database optimization
-- `code-reviewer` - Code quality review
+- `agent-code-reviewer` - Code quality review
 - `technical-documentation-writer` - Documentation creation
 - `kiro-requirement` - Requirements analysis
 - `kiro-design` - Technical design

@@ -1072,3 +1072,548 @@ export async function getMaterialsByMarker(markerId: string) {
     return { success: false, error: 'Failed to fetch materials' };
   }
 }
+
+// ============================================
+// TASK 0051 - MATERIALS ENHANCEMENT
+// ============================================
+
+// TypeScript interfaces for new server actions
+export interface MaterialWithStats {
+  material_id: string;
+  product_name: string;
+  sku: string;
+  unit_price: number;
+  stock_status: string;
+  product_image_url?: string;
+  total_quantity: number;
+  task_count: number;
+  is_tracked: boolean;
+}
+
+export interface TrackedMaterial {
+  material_id: string;
+  product_name: string;
+  sku: string;
+  current_price: number;
+  previous_price?: number;
+  price_change_percent?: number;
+  product_image_url?: string;
+  stock_status: string;
+  tracked_at: string;
+}
+
+export interface MaterialSummaryStats {
+  total_materials_linked: number;
+  total_estimated_cost: number;
+  price_increases_last_7_days: number;
+  average_lead_time_days: number;
+}
+
+const toggleTrackingSchema = z.object({
+  material_id: z.string().uuid('Invalid material ID'),
+  track: z.boolean(),
+});
+
+const updateLeadTimeSchema = z.object({
+  material_id: z.string().uuid('Invalid material ID'),
+  lead_time_days: z.number().int().min(0).max(365, 'Lead time must be between 0 and 365 days'),
+});
+
+/**
+ * Get paginated list of task-linked materials sorted by quantity
+ * @param page - Page number (1-based)
+ * @param limit - Items per page (6-24, default 12)
+ */
+export async function getTaskLinkedMaterials(
+  page: number = 1,
+  limit: number = 12
+) {
+  console.log('[getTaskLinkedMaterials] Fetching page:', page, 'limit:', limit);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    // Validate pagination params
+    if (page < 1) {
+      return { success: false, error: 'Page must be >= 1' };
+    }
+    if (limit < 6 || limit > 24) {
+      return { success: false, error: 'Limit must be between 6 and 24' };
+    }
+
+    const supabase = await createClient();
+
+    // Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    // Get all material assignments for the company
+    const { data: assignments, error: assignmentsError } = await supabase
+      .from('material_assignments')
+      .select(`
+        material_id,
+        quantity,
+        task_id,
+        material:materials!inner (
+          id,
+          product_name,
+          sku,
+          unit_price,
+          stock_status,
+          product_image_url,
+          home_depot_product_id,
+          company_id
+        )
+      `)
+      .eq('material.company_id', companyUser.company_id);
+
+    if (assignmentsError) {
+      console.error('[getTaskLinkedMaterials] Assignments error:', assignmentsError);
+      return { success: false, error: 'Failed to fetch material assignments' };
+    }
+
+    // Aggregate by material_id
+    const materialMap = new Map<string, MaterialWithStats>();
+
+    for (const assignment of assignments || []) {
+      const material = assignment.material as any;
+      const materialId = assignment.material_id;
+
+      if (!materialMap.has(materialId)) {
+        materialMap.set(materialId, {
+          material_id: materialId,
+          product_name: material.product_name,
+          sku: material.sku,
+          unit_price: material.unit_price,
+          stock_status: material.stock_status,
+          product_image_url: material.product_image_url,
+          total_quantity: 0,
+          task_count: 0,
+          is_tracked: false,
+        });
+      }
+
+      const stats = materialMap.get(materialId)!;
+      stats.total_quantity += assignment.quantity;
+      stats.task_count++;
+    }
+
+    // Get tracking status for each material
+    const { data: trackedMaterials } = await supabase
+      .from('tracked_materials')
+      .select('material_id')
+      .eq('user_id', session.user.id);
+
+    const trackedIds = new Set((trackedMaterials || []).map((t) => t.material_id));
+
+    // Convert Map to array and mark tracked materials
+    const materialsArray = Array.from(materialMap.values());
+
+    for (const stats of materialsArray) {
+      stats.is_tracked = trackedIds.has(stats.material_id);
+    }
+
+    // Sort by total_quantity DESC
+    const sortedMaterials = materialsArray.sort(
+      (a, b) => b.total_quantity - a.total_quantity
+    );
+
+    // Paginate
+    const total = sortedMaterials.length;
+    const totalPages = Math.ceil(total / limit);
+    const offset = (page - 1) * limit;
+    const paginatedMaterials = sortedMaterials.slice(offset, offset + limit);
+
+    console.log('[getTaskLinkedMaterials] Found', paginatedMaterials.length, 'materials, total:', total);
+    return {
+      success: true,
+      data: {
+        materials: paginatedMaterials,
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error('[getTaskLinkedMaterials] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch task-linked materials' };
+  }
+}
+
+/**
+ * Get user's tracked materials (max 10) with price change indicators
+ */
+export async function getTrackedMaterials() {
+  console.log('[getTrackedMaterials] Fetching tracked materials');
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Get tracked materials with current and previous prices
+    const { data: tracked, error } = await supabase
+      .from('tracked_materials')
+      .select(`
+        material_id,
+        tracked_at,
+        material:materials (
+          id,
+          product_name,
+          sku,
+          unit_price,
+          product_image_url,
+          stock_status
+        )
+      `)
+      .eq('user_id', session.user.id)
+      .order('tracked_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('[getTrackedMaterials] Error:', error);
+      return { success: false, error: 'Failed to fetch tracked materials' };
+    }
+
+    // Calculate price changes
+    const materialsWithPriceChange: TrackedMaterial[] = await Promise.all(
+      (tracked || []).map(async (item: any) => {
+        const material = item.material;
+        const currentPrice = material.unit_price;
+
+        // Get price from 7 days ago
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const { data: priceHistory } = await supabase
+          .from('material_price_history')
+          .select('price')
+          .eq('material_id', item.material_id)
+          .lte('recorded_at', sevenDaysAgo.toISOString())
+          .order('recorded_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        const previousPrice = priceHistory?.price || null;
+        let priceChangePercent = null;
+
+        if (previousPrice && previousPrice > 0) {
+          priceChangePercent = ((currentPrice - previousPrice) / previousPrice) * 100;
+        }
+
+        return {
+          material_id: item.material_id,
+          product_name: material.product_name,
+          sku: material.sku,
+          current_price: currentPrice,
+          previous_price: previousPrice,
+          price_change_percent: priceChangePercent,
+          product_image_url: material.product_image_url,
+          stock_status: material.stock_status,
+          tracked_at: item.tracked_at,
+        };
+      })
+    );
+
+    console.log('[getTrackedMaterials] Found', materialsWithPriceChange.length, 'tracked materials');
+    return { success: true, data: materialsWithPriceChange };
+  } catch (error) {
+    console.error('[getTrackedMaterials] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch tracked materials' };
+  }
+}
+
+/**
+ * Toggle material tracking (add/remove from watchlist, max 10)
+ * @param material_id - Material UUID
+ * @param track - true to track, false to untrack
+ */
+export async function toggleTracking(material_id: string, track: boolean) {
+  console.log('[toggleTracking] Material:', material_id, 'track:', track);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const validated = toggleTrackingSchema.parse({ material_id, track });
+    const supabase = await createClient();
+
+    // Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    if (track) {
+      // Check current count (trigger will also enforce, but provide better UX)
+      const { count } = await supabase
+        .from('tracked_materials')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      if (count && count >= 10) {
+        return { success: false, error: 'Maximum 10 tracked materials allowed. Untrack one to add another.' };
+      }
+
+      // Verify material exists in user's company
+      const { data: material, error: materialError } = await supabase
+        .from('materials')
+        .select('id, unit_price')
+        .eq('id', material_id)
+        .eq('company_id', companyUser.company_id)
+        .single();
+
+      if (materialError || !material) {
+        return { success: false, error: 'Material not found' };
+      }
+
+      // Insert tracking record
+      const { error: trackError } = await supabase
+        .from('tracked_materials')
+        .insert({
+          company_id: companyUser.company_id,
+          user_id: session.user.id,
+          material_id,
+        });
+
+      if (trackError) {
+        // Handle duplicate tracking error
+        if (trackError.code === '23505') {
+          return { success: false, error: 'Material is already being tracked' };
+        }
+        console.error('[toggleTracking] Track error:', trackError);
+        return { success: false, error: 'Failed to track material' };
+      }
+
+      // Note: Baseline price recording will be handled by scheduled job
+      // RLS policy prevents regular users from inserting into material_price_history
+      // Only service role can insert (for price sync jobs)
+
+      console.log('[toggleTracking] Material tracked successfully');
+    } else {
+      // Untrack material
+      const { error: untrackError } = await supabase
+        .from('tracked_materials')
+        .delete()
+        .eq('user_id', session.user.id)
+        .eq('material_id', material_id);
+
+      if (untrackError) {
+        console.error('[toggleTracking] Untrack error:', untrackError);
+        return { success: false, error: 'Failed to untrack material' };
+      }
+
+      console.log('[toggleTracking] Material untracked successfully');
+    }
+
+    revalidatePath('/app/materials');
+    return { success: true };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0].message };
+    }
+    console.error('[toggleTracking] Unexpected error:', error);
+    return { success: false, error: 'Failed to toggle material tracking' };
+  }
+}
+
+/**
+ * Get material summary statistics for dashboard
+ */
+export async function getMaterialSummaryStats() {
+  console.log('[getMaterialSummaryStats] Fetching summary stats');
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    // Get basic stats (total materials, total cost, avg lead time)
+    const { data: basicStats, error: basicError } = await supabase
+      .from('material_assignments')
+      .select(`
+        material_id,
+        total_cost,
+        material:materials (
+          lead_time_days
+        )
+      `)
+      .in(
+        'material_id',
+        await supabase
+          .from('materials')
+          .select('id')
+          .eq('company_id', companyUser.company_id)
+          .then(({ data }) => data?.map((m) => m.id) || [])
+      );
+
+    if (basicError) {
+      console.error('[getMaterialSummaryStats] Basic stats error:', basicError);
+      return { success: false, error: 'Failed to fetch material stats' };
+    }
+
+    // Calculate unique materials and total cost
+    const uniqueMaterials = new Set((basicStats || []).map((a: any) => a.material_id));
+    const totalMaterialsLinked = uniqueMaterials.size;
+    const totalEstimatedCost = (basicStats || []).reduce(
+      (sum: number, a: any) => sum + Number(a.total_cost || 0),
+      0
+    );
+
+    // Calculate average lead time (only for materials with assignments)
+    const leadTimes = (basicStats || [])
+      .map((a: any) => a.material?.lead_time_days)
+      .filter((lt: any) => lt !== null && lt !== undefined);
+    const averageLeadTimeDays = leadTimes.length > 0
+      ? leadTimes.reduce((sum: number, lt: number) => sum + lt, 0) / leadTimes.length
+      : 0;
+
+    // Get price increases in last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const { data: materialsWithPrices, error: pricesError } = await supabase
+      .from('materials')
+      .select('id, unit_price')
+      .eq('company_id', companyUser.company_id)
+      .in('id', Array.from(uniqueMaterials));
+
+    if (pricesError) {
+      console.error('[getMaterialSummaryStats] Prices error:', pricesError);
+    }
+
+    let priceIncreasesLast7Days = 0;
+
+    if (materialsWithPrices) {
+      await Promise.all(
+        materialsWithPrices.map(async (material: any) => {
+          const { data: oldPrice } = await supabase
+            .from('material_price_history')
+            .select('price')
+            .eq('material_id', material.id)
+            .lte('recorded_at', sevenDaysAgo.toISOString())
+            .order('recorded_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          if (oldPrice && oldPrice.price < material.unit_price) {
+            priceIncreasesLast7Days++;
+          }
+        })
+      );
+    }
+
+    const stats: MaterialSummaryStats = {
+      total_materials_linked: totalMaterialsLinked,
+      total_estimated_cost: totalEstimatedCost,
+      price_increases_last_7_days: priceIncreasesLast7Days,
+      average_lead_time_days: Math.round(averageLeadTimeDays),
+    };
+
+    console.log('[getMaterialSummaryStats] Stats:', stats);
+    return { success: true, data: stats };
+  } catch (error) {
+    console.error('[getMaterialSummaryStats] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch material summary stats' };
+  }
+}
+
+/**
+ * Manually update material lead time
+ * @param material_id - Material UUID
+ * @param lead_time_days - Lead time in days (0-365)
+ */
+export async function updateMaterialLeadTime(
+  material_id: string,
+  lead_time_days: number
+) {
+  console.log('[updateMaterialLeadTime] Material:', material_id, 'lead time:', lead_time_days);
+
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const validated = updateLeadTimeSchema.parse({ material_id, lead_time_days });
+    const supabase = await createClient();
+
+    // Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    // Update lead time
+    const { data: material, error: updateError } = await supabase
+      .from('materials')
+      .update({ lead_time_days: validated.lead_time_days })
+      .eq('id', validated.material_id)
+      .eq('company_id', companyUser.company_id)
+      .select('id, product_name, lead_time_days')
+      .single();
+
+    if (updateError) {
+      console.error('[updateMaterialLeadTime] Update error:', updateError);
+      return { success: false, error: 'Failed to update material lead time' };
+    }
+
+    if (!material) {
+      return { success: false, error: 'Material not found' };
+    }
+
+    revalidatePath('/app/materials');
+    console.log('[updateMaterialLeadTime] Lead time updated successfully');
+    return { success: true, data: material };
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0].message };
+    }
+    console.error('[updateMaterialLeadTime] Unexpected error:', error);
+    return { success: false, error: 'Failed to update material lead time' };
+  }
+}

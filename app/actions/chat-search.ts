@@ -95,7 +95,18 @@ export interface MessageSearchResult {
 // Helper Functions
 // ============================================
 
-async function getUserContext() {
+type UserContextSuccess = {
+  userId: string;
+  companyId: string;
+  role: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+};
+
+type UserContextError = {
+  error: string;
+};
+
+async function getUserContext(): Promise<UserContextSuccess | UserContextError> {
   console.log('[getUserContext] Getting user session...');
 
   // Get NextAuth session
@@ -112,8 +123,8 @@ async function getUserContext() {
   const supabase = await createClient();
 
   // Get user's company and role using NextAuth user ID
-  const companyUserResult = await supabase
-    .from('company_users')
+  const companyUserResult = await (supabase
+    .from('company_users') as any)
     .select('company_id, role, status')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
@@ -125,7 +136,7 @@ async function getUserContext() {
   }
 
   type CompanyUserData = { company_id: string; role: string; status: string };
-  const companyUser = companyUserResult.data as unknown as CompanyUserData;
+  const companyUser = companyUserResult.data as CompanyUserData;
 
   console.log('[getUserContext] User context loaded:', {
     userId: session.user.id,
@@ -555,11 +566,11 @@ export async function searchMessages(query: string, chatRoomId?: string | null) 
       return { error: 'Failed to search messages' };
     }
 
-    console.log('[searchMessages] Found', rawMessages?.length || 0, 'raw results');
+    console.log('[searchMessages] Found', (rawMessages as any)?.length || 0, 'raw results');
 
     // Debug: Filter results to only rooms user has access to (via RLS we only get accessible rooms)
     // Additional check: verify user is participant
-    const messageIds = rawMessages?.map(m => m.id) || [];
+    const messageIds = (rawMessages as any)?.map((m: any) => m.id) || [];
 
     if (messageIds.length === 0) {
       console.log('[searchMessages] No messages found');
@@ -570,7 +581,7 @@ export async function searchMessages(query: string, chatRoomId?: string | null) 
     }
 
     // Debug: Verify user has access to these chat rooms
-    const roomIds = [...new Set(rawMessages?.map(m => m.chat_room_id) || [])];
+    const roomIds = [...new Set((rawMessages as any)?.map((m: any) => m.chat_room_id) || [])] as string[];
 
     const { data: accessibleRooms, error: accessError } = await supabase
       .from('chat_participants')
@@ -583,19 +594,19 @@ export async function searchMessages(query: string, chatRoomId?: string | null) 
       return { error: 'Failed to verify room access' };
     }
 
-    const accessibleRoomIds = new Set(accessibleRooms?.map(r => r.chat_room_id) || []);
+    const accessibleRoomIds = new Set((accessibleRooms as any)?.map((r: any) => r.chat_room_id) || []);
 
     console.log('[searchMessages] User has access to', accessibleRoomIds.size, 'of', roomIds.length, 'rooms');
 
     // Debug: Filter messages to only accessible rooms
-    const accessibleMessages = rawMessages?.filter(m => accessibleRoomIds.has(m.chat_room_id)) || [];
+    const accessibleMessages = (rawMessages as any)?.filter((m: any) => accessibleRoomIds.has(m.chat_room_id)) || [];
 
     console.log('[searchMessages] Filtered to', accessibleMessages.length, 'accessible messages');
 
     // Debug: Calculate relevance rank using ts_rank for ordering
     // We'll do this in memory since Supabase JS doesn't support ts_rank directly
     // For now, we'll order by created_at DESC
-    const sortedMessages = accessibleMessages.sort((a, b) =>
+    const sortedMessages = accessibleMessages.sort((a: any, b: any) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 

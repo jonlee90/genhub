@@ -1,5 +1,5 @@
 ---
-name: frontend-engineer
+name: agent-frontend-engineer
 description: Frontend engineer for GenHub construction PWA. UI components, styling, client state ONLY. No database, auth, or server logic.
 tools: Skill, Read, Edit, Write, Glob, Grep, Bash, WebFetch
 model: sonnet
@@ -51,8 +51,8 @@ export function TaskList({ tasks }: TaskListProps) {
 
 ```tsx
 // WRONG - Not your authority
-const session = await auth()           // NEVER - backend-engineer
-await supabase.from('tasks').insert()  // NEVER - backend-engineer
+const session = await auth()           // NEVER - agent-backend-engineer
+await supabase.from('tasks').insert()  // NEVER - agent-backend-engineer
 ```
 
 ---
@@ -117,7 +117,7 @@ export function TaskForm({ projectId, onSuccess }: TaskFormProps) {
 
 **How to handoff:**
 ```
-HANDOFF: backend-engineer
+HANDOFF: agent-backend-engineer
 Reason: Need Server Action for [task creation/data fetching/etc.]
 Required: [describe what backend needs to provide]
 ```

@@ -8,7 +8,18 @@ import type { ChatRoomWithUnread, MessageWithSender } from '@/types/chat.types';
 // Helper Functions
 // ============================================
 
-async function getUserContext() {
+type UserContextSuccess = {
+  userId: string;
+  userName: string;
+  companyId: string;
+  supabase: Awaited<ReturnType<typeof createClient>>;
+};
+
+type UserContextError = {
+  error: string;
+};
+
+async function getUserContext(): Promise<UserContextSuccess | UserContextError> {
   console.log('[chat-queries] Getting user session...');
 
   // Get NextAuth session
@@ -161,11 +172,10 @@ export async function getChatRooms(): Promise<{
   const roomsWithUnread: ChatRoomWithUnread[] = await Promise.all(
     (rooms || []).map(async (room) => {
       // Calculate unread count using get_unread_count function
-      const { data: unreadData, error: unreadError } = await supabase
-        .rpc('get_unread_count', {
-          p_chat_room_id: room.id,
-          p_user_id: userId,
-        });
+      const { data: unreadData, error: unreadError } = await (supabase.rpc as any)('get_unread_count', {
+        p_chat_room_id: room.id,
+        p_user_id: userId,
+      });
 
       const unreadCount = unreadError ? 0 : (unreadData || 0);
 
