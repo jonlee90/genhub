@@ -1,83 +1,113 @@
-# GenHub PWA - Critical Rules
+# CLAUDE.md - GenHub PWA Global Rules
 
-> **Minimal essential rules that apply to ALL agents. Agents have their own embedded references.**
+> GLOBAL, NON-NEGOTIABLE rules. Follow BEFORE agent-specific prompts.
 
-## Construction Theme (ALWAYS)
+## CRITICAL SAFETY RULES (HARD FAIL)
 
-- **Primary**: #001B51 (Navy Blue)
-- **Accent**: #3C3C3C (Dark Gray)
-- **Icons**: Lucide (construction context)
-- **Modals**: BaseModal (not Dialog)
-
-## Critical Don'ts
-
-❌ **NEVER import Supabase in client components** (`'use client'`)
-❌ **NO riveted borders, hazard stripes, custom fonts**
-✅ **USE MCP Supabase** (backend-engineer uses MCP Supabase for all database operations)
-
-## Agent Structure (Optimized)
-
-### Primary Agents (3 Core Agents)
-
-| Agent | Purpose | When to Use |
-|-------|---------|-------------|
-| **frontend-engineer** | Full frontend lifecycle | All UI work - research, planning, and implementation. Uses `frontend-design` plugin. Plans first for complex features, implements directly for simple tasks. |
-| **backend-engineer** | Supabase + Next.js server | Database, Server Actions, API routes, auth. |
-| **code-reviewer** | Review, debug, test, security | After implementations. Reviews code, fixes issues, runs checks. |
-
-### Agent Workflow
-
+### 1. Supabase Client Isolation
 ```
-Complex UI Feature:
-1. frontend-engineer → Plans architecture, then implements using frontend-design plugin
-2. code-reviewer → Reviews and fixes issues
+NEVER in 'use client' files:
+  - import from '@/utils/supabase/*'
+  - import { createClient } from '@supabase/supabase-js'
+  - any direct Supabase SDK usage
 
-Simple UI Change:
-1. frontend-engineer → Direct implementation with plugin
-2. code-reviewer → Quick review
-
-Backend Work:
-1. backend-engineer → Implements database API Supabase
-2. code-reviewer → Security audit
+ALWAYS use:
+  - Server Actions (app/actions/*.ts)
+  - API Routes (app/api/*)
+  - Server Components for data fetching
 ```
 
-## Agent Quick Reference
+Violation causes build failure: `Module not found: Can't resolve 'child_process'`
 
-| Agent | For | Tools |
-|-------|-----|-------|
-| frontend-engineer | UI | frontend-design plugin |
-| backend-engineer | Database/Server | MCP Supabase, Server Actions |
-| code-reviewer | Review/debug | Read, Grep, Bash |
+### 2. Architecture Separation
+- Client components (`'use client'`): UI rendering, user interaction, local state
+- Server Actions/Routes: ALL database queries, auth checks, mutations
+- No file may mix both responsibilities
 
-**Workflow**: /kc:impl → frontend/backend → code-reviewer → /kc:build
+## PROJECT CONTEXT
 
+**GenHub**: Construction PWA for general contractors.
 
-## Session Context
+**Stack**: Next.js 14+, Supabase (via MCP), Tailwind CSS, Lucide icons, Aceternity UI
 
-Check `.claude/tasks/context_session_x.md` before/after work
+**Priorities** (ordered):
+1. Correctness & safety
+2. Token efficiency
+3. Architectural consistency
+4. Visual consistency
+5. Delivery speed
+
+## DESIGN SYSTEM
+
+### Colors
+- Primary: `#001B51` (Navy)
+- Accent: `#3C3C3C` (Gray)
+
+### UI Requirements
+- Icons: Lucide only
+- Modals: `BaseModal` component only (not `Dialog`)
+- Style: Clean, professional, minimal decoration
+
+### Forbidden
+- Riveted borders, hazard stripes, decorative frames
+- Custom fonts (use system/Tailwind defaults)
+- Gratuitous animations
+
+## AGENT MODEL
+
+| Agent | Authority | Tools |
+|-------|-----------|-------|
+| frontend-engineer | UI components, styling, client state | frontend-design plugin |
+| backend-engineer | Database, APIs, auth, server logic | MCP Supabase |
+| code-reviewer | Validation, testing, fixes | Read, Grep, Bash |
+
+**Boundaries are strict.** If task crosses agent authority, handoff explicitly.
+
+### Workflow
+```
+Complex: Plan -> Implement -> Review -> Build
+Simple: Implement -> Quick Review
+Backend: MCP Supabase + Server Actions -> Security Audit
+```
+
+Canonical: `/kc:impl -> agent execution -> code-reviewer -> /kc:build`
+
+## TOKEN DISCIPLINE
+
+### Read Strategy
+1. Grep/search first, then Read with offset+limit
+2. Batch multiple small reads in one tool call
+3. Full file reads only for: <200 lines, configs, migrations
+4. Build logs: `npm run build 2>&1 | grep -E "error|Error" -A 3`
+
+### Budgets (hard caps)
+- backend-engineer: 25k max (typical: 3-20k)
+- frontend-engineer: 35k max (typical: 5-25k)
+- code-reviewer: 15k max (typical: 2-12k)
+
+Stop early and request continuation if approaching cap.
+
+## CONTEXT MANAGEMENT
+
+Before work: Read `.claude/tasks/context_session_x.md`
+After work: Update with changes, files touched, next steps
+
+### Law Docs (read only when relevant)
+| Doc | When |
+|-----|------|
+| `.claude/docs/law/SYSTEM.md` | Architecture changes |
+| `.claude/docs/law/DB_SCHEMA.md` | Database work |
+| `.claude/docs/law/UI_RULES.md` | UI consistency |
+| `.claude/docs/law/SPATIAL_VIEWER.md` | 3D/spatial views |
+
+## STOP CONDITIONS
+
+Halt and request guidance if:
+- Task requires Supabase in client component
+- Task violates agent authority boundaries
+- Design rules conflict
+- Required context file missing
+- Approaching token cap
 
 ---
-
-**Law Docs** (agents read when needed, not always):
-- `docs/law/SYSTEM.md` - Architecture
-- `docs/law/DB_SCHEMA.md` - Database
-- `docs/law/UI_RULES.md` - Design system
-- `docs/law/SPATIAL_VIEW.md` - components/projects/spatial (Only read this if task involves spatial and need more information)
-
-## Token Discipline (ALL AGENTS)
-
-### Core Principle
-**"Grep → Locate → Read with Context"** (never read-everything-first)
-
-### Patterns
-1. **Grep before Read**: `Grep → pattern` → `Read (offset=line-5, limit=30)`
-2. **Filter build output**: `npm run build 2>&1 | grep -E "error|Error" -A 3`
-3. **Parallel tool calls**: Batch independent Reads in single message
-4. **Full Read only**: Small files (<200 lines), configs, migrations
-
-### Agent Budgets
-| Agent | Simple | Complex | Max |
-|-------|--------|---------|-----|
-| backend-engineer | 3-8k | 10-20k | 25k |
-| frontend-engineer | 5-10k | 12-25k | 35k |
-| code-reviewer | 2-4k | 6-12k | 15k |
+END
