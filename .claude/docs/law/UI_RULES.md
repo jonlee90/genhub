@@ -305,6 +305,155 @@ xl:  1280px  (Large desktop)
 </details>
 
 <details>
+<summary><strong>InfoCard - Reusable Information Card</strong></summary>
+
+**Flexible information card with 1-4 column layouts, progress bars, badges, and interactive fields.**
+
+Location: `components/projects/ProjectOverview.tsx` (InfoCard component)
+
+**Features:**
+- Supports 1-4 column grid layouts (responsive)
+- Progress bars with custom colors
+- Status badges with icons
+- Interactive fields (email, phone, links)
+- Conditional rendering (show/hide fields)
+- Footer content support
+- Construction-themed styling
+
+```tsx
+import { InfoCard } from '@/components/projects/ProjectOverview';
+import { User, Mail, Phone, Building2, DollarSign, Calendar, MapPin } from 'lucide-react';
+
+// Single column (Client Info, User Details)
+<InfoCard
+  headerIcon={User}
+  headerTitle="Client Information"
+  headerDescription="Primary contact"
+  columns={1}
+  fields={[
+    {
+      label: 'Name',
+      value: 'John Doe',
+      show: true,
+    },
+    {
+      label: 'Email',
+      value: 'john@example.com',
+      icon: Mail,
+      href: 'john@example.com',
+      hrefType: 'email',
+    },
+    {
+      label: 'Phone',
+      value: '+1 (555) 123-4567',
+      icon: Phone,
+      href: '+1 (555) 123-4567',
+      hrefType: 'tel',
+    },
+  ]}
+/>
+
+// With progress bars and badges
+<InfoCard
+  headerIcon={Building2}
+  headerTitle="Project Details"
+  headerDescription="Core information"
+  columns={1}
+  fields={[
+    {
+      label: 'Budget',
+      value: <span className="text-lg">$500,000</span>,
+      icon: DollarSign,
+    },
+    {
+      label: 'Health Score',
+      value: 85,
+      isProgressBar: true,
+      progressValue: 85,
+      progressColor: 'bg-[#059669]', // Green for high health
+    },
+    {
+      label: 'Status',
+      value: (
+        <>
+          <div className="w-2 h-2 rounded-full bg-[#059669]" />
+          Active
+        </>
+      ),
+      isBadge: true,
+    },
+    {
+      label: 'Location',
+      value: '123 Main St, City, State',
+      icon: MapPin,
+    },
+  ]}
+  footerContent={
+    <div className="border-t-2 border-gray-100 pt-4 mt-4 space-y-3 col-span-full">
+      <div className="flex items-center justify-between">
+        <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          Created
+        </div>
+        <div className="text-xs font-medium text-gray-600">
+          January 1, 2024
+        </div>
+      </div>
+    </div>
+  }
+/>
+
+// Multi-column layout (2 columns for specifications)
+<InfoCard
+  headerIcon={Wrench}
+  headerTitle="Specifications"
+  headerDescription="Technical details"
+  columns={2}
+  fields={[
+    { label: 'Material', value: 'Concrete', show: true },
+    { label: 'Grade', value: 'A+', show: true },
+    { label: 'Width', value: '10ft', icon: Ruler },
+    { label: 'Height', value: '12ft', icon: Ruler },
+  ]}
+/>
+
+// Field types reference
+interface InfoCardField {
+  label: string;                    // Field label (uppercase)
+  value: string | number | ReactNode; // Field value or custom JSX
+  icon?: LucideIcon;                // Optional icon (Lucide)
+  href?: string;                    // Link URL (for email/phone/links)
+  hrefType?: 'email' | 'tel' | 'link'; // Link type
+  show?: boolean;                   // Conditional rendering (default: true)
+  isProgressBar?: boolean;          // Render as progress bar
+  progressValue?: number;           // Progress value (0-100)
+  progressColor?: string;           // Tailwind color class
+  isBadge?: boolean;                // Render as badge
+  badgeColor?: string;              // Tailwind color class
+  className?: string;               // Custom styling
+}
+
+// Column layouts (responsive)
+columns={1} // Single column (default) - mobile: 1, tablet: 1, desktop: 1
+columns={2} // Two columns - mobile: 1, tablet: 2, desktop: 2
+columns={3} // Three columns - mobile: 1, tablet: 2, desktop: 3
+columns={4} // Four columns - mobile: 1, tablet: 2, desktop: 4
+```
+
+**Use Cases:**
+- Client/User information cards
+- Project/Task details sidebars
+- Specification sheets
+- Multi-column data displays
+- Settings panels
+
+**Styling:**
+- Matches construction theme (#001B51, #3C3C3C)
+- Hover effects (gradient overlay)
+- Responsive grid layout
+- Consistent spacing (space-y-4)
+</details>
+
+<details>
 <summary><strong>Form Layout</strong></summary>
 
 ```tsx

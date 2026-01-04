@@ -2,7 +2,7 @@
 
 import { Box, Triangle, HardDrive, Layers, CheckCircle2, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
+import { InfoCard, InfoCardField } from '../InfoCard';
 import { Badge } from '@/components/ui/badge';
 
 export interface ModelStats {
@@ -56,111 +56,72 @@ export function ModelStatsDisplay({ stats, className }: ModelStatsDisplayProps) 
     }
   };
 
-  const statItems = [
+  const getStatusBadge = (status: ModelStats['processingStatus']) => {
+    if (!status) return null;
+    return (
+      <Badge className={cn('text-xs font-semibold px-2 py-1', getStatusColor(status))}>
+        <CheckCircle2 className="w-3 h-3 mr-1" />
+        {status}
+      </Badge>
+    );
+  };
+
+  // Build fields for InfoCard
+  const fields: InfoCardField[] = [
     {
-      icon: Box,
       label: 'Objects',
       value: formatNumber(stats.objectCount),
-      color: 'text-blue-600',
+      icon: Box,
     },
     {
-      icon: Triangle,
       label: 'Triangles',
       value: formatNumber(stats.triangleCount),
-      color: 'text-purple-600',
+      icon: Triangle,
     },
     {
-      icon: Layers,
       label: 'Vertices',
       value: formatNumber(stats.vertexCount),
-      color: 'text-green-600',
+      icon: Layers,
     },
     {
-      icon: HardDrive,
       label: 'File Size',
       value: formatFileSize(stats.fileSize),
-      color: 'text-orange-600',
+      icon: HardDrive,
     },
     {
-      icon: Clock,
       label: 'Load Time',
       value: formatLoadTime(stats.loadTime),
-      color: 'text-teal-600',
+      icon: Clock,
     },
   ];
 
-  return (
-    <Card
-      className={cn(
-        'border-2 border-gray-200 shadow-construction overflow-hidden',
-        'bg-white',
-        className
-      )}
-    >
-      {/* Technical header strip */}
-      <div className="h-1 bg-gradient-to-r from-[#001B51] via-[#3C3C3C] to-[#001B51]" />
-
-      <div className="p-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-[#001B51] rounded">
-              <Box className="w-4 h-4 text-white" />
-            </div>
-            <h3 className="font-bold text-gray-900 uppercase tracking-tight text-sm">
-              Model Stats
-            </h3>
-          </div>
-
-          {stats.processingStatus && (
-            <Badge className={cn('text-xs font-semibold px-2 py-1', getStatusColor(stats.processingStatus))}>
-              <CheckCircle2 className="w-3 h-3 mr-1" />
-              {stats.processingStatus}
-            </Badge>
-          )}
+  // Footer with status badge and real-time indicator
+  const footerContent = (
+    <div className="col-span-full mt-4 pt-4 border-t-2 border-gray-100">
+      <div className="flex items-center justify-between">
+        <div className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
+          Real-time metrics
         </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {statItems.map(({ icon: Icon, label, value, color }) => (
-            <div
-              key={label}
-              className={cn(
-                'relative p-3 rounded-lg border-2 border-gray-200',
-                'bg-gray-50/50 hover:bg-gray-100/50 transition-colors',
-                'group'
-              )}
-            >
-              {/* Technical corner accent */}
-              <div className="absolute top-0 right-0 w-6 h-6">
-                <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-[#001B51] opacity-20" />
-              </div>
-
-              <div className="flex items-start gap-2 mb-2">
-                <Icon className={cn('w-4 h-4 flex-shrink-0 mt-0.5', color)} />
-                <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
-                  {label}
-                </span>
-              </div>
-
-              <p className={cn('font-bold text-lg font-mono text-gray-900 group-hover:text-[#001B51] transition-colors')}>
-                {value}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Technical annotation footer */}
-        <div className="mt-4 pt-4 border-t-2 border-gray-100 flex items-center justify-between">
-          <div className="text-[10px] font-mono text-gray-400 uppercase tracking-wider">
-            Real-time metrics
-          </div>
+        <div className="flex items-center gap-3">
+          {stats.processingStatus && getStatusBadge(stats.processingStatus)}
           <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-[#059669] animate-pulse" />
             <span className="text-[10px] font-mono text-gray-400">LIVE</span>
           </div>
         </div>
       </div>
-    </Card>
+    </div>
+  );
+
+  return (
+    <InfoCard
+      headerIcon={Box}
+      headerTitle="Model Stats"
+      headerDescription="Real-time 3D model metrics"
+      fields={fields}
+      columns={3}
+      footerContent={footerContent}
+      className={className}
+    />
   );
 }

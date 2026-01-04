@@ -195,16 +195,22 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
     }
 
     // Use admin client for atomic operations
-    const supabase = createAdminClient();
+    const supabase = createAdminClient() as unknown as ReturnType<typeof createAdminClient> & {
+      from<T extends keyof Database['public']['Tables']>(
+        table: T
+      ): any;
+    };
 
     // ATOMIC OPERATION: Mark invitation as used AND check it wasn't already used
     // This prevents replay attacks
-    const { data: markedInvitation, error: markError } = await supabase
-      .from('team_invitations')
-      .update({
-        used_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+    const updateData: { used_at: string; updated_at: string } = {
+      used_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data: markedInvitation, error: markError } = await (supabase
+      .from('team_invitations') as any)
+      .update(updateData)
       .eq('id', invitation.invitationId)
       .eq('invitation_token', token)
       .is('used_at', null) // CRITICAL: Only update if not already used
@@ -237,8 +243,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
     // This prevents foreign key constraint violations when new users sign in via email
     // NOTE: A database trigger should auto-create user_profiles on signup, but we upsert as a safety measure
     console.log('[ACCEPT_INVITE] Creating/updating user profile for user:', authenticatedUserId);
-    const { data: profileData, error: profileError } = await supabase
-      .from('user_profiles')
+    const { data: profileData, error: profileError } = await (supabase
+      .from('user_profiles') as any)
       .upsert({
         id: authenticatedUserId,
         email: authenticatedEmail,
@@ -266,8 +272,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
       }
 
       // User exists but is inactive - reactivate them
-      const { error: reactivateError } = await supabase
-        .from('company_users')
+      const { error: reactivateError } = await (supabase
+        .from('company_users') as any)
         .update({
           status: 'active',
           role: invitation.role as UserRole,
@@ -283,8 +289,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
     } else {
       // Create new company_users entry with REAL user ID from next-auth
       console.log('[ACCEPT_INVITE] Creating company_users entry for:', { userId: authenticatedUserId, companyId: invitation.companyId, role: invitation.role });
-      const { data: companyUserData, error: createError } = await supabase
-        .from('company_users')
+      const { data: companyUserData, error: createError } = await (supabase
+        .from('company_users') as any)
         .insert({
           company_id: invitation.companyId,
           user_id: authenticatedUserId, // REAL user ID from next-auth session
@@ -302,8 +308,8 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
         console.error('[ACCEPT_INVITE] Error details:', JSON.stringify(createError, null, 2));
 
         // Rollback: Mark invitation as unused if company_users creation fails
-        await supabase
-          .from('team_invitations')
+        await (supabase
+          .from('team_invitations') as any)
           .update({ used_at: null })
           .eq('id', invitation.invitationId);
 
@@ -314,7 +320,7 @@ export async function acceptInvitation(token: string): Promise<AcceptInviteResul
     }
 
     // Create welcome notification
-    await supabase.from('notifications').insert({
+    await (supabase.from('notifications') as any).insert({
       user_id: authenticatedUserId,
       type: 'team_invited',
       title: 'Welcome to GenHub!',

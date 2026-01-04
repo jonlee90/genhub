@@ -113,29 +113,30 @@ export function MarkerAnnotationPanel({
   return (
     <Card
       className={cn(
-        'border-2 border-gray-200 shadow-construction overflow-hidden',
+        'border-2 border-gray-200 shadow-construction overflow-hidden relative group',
         'bg-white',
         className
       )}
     >
-      {/* Header */}
-      <div className="border-b-2 border-gray-200 bg-gray-50">
-        <div className="h-1 bg-[#001B51]" />
+      {/* Hover overlay effect */}
+      <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
+      {/* Header */}
+      <div className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white relative">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-full flex items-center justify-between gap-4 p-4 hover:bg-gray-100 transition-colors"
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#001B51] rounded-lg">
-              <MapPin className="w-5 h-5 text-white" />
+              <MapPin className="h-4 w-4 text-white" />
             </div>
 
             <div className="text-left">
-              <h3 className="font-bold text-gray-900 uppercase tracking-tight text-sm">
+              <h3 className="text-sm font-black text-gray-700 uppercase tracking-wider">
                 Markers & Annotations
               </h3>
-              <p className="text-xs text-gray-500 font-mono">{markers.length} total</p>
+              <p className="text-xs text-gray-500 mt-0.5">{markers.length} total</p>
             </div>
           </div>
 
@@ -149,7 +150,7 @@ export function MarkerAnnotationPanel({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 relative">
           {/* Search & Add Button */}
           <div className="flex gap-2">
             <div className="relative flex-1">

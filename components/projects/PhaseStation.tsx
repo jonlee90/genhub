@@ -42,7 +42,7 @@ const getPhaseIcon = (phaseName: string) => {
   const name = phaseName.toLowerCase();
   if (name.includes('initiation') || name.includes('planning')) return Rocket;
   if (name.includes('pre-construction') || name.includes('design')) return FileText;
-  if (name.includes('procurement') || name.includes('procurement')) return ShoppingCart;
+  if (name.includes('procurement')) return ShoppingCart;
   if (name.includes('post') || name.includes('closeout') || name.includes('completion')) return CheckCircle2;
   if (name.includes('construction') || name.includes('execution')) return HardHat;
   return Sparkles; // Default icon
@@ -62,226 +62,169 @@ export function PhaseStation({
   isSelected,
   onClick,
 }: PhaseStationProps) {
+  console.log('[PhaseStation] Rendering phase:', phase.name, { isCurrent, isSelected });
+
   const isCompleted = phase.status === 'completed';
   const isInProgress = phase.status === 'in_progress';
   const hasBlockers = (stats?.blockedTasks || 0) > 0;
   const hasOverdue = (stats?.overdueTasks || 0) > 0;
   const PhaseIcon = getPhaseIcon(phase.name);
 
-  // Tooltip content with phase details
+  // Clean, professional tooltip content
   const tooltipContent = (
-    <div className="space-y-2 min-w-[220px]">
-      <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-        <span className="font-black text-white">{phase.name}</span>
-        <span className={cn(
-          "text-sm font-black",
-          isCompleted && "text-construction-blue",
-          isInProgress && "text-construction-accent",
-          !isCompleted && !isInProgress && "text-gray-400"
-        )}>
-          {phase.completion_percentage}%
-        </span>
+    <div className="space-y-3 min-w-[240px]">
+      {/* Header */}
+      <div className="space-y-1 border-b border-gray-700 pb-3">
+        <div className="flex items-center justify-between">
+          <span className="font-semibold text-white text-sm">{phase.name}</span>
+          <span className={cn(
+            "text-sm font-bold tabular-nums",
+            isCompleted && "text-[#059669]",
+            isInProgress && "text-[#001B51]",
+            !isCompleted && !isInProgress && "text-gray-400"
+          )}>
+            {phase.completion_percentage}%
+          </span>
+        </div>
       </div>
 
+      {/* Stats */}
       {stats && (
-        <div className="space-y-1.5 text-xs text-gray-300">
-          <div className="flex items-center gap-2">
-            <ListTodo className="w-3.5 h-3.5 text-construction-accent" />
-            <span className="font-medium">
-              {stats.completedTasks}/{stats.totalTasks} tasks
+        <div className="space-y-2 text-xs text-gray-300">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ListTodo className="w-3.5 h-3.5 text-gray-400" />
+              <span className="font-medium">Tasks</span>
+            </div>
+            <span className="font-semibold text-white tabular-nums">
+              {stats.completedTasks}/{stats.totalTasks}
             </span>
           </div>
+
           {stats.blockedTasks > 0 && (
-            <div className="flex items-center gap-2 text-construction-red">
-              <Ban className="w-3.5 h-3.5" />
-              <span className="font-medium">{stats.blockedTasks} blocked</span>
+            <div className="flex items-center justify-between text-[#DC2626]">
+              <div className="flex items-center gap-2">
+                <Ban className="w-3.5 h-3.5" />
+                <span className="font-medium">Blocked</span>
+              </div>
+              <span className="font-semibold tabular-nums">{stats.blockedTasks}</span>
             </div>
           )}
+
           {stats.overdueTasks > 0 && (
-            <div className="flex items-center gap-2 text-construction-accent">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span className="font-medium">{stats.overdueTasks} overdue</span>
+            <div className="flex items-center justify-between text-[#FFB627]">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span className="font-medium">Overdue</span>
+              </div>
+              <span className="font-semibold tabular-nums">{stats.overdueTasks}</span>
             </div>
           )}
         </div>
       )}
 
-      <div className="space-y-1 text-xs text-gray-400 pt-2 border-t border-gray-700">
-        {phase.started_at && (
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Started: {formatDate(phase.started_at)}</span>
-          </div>
-        )}
-        {phase.completed_at && (
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Completed: {formatDate(phase.completed_at)}</span>
-          </div>
-        )}
-      </div>
+      {/* Dates */}
+      {(phase.started_at || phase.completed_at) && (
+        <div className="space-y-1.5 text-xs text-gray-400 pt-2 border-t border-gray-700">
+          {phase.started_at && (
+            <div className="flex items-center gap-2">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Started: {formatDate(phase.started_at)}</span>
+            </div>
+          )}
+          {phase.completed_at && (
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Completed: {formatDate(phase.completed_at)}</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 
   return (
-    <AnimatedTooltip content={tooltipContent} side="right" delay={200}>
+    <AnimatedTooltip content={tooltipContent} side="top" delay={300}>
       <motion.button
-      onClick={onClick}
-      className="flex flex-col items-center gap-3 w-full group focus:outline-none focus-visible:outline-none"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-    >
-      {/* Station Circle with Icon and Spotlight Effect */}
-      <div className="relative">
-        {/* Spotlight glow for active phase - Aceternity style */}
-        {isCurrent && !isCompleted && (
-          <motion.div
-            className="absolute inset-0 rounded-full bg-construction-blue/40 blur-2xl -z-10"
-            animate={{
-              scale: [1, 1.2, 1],
-              opacity: [0.4, 0.7, 0.4],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-        )}
-
-        <motion.div
-          className={cn(
-            'relative flex items-center justify-center rounded-full border-4 transition-all duration-300 shadow-construction',
-            // Debug: Larger touch target on mobile (56x56px minimum)
-            'w-20 h-20 md:w-20 md:h-20',
-            isCompleted && 'bg-gradient-to-br from-construction-blue to-emerald-600 border-construction-blue text-white shadow-emerald-200',
-            isInProgress && 'bg-gradient-to-br from-construction-blue to-blue-700 border-construction-blue text-white shadow-construction-lg',
-            !isCompleted && !isInProgress && 'bg-white border-gray-300 text-gray-400 shadow-gray-100',
-            isCurrent && !isCompleted && 'ring-4 ring-construction-blue/30',
-            isSelected && 'ring-4 ring-construction-accent/40 scale-105'
+        onClick={onClick}
+        className="flex flex-col items-center gap-2.5 w-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001B51] focus-visible:ring-offset-2 rounded-lg"
+        whileHover={{ y: -2 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      >
+        {/* Clean station circle */}
+        <div className="relative">
+          {/* Subtle glow for active phase */}
+          {isCurrent && !isCompleted && (
+            <div className="absolute inset-0 rounded-full bg-[#001B51]/20 blur-xl -z-10" />
           )}
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-        >
-          {isCompleted ? (
-            <motion.div
-              className="flex flex-col items-center gap-1"
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 300 }}
-            >
-              <Check className="w-7 h-7 stroke-[3]" />
-            </motion.div>
-          ) : (
-            <div className="flex flex-col items-center">
-              <PhaseIcon className="w-6 h-6 mb-0.5" />
-              <span className="text-xs font-black">{phase.completion_percentage}%</span>
+
+          <motion.div
+            className={cn(
+              'relative flex items-center justify-center rounded-full border-3 transition-all duration-300',
+              // Touch target: 56x56px minimum on mobile
+              'w-14 h-14 md:w-16 md:h-16',
+              isCompleted && 'bg-[#059669] border-[#059669] text-white shadow-lg shadow-[#059669]/20',
+              isInProgress && 'bg-[#001B51] border-[#001B51] text-white shadow-lg shadow-[#001B51]/20',
+              !isCompleted && !isInProgress && 'bg-white border-gray-300 text-gray-500 shadow-md',
+              isSelected && 'ring-3 ring-[#001B51]/30 ring-offset-2'
+            )}
+            animate={isCurrent && !isCompleted ? {
+              boxShadow: [
+                '0 10px 15px -3px rgba(0, 27, 81, 0.2)',
+                '0 20px 25px -5px rgba(0, 27, 81, 0.3)',
+                '0 10px 15px -3px rgba(0, 27, 81, 0.2)',
+              ],
+            } : {}}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            {isCompleted ? (
+              <Check className="w-7 h-7 stroke-[2.5]" />
+            ) : (
+              <div className="flex flex-col items-center gap-0.5">
+                <PhaseIcon className="w-5 h-5" />
+                <span className="text-[10px] font-bold tabular-nums leading-none">
+                  {phase.completion_percentage}%
+                </span>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Clean warning indicators */}
+          {hasBlockers && !isCompleted && (
+            <div className="absolute -top-1 -right-1 bg-[#DC2626] rounded-full p-1 shadow-md border-2 border-white">
+              <Ban className="w-3 h-3 text-white" />
             </div>
           )}
 
-          {/* Pulsing ring for current phase */}
-          {isCurrent && !isCompleted && (
-            <motion.div
-              className="absolute inset-0 rounded-full border-4 border-construction-blue"
-              animate={{
-                scale: [1, 1.15, 1],
-                opacity: [0.5, 0, 0.5],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
+          {hasOverdue && !hasBlockers && !isCompleted && (
+            <div className="absolute -top-1 -right-1 bg-[#FFB627] rounded-full p-1 shadow-md border-2 border-white">
+              <AlertTriangle className="w-3 h-3 text-white" />
+            </div>
           )}
-        </motion.div>
+        </div>
 
-        {/* Warning Indicators with construction theme */}
-        {hasBlockers && !isCompleted && (
-          <motion.div
-            className="absolute -top-1.5 -right-1.5 bg-construction-red rounded-full p-1.5 shadow-construction animate-pulse border-2 border-white"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <Ban className="w-3.5 h-3.5 text-white" />
-          </motion.div>
-        )}
-        {hasOverdue && !hasBlockers && !isCompleted && (
-          <motion.div
-            className="absolute -top-1.5 -right-1.5 bg-construction-accent rounded-full p-1.5 shadow-construction animate-pulse border-2 border-white"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 300 }}
-          >
-            <AlertTriangle className="w-3.5 h-3.5 text-white" />
-          </motion.div>
-        )}
-
-        {/* Completion check mark for completed phases */}
-        {isCompleted && (
-          <motion.div
-            className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-construction border-2 border-construction-green"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-          >
-            <CheckCircle2 className="w-4 h-4 text-construction-green fill-green-50" />
-          </motion.div>
-        )}
-      </div>
-
-      {/* Phase Name and Details */}
-      <div className="text-center max-w-[160px]">
-        <p
-          className={cn(
-            'text-sm font-bold line-clamp-2 mb-1',
-            isCompleted && 'text-construction-green',
-            isInProgress && 'text-construction-blue',
+        {/* Phase name and status */}
+        <div className="text-center max-w-[140px]">
+          <p className={cn(
+            'text-xs font-semibold line-clamp-2 mb-1 leading-tight',
+            isCompleted && 'text-[#059669]',
+            isInProgress && 'text-[#001B51]',
             !isCompleted && !isInProgress && 'text-gray-600',
-            'group-hover:text-construction-blue transition-colors'
+            'group-hover:text-[#001B51] transition-colors'
+          )}>
+            {phase.name}
+          </p>
+
+          {/* Task count */}
+          {stats && stats.totalTasks > 0 && (
+            <div className="flex items-center justify-center gap-1 text-[10px] text-gray-500 font-medium">
+              <span className="tabular-nums">{stats.completedTasks}/{stats.totalTasks}</span>
+              <span>tasks</span>
+            </div>
           )}
-        >
-          {phase.name}
-        </p>
-
-        {/* Task Count with construction styling */}
-        {stats && stats.totalTasks > 0 && (
-          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground mb-1">
-            <div className="w-1 h-1 rounded-full bg-current" />
-            <span className="font-medium">
-              {stats.completedTasks}/{stats.totalTasks} tasks
-            </span>
-          </div>
-        )}
-
-        {/* Status Badge with construction theme */}
-        {isCurrent && !isCompleted && (
-          <motion.span
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-construction-blue/10 to-construction-blue/20 text-construction-blue text-xs font-black rounded-full border-2 border-construction-blue"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-          >
-            <Clock className="w-3 h-3" />
-            Active
-          </motion.span>
-        )}
-
-        {isCompleted && (
-          <motion.span
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-construction-green/10 to-construction-green/20 text-construction-green text-xs font-black rounded-full border-2 border-construction-green/30"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
-          >
-            <CheckCircle2 className="w-3 h-3" />
-            Complete
-          </motion.span>
-        )}
-      </div>
-    </motion.button>
+        </div>
+      </motion.button>
     </AnimatedTooltip>
   );
 }

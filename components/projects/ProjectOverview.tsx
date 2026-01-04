@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Building2, MapPin, FileText, DollarSign, Layers, Box } from 'lucide-react';
+import { Calendar, Building2, MapPin, DollarSign, Box, User, Mail, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MetroJourney } from './MetroJourney';
 import { ProjectExpenseSummary } from './ProjectExpenseSummary';
@@ -15,6 +14,7 @@ import { deleteModelVersion, replaceActiveModel } from '@/app/actions/spatial';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import dynamic from 'next/dynamic';
+import { InfoCard } from './InfoCard';
 
 // Dynamically import SpatialViewer to avoid SSR issues with xeokit SDK
 const SpatialViewer = dynamic(
@@ -198,28 +198,7 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
           transition={{ duration: 0.4, delay: hasPhases ? 0.3 : 0 }}
           className="lg:col-span-2 space-y-6"
         >
-          {/* Project Description */}
-          <Card className="border-2 border-gray-200 shadow-construction relative overflow-hidden group">
-            {/* Subtle animated gradient overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/[0.02] via-transparent to-construction-accent/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-            <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white relative">
-              <CardTitle className="text-lg font-black text-construction-blue flex items-center gap-2">
-                <div className="p-1.5 bg-construction-blue/10 rounded-lg">
-                  <FileText className="h-4 w-4" />
-                </div>
-                Project Description
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 relative">
-              {project.description ? (
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{project.description}</p>
-              ) : (
-                <p className="text-gray-400 italic">No description provided for this project.</p>
-              )}
-            </CardContent>
-          </Card>
-
+ 
 
           {/* Expense Summary Widget */}
           {expenseStats && project.budget && project.budget > 0 && (
@@ -249,133 +228,137 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
           transition={{ duration: 0.4, delay: hasPhases ? 0.35 : 0.15 }}
           className="space-y-6"
         >
-         
           {/* Client Information */}
-          {project.client_name && (
-            <Card className="border-2 border-gray-200 shadow-construction relative overflow-hidden group">
-  
-              <CardContent className="p-4 space-y-4 relative">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-construction-blue/10 rounded-lg border border-construction-blue/20">
-                    <Building2 className="h-5 w-5 text-construction-blue" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Client Name</div>
-                    <div className="text-sm font-bold text-gray-900 mt-0.5">{project.client_name}</div>
-                  </div>
-                </div>
-
-                {project.client_email && (
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Email</div>
-                    <a
-                      href={`mailto:${project.client_email}`}
-                      className="text-sm text-construction-blue hover:underline font-medium"
-                    >
-                      {project.client_email}
-                    </a>
-                  </div>
-                )}
-
-                {project.client_phone && (
-                  <div>
-                    <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Phone</div>
-                    <a
-                      href={`tel:${project.client_phone}`}
-                      className="text-sm text-construction-blue hover:underline font-medium"
-                    >
-                      {project.client_phone}
-                    </a>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {(project.client_name || project.client_email || project.client_phone) && (
+            <InfoCard
+              headerIcon={User}
+              headerTitle="Client Information"
+              headerDescription="Primary contact"
+              columns={1}
+              fields={[
+                {
+                  label: 'Name',
+                  value: project.client_name,
+                  show: !!project.client_name,
+                },
+                {
+                  label: 'Email',
+                  value: project.client_email,
+                  icon: Mail,
+                  href: project.client_email,
+                  hrefType: 'email',
+                  show: !!project.client_email,
+                },
+                {
+                  label: 'Phone',
+                  value: project.client_phone,
+                  icon: Phone,
+                  href: project.client_phone,
+                  hrefType: 'tel',
+                  show: !!project.client_phone,
+                },
+              ]}
+            />
           )}
-            {/* Project Timeline */}
-            {(project.start_date || project.end_date) && (
-              <Card className="border-2 border-gray-200 shadow-construction relative overflow-hidden group">
-                <CardContent className="p-5 space-y-5 relative">
-                  {project.start_date && (
-                    <div className="space-y-2">
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Start Date</div>
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                          <Calendar className="h-5 w-5 text-construction-blue" />
-                        </div>
-                        <div>
-                          <div className="text-2xl font-black text-construction-blue">
-                            {new Date(project.start_date).getDate()}
-                          </div>
-                          <div className="text-sm font-bold text-gray-600">
-                            {new Date(project.start_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              year: 'numeric',
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {project.end_date && (
-                    <div className="space-y-2">
-                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Target End</div>
-                      <div className="flex items-center gap-3">
-                        <div className="p-3 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                          <Calendar className="h-5 w-5 text-construction-accent" />
-                        </div>
-                        <div>
-                          <div className="text-2xl font-black text-construction-accent">
-                            {new Date(project.end_date).getDate()}
-                          </div>
-                          <div className="text-sm font-bold text-gray-600">
-                            {new Date(project.end_date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              year: 'numeric',
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
 
            {/* Project Details Card */}
-           <Card className="border-2 border-gray-200 shadow-construction relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-b from-gray-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-            <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white relative">
-              <CardTitle className="text-sm font-black text-gray-700 uppercase tracking-wider">
-                Project Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4 relative">
-              {/* Project ID */}
-              <div>
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Project ID</div>
-                <div className="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded border border-gray-200">
-                  {project.id.substring(0, 8)}...
+           <InfoCard
+            headerIcon={Building2}
+            headerTitle="Project Details"
+            headerDescription="Core information"
+            columns={1}
+            fields={[
+              {
+                label: 'Budget',
+                value: <span className="text-lg">{formatCurrency(project.budget)}</span>,
+                icon: DollarSign,
+                show: project.budget && project.budget > 0,
+              },
+              {
+                label: 'Health Score',
+                value: project.health,
+                isProgressBar: true,
+                progressValue: project.health,
+                progressColor: project.health >= 75
+                  ? 'bg-[#059669]'
+                  : project.health >= 50
+                  ? 'bg-[#FFB627]'
+                  : 'bg-[#DC2626]',
+                show: typeof project.health === 'number',
+              },
+              {
+                label: 'Completion',
+                value: project.completion_percentage,
+                isProgressBar: true,
+                progressValue: project.completion_percentage,
+                progressColor: 'bg-[#001B51]',
+                show: typeof project.completion_percentage === 'number',
+              },
+              {
+                label: 'Status',
+                value: (
+                  <>
+                    <div className={`w-2 h-2 rounded-full ${
+                      project.status === 'active'
+                        ? 'bg-[#059669]'
+                        : project.status === 'completed'
+                        ? 'bg-[#001B51]'
+                        : project.status === 'on_hold'
+                        ? 'bg-[#FFB627]'
+                        : 'bg-gray-400'
+                    }`} />
+                    {project.status?.replace('_', ' ')}
+                  </>
+                ),
+                isBadge: true,
+                show: !!project.status,
+              },
+              {
+                label: 'Start Date',
+                value: formatDate(project.start_date),
+                icon: Calendar,
+                show: !!project.start_date,
+              },
+              {
+                label: 'Target Completion',
+                value: formatDate(project.end_date),
+                icon: Calendar,
+                show: !!project.end_date,
+              },
+              {
+                label: 'Location',
+                value: project.location,
+                icon: MapPin,
+                show: !!project.location,
+              },
+            ]}
+            footerContent={
+              (project.created_at || project.updated_at) && (
+                <div className="border-t-2 border-gray-100 pt-4 mt-4 space-y-3 col-span-full">
+                  {project.created_at && (
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Created
+                      </div>
+                      <div className="text-xs font-medium text-gray-600">
+                        {formatDate(project.created_at)}
+                      </div>
+                    </div>
+                  )}
+                  {project.updated_at && (
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                        Last Updated
+                      </div>
+                      <div className="text-xs font-medium text-gray-600">
+                        {formatDate(project.updated_at)}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              {/* Created Date */}
-              {project.created_at && (
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Created</div>
-                  <div className="text-sm font-bold text-gray-900">{formatDate(project.created_at)}</div>
-                </div>
-              )}
-
-              {/* Last Updated */}
-              {project.updated_at && (
-                <div>
-                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Last Updated</div>
-                  <div className="text-sm font-bold text-gray-900">{formatDate(project.updated_at)}</div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              )
+            }
+          />
 
         </motion.div>
       </div>

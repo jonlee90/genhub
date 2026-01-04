@@ -26,14 +26,14 @@ async function getUserContext() {
 
   // Get user's company and profile in parallel
   const [companyUserResult, profileResult] = await Promise.all([
-    supabase
-      .from('company_users')
+    (supabase
+      .from('company_users') as any)
       .select('company_id, status')
       .eq('user_id', session.user.id)
       .eq('status', 'active')
       .single(),
-    supabase
-      .from('user_profiles')
+    (supabase
+      .from('user_profiles') as any)
       .select('name')
       .eq('id', session.user.id)
       .single(),

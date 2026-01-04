@@ -98,7 +98,8 @@
       "Bash(node scripts/apply-migration-management-api.mjs:*)",
       "Bash(source ~/.zshrc)",
       "Bash(restart3000)",
-      "Bash(mcp__supabase__execute_sql:*)"
+      "Bash(mcp__supabase__execute_sql:*)",
+      "Skill(frontend-design)"
     ],
     "deny": [],
     "ask": []

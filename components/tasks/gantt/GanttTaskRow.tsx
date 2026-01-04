@@ -4,6 +4,40 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { GanttTaskBar } from './GanttTaskBar';
 import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
+import {
+  Wrench,
+  ShoppingCart,
+  CheckSquare,
+  FileText,
+  type LucideIcon,
+} from 'lucide-react';
+import type { Database } from '@/types/database.types';
+
+// Task type configuration with icons and colors
+type TaskType = Database['public']['Enums']['task_type'];
+
+const TASK_TYPE_CONFIG: Record<TaskType, { icon: LucideIcon; label: string; color: string }> = {
+  work: {
+    icon: Wrench,
+    label: 'Work',
+    color: 'text-construction-blue',
+  },
+  purchase: {
+    icon: ShoppingCart,
+    label: 'Purchase',
+    color: 'text-emerald-600',
+  },
+  approval: {
+    icon: CheckSquare,
+    label: 'Approval',
+    color: 'text-amber-600',
+  },
+  admin: {
+    icon: FileText,
+    label: 'Admin',
+    color: 'text-gray-600',
+  },
+};
 
 interface GanttTaskRowProps {
   task: GanttTask;
@@ -53,10 +87,28 @@ export function GanttTaskRow({
         )}
 
         {/* Task title and phase */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          {/* Title row with icon and duration badge */}
+          <div className="flex items-center gap-1.5">
+            {/* Task type icon */}
+            {task.task_type && TASK_TYPE_CONFIG[task.task_type] && (() => {
+              const typeConfig = TASK_TYPE_CONFIG[task.task_type];
+              const IconComponent = typeConfig.icon;
+              return (
+                <IconComponent
+                  className={cn(
+                    'shrink-0',
+                    typeConfig.color,
+                    isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'
+                  )}
+                  strokeWidth={2}
+                  aria-label={typeConfig.label}
+                />
+              );
+            })()}
+            {/* Task title */}
             <span className={cn(
-              'font-bold text-gray-900 truncate',
+              'font-semibold text-gray-900 truncate flex-1 min-w-0',
               isMobile ? 'text-xs' : 'text-sm'
             )}>
               {task.title}
@@ -69,11 +121,11 @@ export function GanttTaskRow({
               {task.durationDays}d
             </span>
           </div>
-          {/* Show project name on both mobile and desktop */}
+          {/* Project name - secondary line */}
           {task.project && (
             <span className={cn(
-              'text-gray-500 truncate block',
-              isMobile ? 'text-[10px]' : 'text-xs'
+              'text-gray-500 truncate',
+              isMobile ? 'text-[10px] mt-0.5' : 'text-xs mt-0.5'
             )}>
               {task.project.name}
             </span>

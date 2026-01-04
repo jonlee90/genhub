@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  HardHat,
   Building2,
   MapPin,
   Calendar,
@@ -12,15 +11,18 @@ import {
   Users,
   CheckSquare,
   Clock,
-  AlertTriangle,
   FileText,
   Settings,
   Activity,
-  CheckCircle2,
-  XCircle,
+  Home,
+  UtensilsCrossed,
+  Factory,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  HardHat,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
@@ -28,6 +30,7 @@ import { ProjectOverview } from './ProjectOverview';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
 import type { Database } from '@/types/database.types';
 import { DashboardStats } from '../tasks/DashboardStats';
+import { InfoCard } from './InfoCard';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -100,8 +103,50 @@ export function ProjectDetailContent({
   console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'settings'>('overview');
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const statusConfig = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
+
+  // Get project type icon
+  const getProjectTypeIcon = () => {
+    const iconClass = "w-8 h-8 text-white";
+    switch (project.project_type) {
+      case 'residential':
+        return <Home className={iconClass} />;
+      case 'restaurant_cafe':
+      case 'restaurant':
+      case 'cafe':
+        return <UtensilsCrossed className={iconClass} />;
+      case 'commercial_office':
+        return <Building2 className={iconClass} />;
+      case 'industrial':
+        return <Factory className={iconClass} />;
+      default:
+        return <HardHat className={iconClass} />;
+    }
+  };
+
+  // Format address for Google Maps
+  const getGoogleMapsUrl = () => {
+    if (!project.address) return null;
+    const addressParts = [
+      project.address,
+      project.city,
+      project.state,
+      project.zip_code,
+    ].filter(Boolean);
+    const fullAddress = addressParts.join(', ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
+  };
+
+  // Truncate description
+  const DESCRIPTION_LIMIT = 150;
+  const shouldTruncateDescription = project.description && project.description.length > DESCRIPTION_LIMIT;
+  const displayDescription = !project.description
+    ? null
+    : isDescriptionExpanded || !shouldTruncateDescription
+    ? project.description
+    : project.description.slice(0, DESCRIPTION_LIMIT) + '...';
 
   // Calculate project statistics
   const totalTasks = project.tasks?.length || 0;
@@ -156,49 +201,159 @@ export function ProjectDetailContent({
         transition={{ duration: 0.4 }}
         className="space-y-4"
       >
-        {/* Title and Status */}
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-construction-blue to-blue-700 flex items-center justify-center shadow-construction">
-                <HardHat className="w-7 h-7 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-4xl font-black text-construction-blue leading-tight mb-2 tracking-tight">
-                  {project.name}
-                </h1>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Badge
-                    className={cn(
-                      'px-3 py-1 text-sm font-bold border-2 flex items-center gap-2',
-                      statusConfig.color
-                    )}
-                  >
-                    <div className={cn('h-2 w-2 rounded-full animate-pulse', statusConfig.dotColor)} />
-                    {statusConfig.label}
-                  </Badge>
-                  {project.client_name && (
-                    <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                      <Building2 className="h-4 w-4 text-construction-blue" />
-                      <span>{project.client_name}</span>
-                    </div>
-                  )}
+        {/* Comprehensive Project Title InfoCard */}
+        <InfoCard
+          headerIcon={getProjectTypeIcon}
+          headerTitle={project.name}
+          headerDescription={displayDescription || 'No description provided'}
+          isHeroCard={true}
+          columns={3}
+          className="border-2 border-gray-300 shadow-construction-lg"
+          customHeader={
+            <div className="space-y-6">
+              {/* Icon + Title + Status Badge */}
+              <div className="flex flex-col sm:flex-row sm:items-start gap-6">
+                {/* Large Project Type Icon */}
+                <div className="p-4 bg-[#001B51] rounded-xl shadow-xl flex-shrink-0">
+                  {getProjectTypeIcon()}
+                </div>
+
+                {/* Title + Status + Description */}
+                <div className="flex-1 min-w-0">
+                  {/* Title + Status Badge (Inline) */}
+                  <div className="flex flex-wrap items-center gap-4 mb-3">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#001B51] tracking-tight leading-none break-words">
+                      {project.name}
+                    </h1>
+                    <Badge
+                      className={cn(
+                        'px-3 py-1.5 text-sm font-bold border-2 flex items-center gap-2 shadow-md whitespace-nowrap flex-shrink-0',
+                        statusConfig.color
+                      )}
+                    >
+                      <div className={cn('h-2 w-2 rounded-full animate-pulse', statusConfig.dotColor)} />
+                      {statusConfig.label}
+                    </Badge>
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-4xl">
+                    {displayDescription || 'No description provided'}
+                  </p>
                 </div>
               </div>
             </div>
-            {project.address && (
-              <div className="flex items-center gap-2 text-gray-600 mt-2">
-                <MapPin className="h-4 w-4 text-construction-accent" />
-                <span className="text-sm">
-                  {project.address}
-                  {project.city && `, ${project.city}`}
-                  {project.state && `, ${project.state}`}
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
+          }
+          fields={[
+            // TIMELINE SECTION
+            {
+              label: 'Start Date',
+              value: project.start_date
+                ? new Date(project.start_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'Not set',
+              icon: Calendar,
+              show: true,
+            },
+            {
+              label: 'Target End',
+              value: project.end_date
+                ? new Date(project.end_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : 'Not set',
+              icon: Calendar,
+              show: true,
+            },
+            {
+              label: daysRemaining !== null && daysRemaining < 0 ? 'Days Over' : 'Days Left',
+              value: daysRemaining !== null ? Math.abs(daysRemaining).toString() : 'N/A',
+              icon: Clock,
+              show: daysRemaining !== null,
+              className: daysRemaining !== null && daysRemaining < 0 ? 'text-construction-red' : 'text-construction-green',
+            },
 
+            // METRICS SECTION
+            {
+              label: 'Project Progress',
+              value: `${project.completion_percentage || 0}%`,
+              icon: TrendingUp,
+              isProgressBar: true,
+              progressValue: project.completion_percentage || 0,
+              progressColor: 'bg-construction-blue',
+              show: true,
+            },
+            {
+              label: 'Health Score',
+              value: `${project.health_score || 0}`,
+              icon: Activity,
+              isProgressBar: true,
+              progressValue: project.health_score || 0,
+              progressColor:
+                (project.health_score || 0) >= 80 ? 'bg-construction-green' :
+                (project.health_score || 0) >= 60 ? 'bg-construction-blue' :
+                (project.health_score || 0) >= 40 ? 'bg-construction-accent' :
+                'bg-construction-red',
+              show: true,
+            },
+            {
+              label: 'Budget',
+              value: project.budget
+                ? `$${(project.budget / 1000).toFixed(0)}k`
+                : 'Not set',
+              icon: DollarSign,
+              show: !!project.budget,
+            },
+
+            // DETAILS SECTION
+            {
+              label: 'Team Members',
+              value: `${teamSize} ${teamSize === 1 ? 'member' : 'members'}`,
+              icon: Users,
+              show: true,
+            },
+            {
+              label: 'Location',
+              value: [
+                project.address,
+                project.city,
+                project.state,
+                project.zip_code,
+              ].filter(Boolean).join(', ') || 'Not provided',
+              icon: MapPin,
+              href: getGoogleMapsUrl() || undefined,
+              hrefType: 'link',
+              show: !!project.address,
+            },
+          ]}
+          footerContent={
+            displayDescription && shouldTruncateDescription ? (
+              <div className="mt-6 pt-6 border-t-2 border-gray-200">
+                <button
+                  onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  className="inline-flex items-center gap-2 text-sm font-bold text-construction-blue hover:text-blue-700 transition-all group hover:gap-3"
+                >
+                  {isDescriptionExpanded ? (
+                    <>
+                      Show less
+                      <ChevronUp className="h-4 w-4 group-hover:-translate-y-0.5 transition-transform" />
+                    </>
+                  ) : (
+                    <>
+                      Read more
+                      <ChevronDown className="h-4 w-4 group-hover:translate-y-0.5 transition-transform" />
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : undefined
+          }
+        />
 
         {/* Task Stats - Only show on Tasks tab */}
         {activeTab === 'tasks' && (
@@ -210,184 +365,6 @@ export function ProjectDetailContent({
             />
                 )}
 
-        {/* Stats Dashboard - Show on all tabs except Tasks */}
-        {activeTab !== 'tasks' && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-5 gap-4"
-        >
-          {/* Completion */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.15 }}
-            className="relative group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <TrendingUp className="h-4 w-4 text-construction-blue" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">
-                  Progress
-                </div>
-              </div>
-              <div className="text-3xl font-black text-construction-blue leading-none mb-1">
-                {project.completion_percentage || 0}%
-              </div>
-              <div className="text-xs font-bold text-gray-600">Complete</div>
-            </div>
-          </motion.div>
-
-          {/* Health Score */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="relative group"
-          >
-            <div
-              className={cn(
-                'absolute inset-0 rounded-lg transform group-hover:scale-105 transition-transform',
-                getHealthBgColor(project.health_score || 0)
-              )}
-            />
-            <div
-              className={cn(
-                'relative bg-white border-2 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all',
-                getHealthBorderColor(project.health_score || 0)
-              )}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div
-                  className={cn(
-                    'p-2 rounded-lg border-2',
-                    getHealthBgColor(project.health_score || 0),
-                    getHealthBorderColor(project.health_score || 0)
-                  )}
-                >
-                  <Activity className={cn('h-4 w-4', getHealthColor(project.health_score || 0))} />
-                </div>
-                <div
-                  className={cn(
-                    'text-xs font-mono uppercase tracking-wider',
-                    getHealthColor(project.health_score || 0),
-                    'opacity-60'
-                  )}
-                >
-                  Health
-                </div>
-              </div>
-              <div className={cn('text-3xl font-black leading-none mb-1', getHealthColor(project.health_score || 0))}>
-                {project.health_score || 0}
-              </div>
-              <div className="text-xs font-bold text-gray-600">Score</div>
-            </div>
-          </motion.div>
-
-          {/* Budget */}
-          {project.budget && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.25 }}
-              className="relative group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-              <div className="relative bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                    <DollarSign className="h-4 w-4 text-construction-accent" />
-                  </div>
-                  <div className="text-xs font-mono uppercase tracking-wider text-construction-accent/60">
-                    Budget
-                  </div>
-                </div>
-                <div className="text-3xl font-black text-construction-accent leading-none mb-1">
-                  ${(project.budget / 1000).toFixed(0)}k
-                </div>
-                <div className="text-xs font-bold text-gray-600">Total</div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Team Size */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-            className="relative group"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all">
-              <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <Users className="h-4 w-4 text-construction-blue" />
-                </div>
-                <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/60">Team</div>
-              </div>
-              <div className="text-3xl font-black text-construction-blue leading-none mb-1">{teamSize}</div>
-              <div className="text-xs font-bold text-gray-600">Members</div>
-            </div>
-          </motion.div>
-
-          {/* Days Remaining */}
-          {daysRemaining !== null && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.35 }}
-              className="relative group"
-            >
-              <div
-                className={cn(
-                  'absolute inset-0 rounded-lg transform group-hover:scale-105 transition-transform',
-                  daysRemaining < 0
-                    ? 'bg-gradient-to-br from-red-50 to-red-100'
-                    : 'bg-gradient-to-br from-construction-green/5 to-construction-green/10'
-                )}
-              />
-              <div
-                className={cn(
-                  'relative bg-white border-2 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all',
-                  daysRemaining < 0 ? 'border-red-200' : 'border-gray-200'
-                )}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div
-                    className={cn(
-                      'p-2 rounded-lg border-2',
-                      daysRemaining < 0
-                        ? 'bg-red-50 border-red-200'
-                        : 'bg-construction-green/10 border-construction-green/20'
-                    )}
-                  >
-                    <Calendar className={cn('h-4 w-4', daysRemaining < 0 ? 'text-red-600' : 'text-construction-green')} />
-                  </div>
-                  <div
-                    className={cn(
-                      'text-xs font-mono uppercase tracking-wider opacity-60',
-                      daysRemaining < 0 ? 'text-red-600' : 'text-construction-green'
-                    )}
-                  >
-                    Timeline
-                  </div>
-                </div>
-                {/* Right-aligned remaining days display */}
-                <div className="text-right">
-                  <div className={cn('text-3xl font-black leading-none mb-1', daysRemaining < 0 ? 'text-red-600' : 'text-construction-green')}>
-                    {Math.abs(daysRemaining)}
-                  </div>
-                  <div className="text-xs font-bold text-gray-600">{daysRemaining < 0 ? 'Days Over' : 'Days Left'}</div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </motion.div>
-        )}
 
       </motion.div>
 
