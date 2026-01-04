@@ -35,24 +35,8 @@ export function GanttTimeline({ config, dateCells, taskCount }: GanttTimelinePro
         height: totalHeight,
       }}
     >
-      {/* Blueprint grid pattern - simplified for mobile */}
+      {/* Arrow marker for today */}
       <defs>
-        <pattern
-          id="blueprint-grid"
-          width={isMobile ? '60' : '40'}
-          height={isMobile ? '60' : '40'}
-          patternUnits="userSpaceOnUse"
-        >
-          <path
-            d={isMobile ? 'M 60 0 L 0 0 0 60' : 'M 40 0 L 0 0 0 40'}
-            fill="none"
-            stroke="#001B51"
-            strokeWidth={isMobile ? '0.3' : '0.5'}
-            strokeOpacity={isMobile ? '0.06' : '0.1'}
-          />
-        </pattern>
-
-        {/* Arrow marker for today */}
         <marker
           id="today-arrow"
           markerWidth={isMobile ? '6' : '8'}
@@ -68,8 +52,8 @@ export function GanttTimeline({ config, dateCells, taskCount }: GanttTimelinePro
         </marker>
       </defs>
 
-      {/* Grid background */}
-      <rect width="100%" height="100%" fill="url(#blueprint-grid)" />
+      {/* Solid white background */}
+      <rect width="100%" height="100%" fill="#FFFFFF" />
 
       {/* Weekend shading */}
       {weekendRects.map((rect, index) => (

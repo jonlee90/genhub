@@ -302,7 +302,7 @@ export function GanttChart({
       >
         <ScrollArea
           className={cn(
-            "w-full select-none",
+            "w-full select-none bg-white",
             isDraggingScroll ? "cursor-grabbing" : "cursor-grab"
           )}
           style={{
@@ -316,12 +316,12 @@ export function GanttChart({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
-          <div className="relative" style={{ width: totalWidth }}>
+          <div className="relative bg-white" style={{ width: totalWidth }}>
             {/* Header */}
             <GanttHeader config={config} dateGroups={dateGroups} dateCells={dateCells} />
 
             {/* Timeline grid and task rows */}
-            <div className="relative" style={{ height: totalHeight }}>
+            <div className="relative bg-white" style={{ height: totalHeight }}>
               {/* Grid background */}
               <GanttTimeline config={config} dateCells={dateCells} taskCount={sortedTasks.length} />
 

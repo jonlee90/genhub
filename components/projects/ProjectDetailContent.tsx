@@ -43,7 +43,7 @@ interface PhaseStats {
 }
 
 // Fix C1: Import ExpenseStats instead of duplicating
-import type { ExpenseStats } from '@/app/actions/projects';
+import type { ExpenseStats, TaskStats } from '@/app/actions/projects';
 
 interface ProjectDetailContentProps {
   project: any;
@@ -65,6 +65,7 @@ interface ProjectDetailContentProps {
   phaseTaskStats: PhaseStats[];
   taskDependencies?: any[];
   expenseStats?: ExpenseStats;
+  taskStats?: TaskStats;
   activeModel?: any;
 }
 
@@ -98,9 +99,10 @@ export function ProjectDetailContent({
   phaseTaskStats,
   taskDependencies = [],
   expenseStats,
+  taskStats,
   activeModel,
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats);
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'and task stats:', taskStats);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'settings'>('overview');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -211,36 +213,108 @@ export function ProjectDetailContent({
           className="border-2 border-gray-300 shadow-construction-lg"
           customHeader={
             <div className="space-y-6">
-              {/* Icon + Title + Status Badge */}
-              <div className="flex flex-col sm:flex-row sm:items-start gap-6">
-                {/* Large Project Type Icon */}
-                <div className="p-4 bg-[#001B51] rounded-xl shadow-xl flex-shrink-0">
-                  {getProjectTypeIcon()}
-                </div>
-
-                {/* Title + Status + Description */}
-                <div className="flex-1 min-w-0">
-                  {/* Title + Status Badge (Inline) */}
-                  <div className="flex flex-wrap items-center gap-4 mb-3">
-                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#001B51] tracking-tight leading-none break-words">
-                      {project.name}
-                    </h1>
-                    <Badge
-                      className={cn(
-                        'px-3 py-1.5 text-sm font-bold border-2 flex items-center gap-2 shadow-md whitespace-nowrap flex-shrink-0',
-                        statusConfig.color
-                      )}
-                    >
-                      <div className={cn('h-2 w-2 rounded-full animate-pulse', statusConfig.dotColor)} />
-                      {statusConfig.label}
-                    </Badge>
+              {/* Construction-themed Header Bar */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b-4 border-[#001B51]">
+                {/* Project Type Icon with Industrial Frame */}
+                <div className="relative flex-shrink-0">
+                  <div className="absolute inset-0 bg-[#001B51] opacity-10 rounded-lg transform rotate-2" />
+                  <div className="absolute inset-0 bg-[#3C3C3C] opacity-5 rounded-lg transform -rotate-2" />
+                  <div className="relative p-5 bg-[#001B51] rounded-lg shadow-2xl border-2 border-[#001B51]/20">
+                    {getProjectTypeIcon()}
                   </div>
-
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-4xl">
-                    {displayDescription || 'No description provided'}
-                  </p>
                 </div>
+
+                {/* Title + Status Section */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col gap-3">
+                    {/* Project Name + Status Badge */}
+                    <div className="flex flex-wrap items-center gap-4">
+                      <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#001B51] tracking-tight leading-none break-words uppercase">
+                        {project.name}
+                      </h1>
+                      <Badge
+                        className={cn(
+                          'px-4 py-2 text-sm font-black border-2 flex items-center gap-2.5 shadow-lg whitespace-nowrap flex-shrink-0 uppercase tracking-wide',
+                          statusConfig.color
+                        )}
+                      >
+                        <div className={cn('h-2.5 w-2.5 rounded-full animate-pulse', statusConfig.dotColor)} />
+                        {statusConfig.label}
+                      </Badge>
+                    </div>
+
+                    {/* Project Type Label */}
+                    <div className="flex items-center gap-2">
+                      <div className="h-1 w-12 bg-[#3C3C3C] rounded-full" />
+                      <span className="text-xs font-black text-[#3C3C3C] uppercase tracking-widest">
+                        {project.project_type?.replace(/_/g, ' ') || 'General Construction'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description + Location Row */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Description - Takes 1 column */}
+                <div className="lg:col-span-1">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-gray-100 rounded-md flex-shrink-0 mt-1">
+                      <FileText className="h-4 w-4 text-[#001B51]" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                        Description
+                      </h3>
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {displayDescription || 'No description provided'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location - Takes 2 columns (2/3 width) */}
+                {project.address && (
+                  <div className="lg:col-span-2">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gray-100 rounded-md flex-shrink-0 mt-1">
+                        <MapPin className="h-4 w-4 text-[#001B51]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                          Project Location
+                        </h3>
+                        {getGoogleMapsUrl() ? (
+                          <a
+                            href={getGoogleMapsUrl()!}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm font-bold text-[#001B51] hover:text-blue-700 transition-colors group"
+                          >
+                            <span className="break-words">
+                              {[
+                                project.address,
+                                project.city,
+                                project.state,
+                                project.zip_code,
+                              ].filter(Boolean).join(', ')}
+                            </span>
+                            <ExternalLink className="h-4 w-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                          </a>
+                        ) : (
+                          <p className="text-sm font-bold text-gray-900">
+                            {[
+                              project.address,
+                              project.city,
+                              project.state,
+                              project.zip_code,
+                            ].filter(Boolean).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           }
@@ -289,6 +363,14 @@ export function ProjectDetailContent({
               show: true,
             },
             {
+              label: 'Budget',
+              value: project.budget
+                ? `$${(project.budget / 1000).toFixed(0)}k`
+                : 'Not set',
+              icon: DollarSign,
+              show: !!project.budget,
+            },
+            {
               label: 'Health Score',
               value: `${project.health_score || 0}`,
               icon: Activity,
@@ -300,36 +382,7 @@ export function ProjectDetailContent({
                 (project.health_score || 0) >= 40 ? 'bg-construction-accent' :
                 'bg-construction-red',
               show: true,
-            },
-            {
-              label: 'Budget',
-              value: project.budget
-                ? `$${(project.budget / 1000).toFixed(0)}k`
-                : 'Not set',
-              icon: DollarSign,
-              show: !!project.budget,
-            },
-
-            // DETAILS SECTION
-            {
-              label: 'Team Members',
-              value: `${teamSize} ${teamSize === 1 ? 'member' : 'members'}`,
-              icon: Users,
-              show: true,
-            },
-            {
-              label: 'Location',
-              value: [
-                project.address,
-                project.city,
-                project.state,
-                project.zip_code,
-              ].filter(Boolean).join(', ') || 'Not provided',
-              icon: MapPin,
-              href: getGoogleMapsUrl() || undefined,
-              hrefType: 'link',
-              show: !!project.address,
-            },
+            }
           ]}
           footerContent={
             displayDescription && shouldTruncateDescription ? (
@@ -453,6 +506,7 @@ export function ProjectDetailContent({
               teamMembers={teamMembers}
               phaseTaskStats={phaseTaskStats}
               expenseStats={expenseStats}
+              taskStats={taskStats}
               activeModel={activeModel}
             />
           </motion.div>
