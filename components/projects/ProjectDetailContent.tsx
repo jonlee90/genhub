@@ -67,6 +67,7 @@ interface ProjectDetailContentProps {
   expenseStats?: ExpenseStats;
   taskStats?: TaskStats;
   activeModel?: any;
+  userRole?: string; // NEW: For spatial viewer permissions
 }
 
 const STATUS_CONFIG = {
@@ -101,8 +102,9 @@ export function ProjectDetailContent({
   expenseStats,
   taskStats,
   activeModel,
+  userRole = 'field_worker',
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'and task stats:', taskStats);
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'settings'>('overview');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -508,6 +510,7 @@ export function ProjectDetailContent({
               expenseStats={expenseStats}
               taskStats={taskStats}
               activeModel={activeModel}
+              userRole={userRole}
             />
           </motion.div>
         )}

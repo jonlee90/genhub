@@ -1,0 +1,30 @@
+{
+  "summary": {
+    "total": 3,
+    "passCount": 1,
+    "failCount": 2,
+    "passPercentage": 33.3,
+    "timestamp": "2026-01-05T06:48:34.368Z"
+  },
+  "results": [
+    {
+      "timestamp": "2026-01-05T06:48:29.253Z",
+      "test": "Navigate to /app",
+      "status": "PASS",
+      "message": "Landed on: login"
+    },
+    {
+      "timestamp": "2026-01-05T06:48:32.066Z",
+      "test": "User Authentication",
+      "status": "FAIL",
+      "message": "Could not complete login form"
+    },
+    {
+      "timestamp": "2026-01-05T06:48:34.142Z",
+      "test": "Find Project",
+      "status": "FAIL",
+      "message": "No projects with models found"
+    }
+  ],
+  "screenshotsDir": "./test-screenshots-authenticated"
+}

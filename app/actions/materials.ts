@@ -1095,9 +1095,9 @@ export interface TrackedMaterial {
   product_name: string;
   sku: string;
   current_price: number;
-  previous_price?: number;
-  price_change_percent?: number;
-  product_image_url?: string;
+  previous_price: number | null;
+  price_change_percent: number | null;
+  product_image_url: string | null;
   stock_status: string;
   tracked_at: string;
 }

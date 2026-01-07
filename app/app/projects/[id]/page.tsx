@@ -430,7 +430,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel } = data;
 
-  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'and task stats:', taskStats);
+  // Fetch user role for spatial viewer permissions
+  const session = await auth();
+  const userRole = session?.user?.role || 'field_worker';
+
+  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -478,6 +482,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           expenseStats={expenseStats}
           taskStats={taskStats}
           activeModel={activeModel || null}
+          userRole={userRole}
         />
       </div>
     </div>

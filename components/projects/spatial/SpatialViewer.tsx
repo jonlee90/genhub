@@ -1,7 +1,7 @@
 'use client';
 
-// Debug: Complete spatial 3D viewer integration example
-// Combines all Phase 2 components: Canvas, Loader, Camera, LOD, Interaction
+// Debug: Phase 3 - Complete spatial 3D viewer with marker integration
+// Integrates Phase 2 components + context menu, marker pins, filters, and task linking
 
 import { useState, useCallback, useEffect } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
@@ -10,11 +10,20 @@ import { ModelLoader } from './ModelLoader';
 import { CameraControls } from './CameraControls';
 import { LODManager } from './LODManager';
 import { InteractionLayer } from './InteractionLayer';
+import { SpatialMarkerContextMenu } from './SpatialMarkerContextMenu';
+import { SpatialMarkerPin } from './SpatialMarkerPin';
+import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
+import { TaskLinker } from './TaskLinker';
+import { MarkerCreationModal } from './MarkerCreationModal';
+import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';
 import { cn } from '@/lib/utils';
 import { createDefaultModel } from '@/lib/xeokit/default-models';
+import { getMarkersByProject, updateMarker } from '@/app/actions/spatial';
+import type { SpatialMarker } from '@/types/spatial';
+import { toast } from 'sonner';
 
-// Debug: Component props
+// Debug: Component props (enhanced for Phase 3)
 export interface SpatialViewerProps {
   projectId: string;
   modelHighURL?: string | null;
@@ -22,18 +31,27 @@ export interface SpatialViewerProps {
   modelLowURL?: string;
   thumbnailURL?: string;
   projectType?: string; // For loading default models when no user model exists
-  onMarkerPlacement?: (position: { x: number; y: number; z: number }, normal: { x: number; y: number; z: number }) => void;
+  userRole: string; // NEW: Permission control (gc_admin, project_manager, etc.)
+  teamMembers?: Array<{ id: string; name: string }>; // NEW: For task assignment
+  phases?: Array<{ id: string; name: string }>; // NEW: For task creation
+  projectTasks?: Array<any>; // NEW: For task linking
+  onMarkerPlacement?: (marker: SpatialMarker) => void; // NEW: Signature updated
   className?: string;
 }
 
 /**
- * SpatialViewer - Complete 3D BIM/IFC viewer
- * Integrates all Phase 2 components:
+ * SpatialViewer - Complete 3D BIM/IFC viewer with Phase 3 marker integration
+ * Integrates all Phase 2 components + Phase 3 features:
  * - 3DViewerCanvas (P2.2)
  * - ModelLoader (P2.5)
  * - CameraControls (P2.3)
  * - LODManager (P2.6)
  * - InteractionLayer (P2.7)
+ * - SpatialMarkerContextMenu (P2.1) - Context menu for 3D clicks
+ * - SpatialMarkerPin (P2.4) - 3D marker visualization
+ * - MarkerFilterPanel (P2.3) - Marker filtering
+ * - TaskLinker (Enhanced) - Task creation/linking
+ * - MarkerCreationModal (P2.2) - Marker creation
  */
 export function SpatialViewer({
   projectId,
@@ -42,15 +60,20 @@ export function SpatialViewer({
   modelLowURL,
   thumbnailURL,
   projectType,
+  userRole,
+  teamMembers = [],
+  phases = [],
+  projectTasks = [],
   onMarkerPlacement,
   className,
 }: SpatialViewerProps) {
-  console.log('[SpatialViewer] Rendering', {
+  console.log('[SpatialViewer] Rendering Phase 3', {
     projectId,
     modelHighURL,
-    modelMediumURL,
-    modelLowURL,
     projectType,
+    userRole,
+    teamMembersCount: teamMembers.length,
+    phasesCount: phases.length,
   });
 
   // Debug: Viewer state
@@ -59,11 +82,99 @@ export function SpatialViewer({
   const [error, setError] = useState<Error | null>(null);
   const [hasDefaultModel, setHasDefaultModel] = useState(false);
 
+  // Debug: Phase 6 - WebGL support detection
+  const [webglSupported, setWebglSupported] = useState(true);
+
+  // Debug: Marker state
+  const [markers, setMarkers] = useState<SpatialMarker[]>([]);
+  const [activeFilters, setActiveFilters] = useState<MarkerFilters>({
+    markerTypes: [],
+    statuses: [],
+    hasTask: null,
+    hasMaterials: null,
+  });
+
+  // Debug: Context menu state
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [clickedPosition, setClickedPosition] = useState<{
+    x: number;
+    y: number;
+    z: number;
+    normal?: { x: number; y: number; z: number };
+    elementId?: string;
+  } | null>(null);
+
+  // Debug: Modal state
+  const [taskLinkerOpen, setTaskLinkerOpen] = useState(false);
+  const [taskLinkerMode, setTaskLinkerMode] = useState<'create' | 'link'>('create');
+  const [markerModalOpen, setMarkerModalOpen] = useState(false);
+  const [selectedMarkerType, setSelectedMarkerType] = useState<'issue' | 'note' | 'safety' | 'milestone'>('issue');
+
+  // Debug: Task detail panel state (Phase 4)
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  // Debug: Phase 6 - Marker selection menu for overlapping markers (mobile)
+  const [markerSelectionMenu, setMarkerSelectionMenu] = useState<{
+    open: boolean;
+    position: { x: number; y: number };
+    markers: SpatialMarker[];
+  }>({
+    open: false,
+    position: { x: 0, y: 0 },
+    markers: [],
+  });
+
   // Determine if we should use default model
   // Check if the modelHighURL is a placeholder (starts with 'defaults/')
   const isPlaceholderURL = modelHighURL?.startsWith('defaults/') || modelHighURL?.startsWith('/defaults/');
   const hasValidProjectType = ['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial'].includes(projectType || '');
   const shouldUseDefaultModel = (!modelHighURL || isPlaceholderURL) && hasValidProjectType;
+
+  // Debug: Permission checks
+  const canEditMarkers = userRole === 'gc_admin' || userRole === 'project_manager';
+
+  // Debug: Phase 6 - Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Debug: Phase 6 - Detect WebGL support on mount
+  useEffect(() => {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('webgl2');
+
+    if (!gl) {
+      console.error('[SpatialViewer] WebGL not supported');
+      setWebglSupported(false);
+    } else {
+      console.log('[SpatialViewer] WebGL supported');
+    }
+  }, []);
+
+  // Debug: Fetch markers on mount and when filters change
+  useEffect(() => {
+    const fetchMarkers = async () => {
+      console.log('[SpatialViewer] Fetching markers with filters:', activeFilters);
+      const result = await getMarkersByProject(projectId, activeFilters);
+      if (result.success && result.data) {
+        console.log('[SpatialViewer] Loaded markers:', result.data.length);
+        setMarkers(result.data);
+      } else if (result.error) {
+        console.error('[SpatialViewer] Failed to load markers:', result.error);
+      }
+    };
+
+    fetchMarkers();
+  }, [projectId, activeFilters]);
 
   // Debug: Handle viewer ready
   const handleViewerReady = useCallback((viewerInstance: Viewer) => {
@@ -102,30 +213,258 @@ export function SpatialViewer({
     setIsModelReady(true);
   }, []);
 
-  // Debug: Handle element click (for marker placement)
-  const handleElementClick = useCallback(
-    (result: IntersectionResult) => {
-      console.log('[SpatialViewer] Element clicked', result);
+  // Debug: Handle 3D canvas click (opens context menu for GC/PM)
+  const handleCanvasClick = useCallback(
+    (event: { screenX: number; screenY: number; worldPosition: { x: number; y: number; z: number }; normal: { x: number; y: number; z: number }; elementId?: string }) => {
+      console.log('[SpatialViewer] Canvas clicked', event);
 
-      // Debug: Could open marker creation modal here
-      if (onMarkerPlacement) {
-        onMarkerPlacement(result.position, result.normal);
+      // Only GC/PM can place markers
+      if (!canEditMarkers) {
+        console.log('[SpatialViewer] User role does not have edit permission');
+        return;
       }
+
+      const { screenX, screenY, worldPosition, normal, elementId } = event;
+
+      setContextMenuPosition({ x: screenX, y: screenY });
+      setClickedPosition({ ...worldPosition, normal, elementId });
+      setContextMenuOpen(true);
     },
-    [onMarkerPlacement]
+    [canEditMarkers]
   );
 
-  // Debug: Handle surface click (for marker placement on empty space)
-  const handleSurfaceClick = useCallback(
-    (position: { x: number; y: number; z: number }, normal: { x: number; y: number; z: number }) => {
-      console.log('[SpatialViewer] Surface clicked', { position, normal });
+  // Debug: Context menu action handlers
+  const handleCreateTask = useCallback(() => {
+    console.log('[SpatialViewer] Opening task creation modal');
+    setTaskLinkerMode('create');
+    setTaskLinkerOpen(true);
+    setContextMenuOpen(false);
+  }, []);
 
+  const handleLinkTask = useCallback(() => {
+    console.log('[SpatialViewer] Opening task linking modal');
+    setTaskLinkerMode('link');
+    setTaskLinkerOpen(true);
+    setContextMenuOpen(false);
+  }, []);
+
+  const handleCreateMarker = useCallback((markerType: 'issue' | 'note' | 'safety' | 'milestone') => {
+    console.log('[SpatialViewer] Opening marker creation modal for type:', markerType);
+    setSelectedMarkerType(markerType);
+    setMarkerModalOpen(true);
+    setContextMenuOpen(false);
+  }, []);
+
+  // Debug: Marker/Task creation callbacks
+  const handleTaskCreated = useCallback(
+    async (task: any, marker: SpatialMarker) => {
+      console.log('[SpatialViewer] Task created:', task.id, 'with marker:', marker.id);
+
+      // Refresh markers
+      const result = await getMarkersByProject(projectId, activeFilters);
+      if (result.success && result.data) {
+        setMarkers(result.data);
+      }
+
+      // Show success toast
+      toast.success(`Task "${task.title}" created at 3D location`);
+
+      // Trigger parent callback
       if (onMarkerPlacement) {
-        onMarkerPlacement(position, normal);
+        onMarkerPlacement(marker);
+      }
+
+      // Close modal
+      setTaskLinkerOpen(false);
+    },
+    [projectId, activeFilters, onMarkerPlacement]
+  );
+
+  const handleTaskLinked = useCallback(
+    async (taskId: string) => {
+      console.log('[SpatialViewer] Task linked:', taskId);
+
+      // Refresh markers
+      const result = await getMarkersByProject(projectId, activeFilters);
+      if (result.success && result.data) {
+        setMarkers(result.data);
+      }
+
+      // Show success toast
+      toast.success('Task linked to 3D location');
+
+      // Close modal
+      setTaskLinkerOpen(false);
+    },
+    [projectId, activeFilters]
+  );
+
+  const handleMarkerCreated = useCallback(
+    async (marker: SpatialMarker) => {
+      console.log('[SpatialViewer] Marker created:', marker.id);
+
+      // Refresh markers
+      const result = await getMarkersByProject(projectId, activeFilters);
+      if (result.success && result.data) {
+        setMarkers(result.data);
+      }
+
+      // Show success toast
+      toast.success(`${marker.marker_type} marker created`);
+
+      // Trigger parent callback
+      if (onMarkerPlacement) {
+        onMarkerPlacement(marker);
+      }
+
+      // Close modal
+      setMarkerModalOpen(false);
+    },
+    [projectId, activeFilters, onMarkerPlacement]
+  );
+
+  const handleMarkerClick = useCallback((marker: SpatialMarker) => {
+    console.log('[SpatialViewer] Marker clicked:', marker.id);
+
+    // Phase 4: Open TaskDetailPanel if marker has linked task
+    if (marker.task_id) {
+      console.log('[SpatialViewer] Opening task detail panel for task:', marker.task_id);
+      setSelectedTaskId(marker.task_id);
+      setDetailPanelOpen(true);
+    } else {
+      // Non-task marker (issue, note, safety, milestone)
+      console.log('[SpatialViewer] Non-task marker clicked - detail view in future phase');
+      toast.info(`${marker.marker_type} marker: ${marker.title}`);
+    }
+  }, []);
+
+  const handleMarkerDragEnd = useCallback(
+    async (marker: SpatialMarker, newPosition: { x: number; y: number; z: number }) => {
+      console.log('[SpatialViewer] Marker dragged to new position:', marker.id, newPosition);
+
+      const result = await updateMarker(marker.id, {
+        position_x: newPosition.x,
+        position_y: newPosition.y,
+        position_z: newPosition.z,
+      });
+
+      if (result.success) {
+        toast.success('Marker position updated');
+
+        // Refresh markers
+        const markersResult = await getMarkersByProject(projectId, activeFilters);
+        if (markersResult.success && markersResult.data) {
+          setMarkers(markersResult.data);
+        }
+      } else {
+        toast.error('Failed to update marker position');
       }
     },
-    [onMarkerPlacement]
+    [projectId, activeFilters]
   );
+
+  // Debug: Phase 6 - Throttle render loop to 30 FPS on mobile
+  useEffect(() => {
+    if (!viewer) return;
+
+    if (isMobile) {
+      console.log('[SpatialViewer] Mobile detected - throttling render to 30 FPS');
+      viewer.scene.fps = 30;
+    } else {
+      console.log('[SpatialViewer] Desktop - using 60 FPS');
+      viewer.scene.fps = 60;
+    }
+  }, [viewer, isMobile]);
+
+  // Debug: Phase 6 - Handle device orientation changes
+  useEffect(() => {
+    if (!viewer) return;
+
+    // Debounce utility function
+    function debounce<T extends (...args: any[]) => void>(
+      func: T,
+      wait: number
+    ): (...args: Parameters<T>) => void {
+      let timeout: NodeJS.Timeout;
+      return function executedFunction(...args: Parameters<T>) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    const handleResize = () => {
+      const canvas = document.getElementById('xeokit-canvas') as HTMLCanvasElement;
+      if (!canvas) return;
+
+      console.log('[SpatialViewer] Orientation/resize event - updating canvas dimensions');
+
+      // Update canvas dimensions
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+
+        // Update Xeokit viewer viewport
+        viewer.scene.canvas.boundary = [0, 0, canvas.width, canvas.height];
+        viewer.scene.canvas.render();
+      }
+    };
+
+    // Debounced resize handler (300ms)
+    const debouncedResize = debounce(handleResize, 300);
+
+    window.addEventListener('resize', debouncedResize);
+    window.addEventListener('orientationchange', debouncedResize);
+
+    console.log('[SpatialViewer] Orientation change handlers registered');
+
+    return () => {
+      window.removeEventListener('resize', debouncedResize);
+      window.removeEventListener('orientationchange', debouncedResize);
+      console.log('[SpatialViewer] Orientation change handlers removed');
+    };
+  }, [viewer]);
+
+  // Debug: Phase 6 - Mobile performance: reduce marker count on mobile (show only active)
+  const visibleMarkers = isMobile
+    ? markers.filter((m) => m.status === 'open' || m.status === 'in_progress')
+    : markers;
+
+  console.log('[SpatialViewer] Visible markers:', visibleMarkers.length, '/', markers.length, '(mobile:', isMobile, ')');
+
+  // Debug: Calculate marker counts for filter panel
+  const markerCounts = {
+    issue: markers.filter((m) => m.marker_type === 'issue').length,
+    note: markers.filter((m) => m.marker_type === 'note').length,
+    safety: markers.filter((m) => m.marker_type === 'safety').length,
+    milestone: markers.filter((m) => m.marker_type === 'milestone').length,
+  };
+
+  // Debug: Phase 6 - WebGL fallback message
+  if (!webglSupported) {
+    return (
+      <div className="relative w-full h-full bg-gray-100 flex flex-col items-center justify-center p-8 text-center">
+        <div className="bg-yellow-50 border-2 border-yellow-500 rounded-lg p-8 max-w-md shadow-construction">
+          <div className="flex justify-center mb-4">
+            <svg className="h-16 w-16 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black uppercase mb-2 text-[#001B51]">3D Viewer Not Supported</h2>
+          <p className="text-gray-600 mb-4">
+            Your browser does not support WebGL, which is required for the 3D viewer.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please use a modern browser like Chrome, Firefox, Safari, or Edge.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('relative w-full h-full bg-gray-100', className)}>
@@ -175,13 +514,143 @@ export function SpatialViewer({
         />
       )}
 
-      {/* Debug: Interaction Layer (click detection) */}
+      {/* Debug: Interaction Layer (click detection) - Updated for context menu */}
       {viewer && isModelReady && (
         <InteractionLayer
           viewer={viewer}
-          onElementClick={handleElementClick}
-          onSurfaceClick={handleSurfaceClick}
+          userRole={userRole}
+          onCanvasClick={handleCanvasClick}
         />
+      )}
+
+      {/* Debug: Marker Pins (rendered on 3D canvas) - Phase 6: uses visibleMarkers for mobile optimization */}
+      {isModelReady &&
+        visibleMarkers.map((marker) => (
+          <SpatialMarkerPin
+            key={marker.id}
+            marker={{
+              id: marker.id,
+              type: marker.marker_type as any,
+              title: marker.title,
+              status: marker.status as any,
+              priority: marker.priority_level as any,
+              assigned_to: marker.assigned_to_user_id,
+              task_id: marker.task_id,
+            }}
+            materialCount={marker.material_count || 0}
+            attachmentCount={marker.content?.length || 0}
+            onClick={() => handleMarkerClick(marker)}
+            onDragEnd={(newPos: { x: number; y: number; z: number }) => handleMarkerDragEnd(marker, newPos)}
+            isDraggable={canEditMarkers}
+          />
+        ))}
+
+      {/* Debug: Filter Panel (bottom-left) */}
+      {isModelReady && (
+        <MarkerFilterPanel
+          activeFilters={activeFilters}
+          onFilterChange={setActiveFilters}
+          markerCounts={markerCounts}
+          className="absolute bottom-4 left-4 z-30"
+        />
+      )}
+
+      {/* Debug: Context Menu (right-click on 3D surface) */}
+      <SpatialMarkerContextMenu
+        isOpen={contextMenuOpen}
+        position={contextMenuPosition}
+        worldPosition={clickedPosition || { x: 0, y: 0, z: 0 }}
+        normal={clickedPosition?.normal}
+        elementId={clickedPosition?.elementId}
+        userRole={userRole}
+        onClose={() => setContextMenuOpen(false)}
+        onCreateTask={handleCreateTask}
+        onLinkTask={handleLinkTask}
+        onAddIssue={() => handleCreateMarker('issue')}
+        onAddNote={() => handleCreateMarker('note')}
+        onAddSafety={() => handleCreateMarker('safety')}
+        onAddMilestone={() => handleCreateMarker('milestone')}
+      />
+
+      {/* Debug: Task Linker Modal (create or link mode) */}
+      <TaskLinker
+        isOpen={taskLinkerOpen}
+        onClose={() => setTaskLinkerOpen(false)}
+        mode={taskLinkerMode}
+        position={clickedPosition || { x: 0, y: 0, z: 0 }}
+        normal={clickedPosition?.normal || { x: 0, y: 0, z: 0 }}
+        elementId={clickedPosition?.elementId}
+        projectId={projectId}
+        phaseId={phases[0]?.id}
+        phases={phases}
+        teamMembers={teamMembers}
+        projectTasks={projectTasks}
+        onTaskCreated={handleTaskCreated}
+        onTaskLinked={handleTaskLinked}
+      />
+
+      {/* Debug: Marker Creation Modal */}
+      <MarkerCreationModal
+        isOpen={markerModalOpen}
+        onClose={() => setMarkerModalOpen(false)}
+        markerType={selectedMarkerType}
+        position={clickedPosition || { x: 0, y: 0, z: 0 }}
+        normal={clickedPosition?.normal || { x: 0, y: 0, z: 0 }}
+        elementId={clickedPosition?.elementId}
+        projectId={projectId}
+        phaseId={phases[0]?.id}
+        onSubmit={handleMarkerCreated}
+        teamMembers={teamMembers}
+      />
+
+      {/* Debug: Task Detail Panel (Phase 4) */}
+      <TaskDetailPanel
+        taskId={selectedTaskId}
+        isOpen={detailPanelOpen}
+        onClose={() => setDetailPanelOpen(false)}
+        userRole={userRole}
+      />
+
+      {/* Debug: Phase 6 - Marker Selection Menu (overlapping markers on mobile) */}
+      {markerSelectionMenu.open && (
+        <div
+          className="fixed z-50 bg-white rounded-lg shadow-2xl p-2 border-2 border-gray-200"
+          style={{
+            top: markerSelectionMenu.position.y,
+            left: markerSelectionMenu.position.x,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <div className="text-xs uppercase font-semibold text-gray-500 mb-1 px-2">
+            Select Marker
+          </div>
+          {markerSelectionMenu.markers.map((marker) => {
+            const config = {
+              issue: { color: '#DC2626', label: 'Issue' },
+              note: { color: '#FBBF24', label: 'Note' },
+              safety: { color: '#F97316', label: 'Safety' },
+              milestone: { color: '#10B981', label: 'Milestone' },
+              task: { color: '#001B51', label: 'Task' },
+            }[marker.marker_type] || { color: '#001B51', label: 'Task' };
+
+            return (
+              <button
+                key={marker.id}
+                onClick={() => {
+                  handleMarkerClick(marker);
+                  setMarkerSelectionMenu({ open: false, position: { x: 0, y: 0 }, markers: [] });
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-2"
+              >
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: config.color }}
+                />
+                <span className="text-sm">{marker.title}</span>
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {/* Debug: Error overlay */}

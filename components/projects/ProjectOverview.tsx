@@ -55,10 +55,11 @@ interface ProjectOverviewProps {
   expenseStats?: ExpenseStats;
   taskStats?: TaskStats;
   activeModel?: any;
+  userRole?: string; // NEW: For spatial viewer permissions
 }
 
-export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, taskStats, activeModel }: ProjectOverviewProps) {
-  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats, 'and task stats:', taskStats);
+export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, taskStats, activeModel, userRole = 'field_worker' }: ProjectOverviewProps) {
+  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
@@ -354,7 +355,7 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
               </div>
             )}
 
-            {/* 3D Viewer with Toolbar */}
+            {/* 3D Viewer with Toolbar (Phase 3 enhanced) */}
             <div className="relative h-[600px] md:h-[800px]">
               <SpatialViewer
                 projectId={project.id}
@@ -363,6 +364,14 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
                 modelLowURL={activeModel?.model_low_url}
                 thumbnailURL={activeModel?.thumbnail_url}
                 projectType={project.project_type}
+                userRole={userRole}
+                teamMembers={teamMembers}
+                phases={project.project_phases || []}
+                projectTasks={project.tasks || []}
+                onMarkerPlacement={(marker) => {
+                  console.log('[ProjectOverview] Marker placed:', marker.id);
+                  // Phase 4 will handle marker detail panel
+                }}
               />
 
               {/* Viewer Toolbar Overlay */}

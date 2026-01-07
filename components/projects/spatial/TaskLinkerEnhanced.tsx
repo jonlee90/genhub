@@ -1,3 +1,10 @@
+/**
+ * TaskLinker - Enhanced P2.5
+ * Support for both 'create' and 'link' modes
+ * Create mode: Creates new task at 3D location
+ * Link mode: Links existing task to 3D location
+ */
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -33,7 +40,7 @@ interface Task {
 interface TaskLinkerProps {
   isOpen: boolean;
   onClose: () => void;
-  mode?: 'create' | 'link';
+  mode: 'create' | 'link';
   // For link mode
   markerId?: string;
   markerTitle?: string;
@@ -65,7 +72,7 @@ const STATUS_COLORS = {
 };
 
 export function TaskLinker(props: TaskLinkerProps) {
-  const { isOpen, onClose, mode = 'link' } = props;
+  const { isOpen, onClose, mode } = props;
 
   console.log('[TaskLinker] Rendering mode:', mode);
 
@@ -328,15 +335,16 @@ function LinkTaskMode({
 
   console.log('[LinkTaskMode] Rendering with marker:', markerId, 'Tasks:', projectTasks.length);
 
-  // Debug: Filter tasks based on search
-  const filteredTasks = projectTasks.filter(task =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.phase?.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = projectTasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.phase?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Debug: Handle task linking
   const handleLinkTask = async (taskId: string) => {
-    console.log('[TaskLinker] Linking task:', taskId, 'to marker:', markerId);
+    if (!markerId) return;
+
+    console.log('[LinkTaskMode] Linking task:', taskId, 'to marker:', markerId);
     setIsLinking(true);
     setSelectedTaskId(taskId);
 
@@ -348,16 +356,16 @@ function LinkTaskMode({
       const result = await updateTask(formData);
 
       if (result.success) {
-        console.log('[TaskLinker] Task linked successfully');
+        console.log('[LinkTaskMode] Task linked successfully');
         toast.success('Task linked to 3D marker');
         onTaskLinked?.(taskId);
         onClose();
       } else {
-        console.error('[TaskLinker] Failed to link task:', result.error);
+        console.error('[LinkTaskMode] Failed to link task:', result.error);
         toast.error(result.error || 'Failed to link task');
       }
     } catch (error) {
-      console.error('[TaskLinker] Error linking task:', error);
+      console.error('[LinkTaskMode] Error linking task:', error);
       toast.error('Failed to link task');
     } finally {
       setIsLinking(false);
@@ -365,29 +373,28 @@ function LinkTaskMode({
     }
   };
 
-  // Debug: Handle unlinking
   const handleUnlinkTask = async (taskId: string) => {
-    console.log('[TaskLinker] Unlinking task:', taskId);
+    console.log('[LinkTaskMode] Unlinking task:', taskId);
     setIsLinking(true);
     setSelectedTaskId(taskId);
 
     try {
       const formData = new FormData();
       formData.append('id', taskId);
-      formData.append('spatial_marker_id', ''); // Clear the marker
+      formData.append('spatial_marker_id', '');
 
       const result = await updateTask(formData);
 
       if (result.success) {
-        console.log('[TaskLinker] Task unlinked successfully');
+        console.log('[LinkTaskMode] Task unlinked successfully');
         toast.success('Task unlinked from marker');
         onTaskLinked?.(taskId);
       } else {
-        console.error('[TaskLinker] Failed to unlink task:', result.error);
+        console.error('[LinkTaskMode] Failed to unlink task:', result.error);
         toast.error(result.error || 'Failed to unlink task');
       }
     } catch (error) {
-      console.error('[TaskLinker] Error unlinking task:', error);
+      console.error('[LinkTaskMode] Error unlinking task:', error);
       toast.error('Failed to unlink task');
     } finally {
       setIsLinking(false);
@@ -400,23 +407,23 @@ function LinkTaskMode({
       isOpen={isOpen}
       onClose={onClose}
       title="Link Task to Marker"
-      size="lg"
+      maxWidth="lg"
     >
       <div className="space-y-4">
         {/* Marker Info */}
-        <div className="flex items-center gap-3 p-4 bg-construction-blue/5 rounded-lg border-2 border-construction-blue/20">
-          <div className="p-2 bg-construction-blue rounded-lg">
-            <MapPin className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/70">
-              Target Marker
+        {markerTitle && (
+          <div className="flex items-center gap-3 p-4 bg-construction-blue/5 rounded-lg border-2 border-construction-blue/20">
+            <div className="p-2 bg-construction-blue rounded-lg">
+              <MapPin className="h-5 w-5 text-white" />
             </div>
-            <div className="text-sm font-bold text-gray-900">
-              {markerTitle}
+            <div>
+              <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/70">
+                Target Marker
+              </div>
+              <div className="text-sm font-bold text-gray-900">{markerTitle}</div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Search */}
         <div className="relative">
@@ -442,12 +449,8 @@ function LinkTaskMode({
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <Search className="h-8 w-8 text-gray-400" />
               </div>
-              <div className="text-sm font-bold text-gray-900 mb-1">
-                No tasks found
-              </div>
-              <div className="text-xs text-gray-500">
-                Try adjusting your search query
-              </div>
+              <div className="text-sm font-bold text-gray-900 mb-1">No tasks found</div>
+              <div className="text-xs text-gray-500">Try adjusting your search query</div>
             </div>
           ) : (
             filteredTasks.map((task) => {
@@ -467,7 +470,6 @@ function LinkTaskMode({
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    {/* Task Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="text-sm font-bold text-gray-900 line-clamp-1">
@@ -480,31 +482,34 @@ function LinkTaskMode({
                           </div>
                         )}
                       </div>
-
                       <div className="flex flex-wrap items-center gap-2">
                         {task.phase && (
-                          <div className="text-xs text-gray-600">
-                            {task.phase.name}
-                          </div>
+                          <div className="text-xs text-gray-600">{task.phase.name}</div>
                         )}
                         <Badge
                           variant="secondary"
-                          className={cn('text-[10px] px-2 py-0.5', STATUS_COLORS[task.status as keyof typeof STATUS_COLORS])}
+                          className={cn(
+                            'text-[10px] px-2 py-0.5',
+                            STATUS_COLORS[task.status as keyof typeof STATUS_COLORS]
+                          )}
                         >
                           {task.status}
                         </Badge>
                         <Badge
                           variant="secondary"
-                          className={cn('text-[10px] px-2 py-0.5', PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS])}
+                          className={cn(
+                            'text-[10px] px-2 py-0.5',
+                            PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS]
+                          )}
                         >
                           {task.priority}
                         </Badge>
                       </div>
                     </div>
-
-                    {/* Action Button */}
                     <button
-                      onClick={() => isLinked ? handleUnlinkTask(task.id) : handleLinkTask(task.id)}
+                      onClick={() =>
+                        isLinked ? handleUnlinkTask(task.id) : handleLinkTask(task.id)
+                      }
                       disabled={isProcessing}
                       className={cn(
                         'px-4 py-2 rounded-lg font-bold text-sm',

@@ -1,0 +1,63 @@
+{
+  "summary": {
+    "total": 8,
+    "passed": 0,
+    "failed": 8,
+    "passPercentage": 0
+  },
+  "results": [
+    {
+      "timestamp": "2026-01-05T06:40:46.599Z",
+      "test": "Navigate to /app",
+      "status": "FAIL",
+      "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3000/app\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3000/app\", waiting until \"networkidle\"\u001b[22m\n"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:16.600Z",
+      "test": "Navigate to Projects Page",
+      "status": "FAIL",
+      "message": "page.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('a[href*=\"/projects\"]')\u001b[22m\n"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:16.607Z",
+      "test": "Navigate to Project Details",
+      "status": "FAIL",
+      "message": "No project links found"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:26.609Z",
+      "test": "Spatial Viewer Canvas Loads",
+      "status": "FAIL",
+      "message": "Canvas not found"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:26.616Z",
+      "test": "Marker Filter Panel Visible",
+      "status": "FAIL",
+      "message": "Panel not found"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:26.618Z",
+      "test": "Camera Control Buttons Found",
+      "status": "FAIL",
+      "message": "No camera controls found"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:26.622Z",
+      "test": "Model Statistics Display Visible",
+      "status": "FAIL",
+      "message": "Stats not found"
+    },
+    {
+      "timestamp": "2026-01-05T06:41:26.624Z",
+      "test": "Task Detail Panel Visible",
+      "status": "FAIL",
+      "message": "Panel not visible in current state"
+    }
+  ],
+  "environment": {
+    "baseUrl": "http://localhost:3000",
+    "timestamp": "2026-01-05T06:41:26.624Z",
+    "browser": "Chromium"
+  }
+}

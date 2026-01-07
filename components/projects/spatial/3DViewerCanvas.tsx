@@ -10,6 +10,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { viewerManager } from '@/lib/xeokit/viewer-manager';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   optimizeViewer,
   getDefaultConfig,
@@ -297,139 +298,118 @@ export function ThreeDViewerCanvas({
       const isIFCFile = url.toLowerCase().endsWith('.ifc');
       console.log('[3DViewerCanvas] File type detected:', isIFCFile ? 'IFC' : 'XKT');
 
-      let model: any;
-
+      // Handle IFC files
       if (isIFCFile) {
-        // For IFC files, use default residential model as fallback
-        // Note: xeokit v2.6.6 requires XKT format for optimal performance
-        // IFC parsing would require server-side conversion to XKT
-        console.warn('[3DViewerCanvas] IFC file detected, loading default model as placeholder');
+        // IFC files cannot be loaded directly by xeokit v2.6.x
+        // They must be converted to XKT format first
+        console.warn('[3DViewerCanvas] IFC file detected - requires server-side XKT conversion');
 
+        // Show notification to user
+        toast.info(
+          'IFC files require conversion to XKT format. ' +
+          'Your file is being processed in the background. ' +
+          'The 3D model will be available shortly.',
+          { duration: 5000 }
+        );
+
+        // Load a placeholder default model while showing a message
         const { createResidentialHouseModel, removeDefaultModel } = await import('@/lib/xeokit/default-models');
 
         if (!viewerRef.current) {
-          throw new Error('Viewer not initialized when loading default model');
+          throw new Error('Viewer not initialized');
         }
 
-        // Remove any existing default model to prevent duplicate component IDs
         removeDefaultModel(viewerRef.current);
-
-        // Load default model as a placeholder until IFC conversion is implemented
         await createResidentialHouseModel(viewerRef.current);
-        console.log('[3DViewerCanvas] Default residential model loaded as IFC placeholder');
 
-        // Model is created internally with meshes - no event handlers needed
-        model = { id: 'default-residential-house' };
+        setLoadProgress(100);
+        setIsLoading(false);
 
-        // Debug: Track loading progress
-        let downloadProgress = 0;
-        const progressInterval = setInterval(() => {
-          // Simulate download progress (0-50%)
-          if (downloadProgress < 50) {
-            downloadProgress += 5;
-            setLoadProgress(downloadProgress);
-            if (onProgress) {
-              onProgress(downloadProgress);
-            }
-          }
-        }, 100);
+        // Fit view
+        const scene = viewerRef.current.scene;
+        const aabb = scene.getAABB();
+        viewerRef.current.cameraFlight.flyTo({
+          aabb,
+          duration: 1.0,
+        });
 
-        // Complete loading after short delay to ensure meshes are rendered
-        setTimeout(() => {
-          clearInterval(progressInterval);
-          console.log('[3DViewerCanvas] IFC Model loaded successfully');
+        modelRef.current = { id: 'default-placeholder-ifc' };
+        console.log('[3DViewerCanvas] Placeholder model loaded while IFC is being converted');
+        return;
+      }
 
-          // Complete progress (50-100% for parsing)
-          setLoadProgress(100);
+      // Debug: Load model file using XKTLoaderPlugin (XKT files only)
+      const { XKTLoaderPlugin } = await import('@xeokit/xeokit-sdk');
+
+      // Verify viewer exists
+      if (!viewerRef.current) {
+        throw new Error('Viewer not initialized when creating XKT plugin');
+      }
+
+      // Instantiate XKTLoaderPlugin (viewer as first parameter)
+      // Plugin automatically registers itself with the viewer
+      const xktLoaderPlugin = new XKTLoaderPlugin(viewerRef.current);
+
+      console.log('[3DViewerCanvas] XKT plugin created and registered');
+
+      // Use the plugin directly as the loader
+      const xktLoader = xktLoaderPlugin;
+
+      console.log('[3DViewerCanvas] Loading XKT model');
+
+      // Load XKT model
+      const model = xktLoader.load({
+        id: `model-${Date.now()}`,
+        src: url,
+        edges: true, // Show edges for better visualization
+      });
+
+      // Debug: Track loading progress
+      let downloadProgress = 0;
+      const progressInterval = setInterval(() => {
+        // Simulate download progress (0-50%)
+        if (downloadProgress < 50) {
+          downloadProgress += 5;
+          setLoadProgress(downloadProgress);
           if (onProgress) {
-            onProgress(100);
+            onProgress(downloadProgress);
           }
+        }
+      }, 100);
 
-          // Debug: Fit model to view
-          const scene = viewerRef.current!.scene;
-          const aabb = scene.getAABB();
-          viewerRef.current!.cameraFlight.flyTo({
-            aabb,
-            duration: 1.0,
-          });
+      // Debug: Wait for model to load
+      model.on('loaded', () => {
+        clearInterval(progressInterval);
+        console.log('[3DViewerCanvas] Model loaded successfully');
 
-          setIsLoading(false);
-          modelRef.current = model;
-        }, 500);
-      } else {
-        // Debug: Load XKT file using XKTLoaderPlugin
-        const { XKTLoaderPlugin } = await import('@xeokit/xeokit-sdk');
-
-        // Verify viewer exists
-        if (!viewerRef.current) {
-          throw new Error('Viewer not initialized when creating XKT plugin');
+        // Complete progress (50-100% for parsing)
+        setLoadProgress(100);
+        if (onProgress) {
+          onProgress(100);
         }
 
-        // Instantiate XKTLoaderPlugin (viewer as first parameter)
-        // Plugin automatically registers itself with the viewer
-        const xktLoaderPlugin = new XKTLoaderPlugin(viewerRef.current);
-
-        console.log('[3DViewerCanvas] XKT plugin created and registered');
-
-        // Use the plugin directly as the loader
-        const xktLoader = xktLoaderPlugin;
-
-        console.log('[3DViewerCanvas] XKT loader created');
-
-        // Load XKT model
-        model = xktLoader.load({
-          id: `model-${Date.now()}`,
-          src: url,
-          edges: true, // Show edges for better visualization
+        // Debug: Fit model to view
+        const scene = viewerRef.current!.scene;
+        const aabb = scene.getAABB();
+        viewerRef.current!.cameraFlight.flyTo({
+          aabb,
+          duration: 1.0,
         });
 
-        // Debug: Track loading progress
-        let downloadProgress = 0;
-        const progressInterval = setInterval(() => {
-          // Simulate download progress (0-50%)
-          if (downloadProgress < 50) {
-            downloadProgress += 5;
-            setLoadProgress(downloadProgress);
-            if (onProgress) {
-              onProgress(downloadProgress);
-            }
-          }
-        }, 100);
+        setIsLoading(false);
+        modelRef.current = model;
+      });
 
-        // Debug: Wait for model to load
-        model.on('loaded', () => {
-          clearInterval(progressInterval);
-          console.log('[3DViewerCanvas] Model loaded successfully');
-
-          // Complete progress (50-100% for parsing)
-          setLoadProgress(100);
-          if (onProgress) {
-            onProgress(100);
-          }
-
-          // Debug: Fit model to view
-          const scene = viewerRef.current!.scene;
-          const aabb = scene.getAABB();
-          viewerRef.current!.cameraFlight.flyTo({
-            aabb,
-            duration: 1.0,
-          });
-
-          setIsLoading(false);
-          modelRef.current = model;
-        });
-
-        model.on('error', (err: any) => {
-          clearInterval(progressInterval);
-          console.error('[3DViewerCanvas] Model load error', err);
-          const error = new Error(`Failed to load model: ${err}`);
-          setError(error);
-          setIsLoading(false);
-          if (onErrorRef.current) {
-            onErrorRef.current(error);
-          }
-        });
-      }
+      model.on('error', (err: any) => {
+        clearInterval(progressInterval);
+        console.error('[3DViewerCanvas] Model load error', err);
+        const error = new Error(`Failed to load model: ${err}`);
+        setError(error);
+        setIsLoading(false);
+        if (onErrorRef.current) {
+          onErrorRef.current(error);
+        }
+      });
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
       console.error('[3DViewerCanvas] Model loading error', error);

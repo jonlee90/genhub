@@ -52,6 +52,70 @@ export interface DefaultModelConfig {
 }
 
 /**
+ * Load the cafe.xkt model from public/models/
+ * This is a real 3D model converted from cafe.ifc
+ */
+export async function loadCafeModel(viewer: Viewer, config?: Partial<DefaultModelConfig>): Promise<void> {
+  console.log('[DefaultModels] Loading cafe.xkt model');
+
+  try {
+    // Use XKTLoaderPlugin to load the cafe model
+    const { XKTLoaderPlugin } = await import('@xeokit/xeokit-sdk');
+
+    if (!viewer) {
+      throw new Error('Viewer not initialized');
+    }
+
+    // Create XKT loader plugin
+    const xktLoaderPlugin = new XKTLoaderPlugin(viewer);
+
+    console.log('[DefaultModels] XKT plugin created');
+
+    // Load the cafe.xkt file from public directory
+    const modelId = config?.modelId || 'default-cafe-model';
+    const model = xktLoaderPlugin.load({
+      id: modelId,
+      src: '/models/cafe.xkt', // Public file
+      edges: true,
+    });
+
+    // Wait for model to load
+    return new Promise((resolve, reject) => {
+      model.on('loaded', () => {
+        console.log('[DefaultModels] Cafe model loaded successfully');
+
+        // Fit camera to model
+        const scene = viewer.scene;
+        const aabb = scene.getAABB();
+        if (aabb) {
+          viewer.cameraFlight.flyTo({
+            aabb,
+            duration: 1.0,
+          });
+        }
+
+        resolve();
+      });
+
+      model.on('error', (err: any) => {
+        console.error('[DefaultModels] Cafe model load error:', err);
+        reject(new Error(`Failed to load cafe model: ${err}`));
+      });
+
+      // Set timeout for loading
+      setTimeout(() => {
+        if (model.loaded === false) {
+          reject(new Error('Cafe model loading timeout'));
+        }
+      }, 30000); // 30 second timeout
+    });
+  } catch (error) {
+    console.error('[DefaultModels] Failed to load cafe model:', error);
+    throw error;
+  }
+}
+
+/**
  * Create a default residential house model
  * Simple house shape with walls, roof, and foundation
  */
@@ -314,9 +378,14 @@ export async function createDefaultModel(viewer: Viewer, projectType: string, co
       break;
 
     case 'cafe':
-      // Use residential model as placeholder for cafe
-      console.log('[DefaultModels] Using residential model as placeholder for cafe');
-      await createResidentialHouseModel(viewer, { ...config, modelId: 'default-cafe-layout' });
+      // Load cafe.xkt model for cafe projects
+      console.log('[DefaultModels] Loading cafe.xkt model for cafe project');
+      try {
+        await loadCafeModel(viewer, { ...config, modelId: 'default-cafe-model' });
+      } catch (error) {
+        console.error('[DefaultModels] Failed to load cafe model, falling back to residential:', error);
+        await createResidentialHouseModel(viewer, { ...config, modelId: 'default-cafe-fallback' });
+      }
       break;
 
     case 'restaurant':
@@ -332,9 +401,14 @@ export async function createDefaultModel(viewer: Viewer, projectType: string, co
       break;
 
     case 'restaurant_cafe':
-      // Legacy combined type - use residential model as placeholder
-      console.log('[DefaultModels] Using residential model as placeholder for restaurant/cafe');
-      await createResidentialHouseModel(viewer, { ...config, modelId: 'default-restaurant-cafe' });
+      // Load cafe.xkt model for restaurant/cafe projects
+      console.log('[DefaultModels] Loading cafe.xkt model for restaurant/cafe project');
+      try {
+        await loadCafeModel(viewer, { ...config, modelId: 'default-restaurant-cafe-model' });
+      } catch (error) {
+        console.error('[DefaultModels] Failed to load cafe model, falling back to residential:', error);
+        await createResidentialHouseModel(viewer, { ...config, modelId: 'default-restaurant-cafe-fallback' });
+      }
       break;
 
     case 'industrial':
@@ -355,24 +429,36 @@ export function removeDefaultModel(viewer: Viewer, modelId: string = 'default-re
   console.log('[DefaultModels] Removing default model:', modelId);
 
   try {
-    // Remove all objects that are part of the default model
-    const objectIds = [
-      `${modelId}-foundation`,
-      `${modelId}-wall-front`,
-      `${modelId}-wall-back`,
-      `${modelId}-wall-left`,
-      `${modelId}-wall-right`,
-      `${modelId}-roof-left`,
-      `${modelId}-roof-right`,
-    ];
+    // Check if this is an XKT-loaded model (cafe models)
+    const isCafeModel = modelId.includes('cafe') || modelId.includes('restaurant');
 
-    objectIds.forEach((objectId) => {
-      const object = viewer.scene.objects?.[objectId];
-      if (object) {
-        object.destroy();
-        console.log('[DefaultModels] Removed object:', objectId);
+    if (isCafeModel) {
+      // Remove XKT-loaded model by destroying the model object
+      const model = viewer.scene.models?.[modelId];
+      if (model) {
+        model.destroy();
+        console.log('[DefaultModels] Removed XKT model:', modelId);
       }
-    });
+    } else {
+      // Remove procedurally-created model (residential, etc.)
+      const objectIds = [
+        `${modelId}-foundation`,
+        `${modelId}-wall-front`,
+        `${modelId}-wall-back`,
+        `${modelId}-wall-left`,
+        `${modelId}-wall-right`,
+        `${modelId}-roof-left`,
+        `${modelId}-roof-right`,
+      ];
+
+      objectIds.forEach((objectId) => {
+        const object = viewer.scene.objects?.[objectId];
+        if (object) {
+          object.destroy();
+          console.log('[DefaultModels] Removed object:', objectId);
+        }
+      });
+    }
 
     console.log('[DefaultModels] Default model removed successfully');
   } catch (error) {

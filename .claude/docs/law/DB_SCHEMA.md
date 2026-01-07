@@ -51,7 +51,7 @@
 | **Core** | companies, user_profiles, company_users |
 | **Projects** | projects, project_phases, project_team |
 | **Tasks** | tasks, task_dependencies, task_activity |
-| **Materials** | materials, material_assignments, expenses, expense_line_items |
+| **Materials** | materials, material_assignments, expenses, expense_line_items, tracked_materials, material_price_history |
 | **Team** | subcontractors, team_invitations |
 | **Chat** | chat_rooms, chat_participants, messages, message_reactions, message_attachments |
 | **System** | notifications, attachments, push_subscriptions |
@@ -124,8 +124,11 @@
 
 **companies**
 ```sql
-id uuid PK, name text, address, phone, email, logo_url, created_at, updated_at
+id uuid PK, name text, address, phone, email, logo_url,
+client_can_view_budget boolean DEFAULT false,
+created_at, updated_at
 -- RLS: Members view, GC Admin update
+-- Client Portal: client_can_view_budget controls budget visibility in client portal
 ```
 
 **user_profiles**
@@ -244,6 +247,26 @@ description text, quantity numeric, unit_price numeric,
 line_total numeric GENERATED (quantity * unit_price) STORED,
 matched_by_ai bool, match_confidence_score numeric, manually_matched bool,
 ocr_extracted_data jsonb, created_at, updated_at
+```
+
+**tracked_materials**
+```sql
+id uuid PK, company_id uuid FK, user_id uuid, material_id uuid FK,
+tracked_at timestamptz, created_at, updated_at
+-- Purpose: User watchlist for material price monitoring (max 10 per user)
+-- Trigger: check_tracked_materials_limit() enforces 10 material limit per user
+-- RLS: Users can view tracked materials in their company, insert/delete their own
+-- Index: UNIQUE(user_id, material_id)
+```
+
+**material_price_history**
+```sql
+id uuid PK, company_id uuid FK, material_id uuid FK,
+price numeric(10,2), recorded_at timestamptz, source text DEFAULT 'home_depot_api',
+created_at
+-- Purpose: Historical price snapshots for materials (90-day retention, append-only)
+-- RLS: Company members can SELECT, only service_role can INSERT (scheduled jobs)
+-- No UPDATE or DELETE policies (append-only table)
 ```
 
 ### Team Tables

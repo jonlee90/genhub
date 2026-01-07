@@ -6,49 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 
-// Type imports
-type Project3DModel = {
-  id: string;
-  project_id: string;
-  version: number;
-  xkt_file_url: string;
-  original_file_url: string | null;
-  file_size_bytes: number;
-  element_count: number | null;
-  bounds: any;
-  floors: any;
-  processing_status: string;
-  error_message: string | null;
-  is_default: boolean;
-  default_model_id: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type SpatialMarker = {
-  id: string;
-  project_id: string;
-  model_id: string;
-  task_id: string | null;
-  position_x: number;
-  position_y: number;
-  position_z: number;
-  normal_x: number;
-  normal_y: number;
-  normal_z: number;
-  floor_id: string | null;
-  floor_name: string | null;
-  element_id: string | null;
-  element_type: string | null;
-  title: string;
-  description: string | null;
-  type: string;
-  status: string;
-  marker_config_id: string | null;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-};
+// Type imports - use database types instead of local types
+import { Project3DModel, SpatialMarker } from '@/types/spatial';
 
 type Task = {
   id: string;

@@ -1360,6 +1360,308 @@ export async function logTaskCompletionToMarker(taskId: string) {
 }
 
 // ============================================
+// P4 - TASK DETAIL PANEL SERVER ACTIONS
+// ============================================
+
+/**
+ * Get full task details with related data for Task Detail Panel (Phase 4)
+ * Fetches task with assignee, phase, spatial marker, and related counts
+ * @param taskId - Task UUID
+ * @returns TaskDetails object or error
+ */
+export async function getTaskDetails(taskId: string): Promise<{
+  data?: {
+    id: string;
+    title: string;
+    description?: string;
+    status: TaskStatus;
+    priority: TaskPriority;
+    due_date?: string;
+    start_date?: string;
+    assignee?: {
+      id: string;
+      name: string;
+      avatar_url?: string;
+    };
+    phase?: {
+      id: string;
+      name: string;
+    };
+    spatial_marker?: {
+      id: string;
+      position_x: number;
+      position_y: number;
+      position_z: number;
+      element_id?: string;
+    };
+    material_count?: number;
+    expense_count?: number;
+    attachment_count?: number;
+    planned_cost?: number;
+    actual_cost?: number;
+    created_at: string;
+    updated_at: string;
+  };
+  error?: string;
+}> {
+  console.log('[getTaskDetails] Fetching details for task:', taskId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
+  if ('error' in taskCheck) {
+    return { error: taskCheck.error };
+  }
+
+  // Fetch task with all related data
+  const { data: task, error: taskError } = await supabase
+    .from('tasks')
+    .select(`
+      id,
+      title,
+      description,
+      status,
+      priority,
+      due_date,
+      start_date,
+      planned_cost,
+      actual_cost,
+      created_at,
+      updated_at,
+      assignee:user_profiles!tasks_assignee_id_fkey (
+        id,
+        name,
+        avatar_url
+      ),
+      phase:project_phases!tasks_phase_id_fkey (
+        id,
+        name
+      ),
+      spatial_marker:spatial_markers!tasks_spatial_marker_id_fkey (
+        id,
+        position_x,
+        position_y,
+        position_z,
+        element_id
+      )
+    `)
+    .eq('id', taskId)
+    .single();
+
+  if (taskError || !task) {
+    console.error('[getTaskDetails] Error fetching task:', taskError);
+    return { error: 'Task not found' };
+  }
+
+  // Get material count
+  const { count: materialCount } = await supabase
+    .from('material_assignments')
+    .select('id', { count: 'exact', head: true })
+    .eq('task_id', taskId);
+
+  // Get expense count
+  const { count: expenseCount } = await supabase
+    .from('expenses')
+    .select('id', { count: 'exact', head: true })
+    .eq('task_id', taskId);
+
+  // Get attachment count (assuming attachments table exists, else return 0)
+  const { count: attachmentCount } = await supabase
+    .from('attachments')
+    .select('id', { count: 'exact', head: true })
+    .eq('task_id', taskId)
+    .is('deleted_at', null);
+
+  // Transform data
+  const taskDetails = {
+    id: task.id,
+    title: task.title,
+    description: task.description || undefined,
+    status: task.status,
+    priority: task.priority,
+    due_date: task.due_date || undefined,
+    start_date: task.start_date || undefined,
+    assignee: task.assignee ? {
+      id: (task.assignee as any).id,
+      name: (task.assignee as any).name,
+      avatar_url: (task.assignee as any).avatar_url || undefined,
+    } : undefined,
+    phase: task.phase ? {
+      id: (task.phase as any).id,
+      name: (task.phase as any).name,
+    } : undefined,
+    spatial_marker: task.spatial_marker ? {
+      id: (task.spatial_marker as any).id,
+      position_x: (task.spatial_marker as any).position_x,
+      position_y: (task.spatial_marker as any).position_y,
+      position_z: (task.spatial_marker as any).position_z,
+      element_id: (task.spatial_marker as any).element_id || undefined,
+    } : undefined,
+    material_count: materialCount || 0,
+    expense_count: expenseCount || 0,
+    attachment_count: attachmentCount || 0,
+    planned_cost: task.planned_cost || undefined,
+    actual_cost: task.actual_cost || undefined,
+    created_at: task.created_at,
+    updated_at: task.updated_at,
+  };
+
+  console.log('[getTaskDetails] Task details fetched successfully', {
+    taskId,
+    materialCount,
+    expenseCount,
+    attachmentCount,
+  });
+
+  return { data: taskDetails };
+}
+
+/**
+ * Get chronological activity log for a task (Phase 4)
+ * Fetches activity from task_activity table with user details
+ * @param taskId - Task UUID
+ * @returns Array of activity logs or error
+ */
+export async function getTaskActivity(taskId: string): Promise<{
+  data?: Array<{
+    id: string;
+    action: ActivityAction;
+    user_name: string;
+    timestamp: string;
+    old_value?: string;
+    new_value?: string;
+    comment?: string;
+  }>;
+  error?: string;
+}> {
+  console.log('[getTaskActivity] Fetching activity for task:', taskId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
+  if ('error' in taskCheck) {
+    return { error: taskCheck.error };
+  }
+
+  // Fetch activity log with user details
+  const { data: activities, error: activityError } = await supabase
+    .from('task_activity')
+    .select(`
+      id,
+      action,
+      old_value,
+      new_value,
+      comment,
+      created_at,
+      user:user_profiles!task_activity_user_id_fkey (
+        name
+      )
+    `)
+    .eq('task_id', taskId)
+    .order('created_at', { ascending: false });
+
+  if (activityError) {
+    console.error('[getTaskActivity] Error fetching activity:', activityError);
+    return { error: 'Failed to fetch activity log' };
+  }
+
+  // Transform data
+  const activityLog = (activities || []).map((activity) => ({
+    id: activity.id,
+    action: activity.action as ActivityAction,
+    user_name: (activity.user as any)?.name || 'Unknown User',
+    timestamp: activity.created_at,
+    old_value: activity.old_value || undefined,
+    new_value: activity.new_value || undefined,
+    comment: activity.comment || undefined,
+  }));
+
+  console.log('[getTaskActivity] Activity log fetched successfully', {
+    taskId,
+    activityCount: activityLog.length,
+  });
+
+  return { data: activityLog };
+}
+
+/**
+ * Get attachments for a task (Phase 4)
+ * Fetches all non-deleted attachments linked to a task
+ * @param taskId - Task UUID
+ * @returns Array of attachments or error
+ */
+export async function getTaskAttachments(taskId: string): Promise<{
+  data?: Array<{
+    id: string;
+    file_name: string;
+    file_url: string;
+    file_type?: string;
+    file_size_bytes?: number;
+    thumbnail_url?: string;
+    created_at: string;
+  }>;
+  error?: string;
+}> {
+  console.log('[getTaskAttachments] Fetching attachments for task:', taskId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
+  if ('error' in taskCheck) {
+    return { error: taskCheck.error };
+  }
+
+  // Fetch attachments (non-deleted only)
+  const { data: attachments, error: attachmentsError } = await supabase
+    .from('attachments')
+    .select(`
+      id,
+      file_name,
+      file_url,
+      file_type,
+      file_size_bytes,
+      thumbnail_url,
+      created_at
+    `)
+    .eq('task_id', taskId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false });
+
+  if (attachmentsError) {
+    console.error('[getTaskAttachments] Error fetching attachments:', attachmentsError);
+    return { error: 'Failed to fetch attachments' };
+  }
+
+  console.log('[getTaskAttachments] Attachments fetched successfully', {
+    taskId,
+    attachmentCount: attachments?.length || 0,
+  });
+
+  return { data: attachments || [] };
+}
+
+// ============================================
 // Task Analytics
 // ============================================
 

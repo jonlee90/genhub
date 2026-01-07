@@ -1,0 +1,501 @@
+{
+  "summary": {
+    "total": 72,
+    "passed": 67,
+    "failed": 5,
+    "passPercentage": 93.06,
+    "timestamp": "2026-01-05T07:01:52.094Z",
+    "categories": {
+      "Component Files": {
+        "total": 10,
+        "passed": 10
+      },
+      "SpatialViewer": {
+        "total": 15,
+        "passed": 15
+      },
+      "InteractionLayer": {
+        "total": 8,
+        "passed": 8
+      },
+      "Marker Components": {
+        "total": 8,
+        "passed": 7
+      },
+      "Task Integration": {
+        "total": 8,
+        "passed": 8
+      },
+      "Server Actions": {
+        "total": 5,
+        "passed": 4
+      },
+      "Database Types": {
+        "total": 5,
+        "passed": 5
+      },
+      "ProjectOverview": {
+        "total": 11,
+        "passed": 11
+      },
+      "Accessibility": {
+        "total": 5,
+        "passed": 3
+      },
+      "Performance": {
+        "total": 5,
+        "passed": 4
+      }
+    }
+  },
+  "results": [
+    {
+      "timestamp": "2026-01-05T07:01:52.089Z",
+      "test": "Component Exists: SpatialViewer",
+      "status": "PASS",
+      "message": "components/projects/spatial/SpatialViewer.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.089Z",
+      "test": "Component Exists: InteractionLayer",
+      "status": "PASS",
+      "message": "components/projects/spatial/InteractionLayer.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.089Z",
+      "test": "Component Exists: MarkerFilterPanel",
+      "status": "PASS",
+      "message": "components/projects/spatial/MarkerFilterPanel.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: SpatialMarkerPin",
+      "status": "PASS",
+      "message": "components/projects/spatial/SpatialMarkerPin.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: SpatialMarkerContextMenu",
+      "status": "PASS",
+      "message": "components/projects/spatial/SpatialMarkerContextMenu.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: MarkerCreationModal",
+      "status": "PASS",
+      "message": "components/projects/spatial/MarkerCreationModal.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: TaskLinkerEnhanced",
+      "status": "PASS",
+      "message": "components/projects/spatial/TaskLinkerEnhanced.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: ViewerToolbar",
+      "status": "PASS",
+      "message": "components/projects/spatial/ViewerToolbar.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: ModelStatsDisplay",
+      "status": "PASS",
+      "message": "components/projects/spatial/ModelStatsDisplay.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.090Z",
+      "test": "Component Exists: ProjectOverview",
+      "status": "PASS",
+      "message": "components/projects/ProjectOverview.tsx"
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: exportsFunctionComponent",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: hasCanvasClickHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: hasContextMenuState",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: hasMarkerState",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: hasTaskCreationHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: hasMarkerCreationHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesInteractionLayer",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesspatialMarkerPin",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesMarkerFilterPanel",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesContextMenu",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesTaskLinker",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialViewer: integratesMarkerModal",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: exportsFunctionComponent",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: hasRightClickHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: hasTouchSupport",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: hasCanvasClickCallback",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: hasWorldPositionCapture",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "InteractionLayer: hasPermissionCheck",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialMarkerPin.tsx: hasDragSupport",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialMarkerPin.tsx: hasClickHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "MarkerFilterPanel.tsx: hasFilterUI",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "MarkerFilterPanel.tsx: hasStatusUpdate",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialMarkerContextMenu.tsx: hasContextMenu",
+      "status": "FAIL",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.091Z",
+      "test": "SpatialMarkerContextMenu.tsx: hasMenuItems",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "MarkerCreationModal.tsx: hasModalForm",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "MarkerCreationModal.tsx: hasSubmitHandler",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: exportsFunctionComponent",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: hasCreateMode",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: hasLinkMode",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: hasPhaseSelection",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: hasTeamMemberAssignment",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.092Z",
+      "test": "TaskLinker: hasPositionCapture",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Server Actions: hasCreateMarkerAction",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Server Actions: hasGetMarkersAction",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Server Actions: hasUpdateMarkerAction",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Server Actions: hasCreateTaskMarkerAction",
+      "status": "FAIL",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Server Actions: hasDeleteMarkerAction",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Database Types: hasSpatialMarkerTable",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Database Types: hasMarkerType",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Database Types: hasPosition",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Database Types: hasStatus",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.093Z",
+      "test": "Database Types: hasPriority",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: importsSpatialViewer",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: rendersSpatialViewer",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: passesProjectId",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: passesUserRole",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: passesTeamMembers",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: passesPhases",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: passesTaskList",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: hasMarkerAnnotationPanel",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: hasModelStats",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "ProjectOverview: hasIFCUploader",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Accessibility: hasAriaLabels",
+      "status": "FAIL",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Accessibility: hasKeyboardSupport",
+      "status": "FAIL",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Accessibility: hasErrorHandling",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Accessibility: hasLoadingState",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Accessibility: hasWebGLFallback",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Performance: hasMarkerMemoization",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Performance: hasMobileOptimization",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Performance: hasLODManager",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Performance: hasRenderThrottling",
+      "status": "PASS",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-01-05T07:01:52.094Z",
+      "test": "Performance: hasDynamicImport",
+      "status": "FAIL",
+      "message": ""
+    }
+  ],
+  "testSuite": {
+    "name": "Spatial Viewer Integration Test Suite",
+    "description": "Comprehensive integration test for the 3D spatial viewer component",
+    "components": [
+      "SpatialViewer",
+      "InteractionLayer",
+      "MarkerFilterPanel",
+      "SpatialMarkerPin",
+      "SpatialMarkerContextMenu",
+      "MarkerCreationModal",
+      "TaskLinkerEnhanced",
+      "ViewerToolbar",
+      "ModelStatsDisplay",
+      "ProjectOverview"
+    ]
+  }
+}

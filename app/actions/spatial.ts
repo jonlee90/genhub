@@ -506,7 +506,11 @@ export async function replaceActiveModel(projectId: string, file: File) {
   }
 
   // Debug: Upload new file using existing upload logic
-  const uploadResult = await uploadIFCModel(projectId, file);
+  // Convert File to FormData for uploadIFCFile
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const uploadResult = await uploadIFCFile(projectId, formData);
 
   if ('error' in uploadResult) {
     // Re-activate old model on failure
@@ -521,7 +525,7 @@ export async function replaceActiveModel(projectId: string, file: File) {
 
   console.log('[replaceActiveModel] Model replaced successfully');
   revalidatePath(`/app/projects/${projectId}`);
-  return { success: true, modelId: uploadResult.modelId };
+  return { success: true, data: uploadResult.data };
 }
 
 // ============================================================================
@@ -1016,4 +1020,158 @@ export async function findNearestMarker(
 
   console.log('[findNearestMarker] Found marker:', nearestMarker.id, 'distance:', minDistance.toFixed(2), 'm');
   return { success: true, data: nearestMarker };
+}
+
+/**
+ * Get spatial markers for a project with optional filters (enhanced version)
+ *
+ * Fetches spatial markers with optional filters for marker type, status, priority,
+ * phase, task linkage, and material linkage. Returns markers with extended info
+ * including task details and material counts.
+ * 
+ * CRITICAL FIX: Uses explicit task_id relationship to resolve ambiguity
+ * (spatial_markers.task_id -> tasks.id)
+ * PostgREST requires this because there are TWO relationships between these tables:
+ * - spatial_markers.task_id -> tasks.id (forward)
+ * - tasks.spatial_marker_id -> spatial_markers.id (reverse)
+ */
+export async function getMarkersByProject(
+  projectId: string,
+  filters?: {
+    markerTypes?: string[];
+    statuses?: string[];
+    priorities?: string[];
+    phaseId?: string;
+    hasTask?: boolean;
+    hasMaterials?: boolean;
+  }
+) {
+  console.log('[getMarkersByProject] Fetching markers with filters', { projectId, filters });
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { error: userContext.error };
+
+  const { companyId, supabase } = userContext;
+
+  // Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { error: projectCheck.error };
+
+  // Build base query with task info
+  // CRITICAL: Use tasks!task_id(...) syntax to explicitly specify the foreign key relationship
+  // This resolves the "more than one relationship" error from PostgREST
+  let query = supabase
+    .from('spatial_markers')
+    .select(`
+      *,
+      tasks!task_id (
+        id,
+        title,
+        status
+      )
+    `)
+    .eq('project_id', projectId);
+
+  // Apply filters
+  if (filters?.markerTypes && filters.markerTypes.length > 0) {
+    query = query.in('type', filters.markerTypes as Array<'photo' | 'note' | 'issue' | 'inspection' | 'rfi' | 'safety' | 'material' | 'progress'>);
+  }
+
+  if (filters?.statuses && filters.statuses.length > 0) {
+    query = query.in('status', filters.statuses as Array<'open' | 'in_progress' | 'resolved' | 'closed'>);
+  }
+
+  if (filters?.priorities && filters.priorities.length > 0) {
+    query = query.in('priority', filters.priorities);
+  }
+
+  if (filters?.phaseId) {
+    query = query.eq('phase_id', filters.phaseId);
+  }
+
+  if (filters?.hasTask !== undefined) {
+    if (filters.hasTask) {
+      query = query.not('task_id', 'is', null);
+    } else {
+      query = query.is('task_id', null);
+    }
+  }
+
+  const { data: markers, error } = await query.order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('[getMarkersByProject] Query failed:', error);
+    return { error: error.message };
+  }
+
+  if (!markers) return { success: true, data: [] };
+
+  // Fetch material counts for tasks (if hasMaterials filter is active)
+  let materialCounts: Record<string, number> = {};
+
+  if (filters?.hasMaterials !== undefined) {
+    const taskIds = markers.map((m) => m.task_id).filter((id): id is string => id !== null);
+
+    if (taskIds.length > 0) {
+      const { data: assignments } = await supabase
+        .from('material_assignments')
+        .select('task_id')
+        .in('task_id', taskIds);
+
+      if (assignments) {
+        materialCounts = assignments.reduce(
+          (acc, a) => {
+            acc[a.task_id] = (acc[a.task_id] || 0) + 1;
+            return acc;
+          },
+          {} as Record<string, number>
+        );
+      }
+    }
+  }
+
+  // Fetch marker content
+  const markerIds = markers.map((m) => m.id);
+  let markerContentMap: Record<string, any[]> = {};
+
+  if (markerIds.length > 0) {
+    const { data: contents } = await supabase.from('marker_content').select('*').in('marker_id', markerIds);
+
+    if (contents) {
+      markerContentMap = contents.reduce(
+        (acc, c) => {
+          if (!acc[c.marker_id]) acc[c.marker_id] = [];
+          acc[c.marker_id].push(c);
+          return acc;
+        },
+        {} as Record<string, any[]>
+      );
+    }
+  }
+
+  // Transform markers to include extended info
+  const markersWithDetails = markers.map((marker) => {
+    const task = marker.tasks as unknown as { id: string; title: string; status: string } | null;
+    const materialCount = marker.task_id ? materialCounts[marker.task_id] || 0 : 0;
+    const content = markerContentMap[marker.id] || [];
+
+    return {
+      ...marker,
+      task_title: task?.title || null,
+      task_status: task?.status || null,
+      material_count: materialCount,
+      content,
+    };
+  });
+
+  // Apply hasMaterials filter (post-processing)
+  let filteredMarkers = markersWithDetails;
+  if (filters?.hasMaterials !== undefined) {
+    filteredMarkers = markersWithDetails.filter((m) =>
+      filters.hasMaterials ? m.material_count > 0 : m.material_count === 0
+    );
+  }
+
+  console.log('[getMarkersByProject] Fetched', filteredMarkers.length, 'markers');
+  return { success: true, data: filteredMarkers };
 }

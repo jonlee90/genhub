@@ -1,319 +1,254 @@
 'use client';
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+// Debug: Phase 5 - Client Portal Read-Only 3D Spatial Viewer
+// Reuses core 3D rendering from SpatialViewer but removes all edit capabilities
+// Clients can view models, markers, and task details but cannot create/edit/delete
+
+import { useState, useCallback, useEffect } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { ThreeDViewerCanvas } from './3DViewerCanvas';
+import { ModelLoader } from './ModelLoader';
 import { CameraControls } from './CameraControls';
-import { MessageSquare, Eye, Info, Send } from 'lucide-react';
+import { LODManager } from './LODManager';
+import { InteractionLayer } from './InteractionLayer';
+import { SpatialMarkerPin } from './SpatialMarkerPin';
+import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
+import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel';
 import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { createDefaultModel } from '@/lib/xeokit/default-models';
+import { getMarkersByProject } from '@/app/actions/spatial';
 import type { SpatialMarker } from '@/types/spatial';
+import { toast } from 'sonner';
 
+// Debug: Component props (client-specific, aligned with Phase 5 spec)
 export interface ClientSpatialViewerProps {
   projectId: string;
+  projectType: string; // For loading default models
   modelHighURL?: string | null;
-  thumbnailURL?: string;
-  markers: SpatialMarker[];
-  onRequestInformation?: (markerId: string, message: string) => Promise<void>;
+  modelMediumURL?: string;
+  modelLowURL?: string;
+  hasBudgetVisibility: boolean; // Controls cost visibility in TaskDetailPanel
   className?: string;
 }
 
 /**
- * ClientSpatialViewer - Read-only 3D viewer for client portal
- * - Filters markers: only shows is_client_visible = true
- * - Hide all edit/create/delete UI
- * - "Request Information" button creates client note
- * - Simplified controls, tablet/iPad optimized
+ * ClientSpatialViewer - Read-only 3D BIM/IFC viewer for client portal
+ *
+ * **Key Differences from SpatialViewer:**
+ * - NO context menu on canvas clicks
+ * - NO marker creation/editing/deletion
+ * - NO drag-and-drop for markers
+ * - Opens TaskDetailPanel in read-only mode on marker click
+ * - Budget visibility controlled by hasBudgetVisibility prop
+ *
+ * **Reused Components:**
+ * - 3DViewerCanvas (P2.2) - Core 3D rendering
+ * - ModelLoader (P2.5) - IFC/model loading
+ * - CameraControls (P2.3) - Camera navigation
+ * - LODManager (P2.6) - Level of detail
+ * - InteractionLayer (P2.7) - Click/hover detection
+ * - SpatialMarkerPin (P2.4) - Marker visualization (read-only)
+ * - MarkerFilterPanel (P2.3) - Filtering
+ * - TaskDetailPanel (P4) - Task details (read-only mode)
  */
 export function ClientSpatialViewer({
   projectId,
+  projectType,
   modelHighURL,
-  thumbnailURL,
-  markers,
-  onRequestInformation,
+  modelMediumURL,
+  modelLowURL,
+  hasBudgetVisibility,
   className,
 }: ClientSpatialViewerProps) {
   console.log('[ClientSpatialViewer] Rendering', {
     projectId,
+    projectType,
     modelHighURL,
-    markerCount: markers.length,
+    hasBudgetVisibility,
   });
 
+  // Debug: Viewer state
   const [viewer, setViewer] = useState<Viewer | null>(null);
   const [isModelReady, setIsModelReady] = useState(false);
-  const [selectedMarker, setSelectedMarker] = useState<SpatialMarker | null>(null);
-  const [requestMessage, setRequestMessage] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showRequestDialog, setShowRequestDialog] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [hasDefaultModel, setHasDefaultModel] = useState(false);
 
-  // Filter markers: only show client-visible ones
-  const clientVisibleMarkers = useMemo(() => {
-    console.log('[ClientSpatialViewer] Filtering client-visible markers');
-    return markers.filter((m) => m.is_client_visible === true);
-  }, [markers]);
+  // Debug: Marker state
+  const [markers, setMarkers] = useState<SpatialMarker[]>([]);
+  const [activeFilters, setActiveFilters] = useState<MarkerFilters>({
+    markerTypes: [],
+    statuses: [],
+    hasTask: null,
+    hasMaterials: null,
+  });
 
+  // Debug: Task detail panel state (read-only mode)
+  const [detailPanelOpen, setDetailPanelOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+
+  // Determine if we should use default model
+  const isPlaceholderURL = modelHighURL?.startsWith('defaults/') || modelHighURL?.startsWith('/defaults/');
+  const hasValidProjectType = ['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial'].includes(projectType || '');
+  const shouldUseDefaultModel = (!modelHighURL || isPlaceholderURL) && hasValidProjectType;
+
+  // Debug: Fetch markers on mount and when filters change
+  useEffect(() => {
+    const fetchMarkers = async () => {
+      console.log('[ClientSpatialViewer] Fetching markers with filters:', activeFilters);
+      const result = await getMarkersByProject(projectId, activeFilters);
+      if (result.success && result.data) {
+        console.log('[ClientSpatialViewer] Loaded markers:', result.data.length);
+        setMarkers(result.data);
+      } else if (result.error) {
+        console.error('[ClientSpatialViewer] Failed to load markers:', result.error);
+        toast.error('Failed to load markers');
+      }
+    };
+
+    fetchMarkers();
+  }, [projectId, activeFilters]);
+
+  // Debug: Handle viewer ready
   const handleViewerReady = useCallback((viewerInstance: Viewer) => {
-    console.log('[ClientSpatialViewer] Viewer ready');
+    console.log('[ClientSpatialViewer] Viewer ready', viewerInstance);
     setViewer(viewerInstance);
+  }, []);
+
+  // Debug: Load default model when viewer is ready and no user model exists
+  useEffect(() => {
+    if (viewer && shouldUseDefaultModel && !hasDefaultModel) {
+      console.log(`[ClientSpatialViewer] Loading default ${projectType} model`);
+
+      (async () => {
+        try {
+          await createDefaultModel(viewer, projectType!);
+          setIsModelReady(true);
+          setHasDefaultModel(true);
+        } catch (err) {
+          console.error('[ClientSpatialViewer] Failed to load default model:', err);
+          setError(err as Error);
+        }
+      })();
+    }
+  }, [viewer, shouldUseDefaultModel, projectType, hasDefaultModel]);
+
+  // Debug: Handle model load error
+  const handleModelError = useCallback((err: Error) => {
+    console.error('[ClientSpatialViewer] Model load error', err);
+    setError(err);
+    toast.error('Failed to load 3D model');
+  }, []);
+
+  // Debug: Handle model load success
+  const handleModelSuccess = useCallback(() => {
+    console.log('[ClientSpatialViewer] Model loaded successfully');
     setIsModelReady(true);
   }, []);
 
+  // Debug: Handle marker click (opens TaskDetailPanel in read-only mode)
   const handleMarkerClick = useCallback((marker: SpatialMarker) => {
-    console.log('[ClientSpatialViewer] Marker clicked:', marker.id);
-    setSelectedMarker(marker);
-    setShowRequestDialog(false);
-    setRequestMessage('');
+    console.log('[ClientSpatialViewer] Marker clicked:', marker);
+    if (marker.task_id) {
+      setSelectedTaskId(marker.task_id);
+      setDetailPanelOpen(true);
+    } else {
+      toast.info('This marker is not linked to a task');
+    }
   }, []);
 
-  const handleRequestInfo = useCallback(
-    async (marker: SpatialMarker) => {
-      console.log('[ClientSpatialViewer] Request information for marker:', marker.id);
-      setSelectedMarker(marker);
-      setShowRequestDialog(true);
-    },
-    []
-  );
-
-  const handleSubmitRequest = useCallback(async () => {
-    if (!selectedMarker || !requestMessage.trim()) return;
-
-    console.log('[ClientSpatialViewer] Submitting request:', {
-      markerId: selectedMarker.id,
-      message: requestMessage,
-    });
-
-    setIsSubmitting(true);
-
-    try {
-      if (onRequestInformation) {
-        await onRequestInformation(selectedMarker.id, requestMessage);
-      }
-
-      setShowRequestDialog(false);
-      setRequestMessage('');
-      setSelectedMarker(null);
-    } catch (err) {
-      console.error('[ClientSpatialViewer] Request submission error:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [selectedMarker, requestMessage, onRequestInformation]);
-
-  const getMarkerIcon = (type: string) => {
-    switch (type) {
-      case 'issue':
-        return '⚠️';
-      case 'note':
-        return '📝';
-      case 'task':
-        return '✓';
-      case 'approval':
-        return '⏱️';
-      default:
-        return '📍';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'bg-gray-400 text-white';
-      case 'in_progress':
-        return 'bg-[#FFB627] text-gray-900';
-      case 'resolved':
-        return 'bg-[#059669] text-white';
-      default:
-        return 'bg-gray-400 text-white';
-    }
+  // Debug: Calculate marker counts for filter panel
+  const markerCounts = {
+    task: markers.filter(m => m.type === 'task').length,
+    issue: markers.filter(m => m.type === 'issue').length,
+    note: markers.filter(m => m.type === 'note').length,
+    safety: markers.filter(m => m.type === 'safety').length,
+    milestone: markers.filter(m => m.type === 'milestone').length,
+    total: markers.length,
   };
 
   return (
-    <div className={cn('relative w-full h-full bg-gray-50', className)}>
-      {/* Client View Badge */}
-      <div className="absolute top-4 left-4 z-30 bg-[#001B51] text-white px-4 py-2 rounded-lg shadow-lg">
-        <div className="flex items-center gap-2">
-          <Eye className="w-4 h-4" />
-          <span className="text-sm font-bold uppercase tracking-wide">Client View</span>
-        </div>
+    <div className={cn('relative h-full w-full bg-gray-50', className)}>
+      {/* Debug: 3D Viewer Canvas */}
+      <ThreeDViewerCanvas onViewerReady={handleViewerReady} />
+
+      {/* Debug: Model Loader (loads IFC/model if provided, skips if using default) */}
+      {!shouldUseDefaultModel && modelHighURL && (
+        <ModelLoader
+          modelUrl={modelHighURL}
+          onLoadSuccess={handleModelSuccess}
+          onLoadError={handleModelError}
+        />
+      )}
+
+      {/* Debug: Camera Controls (orbit, pan, zoom) */}
+      {viewer && <CameraControls viewer={viewer} />}
+
+      {/* Debug: LOD Manager (optimizes rendering based on camera distance) */}
+      {viewer && isModelReady && <LODManager viewer={viewer} />}
+
+      {/* Debug: Interaction Layer (detects clicks/hovers - read-only mode, NO context menu) */}
+      {viewer && isModelReady && (
+        <InteractionLayer
+          viewer={viewer}
+          // NO onClick handler (clients cannot open context menu)
+        />
+      )}
+
+      {/* Debug: Spatial Marker Pins (read-only, no drag-and-drop) */}
+      {isModelReady && markers.map((marker) => (
+        <SpatialMarkerPin
+          key={marker.id}
+          marker={marker}
+          viewer={viewer}
+          materialCount={0} // TODO: Fetch material count from server
+          attachmentCount={0} // TODO: Fetch attachment count from server
+          onClick={() => handleMarkerClick(marker)}
+          // NO drag handlers (read-only mode)
+        />
+      ))}
+
+      {/* Debug: Marker Filter Panel (same as SpatialViewer) */}
+      <div className="absolute top-4 left-4 w-72 z-20">
+        <MarkerFilterPanel
+          activeFilters={activeFilters}
+          onFilterChange={setActiveFilters}
+          markerCounts={markerCounts}
+        />
       </div>
 
-      {/* 3D Viewer Canvas */}
-      <ThreeDViewerCanvas
-        projectId={projectId}
-        modelUrl={modelHighURL}
-        onReady={handleViewerReady}
-        className="absolute inset-0"
+      {/* Debug: Task Detail Panel (read-only mode, budget visibility controlled) */}
+      <TaskDetailPanel
+        taskId={selectedTaskId}
+        isOpen={detailPanelOpen}
+        onClose={() => {
+          setDetailPanelOpen(false);
+          setSelectedTaskId(null);
+        }}
+        userRole="client" // Forces read-only mode (no edit buttons)
+        hasBudgetVisibility={hasBudgetVisibility} // Controls cost visibility
       />
 
-      {/* Camera Controls (Read-only) */}
-      {viewer && isModelReady && <CameraControls viewer={viewer} />}
-
-      {/* Client-Visible Markers Panel */}
-      {isModelReady && (
-        <div className="absolute bottom-4 left-4 right-4 md:left-4 md:right-auto md:w-96 z-20">
-          <Card className="border-2 border-gray-200 shadow-construction bg-white">
-            <div className="border-b-2 border-gray-200 bg-gray-50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#001B51] rounded-lg">
-                  <Info className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 uppercase tracking-tight text-sm">
-                    Project Information
-                  </h3>
-                  <p className="text-xs text-gray-500 font-mono">
-                    {clientVisibleMarkers.length} items
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 space-y-2 max-h-[400px] overflow-y-auto">
-              {clientVisibleMarkers.length === 0 ? (
-                <div className="text-center py-8">
-                  <Info className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">No information markers</p>
-                </div>
-              ) : (
-                clientVisibleMarkers.map((marker) => (
-                  <button
-                    key={marker.id}
-                    onClick={() => handleMarkerClick(marker)}
-                    className={cn(
-                      'w-full p-3 rounded-lg border-2 text-left transition-all',
-                      'hover:border-[#001B51] hover:bg-blue-50/30',
-                      selectedMarker?.id === marker.id
-                        ? 'border-[#001B51] bg-blue-50/50'
-                        : 'border-gray-200'
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl flex-shrink-0">
-                        {getMarkerIcon(marker.type)}
-                      </span>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-semibold text-sm text-gray-900">
-                            {marker.title}
-                          </h4>
-                          <Badge
-                            className={cn('text-xs px-2 py-0.5', getStatusColor(marker.status))}
-                          >
-                            {marker.status}
-                          </Badge>
-                        </div>
-
-                        {marker.description && (
-                          <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                            {marker.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRequestInfo(marker);
-                            }}
-                            className={cn(
-                              'px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide',
-                              'bg-[#001B51] text-white hover:bg-[#002666] transition-colors',
-                              'flex items-center gap-1.5'
-                            )}
-                          >
-                            <MessageSquare className="w-3 h-3" />
-                            Request Info
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </Card>
+      {/* Debug: Error State */}
+      {error && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="bg-white border-2 border-red-500 rounded-lg p-6 shadow-construction max-w-md">
+            <h3 className="text-lg font-bold text-red-600 mb-2">Failed to Load 3D Model</h3>
+            <p className="text-sm text-gray-600">{error.message}</p>
+          </div>
         </div>
       )}
 
-      {/* Request Information Dialog */}
-      {showRequestDialog && selectedMarker && (
-        <div className="absolute inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="border-2 border-gray-200 shadow-construction bg-white max-w-md w-full">
-            <div className="border-b-2 border-gray-200 bg-gray-50 p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#001B51] rounded-lg">
-                  <MessageSquare className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 uppercase tracking-tight text-sm">
-                    Request Information
-                  </h3>
-                  <p className="text-xs text-gray-500 font-mono">{selectedMarker.title}</p>
-                </div>
-              </div>
+      {/* Debug: Loading State */}
+      {!isModelReady && !error && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="bg-white/90 backdrop-blur-sm border-2 border-[#001B51] rounded-lg p-8 shadow-construction">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-12 h-12 border-4 border-[#001B51] border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm font-semibold text-[#001B51] uppercase tracking-wide">
+                Loading 3D Model...
+              </p>
             </div>
-
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Your Message
-                </label>
-                <textarea
-                  value={requestMessage}
-                  onChange={(e) => setRequestMessage(e.target.value)}
-                  placeholder="What would you like to know about this item?"
-                  rows={4}
-                  className={cn(
-                    'w-full px-3 py-2 rounded-lg',
-                    'border-2 border-gray-200 focus:border-[#001B51] focus:outline-none',
-                    'text-sm resize-none'
-                  )}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setShowRequestDialog(false);
-                    setRequestMessage('');
-                  }}
-                  disabled={isSubmitting}
-                  className={cn(
-                    'flex-1 px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                    'bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors',
-                    'disabled:opacity-50 disabled:cursor-not-allowed'
-                  )}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSubmitRequest}
-                  disabled={!requestMessage.trim() || isSubmitting}
-                  className={cn(
-                    'flex-1 px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                    'bg-[#001B51] text-white hover:bg-[#002666] transition-colors',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
-                    'flex items-center justify-center gap-2'
-                  )}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4" />
-                      Send Request
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>

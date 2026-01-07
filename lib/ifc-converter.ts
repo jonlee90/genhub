@@ -34,8 +34,13 @@ export interface ConversionResult {
 /**
  * Convert IFC file to XKT format
  *
- * DEVELOPMENT MODE: This is a mock implementation that returns the original IFC URL
- * In production, this should trigger actual IFC->XKT conversion
+ * CURRENT LIMITATION: xeokit v2.6.x does not support native IFC loading.
+ * IFC files must be converted to XKT format before visualization.
+ *
+ * TODO - Implement IFC to XKT conversion using:
+ * - web-ifc library for parsing IFC files
+ * - @xeokit/xeokit-convert for XKT creation
+ * - Or use a cloud conversion service (e.g., BIM Collab, Convert Online)
  *
  * @param ifcUrl - URL of the uploaded IFC file
  * @param modelId - Database ID of the model record
@@ -47,46 +52,46 @@ export async function convertIFCToXKT(
   console.log('[IFCConverter] Starting conversion', { ifcUrl, modelId });
 
   try {
-    // PRODUCTION IMPLEMENTATION:
-    // 1. Download IFC file from Supabase Storage
-    // 2. Run xeokit-convert CLI or call conversion service
-    // 3. Upload XKT file to Supabase Storage
-    // 4. Return XKT URL
+    // TODO: Implement one of these approaches:
+    //
+    // Option 1: Client-side conversion (web-ifc + three.js export)
+    // - Download IFC file
+    // - Parse using web-ifc library
+    // - Extract geometry and properties
+    // - Create XKT structure
+    // - Upload to Supabase Storage
+    //
+    // Option 2: Server-side conversion (@xeokit/xeokit-convert)
+    // - Download IFC file
+    // - Use xeokit-convert CLI
+    // - Requires native dependencies (IfcOpenShell)
+    // - Upload XKT to Supabase Storage
+    //
+    // Option 3: Cloud conversion API
+    // - Send IFC to conversion service (Convert Online, BIM Collab, etc.)
+    // - Retrieve converted XKT
+    // - Upload to Supabase Storage
 
-    // DEVELOPMENT MOCK:
-    // For now, we'll use the IFC file directly and mark it as ready
-    // This allows testing the UI without full conversion pipeline
-
-    console.log('[IFCConverter] MOCK: Using IFC file directly (production needs XKT conversion)');
+    console.warn('[IFCConverter] IFC conversion not yet implemented');
+    console.log('[IFCConverter] The 3D viewer will show a placeholder model');
+    console.log('[IFCConverter] To use your actual IFC model, please convert it to XKT format using an online tool');
+    console.log('[IFCConverter] Recommended: https://convert.babylonjs.com or similar XKT conversion service');
 
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // In production, this would be the uploaded XKT file URL
-    // For now, return the IFC URL (xeokit can attempt to load it)
-    const xktUrl = ifcUrl;
-
-    // Mock metadata (in production, extracted during conversion)
-    const elementCount = 150; // Sample house elements
-    const bounds = {
-      minX: -10,
-      minY: 0,
-      minZ: -10,
-      maxX: 10,
-      maxY: 8,
-      maxZ: 10,
-    };
-
-    console.log('[IFCConverter] Conversion complete (mock)', { xktUrl, elementCount });
-
+    // For now, return a failure status
+    // The viewer will show placeholder model instead
     return {
-      success: true,
-      xktUrl,
-      elementCount,
-      bounds,
+      success: false,
+      error:
+        'IFC conversion not yet implemented. ' +
+        'Please convert your IFC file to XKT format using https://convert.babylonjs.com ' +
+        'and re-upload the converted file. ' +
+        'This will be automated in a future update.',
     };
   } catch (error) {
-    console.error('[IFCConverter] Conversion failed:', error);
+    console.error('[IFCConverter] Conversion error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown conversion error',
