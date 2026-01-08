@@ -7,7 +7,6 @@ import { auth } from '@/lib/auth';
 import type { Database } from '@/types/database.types';
 import { put, del } from '@vercel/blob';
 
-type TradeType = Database['public']['Enums']['trade_type'];
 type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
 type SubcontractorInsert = Database['public']['Tables']['subcontractors']['Insert'];
 type SubcontractorUpdate = Database['public']['Tables']['subcontractors']['Update'];
@@ -18,26 +17,6 @@ type SubcontractorUpdate = Database['public']['Tables']['subcontractors']['Updat
 
 const createSubcontractorSchema = z.object({
   company_name: z.string().min(1, 'Company name is required').max(200).transform((v) => v.trim()),
-  trade_specialization: z.enum([
-    'general',
-    'electrical',
-    'plumbing',
-    'hvac',
-    'carpentry',
-    'masonry',
-    'roofing',
-    'flooring',
-    'painting',
-    'drywall',
-    'concrete',
-    'landscaping',
-    'demolition',
-    'steel_work',
-    'glass_glazing',
-    'fire_protection',
-    'insulation',
-    'other',
-  ]),
   contact_name: z.string().min(1, 'Contact name is required').max(200).transform((v) => v.trim()),
   email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()),
   phone: z.string().optional().transform((v) => v ? v.trim() : v),
@@ -53,26 +32,6 @@ const createSubcontractorSchema = z.object({
 const updateSubcontractorSchema = z.object({
   id: z.string().uuid('Invalid subcontractor ID'),
   company_name: z.string().min(1, 'Company name is required').max(200).transform((v) => v.trim()).optional(),
-  trade_specialization: z.enum([
-    'general',
-    'electrical',
-    'plumbing',
-    'hvac',
-    'carpentry',
-    'masonry',
-    'roofing',
-    'flooring',
-    'painting',
-    'drywall',
-    'concrete',
-    'landscaping',
-    'demolition',
-    'steel_work',
-    'glass_glazing',
-    'fire_protection',
-    'insulation',
-    'other',
-  ]).optional(),
   contact_name: z.string().min(1, 'Contact name is required').max(200).transform((v) => v.trim()).optional(),
   email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()).optional(),
   phone: z.string().optional().transform((v) => v ? v.trim() : v),
@@ -163,7 +122,6 @@ export async function createSubcontractor(formData: FormData) {
   // Parse and validate form data
   const rawData = {
     company_name: formData.get('company_name'),
-    trade_specialization: formData.get('trade_specialization'),
     contact_name: formData.get('contact_name'),
     email: formData.get('email'),
     phone: formData.get('phone') || undefined,
@@ -219,7 +177,6 @@ export async function createSubcontractor(formData: FormData) {
     const subcontractorInsert: SubcontractorInsert = {
       company_id: companyId,
       company_name: data.company_name,
-      trade_specialization: data.trade_specialization as TradeType,
       contact_name: data.contact_name,
       email: data.email,
       phone: data.phone || null,
@@ -279,7 +236,6 @@ export async function createSubcontractor(formData: FormData) {
 export async function updateSubcontractor(data: {
   id: string;
   company_name?: string;
-  trade_specialization?: TradeType;
   contact_name?: string;
   email?: string;
   phone?: string;

@@ -29,7 +29,7 @@ import { format } from 'date-fns'
 import type { MarkerContent } from '@/types/spatial'
 
 export interface FileListProps {
-  markerId: number
+  markerId: string
   files: MarkerContent[]
 }
 
@@ -96,7 +96,7 @@ export function FileList({ markerId, files }: FileListProps) {
     // The mutation hook will handle revalidation
   }
 
-  const handleDelete = async (fileId: number) => {
+  const handleDelete = async (fileId: string) => {
     if (!confirm('Delete this file?')) return
     console.log('[FileList] Deleting file:', fileId)
     await deleteContent(fileId)
@@ -104,7 +104,9 @@ export function FileList({ markerId, files }: FileListProps) {
 
   const handleDownload = (file: MarkerContent) => {
     console.log('[FileList] Downloading file:', file.id)
-    window.open(file.url, '_blank')
+    if (file.file_url) {
+      window.open(file.file_url, '_blank')
+    }
   }
 
   if (files.length === 0 && !showUploader) {
@@ -164,8 +166,8 @@ export function FileList({ markerId, files }: FileListProps) {
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((file) => {
-            const Icon = getFileIcon(file.mime_type || '')
-            const colorClass = getFileColor(file.mime_type || '')
+            const Icon = getFileIcon(file.file_mime_type || '')
+            const colorClass = getFileColor(file.file_mime_type || '')
 
             return (
               <motion.div
@@ -183,10 +185,10 @@ export function FileList({ markerId, files }: FileListProps) {
                 {/* File info */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-[#001B51] truncate">
-                    {file.filename || 'Untitled File'}
+                    {file.file_name || 'Untitled File'}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    {file.file_size && <span>{formatFileSize(file.file_size)}</span>}
+                    {file.file_size_bytes && <span>{formatFileSize(file.file_size_bytes)}</span>}
                     {file.created_at && (
                       <>
                         <span>•</span>

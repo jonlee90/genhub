@@ -27,6 +27,7 @@ interface TaskModalTriggerProps {
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   label?: string;
+  className?: string;
 }
 
 export function TaskModalTrigger({
@@ -37,6 +38,7 @@ export function TaskModalTrigger({
   variant = 'default',
   size = 'lg',
   label = 'NEW TASK',
+  className,
 }: TaskModalTriggerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
@@ -53,9 +55,9 @@ export function TaskModalTrigger({
         size={size}
         variant={variant}
         className={
-          variant === 'default'
+          className || (variant === 'default'
             ? 'relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white'
-            : ''
+            : '')
         }
       >
         {variant === 'default' && (

@@ -31,10 +31,10 @@ async function loadXeokit() {
 
   try {
     const xeokit = await import('@xeokit/xeokit-sdk');
-    Mesh = xeokit.Mesh;
-    buildBoxGeometry = xeokit.buildBoxGeometry;
-    PhongMaterial = xeokit.PhongMaterial;
-    ReadableGeometry = xeokit.ReadableGeometry;
+    Mesh = (xeokit as any).Mesh;
+    buildBoxGeometry = (xeokit as any).buildBoxGeometry;
+    PhongMaterial = (xeokit as any).PhongMaterial;
+    ReadableGeometry = (xeokit as any).ReadableGeometry;
     xeokitLoaded = true;
     console.log('[DefaultModels] Xeokit SDK loaded successfully');
   } catch (error) {

@@ -290,6 +290,22 @@ if (resource.company_id !== userContext.companyId) {
 }
 ```
 
+### ⚠️ Cross-Schema Join Limitation
+
+Tables with `uploaded_by` or `created_by` referencing `next_auth.users` **cannot use PostgREST auto-join**:
+
+```typescript
+// ❌ WRONG - "Could not find relationship" error
+.from('project_files')
+.select(`*, uploader:uploaded_by (id, name)`)
+
+// ✅ CORRECT - Fetch user details separately
+.from('project_files')
+.select('*')
+```
+
+**Affected tables:** `project_files`, `project_photos`, `spatial_markers`, `marker_content`
+
 ---
 
 ## Security
@@ -315,7 +331,7 @@ client           -> Read-only project visibility
 ```typescript
 const schema = z.object({
   title: z.string().min(1).max(500),
-  priority: z.enum(['low', 'medium', 'high']),
+  priority: z.enum(['low', 'medium', 'high', 'critical']), // Note: includes 'critical'
   due_date: z.string().date().optional(),
 });
 

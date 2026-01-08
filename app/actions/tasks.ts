@@ -1562,7 +1562,6 @@ export async function getTaskActivity(taskId: string): Promise<{
     .from('task_activity')
     .select(`
       id,
-      action,
       old_value,
       new_value,
       comment,
@@ -1579,10 +1578,10 @@ export async function getTaskActivity(taskId: string): Promise<{
     return { error: 'Failed to fetch activity log' };
   }
 
-  // Transform data
+  // Transform data - infer action from old_value/new_value changes
   const activityLog = (activities || []).map((activity) => ({
     id: activity.id,
-    action: activity.action as ActivityAction,
+    action: (activity.comment ? 'comment' : activity.old_value ? 'update' : 'create') as ActivityAction,
     user_name: (activity.user as any)?.name || 'Unknown User',
     timestamp: activity.created_at,
     old_value: activity.old_value || undefined,
@@ -1609,9 +1608,8 @@ export async function getTaskAttachments(taskId: string): Promise<{
     id: string;
     file_name: string;
     file_url: string;
-    file_type?: string;
-    file_size_bytes?: number;
-    thumbnail_url?: string;
+    file_type?: string | null;
+    file_size?: number | null;
     created_at: string;
   }>;
   error?: string;
@@ -1632,7 +1630,7 @@ export async function getTaskAttachments(taskId: string): Promise<{
     return { error: taskCheck.error };
   }
 
-  // Fetch attachments (non-deleted only)
+  // Fetch attachments for this task
   const { data: attachments, error: attachmentsError } = await supabase
     .from('attachments')
     .select(`
@@ -1640,12 +1638,10 @@ export async function getTaskAttachments(taskId: string): Promise<{
       file_name,
       file_url,
       file_type,
-      file_size_bytes,
-      thumbnail_url,
+      file_size,
       created_at
     `)
-    .eq('task_id', taskId)
-    .is('deleted_at', null)
+    .eq('entity_id', taskId)
     .order('created_at', { ascending: false });
 
   if (attachmentsError) {
@@ -1789,11 +1785,11 @@ export async function getTaskAnalytics(
       blocked: {
         count: Number(row.blocked_count) || 0,
         rate: Number(row.blocked_rate) || 0,
-        topReasons: row.top_blocked_reasons || [],
+        topReasons: (row.top_blocked_reasons as string[] | null) || [],
       },
       workload: {
         unassigned: Number(row.unassigned) || 0,
-        topAssignees: row.top_assignees_json || [],
+        topAssignees: (row.top_assignees_json as Array<{ id: string; name: string; avatar_url: string | null; count: number }> | null) || [],
       },
       materials: {
         needed: Number(row.materials_needed) || 0,

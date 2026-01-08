@@ -70,8 +70,8 @@ export function MarkerSearch({
       // Extract content notes if available
       const contentNotes = 'content' in marker && Array.isArray(marker.content)
         ? marker.content
-            .filter((c) => c.content_type === 'note')
-            .map((c) => c.text_content || '')
+            .filter((c) => c.type === 'note')
+            .map((c) => c.note_text || '')
             .join(' ')
         : '';
 

@@ -70,7 +70,9 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [currentStatus, setCurrentStatus] = useState<Project['status']>(project.status);
+  const [currentStatus, setCurrentStatus] = useState<'active' | 'on_hold' | 'completed' | 'archived'>(
+    (project.status === 'in_progress' || project.status === 'planning') ? 'active' : project.status
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -94,13 +96,14 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
   };
 
   const handleStatusChange = async (status: string) => {
+    const validStatus = status as 'active' | 'on_hold' | 'completed' | 'archived';
     const previousStatus = currentStatus;
-    setCurrentStatus(status as Project['status']); // Optimistic update
+    setCurrentStatus(validStatus); // Optimistic update
     setError(null);
 
     const result = await updateProjectStatus(
       project.id,
-      status as Project['status']
+      validStatus
     );
 
     if (result?.error) {

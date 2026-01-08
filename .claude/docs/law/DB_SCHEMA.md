@@ -31,6 +31,7 @@
 | **Materials** | Material Tables, Task Tables | materials → material_assignments → tasks, expense_line_items |
 | **Expenses** | Material Tables (Expenses) | expenses → projects, tasks, expense_line_items → materials |
 | **Chat** | Chat Tables | chat_rooms → projects, chat_participants, messages |
+| **Files & Photos** | File Management Tables | project_files, project_photos, file_audit_log → projects, company |
 | **Team** | Team Tables, Core Tables | subcontractors, company_users, team_invitations, project_team |
 | **3D Spatial** | 3D Spatial Tables (independent) | projects_3d_models, spatial_markers, marker_content, model_elements |
 | **Notifications** | System Tables | notifications → users (independent) |
@@ -54,6 +55,7 @@
 | **Materials** | materials, material_assignments, expenses, expense_line_items, tracked_materials, material_price_history |
 | **Team** | subcontractors, team_invitations |
 | **Chat** | chat_rooms, chat_participants, messages, message_reactions, message_attachments |
+| **Files** | project_files, project_photos, file_audit_log |
 | **System** | notifications, attachments, push_subscriptions |
 | **Integrations** | kakao_connections |
 | **Billing** | stripe_customers |
@@ -87,7 +89,7 @@
 
 ```sql
 -- task_status: todo, in_progress, review, blocked, completed
--- task_priority: low, medium, high
+-- task_priority: low, medium, high, critical
 -- task_type: work, purchase, approval, admin
 -- approval_status: pending, approved, rejected, revision_requested
 -- activity_action: created, updated, deleted, status_changed, assigned, commented, attachment_added, attachment_removed
@@ -103,6 +105,15 @@
 -- purchaser_type: gc, pm, subcontractor
 -- expense_category: materials, labor, equipment, permits, transportation, meals, lodging, other
 -- expense_status: submitted, under_review, approved, rejected, paid
+```
+</details>
+
+<details>
+<summary><strong>File Management Enums</strong></summary>
+
+```sql
+-- document_category: contracts, permits, drawings, reports, financial, safety, meeting_notes, specifications, general
+-- photo_category: site_progress, safety_documentation, permits_approvals, inspection_reports, material_receipts, change_orders, defects_issues, before_after, task_receipts, expense_receipts, general
 ```
 </details>
 
@@ -329,6 +340,53 @@ id uuid PK, message_id uuid FK (CASCADE), file_name, file_url, file_type,
 file_size int (max 10MB), thumbnail_url, created_at, updated_at
 ```
 
+### File Management Tables
+
+**project_files**
+```sql
+id uuid PK, company_id uuid FK, project_id uuid FK, uploaded_by uuid FK,
+filename text, original_filename text, file_url text (Vercel Blob),
+file_size bigint, file_type text (MIME type),
+category document_category DEFAULT 'general', tags text[],
+client_visible bool DEFAULT false,
+version_number int DEFAULT 1, parent_file_id uuid FK (version chain),
+metadata jsonb (SHA-256 hash, custom data),
+deleted_at timestamptz (soft delete), created_at, updated_at
+-- Trigger: Auto-update updated_at on changes
+-- Indexes: (project_id), (project_id, category), (uploaded_by), (parent_file_id), (company_id)
+-- RLS: Company members view/upload, own files editable/deletable, GC/PM can manage all
+-- Versioning: parent_file_id links to previous version for history chain
+-- ⚠️ CROSS-SCHEMA: uploaded_by → next_auth.users (can't auto-join via PostgREST)
+```
+
+**project_photos**
+```sql
+id uuid PK, company_id uuid FK, project_id uuid FK, uploaded_by uuid FK,
+filename text, photo_url text (Vercel Blob), thumbnail_url text (300x300px),
+file_size bigint,
+category photo_category DEFAULT 'general', tags text[],
+exif_data jsonb (timestamp, camera: {make, model}, gps: {latitude, longitude}, exposure: {focalLength, fNumber, iso}),
+client_visible bool DEFAULT false,
+deleted_at timestamptz (soft delete), created_at
+-- Indexes: (project_id), (project_id, category), (uploaded_by), (company_id)
+-- RLS: Company members view/upload, own photos editable/deletable, GC/PM can manage all
+-- EXIF: Automatically extracted from JPEG/PNG metadata on upload
+-- ⚠️ CROSS-SCHEMA: uploaded_by → next_auth.users (can't auto-join via PostgREST)
+```
+
+**file_audit_log**
+```sql
+id uuid PK, company_id uuid FK,
+file_id uuid (references project_files OR project_photos),
+file_type text ('document'|'photo'), action text ('upload'|'delete'|'version_update'|'category_change'),
+performed_by uuid FK, previous_state jsonb (JSON snapshot before), new_state jsonb (JSON snapshot after),
+created_at timestamptz
+-- Immutable: No UPDATE/DELETE policies (append-only)
+-- Indexes: (file_id, file_type), (created_at DESC), (company_id)
+-- RLS: Company members view, system inserts (no direct INSERT by users)
+-- Purpose: 7-year compliance audit trail for construction documentation
+```
+
 ### System Tables
 
 **notifications**
@@ -399,18 +457,25 @@ metadata jsonb, created_at, updated_at
 **spatial_markers**
 ```sql
 id uuid PK, project_id uuid FK, model_id uuid FK, title, description,
-marker_type ('issue'|'inspection'|'note'|'safety'|'change_order'|'milestone'),
-position jsonb (x,y,z), normal_vector jsonb, element_id, phase_id uuid FK,
-task_id uuid FK, status ('open'|'in_progress'|'resolved'|'closed'),
-priority task_priority, assigned_to uuid FK, created_by uuid FK,
+type spatial_marker_type, -- 'issue'|'note'|'photo'|'inspection'|'rfi'|'safety'|'material'|'progress'
+position_x numeric, position_y numeric, position_z numeric,
+normal_x numeric, normal_y numeric, normal_z numeric,
+element_id text, element_name text, phase_id uuid FK,
+task_id uuid FK, status spatial_marker_status, -- 'open'|'in_progress'|'resolved'|'closed'
+cluster_id uuid, content_count int, created_by uuid FK,
 resolved_at, created_at, updated_at
+-- NOTE: No assigned_to column - use linked task for assignment
 ```
 
 **marker_content**
 ```sql
-id uuid PK, marker_id uuid FK (CASCADE), content_type ('photo'|'file'|'note'|'voice'),
-file_url, thumbnail_url, file_name, file_size_bytes bigint, notes text,
-metadata jsonb, created_by uuid FK, created_at
+id uuid PK, marker_id uuid FK (CASCADE),
+type text, -- 'photo'|'file'|'note'
+file_url text, file_name text, file_size_bytes bigint, file_mime_type text,
+photo_url text, photo_thumbnail_url text, photo_width int, photo_height int, photo_exif jsonb,
+note_text text,
+created_by uuid FK, created_at
+-- NOTE: Use 'type' not 'content_type', use 'note_text' not 'text_content'
 ```
 
 **model_elements**
@@ -583,4 +648,64 @@ companies
 ├─ subcontractors
 ├─ materials
 └─ team_invitations
+```
+
+---
+
+## Common Gotchas
+
+### Cross-Schema Joins (PostgREST Limitation)
+
+Tables with `uploaded_by` or `created_by` referencing `next_auth.users` **cannot use auto-join syntax**:
+
+```typescript
+// ❌ WRONG - Will fail with "Could not find relationship" error
+.from('project_files')
+.select(`*, uploader:uploaded_by (id, name, avatar_url)`)
+
+// ✅ CORRECT - Select raw data, fetch user details separately
+.from('project_files')
+.select('*')
+```
+
+**Affected tables:** `project_files`, `project_photos`, `spatial_markers`, `marker_content`
+
+### Spatial Marker Field Names
+
+```typescript
+// ❌ WRONG (old names)
+marker.marker_type    // Use: marker.type
+marker.position.x     // Use: marker.position_x
+marker.assigned_to    // REMOVED - use linked task
+
+// ❌ WRONG (marker_content old names)
+content.content_type  // Use: content.type
+content.text_content  // Use: content.note_text
+content.url           // Use: content.file_url or content.photo_url
+content.uploaded_by   // Use: content.created_by
+
+// ✅ CORRECT field names
+marker.type           // spatial_marker_type enum
+marker.status         // spatial_marker_status enum
+marker.position_x, marker.position_y, marker.position_z
+content.type, content.note_text, content.file_url, content.photo_url
+```
+
+### Task Priority Enum
+
+```typescript
+// ✅ All valid values (includes 'critical')
+type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
+```
+
+### Null vs Undefined
+
+Database returns `null`, but TypeScript function params often expect `undefined`:
+
+```typescript
+// ❌ WRONG - Type error
+createTask({ description: row.description }) // null not assignable to undefined
+
+// ✅ CORRECT - Convert null to undefined
+createTask({ description: row.description ?? undefined })
 ```

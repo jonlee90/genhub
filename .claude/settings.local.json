@@ -103,12 +103,13 @@
       "Bash(node -e:*)",
       "Bash(tree:*)",
       "Bash(grep:*)",
-      "Bash(xargs -I {} sh -c 'echo \"\"=== {} ===\"\" && grep -c \"\"from.*supabase\\\\|createClient\"\" {} || echo \"\"0 imports found\"\"')",
       "Bash(mcp__supabase__list_tables)",
       "Bash(npx mcp__supabase__execute_sql:*)",
       "Bash(node:*)",
       "Bash(git checkout:*)",
-      "Bash(npm search:*)"
+      "Bash(npm search:*)",
+      "Bash(npx eslint:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []

@@ -113,7 +113,7 @@ export function ChatSettings({
     try {
       const result = await updateChatRoom(roomId, {
         name: name.trim(),
-        description: description.trim() || null,
+        description: description.trim() || undefined,
       });
 
       if (result.success) {

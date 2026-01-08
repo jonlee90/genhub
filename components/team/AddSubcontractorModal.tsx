@@ -300,9 +300,9 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
                 ))}
               </SelectContent>
             </Select>
-            {state?.fieldErrors?.trade_specialization && (
+            {(state?.fieldErrors as any)?.trade_specialization && (
               <p className="text-sm text-red-600 font-medium">
-                {state.fieldErrors.trade_specialization[0]}
+                {(state!.fieldErrors as any).trade_specialization[0]}
               </p>
             )}
           </div>

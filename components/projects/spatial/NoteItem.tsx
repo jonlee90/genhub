@@ -18,9 +18,9 @@ import type { MarkerContent } from '@/types/spatial'
 interface NoteItemProps {
   note: MarkerContent
   currentUserId: string
-  onEdit?: (noteId: number, content: string) => Promise<void>
-  onDelete?: (noteId: number) => Promise<void>
-  onReply?: (parentNoteId: number) => void
+  onEdit?: (noteId: string, content: string) => Promise<void>
+  onDelete?: (noteId: string) => Promise<void>
+  onReply?: (parentNoteId: string) => void
   replies?: MarkerContent[]
   level?: number // 0 = top-level, 1 = reply
 }
@@ -38,9 +38,9 @@ export function NoteItem({
 
   const [showMenu, setShowMenu] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [editContent, setEditContent] = useState(note.content || '')
+  const [editContent, setEditContent] = useState(note.note_text || '')
 
-  const isCreator = note.uploaded_by === currentUserId
+  const isCreator = note.created_by === currentUserId
   const canReply = level === 0 // Only allow replies to top-level notes
 
   const handleEdit = async () => {
@@ -61,7 +61,7 @@ export function NoteItem({
   }
 
   // Render markdown content
-  const renderedContent = parseMarkdown(note.content || '')
+  const renderedContent = parseMarkdown(note.note_text || '')
 
   return (
     <motion.div
@@ -81,7 +81,7 @@ export function NoteItem({
         {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-[#001B51] flex items-center justify-center text-xs text-white font-bold">
-            {note.uploaded_by?.[0]?.toUpperCase() || 'U'}
+            {note.created_by?.[0]?.toUpperCase() || 'U'}
           </div>
         </div>
 
@@ -91,7 +91,7 @@ export function NoteItem({
           <div className="flex items-start justify-between mb-1">
             <div>
               <p className="text-sm font-bold text-gray-900">
-                {note.uploaded_by || 'Unknown User'}
+                {note.created_by || 'Unknown User'}
               </p>
               <p className="text-xs text-gray-500">
                 {note.created_at && format(new Date(note.created_at), 'MMM d, yyyy · h:mm a')}
@@ -170,7 +170,7 @@ export function NoteItem({
                 <button
                   onClick={() => {
                     setEditing(false)
-                    setEditContent(note.content || '')
+                    setEditContent(note.note_text || '')
                   }}
                   className={cn(
                     'px-3 py-1 rounded-lg text-sm font-medium',

@@ -10,15 +10,14 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Image, Upload, X, Trash2, Calendar, Camera, MapPin, Maximize2 } from 'lucide-react'
+import { Image, Upload, X, Trash2, Maximize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PhotoUploader } from './PhotoUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'
-import { format } from 'date-fns'
 import type { MarkerContent } from '@/types/spatial'
 
 export interface PhotoGalleryProps {
-  markerId: number
+  markerId: string
   photos: MarkerContent[]
 }
 
@@ -38,7 +37,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
     // The mutation hook will handle revalidation
   }
 
-  const handleDelete = async (photoId: number) => {
+  const handleDelete = async (photoId: string) => {
     if (!confirm('Delete this photo?')) return
     console.log('[PhotoGallery] Deleting photo:', photoId)
     await deleteContent(photoId)
@@ -114,8 +113,8 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
             >
               {/* Thumbnail */}
               <img
-                src={photo.thumbnail_url || photo.url}
-                alt={photo.filename || 'Photo'}
+                src={photo.photo_thumbnail_url || photo.photo_url || photo.file_url || ''}
+                alt={photo.file_name || 'Photo'}
                 className="w-full h-full object-cover"
               />
 
@@ -167,8 +166,8 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
               {/* Photo */}
               <div className="flex-1 flex items-center justify-center mb-4">
                 <img
-                  src={lightboxPhoto.url}
-                  alt={lightboxPhoto.filename || 'Photo'}
+                  src={lightboxPhoto.photo_url || lightboxPhoto.file_url || ''}
+                  alt={lightboxPhoto.file_name || 'Photo'}
                   className="max-w-full max-h-[70vh] object-contain rounded-lg"
                 />
               </div>
@@ -177,7 +176,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
               <div className="bg-[#001B51] rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white uppercase tracking-tight">
-                    {lightboxPhoto.filename || 'Untitled Photo'}
+                    {lightboxPhoto.file_name || 'Untitled Photo'}
                   </h3>
                   <button
                     onClick={() => handleDelete(lightboxPhoto.id)}
@@ -192,54 +191,12 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
                   </button>
                 </div>
 
-                {/* EXIF data */}
-                {lightboxPhoto.metadata && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                    {/* Date */}
-                    {lightboxPhoto.metadata.timestamp && (
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Calendar className="w-4 h-4 text-gray-400" />
-                        <span>{format(new Date(lightboxPhoto.metadata.timestamp), 'MMM d, yyyy')}</span>
-                      </div>
-                    )}
-
-                    {/* Camera */}
-                    {lightboxPhoto.metadata.camera && (
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <Camera className="w-4 h-4 text-gray-400" />
-                        <span className="truncate">
-                          {lightboxPhoto.metadata.camera.make} {lightboxPhoto.metadata.camera.model}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* GPS */}
-                    {lightboxPhoto.metadata.gps && (
-                      <div className="flex items-center gap-2 text-gray-300">
-                        <MapPin className="w-4 h-4 text-gray-400" />
-                        <span>
-                          {lightboxPhoto.metadata.gps.latitude.toFixed(6)}, {lightboxPhoto.metadata.gps.longitude.toFixed(6)}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Exposure */}
-                    {lightboxPhoto.metadata.exposure && (
-                      <div className="text-gray-300">
-                        {lightboxPhoto.metadata.exposure.focalLength && (
-                          <span>{lightboxPhoto.metadata.exposure.focalLength}mm </span>
-                        )}
-                        {lightboxPhoto.metadata.exposure.fNumber && (
-                          <span>f/{lightboxPhoto.metadata.exposure.fNumber} </span>
-                        )}
-                        {lightboxPhoto.metadata.exposure.exposureTime && (
-                          <span>{lightboxPhoto.metadata.exposure.exposureTime}s </span>
-                        )}
-                        {lightboxPhoto.metadata.exposure.iso && (
-                          <span>ISO {lightboxPhoto.metadata.exposure.iso}</span>
-                        )}
-                      </div>
-                    )}
+                {/* Photo dimensions */}
+                {(lightboxPhoto.photo_width || lightboxPhoto.photo_height) && (
+                  <div className="flex items-center gap-2 text-sm text-gray-300">
+                    <span>
+                      {lightboxPhoto.photo_width}×{lightboxPhoto.photo_height}px
+                    </span>
                   </div>
                 )}
               </div>

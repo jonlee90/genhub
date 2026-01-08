@@ -226,7 +226,7 @@ export function usePresence({
       console.log('[usePresence] User joined:', key, newPresences);
 
       // Get first presence (in case of multiple tabs)
-      const presence = newPresences[0] as PresenceUser;
+      const presence = newPresences[0] as unknown as PresenceUser;
 
       if (presence && onUserJoin) {
         onUserJoin(presence);
@@ -238,7 +238,7 @@ export function usePresence({
       console.log('[usePresence] User left:', key, leftPresences);
 
       // Get first presence (in case of multiple tabs)
-      const presence = leftPresences[0] as PresenceUser;
+      const presence = leftPresences[0] as unknown as PresenceUser;
 
       if (presence && onUserLeave) {
         onUserLeave(presence.userId);

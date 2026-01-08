@@ -127,7 +127,7 @@ function SortableTaskItem({
   };
 
   // Get task type config from database or fallback to defaults
-  const dbTaskType = taskTypeConfigs[task.default_task_type];
+  const dbTaskType = task.default_task_type ? taskTypeConfigs[task.default_task_type] : undefined;
   const defaultTaskType = DEFAULT_TASK_TYPE_CONFIG[task.default_task_type as keyof typeof DEFAULT_TASK_TYPE_CONFIG] || DEFAULT_TASK_TYPE_CONFIG.work;
 
   const TaskTypeIcon = dbTaskType ?
@@ -866,7 +866,7 @@ export function TaskTemplateManager() {
                 <Label htmlFor="edit-task-type" className="text-sm font-bold text-gray-900">
                   Task Type *
                 </Label>
-                <Select name="default_task_type" defaultValue={editingTask.default_task_type}>
+                <Select name="default_task_type" defaultValue={editingTask.default_task_type ?? undefined}>
                   <SelectTrigger
                     id="edit-task-type"
                     className="border-2 border-gray-200 focus:border-construction-blue"
@@ -894,7 +894,7 @@ export function TaskTemplateManager() {
                 <Label htmlFor="edit-priority" className="text-sm font-bold text-gray-900">
                   Default Priority *
                 </Label>
-                <Select name="default_priority" defaultValue={editingTask.default_priority}>
+                <Select name="default_priority" defaultValue={editingTask.default_priority ?? undefined}>
                   <SelectTrigger
                     id="edit-priority"
                     className="border-2 border-gray-200 focus:border-construction-blue"

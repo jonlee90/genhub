@@ -14,6 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { updateTask } from '@/app/actions/tasks';
 import { createTaskAtLocation } from '@/app/actions/spatial';
@@ -107,17 +108,18 @@ function CreateTaskMode({
 
     startTransition(async () => {
       try {
+        // Convert null to undefined for optional fields to match function signature
         const taskData = {
-          project_id: projectId,
-          phase_id: phaseId || null,
           title: title.trim(),
-          description: description.trim() || null,
+          description: description.trim() || undefined,
           priority,
-          assignee_id: assigneeId || null,
-          due_date: dueDate || null,
+          phase_id: phaseId || undefined,
+          assignee_id: assigneeId || undefined,
+          due_date: dueDate || undefined,
         };
 
-        const result = await createTaskAtLocation(taskData, position, elementId);
+        // Pass projectId as separate argument per function signature
+        const result = await createTaskAtLocation(taskData, position, projectId, elementId);
 
         if (!result.success || !result.data) {
           throw new Error(result.error || 'Failed to create task');
@@ -149,23 +151,32 @@ function CreateTaskMode({
       isOpen={isOpen}
       onClose={handleClose}
       title="Create Task at Location"
-      icon={<Plus className="h-5 w-5 text-[#001B51]" />}
+      icon={Plus}
       maxWidth="lg"
-      rightActions={[
-        {
-          label: 'Cancel',
-          onClick: handleClose,
-          variant: 'secondary',
-          disabled: isPending,
-        },
-        {
-          label: isPending ? 'Creating...' : 'Create Task',
-          onClick: handleSubmit,
-          variant: 'primary',
-          disabled: isPending || !title.trim(),
-          icon: isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined,
-        },
-      ]}
+      rightActions={
+        <>
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isPending || !title.trim()}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Creating...
+              </>
+            ) : (
+              'Create Task'
+            )}
+          </Button>
+        </>
+      }
     >
       <div className="space-y-5">
         {/* 3D Position */}
@@ -336,6 +347,11 @@ function LinkTaskMode({
 
   // Debug: Handle task linking
   const handleLinkTask = async (taskId: string) => {
+    if (!markerId) {
+      toast.error('No marker selected');
+      return;
+    }
+    
     console.log('[TaskLinker] Linking task:', taskId, 'to marker:', markerId);
     setIsLinking(true);
     setSelectedTaskId(taskId);
@@ -400,7 +416,7 @@ function LinkTaskMode({
       isOpen={isOpen}
       onClose={onClose}
       title="Link Task to Marker"
-      size="lg"
+      maxWidth="lg"
     >
       <div className="space-y-4">
         {/* Marker Info */}

@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
   console.log('[TestAuth] POST request received');
 
   // CRITICAL: Only allow in development/test environments
-  if (process.env.NODE_ENV === 'production') {
+  if ((process.env.NODE_ENV as string) === 'production') {
     console.error('[TestAuth] Blocked - production environment');
     return NextResponse.json(
       { error: 'Test authentication not available in production' },
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from database
+    // Get user from database (using next_auth schema - not in generated types)
     const supabase = createAdminClient();
-    const { data: user, error: userError } = await supabase
+    const { data: user, error: userError } = await (supabase as any)
       .schema('next_auth')
       .from('users')
       .select('id, email, name')
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     const sessionToken = `test-session-${user.id}-${Date.now()}`;
     const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
-    // Store session in database
-    const { error: sessionError } = await supabase
+    // Store session in database (using next_auth schema - not in generated types)
+    const { error: sessionError } = await (supabase as any)
       .schema('next_auth')
       .from('sessions')
       .insert({
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       name: 'authjs.session-token',
       value: sessionToken,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: (process.env.NODE_ENV as string) === 'production',
       sameSite: 'lax',
       expires,
       path: '/',

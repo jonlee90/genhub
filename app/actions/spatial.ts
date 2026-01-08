@@ -665,7 +665,7 @@ export async function updateMarker(markerId: string, data: SpatialMarkerUpdate) 
   const canUpdate =
     existingMarker.created_by === userId ||
     role === 'gc_admin' ||
-    role === 'pm';
+    role === 'project_manager';
 
   if (!canUpdate) {
     return { error: 'Permission denied: Only marker creator or GC/PM can update' };
@@ -752,7 +752,6 @@ export async function attachContentToMarker(markerId: string, content: MarkerCon
   const { data: markerContent, error } = await supabase
     .from('marker_content')
     .insert({
-      marker_id: markerId,
       ...content,
       created_by: userId,
     })
@@ -1028,7 +1027,7 @@ export async function findNearestMarker(
  * Fetches spatial markers with optional filters for marker type, status, priority,
  * phase, task linkage, and material linkage. Returns markers with extended info
  * including task details and material counts.
- * 
+ *
  * CRITICAL FIX: Uses explicit task_id relationship to resolve ambiguity
  * (spatial_markers.task_id -> tasks.id)
  * PostgREST requires this because there are TWO relationships between these tables:
@@ -1174,4 +1173,194 @@ export async function getMarkersByProject(
 
   console.log('[getMarkersByProject] Fetched', filteredMarkers.length, 'markers');
   return { success: true, data: filteredMarkers };
+}
+
+// ============================================================================
+// P4.4 - TASK AT LOCATION & FILE UPLOAD
+// ============================================================================
+
+/**
+ * Upload file attachment to a marker
+ * Creates a marker_content record with the file stored in Supabase Storage
+ */
+export async function uploadMarkerAttachment(
+  markerId: string,
+  file: File,
+  contentType: 'photo' | 'file'
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  console.log('[uploadMarkerAttachment] Uploading attachment to marker:', markerId);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { success: false, error: userContext.error };
+
+  const { supabase, userId } = userContext;
+
+  // Verify marker exists and user has access
+  const { data: marker } = await supabase
+    .from('spatial_markers')
+    .select('id, project_id')
+    .eq('id', markerId)
+    .single();
+
+  if (!marker) {
+    return { success: false, error: 'Marker not found or access denied' };
+  }
+
+  try {
+    // Generate unique file path
+    const timestamp = Date.now();
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `${marker.project_id}/markers/${markerId}/${timestamp}_${sanitizedFileName}`;
+
+    // Upload to Supabase Storage (marker-attachments bucket)
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('marker-attachments')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[uploadMarkerAttachment] Upload error:', uploadError);
+      return { success: false, error: `Upload failed: ${uploadError.message}` };
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('marker-attachments')
+      .getPublicUrl(filePath);
+
+    // Create marker_content record
+    const contentInsert: MarkerContentInsert = {
+      marker_id: markerId,
+      type: contentType,
+      file_url: urlData.publicUrl,
+      file_size_bytes: file.size,
+      file_name: file.name,
+    };
+
+    const { data: markerContent, error: contentError } = await supabase
+      .from('marker_content')
+      .insert({
+        ...contentInsert,
+        created_by: userId,
+      })
+      .select()
+      .single();
+
+    if (contentError) {
+      // Cleanup uploaded file on error
+      await supabase.storage.from('marker-attachments').remove([filePath]);
+      console.error('[uploadMarkerAttachment] Content insert error:', contentError);
+      return { success: false, error: `Failed to create content record: ${contentError.message}` };
+    }
+
+    console.log('[uploadMarkerAttachment] Attachment uploaded:', markerContent.id);
+    revalidatePath(`/app/projects/${marker.project_id}/spatial`);
+    return { success: true, data: markerContent };
+  } catch (err: any) {
+    console.error('[uploadMarkerAttachment] Unexpected error:', err);
+    return { success: false, error: `Upload failed: ${err.message}` };
+  }
+}
+
+/**
+ * Create a task at a specific 3D location in the model
+ * Creates both the task and a spatial marker linked to it
+ */
+export async function createTaskAtLocation(
+  taskData: {
+    title: string;
+    description?: string;
+    priority?: 'low' | 'medium' | 'high' | 'critical';
+    phase_id?: string;
+    assignee_id?: string;
+    due_date?: string;
+  },
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  },
+  projectId: string,
+  elementId?: string
+): Promise<{ success: boolean; data?: { task: any; marker: any }; error?: string }> {
+  console.log('[createTaskAtLocation] Creating task at position:', position);
+
+  const userContext = await getUserContext();
+  if ('error' in userContext) return { success: false, error: userContext.error };
+
+  const { supabase, companyId, userId } = userContext;
+
+  // Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) return { success: false, error: projectCheck.error };
+
+  try {
+    // Create task in tasks table
+    const { data: task, error: taskError } = await supabase
+      .from('tasks')
+      .insert({
+        title: taskData.title,
+        description: taskData.description || null,
+        priority: taskData.priority || 'medium',
+        phase_id: taskData.phase_id || null,
+        assignee_id: taskData.assignee_id || null,
+        due_date: taskData.due_date || null,
+        project_id: projectId,
+        status: 'todo',
+      })
+      .select()
+      .single();
+
+    if (taskError) {
+      console.error('[createTaskAtLocation] Task creation error:', taskError);
+      return { success: false, error: `Failed to create task: ${taskError.message}` };
+    }
+
+    // Create spatial_marker linked to task
+    const markerInsert: SpatialMarkerInsert = {
+      project_id: projectId,
+      task_id: task.id,
+      phase_id: taskData.phase_id || null,
+      type: 'issue', // Default marker type for task-linked markers
+      title: taskData.title,
+      description: taskData.description || null,
+      position_x: position.x,
+      position_y: position.y,
+      position_z: position.z,
+      element_id: elementId || null,
+      status: 'open',
+    };
+
+    const { data: marker, error: markerError } = await supabase
+      .from('spatial_markers')
+      .insert({
+        ...markerInsert,
+        created_by: userId,
+      })
+      .select()
+      .single();
+
+    if (markerError) {
+      // Rollback: delete task if marker creation fails
+      await supabase.from('tasks').delete().eq('id', task.id);
+      console.error('[createTaskAtLocation] Marker creation error:', markerError);
+      return { success: false, error: `Failed to create marker: ${markerError.message}` };
+    }
+
+    // Update task with spatial_marker_id for reverse reference
+    await supabase
+      .from('tasks')
+      .update({ spatial_marker_id: marker.id })
+      .eq('id', task.id);
+
+    console.log('[createTaskAtLocation] Task and marker created:', task.id, marker.id);
+    revalidatePath(`/app/projects/${projectId}/spatial`);
+    revalidatePath(`/app/projects/${projectId}/tasks`);
+    return { success: true, data: { task, marker } };
+  } catch (err: any) {
+    console.error('[createTaskAtLocation] Unexpected error:', err);
+    return { success: false, error: `Failed to create task at location: ${err.message}` };
+  }
 }

@@ -576,7 +576,7 @@ function TaskModalForm({
       isOpen={true}
       onClose={onClose}
       icon={modalIcon}
-      title={modalTitle}
+      title={modalTitleText}
       badges={approvalBadge || undefined}
       theme="default"
       maxWidth="2xl"

@@ -146,7 +146,7 @@ async function fixCafeProject() {
         type: config.type,
         status: 'open', // Changed from 'active' to 'open' to match spatial_marker_status enum
         marker_config_id: config.id,
-        created_by: project.created_by || '00000000-0000-0000-0000-000000000000', // Use project creator or system
+        created_by: '00000000-0000-0000-0000-000000000000', // Use project creator or system
       };
     });
 

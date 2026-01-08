@@ -16,9 +16,9 @@ import { useMarkerMutations } from '@/hooks/use-marker-mutations'
 import type { MarkerContent } from '@/types/spatial'
 
 export interface NotesListProps {
-  markerId: number
+  markerId: string
   notes: MarkerContent[]
-  currentUserId: string
+  currentUserId?: string
 }
 
 /**
@@ -28,54 +28,40 @@ export function NotesList({ markerId, notes, currentUserId }: NotesListProps) {
   console.log('[NotesList] Rendering', { markerId, noteCount: notes.length })
 
   const [showEditor, setShowEditor] = useState(false)
-  const [replyToNoteId, setReplyToNoteId] = useState<number | null>(null)
   const { createNote, updateContent, deleteContent } = useMarkerMutations()
 
-  // Separate top-level notes and replies
-  const topLevelNotes = notes.filter((note) => !note.parent_content_id)
-  const noteReplies = notes.reduce((acc, note) => {
-    if (note.parent_content_id) {
-      if (!acc[note.parent_content_id]) {
-        acc[note.parent_content_id] = []
-      }
-      acc[note.parent_content_id].push(note)
-    }
-    return acc
-  }, {} as Record<number, MarkerContent[]>)
+  // All notes are top-level (no threading support in current schema)
+  const topLevelNotes = notes
 
   // Handle create note
-  const handleCreateNote = async (content: string, mentions: string[]) => {
-    console.log('[NotesList] Creating note', { markerId, mentions })
+  const handleCreateNote = async (content: string, _mentions: string[]) => {
+    console.log('[NotesList] Creating note', { markerId })
 
-    await createNote({
+    await createNote(markerId, {
       marker_id: markerId,
       type: 'note',
-      content,
-      metadata: { mentions },
-      parent_content_id: replyToNoteId || undefined,
+      note_text: content,
     })
 
     setShowEditor(false)
-    setReplyToNoteId(null)
   }
 
   // Handle edit note
-  const handleEditNote = async (noteId: number, content: string) => {
+  // Note: updateContent signature expects (markerId, contentId: number, data) but IDs are UUIDs
+  const handleEditNote = async (noteId: string, content: string) => {
     console.log('[NotesList] Editing note', { noteId })
-    await updateContent(noteId, { content })
+    // Cast to unknown first to work around type mismatch until API is updated
+    await (updateContent as unknown as (m: string, c: string, d: { note_text: string }) => Promise<boolean>)(
+      markerId,
+      noteId,
+      { note_text: content }
+    )
   }
 
   // Handle delete note
-  const handleDeleteNote = async (noteId: number) => {
+  const handleDeleteNote = async (noteId: string) => {
     console.log('[NotesList] Deleting note', { noteId })
     await deleteContent(noteId)
-  }
-
-  // Handle reply
-  const handleReply = (parentNoteId: number) => {
-    console.log('[NotesList] Replying to note', { parentNoteId })
-    setReplyToNoteId(parentNoteId)
-    setShowEditor(true)
   }
 
   if (topLevelNotes.length === 0 && !showEditor) {
@@ -121,20 +107,13 @@ export function NotesList({ markerId, notes, currentUserId }: NotesListProps) {
       {/* Note editor */}
       {showEditor && (
         <div>
-          {replyToNoteId && (
-            <p className="text-sm text-gray-600 mb-2">
-              Replying to note...
-            </p>
-          )}
           <NoteEditor
             markerId={markerId}
-            parentNoteId={replyToNoteId || undefined}
             onSave={handleCreateNote}
             onCancel={() => {
               setShowEditor(false)
-              setReplyToNoteId(null)
             }}
-            placeholder={replyToNoteId ? 'Write a reply...' : 'Write a note...'}
+            placeholder="Write a note..."
           />
         </div>
       )}
@@ -146,11 +125,9 @@ export function NotesList({ markerId, notes, currentUserId }: NotesListProps) {
             <NoteItem
               key={note.id}
               note={note}
-              currentUserId={currentUserId}
+              currentUserId={currentUserId || ''}
               onEdit={handleEditNote}
               onDelete={handleDeleteNote}
-              onReply={handleReply}
-              replies={noteReplies[note.id] || []}
             />
           ))}
         </div>

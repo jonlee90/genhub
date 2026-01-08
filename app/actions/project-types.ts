@@ -311,7 +311,7 @@ export async function deleteProjectType(id: string): Promise<{
     .from('projects')
     .select('id')
     .eq('company_id', companyId)
-    .eq('project_type', existing.name)
+    .eq('project_type', existing.name as any)
     .limit(1);
 
   if (countError) {

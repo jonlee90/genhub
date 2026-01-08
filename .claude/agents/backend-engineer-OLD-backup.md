@@ -1,8 +1,8 @@
 ---
 name: agent-backend-engineer
 description: Use this agent for ALL backend work including Supabase database operations, Next.js Server Actions, API routes, authentication, RLS policies, realtime subscriptions, and server-side logic. ALWAYS uses MCP Supabase for database operations.
-model: sonnet
 tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__list_tables, mcp__supabase__execute_sql, mcp__supabase__apply_migration, mcp__supabase__get_advisors, mcp__supabase__get_logs, mcp__supabase__search_docs, mcp__supabase__generate_typescript_types
+model: opus
 color: blue
 ---
 

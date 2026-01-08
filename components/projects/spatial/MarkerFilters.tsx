@@ -44,22 +44,24 @@ export interface MarkerFiltersProps {
   className?: string;
 }
 
-// Marker type definitions with labels
+// Marker type definitions with labels (matching database enum)
 const MARKER_TYPES: Array<{ value: SpatialMarkerType; label: string }> = [
   { value: 'note', label: 'Note' },
   { value: 'photo', label: 'Photo' },
-  { value: 'document', label: 'Document' },
   { value: 'issue', label: 'Issue' },
+  { value: 'safety', label: 'Safety' },
   { value: 'progress', label: 'Progress' },
-  { value: 'task', label: 'Task' },
   { value: 'material', label: 'Material' },
+  { value: 'inspection', label: 'Inspection' },
+  { value: 'rfi', label: 'RFI' },
 ];
 
-// Marker status definitions with labels
+// Marker status definitions with labels (matching database enum)
 const MARKER_STATUSES: Array<{ value: SpatialMarkerStatus; label: string }> = [
-  { value: 'active', label: 'Active' },
+  { value: 'open', label: 'Open' },
+  { value: 'in_progress', label: 'In Progress' },
   { value: 'resolved', label: 'Resolved' },
-  { value: 'archived', label: 'Archived' },
+  { value: 'closed', label: 'Closed' },
 ];
 
 /**

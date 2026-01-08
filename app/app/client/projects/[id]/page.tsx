@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getProjectWithStats } from '@/app/actions/projects';
 import { getClientPermissions } from '@/app/actions/client';
+import { getActiveModel } from '@/app/actions/spatial';
 import { ClientSpatialViewer } from '@/components/projects/spatial/ClientSpatialViewer';
 
 /**
@@ -54,8 +55,13 @@ export default async function ClientProjectDetailPage({
     can_view_invoices: false,
   };
 
+  // Fetch active 3D model
+  const modelResult = await getActiveModel(id);
+  const activeModel = modelResult.success ? modelResult.data : null;
+
   console.log('[ClientProjectDetailPage] Project loaded:', project.name);
   console.log('[ClientProjectDetailPage] Client permissions:', permissions);
+  console.log('[ClientProjectDetailPage] Active model:', activeModel?.id);
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -103,7 +109,7 @@ export default async function ClientProjectDetailPage({
         <ClientSpatialViewer
           projectId={project.id}
           projectType={project.project_type || 'commercial_office'}
-          modelHighURL={project.active_3d_model_url}
+          modelHighURL={activeModel?.xkt_file_url}
           hasBudgetVisibility={permissions.can_view_budget}
         />
       </div>

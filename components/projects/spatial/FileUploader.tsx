@@ -25,7 +25,7 @@ interface FileUploadItem {
 }
 
 interface FileUploaderProps {
-  markerId: number
+  markerId: string
   onUploadComplete: (files: { id: number; url: string }[]) => void
   onCancel?: () => void
 }

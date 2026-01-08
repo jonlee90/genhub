@@ -25,7 +25,8 @@ import { createMarker, uploadMarkerAttachment } from '@/app/actions/spatial';
 import { toast } from 'sonner';
 import { SpatialMarker } from '@/types/spatial';
 
-type MarkerType = 'issue' | 'note' | 'safety' | 'milestone';
+// Use valid database enum types: "issue" | "note" | "photo" | "inspection" | "rfi" | "safety" | "material" | "progress"
+type MarkerType = 'issue' | 'note' | 'safety' | 'progress';
 type PriorityLevel = 'low' | 'medium' | 'high';
 
 interface MarkerCreationModalProps {
@@ -69,9 +70,9 @@ const MARKER_TYPE_CONFIG = {
     gradientFrom: '#F97316',
     gradientTo: '#EA580C',
   },
-  milestone: {
+  progress: {
     icon: Flag,
-    label: 'Milestone',
+    label: 'Progress',
     color: '#10B981',
     bgColor: 'bg-green-50',
     borderColor: 'border-green-200',
@@ -212,27 +213,38 @@ export function MarkerCreationModal({
       isOpen={isOpen}
       onClose={handleClose}
       title={`Add ${config.label}`}
-      icon={<Icon className="h-5 w-5" style={{ color: config.color }} />}
+      icon={Icon}
       maxWidth="lg"
-      customTheme={{
-        gradientFrom: config.gradientFrom,
-        gradientTo: config.gradientTo,
-      }}
-      rightActions={[
-        {
-          label: 'Cancel',
-          onClick: handleClose,
-          variant: 'secondary',
-          disabled: isPending,
-        },
-        {
-          label: isPending ? 'Creating...' : 'Create',
-          onClick: handleSubmit,
-          variant: 'primary',
-          disabled: isPending || !title.trim(),
-          icon: isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : undefined,
-        },
-      ]}
+      rightActions={
+        <>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isPending}
+            className={cn(
+              'px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg',
+              'hover:bg-gray-50 transition-colors font-medium text-sm',
+              'disabled:opacity-50 disabled:cursor-not-allowed'
+            )}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isPending || !title.trim()}
+            className={cn(
+              'px-4 py-2 bg-[#001B51] text-white rounded-lg',
+              'hover:bg-[#001B51]/90 transition-colors font-medium text-sm',
+              'disabled:opacity-50 disabled:cursor-not-allowed',
+              'flex items-center gap-2'
+            )}
+          >
+            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {isPending ? 'Creating...' : 'Create'}
+          </button>
+        </>
+      }
     >
       <div className="space-y-6">
         {/* 3D Position Display */}

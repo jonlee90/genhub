@@ -163,6 +163,11 @@ const PRIORITY_CONFIG = {
     color: 'bg-red-50 text-red-600 border-red-200',
     badgeColor: 'bg-red-100 text-red-700',
   },
+  critical: {
+    label: 'Critical',
+    color: 'bg-purple-50 text-purple-600 border-purple-200',
+    badgeColor: 'bg-purple-100 text-purple-700',
+  },
 };
 
 export function TaskDetail({

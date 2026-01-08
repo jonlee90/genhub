@@ -73,6 +73,7 @@ const PRIORITY_CONFIG = {
   low: { label: 'Low', color: 'bg-[#059669]/10 text-[#059669] font-bold' },
   medium: { label: 'Medium', color: 'bg-[#FFB627]/10 text-[#FFB627] font-bold' },
   high: { label: 'High', color: 'bg-[#DC2626]/10 text-[#DC2626] font-bold' },
+  critical: { label: 'Critical', color: 'bg-purple-100 text-purple-700 font-bold' },
 };
 
 type SortField = 'title' | 'project' | 'due_date' | 'priority' | 'status';
@@ -113,7 +114,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
         comparison = dateA - dateB;
         break;
       case 'priority':
-        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const priorityOrder: Record<string, number> = { critical: 0, high: 1, medium: 2, low: 3 };
         comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
         break;
       case 'status':

@@ -1,17 +1,8 @@
-'use server'
+-- Migration: Auto-create phases and tasks from templates
+-- Author: agent-backend-engineer
+-- Date: 2026-01-06
+-- Purpose: Replace hardcoded phase creation with template-based automation
 
-import { createAdminClient } from '@/utils/supabase/server'
-
-/**
- * Apply database migration: 045_auto_create_phases_tasks_from_templates
- * This replaces hardcoded phase creation with template-based automation
- */
-export async function applyMigration045() {
-  const supabase = createAdminClient()
-
-  try {
-    // Execute the migration SQL
-    const migrationSQL = `
 -- ============================================
 -- 1. Add project_type_config_id to projects table if not exists
 -- ============================================
@@ -156,39 +147,3 @@ COMMENT ON FUNCTION public.create_phases_and_tasks_from_templates() IS
 
 COMMENT ON TRIGGER create_phases_and_tasks_on_project_insert ON public.projects IS
   'Trigger that creates phases and tasks from templates when a new project is created.';
-    `
-
-    const { error } = await supabase.rpc('exec', { sql: migrationSQL })
-
-    if (error) {
-      // Try using a direct SQL execution approach
-      const statements = migrationSQL.split(';').filter(s => s.trim())
-
-      for (const statement of statements) {
-        const trimmed = statement.trim()
-        if (!trimmed) continue
-
-        const { error: stmtError } = await supabase.rpc('exec', { sql: trimmed })
-        if (stmtError) {
-          console.error('Migration error:', stmtError)
-          return {
-            success: false,
-            error: stmtError.message,
-            statement: trimmed.substring(0, 100)
-          }
-        }
-      }
-    }
-
-    return {
-      success: true,
-      message: 'Migration 045 applied successfully. Projects will now auto-create phases and tasks from templates.'
-    }
-  } catch (err) {
-    console.error('Migration exception:', err)
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : 'Unknown error'
-    }
-  }
-}

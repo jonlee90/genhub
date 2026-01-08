@@ -13,11 +13,20 @@ type MaterialAssignment = {
   id: string;
   quantity: number;
   unit_cost: number;
+  total_cost: number | null;
   procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  materials: {
+  purchaser_type: 'subcontractor' | 'gc' | 'pm';
+  notes: string | null;
+  created_at: string;
+  material: {
     id: string;
     product_name: string;
-    sku?: string;
+    sku: string | null;
+    category: string | null;
+    unit_of_measure: string | null;
+    product_image_url: string | null;
+    stock_status: string | null;
+    home_depot_product_id: string | null;
   };
 };
 
@@ -133,10 +142,10 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
               >
                 {/* Debug: Material name and SKU */}
                 <td className="p-3">
-                  <div className="font-semibold text-sm">{material.materials.product_name}</div>
-                  {material.materials.sku && (
+                  <div className="font-semibold text-sm">{material.material.product_name}</div>
+                  {material.material.sku && (
                     <div className="text-xs text-gray-500 font-mono mt-0.5">
-                      SKU: {material.materials.sku}
+                      SKU: {material.material.sku}
                     </div>
                   )}
                 </td>

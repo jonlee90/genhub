@@ -336,7 +336,7 @@ export async function createProject(formData: FormData) {
         const createdMarkers = await createMarkersFromDefaultConfigs(
           project.id,
           defaultModel.id,
-          createdTasks
+          createdTasks as any
         );
 
         if (createdMarkers && createdMarkers.length > 0) {

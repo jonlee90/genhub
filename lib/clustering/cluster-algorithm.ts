@@ -42,12 +42,19 @@ const DEFAULT_OPTIONS: Required<ClusteringOptions> = {
  * Parse position from marker (supports both JSON and object formats)
  */
 function parsePosition(marker: SpatialMarker): Position3D | null {
-  if (!marker.position) return null;
+  // Use position_x, position_y, position_z columns from database
+  if (marker.position_x != null && marker.position_y != null && marker.position_z != null) {
+    return { x: marker.position_x, y: marker.position_y, z: marker.position_z };
+  }
+
+  // Fallback for legacy support
+  const positionData = (marker as any).position;
+  if (!positionData) return null;
 
   // Handle JSON string format
-  if (typeof marker.position === 'string') {
+  if (typeof positionData === 'string') {
     try {
-      const parsed = JSON.parse(marker.position);
+      const parsed = JSON.parse(positionData);
       if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number' && typeof parsed.z === 'number') {
         return parsed;
       }
@@ -57,8 +64,8 @@ function parsePosition(marker: SpatialMarker): Position3D | null {
   }
 
   // Handle object format
-  if (typeof marker.position === 'object') {
-    const pos = marker.position as any;
+  if (typeof positionData === 'object') {
+    const pos = positionData as any;
     if (typeof pos.x === 'number' && typeof pos.y === 'number' && typeof pos.z === 'number') {
       return { x: pos.x, y: pos.y, z: pos.z };
     }

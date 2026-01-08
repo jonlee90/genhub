@@ -79,9 +79,9 @@ export function useMarkerClustering(
     if (!isClusteringEnabled) {
       // Return individual markers as single-marker clusters
       const singleClusters = markers.map((marker) => {
-        const position = typeof marker.position === 'string'
-          ? JSON.parse(marker.position)
-          : marker.position;
+        const position = typeof (marker as any).position === 'string'
+          ? JSON.parse((marker as any).position)
+          : { x: marker.position_x ?? 0, y: marker.position_y ?? 0, z: marker.position_z ?? 0 };
 
         return {
           id: `single-${marker.id}`,

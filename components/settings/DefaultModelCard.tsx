@@ -56,7 +56,7 @@ interface DefaultModelCardProps {
     fileSize: number;
     elementCount: number | null;
     uploadedAt: string;
-    xktUrl: string;
+    xktUrl: string | null;
   } | null;
 }
 
@@ -152,13 +152,13 @@ export function DefaultModelCard({
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">File Size</p>
                 <p className="text-sm font-bold text-[#001B51] font-mono">
-                  {formatFileSize(currentModel.fileSize || (currentModel as any).file_size_bytes)}
+                  {formatFileSize('fileSize' in currentModel ? currentModel.fileSize : (currentModel as any).file_size_bytes)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Elements</p>
                 <p className="text-sm font-bold text-[#001B51] font-mono">
-                  {currentModel.elementCount?.toLocaleString() || (currentModel as any).element_count?.toLocaleString() || 'N/A'}
+                  {('elementCount' in currentModel ? currentModel.elementCount : (currentModel as any).element_count)?.toLocaleString() || (currentModel as any).element_count?.toLocaleString() || 'N/A'}
                 </p>
               </div>
             </div>

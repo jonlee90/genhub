@@ -11,12 +11,12 @@ import { getTaskExpenses } from '@/app/actions/expenses';
 // Debug: Expense type (from server action)
 type Expense = {
   id: string;
+  description: string;
   amount: number;
-  category: string;
-  status: 'submitted' | 'reviewed' | 'approved' | 'rejected';
-  receipt_url?: string;
-  notes?: string;
-  created_at: string;
+  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
+  expense_date: string;
+  vendor_name: string | null;
+  category: 'permits' | 'materials' | 'labor' | 'equipment' | 'subcontractor' | 'utilities' | 'professional' | 'other';
 };
 
 // Debug: Component props
@@ -133,7 +133,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
               <div className="flex-1">
                 <h4 className="font-bold text-sm text-gray-900">{expense.category}</h4>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {formatDate(expense.created_at)}
+                  {formatDate(expense.expense_date)}
                 </p>
               </div>
               <div className="text-right">
@@ -148,9 +148,9 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
             </div>
 
             {/* Debug: Notes */}
-            {expense.notes && (
+            {expense.description && (
               <p className="text-sm text-gray-600 mb-2 border-l-2 border-gray-300 pl-3">
-                {expense.notes}
+                {expense.description}
               </p>
             )}
 
@@ -163,15 +163,15 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
                 {expense.status}
               </span>
 
-              {expense.receipt_url && (
+              {expense.vendor_name && (
                 <a
-                  href={expense.receipt_url}
+                  href="#"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-xs text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 hover:underline"
                 >
                   <Receipt className="h-3 w-3" />
-                  View Receipt
+                  Vendor: {expense.vendor_name}
                   <ExternalLink className="h-3 w-3" />
                 </a>
               )}

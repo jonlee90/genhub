@@ -78,8 +78,6 @@ export function ClientSpatialViewer({
   const [activeFilters, setActiveFilters] = useState<MarkerFilters>({
     markerTypes: [],
     statuses: [],
-    hasTask: null,
-    hasMaterials: null,
   });
 
   // Debug: Task detail panel state (read-only mode)
@@ -158,18 +156,16 @@ export function ClientSpatialViewer({
 
   // Debug: Calculate marker counts for filter panel
   const markerCounts = {
-    task: markers.filter(m => m.type === 'task').length,
     issue: markers.filter(m => m.type === 'issue').length,
     note: markers.filter(m => m.type === 'note').length,
     safety: markers.filter(m => m.type === 'safety').length,
-    milestone: markers.filter(m => m.type === 'milestone').length,
-    total: markers.length,
+    milestone: markers.filter(m => (m.type as string) === 'milestone').length, // milestone may not be in DB enum yet
   };
 
   return (
     <div className={cn('relative h-full w-full bg-gray-50', className)}>
       {/* Debug: 3D Viewer Canvas */}
-      <ThreeDViewerCanvas onViewerReady={handleViewerReady} />
+      <ThreeDViewerCanvas projectId={projectId} onReady={handleViewerReady} />
 
       {/* Debug: Model Loader (loads IFC/model if provided, skips if using default) */}
       {!shouldUseDefaultModel && modelHighURL && (
@@ -184,7 +180,14 @@ export function ClientSpatialViewer({
       {viewer && <CameraControls viewer={viewer} />}
 
       {/* Debug: LOD Manager (optimizes rendering based on camera distance) */}
-      {viewer && isModelReady && <LODManager viewer={viewer} />}
+      {viewer && isModelReady && modelHighURL && (
+        <LODManager
+          viewer={viewer}
+          highURL={modelHighURL}
+          mediumURL={modelMediumURL || null}
+          lowURL={modelLowURL || null}
+        />
+      )}
 
       {/* Debug: Interaction Layer (detects clicks/hovers - read-only mode, NO context menu) */}
       {viewer && isModelReady && (
@@ -199,7 +202,6 @@ export function ClientSpatialViewer({
         <SpatialMarkerPin
           key={marker.id}
           marker={marker}
-          viewer={viewer}
           materialCount={0} // TODO: Fetch material count from server
           attachmentCount={0} // TODO: Fetch attachment count from server
           onClick={() => handleMarkerClick(marker)}

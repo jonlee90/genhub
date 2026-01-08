@@ -23,10 +23,23 @@ import type { MessageWithSender } from '@/types/chat.types';
 interface MessageThreadProps {
   parentMessageId: string;
   onClose: () => void;
+  userId: string;
+  userName: string;
+  addOptimisticMessage: (message: any) => void;
+  confirmMessage: (tempId: string, realMessage: MessageWithSender) => void;
+  failMessage: (tempId: string, error: string) => void;
 }
 
 // Debug: Thread panel component
-export function MessageThread({ parentMessageId, onClose }: MessageThreadProps) {
+export function MessageThread({
+  parentMessageId,
+  onClose,
+  userId,
+  userName,
+  addOptimisticMessage,
+  confirmMessage,
+  failMessage,
+}: MessageThreadProps) {
   const [parentMessage, setParentMessage] = useState<MessageWithSender | null>(null);
   const [replies, setReplies] = useState<MessageWithSender[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,8 +58,8 @@ export function MessageThread({ parentMessageId, onClose }: MessageThreadProps) 
 
       if (result.success) {
         console.log('[MessageThread] Thread loaded:', result.replies?.length, 'replies');
-        setParentMessage(result.parentMessage as MessageWithSender);
-        setReplies(result.replies as MessageWithSender[]);
+        setParentMessage(result.parentMessage as unknown as MessageWithSender);
+        setReplies(result.replies as unknown as MessageWithSender[]);
       } else {
         console.error('[MessageThread] Failed to load thread:', result.error);
         setError(result.error || 'Failed to load thread');
@@ -165,6 +178,11 @@ export function MessageThread({ parentMessageId, onClose }: MessageThreadProps) 
                 chatRoomId={parentMessage.chat_room_id}
                 replyTo={parentMessage}
                 onCancelReply={onClose}
+                userId={userId}
+                userName={userName}
+                addOptimisticMessage={addOptimisticMessage}
+                confirmMessage={confirmMessage}
+                failMessage={failMessage}
               />
             </div>
           </>

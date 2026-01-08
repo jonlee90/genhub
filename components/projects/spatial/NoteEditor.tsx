@@ -9,13 +9,13 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Bold, Italic, List, ListOrdered, X, Send, At } from 'lucide-react'
+import { Bold, Italic, List, ListOrdered, X, Send, AtSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { extractMentions } from '@/lib/text-formatting'
 
 interface NoteEditorProps {
-  markerId: number
-  parentNoteId?: number // For threaded replies
+  markerId: string
+  parentNoteId?: string // For threaded replies
   onSave: (content: string, mentions: string[]) => Promise<void>
   onCancel?: () => void
   placeholder?: string
@@ -224,7 +224,7 @@ export function NoteEditor({
         </button>
         <div className="flex-1" />
         <span className="text-xs text-gray-400 flex items-center gap-1">
-          <At className="w-3 h-3" />
+          <AtSign className="w-3 h-3" />
           mention
         </span>
       </div>

@@ -16,7 +16,7 @@ import { validatePhoto } from '@/lib/image-processing'
 import { toast } from 'sonner'
 
 interface PhotoUploaderProps {
-  markerId: number
+  markerId: string
   onUploadComplete: (photoUrl: string) => void
   onCancel?: () => void
 }

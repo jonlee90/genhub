@@ -283,6 +283,7 @@ export async function convertIFCtoXKT(
       xktPath: outputPath,
       metadata: {
         ...metadata,
+        floorCount: metadata.floors?.length || 0,
         processingTimeMs,
       },
     };

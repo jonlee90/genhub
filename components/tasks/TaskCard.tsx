@@ -65,6 +65,11 @@ const PRIORITY_CONFIG = {
     color: 'bg-[#DC2626]/10 text-[#DC2626]', // Status badge color - red
     border: 'border-l-4 border-construction-blue', // Construction theme border
   },
+  critical: {
+    label: 'Critical',
+    color: 'bg-purple-100 text-purple-700', // Status badge color - purple for critical
+    border: 'border-l-4 border-construction-blue', // Construction theme border
+  },
 };
 
 // Debug: Task type config - industrial construction-themed badges

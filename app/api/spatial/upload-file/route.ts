@@ -61,13 +61,13 @@ export async function POST(request: NextRequest) {
     const { data: content, error: dbError } = await supabase
       .from('marker_content')
       .insert({
-        marker_id: parseInt(markerId, 10),
+        marker_id: markerId,
         type: 'file',
-        url: blob.url,
-        filename: file.name,
-        file_size: file.size,
-        mime_type: file.type,
-        uploaded_by: user.id,
+        file_url: blob.url,
+        file_name: file.name,
+        file_size_bytes: file.size,
+        file_mime_type: file.type,
+        created_by: user.id,
       })
       .select()
       .single()

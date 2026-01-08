@@ -109,7 +109,7 @@ export function usePushNotifications() {
           if ('error' in result) {
             console.error('[usePushNotifications] Failed to register subscription:', result.error);
             toast.error('Failed to enable push notifications');
-            setError(result.error);
+            setError(result.error ?? null);
             setIsLoading(false);
             return false;
           }

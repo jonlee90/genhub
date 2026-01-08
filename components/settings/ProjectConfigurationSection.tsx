@@ -17,7 +17,7 @@ export function ProjectConfigurationSection() {
 
   const [activeTab, setActiveTab] = useState<'project-types' | 'task-types' | 'phase-templates' | 'task-templates'>('project-types');
 
-  const tabs = [
+  const tabs: Array<{ id: 'project-types' | 'task-types' | 'phase-templates' | 'task-templates'; label: string; icon: typeof Wrench; description: string; comingSoon?: boolean }> = [
     {
       id: 'project-types' as const,
       label: 'Project Types',

@@ -30,33 +30,36 @@ export interface MarkerListItemProps {
   className?: string;
 }
 
-// Debug: Type icon mapping
+// Debug: Type icon mapping (matching database enum)
 const TYPE_ICONS: Record<SpatialMarkerType, any> = {
   note: FileText,
   photo: Image,
-  document: File,
   issue: AlertCircle,
+  safety: AlertCircle,
   progress: TrendingUp,
-  task: Hammer,
   material: Package,
+  inspection: FileText,
+  rfi: FileText,
 };
 
-// Debug: Type colors
+// Debug: Type colors (matching database enum)
 const TYPE_COLORS: Record<SpatialMarkerType, string> = {
   note: 'bg-blue-500',
   photo: 'bg-green-500',
-  document: 'bg-purple-500',
   issue: 'bg-red-500',
+  safety: 'bg-orange-500',
   progress: 'bg-yellow-500',
-  task: 'bg-orange-500',
   material: 'bg-cyan-500',
+  inspection: 'bg-indigo-500',
+  rfi: 'bg-pink-500',
 };
 
-// Debug: Status badge colors
+// Debug: Status badge colors (matching database enum)
 const STATUS_COLORS = {
-  active: 'bg-green-500/10 text-green-700 border-green-200',
+  open: 'bg-green-500/10 text-green-700 border-green-200',
+  in_progress: 'bg-blue-500/10 text-blue-700 border-blue-200',
   resolved: 'bg-gray-500/10 text-gray-700 border-gray-200',
-  archived: 'bg-gray-400/10 text-gray-600 border-gray-300',
+  closed: 'bg-gray-400/10 text-gray-600 border-gray-300',
 };
 
 /**
@@ -157,7 +160,7 @@ export const MarkerListItem = memo(function MarkerListItem({
             </Badge>
 
             {/* Debug: Content count badge */}
-            {marker.content_count > 0 && (
+            {(marker.content_count ?? 0) > 0 && (
               <Badge
                 variant="outline"
                 className="text-[10px] border-gray-200 bg-gray-50 text-gray-600"

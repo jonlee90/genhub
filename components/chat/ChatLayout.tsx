@@ -308,7 +308,7 @@ export function ChatLayout({ initialRooms, companyUsers = [], userContext }: Cha
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         currentRoomId={activeRoomId || undefined}
-        currentRoomName={activeRoom?.name}
+        currentRoomName={activeRoom?.name ?? undefined}
       />
 
       {/* Debug: Chat Settings Modal (only for project rooms) */}
@@ -318,7 +318,7 @@ export function ChatLayout({ initialRooms, companyUsers = [], userContext }: Cha
           onClose={() => setIsSettingsOpen(false)}
           roomId={activeRoomId!}
           roomType={activeRoom.type}
-          initialName={activeRoom.name}
+          initialName={activeRoom.name || ''}
           initialDescription={activeRoom.description}
         />
       )}

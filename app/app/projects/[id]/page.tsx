@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { ProjectDetailContent } from '@/components/projects/ProjectDetailContent';
 import type { Database } from '@/types/database.types';
 import type { TaskStats } from '@/app/actions/projects';
+import { getProjectFiles } from '@/app/actions/project-files';
+import { getProjectPhotosWithReceipts } from '@/app/actions/project-photos';
 
 type Project = Database['public']['Tables']['projects']['Row'];
 
@@ -19,10 +21,10 @@ async function getProjectData(id: string) {
     return null;
   }
 
-  // Get user's company
+  // Get user's company and role
   const { data: companyUser } = await supabase
     .from('company_users')
-    .select('company_id')
+    .select('company_id, role')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
     .maybeSingle();
@@ -295,20 +297,29 @@ async function getProjectData(id: string) {
   const now = new Date();
 
   // Query tasks with assignee info for workload distribution
-  const { data: tasksWithAssignees } = await supabase
+  const { data: tasksForAssignees } = await supabase
     .from('tasks')
-    .select(`
-      id,
-      status,
-      assignee_id,
-      user_profiles!tasks_assignee_id_fkey (
-        id,
-        name,
-        avatar_url
-      )
-    `)
+    .select('id, status, assignee_id')
     .eq('project_id', id)
     .not('status', 'eq', 'completed');
+
+  // Get unique assignee IDs and fetch their profiles
+  const assigneeIds = [...new Set((tasksForAssignees || []).map(t => t.assignee_id).filter(Boolean))] as string[];
+  const { data: assigneeProfiles } = assigneeIds.length > 0
+    ? await supabase
+        .from('user_profiles')
+        .select('id, name, avatar_url')
+        .in('id', assigneeIds)
+    : { data: [] };
+
+  // Create a map for quick lookup
+  const profileMap = new Map((assigneeProfiles || []).map(p => [p.id, p]));
+
+  // Combine tasks with their assignee profiles
+  const tasksWithAssignees = (tasksForAssignees || []).map(task => ({
+    ...task,
+    user_profiles: task.assignee_id ? profileMap.get(task.assignee_id) || null : null,
+  }));
 
   // Query material assignments for material cost
   const { data: materialAssignments, error: materialAssignmentsError } = await supabase
@@ -404,7 +415,22 @@ async function getProjectData(id: string) {
 
   console.log('[getProjectData] Active 3D model:', activeModel);
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel };
+  // Fetch project files and photos for Files & Photos tab
+  const filesResult = await getProjectFiles(id);
+  const projectFiles = filesResult.error ? [] : (filesResult.data || []);
+  if (filesResult.error) {
+    console.warn('[getProjectData] Failed to load files:', filesResult.error);
+  }
+
+  const photosResult = await getProjectPhotosWithReceipts(id);
+  const projectPhotos = photosResult.error ? [] : (photosResult.data || []);
+  if (photosResult.error) {
+    console.warn('[getProjectData] Failed to load photos:', photosResult.error);
+  }
+
+  console.log('[getProjectData] Files:', projectFiles.length, 'Photos:', projectPhotos.length);
+
+  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, userRole: companyUser.role || 'field_worker' };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -428,11 +454,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel } = data;
-
-  // Fetch user role for spatial viewer permissions
-  const session = await auth();
-  const userRole = session?.user?.role || 'field_worker';
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, userRole } = data;
 
   console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
 
@@ -483,6 +505,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           taskStats={taskStats}
           activeModel={activeModel || null}
           userRole={userRole}
+          projectFiles={projectFiles || []}
+          projectPhotos={projectPhotos || []}
         />
       </div>
     </div>

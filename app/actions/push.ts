@@ -62,9 +62,7 @@ async function getUserContext() {
 
 const registerPushSchema = z.object({
   endpoint: z.string().min(1, 'Endpoint is required'),
-  platform: z.enum(['web', 'ios', 'android'], {
-    errorMap: () => ({ message: 'Platform must be web, ios, or android' }),
-  }),
+  platform: z.enum(['web', 'ios', 'android']),
   p256dh_key: z.string().min(1, 'P256DH key is required'),
   auth_key: z.string().min(1, 'Auth key is required'),
   user_agent: z.string().optional().nullable(),

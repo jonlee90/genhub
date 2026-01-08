@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
   HardHat,
+  FolderOpen,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
+import { ProjectFilesTab } from './files/ProjectFilesTab';
 import type { Database } from '@/types/database.types';
 import { DashboardStats } from '../tasks/DashboardStats';
 import { InfoCard } from './InfoCard';
@@ -68,6 +70,8 @@ interface ProjectDetailContentProps {
   taskStats?: TaskStats;
   activeModel?: any;
   userRole?: string; // NEW: For spatial viewer permissions
+  projectFiles?: any[]; // NEW: For Files & Photos tab
+  projectPhotos?: any[]; // NEW: For Files & Photos tab
 }
 
 const STATUS_CONFIG = {
@@ -103,10 +107,12 @@ export function ProjectDetailContent({
   taskStats,
   activeModel,
   userRole = 'field_worker',
+  projectFiles = [],
+  projectPhotos = [],
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'files' | 'settings'>('overview');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const statusConfig = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
@@ -207,7 +213,6 @@ export function ProjectDetailContent({
       >
         {/* Comprehensive Project Title InfoCard */}
         <InfoCard
-          headerIcon={getProjectTypeIcon}
           headerTitle={project.name}
           headerDescription={displayDescription || 'No description provided'}
           isHeroCard={true}
@@ -478,6 +483,23 @@ export function ProjectDetailContent({
             )}
           </button>
           <button
+            onClick={() => setActiveTab('files')}
+            className={cn(
+              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              activeTab === 'files'
+                ? 'text-construction-blue border-construction-blue'
+                : 'text-gray-500 border-transparent hover:text-gray-700'
+            )}
+          >
+            <FolderOpen className="h-4 w-4" />
+            Files & Photos
+            {((projectFiles?.length || 0) + (projectPhotos?.length || 0)) > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 px-2 text-xs">
+                {(projectFiles?.length || 0) + (projectPhotos?.length || 0)}
+              </Badge>
+            )}
+          </button>
+          <button
             onClick={() => setActiveTab('settings')}
             className={cn(
               'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
@@ -547,6 +569,22 @@ export function ProjectDetailContent({
               initialView="kanban"
               projectId={project.id}
               phases={project.project_phases || []}
+            />
+          </motion.div>
+        )}
+
+        {activeTab === 'files' && (
+          <motion.div
+            key="files"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ProjectFilesTab
+              projectId={project.id}
+              initialFiles={projectFiles || []}
+              initialPhotos={projectPhotos || []}
             />
           </motion.div>
         )}

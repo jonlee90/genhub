@@ -23,20 +23,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Updated to match database schema: spatial_marker_type enum
-type MarkerType = 'issue' | 'note' | 'photo' | 'inspection' | 'rfi' | 'safety' | 'material' | 'progress';
-type MarkerStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
-type PriorityLevel = 'low' | 'medium' | 'high';
+import type { SpatialMarker } from '@/types/spatial.d';
 
-interface SpatialMarker {
-  id: string;
-  type: MarkerType;
-  title: string;
-  status: MarkerStatus;
-  priority: PriorityLevel;
-  assigned_to?: string | null;
-  task_id?: string | null;
-}
+// Local type for priority display
+type PriorityLevel = 'low' | 'medium' | 'high' | 'critical';
 
 interface SpatialMarkerPinProps {
   marker: SpatialMarker;
@@ -97,8 +87,8 @@ export function SpatialMarkerPin({
 
   const Icon = config.icon;
 
-  // High priority markers should pulse
-  const shouldPulse = marker.priority === 'high' && marker.status !== 'closed';
+  // High priority markers should pulse (priority is on linked task, not marker itself)
+  const shouldPulse = false; // TODO: Get priority from linked task
 
   // Blocked status gets red border
   const isBlocked = marker.status === 'closed';
@@ -260,16 +250,6 @@ export function SpatialMarkerPin({
                   {STATUS_LABELS[marker.status]}
                 </div>
               </div>
-
-              {/* Assignee */}
-              {marker.assigned_to && (
-                <div className="flex items-center gap-2">
-                  <div className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-60">
-                    Assigned:
-                  </div>
-                  <div className="text-xs font-medium">{marker.assigned_to}</div>
-                </div>
-              )}
 
               {/* Badges */}
               <div className="flex gap-2 pt-1">

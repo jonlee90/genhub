@@ -43,8 +43,8 @@ export interface ContentDrawerProps {
   className?: string;
 }
 
-// Debug: Type icons
-const TYPE_ICONS = {
+// Debug: Type icons (must match spatial_marker_type enum)
+const TYPE_ICONS: Record<string, typeof MessageSquare> = {
   note: MessageSquare,
   photo: Image,
   document: File,
@@ -52,10 +52,13 @@ const TYPE_ICONS = {
   progress: Activity,
   task: Edit,
   material: File,
+  safety: Edit,
+  inspection: Edit,
+  rfi: MessageSquare,
 };
 
-// Debug: Type colors
-const TYPE_COLORS = {
+// Debug: Type colors (must match spatial_marker_type enum)
+const TYPE_COLORS: Record<string, string> = {
   note: 'bg-blue-500',
   photo: 'bg-green-500',
   document: 'bg-purple-500',
@@ -63,6 +66,9 @@ const TYPE_COLORS = {
   progress: 'bg-yellow-500',
   task: 'bg-orange-500',
   material: 'bg-cyan-500',
+  safety: 'bg-orange-600',
+  inspection: 'bg-indigo-500',
+  rfi: 'bg-pink-500',
 };
 
 // Debug: Status colors

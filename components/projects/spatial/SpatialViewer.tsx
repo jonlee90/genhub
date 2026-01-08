@@ -90,8 +90,8 @@ export function SpatialViewer({
   const [activeFilters, setActiveFilters] = useState<MarkerFilters>({
     markerTypes: [],
     statuses: [],
-    hasTask: null,
-    hasMaterials: null,
+    hasTask: undefined,
+    hasMaterials: undefined,
   });
 
   // Debug: Context menu state
@@ -109,7 +109,7 @@ export function SpatialViewer({
   const [taskLinkerOpen, setTaskLinkerOpen] = useState(false);
   const [taskLinkerMode, setTaskLinkerMode] = useState<'create' | 'link'>('create');
   const [markerModalOpen, setMarkerModalOpen] = useState(false);
-  const [selectedMarkerType, setSelectedMarkerType] = useState<'issue' | 'note' | 'safety' | 'milestone'>('issue');
+  const [selectedMarkerType, setSelectedMarkerType] = useState<'issue' | 'note' | 'safety' | 'progress'>('issue');
 
   // Debug: Task detail panel state (Phase 4)
   const [detailPanelOpen, setDetailPanelOpen] = useState(false);
@@ -248,7 +248,7 @@ export function SpatialViewer({
     setContextMenuOpen(false);
   }, []);
 
-  const handleCreateMarker = useCallback((markerType: 'issue' | 'note' | 'safety' | 'milestone') => {
+  const handleCreateMarker = useCallback((markerType: 'issue' | 'note' | 'safety' | 'progress') => {
     console.log('[SpatialViewer] Opening marker creation modal for type:', markerType);
     setSelectedMarkerType(markerType);
     setMarkerModalOpen(true);
@@ -310,7 +310,7 @@ export function SpatialViewer({
       }
 
       // Show success toast
-      toast.success(`${marker.marker_type} marker created`);
+      toast.success(`${marker.type} marker created`);
 
       // Trigger parent callback
       if (onMarkerPlacement) {
@@ -334,7 +334,7 @@ export function SpatialViewer({
     } else {
       // Non-task marker (issue, note, safety, milestone)
       console.log('[SpatialViewer] Non-task marker clicked - detail view in future phase');
-      toast.info(`${marker.marker_type} marker: ${marker.title}`);
+      toast.info(`${marker.type} marker: ${marker.title}`);
     }
   }, []);
 
@@ -367,12 +367,14 @@ export function SpatialViewer({
   useEffect(() => {
     if (!viewer) return;
 
+    // Type assertion for xeokit fps property not in type definitions
+    const scene = viewer.scene as unknown as { fps: number };
     if (isMobile) {
       console.log('[SpatialViewer] Mobile detected - throttling render to 30 FPS');
-      viewer.scene.fps = 30;
+      scene.fps = 30;
     } else {
       console.log('[SpatialViewer] Desktop - using 60 FPS');
-      viewer.scene.fps = 60;
+      scene.fps = 60;
     }
   }, [viewer, isMobile]);
 
@@ -408,9 +410,13 @@ export function SpatialViewer({
         canvas.width = parent.clientWidth;
         canvas.height = parent.clientHeight;
 
-        // Update Xeokit viewer viewport
-        viewer.scene.canvas.boundary = [0, 0, canvas.width, canvas.height];
-        viewer.scene.canvas.render();
+        // Update Xeokit viewer viewport - type assertions for xeokit methods not in type defs
+        const xeokitCanvas = viewer.scene.canvas as unknown as {
+          boundary: number[];
+          render: () => void;
+        };
+        xeokitCanvas.boundary = [0, 0, canvas.width, canvas.height];
+        xeokitCanvas.render();
       }
     };
 
@@ -438,10 +444,10 @@ export function SpatialViewer({
 
   // Debug: Calculate marker counts for filter panel
   const markerCounts = {
-    issue: markers.filter((m) => m.marker_type === 'issue').length,
-    note: markers.filter((m) => m.marker_type === 'note').length,
-    safety: markers.filter((m) => m.marker_type === 'safety').length,
-    milestone: markers.filter((m) => m.marker_type === 'milestone').length,
+    issue: markers.filter((m) => m.type === 'issue').length,
+    note: markers.filter((m) => m.type === 'note').length,
+    safety: markers.filter((m) => m.type === 'safety').length,
+    milestone: markers.filter((m) => m.type === 'progress').length,
   };
 
   // Debug: Phase 6 - WebGL fallback message
@@ -471,7 +477,7 @@ export function SpatialViewer({
       {/* Debug: 3D Viewer Canvas (base layer) */}
       <ThreeDViewerCanvas
         projectId={projectId}
-        modelUrl={shouldUseDefaultModel ? undefined : modelHighURL}
+        modelUrl={shouldUseDefaultModel ? undefined : (modelHighURL ?? undefined)}
         onReady={handleViewerReady}
         onError={handleModelError}
         className="absolute inset-0"
@@ -505,7 +511,7 @@ export function SpatialViewer({
       {viewer && isModelReady && <CameraControls viewer={viewer} />}
 
       {/* Debug: LOD Manager (bottom-left) */}
-      {viewer && isModelReady && modelMediumURL && modelLowURL && (
+      {viewer && isModelReady && modelHighURL && modelMediumURL && modelLowURL && (
         <LODManager
           viewer={viewer}
           highURL={modelHighURL}
@@ -528,19 +534,10 @@ export function SpatialViewer({
         visibleMarkers.map((marker) => (
           <SpatialMarkerPin
             key={marker.id}
-            marker={{
-              id: marker.id,
-              type: marker.marker_type as any,
-              title: marker.title,
-              status: marker.status as any,
-              priority: marker.priority_level as any,
-              assigned_to: marker.assigned_to_user_id,
-              task_id: marker.task_id,
-            }}
-            materialCount={marker.material_count || 0}
-            attachmentCount={marker.content?.length || 0}
+            marker={marker}
+            materialCount={0}
+            attachmentCount={marker.content_count || 0}
             onClick={() => handleMarkerClick(marker)}
-            onDragEnd={(newPos: { x: number; y: number; z: number }) => handleMarkerDragEnd(marker, newPos)}
             isDraggable={canEditMarkers}
           />
         ))}
@@ -569,7 +566,7 @@ export function SpatialViewer({
         onAddIssue={() => handleCreateMarker('issue')}
         onAddNote={() => handleCreateMarker('note')}
         onAddSafety={() => handleCreateMarker('safety')}
-        onAddMilestone={() => handleCreateMarker('milestone')}
+        onAddMilestone={() => handleCreateMarker('progress')}
       />
 
       {/* Debug: Task Linker Modal (create or link mode) */}
@@ -628,10 +625,13 @@ export function SpatialViewer({
             const config = {
               issue: { color: '#DC2626', label: 'Issue' },
               note: { color: '#FBBF24', label: 'Note' },
+              photo: { color: '#3B82F6', label: 'Photo' },
+              inspection: { color: '#8B5CF6', label: 'Inspection' },
+              rfi: { color: '#EC4899', label: 'RFI' },
               safety: { color: '#F97316', label: 'Safety' },
-              milestone: { color: '#10B981', label: 'Milestone' },
-              task: { color: '#001B51', label: 'Task' },
-            }[marker.marker_type] || { color: '#001B51', label: 'Task' };
+              material: { color: '#059669', label: 'Material' },
+              progress: { color: '#10B981', label: 'Progress' },
+            }[marker.type] || { color: '#6B7280', label: 'Marker' };
 
             return (
               <button

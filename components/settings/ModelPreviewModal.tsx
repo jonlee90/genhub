@@ -43,6 +43,7 @@ export function ModelPreviewModal({
         <div className="border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-100">
           <div className="h-[60vh] min-h-[400px] relative">
             <SpatialViewer
+              userRole="viewer"
               projectId="preview-default-model"
               modelHighURL={modelUrl}
               className="w-full h-full"

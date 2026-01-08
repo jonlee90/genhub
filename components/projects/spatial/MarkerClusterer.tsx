@@ -65,22 +65,25 @@ export function MarkerClusterer({
     if (!clusteringEnabled) {
       // Return individual markers as single-marker clusters
       return markers.map((marker) => {
-        const position = typeof marker.position === 'string'
-          ? JSON.parse(marker.position)
-          : marker.position;
+        // Use individual position fields from database schema
+        const position = {
+          x: marker.position_x ?? 0,
+          y: marker.position_y ?? 0,
+          z: marker.position_z ?? 0,
+        };
 
         return {
           id: `single-${marker.id}`,
-          position: position || { x: 0, y: 0, z: 0 },
+          position,
           markerIds: [marker.id],
           count: 1,
           bounds: {
-            minX: position?.x || 0,
-            minY: position?.y || 0,
-            minZ: position?.z || 0,
-            maxX: position?.x || 0,
-            maxY: position?.y || 0,
-            maxZ: position?.z || 0,
+            minX: position.x,
+            minY: position.y,
+            minZ: position.z,
+            maxX: position.x,
+            maxY: position.y,
+            maxZ: position.z,
           },
         };
       });

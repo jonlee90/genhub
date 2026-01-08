@@ -13,9 +13,9 @@ type Attachment = {
   id: string;
   file_name: string;
   file_url: string;
-  file_type?: string;
-  file_size_bytes?: number;
-  thumbnail_url?: string;
+  file_type?: string | null;
+  file_size?: number | null | undefined;
+  thumbnail_url?: string | null;
   created_at: string;
 };
 
@@ -193,7 +193,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                     {file.file_name}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formatFileSize(file.file_size_bytes)}
+                    {formatFileSize(file.file_size ?? undefined)}
                     {file.file_type && ` • ${file.file_type.split('/')[1]?.toUpperCase()}`}
                   </p>
                 </div>

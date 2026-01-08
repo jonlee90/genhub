@@ -81,15 +81,12 @@ export async function POST(request: NextRequest) {
     const { data: content, error: dbError } = await supabase
       .from('marker_content')
       .insert({
-        marker_id: parseInt(markerId, 10),
+        marker_id: markerId,
         type: 'photo',
-        url: originalBlob.url,
-        thumbnail_url: thumbnailBlob.url,
-        filename: file.name,
-        file_size: file.size,
-        mime_type: file.type,
-        metadata: exifData || {},
-        uploaded_by: user.id,
+        photo_url: originalBlob.url,
+        photo_thumbnail_url: thumbnailBlob.url,
+        photo_exif: exifData ? JSON.parse(JSON.stringify(exifData)) : null,
+        created_by: user.id,
       })
       .select()
       .single()

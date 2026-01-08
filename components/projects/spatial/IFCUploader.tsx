@@ -104,7 +104,7 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
       clearInterval(progressInterval);
 
       if ('error' in result) {
-        setError(result.error);
+        setError(result.error ?? 'Upload failed');
         setIsUploading(false);
         setUploadProgress(0);
         return;

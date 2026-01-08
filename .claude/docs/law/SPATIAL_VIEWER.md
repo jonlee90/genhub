@@ -61,6 +61,36 @@ SpatialViewer (Orchestrator)
 
 ## Critical Gotchas
 
+### 0. Database Field Names (Updated Jan 2026)
+
+**Spatial Markers** - Use correct column names:
+```typescript
+// ❌ WRONG (old names)
+marker.marker_type    // Use: marker.type
+marker.position.x     // Use: marker.position_x, marker.position_y, marker.position_z
+marker.assigned_to    // REMOVED - link via task_id instead
+
+// ✅ CORRECT
+marker.type           // 'issue'|'note'|'photo'|'inspection'|'rfi'|'safety'|'material'|'progress'
+marker.status         // 'open'|'in_progress'|'resolved'|'closed'
+marker.position_x, marker.position_y, marker.position_z
+```
+
+**Marker Content** - Field names changed:
+```typescript
+// ❌ WRONG (old names)
+content.content_type  // Use: content.type
+content.text_content  // Use: content.note_text
+content.url           // Use: content.file_url or content.photo_url
+content.uploaded_by   // Use: content.created_by
+
+// ✅ CORRECT
+content.type          // 'photo'|'file'|'note'
+content.note_text     // text content for notes
+content.file_url, content.photo_url, content.photo_thumbnail_url
+content.created_by    // ⚠️ References next_auth.users - can't auto-join
+```
+
 ### 1. Xeokit Viewer Lifecycle
 
 **NEVER create multiple viewers on the same canvas**:
@@ -220,7 +250,9 @@ spatial_markers
   └─ phase_id → project_phases (SET NULL)
     ↓ (1:N)
 marker_content
-  ├─ type: 'photo' | 'file' | 'note'
+  ├─ type: 'photo' | 'file' | 'note' (NOT 'content_type')
+  ├─ note_text: text (NOT 'text_content')
+  ├─ created_by → next_auth.users (⚠️ can't auto-join via PostgREST)
   └─ polymorphic fields (only relevant fields populated)
 ```
 
@@ -783,6 +815,16 @@ console.log('Realtime status:', channel.state); // Should be 'joined'
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: January 2, 2026
+**Document Version**: 1.1
+**Last Updated**: January 7, 2026
 **Maintainer**: GenHub Core Team
+
+---
+
+## Changelog
+
+### v1.1 (2026-01-07)
+- Added Section 0: Database Field Names - Critical gotcha for renamed fields
+- Updated marker_content relationship notes (type vs content_type, note_text vs text_content)
+- Added cross-schema join warning for created_by → next_auth.users
+- Documented that assigned_to was removed (use task_id linking instead)

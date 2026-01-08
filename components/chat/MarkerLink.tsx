@@ -163,10 +163,10 @@ export function MarkerPreview({ marker }: MarkerPreviewProps) {
         )}
       </div>
 
-      {marker.position && (
+      {marker.position_x != null && marker.position_y != null && marker.position_z != null && (
         <div className="mt-2 pt-2 border-t border-gray-100">
           <div className="text-[10px] font-mono text-gray-500">
-            X: {marker.position.x.toFixed(2)} • Y: {marker.position.y.toFixed(2)} • Z: {marker.position.z.toFixed(2)}
+            X: {marker.position_x.toFixed(2)} • Y: {marker.position_y.toFixed(2)} • Z: {marker.position_z.toFixed(2)}
           </div>
         </div>
       )}

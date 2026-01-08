@@ -261,7 +261,7 @@ export function Example7_ProgrammaticFilters() {
   const showOnlyIssues = () => {
     setFilters({
       types: ['issue'],
-      statuses: ['active'],
+      statuses: ['open'],
     });
   };
 
@@ -271,7 +271,7 @@ export function Example7_ProgrammaticFilters() {
 
     setFilters({
       types: ['photo'],
-      statuses: ['active'],
+      statuses: ['open'],
       dateRange: {
         start: lastWeek.toISOString().split('T')[0],
       },

@@ -179,8 +179,13 @@ export function InteractionLayer({
         const movementX = touch.clientX - lastTouchPos.x;
         const movementY = touch.clientY - lastTouchPos.y;
 
-        viewer.cameraControl.orbitYaw(movementX * 0.5);
-        viewer.cameraControl.orbitPitch(movementY * 0.5);
+        // xeokit SDK methods not in type definitions
+        const cameraControl = viewer.cameraControl as unknown as {
+          orbitYaw: (amount: number) => void;
+          orbitPitch: (amount: number) => void;
+        };
+        cameraControl.orbitYaw(movementX * 0.5);
+        cameraControl.orbitPitch(movementY * 0.5);
 
         lastTouchPos = {
           x: touch.clientX,
@@ -198,9 +203,15 @@ export function InteractionLayer({
           touch2.clientY - touch1.clientY
         );
 
+        // xeokit SDK methods not in type definitions
+        const cameraControl = viewer.cameraControl as unknown as {
+          dolly: (amount: number) => void;
+          pan: (delta: [number, number, number]) => void;
+        };
+
         // Pinch zoom
         const zoomDelta = (currentDistance - initialDistance) * 0.01;
-        viewer.cameraControl.dolly(-zoomDelta);
+        cameraControl.dolly(-zoomDelta);
         initialDistance = currentDistance;
 
         // Calculate current midpoint (for pan)
@@ -213,7 +224,7 @@ export function InteractionLayer({
         const panX = currentMidpoint.x - initialMidpoint.x;
         const panY = currentMidpoint.y - initialMidpoint.y;
 
-        viewer.cameraControl.pan([panX * 0.1, panY * 0.1, 0]);
+        cameraControl.pan([panX * 0.1, panY * 0.1, 0]);
         initialMidpoint = currentMidpoint;
 
         console.log('[InteractionLayer] Two finger gesture - pinch/pan');

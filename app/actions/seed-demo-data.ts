@@ -347,7 +347,7 @@ export async function seedDemoData() {
 
       const { data: createdPhases, error: createPhaseError } = await supabase
         .from('project_phases')
-        .insert(phasesToInsert)
+        .insert(phasesToInsert as any)
         .select('id');
 
       if (createPhaseError || !createdPhases) {
@@ -404,7 +404,7 @@ export async function seedDemoData() {
 
         const { error: createTaskError } = await supabase
           .from('tasks')
-          .insert(tasksToInsert);
+          .insert(tasksToInsert as any);
 
         if (createTaskError) {
           console.error(`Failed to create tasks for phase ${phaseTemplate.name}`);

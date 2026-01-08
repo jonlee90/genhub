@@ -73,7 +73,7 @@ const DEFAULT_TASK_TYPES: Array<{
 
 // Debug: Convert database config to display format (Task 0040)
 function convertTaskTypeConfig(config: TaskTypeConfig) {
-  const IconComponent = ICON_MAP[config.icon_name] || Hammer;
+  const IconComponent = config.icon_name ? (ICON_MAP[config.icon_name] || Hammer) : Hammer;
   const color = config.color || '#001B51';
 
   return {

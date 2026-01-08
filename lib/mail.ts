@@ -44,7 +44,7 @@ export const send: SendEmailHandler = async ({ to, subject, text, html }) => {
 			html,
 		});
 		console.log('[MAIL] Email sent successfully:', result.messageId);
-		return result;
+		// Return void to match SendEmailHandler type
 	} catch (error) {
 		console.error('[MAIL] Email sending failed:', error);
 		throw error;

@@ -142,6 +142,7 @@ export type Database = {
       companies: {
         Row: {
           address: string | null
+          client_can_view_budget: boolean
           created_at: string
           email: string | null
           id: string
@@ -152,6 +153,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          client_can_view_budget?: boolean
           created_at?: string
           email?: string | null
           id?: string
@@ -162,6 +164,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          client_can_view_budget?: boolean
           created_at?: string
           email?: string | null
           id?: string
@@ -581,6 +584,50 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      file_audit_log: {
+        Row: {
+          action: string
+          company_id: string
+          created_at: string
+          file_id: string | null
+          file_type: string
+          id: string
+          new_state: Json | null
+          performed_by: string
+          previous_state: Json | null
+        }
+        Insert: {
+          action: string
+          company_id: string
+          created_at?: string
+          file_id?: string | null
+          file_type: string
+          id?: string
+          new_state?: Json | null
+          performed_by: string
+          previous_state?: Json | null
+        }
+        Update: {
+          action?: string
+          company_id?: string
+          created_at?: string
+          file_id?: string | null
+          file_type?: string
+          id?: string
+          new_state?: Json | null
+          performed_by?: string
+          previous_state?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_audit_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -1202,6 +1249,91 @@ export type Database = {
           },
         ]
       }
+      project_files: {
+        Row: {
+          category: Database["public"]["Enums"]["document_category"]
+          client_visible: boolean | null
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          file_size: number
+          file_type: string
+          file_url: string
+          filename: string
+          id: string
+          metadata: Json | null
+          original_filename: string
+          parent_file_id: string | null
+          project_id: string
+          tags: string[] | null
+          updated_at: string
+          uploaded_by: string
+          version_number: number
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["document_category"]
+          client_visible?: boolean | null
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          file_size: number
+          file_type: string
+          file_url: string
+          filename: string
+          id?: string
+          metadata?: Json | null
+          original_filename: string
+          parent_file_id?: string | null
+          project_id: string
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by: string
+          version_number?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["document_category"]
+          client_visible?: boolean | null
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          filename?: string
+          id?: string
+          metadata?: Json | null
+          original_filename?: string
+          parent_file_id?: string | null
+          project_id?: string
+          tags?: string[] | null
+          updated_at?: string
+          uploaded_by?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_files_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_files_parent_file_id_fkey"
+            columns: ["parent_file_id"]
+            isOneToOne: false
+            referencedRelation: "project_files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_files_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_phases: {
         Row: {
           completed_at: string | null
@@ -1245,6 +1377,72 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "project_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_photos: {
+        Row: {
+          category: Database["public"]["Enums"]["photo_category"]
+          client_visible: boolean | null
+          company_id: string
+          created_at: string
+          deleted_at: string | null
+          exif_data: Json | null
+          file_size: number
+          filename: string
+          id: string
+          photo_url: string
+          project_id: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["photo_category"]
+          client_visible?: boolean | null
+          company_id: string
+          created_at?: string
+          deleted_at?: string | null
+          exif_data?: Json | null
+          file_size: number
+          filename: string
+          id?: string
+          photo_url: string
+          project_id: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["photo_category"]
+          client_visible?: boolean | null
+          company_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          exif_data?: Json | null
+          file_size?: number
+          filename?: string
+          id?: string
+          photo_url?: string
+          project_id?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_photos_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_photos_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -1852,51 +2050,6 @@ export type Database = {
           },
         ]
       }
-      tracked_materials: {
-        Row: {
-          company_id: string
-          created_at: string
-          id: string
-          material_id: string
-          tracked_at: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          company_id: string
-          created_at?: string
-          id?: string
-          material_id: string
-          tracked_at?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          company_id?: string
-          created_at?: string
-          id?: string
-          material_id?: string
-          tracked_at?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tracked_materials_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tracked_materials_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "materials"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       task_dependencies: {
         Row: {
           created_at: string
@@ -2204,6 +2357,51 @@ export type Database = {
           },
         ]
       }
+      tracked_materials: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          material_id: string
+          tracked_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          material_id: string
+          tracked_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          material_id?: string
+          tracked_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracked_materials_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tracked_materials_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
@@ -2341,6 +2539,16 @@ export type Database = {
         | "phase"
         | "profile"
         | "subcontractor"
+      document_category:
+        | "contracts"
+        | "permits"
+        | "drawings"
+        | "reports"
+        | "financial"
+        | "safety"
+        | "meeting_notes"
+        | "specifications"
+        | "general"
       expense_category:
         | "materials"
         | "labor"
@@ -2385,6 +2593,18 @@ export type Database = {
         | "mention"
         | "system"
       phase_status: "not_started" | "in_progress" | "completed" | "on_hold"
+      photo_category:
+        | "site_progress"
+        | "safety_documentation"
+        | "permits_approvals"
+        | "inspection_reports"
+        | "material_receipts"
+        | "change_orders"
+        | "defects_issues"
+        | "before_after"
+        | "task_receipts"
+        | "expense_receipts"
+        | "general"
       procurement_status: "needed" | "ordered" | "delivered" | "installed"
       project_status:
         | "active"
@@ -2597,6 +2817,17 @@ export const Constants = {
         "profile",
         "subcontractor",
       ],
+      document_category: [
+        "contracts",
+        "permits",
+        "drawings",
+        "reports",
+        "financial",
+        "safety",
+        "meeting_notes",
+        "specifications",
+        "general",
+      ],
       expense_category: [
         "materials",
         "labor",
@@ -2645,6 +2876,19 @@ export const Constants = {
         "system",
       ],
       phase_status: ["not_started", "in_progress", "completed", "on_hold"],
+      photo_category: [
+        "site_progress",
+        "safety_documentation",
+        "permits_approvals",
+        "inspection_reports",
+        "material_receipts",
+        "change_orders",
+        "defects_issues",
+        "before_after",
+        "task_receipts",
+        "expense_receipts",
+        "general",
+      ],
       procurement_status: ["needed", "ordered", "delivered", "installed"],
       project_status: [
         "active",

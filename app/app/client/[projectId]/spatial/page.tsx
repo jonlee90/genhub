@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/server';
 import { ClientSpatialViewer } from '@/components/projects/spatial/ClientSpatialViewer';
-import { getActiveModel, getProjectMarkers } from '@/app/actions/spatial';
+import { getActiveModel } from '@/app/actions/spatial';
 import { Building2 } from 'lucide-react';
 
 interface ClientSpatialPageProps {
@@ -28,7 +28,7 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
   const { data: companyUser } = await supabase
     .from('company_users')
     .select('company_id, role')
-    .eq('user_id', session.user.id)
+    .eq('user_id', session.user.id!)
     .eq('status', 'active')
     .single();
 
@@ -36,12 +36,19 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
     redirect('/app');
   }
 
-  // Get project details
+  // Get project details including type and client budget visibility
   const { data: project } = await supabase
     .from('projects')
-    .select('id, name, description, company_id')
+    .select('id, name, description, company_id, project_type')
     .eq('id', params.projectId)
     .eq('company_id', companyUser.company_id)
+    .single();
+
+  // Get company settings for client budget visibility
+  const { data: company } = await supabase
+    .from('companies')
+    .select('client_can_view_budget')
+    .eq('id', companyUser.company_id)
     .single();
 
   if (!project) {
@@ -51,41 +58,6 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
   // Get active 3D model
   const modelResult = await getActiveModel(params.projectId);
   const activeModel = modelResult.success ? modelResult.data : null;
-
-  // Get client-visible markers
-  const markersResult = await getProjectMarkers(params.projectId);
-  const allMarkers = markersResult.success ? markersResult.data || [] : [];
-
-  // Server action to handle client information requests
-  async function handleRequestInformation(markerId: string, message: string) {
-    'use server';
-
-    console.log('[ClientSpatialPage] Client request:', { markerId, message });
-
-    const session = await auth();
-    if (!session?.user?.id) {
-      throw new Error('Not authenticated');
-    }
-
-    const supabase = await createClient();
-
-    // Create a client note with requires_response flag
-    const { error } = await supabase.from('marker_content').insert({
-      marker_id: markerId,
-      type: 'note',
-      text_content: message,
-      created_by: session.user.id,
-      is_client_note: true,
-      requires_response: true,
-    });
-
-    if (error) {
-      console.error('[ClientSpatialPage] Failed to create request:', error);
-      throw new Error('Failed to submit request');
-    }
-
-    console.log('[ClientSpatialPage] Client request created successfully');
-  }
 
   return (
     <div className="relative min-h-screen bg-white">
@@ -118,10 +90,9 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
       <div className="relative z-10" style={{ height: 'calc(100vh - 120px)' }}>
         <ClientSpatialViewer
           projectId={params.projectId}
+          projectType={project.project_type || 'residential'}
           modelHighURL={activeModel?.xkt_file_url}
-          thumbnailURL={activeModel?.thumbnail_url}
-          markers={allMarkers}
-          onRequestInformation={handleRequestInformation}
+          hasBudgetVisibility={company?.client_can_view_budget ?? false}
         />
       </div>
     </div>

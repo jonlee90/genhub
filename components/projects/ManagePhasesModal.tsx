@@ -157,7 +157,7 @@ export function ManagePhasesModal({
     console.log('[ManagePhasesModal] Edit phase:', phase.id);
     setSelectedPhase(phase);
     setPhaseName(phase.name);
-    setPhaseDescription(phase.description || '');
+    setPhaseDescription(phase.notes || '');
     setMode('edit');
   };
 
@@ -344,9 +344,9 @@ export function ManagePhasesModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-gray-900">{phase.name}</p>
-                    {phase.description && (
+                    {phase.notes && (
                       <p className="text-sm text-gray-600 mt-0.5 line-clamp-1">
-                        {phase.description}
+                        {phase.notes}
                       </p>
                     )}
                   </div>

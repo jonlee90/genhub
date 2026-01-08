@@ -22,7 +22,7 @@ const createTaskTemplateSchema = z.object({
   phase_template_id: z.string().uuid('Invalid phase template ID'),
   title: z.string().min(1, 'Title is required').max(500),
   description: z.string().max(2000).optional(),
-  default_task_type: z.string().default('work'),
+  default_task_type: z.enum(['work', 'purchase', 'approval', 'admin']).default('work'),
   default_priority: z.enum(['low', 'medium', 'high']).default('medium'),
   days_offset: z.coerce.number().int().min(0).max(365).optional().nullable(),
 });
@@ -30,7 +30,7 @@ const createTaskTemplateSchema = z.object({
 const updateTaskTemplateSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500).optional(),
   description: z.string().max(2000).optional(),
-  default_task_type: z.string().optional(),
+  default_task_type: z.enum(['work', 'purchase', 'approval', 'admin']).optional(),
   default_priority: z.enum(['low', 'medium', 'high']).optional(),
   is_active: z.boolean().optional(),
   days_offset: z.coerce.number().int().min(0).max(365).optional().nullable(),

@@ -20,10 +20,12 @@ import {
 import { cn } from '@/lib/utils';
 
 export interface MarkerFilters {
-  markerTypes: string[];
-  statuses: string[];
-  hasTask: boolean | null;
-  hasMaterials: boolean | null;
+  markerTypes?: string[];
+  statuses?: string[];
+  priorities?: string[];
+  phaseId?: string;
+  hasTask?: boolean;
+  hasMaterials?: boolean;
 }
 
 interface MarkerCounts {
@@ -83,34 +85,36 @@ export function MarkerFilterPanel({
   }, []); // Only run once on mount
 
   const toggleMarkerType = (type: string) => {
-    const newTypes = activeFilters.markerTypes.includes(type)
-      ? activeFilters.markerTypes.filter((t) => t !== type)
-      : [...activeFilters.markerTypes, type];
+    const markerTypes = activeFilters.markerTypes ?? [];
+    const newTypes = markerTypes.includes(type)
+      ? markerTypes.filter((t) => t !== type)
+      : [...markerTypes, type];
 
     onFilterChange({ ...activeFilters, markerTypes: newTypes });
   };
 
   const toggleStatus = (status: string) => {
-    const newStatuses = activeFilters.statuses.includes(status)
-      ? activeFilters.statuses.filter((s) => s !== status)
-      : [...activeFilters.statuses, status];
+    const statuses = activeFilters.statuses ?? [];
+    const newStatuses = statuses.includes(status)
+      ? statuses.filter((s) => s !== status)
+      : [...statuses, status];
 
     onFilterChange({ ...activeFilters, statuses: newStatuses });
   };
 
   const toggleHasTask = () => {
     const newValue =
-      activeFilters.hasTask === null ? true : activeFilters.hasTask ? false : null;
+      activeFilters.hasTask === undefined ? true : activeFilters.hasTask ? false : undefined;
     onFilterChange({ ...activeFilters, hasTask: newValue });
   };
 
   const toggleHasMaterials = () => {
     const newValue =
-      activeFilters.hasMaterials === null
+      activeFilters.hasMaterials === undefined
         ? true
         : activeFilters.hasMaterials
         ? false
-        : null;
+        : undefined;
     onFilterChange({ ...activeFilters, hasMaterials: newValue });
   };
 
@@ -118,16 +122,16 @@ export function MarkerFilterPanel({
     onFilterChange({
       markerTypes: [],
       statuses: [],
-      hasTask: null,
-      hasMaterials: null,
+      hasTask: undefined,
+      hasMaterials: undefined,
     });
   };
 
   const hasActiveFilters =
-    activeFilters.markerTypes.length > 0 ||
-    activeFilters.statuses.length > 0 ||
-    activeFilters.hasTask !== null ||
-    activeFilters.hasMaterials !== null;
+    (activeFilters.markerTypes?.length ?? 0) > 0 ||
+    (activeFilters.statuses?.length ?? 0) > 0 ||
+    activeFilters.hasTask !== undefined ||
+    activeFilters.hasMaterials !== undefined;
 
   return (
     <div
@@ -166,7 +170,7 @@ export function MarkerFilterPanel({
           {MARKER_TYPE_FILTERS.map((filter) => {
             const Icon = filter.icon;
             const count = markerCounts[filter.id as keyof MarkerCounts] || 0;
-            const isActive = activeFilters.markerTypes.includes(filter.id);
+            const isActive = activeFilters.markerTypes?.includes(filter.id) ?? false;
 
             return (
               <label
@@ -220,7 +224,7 @@ export function MarkerFilterPanel({
         </div>
         <div className="grid grid-cols-2 gap-2">
           {STATUS_FILTERS.map((filter) => {
-            const isActive = activeFilters.statuses.includes(filter.id);
+            const isActive = activeFilters.statuses?.includes(filter.id) ?? false;
 
             return (
               <button
@@ -252,7 +256,7 @@ export function MarkerFilterPanel({
             className={cn(
               'w-full flex items-center gap-3 p-3 rounded-lg',
               'border-2 transition-all duration-150 text-left',
-              activeFilters.hasTask !== null
+              activeFilters.hasTask !== undefined
                 ? 'border-[#001B51] bg-[#001B51]/5'
                 : 'border-gray-200 hover:border-gray-300'
             )}
@@ -260,13 +264,13 @@ export function MarkerFilterPanel({
             <CheckSquare
               className={cn(
                 'h-4 w-4 flex-shrink-0',
-                activeFilters.hasTask !== null ? 'text-[#001B51]' : 'text-gray-400'
+                activeFilters.hasTask !== undefined ? 'text-[#001B51]' : 'text-gray-400'
               )}
             />
             <span className="text-sm font-medium text-gray-900 flex-1">
               Tasks with Locations
             </span>
-            {activeFilters.hasTask !== null && (
+            {activeFilters.hasTask !== undefined && (
               <span className="text-xs font-mono font-bold text-[#001B51]">
                 {activeFilters.hasTask ? 'YES' : 'NO'}
               </span>
@@ -278,7 +282,7 @@ export function MarkerFilterPanel({
             className={cn(
               'w-full flex items-center gap-3 p-3 rounded-lg',
               'border-2 transition-all duration-150 text-left',
-              activeFilters.hasMaterials !== null
+              activeFilters.hasMaterials !== undefined
                 ? 'border-[#001B51] bg-[#001B51]/5'
                 : 'border-gray-200 hover:border-gray-300'
             )}
@@ -286,7 +290,7 @@ export function MarkerFilterPanel({
             <Package
               className={cn(
                 'h-4 w-4 flex-shrink-0',
-                activeFilters.hasMaterials !== null
+                activeFilters.hasMaterials !== undefined
                   ? 'text-[#001B51]'
                   : 'text-gray-400'
               )}
@@ -294,7 +298,7 @@ export function MarkerFilterPanel({
             <span className="text-sm font-medium text-gray-900 flex-1">
               Tasks with Materials
             </span>
-            {activeFilters.hasMaterials !== null && (
+            {activeFilters.hasMaterials !== undefined && (
               <span className="text-xs font-mono font-bold text-[#001B51]">
                 {activeFilters.hasMaterials ? 'YES' : 'NO'}
               </span>

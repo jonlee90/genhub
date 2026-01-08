@@ -30,7 +30,7 @@ function applyButtonStyling(children: React.ReactNode): React.ReactNode {
       child.type === 'button' ||
       childType?.displayName?.includes('Button') ||
       childType?.name?.includes('Button') ||
-      (child.props && ('onClick' in child.props || 'type' in child.props));
+      (child.props && typeof child.props === 'object' && child.props !== null && ('onClick' in child.props || 'type' in child.props));
 
     if (isButton) {
       // Clone the element and merge the construction theme className

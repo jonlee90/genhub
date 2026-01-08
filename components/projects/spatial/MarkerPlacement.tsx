@@ -41,15 +41,16 @@ export interface MarkerPlacementProps {
   className?: string;
 }
 
-// Debug: Marker type options
+// Debug: Marker type options (matching database enum)
 const MARKER_TYPES: Array<{ value: SpatialMarkerType; label: string; icon: any }> = [
   { value: 'note', label: 'Note', icon: FileText },
   { value: 'photo', label: 'Photo', icon: Image },
-  { value: 'document', label: 'Document', icon: File },
   { value: 'issue', label: 'Issue', icon: AlertCircle },
+  { value: 'safety', label: 'Safety', icon: AlertCircle },
   { value: 'progress', label: 'Progress', icon: TrendingUp },
-  { value: 'task', label: 'Task', icon: Hammer },
   { value: 'material', label: 'Material', icon: Package },
+  { value: 'inspection', label: 'Inspection', icon: FileText },
+  { value: 'rfi', label: 'RFI', icon: FileText },
 ];
 
 /**
@@ -127,15 +128,15 @@ export function MarkerPlacement({
       project_id: projectId,
       model_id: modelId,
       type: formData.type,
-      status: 'active',
+      status: 'open',
       title: formData.title.trim(),
       description: formData.description?.trim() || null,
-      position_x: preview.position.x.toString(),
-      position_y: preview.position.y.toString(),
-      position_z: preview.position.z.toString(),
-      normal_x: preview.normal.x.toString(),
-      normal_y: preview.normal.y.toString(),
-      normal_z: preview.normal.z.toString(),
+      position_x: preview.position.x,
+      position_y: preview.position.y,
+      position_z: preview.position.z,
+      normal_x: preview.normal.x,
+      normal_y: preview.normal.y,
+      normal_z: preview.normal.z,
       element_id: preview.elementId || null,
       element_type: preview.elementType || null,
       floor_id: preview.floorId || null,

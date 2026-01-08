@@ -28,7 +28,7 @@ export interface InfoCardField {
  * InfoCard component props
  */
 export interface InfoCardProps {
-  headerIcon: LucideIcon;
+  headerIcon?: LucideIcon; // Optional when customHeader is provided
   headerTitle: string;
   headerDescription: string;
   fields: InfoCardField[];
@@ -94,15 +94,17 @@ export function InfoCard({
           isHeroCard && "pb-4"
         )}>
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-2 bg-[#001B51] rounded-lg",
-              isHeroCard && "p-3"
-            )}>
-              <HeaderIcon className={cn(
-                "h-4 w-4 text-white",
-                isHeroCard && "h-6 w-6"
-              )} />
-            </div>
+            {HeaderIcon && (
+              <div className={cn(
+                "p-2 bg-[#001B51] rounded-lg",
+                isHeroCard && "p-3"
+              )}>
+                <HeaderIcon className={cn(
+                  "h-4 w-4 text-white",
+                  isHeroCard && "h-6 w-6"
+                )} />
+              </div>
+            )}
             <div>
               <CardTitle className={cn(
                 "text-sm font-black text-gray-700 uppercase tracking-wider",

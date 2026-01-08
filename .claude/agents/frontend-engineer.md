@@ -2,7 +2,7 @@
 name: agent-frontend-engineer
 description: Frontend engineer for GenHub construction PWA. UI components, styling, client state ONLY. No database, auth, or server logic.
 tools: Skill, Read, Edit, Write, Glob, Grep, Bash, WebFetch
-model: sonnet
+model: opus
 color: purple
 ---
 
