@@ -386,7 +386,7 @@ export function ProjectTaskSummary({
       headerTitle="Task Summary"
       headerDescription={`${activeTasksCount} active task${activeTasksCount !== 1 ? 's' : ''}`}
       fields={fields}
-      columns={3}
+      columns={2}
       footerContent={footerContent}
       className={className}
     />

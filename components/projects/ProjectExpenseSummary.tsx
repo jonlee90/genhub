@@ -159,7 +159,7 @@ export function ProjectExpenseSummary({
       headerTitle="Expense Summary"
       headerDescription={`${expenseStats.total} total expense${expenseStats.total !== 1 ? 's' : ''}`}
       fields={fields}
-      columns={3}
+      columns={2}
       footerContent={footerContent}
       className={className}
     />

@@ -473,14 +473,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex-1 space-y-6 p-8 pt-6">
+      <div className="relative z-10 flex-1 space-y-4 p-4 pt-4 md:space-y-6 md:p-8 md:pt-6">
         {/* Industrial Header */}
         <div className="relative">
           {/* Construction border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
           {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-3 pt-4 mb-6">
+          <div className="flex items-center gap-2 pt-3 mb-4 md:gap-3 md:pt-4 md:mb-6">
             <Link href="/app/projects">
               <Button
                 variant="ghost"

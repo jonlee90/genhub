@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
@@ -43,10 +42,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 });
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(`${companyUser.company_id}/projects/${projectId}/files/${file.name}`, file, {
-      access: 'public',
-    });
+    // Generate unique filename to avoid collisions
+    const timestamp = Date.now();
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `${companyUser.company_id}/projects/${projectId}/files/${timestamp}_${sanitizedName}`;
+
+    // Convert file to buffer for upload
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('project-files')
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('[POST /api/project-files/upload] Storage error:', uploadError);
+      return NextResponse.json({ error: uploadError.message }, { status: 500 });
+    }
+
+    // Get public URL
+    const { data: { publicUrl: fileUrl } } = supabase.storage
+      .from('project-files')
+      .getPublicUrl(filePath);
 
     // Insert database record
     const { data: fileRecord, error: insertError } = await supabase
@@ -57,7 +78,7 @@ export async function POST(request: NextRequest) {
         uploaded_by: session.user.id,
         filename: file.name,
         original_filename: file.name,
-        file_url: blob.url,
+        file_url: fileUrl,
         file_size: file.size,
         file_type: file.type,
         category: (category || 'general') as any,

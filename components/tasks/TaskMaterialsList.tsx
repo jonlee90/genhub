@@ -491,7 +491,7 @@ export function TaskMaterialsList({
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => handleRemove(assignment.id, assignment.material.product_name)}
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-red-600 hover:bg-red-700 text-white"
                       >
                         Remove
                       </AlertDialogAction>

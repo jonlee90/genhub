@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import sharp from 'sharp'; // For thumbnail generation
@@ -49,26 +48,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type (must be image)' }, { status: 400 });
     }
 
-    // Upload full-size photo
-    const blob = await put(
-      `${companyUser.company_id}/projects/${projectId}/photos/${file.name}`,
-      file,
-      { access: 'public' }
-    );
+    // Generate unique filename to avoid collisions
+    const timestamp = Date.now();
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const photoPath = `${companyUser.company_id}/projects/${projectId}/photos/${timestamp}_${sanitizedName}`;
+    const thumbnailPath = `${companyUser.company_id}/projects/${projectId}/photos/thumbnails/${timestamp}_${sanitizedName}`;
 
-    // Generate thumbnail (300x300)
+    // Convert file to buffer for upload
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    // Upload full-size photo to Supabase Storage
+    const { error: photoError } = await supabase.storage
+      .from('project-files')
+      .upload(photoPath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (photoError) {
+      console.error('[POST /api/project-photos/upload] Storage error:', photoError);
+      return NextResponse.json({ error: photoError.message }, { status: 500 });
+    }
+
+    // Generate thumbnail (300x300)
     const thumbnailBuffer = await sharp(buffer)
       .resize(300, 300, { fit: 'cover' })
       .jpeg({ quality: 80 })
       .toBuffer();
 
-    const thumbnailBlob = await put(
-      `${companyUser.company_id}/projects/${projectId}/photos/thumbnails/${file.name}`,
-      thumbnailBuffer,
-      { access: 'public', contentType: 'image/jpeg' }
-    );
+    // Upload thumbnail to Supabase Storage
+    const { error: thumbError } = await supabase.storage
+      .from('project-files')
+      .upload(thumbnailPath, thumbnailBuffer, {
+        contentType: 'image/jpeg',
+        upsert: false,
+      });
+
+    if (thumbError) {
+      console.error('[POST /api/project-photos/upload] Thumbnail storage error:', thumbError);
+      // Continue even if thumbnail fails - we still have the main photo
+    }
+
+    // Get public URLs
+    const { data: { publicUrl: photoUrl } } = supabase.storage
+      .from('project-files')
+      .getPublicUrl(photoPath);
+
+    const { data: { publicUrl: thumbnailUrl } } = supabase.storage
+      .from('project-files')
+      .getPublicUrl(thumbnailPath);
 
     // Extract EXIF data (placeholder - use exif-parser or similar library)
     const exifData = null; // TODO: Extract EXIF (GPS, camera, timestamp)
@@ -81,8 +110,8 @@ export async function POST(request: NextRequest) {
         project_id: projectId,
         uploaded_by: session.user.id,
         filename: file.name,
-        photo_url: blob.url,
-        thumbnail_url: thumbnailBlob.url,
+        photo_url: photoUrl,
+        thumbnail_url: thumbnailUrl,
         file_size: file.size,
         category: (category || 'general') as any,
         tags: tagsJson ? JSON.parse(tagsJson) : [],

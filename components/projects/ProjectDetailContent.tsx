@@ -203,7 +203,7 @@ export function ProjectDetailContent({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Project Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -219,41 +219,41 @@ export function ProjectDetailContent({
           columns={3}
           className="border-2 border-gray-300 shadow-construction-lg"
           customHeader={
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Construction-themed Header Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b-4 border-[#001B51]">
+              <div className="flex flex-col gap-3 pb-4 border-b-4 border-[#001B51] sm:flex-row sm:items-center sm:gap-4 sm:pb-6">
                 {/* Project Type Icon with Industrial Frame */}
                 <div className="relative flex-shrink-0">
                   <div className="absolute inset-0 bg-[#001B51] opacity-10 rounded-lg transform rotate-2" />
                   <div className="absolute inset-0 bg-[#3C3C3C] opacity-5 rounded-lg transform -rotate-2" />
-                  <div className="relative p-5 bg-[#001B51] rounded-lg shadow-2xl border-2 border-[#001B51]/20">
+                  <div className="relative p-3 bg-[#001B51] rounded-lg shadow-2xl border-2 border-[#001B51]/20 sm:p-4 md:p-5">
                     {getProjectTypeIcon()}
                   </div>
                 </div>
 
                 {/* Title + Status Section */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-2 sm:gap-3">
                     {/* Project Name + Status Badge */}
-                    <div className="flex flex-wrap items-center gap-4">
-                      <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-[#001B51] tracking-tight leading-none break-words uppercase">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                      <h1 className="text-2xl font-black text-[#001B51] tracking-tight leading-none break-words uppercase sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl">
                         {project.name}
                       </h1>
                       <Badge
                         className={cn(
-                          'px-4 py-2 text-sm font-black border-2 flex items-center gap-2.5 shadow-lg whitespace-nowrap flex-shrink-0 uppercase tracking-wide',
+                          'px-3 py-1.5 text-xs font-black border-2 flex items-center gap-2 shadow-lg whitespace-nowrap flex-shrink-0 uppercase tracking-wide w-fit sm:px-4 sm:py-2 sm:text-sm sm:gap-2.5',
                           statusConfig.color
                         )}
                       >
-                        <div className={cn('h-2.5 w-2.5 rounded-full animate-pulse', statusConfig.dotColor)} />
+                        <div className={cn('h-2 w-2 rounded-full animate-pulse sm:h-2.5 sm:w-2.5', statusConfig.dotColor)} />
                         {statusConfig.label}
                       </Badge>
                     </div>
 
                     {/* Project Type Label */}
                     <div className="flex items-center gap-2">
-                      <div className="h-1 w-12 bg-[#3C3C3C] rounded-full" />
-                      <span className="text-xs font-black text-[#3C3C3C] uppercase tracking-widest">
+                      <div className="h-1 w-8 bg-[#3C3C3C] rounded-full sm:w-12" />
+                      <span className="text-[10px] font-black text-[#3C3C3C] uppercase tracking-widest sm:text-xs">
                         {project.project_type?.replace(/_/g, ' ') || 'General Construction'}
                       </span>
                     </div>
@@ -262,18 +262,18 @@ export function ProjectDetailContent({
               </div>
 
               {/* Description + Location Row */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
                 {/* Description - Takes 1 column */}
                 <div className="lg:col-span-1">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gray-100 rounded-md flex-shrink-0 mt-1">
-                      <FileText className="h-4 w-4 text-[#001B51]" />
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="p-1.5 bg-gray-100 rounded-md flex-shrink-0 mt-0.5 sm:p-2 sm:mt-1">
+                      <FileText className="h-3.5 w-3.5 text-[#001B51] sm:h-4 sm:w-4" />
                     </div>
-                    <div>
-                      <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1 sm:text-xs sm:mb-2">
                         Description
                       </h3>
-                      <p className="text-sm text-gray-700 leading-relaxed">
+                      <p className="text-xs text-gray-700 leading-relaxed sm:text-sm">
                         {displayDescription || 'No description provided'}
                       </p>
                     </div>
@@ -283,12 +283,12 @@ export function ProjectDetailContent({
                 {/* Location - Takes 2 columns (2/3 width) */}
                 {project.address && (
                   <div className="lg:col-span-2">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-gray-100 rounded-md flex-shrink-0 mt-1">
-                        <MapPin className="h-4 w-4 text-[#001B51]" />
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div className="p-1.5 bg-gray-100 rounded-md flex-shrink-0 mt-0.5 sm:p-2 sm:mt-1">
+                        <MapPin className="h-3.5 w-3.5 text-[#001B51] sm:h-4 sm:w-4" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-xs font-black text-gray-500 uppercase tracking-wider mb-2">
+                        <h3 className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1 sm:text-xs sm:mb-2">
                           Project Location
                         </h3>
                         {getGoogleMapsUrl() ? (
@@ -296,7 +296,7 @@ export function ProjectDetailContent({
                             href={getGoogleMapsUrl()!}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm font-bold text-[#001B51] hover:text-blue-700 transition-colors group"
+                            className="inline-flex items-start gap-2 text-xs font-bold text-[#001B51] hover:text-blue-700 transition-colors group min-h-[44px] py-2 -my-2 sm:text-sm sm:items-center"
                           >
                             <span className="break-words">
                               {[
@@ -306,10 +306,10 @@ export function ProjectDetailContent({
                                 project.zip_code,
                               ].filter(Boolean).join(', ')}
                             </span>
-                            <ExternalLink className="h-4 w-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                            <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 group-hover:scale-110 transition-transform sm:h-4 sm:w-4" />
                           </a>
                         ) : (
-                          <p className="text-sm font-bold text-gray-900">
+                          <p className="text-xs font-bold text-gray-900 sm:text-sm">
                             {[
                               project.address,
                               project.city,
@@ -433,34 +433,43 @@ export function ProjectDetailContent({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.2 }}
-        className="border-b-2 border-gray-200"
+        className="border-b-2 border-gray-200 -mx-4 px-4 md:mx-0 md:px-0"
       >
-        <div className="flex items-center gap-2">
+        {/* Scrollable container for mobile */}
+        <div
+          className="flex items-center gap-1 overflow-x-auto scrollbar-hide pb-px sm:gap-2"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
           <button
             onClick={() => setActiveTab('overview')}
             className={cn(
-              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              'px-3 py-2.5 font-bold text-xs transition-all flex items-center gap-1.5 border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 min-h-[44px] sm:px-4 sm:py-3 sm:text-sm sm:gap-2 md:px-6',
               activeTab === 'overview'
                 ? 'text-construction-blue border-construction-blue'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
+                : 'text-gray-500 border-transparent hover:text-gray-700 active:text-gray-900'
             )}
           >
             <FileText className="h-4 w-4" />
-            Overview
+            <span className="hidden xs:inline sm:inline">Overview</span>
+            <span className="xs:hidden sm:hidden">Info</span>
           </button>
           <button
             onClick={() => setActiveTab('team')}
             className={cn(
-              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              'px-3 py-2.5 font-bold text-xs transition-all flex items-center gap-1.5 border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 min-h-[44px] sm:px-4 sm:py-3 sm:text-sm sm:gap-2 md:px-6',
               activeTab === 'team'
                 ? 'text-construction-blue border-construction-blue'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
+                : 'text-gray-500 border-transparent hover:text-gray-700 active:text-gray-900'
             )}
           >
             <Users className="h-4 w-4" />
             Team
             {teamSize > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-2 text-xs">
+              <Badge variant="secondary" className="ml-0.5 h-4 px-1.5 text-[10px] sm:ml-1 sm:h-5 sm:px-2 sm:text-xs">
                 {teamSize}
               </Badge>
             )}
@@ -468,16 +477,16 @@ export function ProjectDetailContent({
           <button
             onClick={() => setActiveTab('tasks')}
             className={cn(
-              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              'px-3 py-2.5 font-bold text-xs transition-all flex items-center gap-1.5 border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 min-h-[44px] sm:px-4 sm:py-3 sm:text-sm sm:gap-2 md:px-6',
               activeTab === 'tasks'
                 ? 'text-construction-blue border-construction-blue'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
+                : 'text-gray-500 border-transparent hover:text-gray-700 active:text-gray-900'
             )}
           >
             <CheckSquare className="h-4 w-4" />
             Tasks
             {totalTasks > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-2 text-xs">
+              <Badge variant="secondary" className="ml-0.5 h-4 px-1.5 text-[10px] sm:ml-1 sm:h-5 sm:px-2 sm:text-xs">
                 {totalTasks}
               </Badge>
             )}
@@ -485,16 +494,17 @@ export function ProjectDetailContent({
           <button
             onClick={() => setActiveTab('files')}
             className={cn(
-              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              'px-3 py-2.5 font-bold text-xs transition-all flex items-center gap-1.5 border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 min-h-[44px] sm:px-4 sm:py-3 sm:text-sm sm:gap-2 md:px-6',
               activeTab === 'files'
                 ? 'text-construction-blue border-construction-blue'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
+                : 'text-gray-500 border-transparent hover:text-gray-700 active:text-gray-900'
             )}
           >
             <FolderOpen className="h-4 w-4" />
-            Files & Photos
+            <span className="hidden sm:inline">Files & Photos</span>
+            <span className="sm:hidden">Files</span>
             {((projectFiles?.length || 0) + (projectPhotos?.length || 0)) > 0 && (
-              <Badge variant="secondary" className="ml-1 h-5 px-2 text-xs">
+              <Badge variant="secondary" className="ml-0.5 h-4 px-1.5 text-[10px] sm:ml-1 sm:h-5 sm:px-2 sm:text-xs">
                 {(projectFiles?.length || 0) + (projectPhotos?.length || 0)}
               </Badge>
             )}
@@ -502,14 +512,15 @@ export function ProjectDetailContent({
           <button
             onClick={() => setActiveTab('settings')}
             className={cn(
-              'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
+              'px-3 py-2.5 font-bold text-xs transition-all flex items-center gap-1.5 border-b-2 -mb-[2px] whitespace-nowrap flex-shrink-0 min-h-[44px] sm:px-4 sm:py-3 sm:text-sm sm:gap-2 md:px-6',
               activeTab === 'settings'
                 ? 'text-construction-blue border-construction-blue'
-                : 'text-gray-500 border-transparent hover:text-gray-700'
+                : 'text-gray-500 border-transparent hover:text-gray-700 active:text-gray-900'
             )}
           >
             <Settings className="h-4 w-4" />
-            Settings
+            <span className="hidden xs:inline sm:inline">Settings</span>
+            <span className="xs:hidden sm:hidden sr-only">Settings</span>
           </button>
         </div>
       </motion.div>

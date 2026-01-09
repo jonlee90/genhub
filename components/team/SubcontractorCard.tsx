@@ -330,7 +330,7 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeactivate} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={handleDeactivate} className="bg-red-600 hover:bg-red-700 text-white">
               Deactivate
             </AlertDialogAction>
           </AlertDialogFooter>

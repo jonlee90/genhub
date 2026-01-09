@@ -90,7 +90,7 @@ export function PhotoGallerySection({
             Start documenting site progress, safety conditions, and inspections by uploading your
             first photo.
           </p>
-          <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] hover:bg-[#001B51]/90">
+          <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] text-white hover:bg-[#001B51]/90">
             <Upload className="h-4 w-4 mr-2" />
             Upload Photo
           </Button>
@@ -130,7 +130,7 @@ export function PhotoGallerySection({
           </label>
         </div>
 
-        <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] hover:bg-[#001B51]/90">
+        <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] text-white hover:bg-[#001B51]/90">
           <Upload className="h-4 w-4 mr-2" />
           Upload Photo
         </Button>

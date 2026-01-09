@@ -61,15 +61,26 @@ export function InfoCard({
   customHeader,
   isHeroCard = false,
 }: InfoCardProps) {
+  // Debug logging for responsive layout
+  console.log('[InfoCard] Rendering:', {
+    title: headerTitle,
+    columns,
+    fieldsCount: fields.length,
+    // Mobile: 2-col, Desktop: expands based on columns prop
+    gridLayout: columns > 1 ? `mobile:2-col, desktop:${columns === 2 ? 4 : columns}-col` : 'single-col',
+  });
+
   // Filter out fields where show === false
   const visibleFields = fields.filter(field => field.show !== false);
 
   // Responsive grid classes based on column count
+  // Mobile-first: 2 columns on mobile (< md), expanding on desktop
+  // Progress bars use col-span-full to remain full-width at all breakpoints
   const gridClasses = {
     1: '',
-    2: 'sm:grid sm:grid-cols-2 sm:gap-x-6 sm:gap-y-6',
-    3: 'sm:grid sm:grid-cols-2 md:grid-cols-3 sm:gap-x-8 sm:gap-y-8',
-    4: 'sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-x-6 sm:gap-y-6',
+    2: 'grid grid-cols-2 gap-x-3 gap-y-3 md:grid-cols-4 md:gap-x-6 md:gap-y-4',
+    3: 'grid grid-cols-2 gap-x-3 gap-y-3 md:grid-cols-3 md:gap-x-8 md:gap-y-6',
+    4: 'grid grid-cols-2 gap-x-3 gap-y-3 md:grid-cols-4 md:gap-x-6 md:gap-y-4',
   };
 
   return (
