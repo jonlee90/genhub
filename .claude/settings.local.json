@@ -109,7 +109,11 @@
       "Bash(git checkout:*)",
       "Bash(npm search:*)",
       "Bash(npx eslint:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(wc:*)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:kiro.dev)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

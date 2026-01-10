@@ -1,104 +1,260 @@
 # CLAUDE.md - GenHub PWA Global Rules
 
-> GLOBAL, NON-NEGOTIABLE rules. Follow BEFORE agent-specific prompts.
+> CRITICAL rules. Load BEFORE any work. Non-negotiable.
 
-## CRITICAL SAFETY RULES (HARD FAIL)
+---
+
+## SAFETY RULES (HARD FAIL)
 
 ### 1. Supabase Client Isolation
 ```
 NEVER in 'use client' files:
   - import from '@/utils/supabase/*'
   - import { createClient } from '@supabase/supabase-js'
-  - any direct Supabase SDK usage
+  - any Supabase SDK usage
 
 ALWAYS use:
   - Server Actions (app/actions/*.ts)
   - API Routes (app/api/*)
   - Server Components for data fetching
 ```
-
-Violation causes build failure: `Module not found: Can't resolve 'child_process'`
+**Violation causes:** `Module not found: Can't resolve 'child_process'`
 
 ### 2. Architecture Separation
-- Client components (`'use client'`): UI rendering, user interaction, local state
-- Server Actions/Routes: ALL database queries, auth checks, mutations
-- No file may mix both responsibilities
+- **Client components** (`'use client'`): UI, interactions, local state only
+- **Server Actions/Routes**: ALL database, auth, mutations
+- **No mixing**: Each file has ONE responsibility
+
+### 3. BaseModal Only
+- ✓ Use: `<BaseModal isOpen={} onClose={} />`
+- ✗ Never: `<Dialog>` component
+
+---
 
 ## PROJECT CONTEXT
 
-**GenHub**: Construction PWA for general contractors.
+**GenHub**: Construction PWA for general contractors
+**Stack**: Next.js 14+, Supabase (MCP), Tailwind, Lucide, Aceternity UI
+**Priorities**: Correctness → Token efficiency → Consistency → Speed
 
-**Stack**: Next.js 14+, Supabase (via MCP), Tailwind CSS, Lucide icons, Aceternity UI
+---
 
-**Priorities** (ordered):
-1. Correctness & safety
-2. Token efficiency
-3. Architectural consistency
-4. Visual consistency
-5. Delivery speed
+## AGENT LOADING STRATEGY
+
+**BEFORE starting ANY task, execute in this order:**
+
+```
+1. ALWAYS load: .claude/CLAUDE.md (this file - core rules)
+2. SCAN indexes (1-2 minutes): Find what exists
+   → .claude/docs/indexes/tables.md (if backend)
+   → .claude/docs/indexes/actions.md (if backend)
+   → .claude/docs/indexes/components.md (if frontend)
+   → .claude/docs/indexes/routes.md (if frontend)
+3. LOAD skill on demand: Task-specific patterns
+   → .claude/skills/index.md (find skill path)
+   → .claude/skills/{category}/{skill}.md (read full)
+4. GREP codebase: Find existing similar code
+   → Verify patterns before reinventing
+5. THEN implement: Execute skill instructions
+```
+
+---
+
+## SKILL LOADING (MANDATORY)
+
+Before **ANY** work:
+
+1. **Identify task type** from user request
+2. **Check index**: `.claude/skills/index.md`
+3. **Load skill file(s)**: Read relevant skill
+4. **Follow instructions**: Execute skill patterns
+5. **Run doc sync**: After completion (if skill specifies)
+
+### Quick Skill Matrix
+
+| Task | Skill | Agent |
+|------|-------|-------|
+| New database table | `skills/database/create-migration.md` | backend |
+| Alter table | `skills/database/modify-schema.md` | backend |
+| Server Action | `skills/backend/server-action.md` | backend |
+| New page | `skills/frontend/page-creation.md` | frontend |
+| Form UI | `skills/frontend/form-patterns.md` | frontend |
+| Modal | `skills/frontend/modal-patterns.md` | frontend |
+| GenHub feature | `skills/domain/{feature}.md` | both |
+
+---
+
+## AGENT REFERENCE
+
+| Agent | Authority | Budget | Tools |
+|-------|-----------|--------|-------|
+| **frontend-engineer** | UI, styling, client state | 45k | frontend-design |
+| **backend-engineer** | Database, APIs, Server Actions | 35k | MCP Supabase |
+| **code-reviewer** | Review, testing, fixes | 15k | Read, Grep, Bash |
+| **spec-writer** | Requirements, design, planning | 60k | All |
+| **orchestrator** | Multi-agent coordination | 20k | All |
+
+**Boundaries are strict.** Task crosses boundary? Handoff explicitly.
+
+---
+
+## ORCHESTRATION SIGNALS (CRITICAL)
+
+When orchestrator delegates work to specialized agents, it passes context flags. Agents MUST check these flags to avoid redundant work:
+
+### Control Flags
+
+| Flag | Value | Meaning | Agent Action |
+|------|-------|---------|--------------|
+| `ORCHESTRATED` | `true` | Called by orchestrator (not standalone) | Skip build, sync; return status only |
+| `SKIP_BUILD` | `true` | Don't run `/kc:build` | Skip even if normally required |
+| `SKIP_SYNC` | `true` | Don't run `/kc:sync-docs` | Skip; orchestrator handles consolidated sync |
+
+### Example: Orchestrator Delegation
+
+```
+ORCHESTRATED=true SKIP_BUILD=true SKIP_SYNC=true
+
+Task(subagent_type="backend-engineer", prompt="""
+  ...implementation prompt...
+
+  CONTEXT: ORCHESTRATED=true
+  - Skip: /kc:build, /kc:sync-docs
+  - Return: status, files modified, issues only
+""")
+```
+
+### How Agents Use Flags
+
+**In agent execution protocol, check at start:**
+
+```
+if (ORCHESTRATED) {
+  // Called by orchestrator
+  // Do: implementation + CRITICAL checks
+  // Skip: build, sync
+  // Return: status only
+} else {
+  // Independent execution
+  // Do: full workflow including build + sync
+}
+```
+
+---
+
+## QUICK LOOKUP
+
+### Index Files (scan first, load full doc on demand)
+- **Tables**: `.claude/docs/indexes/tables.md`
+- **Actions**: `.claude/docs/indexes/actions.md`
+- **Components**: `.claude/docs/indexes/components.md`
+- **Enums**: `.claude/docs/indexes/enums.md`
+- **Routes**: `.claude/docs/indexes/routes.md`
+- **Skills**: `.claude/skills/index.md`
+
+### Reference Docs
+- **Backend schema**: `.claude/docs/backend/SCHEMA_*.md`
+- **Frontend design**: `.claude/docs/frontend/DESIGN_SYSTEM.md`
+- **Domain features**: `.claude/docs/domain/{FEATURE}.md`
+
+---
+
+## QUICK REFERENCE
+
+### When to Use What
+
+| Task | Use |
+|------|-----|
+| New feature requirements | `/kc:spec --mode=requirements` |
+| Technical design | `/kc:spec --mode=design` |
+| Task planning | `/kc:spec --mode=plan` |
+| Full spec workflow | `/kc:spec --mode=full` |
+| UI research | `/kc:research-ui [topic]` |
+| AI SDK research | `/kc:research-ai-sdk [topic]` |
+| Implement tasks | `/kc:impl [task-id]` |
+| Sync documentation | `/kc:sync-docs` |
+| Regenerate indexes | `/kc:gen-index` |
+
+---
 
 ## DESIGN SYSTEM
 
 ### Colors
-- Primary: `#001B51` (Navy)
-- Accent: `#3C3C3C` (Gray)
+- **Primary**: `#001B51` (Navy)
+- **Accent**: `#3C3C3C` (Gray)
+- **Success**: `#059669`
+- **Error**: `#DC2626`
+- **Warning**: `#F59E0B`
 
-### UI Requirements
+### UI Rules
 - Icons: Lucide only
-- Modals: `BaseModal` component only (not `Dialog`)
-- Style: Clean, professional, minimal decoration
+- Modals: `BaseModal` only (never `Dialog`)
+- Fonts: System default
+- Decoration: Minimal (no riveted borders, hazard stripes, gradients)
 
-### Forbidden
-- Riveted borders, hazard stripes, decorative frames
-- Custom fonts (use system/Tailwind defaults)
-- Gratuitous animations
+---
 
-## AGENT MODEL
+## POST-CHANGE PROTOCOL (Context-Aware)
 
-| Agent | Authority | Tools |
-|-------|-----------|-------|
-| agent-agent-frontend-engineer | UI components, styling, client state | frontend-design plugin |
-| agent-agent-backend-engineer | Database, APIs, auth, server logic | MCP Supabase |
-| agent-agent-code-reviewer | Validation, testing, fixes | Read, Grep, Bash |
+### When ORCHESTRATED=true (Called by Orchestrator)
 
-**Boundaries are strict.** If task crosses agent authority, handoff explicitly.
+Agents skip individual build/sync because orchestrator will run consolidated build/sync at end.
 
-### Workflow
 ```
-Complex: Plan -> Implement -> Review -> Build
-Simple: Implement -> Quick Review
-Backend: MCP Supabase + Server Actions -> Security Audit
+1. Complete implementation
+2. Run CRITICAL violation checks only:
+   - Stop immediately if any CRITICAL issue found
+   - Fix in place, don't continue
+3. Return to orchestrator:
+   - Status: success/failure
+   - Files modified: [list]
+   - Any CRITICAL issues: [list]
+4. Skip: /kc:build, /kc:sync-docs
 ```
 
-Canonical: `/kc:impl -> agent execution -> agent-code-reviewer -> /kc:build`
+**Return format:**
+```
+Status: ✓ completed | ✗ failed
+Files: [paths modified]
+Issues: [CRITICAL issues if any]
+```
+
+### When Independent Mode (Normal)
+
+```
+1. Complete implementation
+2. Run all checks (CRITICAL, HIGH, MEDIUM)
+   - Fix issues before proceeding
+3. Update documentation:
+   /kc:sync-docs --source=path/to/change
+4. Verify build:
+   /kc:build
+5. Report results: Show sync output and build status
+```
+
+**For agent-specific protocols, see:**
+- frontend-engineer.md → EXECUTION PROTOCOL (now includes mode detection)
+- backend-engineer.md → EXECUTION PROTOCOL (now includes mode detection)
+- code-reviewer.md → PHASE 0 CONTEXT CHECK (determines review scope)
+
+---
 
 ## TOKEN DISCIPLINE
 
 ### Read Strategy
 1. Grep/search first, then Read with offset+limit
 2. Batch multiple small reads in one tool call
-3. Full file reads only for: <200 lines, configs, migrations
+3. Full file reads only for: <200 lines, configs
 4. Build logs: `npm run build 2>&1 | grep -E "error|Error" -A 3`
 
 ### Budgets (hard caps)
-- agent-backend-engineer: 25k max (typical: 3-20k)
-- agent-frontend-engineer: 35k max (typical: 5-25k)
-- agent-code-reviewer: 15k max (typical: 2-12k)
+- backend-engineer: 35k max
+- frontend-engineer: 45k max
+- code-reviewer: 15k max
 
 Stop early and request continuation if approaching cap.
 
-## CONTEXT MANAGEMENT
-
-Before work: Read `.claude/tasks/context_session_x.md`
-After work: Update with changes, files touched, next steps
-
-### Law Docs (read only when relevant)
-| Doc | When |
-|-----|------|
-| `.claude/docs/law/SYSTEM.md` | Architecture changes |
-| `.claude/docs/law/DB_SCHEMA.md` | Database work |
-| `.claude/docs/law/UI_RULES.md` | UI consistency |
-| `.claude/docs/law/SPATIAL_VIEWER.md` | 3D/spatial views |
+---
 
 ## STOP CONDITIONS
 
@@ -109,82 +265,122 @@ Halt and request guidance if:
 - Required context file missing
 - Approaching token cap
 
-## 11. AGENT ACTION LOGGING & AUDIT REPORTING (MANDATORY)
-
-All agents MUST log their actions during task execution and produce an **Audit Report** at the end of each task.
-
-This system exists to:
-- Improve agent prompts over time
-- Identify token waste and unnecessary reads
-- Detect authority or rule violations
-- Surface unclear rules and missing documentation
-- Make agents progressively better with real evidence
-
 ---
 
-### ACTION LOGGING (INTERNAL, LIGHTWEIGHT)
+## AGENT ACTION LOGGING & AUDIT REPORTING
 
-During execution, agents MUST internally track the following.
-❌ Do NOT stream logs during execution  
-✅ Logs are summarized ONLY in the final Audit Report
+All agents MUST log actions and produce an **Audit Report** at end of task.
 
-Agents MUST track:
-- Agent name
-- Task type (UI / Backend / Review)
-- Task complexity (Simple / Complex)
-- Files read (path + reason)
-- Files modified (path + reason)
-- Tools used (Grep, Read, MCP Supabase, frontend-design, etc.)
-- Planning decision (Plan-first vs Direct-implement)
-- Handoffs to other agents (if any)
-- Blockers, ambiguities, or missing context
-
----
-
-### AUDIT REPORT (REQUIRED FINAL OUTPUT)
-
-At the end of EVERY task, agents MUST append an **Audit Report** after their normal output.
-
-#### REQUIRED FORMAT (DO NOT MODIFY)
+### Audit Report Format
 
 ```md
 ## 🧾 Agent Audit Report
 
-**Agent:** frontend-engineer | backend-engineer | code-reviewer  
-**Task Type:** UI / Backend / Review  
-**Task Complexity:** Simple / Complex  
+**Agent:** frontend-engineer | backend-engineer | code-reviewer
+**Task Type:** UI / Backend / Review
+**Task Complexity:** Simple / Complex
 
 ### Actions Taken
 - Planned before implementation: Yes / No
-- Tools used:
-  - Grep
-  - Read
-  - MCP Supabase
-  - frontend-design
-- Files read:
-  - path/to/file.ts – reason
-- Files modified:
-  - path/to/file.ts – reason
+- Tools used: [list]
+- Files read: [path – reason]
+- Files modified: [path – reason]
 
 ### Decisions & Reasoning
-- Key architectural or implementation decisions
+- Key decisions
 - Tradeoffs considered
-- CLAUDE.md rules relied upon
+- Rules relied upon
 
 ### Issues Encountered
-- Ambiguous requirements
-- Missing or outdated documentation
-- Conflicting rules or constraints
+- Ambiguities
+- Missing docs
+- Conflicting rules
 
 ### Token & Efficiency Notes
-- Estimated token usage
-- Any unnecessary reads or rework
-- Suggestions to reduce token usage next time
-
-### Improvement Suggestions
-- Prompt improvements recommended
-- Rules that should be clarified or added
-- Docs that should be updated
+- Estimated usage
+- Unnecessary reads
+- Improvement suggestions
+```
 
 ---
-END
+
+## DOCUMENTATION SYNC SYSTEM
+
+Prevent documentation drift by tracking dependencies and auto-updating affected docs.
+
+### Dependency Graph
+
+**File**: `.claude/docs/dependencies.json`
+
+Maps code sources to docs that depend on them:
+```
+database/tasks → docs/indexes/tables.md
+              → docs/backend/SCHEMA_CORE.md
+              → docs/indexes/enums.md
+
+actions/tasks.ts → docs/indexes/actions.md
+                → docs/domain/TASKS.md
+
+components/tasks/** → docs/indexes/components.md
+```
+
+### Auto-Sync Triggers
+
+After **ANY** code change, update affected indexes:
+
+| Change Type | Auto-Sync Index | Manual Review Docs |
+|-------------|-----------------|-------------------|
+| Table add/modify | `docs/indexes/tables.md` | `docs/backend/SCHEMA_*.md` |
+| Server Action | `docs/indexes/actions.md` | `docs/domain/{FEATURE}.md` |
+| Component add/change | `docs/indexes/components.md` | `docs/frontend/COMPONENTS.md` |
+| Route add/change | `docs/indexes/routes.md` | `docs/frontend/LAYOUTS.md` |
+
+### Sync Workflow
+
+**After database migration:**
+```
+1. mcp__supabase__generate_typescript_types
+2. Update docs/indexes/tables.md
+3. Update docs/indexes/enums.md
+4. Review docs/backend/SCHEMA_*.md for changes
+5. /kc:build
+```
+
+**After Server Action:**
+```
+1. Update docs/indexes/actions.md
+2. Review docs/domain/{FEATURE}.md
+3. /kc:build
+```
+
+**After component:**
+```
+1. Update docs/indexes/components.md
+2. Review docs/frontend/COMPONENTS.md
+3. /kc:build
+```
+
+**After route:**
+```
+1. Update docs/indexes/routes.md
+2. Review docs/frontend/LAYOUTS.md
+3. /kc:build
+```
+
+### Quick Command
+
+```bash
+/kc:sync-docs    # Auto-update all indexes + manual review checklist
+```
+
+---
+
+## SEE ALSO
+
+- `.claude/skills/` — Task-specific instructions (load before work)
+- `.claude/docs/indexes/` — Quick lookups (auto-synced from code)
+- `.claude/docs/{backend,frontend,domain}/` — Reference docs (manual sync)
+- `.claude/docs/dependencies.json` — Dependency graph for sync automation
+- `.claude/agents/` — Agent configurations
+- `.claude/commands/kc/` — Available commands
+

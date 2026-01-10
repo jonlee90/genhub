@@ -1,0 +1,556 @@
+{
+  "version": "1.1",
+  "description": "Dependency graph for documentation sync. Maps code sources to affected docs.",
+  "lastUpdated": "2026-01-09",
+
+  "sources": {
+    "database/companies": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/user_profiles": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/company_users": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/projects": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/PROJECTS.md"
+      ]
+    },
+    "database/project_phases": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/PROJECTS.md"
+      ]
+    },
+    "database/project_team": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/PROJECTS.md"
+      ]
+    },
+    "database/tasks": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/indexes/enums.md",
+        "docs/domain/TASKS.md"
+      ]
+    },
+    "database/task_dependencies": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/TASKS.md"
+      ]
+    },
+    "database/task_activity": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/TASKS.md"
+      ]
+    },
+    "database/materials": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/MATERIALS.md"
+      ]
+    },
+    "database/material_assignments": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/MATERIALS.md"
+      ]
+    },
+    "database/tracked_materials": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/MATERIALS.md"
+      ]
+    },
+    "database/material_price_history": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/MATERIALS.md"
+      ]
+    },
+    "database/expenses": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/expense_line_items": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/spatial_markers": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md",
+        "docs/domain/SPATIAL.md"
+      ]
+    },
+    "database/marker_content": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md",
+        "docs/domain/SPATIAL.md"
+      ]
+    },
+    "database/projects_3d_models": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md",
+        "docs/domain/SPATIAL.md"
+      ]
+    },
+    "database/model_elements": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md",
+        "docs/domain/SPATIAL.md"
+      ]
+    },
+    "database/default_3d_models": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md"
+      ]
+    },
+    "database/company_default_models": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md"
+      ]
+    },
+    "database/default_marker_configs": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_SPATIAL.md"
+      ]
+    },
+    "database/chat_rooms": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/chat_participants": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/messages": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/message_reactions": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/message_attachments": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/subcontractors": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/team_invitations": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/notifications": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/attachments": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/project_files": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/PROJECTS.md"
+      ]
+    },
+    "database/project_photos": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/PROJECTS.md"
+      ]
+    },
+    "database/file_audit_log": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/project_type_configs": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/task_type_configs": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/phase_templates": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/task_templates": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/stripe_customers": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/push_subscriptions": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/kakao_connections": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md"
+      ]
+    },
+    "database/enums": {
+      "type": "enum",
+      "affects": [
+        "docs/indexes/enums.md",
+        "docs/backend/SCHEMA_ENUMS.md"
+      ]
+    },
+
+    "actions/auth.ts": {
+      "type": "server_action",
+      "depends_on": ["database/user_profiles", "database/company_users"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/tasks.ts": {
+      "type": "server_action",
+      "depends_on": ["database/tasks", "database/projects", "database/task_activity"],
+      "affects": ["docs/indexes/actions.md", "docs/domain/TASKS.md"]
+    },
+    "actions/projects.ts": {
+      "type": "server_action",
+      "depends_on": ["database/projects", "database/project_phases", "database/project_team"],
+      "affects": ["docs/indexes/actions.md", "docs/domain/PROJECTS.md"]
+    },
+    "actions/materials.ts": {
+      "type": "server_action",
+      "depends_on": ["database/materials", "database/material_assignments", "database/tracked_materials"],
+      "affects": ["docs/indexes/actions.md", "docs/domain/MATERIALS.md"]
+    },
+    "actions/expenses.ts": {
+      "type": "server_action",
+      "depends_on": ["database/expenses", "database/expense_line_items"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/spatial.ts": {
+      "type": "server_action",
+      "depends_on": ["database/spatial_markers", "database/marker_content", "database/projects_3d_models"],
+      "affects": ["docs/indexes/actions.md", "docs/domain/SPATIAL.md"]
+    },
+    "actions/chat.ts": {
+      "type": "server_action",
+      "depends_on": ["database/chat_rooms", "database/chat_participants", "database/messages"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/chat-queries.ts": {
+      "type": "server_action",
+      "depends_on": ["database/chat_rooms", "database/messages"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/chat-search.ts": {
+      "type": "server_action",
+      "depends_on": ["database/messages"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/team.ts": {
+      "type": "server_action",
+      "depends_on": ["database/company_users", "database/team_invitations"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/phases.ts": {
+      "type": "server_action",
+      "depends_on": ["database/project_phases"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/phase-templates.ts": {
+      "type": "server_action",
+      "depends_on": ["database/phase_templates"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/task-types.ts": {
+      "type": "server_action",
+      "depends_on": ["database/task_type_configs"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/task-templates.ts": {
+      "type": "server_action",
+      "depends_on": ["database/task_templates"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/project-types.ts": {
+      "type": "server_action",
+      "depends_on": ["database/project_type_configs"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/project-files.ts": {
+      "type": "server_action",
+      "depends_on": ["database/project_files", "database/file_audit_log"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/project-photos.ts": {
+      "type": "server_action",
+      "depends_on": ["database/project_photos"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/subcontractors.ts": {
+      "type": "server_action",
+      "depends_on": ["database/subcontractors"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/default-models.ts": {
+      "type": "server_action",
+      "depends_on": ["database/default_3d_models", "database/company_default_models"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/client.ts": {
+      "type": "server_action",
+      "depends_on": ["database/projects", "database/tasks"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/stripe.ts": {
+      "type": "server_action",
+      "depends_on": ["database/stripe_customers"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/push.ts": {
+      "type": "server_action",
+      "depends_on": ["database/push_subscriptions"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/kakao.ts": {
+      "type": "server_action",
+      "depends_on": ["database/kakao_connections"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+    "actions/accept-invite.ts": {
+      "type": "server_action",
+      "depends_on": ["database/team_invitations", "database/company_users"],
+      "affects": ["docs/indexes/actions.md"]
+    },
+
+    "components/tasks/**": {
+      "type": "component",
+      "depends_on": ["actions/tasks.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/projects/**": {
+      "type": "component",
+      "depends_on": ["actions/projects.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/materials/**": {
+      "type": "component",
+      "depends_on": ["actions/materials.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/expenses/**": {
+      "type": "component",
+      "depends_on": ["actions/expenses.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/chat/**": {
+      "type": "component",
+      "depends_on": ["actions/chat.ts", "actions/chat-queries.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/team/**": {
+      "type": "component",
+      "depends_on": ["actions/team.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/settings/**": {
+      "type": "component",
+      "depends_on": [],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/auth/**": {
+      "type": "component",
+      "depends_on": ["actions/auth.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/forms/**": {
+      "type": "component",
+      "depends_on": [],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/ui/**": {
+      "type": "component",
+      "depends_on": [],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/app/**": {
+      "type": "component",
+      "depends_on": [],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/admin/**": {
+      "type": "component",
+      "depends_on": [],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/stripe/**": {
+      "type": "component",
+      "depends_on": ["actions/stripe.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+    "components/pwa/**": {
+      "type": "component",
+      "depends_on": ["actions/push.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
+
+    "app/app/**/page.tsx": {
+      "type": "route",
+      "affects": ["docs/indexes/routes.md"]
+    }
+  },
+
+  "autoSync": {
+    "docs/indexes/tables.md": {
+      "source": "mcp__supabase__list_tables",
+      "template": "Quick lookup table of all database tables"
+    },
+    "docs/indexes/actions.md": {
+      "source": "app/actions/*.ts",
+      "extract": "exported async function signatures"
+    },
+    "docs/indexes/components.md": {
+      "source": "components/**/*.tsx",
+      "extract": "interface Props definitions"
+    },
+    "docs/indexes/routes.md": {
+      "source": "app/app/**/page.tsx",
+      "extract": "route paths"
+    },
+    "docs/indexes/enums.md": {
+      "source": "types/database.types.ts",
+      "extract": "Enums type definitions"
+    }
+  },
+
+  "syncCommands": {
+    "afterDatabaseChange": [
+      "regenerate types/database.types.ts",
+      "update docs/indexes/tables.md",
+      "update docs/indexes/enums.md"
+    ],
+    "afterActionChange": [
+      "update docs/indexes/actions.md"
+    ],
+    "afterComponentChange": [
+      "update docs/indexes/components.md"
+    ],
+    "afterRouteChange": [
+      "update docs/indexes/routes.md"
+    ]
+  }
+}
