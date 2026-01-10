@@ -620,6 +620,7 @@ export async function updateTask(formData: FormData) {
   if (updateData.planned_cost !== undefined) taskUpdate.planned_cost = updateData.planned_cost;
   if (updateData.actual_cost !== undefined) taskUpdate.actual_cost = updateData.actual_cost;
   if (updateData.phase_id !== undefined) taskUpdate.phase_id = updateData.phase_id;
+  if (updateData.status !== undefined) taskUpdate.status = updateData.status as TaskStatus;
 
   // Update task
   const { data: task, error: updateError } = await supabase

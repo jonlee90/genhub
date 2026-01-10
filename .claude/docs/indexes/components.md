@@ -39,6 +39,21 @@ Last updated: 2026-01-10
 | BillingPlans | Client | Plan selection |
 | BillingHistory | Client | Payment history |
 
+### Dashboard (`components/dashboard/`)
+| Component | Type | Purpose |
+|-----------|------|---------|
+| KPICard | Client | Single KPI metric with trend indicator |
+| KPICardsGrid | Client | 6 KPI cards in responsive grid |
+| ProjectStatusWidget | Client | Project status distribution bar |
+| TaskProgressWidget | Client | Circular progress ring with task metrics |
+| BudgetSummaryWidget | Client | Budget utilization and expenses |
+| ScheduleHealthWidget | Client | On-time/at-risk/overdue breakdown |
+| TeamActivityWidget | Client | Top assignees and workload |
+| MaterialsStatusWidget | Client | Procurement pipeline flow |
+| WidgetsGrid | Client | Container grid for all widgets |
+| DashboardHeader | Client | Welcome header with accent bar |
+| DashboardContent | Client | Main dashboard client component |
+
 ### Projects (`components/projects/`)
 | Component | Type | Purpose |
 |-----------|------|---------|
@@ -222,6 +237,7 @@ interface EntityListProps {
 | Directory | Count | Type |
 |-----------|-------|------|
 | ui/ | ~25 | Base components |
+| dashboard/ | ~11 | Dashboard widgets |
 | tasks/ | ~40 | Task management (incl. gantt/) |
 | projects/ | ~78 | Project views (incl. files/, spatial/) |
 | chat/ | ~10 | Chat system |
@@ -237,7 +253,7 @@ interface EntityListProps {
 | settings/ | ~3 | Settings |
 | forms/ | ~8 | Form components |
 | admin/ | ~3 | Admin tools |
-| **Total** | ~200+ | - |
+| **Total** | ~210+ | - |
 
 ---
 

@@ -8,6 +8,11 @@ Last updated: 2026-01-10
 
 ## Quick Lookup by File
 
+### Dashboard (`app/actions/dashboard.ts`)
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| getDashboardData | Aggregated KPIs, widgets data | - |
+
 ### Projects (`app/actions/projects.ts`)
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
@@ -152,6 +157,7 @@ Last updated: 2026-01-10
 
 | Domain | Action Count | Files |
 |--------|--------------|-------|
+| Dashboard | 1 | dashboard.ts |
 | Projects | 6 | projects.ts |
 | Tasks | 20 | tasks.ts |
 | Phases | 3 | phases.ts |
@@ -162,7 +168,7 @@ Last updated: 2026-01-10
 | Chat | 5 | chat.ts, chat-queries.ts |
 | Spatial | 7 | spatial.ts |
 | Files/Photos | 11 | project-files.ts, project-photos.ts |
-| **Total** | ~76+ | 26 files |
+| **Total** | ~77+ | 27 files |
 
 ---
 

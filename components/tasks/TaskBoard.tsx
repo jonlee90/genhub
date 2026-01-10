@@ -36,6 +36,10 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
     id: string;
     name: string;
   } | null;
+  materialStats?: {
+    count: number;
+    totalCost: number;
+  };
 };
 
 type Phase = {
@@ -258,6 +262,10 @@ export function TaskBoard({
       .slice(0, 3)
       .map((a) => ({ id: a.id, name: a.name, avatar_url: a.avatar_url, taskCount: a.count }));
 
+    // Calculate materials from task materialStats
+    const tasksWithMaterials = tasksForStats.filter((t) => t.materialStats && t.materialStats.count > 0).length;
+    const totalMaterialCost = tasksForStats.reduce((sum, t) => sum + (t.materialStats?.totalCost || 0), 0);
+
     return {
       total: tasksForStats.length,
       completed,
@@ -270,8 +278,8 @@ export function TaskBoard({
       budgetUtilization,
       unassignedCount,
       topAssignees,
-      tasksWithMaterials: 0, // Would need material data to compute
-      totalMaterialCost: 0, // Would need material data to compute
+      tasksWithMaterials,
+      totalMaterialCost,
     };
   }, [initialTasks, projectFilter, isProjectContext]);
 

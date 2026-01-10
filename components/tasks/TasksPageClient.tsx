@@ -21,6 +21,10 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
     id: string;
     name: string;
   } | null;
+  materialStats?: {
+    count: number;
+    totalCost: number;
+  };
 };
 
 type Phase = {
