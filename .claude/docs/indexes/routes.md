@@ -2,7 +2,7 @@
 
 > Quick lookup for app routes. For page patterns, see `.claude/skills/frontend/page-creation.md`
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -13,7 +13,7 @@ All routes require authentication via NextAuth.
 ### Dashboard
 | Route | Page | Data Source |
 |-------|------|-------------|
-| `/app` | Dashboard home | getProjects, getTasks |
+| `/app` | Dashboard home | getDashboardData |
 
 ### Projects
 | Route | Page | Data Source |

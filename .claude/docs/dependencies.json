@@ -1,7 +1,7 @@
 {
   "version": "1.1",
   "description": "Dependency graph for documentation sync. Maps code sources to affected docs.",
-  "lastUpdated": "2026-01-09",
+  "lastUpdated": "2026-01-10",
 
   "sources": {
     "database/companies": {
@@ -324,6 +324,11 @@
       ]
     },
 
+    "actions/dashboard.ts": {
+      "type": "server_action",
+      "depends_on": ["database/projects", "database/tasks", "database/expenses", "database/material_assignments", "database/company_users"],
+      "affects": ["docs/indexes/actions.md"]
+    },
     "actions/auth.ts": {
       "type": "server_action",
       "depends_on": ["database/user_profiles", "database/company_users"],
@@ -445,6 +450,11 @@
       "affects": ["docs/indexes/actions.md"]
     },
 
+    "components/dashboard/**": {
+      "type": "component",
+      "depends_on": ["actions/dashboard.ts"],
+      "affects": ["docs/indexes/components.md"]
+    },
     "components/tasks/**": {
       "type": "component",
       "depends_on": ["actions/tasks.ts"],
