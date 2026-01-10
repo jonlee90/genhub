@@ -171,7 +171,7 @@ BEGIN
           ORDER BY order_index
         LOOP
           -- Create phase
-          INSERT INTO public.project_phases (project_id, name, display_order, status, completion_percentage, description)
+          INSERT INTO public.project_phases (project_id, name, order_index, status, completion_percentage, description)
           SELECT v_project_id, name, order_index,
             CASE
               WHEN order_index = 0 THEN 'completed'::phase_status
@@ -193,7 +193,7 @@ BEGIN
             WHERE phase_template_id = v_phase_template_id
             ORDER BY order_index
           LOOP
-            INSERT INTO public.tasks (project_id, phase_id, title, description, status, priority, assignee_id, due_date, display_order, created_by)
+            INSERT INTO public.tasks (project_id, phase_id, title, description, status, priority, assignee_id, due_date, order_index, created_by)
             SELECT v_project_id, v_phase_id, title, NULL,
               CASE
                 WHEN order_index % 5 = 0 THEN 'completed'::task_status
@@ -221,7 +221,7 @@ BEGIN
           WHERE project_type_config_id = v_restaurant_config_id
           ORDER BY order_index
         LOOP
-          INSERT INTO public.project_phases (project_id, name, display_order, status, completion_percentage, description)
+          INSERT INTO public.project_phases (project_id, name, order_index, status, completion_percentage, description)
           SELECT v_project_id, name, order_index,
             CASE
               WHEN order_index = 0 THEN 'completed'::phase_status
@@ -243,7 +243,7 @@ BEGIN
             WHERE phase_template_id = v_phase_template_id
             ORDER BY order_index
           LOOP
-            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, display_order, created_by)
+            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, order_index, created_by)
             SELECT v_project_id, v_phase_id, title,
               CASE
                 WHEN order_index % 4 = 0 THEN 'completed'::task_status
@@ -269,7 +269,7 @@ BEGIN
           WHERE project_type_config_id = v_restaurant_config_id
           ORDER BY order_index
         LOOP
-          INSERT INTO public.project_phases (project_id, name, display_order, status, completion_percentage, description)
+          INSERT INTO public.project_phases (project_id, name, order_index, status, completion_percentage, description)
           SELECT v_project_id, name, order_index,
             CASE
               WHEN order_index = 0 THEN 'completed'::phase_status
@@ -290,7 +290,7 @@ BEGIN
             WHERE phase_template_id = v_phase_template_id
             ORDER BY order_index
           LOOP
-            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, display_order, created_by)
+            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, order_index, created_by)
             SELECT v_project_id, v_phase_id, title,
               CASE
                 WHEN order_index % 3 = 0 THEN 'completed'::task_status
@@ -313,7 +313,7 @@ BEGIN
           WHERE project_type_config_id = v_commercial_config_id
           ORDER BY order_index
         LOOP
-          INSERT INTO public.project_phases (project_id, name, display_order, status, completion_percentage, description)
+          INSERT INTO public.project_phases (project_id, name, order_index, status, completion_percentage, description)
           SELECT v_project_id, name, order_index,
             CASE
               WHEN order_index <= 1 THEN 'completed'::phase_status
@@ -335,7 +335,7 @@ BEGIN
             WHERE phase_template_id = v_phase_template_id
             ORDER BY order_index
           LOOP
-            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, display_order, created_by)
+            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, order_index, created_by)
             SELECT v_project_id, v_phase_id, title,
               CASE
                 WHEN order_index % 4 = 0 THEN 'completed'::task_status
@@ -363,7 +363,7 @@ BEGIN
           WHERE project_type_config_id = v_industrial_config_id
           ORDER BY order_index
         LOOP
-          INSERT INTO public.project_phases (project_id, name, display_order, status, completion_percentage, description)
+          INSERT INTO public.project_phases (project_id, name, order_index, status, completion_percentage, description)
           SELECT v_project_id, name, order_index,
             CASE
               WHEN order_index <= 2 THEN 'completed'::phase_status
@@ -386,7 +386,7 @@ BEGIN
             WHERE phase_template_id = v_phase_template_id
             ORDER BY order_index
           LOOP
-            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, display_order, created_by)
+            INSERT INTO public.tasks (project_id, phase_id, title, status, priority, assignee_id, due_date, order_index, created_by)
             SELECT v_project_id, v_phase_id, title,
               CASE
                 WHEN order_index % 5 = 0 THEN 'completed'::task_status

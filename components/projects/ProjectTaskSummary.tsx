@@ -8,7 +8,6 @@ import {
   TrendingUp,
   TrendingDown,
   CheckCircle,
-  Clock,
   AlertTriangle,
   AlertCircle,
   Users,
@@ -166,23 +165,6 @@ export function ProjectTaskSummary({
             </span>
             <span className="text-xs text-gray-500">
               {taskStats.total > 0 ? `${Math.round((taskStats.completed / taskStats.total) * 100)}%` : '0%'}
-            </span>
-          </div>
-        </div>
-      ),
-    },
-    // In Progress Tasks
-    {
-      label: 'In Progress',
-      value: (
-        <div className="flex items-center gap-2">
-          <Clock className="h-5 w-5 text-blue-600 flex-shrink-0" />
-          <div className="flex flex-col">
-            <span className="text-lg font-bold text-gray-900 leading-tight">
-              {taskStats.inProgress}
-            </span>
-            <span className="text-xs text-gray-500">
-              Active
             </span>
           </div>
         </div>

@@ -33,6 +33,8 @@ interface TaskFiltersProps {
   onPriorityChange: (value: string) => void;
   projects: Project[];
   teamMembers: TeamMember[];
+  /** Hide project filter when it's displayed elsewhere (e.g., page header) */
+  hideProjectFilter?: boolean;
 }
 
 const PRIORITIES = [
@@ -53,6 +55,7 @@ export function TaskFilters({
   onPriorityChange,
   projects,
   teamMembers,
+  hideProjectFilter = false,
 }: TaskFiltersProps) {
   return (
     <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
@@ -67,20 +70,22 @@ export function TaskFilters({
         />
       </div>
 
-      {/* Project Filter */}
-      <Select value={projectFilter} onValueChange={onProjectChange}>
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="All Projects" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Projects</SelectItem>
-          {projects.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
-              {project.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Project Filter - Hidden when displayed in page header */}
+      {!hideProjectFilter && (
+        <Select value={projectFilter} onValueChange={onProjectChange}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="All Projects" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Projects</SelectItem>
+            {projects.map((project) => (
+              <SelectItem key={project.id} value={project.id}>
+                {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {/* Assignee Filter */}
       <Select value={assigneeFilter} onValueChange={onAssigneeChange}>

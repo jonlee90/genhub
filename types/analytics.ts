@@ -124,24 +124,3 @@ export interface TaskAnalytics {
     trend: number;
   };
 }
-
-/**
- * Props for TaskAnalyticsSection component
- */
-export interface TaskAnalyticsSectionProps {
-  /** Analytics data to display */
-  analytics: TaskAnalytics;
-  /** Current project filter: 'all' or project UUID */
-  projectFilter: string;
-  /** Callback for filter changes (click-to-filter functionality) */
-  onFilterChange: (filter: {
-    /** Filter by task status */
-    status?: string;
-    /** Filter by assignee UUID or 'unassigned' */
-    assignee?: string;
-    /** Filter by priority level */
-    priority?: string;
-    /** Filter by material procurement status */
-    materialStatus?: string;
-  }) => void;
-}

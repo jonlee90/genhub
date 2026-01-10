@@ -194,8 +194,47 @@ async function getProjectData(id: string) {
       }
     }
 
-    // Fetch material assignment counts and totals for each task
+    // Fetch multi-assignees from task_assignees junction table
     const taskIds = project.tasks.map((t: any) => t.id);
+    const { data: taskAssignees } = await supabase
+      .from('task_assignees')
+      .select('id, task_id, user_id, subcontractor_id')
+      .in('task_id', taskIds);
+
+    if (taskAssignees && taskAssignees.length > 0) {
+      // Get unique user IDs and subcontractor IDs
+      const userIds = [...new Set(taskAssignees.filter(ta => ta.user_id).map(ta => ta.user_id))] as string[];
+      const subIds = [...new Set(taskAssignees.filter(ta => ta.subcontractor_id).map(ta => ta.subcontractor_id))] as string[];
+
+      // Fetch user profiles
+      const { data: userProfiles } = userIds.length > 0
+        ? await supabase.from('user_profiles').select('id, name, email, avatar_url').in('id', userIds)
+        : { data: [] };
+
+      // Fetch subcontractors
+      const { data: subcontractors } = subIds.length > 0
+        ? await supabase.from('subcontractors').select('id, company_name, contact_name, email').in('id', subIds)
+        : { data: [] };
+
+      // Attach assignees to tasks
+      (project.tasks as any[]).forEach((task: any) => {
+        const taskAssigns = taskAssignees.filter(ta => ta.task_id === task.id);
+        task.assignees = taskAssigns.map(ta => ({
+          id: ta.id,
+          user_id: ta.user_id,
+          subcontractor_id: ta.subcontractor_id,
+          user: ta.user_id ? userProfiles?.find(u => u.id === ta.user_id) || null : null,
+          subcontractor: ta.subcontractor_id ? subcontractors?.find(s => s.id === ta.subcontractor_id) || null : null,
+        }));
+      });
+    } else {
+      // Initialize empty assignees array for all tasks
+      (project.tasks as any[]).forEach((task: any) => {
+        task.assignees = [];
+      });
+    }
+
+    // Fetch material assignment counts and totals for each task
     const { data: materialStats } = await supabase
       .from('material_assignments')
       .select('task_id, quantity, total_cost')

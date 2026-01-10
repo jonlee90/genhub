@@ -7,19 +7,19 @@ import { TaskList } from './TaskList';
 import { TaskFilters } from './TaskFilters';
 import { TaskModal } from './TaskModal';
 import { GanttChart } from './gantt/GanttChart';
-import { TaskAnalyticsSection } from './TaskAnalyticsSection';
+import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
 import { TopProjectsCard } from './TopProjectsCard';
 import { TopTeamMembersCard } from './TopTeamMembersCard';
 import { transformTasksForGantt } from './gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LayoutGrid, List, Plus, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, List, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/types/database.types';
-import type { TaskAnalytics } from '@/types/analytics';
+import type { TaskStats } from '@/app/actions/projects';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
   assignee?: {
@@ -83,10 +83,10 @@ interface TaskBoardProps {
   showNewTaskButton?: boolean;
   /** Top 5 team members by completed tasks (for dashboard stats) */
   topTeamMembers?: TopTeamMember[];
-  /** Task analytics data (Tasks page only) */
-  analytics?: TaskAnalytics;
-  /** Analytics error message (if fetch failed) */
-  analyticsError?: string;
+  /** External project filter control - when provided, filter is managed externally */
+  externalProjectFilter?: string;
+  /** External project filter change handler */
+  onExternalProjectFilterChange?: (projectId: string) => void;
 }
 
 export function TaskBoard({
@@ -99,13 +99,12 @@ export function TaskBoard({
   phases,
   showNewTaskButton,
   topTeamMembers = [],
-  analytics,
-  analyticsError,
+  externalProjectFilter,
+  onExternalProjectFilterChange,
 }: TaskBoardProps) {
   console.log('[TaskBoard] Rendering', {
     isProjectContext: !!projectId,
-    hasAnalytics: !!analytics,
-    analyticsError
+    taskCount: initialTasks.length
   });
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -116,10 +115,14 @@ export function TaskBoard({
 
   const [view, setView] = useState<'kanban' | 'list'>(initialView);
   const [searchQuery, setSearchQuery] = useState('');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [internalProjectFilter, setInternalProjectFilter] = useState<string>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [phaseFilter, setPhaseFilter] = useState<string>('all');
+
+  // Use external filter if provided, otherwise use internal state
+  const projectFilter = externalProjectFilter ?? internalProjectFilter;
+  const setProjectFilter = onExternalProjectFilterChange ?? setInternalProjectFilter;
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -191,6 +194,87 @@ export function TaskBoard({
     return filtered;
   }, [initialTasks, searchQuery, projectFilter, assigneeFilter, priorityFilter, phaseFilter, isProjectContext]);
 
+  // Compute TaskStats from project-filtered tasks (updates when project dropdown changes)
+  const computedTaskStats = useMemo((): TaskStats | null => {
+    if (isProjectContext) return null; // Only for Tasks page
+
+    // Filter tasks by project only (not other filters) for summary stats
+    const tasksForStats = projectFilter === 'all'
+      ? initialTasks
+      : initialTasks.filter((task) => task.project_id === projectFilter);
+
+    if (tasksForStats.length === 0) {
+      return {
+        total: 0,
+        completed: 0,
+        inProgress: 0,
+        blocked: 0,
+        overdue: 0,
+        totalPlannedCost: 0,
+        totalActualCost: 0,
+        budgetVariance: 0,
+        budgetUtilization: 0,
+        unassignedCount: 0,
+        topAssignees: [],
+        tasksWithMaterials: 0,
+        totalMaterialCost: 0,
+      };
+    }
+
+    const now = new Date();
+    const completed = tasksForStats.filter((t) => t.status === 'completed').length;
+    const blocked = tasksForStats.filter((t) => t.status === 'blocked').length;
+    const inProgress = tasksForStats.filter((t) => t.status === 'in_progress').length;
+    const overdue = tasksForStats.filter((t) => {
+      if (!t.due_date || t.status === 'completed') return false;
+      return new Date(t.due_date) < now;
+    }).length;
+
+    const totalPlannedCost = tasksForStats.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
+    const totalActualCost = tasksForStats.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
+    const budgetVariance = totalPlannedCost - totalActualCost;
+    const budgetUtilization = totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
+
+    const unassignedCount = tasksForStats.filter((t) => !t.assignee_id).length;
+
+    // Compute top assignees
+    const assigneeCounts: Record<string, { id: string; name: string; avatar_url: string | null; count: number }> = {};
+    tasksForStats.forEach((task) => {
+      if (task.assignee) {
+        const key = task.assignee.id;
+        if (!assigneeCounts[key]) {
+          assigneeCounts[key] = {
+            id: task.assignee.id,
+            name: task.assignee.name,
+            avatar_url: task.assignee.avatar_url,
+            count: 0,
+          };
+        }
+        assigneeCounts[key].count++;
+      }
+    });
+    const topAssignees = Object.values(assigneeCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((a) => ({ id: a.id, name: a.name, avatar_url: a.avatar_url, taskCount: a.count }));
+
+    return {
+      total: tasksForStats.length,
+      completed,
+      inProgress,
+      blocked,
+      overdue,
+      totalPlannedCost,
+      totalActualCost,
+      budgetVariance,
+      budgetUtilization,
+      unassignedCount,
+      topAssignees,
+      tasksWithMaterials: 0, // Would need material data to compute
+      totalMaterialCost: 0, // Would need material data to compute
+    };
+  }, [initialTasks, projectFilter, isProjectContext]);
+
   // Handle view change
   const handleViewChange = (newView: 'kanban' | 'list') => {
     setView(newView);
@@ -198,40 +282,6 @@ export function TaskBoard({
       const params = new URLSearchParams(searchParams.toString());
       params.set('view', newView);
       router.push(`/app/tasks?${params.toString()}`, { scroll: false });
-    }
-  };
-
-  // Handle analytics filter change (click-to-filter from analytics cards)
-  const handleAnalyticsFilterChange = (filter: {
-    status?: string;
-    assignee?: string;
-    priority?: string;
-    materialStatus?: string;
-  }) => {
-    console.log('[TaskBoard] Analytics filter change:', filter);
-
-    // Apply assignee filter
-    if (filter.assignee !== undefined) {
-      setAssigneeFilter(filter.assignee); // 'unassigned' or UUID
-    }
-
-    // Apply priority filter
-    if (filter.priority !== undefined) {
-      setPriorityFilter(filter.priority); // 'high', 'medium', 'low'
-    }
-
-    // Analytics-specific status filters (overdue, at-risk, blocked)
-    // These are calculated states, not direct task.status values
-    // For MVP: Log to console (future: implement custom filter logic)
-    if (filter.status !== undefined) {
-      console.log('[TaskBoard] Analytics status filter (not yet implemented):', filter.status);
-      // TODO: Implement custom filtering for 'overdue', 'at-risk', 'blocked'
-    }
-
-    // Material status filter
-    if (filter.materialStatus !== undefined) {
-      console.log('[TaskBoard] Material status filter (not yet implemented):', filter.materialStatus);
-      // TODO: Implement material status filter
     }
   };
 
@@ -284,28 +334,15 @@ export function TaskBoard({
         </motion.div>
       )}
 
-      {/* Task Analytics Section - Only show on Tasks page (not in project context) */}
-      {!isProjectContext && (
-        analyticsError ? (
-          // Error banner if analytics fetch failed
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-lg"
-          >
-            <AlertTriangle className="h-5 w-5 text-red-600" />
-            <div>
-              <p className="text-sm font-bold text-red-900">Analytics Unavailable</p>
-              <p className="text-xs text-red-700">{analyticsError}</p>
-            </div>
-          </motion.div>
-        ) : analytics ? (
-          // Task Analytics Section (replaces DashboardStats)
-          <TaskAnalyticsSection
-            analytics={analytics}
-            onFilterChange={handleAnalyticsFilterChange}
-          />
-        ) : null
+      {/* Task Summary - Only show on Tasks page (not in project context) */}
+      {!isProjectContext && computedTaskStats && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <ProjectTaskSummary taskStats={computedTaskStats} />
+        </motion.div>
       )}
 
       {/* Gantt Chart Timeline - Above Task Board */}
@@ -423,6 +460,7 @@ export function TaskBoard({
             onPriorityChange={setPriorityFilter}
             projects={projects}
             teamMembers={teamMembers}
+            hideProjectFilter={!!externalProjectFilter}
           />
 
           {/* View Toggle */}

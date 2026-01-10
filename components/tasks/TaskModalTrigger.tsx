@@ -60,9 +60,7 @@ export function TaskModalTrigger({
             : '')
         }
       >
-        {variant === 'default' && (
-          <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-10 transition-opacity" />
-        )}
+   
         <Wrench className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
         <span className="font-black text-sm md:text-base">{label}</span>
       </Button>

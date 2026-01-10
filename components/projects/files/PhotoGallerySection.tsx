@@ -5,13 +5,14 @@
  * - Lazy loading for thumbnails
  * - Empty state with upload CTA
  * - Receipt badge overlay for task/expense photos
+ * - Cover photo badge and star button for setting primary photo
  */
 
 'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, Upload, Eye, Trash2 } from 'lucide-react';
+import { Image, Upload, Eye, Trash2, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -19,6 +20,8 @@ import { BaseModal } from '@/components/ui/BaseModal';
 import { ProjectPhotoUploader } from './ProjectPhotoUploader';
 import { PhotoLightbox } from './PhotoLightbox';
 import { ReceiptPhotoBadge } from './ReceiptPhotoBadge';
+import { setProjectPrimaryPhoto } from '@/app/actions/project-photos';
+import { toast } from 'sonner';
 
 interface UnifiedPhoto {
   id: string;
@@ -44,6 +47,8 @@ interface PhotoGallerySectionProps {
   onSelectAll: () => void;
   onRefresh: () => void;
   projectId: string;
+  currentImageUrl?: string | null;
+  onSetPrimary?: (url: string | null) => void;
 }
 
 export function PhotoGallerySection({
@@ -53,11 +58,59 @@ export function PhotoGallerySection({
   onSelectAll,
   onRefresh,
   projectId,
+  currentImageUrl,
+  onSetPrimary,
 }: PhotoGallerySectionProps) {
-  console.log('[PhotoGallerySection] Rendering with photos:', photos.length);
+  console.log('[PhotoGallerySection] Rendering with photos:', photos.length, 'currentImageUrl:', currentImageUrl);
 
   const [showUploader, setShowUploader] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState<UnifiedPhoto | null>(null);
+  const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
+
+  // Check if photo is the current primary/cover photo
+  const isPrimaryPhoto = (photo: UnifiedPhoto) => {
+    return currentImageUrl === photo.url;
+  };
+
+  // Handle setting primary photo
+  const handleSetPrimary = async (photoUrl: string) => {
+    if (!onSetPrimary) return;
+
+    // Find the photo to get its ID for loading state
+    const photo = photos.find(p => p.url === photoUrl);
+    if (photo) setSettingPrimaryId(photo.id);
+
+    const result = await setProjectPrimaryPhoto(projectId, photoUrl);
+
+    setSettingPrimaryId(null);
+
+    if (!result.success) {
+      toast.error(`Failed to set cover photo: ${result.error}`);
+    } else {
+      toast.success('Cover photo updated');
+      onSetPrimary(photoUrl);
+      onRefresh();
+    }
+  };
+
+  // Handle removing primary photo
+  const handleRemovePrimary = async () => {
+    if (!onSetPrimary) return;
+
+    setSettingPrimaryId('removing');
+
+    const result = await setProjectPrimaryPhoto(projectId, null);
+
+    setSettingPrimaryId(null);
+
+    if (!result.success) {
+      toast.error(`Failed to remove cover photo: ${result.error}`);
+    } else {
+      toast.success('Cover photo removed');
+      onSetPrimary(null);
+      onRefresh();
+    }
+  };
 
   // Handle photo deletion from lightbox
   const handlePhotoDelete = (photoId: string) => {
@@ -186,6 +239,16 @@ export function PhotoGallerySection({
                 </div>
               )}
 
+              {/* Cover photo badge (top-right, for uploads only - below receipt badge position) */}
+              {photo.source === 'upload' && isPrimaryPhoto(photo) && (
+                <div className="absolute top-2 right-2 z-10">
+                  <div className="px-2 py-1 bg-[#001B51] text-white rounded text-xs font-bold flex items-center gap-1 shadow-lg">
+                    <Star className="h-3 w-3 fill-current" />
+                    Cover
+                  </div>
+                </div>
+              )}
+
               {/* Hover overlay with actions */}
               <div
                 className={cn(
@@ -201,11 +264,35 @@ export function PhotoGallerySection({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setLightboxPhoto(photo)}
-                    className="flex items-center justify-center w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                    className="flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] bg-white/20 hover:bg-white/30 rounded-full transition-colors"
                     aria-label="View photo"
                   >
                     <Eye className="w-4 h-4 text-white" />
                   </button>
+
+                  {/* Star button for setting as cover (only for direct uploads) */}
+                  {photo.source === 'upload' && onSetPrimary && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isPrimaryPhoto(photo)) {
+                          handleRemovePrimary();
+                        } else {
+                          handleSetPrimary(photo.url);
+                        }
+                      }}
+                      disabled={settingPrimaryId === photo.id || settingPrimaryId === 'removing'}
+                      className={cn(
+                        'flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full transition-colors',
+                        isPrimaryPhoto(photo)
+                          ? 'bg-[#001B51] text-white'
+                          : 'bg-white/20 hover:bg-white/30 text-white'
+                      )}
+                      aria-label={isPrimaryPhoto(photo) ? 'Remove as cover photo' : 'Set as cover photo'}
+                    >
+                      <Star className={cn('w-4 h-4', isPrimaryPhoto(photo) ? 'fill-current' : '')} />
+                    </button>
+                  )}
 
                   {/* Only show delete for direct uploads */}
                   {photo.is_deletable && (
@@ -215,7 +302,7 @@ export function PhotoGallerySection({
                         // Delete will be handled via lightbox for now
                         setLightboxPhoto(photo);
                       }}
-                      className="flex items-center justify-center w-8 h-8 bg-red-500/80 hover:bg-red-600 rounded-full transition-colors"
+                      className="flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] bg-red-500/80 hover:bg-red-600 rounded-full transition-colors"
                       aria-label="Delete photo"
                     >
                       <Trash2 className="w-4 h-4 text-white" />
@@ -259,6 +346,9 @@ export function PhotoGallerySection({
           onClose={() => setLightboxPhoto(null)}
           onNavigate={(newPhoto) => setLightboxPhoto(newPhoto)}
           onDelete={handlePhotoDelete}
+          isPrimary={isPrimaryPhoto(lightboxPhoto)}
+          onSetPrimary={onSetPrimary ? handleSetPrimary : undefined}
+          onRemovePrimary={onSetPrimary ? handleRemovePrimary : undefined}
         />
       )}
     </div>

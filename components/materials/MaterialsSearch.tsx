@@ -29,6 +29,7 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
   const [selectedForComparison, setSelectedForComparison] = useState<HomeDepotProduct[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = () => {
     startTransition(async () => {
@@ -38,8 +39,11 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
         inStockOnly: stockFilter === 'in_stock' ? true : undefined,
       });
 
+      setHasSearched(true);
       if (result.success && result.data) {
         setProducts(result.data.products);
+      } else {
+        setProducts([]);
       }
     });
   };
@@ -210,8 +214,8 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
         )}
       </AnimatePresence>
 
-      {/* Products Grid/List */}
-      {products.length > 0 ? (
+      {/* Products Grid/List - only show when there are results */}
+      {products.length > 0 && (
         <div className={viewMode === 'grid'
           ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4'
           : 'space-y-3 md:space-y-4'
@@ -236,20 +240,15 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
             ))}
           </AnimatePresence>
         </div>
-      ) : isPending ? (
+      )}
+
+      {/* Loading state */}
+      {isPending && (
         <div className="flex items-center justify-center py-12 md:py-16">
           <div className="text-center space-y-3 md:space-y-4">
             <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-construction-blue mx-auto" />
             <p className="text-sm md:text-lg font-semibold text-gray-600">Searching Home Depot catalog...</p>
           </div>
-        </div>
-      ) : (
-        <div className="bg-white border-2 border-dashed border-gray-300 rounded-lg p-8 md:p-12 text-center">
-          <Search className="h-12 w-12 md:h-16 md:w-16 text-gray-400 mx-auto mb-3 md:mb-4" />
-          <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-1 md:mb-2">Search for Materials</h3>
-          <p className="text-sm md:text-base text-gray-600 px-4">
-            Enter a product name or browse by category to find materials from Home Depot
-          </p>
         </div>
       )}
 

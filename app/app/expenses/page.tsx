@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth';
 import { ExpensesList } from '@/components/expenses/ExpensesList';
 import { ExpensesListSkeleton } from '@/components/expenses/ExpensesListSkeleton';
 import { ExpensesPageHeader } from '@/components/expenses/ExpensesPageHeader';
+import { ExpenseSummary } from '@/components/expenses/ExpenseSummary';
+import { getExpenseAnalytics } from '@/app/actions/expenses';
 
 // Debug: Server-side data fetching for expenses page
 async function getExpensesData() {
@@ -157,7 +159,12 @@ export default async function ExpensesPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const { expenses, projects, tasks, role } = await getExpensesData();
+  const [expensesData, analyticsResult] = await Promise.all([
+    getExpensesData(),
+    getExpenseAnalytics(),
+  ]);
+  const { expenses, projects, tasks, role } = expensesData;
+  const analytics = analyticsResult.data || null;
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
@@ -190,6 +197,9 @@ export default async function ExpensesPage({
           <ExpensesPageHeader projects={projects} tasks={tasks} />
         </div>
       </div>
+
+      {/* Expense Summary Cards */}
+      <ExpenseSummary analytics={analytics} />
 
       {/* Expenses List with Filters */}
       <Suspense fallback={<ExpensesListSkeleton />}>

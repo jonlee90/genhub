@@ -58,6 +58,14 @@
         "docs/domain/TASKS.md"
       ]
     },
+    "database/task_assignees": {
+      "type": "table",
+      "affects": [
+        "docs/indexes/tables.md",
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/TASKS.md"
+      ]
+    },
     "database/task_dependencies": {
       "type": "table",
       "affects": [

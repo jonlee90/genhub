@@ -65,13 +65,13 @@ created_at, updated_at
 id uuid PK
 project_id uuid FK → projects
 name text NOT NULL
-display_order int
+order_index int
 status phase_status  -- not_started, in_progress, completed
 completion_percentage int (0-100)
 start_date date, end_date date
 description text
 created_at, updated_at
-UNIQUE(project_id, name), UNIQUE(project_id, display_order)
+UNIQUE(project_id, name), UNIQUE(project_id, order_index)
 ```
 **Default phases**: Initiation(0), Pre-Construction(1), Procurement(2), Construction(3), Post-Construction(4)
 **Triggers**: Updates project.completion_percentage
@@ -108,7 +108,7 @@ start_date date, due_date date
 planned_cost decimal(10,2)
 actual_cost decimal(10,2)  -- AUTO-CALCULATED from materials + expenses
 blocked_reason text
-display_order int
+order_index int
 approval_status approval_status (optional)
 created_by uuid FK
 completed_at timestamptz
@@ -118,6 +118,21 @@ created_at, updated_at
 - Updates actual_cost from materials + expenses
 - Sets completed_at on status change
 - Updates phase completion
+
+### task_assignees
+```sql
+id uuid PK
+task_id uuid FK → tasks ON DELETE CASCADE
+user_id uuid FK → user_profiles (nullable)
+subcontractor_id uuid FK → subcontractors (nullable)
+assigned_at timestamptz
+assigned_by uuid FK → user_profiles
+created_at, updated_at
+CHECK(user_id IS NOT NULL XOR subcontractor_id IS NOT NULL)
+UNIQUE(task_id, user_id)
+UNIQUE(task_id, subcontractor_id)
+```
+**Purpose**: Junction table for multi-assignee support. Each task can have multiple users and/or subcontractors assigned.
 
 ### task_dependencies
 ```sql
@@ -233,6 +248,7 @@ companies (root)
 │   ├── project_phases
 │   ├── project_team → users, subcontractors
 │   ├── tasks
+│   │   ├── task_assignees → users, subcontractors
 │   │   ├── task_dependencies
 │   │   ├── task_activity
 │   │   └── material_assignments → materials

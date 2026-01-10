@@ -116,7 +116,12 @@
       "Bash(python3:*)",
       "mcp__plugin_serena_serena__find_file",
       "mcp__plugin_serena_serena__activate_project",
-      "mcp__plugin_serena_serena__replace_content"
+      "mcp__plugin_serena_serena__replace_content",
+      "mcp__plugin_serena_serena__search_for_pattern",
+      "mcp__plugin_serena_serena__read_file",
+      "Bash(npx next build:*)",
+      "Skill(kc:sync-docs)",
+      "Bash(npx next lint:*)"
     ],
     "deny": [],
     "ask": []

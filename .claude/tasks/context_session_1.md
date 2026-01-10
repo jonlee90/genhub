@@ -817,7 +817,7 @@ Comprehensive code review completed for Epic 2: Projects Module. Overall grade: 
 1. Missing error boundaries for all routes
 2. Missing loading states for detail pages
 3. SQL injection risk from `any` types
-4. Unhandled edge case for missing display_order
+4. Unhandled edge case for missing order_index
 5. Missing revalidation tags for cache management
 6. Race condition in ProjectSettings status updates
 7. Memory leak in CreateProjectForm useEffect

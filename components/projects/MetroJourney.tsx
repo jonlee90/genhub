@@ -192,9 +192,10 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
                         stats={stats}
                         isCurrent={isCurrent}
                         isSelected={isSelected}
-                        onClick={() =>
-                          setSelectedPhaseId(isSelected ? null : phase.id)
-                        }
+                        onClick={() => {
+                          console.log('[PhaseStation] Clicked:', phase.name, 'isSelected:', isSelected);
+                          setSelectedPhaseId(isSelected ? null : phase.id);
+                        }}
                       />
                     </motion.div>
                   );
@@ -291,9 +292,10 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
                         stats={stats}
                         isCurrent={isCurrent}
                         isSelected={isSelected}
-                        onClick={() =>
-                          setSelectedPhaseId(isSelected ? null : phase.id)
-                        }
+                        onClick={() => {
+                          console.log('[PhaseStation] Clicked:', phase.name, 'isSelected:', isSelected);
+                          setSelectedPhaseId(isSelected ? null : phase.id);
+                        }}
                       />
                     </motion.div>
                   );
@@ -304,7 +306,7 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
         </div>
 
         {/* Phase detail panel */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           {selectedPhase && selectedPhaseStats && (
             <motion.div
               key={selectedPhase.id}
@@ -312,7 +314,7 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
             >
               <PhaseDetailPanel
                 phase={selectedPhase}

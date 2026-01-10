@@ -22,6 +22,7 @@ import {
   Calendar,
   Aperture,
   Loader2,
+  Star,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -58,6 +59,9 @@ interface PhotoLightboxProps {
   onClose: () => void;
   onNavigate: (photo: UnifiedPhoto) => void;
   onDelete: (photoId: string) => void;
+  isPrimary?: boolean;
+  onSetPrimary?: (photoUrl: string) => void;
+  onRemovePrimary?: () => void;
 }
 
 export function PhotoLightbox({
@@ -66,11 +70,30 @@ export function PhotoLightbox({
   onClose,
   onNavigate,
   onDelete,
+  isPrimary = false,
+  onSetPrimary,
+  onRemovePrimary,
 }: PhotoLightboxProps) {
-  console.log('[PhotoLightbox] Rendering photo:', photo.id);
+  console.log('[PhotoLightbox] Rendering photo:', photo.id, 'isPrimary:', isPrimary);
 
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSettingPrimary, setIsSettingPrimary] = useState(false);
+  const [isRemovingPrimary, setIsRemovingPrimary] = useState(false);
+
+  const handleSetPrimary = async () => {
+    if (!onSetPrimary) return;
+    setIsSettingPrimary(true);
+    await onSetPrimary(photo.url);
+    setIsSettingPrimary(false);
+  };
+
+  const handleRemovePrimary = async () => {
+    if (!onRemovePrimary) return;
+    setIsRemovingPrimary(true);
+    await onRemovePrimary();
+    setIsRemovingPrimary(false);
+  };
 
   const currentIndex = photos.findIndex((p) => p.id === photo.id);
   const hasPrev = currentIndex > 0;
@@ -221,6 +244,16 @@ export function PhotoLightbox({
           <div className="p-4 bg-white/10 backdrop-blur-md rounded-lg">
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1 min-w-0">
+                {/* Current Cover Photo indicator */}
+                {isPrimary && photo.source === 'upload' && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="px-3 py-1.5 bg-[#001B51] text-white rounded text-xs font-bold flex items-center gap-1.5 shadow-lg">
+                      <Star className="h-3.5 w-3.5 fill-current" />
+                      Current Cover Photo
+                    </div>
+                  </div>
+                )}
+
                 {/* Filename */}
                 <h3 className="text-lg font-bold text-white mb-2 truncate">
                   {photo.filename}
@@ -294,7 +327,43 @@ export function PhotoLightbox({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
+                {/* Set as Cover button (only for direct uploads that are not primary) */}
+                {photo.source === 'upload' && !isPrimary && onSetPrimary && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSetPrimary}
+                    disabled={isSettingPrimary}
+                    className="bg-[#001B51] hover:bg-[#001B51]/90 text-white min-h-[44px]"
+                  >
+                    {isSettingPrimary ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Star className="h-4 w-4 mr-2" />
+                    )}
+                    Set as Cover
+                  </Button>
+                )}
+
+                {/* Remove as Cover button (only when photo is primary) */}
+                {photo.source === 'upload' && isPrimary && onRemovePrimary && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRemovePrimary}
+                    disabled={isRemovingPrimary}
+                    className="border-white/20 text-white hover:bg-white/10 min-h-[44px]"
+                  >
+                    {isRemovingPrimary ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <X className="h-4 w-4 mr-2" />
+                    )}
+                    Remove as Cover
+                  </Button>
+                )}
+
                 {/* Delete button (only for direct uploads) */}
                 {photo.is_deletable && (
                   <Button
@@ -302,7 +371,7 @@ export function PhotoLightbox({
                     size="sm"
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="bg-red-600 hover:bg-red-700 text-white"
+                    className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]"
                   >
                     {isDeleting ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -321,7 +390,7 @@ export function PhotoLightbox({
                     variant="secondary"
                     size="sm"
                     onClick={handleViewSource}
-                    className="bg-white/20 hover:bg-white/30 text-white"
+                    className="bg-white/20 hover:bg-white/30 text-white min-h-[44px]"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     View Source

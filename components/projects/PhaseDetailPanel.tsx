@@ -6,6 +6,7 @@ import { X, CheckCircle2, Clock, AlertTriangle, Ban, Calendar, Sparkles, Loader2
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { applyTaskTemplates } from '@/app/actions/phases';
 import type { Database } from '@/types/database.types';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
@@ -16,7 +17,23 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 type Phase = Database['public']['Tables']['project_phases']['Row'];
-type Task = Database['public']['Tables']['tasks']['Row'];
+type Task = Database['public']['Tables']['tasks']['Row'] & {
+  assignees?: Array<{
+    id: string;
+    user_id: string | null;
+    subcontractor_id: string | null;
+    user?: {
+      id: string;
+      name: string;
+      avatar_url: string | null;
+    } | null;
+    subcontractor?: {
+      id: string;
+      contact_name: string;
+      company_name: string;
+    } | null;
+  }>;
+};
 
 interface PhaseStats {
   phaseId: string;
@@ -121,12 +138,7 @@ export function PhaseDetailPanel({
     : 0;
 
   return (
-    <motion.div
-      className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* LEFT COLUMN - Phase Info */}
       <div className="space-y-5">
         {/* Header Section */}
@@ -409,6 +421,28 @@ export function PhaseDetailPanel({
                         >
                           {task.priority.toUpperCase()}
                         </Badge>
+                        {/* Assignee Avatars */}
+                        {task.assignees && task.assignees.length > 0 && (
+                          <div className="flex -space-x-1.5 ml-auto">
+                            {task.assignees.slice(0, 3).map((a) => {
+                              const name = a.user?.name || a.subcontractor?.contact_name || '?';
+                              const isUser = !!a.user_id;
+                              return (
+                                <Avatar key={a.id} className="h-6 w-6 border-2 border-white">
+                                  <AvatarImage src={a.user?.avatar_url || undefined} />
+                                  <AvatarFallback className={cn("text-[9px] text-white", isUser ? "bg-[#001B51]" : "bg-orange-600")}>
+                                    {name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                  </AvatarFallback>
+                                </Avatar>
+                              );
+                            })}
+                            {task.assignees.length > 3 && (
+                              <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
+                                <span className="text-[9px] font-bold text-gray-600">+{task.assignees.length - 3}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -465,6 +499,6 @@ export function PhaseDetailPanel({
           background: #94a3b8;
         }
       `}</style>
-    </motion.div>
+    </div>
   );
 }

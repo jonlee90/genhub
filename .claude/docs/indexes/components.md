@@ -2,7 +2,7 @@
 
 > Quick lookup for UI components. For patterns, see `.claude/skills/frontend/`
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -48,6 +48,10 @@ Last updated: 2026-01-09
 | PhaseTimeline | Client | Metro journey view |
 | ProjectSummaryCard | Client | Dashboard widget |
 | MetroJourney | Client | Phase visualization |
+| ProjectDetailContent | Client | Project detail page content |
+| ProjectFilesTab | Client | Files & photos tab container |
+| PhotoGallerySection | Client | Photo grid with primary photo selection |
+| PhotoLightbox | Client | Full-screen photo viewer with actions |
 
 ### Tasks (`components/tasks/`)
 | Component | Type | Purpose |
@@ -57,6 +61,7 @@ Last updated: 2026-01-09
 | TaskKanban | Client | Kanban board |
 | TaskModal | Client | Task detail modal |
 | TaskForm | Client | Create/edit form |
+| AssigneeMultiSelect | Client | Multi-user/sub dropdown |
 | TaskFilters | Client | Filter controls |
 | TaskStatusBadge | Client | Status display |
 | TaskPriorityIcon | Client | Priority indicator |
@@ -82,6 +87,7 @@ Last updated: 2026-01-09
 | ExpenseForm | Client | Create/edit form |
 | ExpenseStatusBadge | Client | Approval status |
 | ReceiptUpload | Client | Receipt upload |
+| ExpenseSummary | Client | Analytics summary cards |
 
 ### Chat (`components/chat/`)
 | Component | Type | Purpose |
@@ -216,8 +222,8 @@ interface EntityListProps {
 | Directory | Count | Type |
 |-----------|-------|------|
 | ui/ | ~25 | Base components |
-| tasks/ | ~15 | Task management |
-| projects/ | ~8 | Project views |
+| tasks/ | ~40 | Task management (incl. gantt/) |
+| projects/ | ~78 | Project views (incl. files/, spatial/) |
 | chat/ | ~10 | Chat system |
 | materials/ | ~6 | Materials |
 | expenses/ | ~5 | Expenses |
@@ -231,7 +237,7 @@ interface EntityListProps {
 | settings/ | ~3 | Settings |
 | forms/ | ~8 | Form components |
 | admin/ | ~3 | Admin tools |
-| **Total** | ~105+ | - |
+| **Total** | ~200+ | - |
 
 ---
 

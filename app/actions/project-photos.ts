@@ -225,6 +225,98 @@ export async function getProjectPhotosWithReceipts(
 }
 
 /**
+ * Set or clear the primary photo for a project
+ * Updates projects.image_url column
+ */
+export async function setProjectPrimaryPhoto(
+  projectId: string,
+  photoUrl: string | null
+): Promise<{ success: boolean; error?: string }> {
+  console.log('[setProjectPrimaryPhoto] Setting primary photo for project:', projectId);
+
+  // 1. Validate user is authenticated
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { success: false, error: userContext.error };
+  }
+
+  const { supabase, userId, companyId } = userContext;
+
+  // 2. Validate projectId format (basic UUID check)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(projectId)) {
+    return { success: false, error: 'Invalid project ID format' };
+  }
+
+  // 3. Verify user has access to project (company_id check or project_team membership)
+  const { data: project, error: projectError } = await supabase
+    .from('projects')
+    .select('id, company_id')
+    .eq('id', projectId)
+    .single();
+
+  if (projectError || !project) {
+    return { success: false, error: 'Project not found' };
+  }
+
+  // Check company access
+  if (project.company_id !== companyId) {
+    // Check project_team membership as fallback
+    const { data: teamMember } = await supabase
+      .from('project_team')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!teamMember) {
+      return { success: false, error: "You don't have permission to edit this project" };
+    }
+  }
+
+  // 4. Validate photoUrl format if provided
+  if (photoUrl !== null) {
+    // Basic URL validation
+    try {
+      new URL(photoUrl);
+    } catch {
+      return { success: false, error: 'Invalid photo URL format' };
+    }
+
+    // Verify the photo exists in project_photos for this project (prevents arbitrary URL injection)
+    const { data: existingPhoto, error: photoError } = await supabase
+      .from('project_photos')
+      .select('id, photo_url')
+      .eq('project_id', projectId)
+      .eq('photo_url', photoUrl)
+      .is('deleted_at', null)
+      .single();
+
+    if (photoError || !existingPhoto) {
+      return { success: false, error: 'Photo not found or has been deleted' };
+    }
+  }
+
+  // 5. Update projects.image_url
+  const { error: updateError } = await supabase
+    .from('projects')
+    .update({ image_url: photoUrl, updated_at: new Date().toISOString() })
+    .eq('id', projectId);
+
+  if (updateError) {
+    console.error('[setProjectPrimaryPhoto] Error:', updateError);
+    return { success: false, error: 'Failed to update cover photo. Please try again.' };
+  }
+
+  // 6. Revalidate paths
+  revalidatePath(`/app/projects/${projectId}`);
+  revalidatePath('/app/projects');
+
+  console.log('[setProjectPrimaryPhoto] Success - imageUrl:', photoUrl ? 'set' : 'cleared');
+  return { success: true };
+}
+
+/**
  * Delete project photo (soft delete)
  */
 export async function deleteProjectPhoto(photoId: string) {

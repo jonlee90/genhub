@@ -2,7 +2,7 @@
 
 > Quick lookup for Server Actions. For patterns, see `.claude/skills/backend/server-action.md`
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -21,14 +21,26 @@ Last updated: 2026-01-09
 ### Tasks (`app/actions/tasks.ts`)
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getTasks | List tasks (with filters) | - |
-| getTaskById | Get single task | - |
+| getProjectAssignees | Get team + subcontractors for dropdown | - |
 | createTask | Create task | /app/tasks |
 | updateTask | Update task fields | /app/tasks |
 | updateTaskStatus | Change task status | /app/tasks |
-| deleteTask | Delete task | /app/tasks |
+| addTaskDependency | Add task dependency | /app/tasks |
+| removeTaskDependency | Remove task dependency | /app/tasks |
 | addTaskComment | Add comment | /app/tasks/[id] |
+| deleteTask | Delete task | /app/tasks |
+| updateApprovalStatus | Change approval status | /app/tasks |
+| getProjectTasks | Get tasks for a project | - |
+| updateTaskDueDate | Update single due date | /app/tasks |
+| updateTaskDates | Update start/end dates | /app/tasks |
+| getTaskDependencies | Get dependencies for tasks | - |
+| linkTaskToMarker | Link task to spatial marker | - |
+| getTasksByMarker | Get tasks for a marker | - |
+| logTaskCompletionToMarker | Log completion to marker | - |
+| getTaskDetails | Get full task details | - |
 | getTaskActivity | Get task history | - |
+| getTaskAttachments | Get task attachments | - |
+| getTaskAnalytics | Get task analytics data | - |
 
 ### Phases (`app/actions/phases.ts`)
 | Action | Purpose | Revalidates |
@@ -54,6 +66,7 @@ Last updated: 2026-01-09
 | createExpense | Submit expense | /app/expenses |
 | updateExpense | Update expense | /app/expenses |
 | updateExpenseStatus | Approve/reject | /app/expenses |
+| getExpenseAnalytics | Get expense summary stats | - |
 
 ### Team (`app/actions/team.ts`)
 | Action | Purpose | Revalidates |
@@ -109,6 +122,7 @@ Last updated: 2026-01-09
 | uploadPhoto | Upload photo | /app/projects/[id] |
 | deletePhoto | Delete photo | /app/projects/[id] |
 | updatePhotoCategory | Change category | - |
+| setProjectPrimaryPhoto | Set/clear cover image | /app/projects/[id], /app/projects |
 
 ### Auth (`app/actions/auth.ts`)
 | Action | Purpose | Revalidates |
@@ -139,16 +153,16 @@ Last updated: 2026-01-09
 | Domain | Action Count | Files |
 |--------|--------------|-------|
 | Projects | 6 | projects.ts |
-| Tasks | 8 | tasks.ts |
+| Tasks | 20 | tasks.ts |
 | Phases | 3 | phases.ts |
 | Materials | 5 | materials.ts |
-| Expenses | 5 | expenses.ts |
+| Expenses | 6 | expenses.ts |
 | Team | 5 | team.ts |
 | Subcontractors | 4 | subcontractors.ts |
 | Chat | 5 | chat.ts, chat-queries.ts |
 | Spatial | 7 | spatial.ts |
-| Files/Photos | 10 | project-files.ts, project-photos.ts |
-| **Total** | ~60+ | 26 files |
+| Files/Photos | 11 | project-files.ts, project-photos.ts |
+| **Total** | ~76+ | 26 files |
 
 ---
 

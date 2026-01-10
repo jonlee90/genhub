@@ -1,10 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import { TaskBoard } from '@/components/tasks/TaskBoard';
-import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
-import { getTaskAnalytics } from '@/app/actions/tasks';
-import type { TaskAnalytics } from '@/types/analytics';
+import { TasksPageClient } from '@/components/tasks/TasksPageClient';
 
 interface TasksPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -316,80 +313,14 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
   // Get view mode from URL or default to kanban
   const viewMode = (params.view as string) || 'kanban';
 
-  // Fetch task analytics for the dashboard
-  let analytics: TaskAnalytics | undefined;
-  let analyticsError: string | undefined;
-
-  const session = await auth();
-  if (session?.user?.id) {
-    const supabase = await createClient();
-    const { data: companyUser } = await supabase
-      .from('company_users')
-      .select('company_id')
-      .eq('user_id', session.user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-
-    if (companyUser?.company_id) {
-      const analyticsResult = await getTaskAnalytics('all', companyUser.company_id);
-      if (analyticsResult.error) {
-        console.error('[TasksPage] Analytics fetch failed:', analyticsResult.error);
-        analyticsError = analyticsResult.error;
-      } else {
-        analytics = analyticsResult.data;
-      }
-    }
-  }
-
   return (
-    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
-      {/* Blueprint Grid Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          color: '#001B51'
-        }} />
-      </div>
-
-      {/* Industrial Header with Blueprint Aesthetic */}
-      <div className="relative">
-          {/* Construction border */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-
-        <div className="flex items-start justify-between pt-2 md:pt-4 gap-3">
-          <div className="space-y-1 md:space-y-3">
-            {/* Main Title - Heavy Industrial Typography */}
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
-              TASKS
-            </h1>
-          </div>
-
-          {/* Action Button with Construction Theme */}
-          <TaskModalTrigger
-            projects={projects}
-            teamMembers={teamMembers}
-          />
-        </div>
-      </div>
-
-      {/* Task Board with Analytics */}
-      <TaskBoard
-        initialTasks={tasks}
-        taskDependencies={taskDependencies}
-        projects={projects}
-        teamMembers={teamMembers}
-        initialView={viewMode as 'kanban' | 'list'}
-        topTeamMembers={topTeamMembers}
-        analytics={analytics}
-        analyticsError={analyticsError}
-      />
-
-      {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
-    </div>
+    <TasksPageClient
+      tasks={tasks}
+      projects={projects}
+      teamMembers={teamMembers}
+      taskDependencies={taskDependencies || []}
+      topTeamMembers={topTeamMembers || []}
+      initialView={viewMode as 'kanban' | 'list'}
+    />
   );
 }

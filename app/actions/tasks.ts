@@ -15,6 +15,21 @@ type TaskType = Database['public']['Enums']['task_type'];
 type ApprovalStatus = Database['public']['Enums']['approval_status'];
 type ActivityAction = Database['public']['Enums']['activity_action'];
 
+// Types for multi-assignee support
+export interface AssigneeOption {
+  id: string;
+  type: 'user' | 'subcontractor';
+  name: string;
+  email?: string;
+  avatar_url?: string | null;
+  company_name?: string; // For subcontractors
+}
+
+export interface TaskAssignee {
+  id: string;
+  type: 'user' | 'subcontractor';
+}
+
 // ============================================
 // Validation Schemas
 // ============================================
@@ -57,6 +72,7 @@ const updateTaskSchema = z.object({
   actual_cost: z.number().min(0).optional().nullable(),
   phase_id: z.string().uuid('Invalid phase ID').optional().nullable(),
   receipt_photo_url: z.string().url('Invalid receipt photo URL').optional().nullable(),
+  status: z.enum(['todo', 'in_progress', 'review', 'blocked', 'completed']).optional(),
 }).refine(
   (data) => {
     // If both dates are provided, start_date must be <= due_date
@@ -200,6 +216,155 @@ async function logTaskActivity(
 }
 
 // ============================================
+// Multi-Assignee Helper Functions
+// ============================================
+
+/**
+ * Get all assignable users and subcontractors for a project
+ * Returns combined list of ALL company team members + ALL company subcontractors
+ */
+export async function getProjectAssignees(projectId: string): Promise<{
+  data?: AssigneeOption[];
+  error?: string;
+}> {
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  // Verify project access
+  const projectCheck = await verifyProjectAccess(supabase, projectId, companyId);
+  if ('error' in projectCheck) {
+    return { error: projectCheck.error };
+  }
+
+  // Transform into unified assignee options
+  const assignees: AssigneeOption[] = [];
+
+  // Fetch ALL company team members (from company_users + user_profiles)
+  const { data: companyUsers, error: usersError } = await supabase
+    .from('company_users')
+    .select(`
+      user_id,
+      user_profiles!inner (
+        id,
+        name,
+        email,
+        avatar_url
+      )
+    `)
+    .eq('company_id', companyId)
+    .eq('status', 'active');
+
+  if (usersError) {
+    console.error('[getProjectAssignees] Error fetching company users:', usersError);
+    return { error: 'Failed to fetch team members' };
+  }
+
+  companyUsers?.forEach(cu => {
+    const user = cu.user_profiles as unknown as { id: string; name: string; email: string; avatar_url: string | null };
+    if (user) {
+      assignees.push({
+        id: user.id,
+        type: 'user',
+        name: user.name,
+        email: user.email,
+        avatar_url: user.avatar_url,
+      });
+    }
+  });
+
+  // Fetch ALL company subcontractors
+  const { data: subs, error: subsError } = await supabase
+    .from('subcontractors')
+    .select('id, company_name, contact_name, email')
+    .eq('company_id', companyId)
+    .eq('is_active', true);
+
+  if (subsError) {
+    console.error('[getProjectAssignees] Error fetching subcontractors:', subsError);
+    // Don't fail - just continue without subcontractors
+  }
+
+  subs?.forEach(sub => {
+    assignees.push({
+      id: sub.id,
+      type: 'subcontractor',
+      name: sub.contact_name,
+      email: sub.email || undefined,
+      company_name: sub.company_name,
+    });
+  });
+
+  // Remove duplicates (in case someone appears multiple times)
+  const uniqueAssignees = assignees.filter((assignee, index, self) =>
+    index === self.findIndex((a) => a.id === assignee.id && a.type === assignee.type)
+  );
+
+  return { data: uniqueAssignees };
+}
+
+/**
+ * Manage task assignees - insert new assignees for a task
+ */
+async function insertTaskAssignees(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  taskId: string,
+  assignees: TaskAssignee[],
+  assignedBy: string
+): Promise<{ error?: string }> {
+  if (!assignees || assignees.length === 0) {
+    return {};
+  }
+
+  const assigneeInserts = assignees.map((assignee) => ({
+    task_id: taskId,
+    user_id: assignee.type === 'user' ? assignee.id : null,
+    subcontractor_id: assignee.type === 'subcontractor' ? assignee.id : null,
+    assigned_by: assignedBy,
+  }));
+
+  const { error } = await supabase.from('task_assignees').insert(assigneeInserts);
+
+  if (error) {
+    console.error('[insertTaskAssignees] Error:', error);
+    return { error: 'Failed to assign users to task' };
+  }
+
+  return {};
+}
+
+/**
+ * Update task assignees - replace all assignees for a task
+ */
+async function updateTaskAssignees(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  taskId: string,
+  assignees: TaskAssignee[],
+  assignedBy: string
+): Promise<{ error?: string }> {
+  // Delete existing assignees
+  const { error: deleteError } = await supabase
+    .from('task_assignees')
+    .delete()
+    .eq('task_id', taskId);
+
+  if (deleteError) {
+    console.error('[updateTaskAssignees] Delete error:', deleteError);
+    return { error: 'Failed to update assignees' };
+  }
+
+  // Insert new assignees
+  if (assignees && assignees.length > 0) {
+    return insertTaskAssignees(supabase, taskId, assignees, assignedBy);
+  }
+
+  return {};
+}
+
+// ============================================
 // Server Actions
 // ============================================
 
@@ -218,8 +383,19 @@ export async function createTask(prevState: any, formData: FormData) {
   // Parse form data
   const phaseId = formData.get('phase_id') as string;
   const assigneeId = formData.get('assignee_id') as string;
+  const assigneeIdsJson = formData.get('assignee_ids') as string;
 
   const taskType = formData.get('task_type') as string;
+
+  // Parse multi-assignee data (new format)
+  let assigneeIds: TaskAssignee[] = [];
+  if (assigneeIdsJson) {
+    try {
+      assigneeIds = JSON.parse(assigneeIdsJson);
+    } catch (e) {
+      console.warn('[createTask] Failed to parse assignee_ids JSON:', e);
+    }
+  }
 
   const rawData = {
     title: formData.get('title'),
@@ -287,6 +463,27 @@ export async function createTask(prevState: any, formData: FormData) {
   // Log activity
   await logTaskActivity(supabase, task.id, userId, 'created');
 
+  // Insert multi-assignees into junction table
+  if (assigneeIds && assigneeIds.length > 0) {
+    const assigneeResult = await insertTaskAssignees(supabase, task.id, assigneeIds, userId);
+    if (assigneeResult.error) {
+      console.warn('[createTask] Failed to insert assignees:', assigneeResult.error);
+    }
+
+    // Notify all user assignees (not subcontractors)
+    for (const assignee of assigneeIds) {
+      if (assignee.type === 'user' && assignee.id !== userId) {
+        await supabase.from('notifications').insert({
+          user_id: assignee.id,
+          type: 'task_assigned',
+          title: 'New Task Assigned',
+          message: `You have been assigned to: ${data.title}`,
+          link: `/app/tasks/${task.id}`,
+        });
+      }
+    }
+  }
+
   // Create notification for assignee if assigned
   if (data.assignee_id && data.assignee_id !== userId) {
     await supabase.from('notifications').insert({
@@ -346,6 +543,17 @@ export async function updateTask(formData: FormData) {
   const startDate = formData.get('start_date') as string;
   const dueDate = formData.get('due_date') as string;
 
+  // Parse multi-assignee data (new format)
+  const assigneeIdsJson = formData.get('assignee_ids') as string;
+  let assigneeIds: TaskAssignee[] | undefined;
+  if (assigneeIdsJson) {
+    try {
+      assigneeIds = JSON.parse(assigneeIdsJson);
+    } catch (e) {
+      console.warn('[updateTask] Failed to parse assignee_ids:', e);
+    }
+  }
+
   const rawData = {
     id: formData.get('id'),
     title: formData.get('title') || undefined,
@@ -361,6 +569,7 @@ export async function updateTask(formData: FormData) {
       ? parseFloat(formData.get('actual_cost') as string)
       : undefined,
     phase_id: phaseId && phaseId !== 'none' && phaseId !== '' ? phaseId : null,
+    status: formData.get('status') as string || undefined,
   };
 
   // Validate input
@@ -450,6 +659,27 @@ export async function updateTask(formData: FormData) {
       message: `You have been assigned to: ${task.title}`,
       link: `/app/tasks/${task.id}`,
     });
+  }
+
+  // Update multi-assignees if provided
+  if (assigneeIds !== undefined) {
+    const assigneeResult = await updateTaskAssignees(supabase, id, assigneeIds, userId);
+    if (assigneeResult.error) {
+      console.warn('[updateTask] Failed to update assignees:', assigneeResult.error);
+    }
+
+    // Notify new user assignees
+    for (const assignee of assigneeIds) {
+      if (assignee.type === 'user' && assignee.id !== userId) {
+        await supabase.from('notifications').insert({
+          user_id: assignee.id,
+          type: 'task_assigned',
+          title: 'Task Assigned',
+          message: `You have been assigned to: ${task.title}`,
+          link: `/app/tasks/${id}`,
+        });
+      }
+    }
   }
 
   // Revalidate paths
@@ -1002,6 +1232,23 @@ export async function getProjectTasks(
         name,
         email,
         avatar_url
+      ),
+      assignees:task_assignees (
+        id,
+        user_id,
+        subcontractor_id,
+        user:user_profiles (
+          id,
+          name,
+          email,
+          avatar_url
+        ),
+        subcontractor:subcontractors (
+          id,
+          company_name,
+          contact_name,
+          email
+        )
       ),
       phase:project_phases (
         id,

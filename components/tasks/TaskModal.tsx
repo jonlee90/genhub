@@ -45,13 +45,16 @@ import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSele
 import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
 import { TaskExpensesSection, type TaskExpense } from './TaskExpensesSection';
 import { TaskReceiptUpload } from './TaskReceiptUpload';
+import { AssigneeMultiSelect } from './AssigneeMultiSelect';
 import { getTaskExpenses } from '@/app/actions/expenses';
+import type { TaskAssignee } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';
 import { BaseModal } from '@/components/ui/BaseModal';
 import type { Database } from '@/types/database.types';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
 type TaskType = Database['public']['Enums']['task_type'];
+type TaskStatus = Database['public']['Enums']['task_status'];
 type ApprovalStatus = Database['public']['Enums']['approval_status'];
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -77,6 +80,21 @@ type Task = Database['public']['Tables']['tasks']['Row'] & {
     email: string;
     avatar_url: string | null;
   } | null;
+  assignees?: Array<{
+    id: string;
+    user_id: string | null;
+    subcontractor_id: string | null;
+    user?: {
+      id: string;
+      name: string;
+      avatar_url: string | null;
+    } | null;
+    subcontractor?: {
+      id: string;
+      contact_name: string;
+      company_name: string;
+    } | null;
+  }>;
 };
 
 interface Project {
@@ -111,6 +129,35 @@ interface TaskModalProps {
   onSuccess?: () => void;
   tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
 }
+
+// Status configuration for task workflow
+const STATUS_CONFIG = {
+  todo: {
+    label: 'To Do',
+    color: 'bg-gray-100 text-gray-800',
+    icon: 'text-gray-500',
+  },
+  in_progress: {
+    label: 'In Progress',
+    color: 'bg-blue-100 text-blue-800',
+    icon: 'text-blue-500',
+  },
+  review: {
+    label: 'Review',
+    color: 'bg-amber-100 text-amber-800',
+    icon: 'text-amber-500',
+  },
+  blocked: {
+    label: 'Blocked',
+    color: 'bg-red-100 text-red-800',
+    icon: 'text-red-500',
+  },
+  completed: {
+    label: 'Completed',
+    color: 'bg-emerald-100 text-emerald-800',
+    icon: 'text-emerald-500',
+  },
+};
 
 // Priority color configuration for dynamic theming
 const PRIORITY_CONFIG = {
@@ -284,6 +331,21 @@ function TaskModalForm({
     if (mode === 'edit' && task) return task.actual_cost?.toString() || '';
     return '';
   });
+  const [status, setStatus] = useState<string>(() => {
+    if (mode === 'edit' && task) return task.status;
+    return 'todo';
+  });
+
+  // Multi-assignee state
+  const [selectedAssignees, setSelectedAssignees] = useState<TaskAssignee[]>(() => {
+    if (mode === 'edit' && task?.assignees) {
+      return task.assignees.map((a) => ({
+        id: a.user_id || a.subcontractor_id || '',
+        type: (a.user_id ? 'user' : 'subcontractor') as 'user' | 'subcontractor'
+      })).filter((a): a is TaskAssignee => !!a.id);
+    }
+    return [];
+  });
 
   // Get current theme based on mode and priority
   const theme = getTheme(mode, priority);
@@ -377,6 +439,13 @@ function TaskModalForm({
     if (mode === 'edit' && task) {
       formData.append('id', task.id);
       formData.append('actual_cost', actualCost);
+      formData.append('status', status);
+    }
+
+    // Add multi-assignee data
+    if (selectedAssignees.length > 0) {
+      formData.append('assignee_ids', JSON.stringify(selectedAssignees));
+      console.log('[TaskModalForm] Adding assignee_ids to form:', selectedAssignees);
     }
 
     startTransition(async () => {
@@ -577,6 +646,7 @@ function TaskModalForm({
       onClose={onClose}
       icon={modalIcon}
       title={modalTitleText}
+      subtitle={mode === 'edit' && selectedProject ? selectedProject.name : undefined}
       badges={approvalBadge || undefined}
       theme="default"
       maxWidth="2xl"
@@ -835,33 +905,39 @@ function TaskModalForm({
             />
           </div>
 
-          {/* Project & Phase Row - Phase conditional (Subtask 2.2) */}
+          {/* Status & Phase Row - Phase conditional (Subtask 2.2) */}
           <div className={cn(
             'grid gap-4',
             isFieldVisible(taskType, 'phase', mode) ? 'grid-cols-2' : 'grid-cols-1'
           )}>
-            <div className="space-y-2">
-              <Label htmlFor="project" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <FolderOpen className="h-4 w-4 text-gray-400" />
-                Project <span className="text-red-500">*</span>
-              </Label>
-              <Select
-                value={selectedProjectId}
-                onValueChange={setSelectedProjectId}
-                disabled={isPending || mode === 'edit'}
-              >
-                <SelectTrigger id="project" className="h-11 border-gray-200">
-                  <SelectValue placeholder="Select project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Status field - Edit mode only */}
+            {mode === 'edit' && (
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-gray-400" />
+                  Status <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={status}
+                  onValueChange={setStatus}
+                  disabled={isPending}
+                >
+                  <SelectTrigger id="status" className="h-11 border-gray-200">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                      <SelectItem key={value} value={value} textValue={config.label}>
+                        <div className="flex items-center gap-2">
+                          <div className={cn('w-2 h-2 rounded-full', config.color.split(' ')[0].replace('bg-', 'bg-'))} />
+                          <span>{config.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Phase field - Hidden for admin tasks (Subtask 2.2) */}
             {isFieldVisible(taskType, 'phase', mode) && (
@@ -893,40 +969,19 @@ function TaskModalForm({
             )}
           </div>
 
-          {/* Assignee & Priority Row */}
+          {/* Assignees & Priority Row */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assignee" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <User className="h-4 w-4 text-gray-400" />
-                Assignee
+                Assignees
               </Label>
-              <Select
-                value={assigneeId}
-                onValueChange={setAssigneeId}
+              <AssigneeMultiSelect
+                projectId={selectedProjectId}
+                selectedAssignees={selectedAssignees}
+                onChange={setSelectedAssignees}
                 disabled={isPending}
-              >
-                <SelectTrigger id="assignee" className="h-11 border-gray-200">
-                  <SelectValue placeholder="Unassigned" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none" textValue="Unassigned">
-                    <span className="text-gray-500">Unassigned</span>
-                  </SelectItem>
-                  {teamMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.id} textValue={member.name}>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-5 w-5">
-                          <AvatarImage src={member.avatar_url || undefined} />
-                          <AvatarFallback className="text-[10px] bg-construction-blue text-white">
-                            {getInitials(member.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span>{member.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              />
             </div>
 
             <div className="space-y-2">

@@ -17,6 +17,7 @@ Last updated: 2026-01-09
 | project_phases | Phase tracking | → projects | Yes |
 | project_team | Team assignments | → projects, users | Yes |
 | tasks | Task tracking | → projects, phases | Yes |
+| task_assignees | Multi-assignee junction | → tasks, users, subcontractors | Yes |
 | task_dependencies | Task blocking | → tasks | Yes |
 | task_activity | Task audit log | → tasks | Yes |
 | materials | Material catalog | → companies | Yes |
@@ -64,6 +65,7 @@ Last updated: 2026-01-09
 
 ### Tasks
 - `tasks` - Task records with status/priority
+- `task_assignees` - Multi-assignee junction (users + subcontractors)
 - `task_dependencies` - Blocking relationships
 - `task_activity` - Audit log
 
@@ -111,8 +113,8 @@ Last updated: 2026-01-09
 
 ## Stats
 
-- **Total tables**: 41
-- **Tables with RLS**: 41/41 (100%)
+- **Total tables**: 42
+- **Tables with RLS**: 42/42 (100%)
 - **Tables with triggers**: 12+
 - **Tables in Realtime**: 5+ (messages, notifications, etc.)
 
@@ -127,6 +129,7 @@ companies
 │   ├── project_phases
 │   ├── project_team
 │   ├── tasks
+│   │   ├── task_assignees → users, subcontractors
 │   │   ├── task_dependencies
 │   │   ├── task_activity
 │   │   └── material_assignments → materials

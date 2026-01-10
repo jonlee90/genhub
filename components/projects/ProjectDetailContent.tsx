@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import {
   Building2,
   MapPin,
@@ -112,8 +113,15 @@ export function ProjectDetailContent({
 }: ProjectDetailContentProps) {
   console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length);
 
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'files' | 'settings'>('overview');
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  // Handler for when primary photo changes - refresh to get updated project data
+  const handlePrimaryPhotoChange = useCallback(() => {
+    console.log('[ProjectDetailContent] Primary photo changed, refreshing...');
+    router.refresh();
+  }, [router]);
 
   const statusConfig = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
 
@@ -596,6 +604,8 @@ export function ProjectDetailContent({
               projectId={project.id}
               initialFiles={projectFiles || []}
               initialPhotos={projectPhotos || []}
+              currentImageUrl={project.image_url}
+              onPrimaryPhotoChange={handlePrimaryPhotoChange}
             />
           </motion.div>
         )}

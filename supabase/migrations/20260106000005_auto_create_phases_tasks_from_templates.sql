@@ -50,7 +50,7 @@ BEGIN
   -- Check if project has a project_type_config_id
   IF NEW.project_type_config_id IS NULL THEN
     -- Fallback: Create default 5 universal phases (backwards compatibility)
-    INSERT INTO public.project_phases (project_id, name, display_order, status)
+    INSERT INTO public.project_phases (project_id, name, order_index, status)
     VALUES
       (NEW.id, 'Initiation', 1, 'not_started'),
       (NEW.id, 'Pre-Construction', 2, 'not_started'),
@@ -74,7 +74,7 @@ BEGIN
     INSERT INTO public.project_phases (
       project_id,
       name,
-      display_order,
+      order_index,
       status,
       description
     )
@@ -104,7 +104,7 @@ BEGIN
         description,
         status,
         priority,
-        display_order,
+        order_index,
         due_date,
         created_by
       )

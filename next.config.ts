@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.thdstatic.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'fozwbpqgkcduwxqvmkjd.supabase.co',
+      },
     ],
   },
   webpack: (config, { isServer }) => {

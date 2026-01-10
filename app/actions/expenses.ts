@@ -798,3 +798,125 @@ export async function getMaterialExpenseLink(materialAssignmentId: string) {
     return { success: false, error: 'Failed to check material expense link' };
   }
 }
+
+// ============================================
+// Expense Analytics
+// ============================================
+
+export interface ExpenseAnalytics {
+  totalCount: number;
+  totalAmount: number;
+  pendingCount: number;
+  pendingAmount: number;
+  approvedCount: number;
+  approvedAmount: number;
+  rejectedCount: number;
+  rejectedAmount: number;
+  byCategory: { category: string; amount: number; count: number }[];
+}
+
+/**
+ * Get expense analytics for dashboard summary
+ * Aggregates expense data by status and category
+ *
+ * @param filters Optional filters for projectId and date range
+ * @returns Analytics data or error
+ */
+export async function getExpenseAnalytics(filters?: {
+  projectId?: string;
+  startDate?: string;
+  endDate?: string;
+}): Promise<{ data?: ExpenseAnalytics; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Build query with optional filters
+    let query = supabase
+      .from('expenses')
+      .select('id, amount, status, category');
+
+    if (filters?.projectId) {
+      query = query.eq('project_id', filters.projectId);
+    }
+
+    if (filters?.startDate) {
+      query = query.gte('expense_date', filters.startDate);
+    }
+
+    if (filters?.endDate) {
+      query = query.lte('expense_date', filters.endDate);
+    }
+
+    const { data: expenses, error } = await query;
+
+    if (error) {
+      console.error('Error fetching expenses for analytics:', error);
+      return { error: 'Failed to fetch expense analytics' };
+    }
+
+    // Initialize analytics
+    const analytics: ExpenseAnalytics = {
+      totalCount: 0,
+      totalAmount: 0,
+      pendingCount: 0,
+      pendingAmount: 0,
+      approvedCount: 0,
+      approvedAmount: 0,
+      rejectedCount: 0,
+      rejectedAmount: 0,
+      byCategory: [],
+    };
+
+    // Category aggregation map
+    const categoryMap: Record<string, { amount: number; count: number }> = {};
+
+    // Process expenses
+    for (const expense of expenses || []) {
+      const amount = expense.amount || 0;
+
+      // Total counts
+      analytics.totalCount++;
+      analytics.totalAmount += amount;
+
+      // Status aggregation
+      // "pending" = submitted + under_review (awaiting decision)
+      if (expense.status === 'submitted' || expense.status === 'under_review') {
+        analytics.pendingCount++;
+        analytics.pendingAmount += amount;
+      } else if (expense.status === 'approved' || expense.status === 'paid') {
+        analytics.approvedCount++;
+        analytics.approvedAmount += amount;
+      } else if (expense.status === 'rejected') {
+        analytics.rejectedCount++;
+        analytics.rejectedAmount += amount;
+      }
+
+      // Category aggregation
+      const category = expense.category || 'other';
+      if (!categoryMap[category]) {
+        categoryMap[category] = { amount: 0, count: 0 };
+      }
+      categoryMap[category].amount += amount;
+      categoryMap[category].count++;
+    }
+
+    // Convert category map to array sorted by amount descending
+    analytics.byCategory = Object.entries(categoryMap)
+      .map(([category, data]) => ({
+        category,
+        amount: data.amount,
+        count: data.count,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+
+    return { data: analytics };
+  } catch (error) {
+    console.error('Error in getExpenseAnalytics:', error);
+    return { error: 'Failed to fetch expense analytics' };
+  }
+}

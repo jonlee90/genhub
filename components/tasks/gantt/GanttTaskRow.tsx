@@ -68,13 +68,23 @@ export function GanttTaskRow({
       className="flex border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
       style={{ height: rowHeight }}
     >
-      {/* Left sidebar: Task info */}
+      {/* Left sidebar: Task info - clickable to open edit modal */}
       <div
         className={cn(
-          'sticky left-0 z-10 bg-white border-r border-gray-200 flex items-center',
+          'sticky left-0 z-10 bg-white border-r border-gray-200 flex items-center cursor-pointer transition-colors',
+          'hover:bg-gray-100',
           isMobile ? 'gap-1.5 px-2 py-1' : 'gap-3 px-3 py-2'
         )}
         style={{ width: sidebarWidth }}
+        onClick={() => onClick(task)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick(task);
+          }
+        }}
       >
         {/* Assignee avatar - only show on larger mobile/desktop */}
         {task.assignee && !isMobile && (

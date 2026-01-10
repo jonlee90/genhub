@@ -203,81 +203,7 @@ export default async function MaterialsPage({
         </div>
       </div>
 
-      {/* Industrial Stats Dashboard - 2x2 on mobile, 4 columns on desktop */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-        {/* Total Materials */}
-        <div className="relative group h-full">
-          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <Boxes className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
-              </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{totalMaterials}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Materials Assigned</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Pending Orders */}
-        <div className="relative group h-full">
-          <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                <Package className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
-              </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">Pending</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">{pendingOrders}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Need to Order</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Cost */}
-        <div className="relative group h-full">
-          <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                <DollarSign className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
-              </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">Cost</div>
-            </div>
-            <div>
-              <div className="text-xl md:text-4xl font-black text-construction-green leading-none mb-1">{formatCurrency(totalCost)}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Total Value</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Projects */}
-        <div className="relative group h-full">
-          <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
-              </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Active</div>
-            </div>
-            <div>
-              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{projects.length}</div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Projects</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Materials Search Interface */}
-      <MaterialsSearch projects={projects} />
-
-      {/* New Materials Enhancement Section */}
+         {/* New Materials Enhancement Section */}
       <div className="space-y-4 md:space-y-6">
         {/* MaterialSummary - 5-card grid with stats */}
         <ErrorBoundary>
@@ -292,6 +218,10 @@ export default async function MaterialsPage({
             </div>
           )}
         </ErrorBoundary>
+
+
+      {/* Materials Search Interface */}
+      <MaterialsSearch projects={projects} />
 
         {/* TrackedMaterialsCarousel - horizontal scroll */}
         <ErrorBoundary>
@@ -309,6 +239,9 @@ export default async function MaterialsPage({
           />
         </ErrorBoundary>
       </div>
+
+
+
 
       {/* Decorative bottom border */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />

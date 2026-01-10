@@ -207,11 +207,11 @@ const demoProjects: DemoProject[] = [
 ]
 
 const projectPhases = [
-  { name: 'Initiation', display_order: 1, duration_days: 14 },
-  { name: 'Planning', display_order: 2, duration_days: 21 },
-  { name: 'Execution', display_order: 3, duration_days: 90 },
-  { name: 'Monitoring', display_order: 4, duration_days: 30 },
-  { name: 'Closeout', display_order: 5, duration_days: 14 }
+  { name: 'Initiation', order_index: 1, duration_days: 14 },
+  { name: 'Planning', order_index: 2, duration_days: 21 },
+  { name: 'Execution', order_index: 3, duration_days: 90 },
+  { name: 'Monitoring', order_index: 4, duration_days: 30 },
+  { name: 'Closeout', order_index: 5, duration_days: 14 }
 ]
 
 const taskTemplates = {
@@ -380,7 +380,7 @@ async function main() {
             name: phaseTemplate.name,
             description: `${phaseTemplate.name} phase for ${projectData.name}`,
             status: phaseStatus as "not_started" | "in_progress" | "completed" | "on_hold",
-            display_order: phaseTemplate.display_order,
+            order_index: phaseTemplate.order_index,
             completion_percentage: phaseStatus === 'completed' ? 100 : (phaseStatus === 'in_progress' ? 50 : 0),
             start_date: phaseStatus !== 'not_started' ? projectData.start_date : null,
             end_date: phaseStatus === 'completed' ? new Date(new Date(projectData.start_date).getTime() + phaseTemplate.duration_days * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : null

@@ -25,6 +25,8 @@ interface ProjectFilesTabProps {
   projectId: string;
   initialFiles?: any[];
   initialPhotos?: any[];
+  currentImageUrl?: string | null;
+  onPrimaryPhotoChange?: () => void;
 }
 
 type TabView = 'photos' | 'documents' | 'all';
@@ -33,8 +35,20 @@ export function ProjectFilesTab({
   projectId,
   initialFiles = [],
   initialPhotos = [],
+  currentImageUrl,
+  onPrimaryPhotoChange,
 }: ProjectFilesTabProps) {
-  console.log('[ProjectFilesTab] Rendering for project:', projectId);
+  console.log('[ProjectFilesTab] Rendering for project:', projectId, 'currentImageUrl:', currentImageUrl);
+
+  // Track current primary photo locally for optimistic UI
+  const [localImageUrl, setLocalImageUrl] = useState<string | null | undefined>(currentImageUrl);
+
+  // Handler for when primary photo changes
+  const handleSetPrimary = (url: string | null) => {
+    console.log('[ProjectFilesTab] Primary photo changed to:', url);
+    setLocalImageUrl(url);
+    onPrimaryPhotoChange?.();
+  };
 
   // Tab state
   const [activeView, setActiveView] = useState<TabView>('photos');
@@ -263,6 +277,8 @@ export function ProjectFilesTab({
                 onSelectAll={handleSelectAll}
                 onRefresh={fetchData}
                 projectId={projectId}
+                currentImageUrl={localImageUrl}
+                onSetPrimary={handleSetPrimary}
               />
             </motion.div>
           )}
@@ -300,6 +316,8 @@ export function ProjectFilesTab({
                 onSelectAll={handleSelectAll}
                 onRefresh={fetchData}
                 projectId={projectId}
+                currentImageUrl={localImageUrl}
+                onSetPrimary={handleSetPrimary}
               />
               <DocumentsSection
                 files={files}
