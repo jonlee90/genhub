@@ -143,14 +143,40 @@ export function ClientSpatialViewer({
     setIsModelReady(true);
   }, []);
 
-  // Debug: Handle marker click (opens TaskDetailPanel in read-only mode)
+  /**
+   * Handle marker click - opens TaskDetailPanel if marker has linked task,
+   * otherwise shows marker info toast.
+   *
+   * @param marker - The spatial marker that was clicked
+   * @note marker.task_id is null for standalone markers (issues, notes, safety, etc.)
+   */
   const handleMarkerClick = useCallback((marker: SpatialMarker) => {
-    console.log('[ClientSpatialViewer] Marker clicked:', marker);
+    console.log('[ClientSpatialViewer] Marker clicked:', marker.id, 'task_id:', marker.task_id);
+
+    // Open TaskDetailPanel ONLY if marker has a linked task
     if (marker.task_id) {
+      console.log('[ClientSpatialViewer] Opening task detail panel for task:', marker.task_id);
       setSelectedTaskId(marker.task_id);
       setDetailPanelOpen(true);
     } else {
-      toast.info('This marker is not linked to a task');
+      // Debug: Non-task marker - show marker info to client
+      console.log('[ClientSpatialViewer] Non-task marker clicked - showing marker info');
+
+      const markerTypeLabel = marker.type.charAt(0).toUpperCase() + marker.type.slice(1);
+      toast.info(
+        <div className="flex flex-col gap-1">
+          <span className="font-semibold">{markerTypeLabel}: {marker.title}</span>
+          {marker.description && (
+            <span className="text-sm text-gray-500">{marker.description}</span>
+          )}
+          <span className="text-xs text-gray-400 mt-1">
+            This marker is not linked to a task
+          </span>
+        </div>,
+        {
+          duration: 4000,
+        }
+      );
     }
   }, []);
 

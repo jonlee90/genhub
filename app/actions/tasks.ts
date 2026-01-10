@@ -1443,13 +1443,6 @@ export async function getTaskDetails(taskId: string): Promise<{
       phase:project_phases!tasks_phase_id_fkey (
         id,
         name
-      ),
-      spatial_marker:spatial_markers!tasks_spatial_marker_id_fkey (
-        id,
-        position_x,
-        position_y,
-        position_z,
-        element_id
       )
     `)
     .eq('id', taskId)
@@ -1459,6 +1452,13 @@ export async function getTaskDetails(taskId: string): Promise<{
     console.error('[getTaskDetails] Error fetching task:', taskError);
     return { error: 'Task not found' };
   }
+
+  // Fetch spatial marker separately (relationship: spatial_markers.task_id → tasks.id)
+  const { data: spatialMarker } = await supabase
+    .from('spatial_markers')
+    .select('id, position_x, position_y, position_z, element_id')
+    .eq('task_id', taskId)
+    .maybeSingle(); // Use maybeSingle since not all tasks have markers
 
   // Get material count
   const { count: materialCount } = await supabase
@@ -1497,12 +1497,12 @@ export async function getTaskDetails(taskId: string): Promise<{
       id: (task.phase as any).id,
       name: (task.phase as any).name,
     } : undefined,
-    spatial_marker: task.spatial_marker ? {
-      id: (task.spatial_marker as any).id,
-      position_x: (task.spatial_marker as any).position_x,
-      position_y: (task.spatial_marker as any).position_y,
-      position_z: (task.spatial_marker as any).position_z,
-      element_id: (task.spatial_marker as any).element_id || undefined,
+    spatial_marker: spatialMarker ? {
+      id: spatialMarker.id,
+      position_x: spatialMarker.position_x,
+      position_y: spatialMarker.position_y,
+      position_z: spatialMarker.position_z,
+      element_id: spatialMarker.element_id || undefined,
     } : undefined,
     material_count: materialCount || 0,
     expense_count: expenseCount || 0,

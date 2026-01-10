@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { deactivateSubcontractor } from '@/app/actions/subcontractors';
+import { EditSubcontractorModal } from './EditSubcontractorModal';
 
 type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
 type TradeType = Database['public']['Enums']['trade_type'];
@@ -93,8 +94,11 @@ const TRADE_LABELS: Record<TradeType, string> = {
 };
 
 export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: SubcontractorCardProps) {
+  console.log('[SubcontractorCard] Rendering card for:', subcontractor.company_name);
+
   const [isPending, startTransition] = useTransition();
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Check if dates are expiring (within 30 days) or expired
   const checkExpiryStatus = (expiryDate: string | null): 'valid' | 'expiring' | 'expired' => {
@@ -191,7 +195,14 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuLabel className="font-bold text-gray-900">Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem disabled className="cursor-not-allowed opacity-50">
+                <DropdownMenuItem
+                  onClick={() => {
+                    console.log('[SubcontractorCard] Opening edit modal for:', subcontractor.id);
+                    setEditModalOpen(true);
+                  }}
+                  disabled={isPending}
+                  className="cursor-pointer"
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Details
                 </DropdownMenuItem>
@@ -336,6 +347,16 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Subcontractor Modal */}
+      <EditSubcontractorModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          console.log('[SubcontractorCard] Closing edit modal');
+          setEditModalOpen(false);
+        }}
+        subcontractor={subcontractor}
+      />
     </>
   );
 }

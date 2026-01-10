@@ -6,6 +6,13 @@ export type Project3DModel = Database['public']['Tables']['projects_3d_models'][
 export type Project3DModelInsert = Database['public']['Tables']['projects_3d_models']['Insert'];
 export type Project3DModelUpdate = Database['public']['Tables']['projects_3d_models']['Update'];
 
+/**
+ * SpatialMarker - A marker placed on a 3D model
+ *
+ * @property task_id - Optional reference to a linked task.
+ *   - When `task_id` is non-null: Marker is linked to a task, clicking opens TaskDetailPanel
+ *   - When `task_id` is null: Marker is standalone (issue, note, safety, etc.), clicking shows marker info
+ */
 export type SpatialMarker = Database['public']['Tables']['spatial_markers']['Row'];
 export type SpatialMarkerInsert = Database['public']['Tables']['spatial_markers']['Insert'];
 export type SpatialMarkerUpdate = Database['public']['Tables']['spatial_markers']['Update'];

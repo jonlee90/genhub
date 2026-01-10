@@ -823,6 +823,14 @@ console.log('Realtime status:', channel.state); // Should be 'joined'
 
 ## Changelog
 
+### v1.2 (2026-01-09)
+- **CRITICAL BUG FIX**: Fixed `getTaskDetails` FK relationship - spatial_markers link to tasks via `task_id`, not vice versa
+- Added null check for `marker.task_id` - non-linked markers now show toast with marker info instead of error
+- Updated `SpatialMarkerPin` component to show visual hints about whether marker is linked to task
+- Improved error handling: TaskDetailPanel only opens when `marker.task_id` is truthy
+- Enhanced toast messages for markers without tasks to prevent "Task not found" errors
+- Fixed spatial marker data type documentation (confirmed `spatial_markers.task_id → tasks.id` relationship)
+
 ### v1.1 (2026-01-07)
 - Added Section 0: Database Field Names - Critical gotcha for renamed fields
 - Updated marker_content relationship notes (type vs content_type, note_text vs text_content)

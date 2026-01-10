@@ -37,6 +37,8 @@ interface SpatialMarkerPinProps {
   onDragEnd?: (e: React.DragEvent) => void;
   className?: string;
   isDraggable?: boolean; // Only true for GC/PM
+  /** Whether marker has a linked task (controls click behavior hint in tooltip) */
+  hasLinkedTask?: boolean;
 }
 
 // Comprehensive marker type configuration matching database schema
@@ -70,11 +72,15 @@ export function SpatialMarkerPin({
   onDragEnd,
   className,
   isDraggable = false,
+  hasLinkedTask,
 }: SpatialMarkerPinProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  console.log('[SpatialMarkerPin] Rendering marker:', marker.id, marker.type);
+  // Debug: Derive hasLinkedTask from marker.task_id if not explicitly provided
+  const isLinkedToTask = hasLinkedTask ?? Boolean(marker.task_id);
+
+  console.log('[SpatialMarkerPin] Rendering marker:', marker.id, marker.type, 'hasLinkedTask:', isLinkedToTask);
 
   // Safe config lookup with fallback for undefined types
   const config = MARKER_TYPE_CONFIG[marker.type as keyof typeof MARKER_TYPE_CONFIG] || FALLBACK_CONFIG;
@@ -263,6 +269,21 @@ export function SpatialMarkerPin({
                   <div className="flex items-center gap-1 px-2 py-1 bg-blue-900 rounded text-[10px] font-bold">
                     <Paperclip className="h-3 w-3" />
                     {attachmentCount}
+                  </div>
+                )}
+              </div>
+
+              {/* Click action hint */}
+              <div className="mt-2 pt-2 border-t border-gray-700">
+                {isLinkedToTask ? (
+                  <div className="flex items-center gap-1 text-[10px] text-blue-400">
+                    <CheckSquare className="h-3 w-3" />
+                    <span>Click to view linked task</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                    <Flag className="h-3 w-3" />
+                    <span>Click to view marker details</span>
                   </div>
                 )}
               </div>

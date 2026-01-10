@@ -155,31 +155,6 @@ export function PhaseDetailPanel({
           </Button>
         </motion.div>
 
-        {/* Progress Card - Large, Prominent */}
-        <motion.div
-          className="bg-gradient-to-br from-[#001B51] via-[#001B51] to-[#001B51]/85 rounded-2xl p-6 text-white shadow-construction"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-white/10 rounded-lg backdrop-blur-sm">
-              <ListTodo className="h-5 w-5 text-white" />
-            </div>
-            <p className="text-sm font-bold text-white/80 uppercase tracking-wide">Phase Progress</p>
-          </div>
-          <div className="flex items-end gap-4 mb-4">
-            <span className="text-5xl font-black tabular-nums leading-none">{progressPercentage}%</span>
-            <span className="text-lg text-white/70 mb-1.5 tabular-nums font-semibold">
-              {stats.completedTasks} / {stats.totalTasks} tasks
-            </span>
-          </div>
-          <Progress
-            value={progressPercentage}
-            className="h-3 bg-white/20 rounded-full overflow-hidden"
-          />
-        </motion.div>
-
         {/* Date Cards Grid */}
         {(phase.started_at || phase.completed_at) && (
           <motion.div
@@ -297,6 +272,37 @@ export function PhaseDetailPanel({
             label="Add New Task"
             className="w-full bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold shadow-construction h-11 transition-all"
           />
+        </motion.div>
+
+        {/* Progress Card - Compact version below action buttons */}
+        <motion.div
+          className="bg-gradient-to-r from-[#001B51] to-[#001B51]/90 rounded-xl p-4 text-white shadow-sm"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 bg-white/10 rounded-lg">
+                <ListTodo className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-white/70 uppercase tracking-wide">Progress</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-black tabular-nums leading-none">{progressPercentage}%</span>
+                  <span className="text-sm text-white/60 tabular-nums">
+                    ({stats.completedTasks}/{stats.totalTasks})
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 max-w-[120px]">
+              <Progress
+                value={progressPercentage}
+                className="h-2 bg-white/20 rounded-full overflow-hidden"
+              />
+            </div>
+          </div>
         </motion.div>
       </div>
 
