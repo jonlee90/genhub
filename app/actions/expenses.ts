@@ -337,6 +337,18 @@ export async function getExpensesByCompany() {
 
     const supabase = await createClient();
 
+    // Get user's company_id for proper data isolation
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (companyError || !companyUser) {
+      return { success: true, data: [] };
+    }
+
     const { data: expenses, error } = await supabase
       .from('expenses')
       .select(`
@@ -346,6 +358,7 @@ export async function getExpensesByCompany() {
         project:projects(id, name),
         task:tasks(id, title)
       `)
+      .eq('company_id', companyUser.company_id)
       .order('expense_date', { ascending: false });
 
     if (error) {
@@ -835,10 +848,33 @@ export async function getExpenseAnalytics(filters?: {
 
     const supabase = await createClient();
 
-    // Build query with optional filters
+    // Get user's company_id for proper data isolation
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (companyError || !companyUser) {
+      return { data: {
+        totalCount: 0,
+        totalAmount: 0,
+        pendingCount: 0,
+        pendingAmount: 0,
+        approvedCount: 0,
+        approvedAmount: 0,
+        rejectedCount: 0,
+        rejectedAmount: 0,
+        byCategory: [],
+      }};
+    }
+
+    // Build query with company filter and optional filters
     let query = supabase
       .from('expenses')
-      .select('id, amount, status, category');
+      .select('id, amount, status, category')
+      .eq('company_id', companyUser.company_id);
 
     if (filters?.projectId) {
       query = query.eq('project_id', filters.projectId);

@@ -197,7 +197,7 @@ const [receiptPreview, setReceiptPreview] = useState<string | null>(() => {
    mcp__supabase__apply_migration name:"add_receipt_photo_to_tasks" query:"<migration SQL>"
 
    # Regenerate TypeScript types
-   mcp__supabase__generate_typescript_types
+   npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
    ```
 
 2. **Upload Handling** (Future Enhancement):

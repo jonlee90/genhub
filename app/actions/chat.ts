@@ -1836,7 +1836,7 @@ export async function deleteMessage(messageId: string) {
 
 /**
  * Update chat room name and/or description
- * Only GC Admin or PM can update project chat rooms
+ * Only Admin or PM can update project chat rooms
  *
  * @param roomId - UUID of the chat room
  * @param data - Object containing name and/or description
@@ -1891,21 +1891,21 @@ export async function updateChatRoom(
     return { error: 'Only project chat rooms can be renamed' };
   }
 
-  // Debug: Validate user is GC Admin or PM via RPC
+  // Debug: Validate user is Admin or PM via RPC
   const { data: isGcAdmin, error: gcAdminError } = await supabase
-    .rpc('is_user_gc_admin', { p_user_id: userId });
+    .rpc('is_user_admin', { p_user_id: userId });
 
   if (gcAdminError) {
-    console.error('[updateChatRoom] Error checking GC Admin status:', gcAdminError);
+    console.error('[updateChatRoom] Error checking Admin status:', gcAdminError);
     return { error: 'Failed to verify permissions' };
   }
 
   if (!isGcAdmin) {
-    console.error('[updateChatRoom] User is not GC Admin');
-    return { error: 'Only GC Admins can update chat room settings' };
+    console.error('[updateChatRoom] User is not Admin');
+    return { error: 'Only Admins can update chat room settings' };
   }
 
-  console.log('[updateChatRoom] User is GC Admin, updating room...');
+  console.log('[updateChatRoom] User is Admin, updating room...');
 
   // Build update object
   const updateData: any = {
@@ -1942,7 +1942,7 @@ export async function updateChatRoom(
 
 /**
  * Export transcript of a chat room
- * Only GC Admin can export transcripts
+ * Only Admin can export transcripts
  * Returns all messages with sender names, timestamps, and attachments
  *
  * @param roomId - UUID of the chat room
@@ -1971,21 +1971,21 @@ export async function exportTranscript(roomId: string) {
 
   const validatedData = validation.data;
 
-  // Debug: Validate user is GC Admin via RPC
+  // Debug: Validate user is Admin via RPC
   const { data: isGcAdmin, error: gcAdminError } = await supabase
-    .rpc('is_user_gc_admin', { p_user_id: userId });
+    .rpc('is_user_admin', { p_user_id: userId });
 
   if (gcAdminError) {
-    console.error('[exportTranscript] Error checking GC Admin status:', gcAdminError);
+    console.error('[exportTranscript] Error checking Admin status:', gcAdminError);
     return { error: 'Failed to verify permissions' };
   }
 
   if (!isGcAdmin) {
-    console.error('[exportTranscript] User is not GC Admin');
-    return { error: 'Only GC Admins can export transcripts' };
+    console.error('[exportTranscript] User is not Admin');
+    return { error: 'Only Admins can export transcripts' };
   }
 
-  console.log('[exportTranscript] User is GC Admin, fetching messages...');
+  console.log('[exportTranscript] User is Admin, fetching messages...');
 
   // Verify user has access to the chat room
   const accessCheck = await verifyChatRoomAccess(supabase, validatedData.roomId, userId);
@@ -2182,7 +2182,7 @@ export async function getChatRoomParticipants(roomId: string) {
 }
 
 /**
- * Check if current user is GC Admin or PM
+ * Check if current user is Admin or PM
  * Task 0023: Chat Room Settings - Permission Check
  *
  * @returns Boolean flags for isGcAdmin and isPm
@@ -2201,7 +2201,7 @@ export async function isUserGcAdmin() {
 
   return {
     success: true,
-    isGcAdmin: role === 'gc_admin',
+    isGcAdmin: role === 'admin',
     isPm: role === 'pm',
   };
 }

@@ -2,7 +2,7 @@
 
 > Task-specific instruction modules for agents. Load BEFORE executing work.
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -17,7 +17,9 @@ Last updated: 2026-01-09
 | Add RLS policy | `database/rls-patterns.md` | backend-engineer |
 | Add enum type | `database/enums.md` | backend-engineer |
 | Create Server Action | `backend/server-action.md` | backend-engineer |
+| Backend security/patterns | `backend/nextjs-patterns.md` | backend-engineer, code-reviewer |
 | Create API route | `backend/api-route.md` | backend-engineer |
+| **UI creation/redesign** | **`/frontend-design`** | **frontend-engineer** |
 | New page | `frontend/page-creation.md` | frontend-engineer |
 | Form with validation | `frontend/form-patterns.md` | frontend-engineer |
 | Modal dialog | `frontend/modal-patterns.md` | frontend-engineer |
@@ -39,12 +41,14 @@ Last updated: 2026-01-09
 - `database/enums.md` - Enum management
 - `database/triggers.md` - Trigger patterns
 - `backend/server-action.md` - CRUD action patterns
+- `backend/nextjs-patterns.md` - Security-first GenHub conventions
 - `backend/api-route.md` - Route handlers
 - `backend/validation.md` - Zod patterns
 - `backend/error-handling.md` - Error responses
 - `backend/auth-check.md` - Auth verification
 
 #### frontend-engineer
+- **`/frontend-design` - Production-grade UI (ALWAYS use for new UI/redesign)**
 - `frontend/page-creation.md` - New page setup
 - `frontend/component-patterns.md` - Component architecture
 - `frontend/form-patterns.md` - Forms with validation
@@ -65,6 +69,10 @@ Last updated: 2026-01-09
 - `integration/vercel-ai-sdk.md` - AI SDK v5 patterns
 - `integration/file-upload.md` - Vercel Blob
 - `integration/push-notifications.md` - FCM patterns
+
+#### code-reviewer
+- `backend/nextjs-patterns.md` - Security-first backend conventions (for backend reviews)
+- `workflow/code-review.md` - Review checklist
 
 #### Workflow
 - `workflow/feature-lifecycle.md` - Full spec→implement flow
@@ -90,9 +98,10 @@ Before starting ANY work:
 | Task Type | Required Skills | Optional Skills |
 |-----------|-----------------|-----------------|
 | Database schema change | `database/create-migration.md` OR `database/modify-schema.md` | `database/rls-patterns.md` |
-| New Server Action | `backend/server-action.md` | `backend/validation.md` |
-| New page | `frontend/page-creation.md` | `frontend/responsive.md` |
-| Form UI | `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
+| New Server Action | `backend/server-action.md` | `backend/nextjs-patterns.md` |
+| **UI creation/redesign** | **`/frontend-design`** | Related frontend skills |
+| New page | `/frontend-design` + `frontend/page-creation.md` | `frontend/responsive.md` |
+| Form UI | `/frontend-design` + `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
 | GenHub domain feature | `domain/{feature}.md` | Related backend/frontend skills |
 
 ---
@@ -145,9 +154,9 @@ All skills follow this structure:
 
 ## Stats
 
-- **Total skills**: 27 (complete)
+- **Total skills**: 28 (complete)
 - **Database**: 6 skills ✓
-- **Backend**: 5 skills ✓
+- **Backend**: 6 skills ✓
 - **Frontend**: 6 skills ✓
 - **Domain**: 6 skills ✓
 - **Integration**: 4 skills ✓

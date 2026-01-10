@@ -1737,7 +1737,7 @@ describe('Analytics Performance', () => {
 - [ ] Add required indexes (if missing)
 - [ ] Test function in Supabase SQL editor
 - [ ] Verify performance < 500ms for 1000 tasks
-- [ ] Generate TypeScript types (`mcp__supabase__generate_typescript_types`)
+- [ ] Generate TypeScript types (`npx supabase gen types typescript...`)
 
 **Deliverable:** Working database function with performance validation
 

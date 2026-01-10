@@ -664,7 +664,7 @@ export async function updateMarker(markerId: string, data: SpatialMarkerUpdate) 
   // Additional check: Only creator or GC/PM can update
   const canUpdate =
     existingMarker.created_by === userId ||
-    role === 'gc_admin' ||
+    role === 'admin' ||
     role === 'project_manager';
 
   if (!canUpdate) {
@@ -715,7 +715,7 @@ export async function deleteMarker(markerId: string) {
   // Additional check: Only creator or GC admin can delete
   const canDelete =
     marker.created_by === userId ||
-    role === 'gc_admin';
+    role === 'admin';
 
   if (!canDelete) {
     return { error: 'Permission denied: Only marker creator or GC admin can delete' };

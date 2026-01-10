@@ -20,7 +20,7 @@ import Image from 'next/image';
 import { motion } from "framer-motion";
 import { Users, Calendar, MapPin } from 'lucide-react';
 import type { Database } from '@/types/database.types';
-import { cn, formatBudget } from '@/lib/utils';
+import { cn, formatBudget, formatPercentWhole } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
 import { getProjectTheme, PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
 
@@ -223,7 +223,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
                   />
                 </div>
                 <span className="text-sm font-bold text-construction-blue shrink-0 tabular-nums">
-                  {completionPercentage}%
+                  {formatPercentWhole(completionPercentage)}
                 </span>
               </div>
             </div>

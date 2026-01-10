@@ -95,7 +95,7 @@ async function verifyPhaseAccess(supabase: Awaited<ReturnType<typeof createClien
 
 /**
  * Update a phase's status
- * Only GC Admin and Project Manager can update phase status
+ * Only Admin and Project Manager can update phase status
  */
 export async function updatePhaseStatus(phaseId: string, status: PhaseStatus) {
   // Get user's company and role
@@ -107,7 +107,7 @@ export async function updatePhaseStatus(phaseId: string, status: PhaseStatus) {
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to update phase status' };
   }
 
@@ -156,7 +156,7 @@ export async function updatePhaseStatus(phaseId: string, status: PhaseStatus) {
 
 /**
  * Update phase details (dates, notes)
- * Only GC Admin and Project Manager can update phase details
+ * Only Admin and Project Manager can update phase details
  */
 export async function updatePhase(formData: FormData) {
   // Get user's company and role
@@ -168,7 +168,7 @@ export async function updatePhase(formData: FormData) {
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to update phase' };
   }
 
@@ -289,7 +289,7 @@ export async function startNextPhase(projectId: string) {
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to start phase' };
   }
 
@@ -358,7 +358,7 @@ export async function completeCurrentPhase(projectId: string, startNext: boolean
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to complete phase' };
   }
 
@@ -423,7 +423,7 @@ export async function completeCurrentPhase(projectId: string, startNext: boolean
 
 // ============================================
 // Project-Level Phase CRUD Operations
-// (For gc_admin and project_manager)
+// (For admin and project_manager)
 // ============================================
 
 const createPhaseSchema = z.object({
@@ -439,7 +439,7 @@ const updatePhaseNameSchema = z.object({
 
 /**
  * Check if user has permission to manage phases within a project
- * gc_admin and project_manager (with project access) can manage phases
+ * admin and project_manager (with project access) can manage phases
  */
 async function checkProjectPhasePermission(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -448,8 +448,8 @@ async function checkProjectPhasePermission(
   role: string,
   projectId: string
 ): Promise<{ hasPermission: boolean; error?: string }> {
-  // gc_admin has full access
-  if (role === 'gc_admin') {
+  // admin has full access
+  if (role === 'admin') {
     return { hasPermission: true };
   }
 
@@ -487,13 +487,13 @@ async function checkProjectPhasePermission(
 
   return {
     hasPermission: false,
-    error: 'Insufficient permissions. Only GC Admin and Project Manager can manage phases.',
+    error: 'Insufficient permissions. Only Admin and Project Manager can manage phases.',
   };
 }
 
 /**
  * Create a new phase within a project
- * Accessible to gc_admin and project_manager (with project access)
+ * Accessible to admin and project_manager (with project access)
  */
 export async function createPhase(
   projectId: string,
@@ -575,7 +575,7 @@ export async function createPhase(
 
 /**
  * Update an existing project phase (name, description, order)
- * Accessible to gc_admin and project_manager (with project access)
+ * Accessible to admin and project_manager (with project access)
  */
 export async function updatePhaseName(
   phaseId: string,
@@ -655,7 +655,7 @@ export async function updatePhaseName(
 
 /**
  * Delete a project phase with task handling options
- * Accessible to gc_admin and project_manager (with project access)
+ * Accessible to admin and project_manager (with project access)
  *
  * @param phaseId - ID of the phase to delete
  * @param taskHandling - 'move' to move tasks to another phase, 'delete' to delete tasks
@@ -767,20 +767,21 @@ export async function deletePhase(
 /**
  * Apply task templates to a phase
  * Creates tasks from templates in the specified phase
+ * Finds matching phase template by name (since project_phases don't have a direct FK to phase_templates)
  * Prevents duplicates by checking if task with same title already exists
  *
  * @param phaseId - ID of the phase to create tasks in
- * @param phaseTemplateId - ID of the phase template to get task templates from
+ * @param _phaseTemplateId - DEPRECATED: No longer used, kept for backward compatibility
  */
 export async function applyTaskTemplates(
   phaseId: string,
-  phaseTemplateId: string
+  _phaseTemplateId?: string
 ): Promise<{
   success?: boolean;
   tasksCreated?: number;
   error?: string;
 }> {
-  console.log('[applyTaskTemplates] Applying task templates to phase:', phaseId, 'from template:', phaseTemplateId);
+  console.log('[applyTaskTemplates] Applying task templates to phase:', phaseId);
 
   const userContext = await getUserContext();
   if ('error' in userContext) {
@@ -811,11 +812,43 @@ export async function applyTaskTemplates(
     return { error: 'Insufficient permissions to access this project' };
   }
 
+  // Find phase template(s) with matching name in the same company
+  // Get the one that has the most task templates (most useful match)
+  const { data: phaseTemplates, error: phaseTemplatesError } = await supabase
+    .from('phase_templates')
+    .select(`
+      id,
+      name,
+      task_templates!inner(id)
+    `)
+    .eq('company_id', companyId)
+    .eq('name', phase.name)
+    .eq('is_active', true);
+
+  if (phaseTemplatesError) {
+    console.error('[applyTaskTemplates] Error finding phase template:', phaseTemplatesError);
+    return { error: 'Failed to find matching phase template' };
+  }
+
+  if (!phaseTemplates || phaseTemplates.length === 0) {
+    return { error: `No phase template found matching "${phase.name}" with task templates` };
+  }
+
+  // Pick the phase template with the most task templates
+  const bestTemplate = phaseTemplates.reduce((best, current) => {
+    const currentCount = Array.isArray(current.task_templates) ? current.task_templates.length : 0;
+    const bestCount = Array.isArray(best.task_templates) ? best.task_templates.length : 0;
+    return currentCount > bestCount ? current : best;
+  });
+
+  console.log('[applyTaskTemplates] Using phase template:', bestTemplate.id, 'with',
+    Array.isArray(bestTemplate.task_templates) ? bestTemplate.task_templates.length : 0, 'task templates');
+
   // Get task templates for this phase template
   const { data: taskTemplates, error: templatesError } = await supabase
     .from('task_templates')
     .select('*')
-    .eq('phase_template_id', phaseTemplateId)
+    .eq('phase_template_id', bestTemplate.id)
     .eq('is_active', true)
     .order('order_index', { ascending: true });
 

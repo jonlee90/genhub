@@ -16,7 +16,7 @@ import {
   ListTodo
 } from 'lucide-react';
 import { AnimatedTooltip } from '@/components/ui/aceternity/animated-tooltip';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 import type { Database } from '@/types/database.types';
 
 type Phase = Database['public']['Tables']['project_phases']['Row'];
@@ -83,7 +83,7 @@ export function PhaseStation({
             isInProgress && "text-[#001B51]",
             !isCompleted && !isInProgress && "text-gray-400"
           )}>
-            {phase.completion_percentage}%
+            {formatPercentWhole(phase.completion_percentage)}
           </span>
         </div>
       </div>
@@ -184,7 +184,7 @@ export function PhaseStation({
               <div className="flex flex-col items-center gap-0.5">
                 <PhaseIcon className="w-5 h-5" />
                 <span className="text-[10px] font-bold tabular-nums leading-none">
-                  {phase.completion_percentage}%
+                  {formatPercentWhole(phase.completion_percentage)}
                 </span>
               </div>
             )}

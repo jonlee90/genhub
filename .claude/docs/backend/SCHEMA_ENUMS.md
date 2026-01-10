@@ -225,7 +225,7 @@ ALTER TYPE public.task_status ADD VALUE 'cancelled';
 ### TypeScript Usage
 After creating enum, regenerate types:
 ```bash
-mcp__supabase__generate_typescript_types
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 Access in code:

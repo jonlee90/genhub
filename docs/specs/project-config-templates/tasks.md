@@ -131,7 +131,7 @@ This document provides a comprehensive, actionable implementation plan for the P
 
 ### 1.11 Generate TypeScript types
 - [ ] **Update TypeScript types for new tables**
-  - Run `mcp__supabase__generate_typescript_types`
+  - Run `npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts`
   - Verify types exported in `types/database.types.ts`
   - Verify ProjectTypeConfig, TaskTypeConfig, PhaseTemplate, TaskTemplate interfaces
   - **References**: All database tables

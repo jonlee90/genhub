@@ -50,6 +50,7 @@ import { getTaskExpenses } from '@/app/actions/expenses';
 import type { TaskAssignee } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';
 import { BaseModal } from '@/components/ui/BaseModal';
+import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
@@ -130,68 +131,8 @@ interface TaskModalProps {
   tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
 }
 
-// Status configuration for task workflow
-const STATUS_CONFIG = {
-  todo: {
-    label: 'To Do',
-    color: 'bg-gray-100 text-gray-800',
-    icon: 'text-gray-500',
-  },
-  in_progress: {
-    label: 'In Progress',
-    color: 'bg-blue-100 text-blue-800',
-    icon: 'text-blue-500',
-  },
-  review: {
-    label: 'Review',
-    color: 'bg-amber-100 text-amber-800',
-    icon: 'text-amber-500',
-  },
-  blocked: {
-    label: 'Blocked',
-    color: 'bg-red-100 text-red-800',
-    icon: 'text-red-500',
-  },
-  completed: {
-    label: 'Completed',
-    color: 'bg-emerald-100 text-emerald-800',
-    icon: 'text-emerald-500',
-  },
-};
-
-// Priority color configuration for dynamic theming
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Low',
-    dot: 'bg-emerald-500',
-    gradient: 'from-emerald-500 via-emerald-400 to-emerald-500',
-    iconBg: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
-    button: 'bg-emerald-500 hover:bg-emerald-600',
-    focusRing: 'focus:ring-emerald-500/20 focus:border-emerald-500',
-    iconColor: 'text-emerald-500',
-    description: 'Can be done when time allows',
-  },
-  medium: {
-    label: 'Medium',
-    dot: 'bg-amber-500',
-    gradient: 'from-amber-500 via-amber-400 to-amber-500',
-    iconBg: 'bg-gradient-to-br from-amber-500 to-amber-600',
-    button: 'bg-amber-500 hover:bg-amber-600',
-    focusRing: 'focus:ring-amber-500/20 focus:border-amber-500',
-    iconColor: 'text-amber-500',
-    description: 'Standard priority task',
-  },
-  high: {
-    label: 'High',
-    dot: 'bg-red-500',
-    gradient: 'from-red-500 via-red-400 to-red-500',
-    iconBg: 'bg-gradient-to-br from-red-500 to-red-600',
-    button: 'bg-red-500 hover:bg-red-600',
-    focusRing: 'focus:ring-red-500/20 focus:border-red-500',
-    iconColor: 'text-red-500',
-    description: 'Needs immediate attention',
-  },
-};
+// Note: Status and Priority colors now come from shared config: TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG
+// This ensures consistency with task cards, task list, and other displays
 
 // Default (create mode) uses construction-blue theme
 const DEFAULT_THEME = {
@@ -202,15 +143,8 @@ const DEFAULT_THEME = {
   iconColor: 'text-construction-blue',
 };
 
-type PriorityKey = keyof typeof PRIORITY_CONFIG;
-
-// Helper to get theme based on mode and priority
-const getTheme = (mode: 'create' | 'edit', priority: string) => {
-  if (mode === 'create') {
-    return DEFAULT_THEME;
-  }
-  return PRIORITY_CONFIG[priority as PriorityKey] || DEFAULT_THEME;
-};
+// Helper to get theme (now always returns default for consistent branding)
+const getTheme = () => DEFAULT_THEME;
 
 // Note: Priority-based theming removed - all modals now use 'default' theme
 // to maintain consistent construction blue (#001B51) branding
@@ -348,7 +282,7 @@ function TaskModalForm({
   });
 
   // Get current theme based on mode and priority
-  const theme = getTheme(mode, priority);
+  const theme = getTheme();
 
   // Get phases for selected project
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
@@ -926,10 +860,10 @@ function TaskModalForm({
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                    {Object.entries(TASK_STATUS_CONFIG).map(([value, config]) => (
                       <SelectItem key={value} value={value} textValue={config.label}>
                         <div className="flex items-center gap-2">
-                          <div className={cn('w-2 h-2 rounded-full', config.color.split(' ')[0].replace('bg-', 'bg-'))} />
+                          <div className={cn('w-2 h-2 rounded-full', config.dotColor)} />
                           <span>{config.label}</span>
                         </div>
                       </SelectItem>
@@ -998,10 +932,10 @@ function TaskModalForm({
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
+                  {Object.entries(TASK_PRIORITY_CONFIG).map(([value, config]) => (
                     <SelectItem key={value} value={value} textValue={config.label}>
                       <div className="flex items-center gap-2">
-                        <div className={cn('w-2 h-2 rounded-full', config.dot)} />
+                        <div className={cn('w-2 h-2 rounded-full', config.dotColor)} />
                         <span>{config.label}</span>
                       </div>
                     </SelectItem>

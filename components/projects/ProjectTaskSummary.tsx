@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { TaskStats } from '@/app/actions/projects';
 import { InfoCard, InfoCardField } from './InfoCard';
+import { formatPercent, formatPercentWhole } from '@/lib/utils';
 
 interface ProjectTaskSummaryProps {
   taskStats: TaskStats;
@@ -90,7 +91,7 @@ export function ProjectTaskSummary({
     // Budget Utilization Progress Bar (full width)
     {
       label: 'Task Budget Utilization',
-      value: `${budgetUtilization.toFixed(1)}%`,
+      value: formatPercent(budgetUtilization),
       isProgressBar: true,
       progressValue: Math.min(100, budgetUtilization),
       progressColor: getProgressColor(),
@@ -164,7 +165,7 @@ export function ProjectTaskSummary({
               {taskStats.completed} of {taskStats.total}
             </span>
             <span className="text-xs text-gray-500">
-              {taskStats.total > 0 ? `${Math.round((taskStats.completed / taskStats.total) * 100)}%` : '0%'}
+              {formatPercentWhole(taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0)}
             </span>
           </div>
         </div>
@@ -275,15 +276,6 @@ export function ProjectTaskSummary({
   // Footer content: Budget status + top assignees
   const footerContent = (
     <div className="col-span-full mt-4 space-y-4">
-      {/* Budget Info */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>
-          ${taskStats.totalActualCost.toLocaleString()} spent
-        </span>
-        <span>
-          Planned: ${taskStats.totalPlannedCost.toLocaleString()}
-        </span>
-      </div>
 
       {/* Budget Warnings */}
       {isOverBudget && (

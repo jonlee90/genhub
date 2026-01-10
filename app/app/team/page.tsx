@@ -113,7 +113,7 @@ export default async function TeamPage() {
   const totalMembers = membersWithProjectCount.length;
   const activeMembers = membersWithProjectCount.filter(m => m.status === 'active').length;
   const invitedMembers = membersWithProjectCount.filter(m => m.status === 'invited').length;
-  const gcAdmins = membersWithProjectCount.filter(m => m.role === 'gc_admin').length;
+  const admins = membersWithProjectCount.filter(m => m.role === 'admin').length;
   const projectManagers = membersWithProjectCount.filter(m => m.role === 'project_manager').length;
   const fieldWorkers = membersWithProjectCount.filter(m => m.role === 'field_worker' || m.role === 'foreman').length;
 
@@ -211,7 +211,7 @@ export default async function TeamPage() {
                 <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Admins</div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{gcAdmins}</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{admins}</div>
                 <div className="text-xs md:text-sm font-bold text-gray-600">GC Admins</div>
               </div>
             </div>

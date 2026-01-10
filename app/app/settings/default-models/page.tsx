@@ -8,7 +8,7 @@ import { redirect } from 'next/navigation';
 
 /**
  * Default 3D Models Settings Page
- * GC Admin only - Configure company-specific default models for each project type
+ * Admin only - Configure company-specific default models for each project type
  * Server Component - fetches data server-side, passes to client components
  */
 export default async function DefaultModelsPage() {
@@ -28,8 +28,8 @@ export default async function DefaultModelsPage() {
     .eq('status', 'active')
     .maybeSingle();
 
-  // Only GC Admins can access this page
-  if (companyUser?.role !== 'gc_admin') {
+  // Only Admins can access this page
+  if (companyUser?.role !== 'admin') {
     redirect('/app/settings');
   }
 

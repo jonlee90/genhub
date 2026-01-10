@@ -10,7 +10,7 @@ Build the Next.js project and report any TypeScript or build errors for fixing.
 
 ## Execution
 
-**IMPORTANT:** Do NOT regenerate database types during build verification. Types should only be regenerated when database schema actually changes (after applying migrations). Never use `mcp__supabase__generate_typescript_types` in /kc:build.
+**IMPORTANT:** Do NOT regenerate database types during build verification. Types should only be regenerated when database schema actually changes (after applying migrations). Never regenerate types in /kc:build.
 
 1. Run TypeScript check:
 ```bash

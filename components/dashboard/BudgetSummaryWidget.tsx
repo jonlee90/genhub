@@ -3,7 +3,7 @@
 import { DollarSign, TrendingUp, TrendingDown, Clock, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn, formatPercent } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { BudgetSummaryData } from '@/types/dashboard';
 
@@ -140,7 +140,7 @@ export function BudgetSummaryWidget({
         <div className="flex justify-between items-center mb-2">
           <span className="text-xs font-medium text-gray-500">Utilization</span>
           <span className={cn('text-sm font-bold', utilizationColors.text)}>
-            {budget.utilizationPercent.toFixed(0)}%
+            {formatPercent(budget.utilizationPercent)}
           </span>
         </div>
         <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -153,7 +153,7 @@ export function BudgetSummaryWidget({
         </div>
         {budget.utilizationPercent > 100 && (
           <p className="text-xs text-[#DC2626] mt-1 font-medium">
-            Over budget by {(budget.utilizationPercent - 100).toFixed(0)}%
+            Over budget by {formatPercent(budget.utilizationPercent - 100)}
           </p>
         )}
       </div>

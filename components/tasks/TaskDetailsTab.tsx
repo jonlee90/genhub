@@ -4,7 +4,8 @@
 // Shows all task metadata: title, description, status, priority, dates, assignee, phase, location, costs
 
 import { Calendar, User, MapPin, DollarSign, Flag, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPercent } from '@/lib/utils';
+import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { TaskDetails } from './TaskDetailPanel';
 
 // Debug: Component props
@@ -30,46 +31,27 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
     });
   };
 
-  // Debug: Status badge color
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      todo: 'bg-gray-400',
-      in_progress: 'bg-blue-500',
-      blocked: 'bg-red-500',
-      completed: 'bg-green-500',
-      review: 'bg-yellow-500',
-    };
-    return colors[status] || 'bg-gray-400';
-  };
-
-  // Debug: Priority badge color
-  const getPriorityColor = (priority: string) => {
-    const colors: Record<string, string> = {
-      low: 'bg-gray-400',
-      medium: 'bg-yellow-500',
-      high: 'bg-orange-500',
-      critical: 'bg-red-600',
-    };
-    return colors[priority] || 'bg-gray-400';
-  };
+  // Get status/priority configs from shared color system
+  const statusConfig = TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG] || TASK_STATUS_CONFIG.todo;
+  const priorityConfig = TASK_PRIORITY_CONFIG[task.priority as keyof typeof TASK_PRIORITY_CONFIG] || TASK_PRIORITY_CONFIG.medium;
 
   return (
     <div className="space-y-6">
       {/* Debug: Status and Priority Badges */}
       <div className="flex gap-2 flex-wrap">
         <div className={cn(
-          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase text-white flex items-center gap-2',
-          getStatusColor(task.status)
+          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border',
+          statusConfig.badgeColor
         )}>
           <Clock className="h-4 w-4" />
-          {task.status.replace('_', ' ')}
+          {statusConfig.label}
         </div>
         <div className={cn(
-          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase text-white flex items-center gap-2',
-          getPriorityColor(task.priority)
+          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border',
+          priorityConfig.badgeColor
         )}>
           <Flag className="h-4 w-4" />
-          {task.priority}
+          {priorityConfig.label}
         </div>
       </div>
 
@@ -211,7 +193,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
                 {task.actual_cost > task.planned_cost ? '+' : ''}
                 ${(task.actual_cost - task.planned_cost).toFixed(2)}
                 {' '}
-                ({((task.actual_cost / task.planned_cost - 1) * 100).toFixed(1)}%)
+                ({task.actual_cost > task.planned_cost ? '+' : '-'}{formatPercent(Math.abs((task.actual_cost / task.planned_cost - 1) * 100))})
               </span>
             </div>
           )}

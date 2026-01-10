@@ -16,7 +16,7 @@ export default async function SettingsPage() {
 
   // Check user role for Project Configuration section
   const session = await auth();
-  let isGcAdmin = false;
+  let isAdmin = false;
 
   if (session?.user?.id) {
     const supabase = await createClient();
@@ -27,7 +27,7 @@ export default async function SettingsPage() {
       .eq('status', 'active')
       .maybeSingle();
 
-    isGcAdmin = companyUser?.role === 'gc_admin';
+    isAdmin = companyUser?.role === 'admin';
   }
 
   return (
@@ -67,7 +67,7 @@ export default async function SettingsPage() {
         {/* ============================================ */}
         {/* Project Configuration - GC Admin Only */}
         {/* ============================================ */}
-        {isGcAdmin && (
+        {isAdmin && (
           <section className="space-y-4">
             <SettingsSectionHeader
               icon={Wrench}

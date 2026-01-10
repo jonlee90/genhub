@@ -89,11 +89,12 @@ psql "$DATABASE_URL" -f supabase/migrations/20260106000004_create_file_audit_log
 
 ### 1. Regenerate TypeScript Types
 ```bash
-# Using MCP Supabase (if available)
-mcp__supabase__generate_typescript_types
-
-# OR using Supabase CLI
+# Using Supabase CLI (recommended)
 npx supabase gen types typescript --project-id fozwbpqgkcduwxqvmkjd --schema public > types/database.types.ts
+
+# Or with env vars from .env.local
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ### 2. Verify Schema

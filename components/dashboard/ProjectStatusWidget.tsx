@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { FolderKanban, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatPercent, formatPercentWhole } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import type { ProjectStatusData } from '@/types/dashboard';
 
@@ -118,7 +118,7 @@ function StatusBar({ status, total }: StatusBarProps) {
             initial={{ width: 0 }}
             animate={{ width: `${percentage}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
-            title={`${STATUS_CONFIG[key].label}: ${count} (${percentage.toFixed(1)}%)`}
+            title={`${STATUS_CONFIG[key].label}: ${count} (${formatPercent(percentage)})`}
           />
         );
       })}
@@ -150,7 +150,7 @@ function LegendItem({ statusKey, count, percentage }: LegendItemProps) {
         {count}
       </span>
       <span className="text-xs text-gray-400 w-12 text-right">
-        {percentage.toFixed(0)}%
+        {formatPercentWhole(percentage)}
       </span>
     </Link>
   );

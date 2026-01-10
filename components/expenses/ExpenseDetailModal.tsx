@@ -129,7 +129,7 @@ export function ExpenseDetailModal({ expense, onClose }: ExpenseDetailModalProps
     });
   };
 
-  // DEBUG: Delete expense handler - only works for submitted expenses or gc_admin
+  // DEBUG: Delete expense handler - only works for submitted expenses or admin
   const handleDelete = () => {
     startTransition(async () => {
       const result = await deleteExpense(expense.id);

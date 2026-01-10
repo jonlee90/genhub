@@ -56,9 +56,9 @@ async function getUserContext() {
     return { error: 'No active company found for user' };
   }
 
-  // Only GC Admin can manage task types
-  if (companyUser.role !== 'gc_admin') {
-    return { error: 'Insufficient permissions. Only GC Admin can manage task types.' };
+  // Only Admin can manage task types
+  if (companyUser.role !== 'admin') {
+    return { error: 'Insufficient permissions. Only Admin can manage task types.' };
   }
 
   return {
@@ -121,7 +121,7 @@ export async function getTaskTypes(): Promise<{
 /**
  * Get ALL task types (active and inactive) for the user's company
  * Used for admin management UI only (settings page)
- * Requires GC Admin role
+ * Requires Admin role
  */
 export async function getAllTaskTypes(): Promise<{
   success?: boolean;

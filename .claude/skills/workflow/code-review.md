@@ -199,7 +199,7 @@ data.filter(item => item.companyId === companyId)  // ❌
 ```typescript
 // CHECK: Types match database schema
 // After migration, types should be regenerated:
-mcp__supabase__generate_typescript_types
+// Run: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 
 // CHECK: Props interfaces defined
 interface TaskCardProps {
@@ -325,7 +325,7 @@ npm run build 2>&1 | grep -E "error|Error" -A 3
 | Missing RLS | Add policy in migration |
 | Dialog used | Replace with BaseModal |
 | Non-Lucide icon | Replace with Lucide equivalent |
-| Missing types | Run generate_typescript_types |
+| Missing types | Run npx supabase gen types... |
 | Stale index | Update relevant index file |
 | No validation | Add Zod schema |
 | Any type | Define proper interface |

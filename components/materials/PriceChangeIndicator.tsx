@@ -1,6 +1,7 @@
 'use client';
 
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { formatPercent } from '@/lib/utils';
 
 interface PriceChangeIndicatorProps {
   percent: number | null | undefined;
@@ -38,7 +39,7 @@ export function PriceChangeIndicator({ percent, className = '' }: PriceChangeInd
     <div className={`flex items-center gap-1 ${color} ${className}`}>
       <Icon className="w-4 h-4" />
       <span className="text-sm font-semibold">
-        {isPositive ? '+' : ''}{percent.toFixed(1)}%
+        {isPositive ? '+' : ''}{formatPercent(Math.abs(percent))}
       </span>
     </div>
   );

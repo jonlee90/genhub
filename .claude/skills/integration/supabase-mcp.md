@@ -27,7 +27,7 @@
 | `mcp__supabase__apply_migration` | Schema changes | CREATE, ALTER, DROP |
 | `mcp__supabase__get_advisors` | Security audit | After migrations, periodic checks |
 | `mcp__supabase__get_logs` | Debug issues | When queries fail |
-| `mcp__supabase__generate_typescript_types` | Update types | After ANY schema change |
+| `npx supabase gen types...` | Update types | After ANY schema change (use Bash) |
 | `mcp__supabase__list_migrations` | Migration history | Review applied migrations |
 
 ---
@@ -185,12 +185,13 @@ service: "api"
 ```
 
 ### Generate Types
-```typescript
-// Run after ANY schema change
-mcp__supabase__generate_typescript_types
+```bash
+# Run after ANY schema change (use Bash, not MCP)
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 
-// Returns TypeScript definitions
-// Save to: types/database.types.ts
+# This saves directly to types/database.types.ts
+# More token-efficient than MCP tool (doesn't return file contents)
 ```
 
 ---
@@ -214,8 +215,8 @@ mcp__supabase__generate_typescript_types
    type: "security"
    → Check for issues
 
-5. mcp__supabase__generate_typescript_types
-   → Update type definitions
+5. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+   → Update type definitions (token-efficient)
 
 6. Save SQL to supabase/migrations/YYYYMMDDHHMMSS_{name}.sql
 ```
@@ -234,7 +235,7 @@ mcp__supabase__generate_typescript_types
    name: "alter_{table}_{change}"
    query: [ALTER TABLE ...]
 
-4. mcp__supabase__generate_typescript_types
+4. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 
 5. Update affected Server Actions
 ```
@@ -324,7 +325,7 @@ npx supabase db push
 
 // WRONG: Skipping type generation
 mcp__supabase__apply_migration(...)
-// No generate_typescript_types!
+// No type generation!
 
 // WRONG: No RLS on new table
 mcp__supabase__apply_migration
@@ -337,7 +338,7 @@ query: "CREATE TABLE public.data (...);"
 // CORRECT: Full workflow
 mcp__supabase__apply_migration(...)
 mcp__supabase__get_advisors({ type: "security" })
-mcp__supabase__generate_typescript_types()
+// Then run: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ---

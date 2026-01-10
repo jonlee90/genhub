@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText, MapPin, Box } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
@@ -48,29 +49,9 @@ interface TaskCardProps {
   showEditIndicator?: boolean;
 }
 
-// Debug: Priority config - status badge colors only (border now uses construction theme)
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Low',
-    color: 'bg-[#059669]/10 text-[#059669]', // Status badge color - green
-    border: 'border-l-4 border-construction-blue', // Construction theme border
-  },
-  medium: {
-    label: 'Medium',
-    color: 'bg-[#FFB627]/10 text-[#FFB627]', // Status badge color - amber
-    border: 'border-l-4 border-construction-blue', // Construction theme border
-  },
-  high: {
-    label: 'High',
-    color: 'bg-[#DC2626]/10 text-[#DC2626]', // Status badge color - red
-    border: 'border-l-4 border-construction-blue', // Construction theme border
-  },
-  critical: {
-    label: 'Critical',
-    color: 'bg-purple-100 text-purple-700', // Status badge color - purple for critical
-    border: 'border-l-4 border-construction-blue', // Construction theme border
-  },
-};
+// Note: Priority colors now come from shared config: TASK_PRIORITY_CONFIG
+// All cards use construction-blue border for consistent branding
+const CARD_BORDER = 'border-l-4 border-construction-blue';
 
 // Debug: Task type config - industrial construction-themed badges
 const TASK_TYPE_CONFIG = {
@@ -135,7 +116,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
   // Show edit indicator when explicitly set, or when in project context (phases provided)
   const shouldShowEditIndicator = showEditIndicator ?? !!phases;
 
-  const priorityConfig = PRIORITY_CONFIG[task.priority];
+  const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
 
   const getInitials = (name: string) => {
     return name
@@ -210,12 +191,10 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
         <Card
           className={cn(
             'p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group',
-            // Debug: Apply construction blue border by default, with priority accent on left
-            priorityConfig.border,
-            // Debug: Blocked state - keep red background but use construction blue border
-            isBlocked && 'bg-red-50',
-            // Debug: Overdue state (when not blocked) - keep default border
-            // All borders now use construction-blue from PRIORITY_CONFIG
+            // Apply construction blue border by default
+            CARD_BORDER,
+            // Blocked state - keep red background
+            isBlocked && 'bg-red-50'
           )}
         >
           {/* Edit indicator on hover */}
@@ -295,7 +274,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
               <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
-              <Badge variant="secondary" className={cn('shrink-0 font-bold text-[10px] px-2 py-0.5', priorityConfig.color)}>
+              <Badge variant="secondary" className={cn('shrink-0 font-bold text-[10px] px-2 py-0.5', priorityConfig.badgeColor)}>
                 {priorityConfig.label}
               </Badge>
             </div>

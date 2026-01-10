@@ -50,7 +50,7 @@ export function InteractionLayer({
   console.log('[InteractionLayer] Rendering Phase 3', { viewer, userRole });
 
   // Debug: Permission check for context menu
-  const canEditMarkers = userRole === 'gc_admin' || userRole === 'project_manager';
+  const canEditMarkers = userRole === 'admin' || userRole === 'project_manager';
 
   // Debug: Use interaction hook (legacy)
   const { hoveredElement, highlightedElement, setupInteraction, clearInteraction } =

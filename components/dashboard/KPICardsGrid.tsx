@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { KPICard, type KPICardProps } from './KPICard';
 import type { DashboardKPIs } from '@/types/dashboard';
+import { formatPercentWhole } from '@/lib/utils';
 
 interface KPICardsGridProps {
   kpis: DashboardKPIs;
@@ -119,8 +120,8 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
 
   // Calculate schedule on-time percentage for display
   const scheduleTotal = kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
-  const scheduleOnTimePercent = scheduleTotal > 0
-    ? Math.round((kpis.scheduleOnTime / scheduleTotal) * 100)
+  const scheduleOnTimePercentRaw = scheduleTotal > 0
+    ? (kpis.scheduleOnTime / scheduleTotal) * 100
     : 100;
 
   // Define the 6 KPI cards
@@ -155,7 +156,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     {
       key: 'budget-health',
       title: 'Budget Health',
-      value: `${Math.round(kpis.budgetUtilization)}%`,
+      value: formatPercentWhole(kpis.budgetUtilization),
       subtitle: `${formatCurrency(kpis.totalActualSpend)} of ${formatCurrency(kpis.totalPlannedBudget)}`,
       icon: Wallet,
       variant: getVariant('budget', kpis),
@@ -171,7 +172,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     {
       key: 'schedule-status',
       title: 'Schedule Status',
-      value: `${scheduleOnTimePercent}%`,
+      value: formatPercentWhole(scheduleOnTimePercentRaw),
       subtitle: kpis.scheduleDelayed > 0
         ? `${kpis.scheduleDelayed} delayed`
         : `${kpis.scheduleOnTime} on time`,

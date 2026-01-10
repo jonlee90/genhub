@@ -30,16 +30,23 @@ if (ORCHESTRATED=true) {
 
 **BEFORE ANY WORK:**
 
-1. Scan indexes (find what exists):
+1. Load Serena memories (instant context):
+   - `mcp__plugin_serena_serena__read_memory("genhub-component-patterns")`
+   - `mcp__plugin_serena_serena__read_memory("genhub-common-gotchas")`
+2. Scan indexes (find what exists):
    - `.claude/docs/indexes/components.md`
    - `.claude/docs/indexes/routes.md`
-2. Load relevant skill:
+3. Load relevant skill:
    - Find skill path in `.claude/skills/index.md`
    - Read full skill: `.claude/skills/frontend/{skill}.md`
-3. Grep existing code:
+4. **For UI creation/redesign - ALWAYS use frontend-design skill:**
+   - Invoke: `/frontend-design` or `Skill("frontend-design")`
+   - Creates distinctive, production-grade interfaces
+   - Avoids generic AI aesthetics
+5. Grep existing code:
    - Find similar components/patterns
    - Understand file structure before changes
-4. Then implement following skill instructions
+6. Then implement following skill instructions
 
 ---
 
@@ -322,6 +329,7 @@ export function ItemForm({ projectId, onSuccess }: ItemFormProps) {
 
 | Task | Skill Path |
 |------|------------|
+| **UI creation/redesign** | **`/frontend-design` (ALWAYS for new UI)** |
 | New page | `frontend/page-creation.md` |
 | New component | `frontend/component-patterns.md` |
 | Form with validation | `frontend/form-patterns.md` |
@@ -333,11 +341,12 @@ export function ItemForm({ projectId, onSuccess }: ItemFormProps) {
 | Material UI feature | `domain/material-tracking.md` |
 
 **How to load skill:**
-1. Read `.claude/skills/index.md` (find skill path)
-2. Read `.claude/skills/frontend/{skill}.md`
-3. Follow skill's Quick Reference (handles 80% of cases)
-4. Use Step-by-Step section for complex variations
-5. Check Anti-Patterns to avoid mistakes
+1. **For UI work:** Invoke `/frontend-design` skill FIRST (creates polished, distinctive interfaces)
+2. Read `.claude/skills/index.md` (find additional skill paths)
+3. Read `.claude/skills/frontend/{skill}.md`
+4. Follow skill's Quick Reference (handles 80% of cases)
+5. Use Step-by-Step section for complex variations
+6. Check Anti-Patterns to avoid mistakes
 
 ---
 
@@ -356,27 +365,29 @@ export function ItemForm({ projectId, onSuccess }: ItemFormProps) {
 ### Complex Task (3+ files, new patterns)
 
 ```
-1. Load relevant skill from .claude/skills/frontend/
-2. Scan indexes/components.md for similar implementations
-3. Grep components/ for related code
-4. Create implementation plan (note design decisions)
-5. Implement following skill instructions
-6. /kc:build to verify
-7. /kc:sync-docs --source=components/{path}
+1. Invoke /frontend-design skill (for polished UI)
+2. Load relevant skill from .claude/skills/frontend/
+3. Scan indexes/components.md for similar implementations
+4. Grep components/ for related code
+5. Create implementation plan (note design decisions)
+6. Implement following skill + frontend-design guidelines
+7. /kc:build to verify
+8. /kc:sync-docs --source=components/{path}
 ```
 
 ### New Page Creation
 
 ```
-1. Load skill: frontend/page-creation.md
-2. Scan indexes/routes.md for route conflicts
-3. Check indexes/actions.md for available Server Actions
-4. If actions missing → HANDOFF: backend-engineer
-5. Create Server Component at app/app/{feature}/page.tsx
-6. Create Client Components at components/{feature}/
-7. Wire Server Actions (import and call)
-8. /kc:build
-9. /kc:sync-docs --source=routes
+1. Invoke /frontend-design skill (for polished UI)
+2. Load skill: frontend/page-creation.md
+3. Scan indexes/routes.md for route conflicts
+4. Check indexes/actions.md for available Server Actions
+5. If actions missing → HANDOFF: backend-engineer
+6. Create Server Component at app/app/{feature}/page.tsx
+7. Create Client Components at components/{feature}/
+8. Wire Server Actions (import and call)
+9. /kc:build
+10. /kc:sync-docs --source=routes
 ```
 
 ---

@@ -21,7 +21,7 @@ export interface ChatMember {
   name: string;
   email: string;
   avatar_url: string | null;
-  role: string; // 'gc_admin', 'pm', 'field_worker', 'subcontractor', etc.
+  role: string; // 'admin', 'pm', 'field_worker', 'subcontractor', etc.
   joined_at: string;
 }
 
@@ -89,7 +89,7 @@ export function ChatMemberList({ members }: ChatMemberListProps) {
 // Debug: Role badge with construction-themed colors
 function RoleBadge({ role }: { role: string }) {
   const badges: Record<string, { label: string; className: string }> = {
-    gc_admin: {
+    admin: {
       label: 'GC ADMIN',
       className: 'bg-construction-blue text-white border-construction-blue',
     },
@@ -128,7 +128,7 @@ function RoleBadge({ role }: { role: string }) {
 // Debug: Role icon with construction context
 function RoleIcon({ role }: { role: string }) {
   const icons: Record<string, React.ReactNode> = {
-    gc_admin: <Shield className="h-5 w-5 text-construction-blue" />,
+    admin: <Shield className="h-5 w-5 text-construction-blue" />,
     pm: <Wrench className="h-5 w-5 text-construction-accent" />,
     field_worker: <HardHat className="h-5 w-5 text-construction-yellow" />,
     subcontractor: <User className="h-5 w-5 text-gray-500" />,

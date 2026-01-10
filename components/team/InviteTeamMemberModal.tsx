@@ -27,8 +27,8 @@ interface InviteTeamMemberModalProps {
 
 const ROLE_OPTIONS = [
   {
-    value: 'gc_admin',
-    label: 'GC Admin',
+    value: 'admin',
+    label: 'Admin',
     description: 'Full access to all features and settings',
   },
   {
@@ -296,7 +296,7 @@ export function InviteTeamMemberModal({ isOpen, onClose, companyId }: InviteTeam
                 <h3 className="text-sm font-semibold text-gray-900">Role Permissions</h3>
                 <div className="mt-2 text-sm text-gray-700">
                   <p className="mb-1">
-                    <strong>GC Admin:</strong> Full system access
+                    <strong>Admin:</strong> Full system access
                   </p>
                   <p className="mb-1">
                     <strong>Project Manager:</strong> Manage projects and teams

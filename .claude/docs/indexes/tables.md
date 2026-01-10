@@ -2,7 +2,7 @@
 
 > Quick lookup for database tables. For full schema details, see `docs/law/DB_SCHEMA.md`
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -41,6 +41,8 @@ Last updated: 2026-01-09
 | push_subscriptions | Push tokens | → users | Yes |
 | kakao_connections | KakaoTalk links | → users | Yes |
 | stripe_customers | Billing | → users | Yes |
+| owners | Platform owners | → user_profiles | Yes |
+| admin_invitations | Admin invites | → companies | Yes |
 | projects_3d_models | Project models | → projects | Yes |
 | default_3d_models | Default models | - | Yes |
 | company_default_models | Company models | → default_3d_models | Yes |
@@ -109,12 +111,16 @@ Last updated: 2026-01-09
 - `kakao_connections` - KakaoTalk integration
 - `stripe_customers` - Stripe billing
 
+### Owner/Admin
+- `owners` - Platform owner accounts (super-admins)
+- `admin_invitations` - Pending admin invitations to companies
+
 ---
 
 ## Stats
 
-- **Total tables**: 42
-- **Tables with RLS**: 42/42 (100%)
+- **Total tables**: 44
+- **Tables with RLS**: 44/44 (100%)
 - **Tables with triggers**: 12+
 - **Tables in Realtime**: 5+ (messages, notifications, etc.)
 

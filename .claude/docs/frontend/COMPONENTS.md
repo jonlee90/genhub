@@ -23,7 +23,7 @@ import { Button } from '@/components/ui/button';
 <Button size="icon"><Plus className="w-4 h-4" /></Button>
 
 // With icon
-<Button className="bg-construction-blue">
+<Button className="bg-construction-blue text-white">
   <Plus className="w-4 h-4 mr-2" />
   Add Item
 </Button>
@@ -34,6 +34,19 @@ import { Button } from '@/components/ui/button';
   Saving...
 </Button>
 ```
+
+**Button Text Color Contrast Rule:**
+- Dark backgrounds → white text (`text-white`)
+- Light backgrounds → dark text (default or `text-gray-900`)
+
+| Background | Text Class |
+|------------|------------|
+| `bg-construction-blue` | `text-white` |
+| `bg-blue-600`, `bg-blue-700`, etc. | `text-white` |
+| `bg-gray-800`, `bg-gray-900` | `text-white` |
+| `bg-green-600`, `bg-red-600` | `text-white` |
+| `bg-construction-yellow` | `text-black` |
+| `bg-gray-100`, `bg-white` | `text-gray-900` |
 
 ### BaseModal (ALWAYS use for modals)
 ```tsx

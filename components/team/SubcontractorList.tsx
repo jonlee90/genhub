@@ -26,7 +26,7 @@ export function SubcontractorList({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Check if user can add/edit subcontractors
-  const canManage = currentUserRole === 'gc_admin' || currentUserRole === 'project_manager';
+  const canManage = currentUserRole === 'admin' || currentUserRole === 'project_manager';
 
   // Filter subcontractors based on search query
   const filteredSubcontractors = useMemo(() => {
@@ -122,7 +122,7 @@ export function SubcontractorList({
               key={subcontractor.id}
               subcontractor={subcontractor}
               canManage={canManage}
-              isGCAdmin={currentUserRole === 'gc_admin'}
+              isGCAdmin={currentUserRole === 'admin'}
             />
           ))}
         </div>

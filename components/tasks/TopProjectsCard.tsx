@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, CheckCircle2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 
 // Debug: TopProjectsCard - Display top 5 projects by task completion ratio (weighted by total tasks)
 interface TopProjectsCardProps {
@@ -207,7 +207,7 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
 
                   {/* Debug: Completion percentage label */}
                   <p className="text-xs font-medium text-gray-500 mt-1">
-                    {Math.round(project.completionRatio * 100)}% Complete
+                    {formatPercentWhole(project.completionRatio * 100)} Complete
                   </p>
                 </div>
 

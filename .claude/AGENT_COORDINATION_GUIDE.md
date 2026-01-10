@@ -303,7 +303,7 @@ Documentation: Updated
 
 → Types weren't regenerated at the right time
 → In ORCHESTRATED mode: backend generates types once
-→ Check: Did backend run `mcp__supabase__generate_typescript_types`?
+→ Check: Did backend run `npx supabase gen types typescript...`?
 
 ### "Documentation isn't updated"
 

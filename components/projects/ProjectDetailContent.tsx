@@ -25,7 +25,7 @@ import {
   FolderOpen,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
@@ -370,7 +370,7 @@ export function ProjectDetailContent({
             // METRICS SECTION
             {
               label: 'Project Progress',
-              value: `${project.completion_percentage || 0}%`,
+              value: formatPercentWhole(project.completion_percentage || 0),
               icon: TrendingUp,
               isProgressBar: true,
               progressValue: project.completion_percentage || 0,

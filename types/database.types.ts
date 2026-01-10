@@ -14,6 +14,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invited_at: string
+          invited_by: string
+          name: string | null
+          updated_at: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          invited_by: string
+          name?: string | null
+          updated_at?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invited_at?: string
+          invited_by?: string
+          name?: string | null
+          updated_at?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "owners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attachments: {
         Row: {
           created_at: string
@@ -1194,6 +1241,36 @@ export type Database = {
           read?: boolean
           read_at?: string | null
           title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      owners: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -2574,7 +2651,9 @@ export type Database = {
         Returns: number
       }
       get_user_company_id: { Args: { p_user_id: string }; Returns: string }
+      is_user_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_user_gc_admin: { Args: { p_user_id: string }; Returns: boolean }
+      is_user_owner: { Args: { p_user_id: string }; Returns: boolean }
       seed_company_templates: {
         Args: { p_company_id: string }
         Returns: undefined
@@ -2723,7 +2802,7 @@ export type Database = {
         | "insulation"
         | "other"
       user_role:
-        | "gc_admin"
+        | "admin"
         | "project_manager"
         | "foreman"
         | "field_worker"
@@ -3012,7 +3091,7 @@ export const Constants = {
         "other",
       ],
       user_role: [
-        "gc_admin",
+        "admin",
         "project_manager",
         "foreman",
         "field_worker",

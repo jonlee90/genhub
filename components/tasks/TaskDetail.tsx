@@ -58,6 +58,7 @@ import { BlockedReasonModal } from './BlockedReasonModal';
 import { TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { updateTask, updateTaskStatus, deleteTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
+import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
@@ -114,60 +115,13 @@ interface TaskDetailProps {
   userRole: UserRole;
 }
 
-const STATUS_CONFIG = {
-  todo: {
-    label: 'To Do',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
-    icon: Clock,
-    dotColor: 'bg-gray-400',
-  },
-  in_progress: {
-    label: 'In Progress',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
-    icon: Activity,
-    dotColor: 'bg-construction-blue',
-  },
-  review: {
-    label: 'Review',
-    color: 'bg-amber-50 text-amber-700 border-amber-300',
-    icon: FileText,
-    dotColor: 'bg-amber-500',
-  },
-  blocked: {
-    label: 'Blocked',
-    color: 'bg-red-50 text-red-700 border-red-300',
-    icon: XCircle,
-    dotColor: 'bg-red-500',
-  },
-  completed: {
-    label: 'Completed',
-    color: 'bg-green-50 text-green-700 border-green-300',
-    icon: CheckCircle2,
-    dotColor: 'bg-green-500',
-  },
-};
-
-const PRIORITY_CONFIG = {
-  low: {
-    label: 'Low',
-    color: 'bg-gray-50 text-gray-600 border-gray-200',
-    badgeColor: 'bg-gray-100 text-gray-700',
-  },
-  medium: {
-    label: 'Medium',
-    color: 'bg-blue-50 text-blue-600 border-blue-200',
-    badgeColor: 'bg-blue-100 text-blue-700',
-  },
-  high: {
-    label: 'High',
-    color: 'bg-red-50 text-red-600 border-red-200',
-    badgeColor: 'bg-red-100 text-red-700',
-  },
-  critical: {
-    label: 'Critical',
-    color: 'bg-purple-50 text-purple-600 border-purple-200',
-    badgeColor: 'bg-purple-100 text-purple-700',
-  },
+// Status icon mapping (icons are component-specific, colors come from shared config)
+const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  todo: Clock,
+  in_progress: Activity,
+  review: FileText,
+  blocked: XCircle,
+  completed: CheckCircle2,
 };
 
 export function TaskDetail({
@@ -205,10 +159,10 @@ export function TaskDetail({
   // Debug: Determine if cost fields should be shown (not for approval tasks)
   const showCostFields = !isApprovalTask;
 
-  const canEdit = userRole === 'gc_admin' || userRole === 'project_manager' ||
+  const canEdit = userRole === 'admin' || userRole === 'project_manager' ||
                   task.assignee_id === task.created_by;
-  const canDelete = userRole === 'gc_admin' || userRole === 'project_manager';
-  const canApprove = userRole === 'gc_admin' || userRole === 'project_manager';
+  const canDelete = userRole === 'admin' || userRole === 'project_manager';
+  const canApprove = userRole === 'admin' || userRole === 'project_manager';
 
   const isOverdue =
     task.due_date &&
@@ -339,7 +293,7 @@ export function TaskDetail({
     }).format(amount);
   };
 
-  const StatusIcon = STATUS_CONFIG[task.status as TaskStatus].icon;
+  const StatusIcon = STATUS_ICONS[task.status as TaskStatus];
 
   return (
     <div className="space-y-6">
@@ -392,21 +346,21 @@ export function TaskDetail({
           <Badge
             className={cn(
               'px-4 py-2 text-sm font-bold border-2 flex items-center gap-2',
-              STATUS_CONFIG[task.status as TaskStatus].color
+              TASK_STATUS_CONFIG[task.status as TaskStatus].badgeColor
             )}
           >
-            <div className={cn('h-2 w-2 rounded-full', STATUS_CONFIG[task.status as TaskStatus].dotColor)} />
+            <div className={cn('h-2 w-2 rounded-full', TASK_STATUS_CONFIG[task.status as TaskStatus].dotColor)} />
             <StatusIcon className="h-4 w-4" />
-            {STATUS_CONFIG[task.status as TaskStatus].label}
+            {TASK_STATUS_CONFIG[task.status as TaskStatus].label}
           </Badge>
 
           <Badge
             className={cn(
               'px-4 py-2 text-sm font-bold border-2',
-              PRIORITY_CONFIG[task.priority as TaskPriority].color
+              TASK_PRIORITY_CONFIG[task.priority as TaskPriority].badgeColor
             )}
           >
-            {PRIORITY_CONFIG[task.priority as TaskPriority].label} Priority
+            {TASK_PRIORITY_CONFIG[task.priority as TaskPriority].label} Priority
           </Badge>
 
           {/* Debug: Approval Status Badge for Approval Tasks */}
@@ -689,7 +643,7 @@ export function TaskDetail({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {Object.entries(PRIORITY_CONFIG).map(([value, config]) => (
+                                {Object.entries(TASK_PRIORITY_CONFIG).map(([value, config]) => (
                                   <SelectItem key={value} value={value}>
                                     {config.label}
                                   </SelectItem>
@@ -872,13 +826,13 @@ export function TaskDetail({
                 <SelectTrigger
                   className={cn(
                     'border-2 font-bold h-12',
-                    STATUS_CONFIG[task.status as TaskStatus].color
+                    TASK_STATUS_CONFIG[task.status as TaskStatus].badgeColor
                   )}
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                  {Object.entries(TASK_STATUS_CONFIG).map(([value, config]) => (
                     <SelectItem key={value} value={value} className="font-medium">
                       <div className="flex items-center gap-2">
                         <div className={cn('h-2 w-2 rounded-full', config.dotColor)} />

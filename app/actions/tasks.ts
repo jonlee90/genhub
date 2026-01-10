@@ -1037,8 +1037,8 @@ export async function deleteTask(taskId: string) {
 
   const { companyId, role, supabase } = userContext;
 
-  // Only GC Admin and PM can delete tasks
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Only Admin and PM can delete tasks
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to delete tasks' };
   }
 
@@ -1112,8 +1112,8 @@ export async function updateApprovalStatus(
     return { error: 'Only approval-type tasks can have their approval status updated' };
   }
 
-  // Only GC Admin and PM can approve/reject tasks
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Only Admin and PM can approve/reject tasks
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to update approval status' };
   }
 

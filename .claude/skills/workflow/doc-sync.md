@@ -10,6 +10,37 @@
 - After adding/changing routes
 - After any implementation task
 
+---
+
+## Database Types Regeneration
+
+### Why
+`types/database.types.ts` is auto-generated from Supabase schema. When migrations change the database, this file becomes stale and causes type errors across the codebase.
+
+### Command (Token-Efficient)
+```bash
+# Direct file write - only returns status message, not file contents
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+```
+
+**IMPORTANT:** Do NOT use `mcp__supabase__generate_typescript_types` - it returns the entire file to context (~10,000+ tokens). The bash redirect approach costs ~50 tokens.
+
+### When to Run
+- After ANY database migration (`apply_migration`)
+- When type errors reference missing columns/tables
+- As part of full sync workflow
+
+### Conditional Regeneration (Optional)
+```bash
+# Only regenerate if migrations changed
+if git diff --name-only HEAD~1 | grep -q "supabase/migrations"; then
+  npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+  echo "✓ Types regenerated"
+else
+  echo "○ No migration changes, skipping"
+fi
+```
+
 ## Prerequisites
 
 - Changes have been implemented
@@ -225,11 +256,16 @@
 
 ### 1. Identify Changes
 What was modified?
-- [ ] Database tables
+- [ ] Database tables/migrations
 - [ ] Server Actions
 - [ ] Components
 - [ ] Routes
 - [ ] Enums
+
+### 1.5. Regenerate Database Types (if migrations changed)
+```bash
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+```
 
 ### 2. Update Indexes
 For each category, update the index file:
@@ -354,6 +390,7 @@ Update docs as part of implementation task
 ## After Implementation
 
 backend-engineer completes migration:
+→ Regenerate types/database.types.ts (bash command)
 → Update tables.md
 → Update enums.md (if applicable)
 
@@ -386,6 +423,7 @@ Format per existing patterns in each index file."
 ## Checklist
 
 - [ ] Identified all changes made
+- [ ] Regenerated `types/database.types.ts` (if migrations changed)
 - [ ] Updated tables.md for database changes
 - [ ] Updated actions.md for Server Actions
 - [ ] Updated components.md for components

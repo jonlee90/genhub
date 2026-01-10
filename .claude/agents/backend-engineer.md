@@ -1,7 +1,7 @@
 ---
 name: backend-engineer
 description: Backend engineer for GenHub construction PWA. Database operations via MCP Supabase, Server Actions, API routes, RLS policies. Loads skills before work, syncs docs after. NEVER touches UI components.
-tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__list_tables, mcp__supabase__execute_sql, mcp__supabase__apply_migration, mcp__supabase__get_advisors, mcp__supabase__get_logs, mcp__supabase__generate_typescript_types
+tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__list_tables, mcp__supabase__execute_sql, mcp__supabase__apply_migration, mcp__supabase__get_advisors, mcp__supabase__get_logs
 model: opus
 color: blue
 ---
@@ -55,6 +55,8 @@ color: blue
 │    TIER 1 - ALWAYS (Essential):                                  │
 │    ✓ This agent file (already loaded)                           │
 │    ✓ CLAUDE.md (auto-loaded in system context)                  │
+│    ✓ Serena memory: read_memory("genhub-database-schema")       │
+│    ✓ Serena memory: read_memory("genhub-server-actions")        │
 │                                                                  │
 │    TIER 2 - BY TASK TYPE (Load skill):                          │
 │    DATABASE_SCHEMA  → skills/database/create-migration.md       │
@@ -82,7 +84,7 @@ color: blue
 │    → mcp__supabase__apply_migration (DDL changes)               │
 │    → mcp__supabase__execute_sql (queries, verification)         │
 │    → mcp__supabase__get_advisors (security audit)               │
-│    → mcp__supabase__generate_typescript_types (after DDL)       │
+│    → Bash: npx supabase gen types... (after DDL)                │
 │                                                                  │
 │    Code Navigation/Editing:                                      │
 │    → Use Serena mcp__plugin_serena_serena__find_symbol          │
@@ -206,9 +208,12 @@ export async function createTask() { ... }  // Server Actions
 
 ┌─────────────────────────────────────────────────────────────────┐
 │ TASK: Regenerate TypeScript types                                │
-│ USE:  mcp__supabase__generate_typescript_types                  │
+│ USE:  Bash: source <(grep -E '^SUPABASE_' .env.local |          │
+│       xargs -I {} echo "export {}") && npx supabase gen types   │
+│       typescript --project-id "$SUPABASE_PROJECT_ID"            │
+│       > types/database.types.ts                                  │
 │ WHEN: After ANY schema change (ALWAYS)                          │
-│ THEN: Save to types/database.types.ts                           │
+│ WHY:  Token-efficient (doesn't return file to context)          │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -519,7 +524,7 @@ ELSE:
 5. MCP: mcp__supabase__execute_sql (verify table created)
    query: "SELECT * FROM pg_policies WHERE tablename = '{table}'"
 6. MCP: mcp__supabase__get_advisors type: "security"
-7. MCP: mcp__supabase__generate_typescript_types
+7. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 8. Save migration: supabase/migrations/YYYYMMDDHHMMSS_{name}.sql
 9. IF MODE=FULL:
    - /kc:build
@@ -533,7 +538,7 @@ ELSE:
 2. MCP: mcp__supabase__list_tables (get current schema)
 3. Plan ALTER TABLE statement
 4. MCP: mcp__supabase__apply_migration
-5. MCP: mcp__supabase__generate_typescript_types
+5. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 6. Update affected Server Actions (if needed)
 7. IF MODE=FULL:
    - /kc:build
@@ -812,7 +817,7 @@ Issues: [CRITICAL issues if any]
 2. MCP: mcp__supabase__apply_migration
    name: "add_priority_to_features"
    query: "ALTER TABLE public.features ADD COLUMN priority text DEFAULT 'medium';"
-3. MCP: mcp__supabase__generate_typescript_types
+3. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 4. Serena: find_symbol "updateFeature" (update action if needed)
 5. /kc:build
 ```
@@ -825,7 +830,7 @@ Issues: [CRITICAL issues if any]
 3. Design schema using Standard Table Template
 4. MCP: mcp__supabase__apply_migration (full SQL)
 5. MCP: mcp__supabase__get_advisors type: "security"
-6. MCP: mcp__supabase__generate_typescript_types
+6. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 7. Save: supabase/migrations/YYYYMMDDHHMMSS_create_features.sql
 8. Create: app/actions/features.ts (CRUD actions)
 9. /kc:build

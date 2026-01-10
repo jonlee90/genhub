@@ -80,8 +80,8 @@ type SortDirection = 'asc' | 'desc';
 const ITEMS_PER_PAGE = 25;
 
 const ROLE_CONFIG = {
-  gc_admin: {
-    label: 'GC Admin',
+  admin: {
+    label: 'Admin',
     color: 'bg-[#001B51] text-white border-[#001B51]',
     icon: Briefcase,
   },
@@ -144,7 +144,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
   const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
   const [optimisticMembers, setOptimisticMembers] = useState(members);
 
-  const isGCAdmin = currentUserRole === 'gc_admin';
+  const isGCAdmin = currentUserRole === 'admin';
 
   // Sync optimistic state with server state
   useEffect(() => {
@@ -330,7 +330,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                       <Users className="h-12 w-12 text-gray-300" />
                       <p className="text-gray-500 font-medium">No team members found</p>
                       <p className="text-sm text-gray-400">
-                        {isGCAdmin ? 'Click "Invite Team Member" to get started' : 'Contact your GC Admin to invite members'}
+                        {isGCAdmin ? 'Click "Invite Team Member" to get started' : 'Contact your Admin to invite members'}
                       </p>
                     </div>
                   </TableCell>
@@ -493,7 +493,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
             <AlertDialogTitle>Deactivate Team Member?</AlertDialogTitle>
             <AlertDialogDescription>
               This will deactivate the team member's access immediately. They can be
-              reactivated later by a GC Admin.
+              reactivated later by a Admin.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

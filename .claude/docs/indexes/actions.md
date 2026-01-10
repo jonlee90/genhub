@@ -135,6 +135,23 @@ Last updated: 2026-01-10
 | handleSignIn | NextAuth sign in | - |
 | handleSignOut | NextAuth sign out | / |
 
+### Owner (`app/actions/owner.ts`)
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| isOwner | Check if user is platform owner | - |
+| getAllCompanies | List all companies (owner only) | - |
+| getAllUsers | List all users (owner only) | - |
+| inviteAdmin | Send admin invitation email | /app/owner/invites |
+| getPendingAdminInvitations | List pending admin invites | - |
+| revokeAdminInvitation | Cancel pending invite | /app/owner/invites |
+| getOwnerDashboardStats | Platform statistics | - |
+
+### Admin Invite (`app/actions/accept-admin-invite.ts`)
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| validateAdminInvitationToken | Validate invite token | - |
+| acceptAdminInvitation | Accept invite, create user/company | - |
+
 ### Other Actions
 | File | Actions |
 |------|---------|
@@ -150,6 +167,8 @@ Last updated: 2026-01-10
 | `project-types.ts` | Project type configuration |
 | `seed-demo-data.ts` | Demo data seeding (admin) |
 | `team-email-helper.ts` | Email utilities (internal) |
+| `owner.ts` | Owner/platform management |
+| `accept-admin-invite.ts` | Admin invitation acceptance |
 
 ---
 
@@ -168,7 +187,9 @@ Last updated: 2026-01-10
 | Chat | 5 | chat.ts, chat-queries.ts |
 | Spatial | 7 | spatial.ts |
 | Files/Photos | 11 | project-files.ts, project-photos.ts |
-| **Total** | ~77+ | 27 files |
+| Owner | 7 | owner.ts |
+| Admin Invite | 2 | accept-admin-invite.ts |
+| **Total** | ~86+ | 29 files |
 
 ---
 

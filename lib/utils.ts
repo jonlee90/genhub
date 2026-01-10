@@ -182,6 +182,118 @@ export interface ScheduleStatusInfo {
  * @param completionPercentage - Current completion percentage
  * @param startDate - Project start date (optional)
  */
+// ============================================
+// Percentage Formatting Helpers
+// ============================================
+
+/**
+ * Format a percentage value to 1 decimal place with minimum display value handling
+ *
+ * Rules:
+ * - Values exactly 0 display as "0%"
+ * - Values > 0 but < 1 display as "1%" (minimum visible indication)
+ * - Values >= 1 display rounded to 1 decimal place
+ * - Trailing .0 is removed for whole numbers
+ *
+ * @param value - The percentage value to format (0-100 scale)
+ * @param options - Formatting options
+ * @returns Formatted percentage string with % symbol
+ *
+ * @example
+ * formatPercent(0) => "0%"
+ * formatPercent(0.06666) => "1%" (minimum display)
+ * formatPercent(0.5) => "1%" (rounds up to minimum)
+ * formatPercent(1.234) => "1.2%"
+ * formatPercent(45.0) => "45%"
+ * formatPercent(99.99) => "100%"
+ */
+export function formatPercent(
+	value: number | null | undefined,
+	options: {
+		/** Include % symbol (default: true) */
+		includeSymbol?: boolean;
+		/** Minimum display value for non-zero percentages (default: 1) */
+		minDisplay?: number;
+		/** Show whole numbers without decimal (default: true) */
+		trimTrailingZero?: boolean;
+	} = {}
+): string {
+	const {
+		includeSymbol = true,
+		minDisplay = 1,
+		trimTrailingZero = true,
+	} = options;
+
+	// Handle null/undefined/NaN
+	if (value === null || value === undefined || isNaN(value)) {
+		return includeSymbol ? '0%' : '0';
+	}
+
+	// If exactly zero, show 0%
+	if (value === 0) {
+		return includeSymbol ? '0%' : '0';
+	}
+
+	// Apply minimum display value for very small percentages
+	let displayValue = value;
+	if (value > 0 && value < minDisplay) {
+		displayValue = minDisplay;
+	}
+
+	// Round to 1 decimal place
+	const rounded = Math.round(displayValue * 10) / 10;
+
+	// Format with 1 decimal place
+	let formatted = rounded.toFixed(1);
+
+	// Optionally trim trailing .0 for whole numbers
+	if (trimTrailingZero && formatted.endsWith('.0')) {
+		formatted = formatted.slice(0, -2);
+	}
+
+	return includeSymbol ? `${formatted}%` : formatted;
+}
+
+/**
+ * Format a percentage value as a whole number (no decimals)
+ * Useful for compact displays where precision isn't critical
+ *
+ * @param value - The percentage value to format (0-100 scale)
+ * @param options - Formatting options
+ * @returns Formatted percentage string
+ *
+ * @example
+ * formatPercentWhole(0) => "0%"
+ * formatPercentWhole(0.4) => "1%" (minimum display)
+ * formatPercentWhole(45.6) => "46%"
+ */
+export function formatPercentWhole(
+	value: number | null | undefined,
+	options: {
+		includeSymbol?: boolean;
+		minDisplay?: number;
+	} = {}
+): string {
+	const { includeSymbol = true, minDisplay = 1 } = options;
+
+	if (value === null || value === undefined || isNaN(value)) {
+		return includeSymbol ? '0%' : '0';
+	}
+
+	if (value === 0) {
+		return includeSymbol ? '0%' : '0';
+	}
+
+	// Apply minimum display value
+	let displayValue = value;
+	if (value > 0 && value < minDisplay) {
+		displayValue = minDisplay;
+	}
+
+	const rounded = Math.round(displayValue);
+	return includeSymbol ? `${rounded}%` : String(rounded);
+}
+
 export function getScheduleStatusDisplay(
 	endDate: string | null | undefined,
 	completionPercentage: number = 0,

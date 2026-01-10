@@ -138,9 +138,10 @@ AND tablename IN ('project_files', 'project_photos', 'file_audit_log');
 npx supabase gen types typescript --project-id fozwbpqgkcduwxqvmkjd --schema public > types/database.types.ts
 ```
 
-**Option B: Using MCP Supabase (if available)**
-```
-mcp__supabase__generate_typescript_types
+**Option B: Load env vars first**
+```bash
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ### Commit Changes

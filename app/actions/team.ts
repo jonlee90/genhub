@@ -21,12 +21,12 @@ type CompanyUserUpdate = Database['public']['Tables']['company_users']['Update']
 const inviteTeamMemberSchema = z.object({
   email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()),
   name: z.string().min(1, 'Name is required').max(200).transform((v) => v.trim()),
-  role: z.enum(['gc_admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
+  role: z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
 });
 
 const updateTeamMemberRoleSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
-  newRole: z.enum(['gc_admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
+  newRole: z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
 });
 
 const deactivateTeamMemberSchema = z.object({
@@ -74,7 +74,7 @@ async function getUserContext() {
 
 /**
  * Invite a new team member to the company
- * Only GC Admins can invite team members
+ * Only Admins can invite team members
  *
  * SECURITY FIXES APPLIED:
  * - Uses team_invitations table instead of placeholder users
@@ -95,9 +95,9 @@ export async function inviteTeamMember(formData: FormData) {
 
   const { userId, companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin can invite
-  if (role !== 'gc_admin') {
-    return { error: 'Insufficient permissions. Only GC Admins can invite team members.' };
+  // Check permissions - only Admin can invite
+  if (role !== 'admin') {
+    return { error: 'Insufficient permissions. Only Admins can invite team members.' };
   }
 
   // Parse and validate form data
@@ -242,7 +242,7 @@ export async function inviteTeamMember(formData: FormData) {
 
 /**
  * Update a team member's role
- * Only GC Admins can update roles
+ * Only Admins can update roles
  *
  * SECURITY FIXES APPLIED:
  * - Verifies target user is in same company
@@ -261,9 +261,9 @@ export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
 
   const { userId: currentUserId, companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin can update roles
-  if (role !== 'gc_admin') {
-    return { error: 'Insufficient permissions. Only GC Admins can update team member roles.' };
+  // Check permissions - only Admin can update roles
+  if (role !== 'admin') {
+    return { error: 'Insufficient permissions. Only Admins can update team member roles.' };
   }
 
   // Validate input
@@ -345,7 +345,7 @@ export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
 
 /**
  * Deactivate a team member
- * Only GC Admins can deactivate team members
+ * Only Admins can deactivate team members
  * Sets status to 'inactive' to preserve historical data
  *
  * SECURITY FIXES APPLIED:
@@ -364,9 +364,9 @@ export async function deactivateTeamMember(userId: string) {
 
   const { userId: currentUserId, companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin can deactivate
-  if (role !== 'gc_admin') {
-    return { error: 'Insufficient permissions. Only GC Admins can deactivate team members.' };
+  // Check permissions - only Admin can deactivate
+  if (role !== 'admin') {
+    return { error: 'Insufficient permissions. Only Admins can deactivate team members.' };
   }
 
   // Validate input
@@ -399,13 +399,13 @@ export async function deactivateTeamMember(userId: string) {
       return { error: 'This team member is already inactive.' };
     }
 
-    // Check if this is the last active GC Admin
-    if (existingMember.role === 'gc_admin') {
+    // Check if this is the last active Admin
+    if (existingMember.role === 'admin') {
       const { data: activeAdmins, error: adminCheckError } = await supabase
         .from('company_users')
         .select('id')
         .eq('company_id', companyId)
-        .eq('role', 'gc_admin')
+        .eq('role', 'admin')
         .eq('status', 'active');
 
       if (adminCheckError) {
@@ -414,7 +414,7 @@ export async function deactivateTeamMember(userId: string) {
       }
 
       if (activeAdmins && activeAdmins.length <= 1) {
-        return { error: 'Cannot deactivate the last GC Admin. Please assign another admin first.' };
+        return { error: 'Cannot deactivate the last Admin. Please assign another admin first.' };
       }
     }
 

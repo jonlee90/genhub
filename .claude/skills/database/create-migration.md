@@ -153,11 +153,10 @@ CREATE INDEX idx_{table}_project_status ON public.{table}(project_id, status);
 ### 6. Regenerate Types
 
 After migration succeeds:
+```bash
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
-mcp__supabase__generate_typescript_types
-```
-
-Then write to `types/database.types.ts`.
 
 ---
 
@@ -269,5 +268,5 @@ FOR SELECT USING (
 - [ ] At least SELECT policy exists
 - [ ] Foreign key columns are indexed
 - [ ] Migration applied via `mcp__supabase__apply_migration`
-- [ ] Types regenerated via `mcp__supabase__generate_typescript_types`
-- [ ] Types written to `types/database.types.ts`
+- [ ] Types regenerated via `npx supabase gen types typescript...`
+- [ ] Types saved to `types/database.types.ts`

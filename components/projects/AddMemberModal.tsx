@@ -22,7 +22,7 @@ interface UserProfile {
 
 // Debug: Available roles for project team members
 const ROLES = [
-  { value: 'gc_admin', label: 'GC Admin' },
+  { value: 'admin', label: 'Admin' },
   { value: 'project_manager', label: 'Project Manager' },
   { value: 'foreman', label: 'Foreman' },
   { value: 'field_worker', label: 'Field Worker' },

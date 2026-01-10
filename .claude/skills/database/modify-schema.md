@@ -85,8 +85,9 @@ query: "[ALTER SQL]"
 If new column affects access control, update policies.
 
 ### 5. Regenerate Types
-```
-mcp__supabase__generate_typescript_types
+```bash
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ---

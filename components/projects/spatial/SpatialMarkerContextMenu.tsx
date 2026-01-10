@@ -1,7 +1,7 @@
 /**
  * SpatialMarkerContextMenu - P2.1
  * Context menu for 3D click interactions on spatial viewer
- * Only visible for gc_admin/project_manager roles
+ * Only visible for admin/project_manager roles
  *
  * NOTE: Uses separate onAdd* callbacks (onAddIssue, onAddNote, onAddSafety, onAddMilestone)
  * instead of single onCreateMarker(type) for better type safety and clearer parent component integration.
@@ -108,7 +108,7 @@ export function SpatialMarkerContextMenu({
   });
 
   // Permission check: Only GC/PM can see menu
-  const hasPermission = userRole === 'gc_admin' || userRole === 'project_manager';
+  const hasPermission = userRole === 'admin' || userRole === 'project_manager';
 
   // Close on ESC key
   useEffect(() => {

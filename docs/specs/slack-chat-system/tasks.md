@@ -43,7 +43,7 @@ This document provides an actionable implementation plan for the Slack-like Chat
   - References: Req 1.1-1.3, Req 12.3-12.4
 
 - [ ] 1.4 Generate TypeScript types for chat tables
-  - Run `mcp__supabase__generate_typescript_types`
+  - Run `npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts`
   - Create `types/chat.types.ts` with extended interfaces (MessageWithSender, ChatRoomWithUnread, ReactionSummary)
   - Export EntityReference type for @mentions: `{type: 'user'|'task'|'project'|'material'|'expense', id: string}`
   - References: Design - Data Models

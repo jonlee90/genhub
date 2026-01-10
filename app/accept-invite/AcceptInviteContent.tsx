@@ -19,7 +19,7 @@ type AcceptInviteContentProps = {
 
 // Role display mapping
 const ROLE_DISPLAY: Record<string, { label: string; color: string }> = {
-  gc_admin: { label: 'GC Admin', color: 'bg-construction-blue text-white' },
+  admin: { label: 'Admin', color: 'bg-construction-blue text-white' },
   project_manager: { label: 'Project Manager', color: 'bg-blue-600 text-white' },
   foreman: { label: 'Foreman', color: 'bg-construction-gray text-white' },
   field_worker: { label: 'Field Worker', color: 'bg-gray-600 text-white' },

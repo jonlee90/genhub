@@ -31,7 +31,7 @@ export interface SpatialViewerProps {
   modelLowURL?: string;
   thumbnailURL?: string;
   projectType?: string; // For loading default models when no user model exists
-  userRole: string; // NEW: Permission control (gc_admin, project_manager, etc.)
+  userRole: string; // NEW: Permission control (admin, project_manager, etc.)
   teamMembers?: Array<{ id: string; name: string }>; // NEW: For task assignment
   phases?: Array<{ id: string; name: string }>; // NEW: For task creation
   projectTasks?: Array<any>; // NEW: For task linking
@@ -133,7 +133,7 @@ export function SpatialViewer({
   const shouldUseDefaultModel = (!modelHighURL || isPlaceholderURL) && hasValidProjectType;
 
   // Debug: Permission checks
-  const canEditMarkers = userRole === 'gc_admin' || userRole === 'project_manager';
+  const canEditMarkers = userRole === 'admin' || userRole === 'project_manager';
 
   // Debug: Phase 6 - Mobile detection
   const [isMobile, setIsMobile] = useState(false);

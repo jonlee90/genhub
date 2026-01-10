@@ -43,14 +43,14 @@ export default async function SubcontractorsPage() {
     );
   }
 
-  // Authorization check - only GC Admin and Project Manager
-  if (companyUser.role !== 'gc_admin' && companyUser.role !== 'project_manager') {
+  // Authorization check - only Admin and Project Manager
+  if (companyUser.role !== 'admin' && companyUser.role !== 'project_manager') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
           <p className="text-gray-600">
-            Only GC Admins and Project Managers can access the subcontractor directory.
+            Only Admins and Project Managers can access the subcontractor directory.
           </p>
         </div>
       </div>

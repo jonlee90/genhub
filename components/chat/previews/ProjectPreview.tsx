@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 import { Building2, TrendingUp, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -129,7 +129,7 @@ export function ProjectPreview({ id }: ProjectPreviewProps) {
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-mono font-bold text-gray-600 uppercase">Progress</span>
-          <span className="text-xs font-black text-construction-blue">{project.completion_percentage}%</span>
+          <span className="text-xs font-black text-construction-blue">{formatPercentWhole(project.completion_percentage)}</span>
         </div>
         <Progress value={project.completion_percentage} className="h-2" />
       </div>

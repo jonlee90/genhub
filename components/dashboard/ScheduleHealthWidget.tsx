@@ -2,7 +2,7 @@
 
 import { CheckCircle, AlertTriangle, XCircle, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 import type { ScheduleHealthData } from '@/types/dashboard';
 
 export interface ScheduleHealthWidgetProps {
@@ -105,7 +105,7 @@ function StatusRow({ status, count, percentage }: StatusRowProps) {
           {count}
         </span>
         <span className="text-xs md:text-sm text-gray-500 min-w-[45px] text-right">
-          ({percentage}%)
+          ({formatPercentWhole(percentage)})
         </span>
       </div>
     </motion.div>
@@ -124,12 +124,12 @@ export function ScheduleHealthWidget({
 
   // Calculate total and percentages
   const total = health.onTime + health.atRisk + health.overdue;
-  const onTimePercent = total > 0 ? Math.round((health.onTime / total) * 100) : 0;
-  const atRiskPercent = total > 0 ? Math.round((health.atRisk / total) * 100) : 0;
-  const overduePercent = total > 0 ? Math.round((health.overdue / total) * 100) : 0;
+  const onTimePercentRaw = total > 0 ? (health.onTime / total) * 100 : 0;
+  const atRiskPercentRaw = total > 0 ? (health.atRisk / total) * 100 : 0;
+  const overduePercentRaw = total > 0 ? (health.overdue / total) * 100 : 0;
 
   // Use the pre-calculated onTimePercent if available, otherwise use calculated
-  const displayOnTimePercent = health.onTimePercent ?? onTimePercent;
+  const displayOnTimePercent = health.onTimePercent ?? onTimePercentRaw;
 
   // Determine overall health status for header styling
   const getHealthStatus = () => {
@@ -183,7 +183,7 @@ export function ScheduleHealthWidget({
         )}
       >
         <div className={cn('text-3xl md:text-4xl font-black', healthColors[healthStatus].text)}>
-          {displayOnTimePercent}%
+          {formatPercentWhole(displayOnTimePercent)}
         </div>
         <div className="text-xs md:text-sm text-gray-600 font-medium">
           On-Time Rate
@@ -192,9 +192,9 @@ export function ScheduleHealthWidget({
 
       {/* Status rows */}
       <div className="space-y-2 md:space-y-3">
-        <StatusRow status="onTime" count={health.onTime} percentage={onTimePercent} />
-        <StatusRow status="atRisk" count={health.atRisk} percentage={atRiskPercent} />
-        <StatusRow status="overdue" count={health.overdue} percentage={overduePercent} />
+        <StatusRow status="onTime" count={health.onTime} percentage={onTimePercentRaw} />
+        <StatusRow status="atRisk" count={health.atRisk} percentage={atRiskPercentRaw} />
+        <StatusRow status="overdue" count={health.overdue} percentage={overduePercentRaw} />
       </div>
 
       {/* Total count footer */}

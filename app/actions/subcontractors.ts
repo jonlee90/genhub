@@ -96,7 +96,7 @@ async function getUserContext() {
 
 /**
  * Create a new subcontractor
- * Only GC Admins and Project Managers can create subcontractors
+ * Only Admins and Project Managers can create subcontractors
  *
  * @param formData - Form data containing subcontractor details
  * @returns Success with subcontractor data or error message
@@ -111,11 +111,11 @@ export async function createSubcontractor(formData: FormData) {
 
   const { companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin and Project Manager can create
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Check permissions - only Admin and Project Manager can create
+  if (role !== 'admin' && role !== 'project_manager') {
     return {
       success: false,
-      error: 'Insufficient permissions. Only GC Admins and Project Managers can create subcontractors.'
+      error: 'Insufficient permissions. Only Admins and Project Managers can create subcontractors.'
     };
   }
 
@@ -228,7 +228,7 @@ export async function createSubcontractor(formData: FormData) {
 
 /**
  * Update an existing subcontractor
- * Only GC Admins and Project Managers can update subcontractors
+ * Only Admins and Project Managers can update subcontractors
  *
  * @param data - Object containing subcontractor ID and fields to update
  * @returns Success with updated subcontractor data or error message
@@ -256,11 +256,11 @@ export async function updateSubcontractor(data: {
 
   const { companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin and Project Manager can update
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Check permissions - only Admin and Project Manager can update
+  if (role !== 'admin' && role !== 'project_manager') {
     return {
       success: false,
-      error: 'Insufficient permissions. Only GC Admins and Project Managers can update subcontractors.'
+      error: 'Insufficient permissions. Only Admins and Project Managers can update subcontractors.'
     };
   }
 
@@ -363,7 +363,7 @@ export async function updateSubcontractor(data: {
 
 /**
  * Deactivate a subcontractor (soft delete)
- * Only GC Admins can deactivate subcontractors
+ * Only Admins can deactivate subcontractors
  *
  * @param id - ID of the subcontractor to deactivate
  * @returns Success or error message
@@ -378,11 +378,11 @@ export async function deactivateSubcontractor(id: string) {
 
   const { companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin can deactivate
-  if (role !== 'gc_admin') {
+  // Check permissions - only Admin can deactivate
+  if (role !== 'admin') {
     return {
       success: false,
-      error: 'Insufficient permissions. Only GC Admins can deactivate subcontractors.'
+      error: 'Insufficient permissions. Only Admins can deactivate subcontractors.'
     };
   }
 
@@ -469,7 +469,7 @@ export async function deactivateSubcontractor(id: string) {
 
 /**
  * Upload document for subcontractor (license or insurance)
- * Only GC Admins and Project Managers can upload documents
+ * Only Admins and Project Managers can upload documents
  *
  * @param formData - Form data containing file and document type
  * @returns Success with file URL or error message
@@ -484,11 +484,11 @@ export async function uploadSubcontractorDocument(formData: FormData) {
 
   const { companyId, role, supabase } = userContext;
 
-  // Check permissions - only GC Admin and Project Manager can upload
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Check permissions - only Admin and Project Manager can upload
+  if (role !== 'admin' && role !== 'project_manager') {
     return {
       success: false,
-      error: 'Insufficient permissions. Only GC Admins and Project Managers can upload documents.'
+      error: 'Insufficient permissions. Only Admins and Project Managers can upload documents.'
     };
   }
 

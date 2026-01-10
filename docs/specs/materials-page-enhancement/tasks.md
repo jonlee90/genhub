@@ -285,7 +285,7 @@ Task 0055 (agent-code-reviewer)
 mcp supabase execute_sql --sql-file supabase/migrations/20260104000001_create_tracked_materials.sql
 
 # Generate types
-mcp supabase generate_typescript_types
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 
 # Test server actions
 npm run dev

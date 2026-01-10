@@ -58,7 +58,7 @@ createTable('new_table')               // NEVER create new tables
 
 ```bash
 # ❌ WRONG - Causes unnecessary changes
-mcp__supabase__generate_typescript_types  # NEVER during review
+npx supabase gen types...  # NEVER during review
 
 # ✅ CORRECT - Types only regenerate after ACTUAL schema changes by backend-engineer
 ```

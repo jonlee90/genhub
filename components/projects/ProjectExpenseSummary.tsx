@@ -3,6 +3,7 @@
 import { DollarSign, CheckCircle, Clock, XCircle } from 'lucide-react';
 import type { ExpenseStats } from '@/app/actions/projects';
 import { InfoCard, InfoCardField } from './InfoCard';
+import { formatPercent } from '@/lib/utils';
 
 interface ProjectExpenseSummaryProps {
   expenseStats: ExpenseStats;
@@ -51,7 +52,7 @@ export function ProjectExpenseSummary({
     // Budget Utilization Progress Bar (full width)
     {
       label: 'Budget Utilization',
-      value: `${budgetUtilization.toFixed(1)}%`,
+      value: formatPercent(budgetUtilization),
       isProgressBar: true,
       progressValue: Math.min(100, budgetUtilization),
       progressColor: getProgressColor(),

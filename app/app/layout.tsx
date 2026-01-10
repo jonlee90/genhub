@@ -5,19 +5,23 @@ import { Toaster } from "sonner";
 import { ServiceWorkerRegistration } from "../../components/pwa/ServiceWorkerRegistration";
 import { OfflineBanner } from "../../components/pwa/OfflineBanner";
 import { InstallPrompt } from "../../components/pwa/InstallPrompt";
+import { isOwner } from "@/app/actions/owner";
 
-export default function AppLayout({
+export default async function AppLayout({
 	children
 }: {
 	children: React.ReactNode
 }) {
+	// Check if current user is a platform owner
+	const ownerStatus = await isOwner();
+
 	return (
 		<div className="flex h-screen bg-gray-50">
 			{/* PWA: Offline Status Banner - z-50 (highest priority) */}
 			<OfflineBanner />
 
 			{/* Sidebar - Desktop Only */}
-			<Sidebar />
+			<Sidebar isOwner={ownerStatus} />
 
 			{/* Main Content Area */}
 			<div className="flex flex-col flex-1 overflow-hidden">

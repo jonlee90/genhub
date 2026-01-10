@@ -135,8 +135,8 @@ export async function createMaterial(data: z.infer<typeof createMaterialSchema>)
       return { success: false, error: 'User not associated with a company' };
     }
 
-    // Check permissions (GC Admin or PM)
-    if (!['gc_admin', 'project_manager'].includes(companyUser.role)) {
+    // Check permissions (Admin or PM)
+    if (!['admin', 'project_manager'].includes(companyUser.role)) {
       return { success: false, error: 'Insufficient permissions' };
     }
 
@@ -281,9 +281,22 @@ export async function getMaterialsByCompany() {
 
     const supabase = await createClient();
 
+    // Get user's company_id for proper data isolation
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (companyError || !companyUser) {
+      return { success: true, data: [] };
+    }
+
     const { data: materials, error } = await supabase
       .from('materials')
       .select('*')
+      .eq('company_id', companyUser.company_id)
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 

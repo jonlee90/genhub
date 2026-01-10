@@ -61,9 +61,9 @@ async function getUserContext() {
     return { error: 'No active company found for user' };
   }
 
-  // Only GC Admin can manage project types
-  if (companyUser.role !== 'gc_admin') {
-    return { error: 'Insufficient permissions. Only GC Admin can manage project types.' };
+  // Only Admin can manage project types
+  if (companyUser.role !== 'admin') {
+    return { error: 'Insufficient permissions. Only Admin can manage project types.' };
   }
 
   return {

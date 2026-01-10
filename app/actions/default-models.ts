@@ -510,7 +510,7 @@ export async function uploadCompanyDefaultModel(
   const { supabase, companyId, role } = userContext;
 
   // Check if user is GC admin
-  if (role !== 'gc_admin') {
+  if (role !== 'admin') {
     return { success: false, error: 'Only GC admins can upload company default models' };
   }
 
@@ -536,7 +536,7 @@ export async function resetToSystemDefault(
   const { supabase, companyId, role } = userContext;
 
   // Check if user is GC admin
-  if (role !== 'gc_admin') {
+  if (role !== 'admin') {
     return { success: false };
   }
 

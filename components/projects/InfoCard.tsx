@@ -170,7 +170,7 @@ export function InfoCard({
                   "font-bold text-gray-900 min-w-[3ch] text-right",
                   isHeroCard ? "text-base md:text-lg" : "text-sm"
                 )}>
-                  {field.progressValue}%
+                  {field.value}
                 </span>
               </div>
             )}

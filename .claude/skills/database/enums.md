@@ -150,8 +150,9 @@ ADD COLUMN {column} public.{enum_name} DEFAULT 'value1';
 ```
 
 ### 4. Regenerate Types
-```
-mcp__supabase__generate_typescript_types
+```bash
+source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ### 5. Update Documentation

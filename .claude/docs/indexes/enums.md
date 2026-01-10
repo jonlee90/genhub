@@ -2,7 +2,7 @@
 
 > Quick lookup for database and TypeScript enums.
 
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 ---
 
@@ -12,7 +12,7 @@ Last updated: 2026-01-09
 
 ```sql
 -- User roles in company
-user_role: gc_admin | project_manager | foreman | field_worker | subcontractor | client
+user_role: admin | project_manager | foreman | field_worker | subcontractor | client
 
 -- Team member status
 member_status: active | invited | inactive
@@ -155,7 +155,7 @@ import { z } from 'zod';
 
 const taskStatusSchema = z.enum(['todo', 'in_progress', 'review', 'blocked', 'completed']);
 const taskPrioritySchema = z.enum(['low', 'medium', 'high', 'critical']);
-const userRoleSchema = z.enum(['gc_admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']);
+const userRoleSchema = z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']);
 ```
 
 ---
@@ -173,8 +173,8 @@ ALTER TABLE public.table_name ADD COLUMN status public.new_enum DEFAULT 'value1'
 ```
 
 3. Regenerate types:
-```
-mcp__supabase__generate_typescript_types
+```bash
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 4. Update this index

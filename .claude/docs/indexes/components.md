@@ -163,6 +163,17 @@ Last updated: 2026-01-10
 | SettingsForm | Client | Settings form |
 | NotificationSettings | Client | Notification prefs |
 
+### Owner (`components/owner/`)
+| Component | Type | Purpose |
+|-----------|------|---------|
+| OwnerInvitesClient | Client | Admin invitation management |
+
+### Admin Invite (`components/admin-invite/`)
+| Component | Type | Purpose |
+|-----------|------|---------|
+| AdminInviteContent | Client | Invite validation page content |
+| AdminSignupForm | Client | Admin signup form |
+
 ---
 
 ## By Type
@@ -253,7 +264,9 @@ interface EntityListProps {
 | settings/ | ~3 | Settings |
 | forms/ | ~8 | Form components |
 | admin/ | ~3 | Admin tools |
-| **Total** | ~210+ | - |
+| owner/ | ~1 | Owner management |
+| admin-invite/ | ~2 | Admin invite flow |
+| **Total** | ~213+ | - |
 
 ---
 

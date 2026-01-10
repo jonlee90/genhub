@@ -17,7 +17,10 @@ import {
   X,
   ChevronDown,
   HardHat,
-  MessageSquare
+  MessageSquare,
+  Building2,
+  UserPlus,
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,16 +46,30 @@ const navigation: NavigationItem[] = [
   { name: "Settings", href: "/app/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+// Owner-only navigation
+const ownerNavigation: NavigationItem[] = [
+  { name: "Companies", href: "/app/owner/companies", icon: Building2 },
+  { name: "Users", href: "/app/owner/users", icon: Users },
+  { name: "Invitations", href: "/app/owner/invites", icon: UserPlus },
+];
+
+interface SidebarProps {
+  isOwner?: boolean;
+}
+
+export function Sidebar({ isOwner = false }: SidebarProps) {
   const pathname = usePathname();
   const notificationCount = 3; // Mock notification count
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
+  // Combine navigation with owner navigation if applicable
+  const allNavigation = isOwner ? [...navigation, ...ownerNavigation] : navigation;
+
   // Auto-expand parent items when child routes are active
   useEffect(() => {
     const newExpanded: Record<string, boolean> = {};
-    navigation.forEach((item) => {
+    allNavigation.forEach((item) => {
       if (item.children) {
         const isChildActive = item.children.some(
           (child) => pathname === child.href || pathname.startsWith(child.href + "/")
@@ -63,7 +80,7 @@ export function Sidebar() {
       }
     });
     setExpandedItems((prev) => ({ ...prev, ...newExpanded }));
-  }, [pathname]);
+  }, [pathname, isOwner]);
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) => ({
@@ -187,6 +204,7 @@ export function Sidebar() {
 
                 {/* Debug: Navigation with touch-optimized spacing */}
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                  {/* Main Navigation */}
                   {navigation.map((item, index) => {
                     const isActive = pathname === item.href ||
                       (item.href !== "/app" && pathname.startsWith(item.href));
@@ -378,6 +396,71 @@ export function Sidebar() {
                       </motion.div>
                     );
                   })}
+
+                  {/* Owner Navigation Section */}
+                  {isOwner && (
+                    <>
+                      <div className="pt-4 mt-4 border-t border-gray-200">
+                        <div className="flex items-center gap-2 px-3 py-2">
+                          <Crown className="w-4 h-4 text-yellow-600" />
+                          <span className="text-xs font-bold text-yellow-700 uppercase tracking-wider">
+                            Platform Admin
+                          </span>
+                        </div>
+                      </div>
+                      {ownerNavigation.map((item, index) => {
+                        const isActive = pathname === item.href ||
+                          pathname.startsWith(item.href + "/");
+
+                        return (
+                          <motion.div
+                            key={item.name}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: (navigation.length + index) * 0.05, duration: 0.3 }}
+                          >
+                            <Link
+                              href={item.href}
+                              className={cn(
+                                "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300",
+                                isActive
+                                  ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
+                                  : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction"
+                              )}
+                            >
+                              {isActive && (
+                                <motion.div
+                                  layoutId="activeNavMobileOwner"
+                                  className="absolute left-0 w-1 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-r-full"
+                                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                              )}
+                              <motion.div
+                                className={cn(
+                                  "relative",
+                                  isActive
+                                    ? "text-yellow-600"
+                                    : "text-gray-700 group-hover:text-yellow-600"
+                                )}
+                                whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                              >
+                                <item.icon className="w-6 h-6 flex-shrink-0" />
+                                {isActive && (
+                                  <div className="absolute inset-0 rounded-full bg-yellow-500/20 blur-sm animate-glow-pulse" />
+                                )}
+                              </motion.div>
+                              <span className="relative z-10">{item.name}</span>
+                              <div className={cn(
+                                "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                "bg-gradient-to-r from-yellow-500/5 to-transparent"
+                              )} />
+                            </Link>
+                          </motion.div>
+                        );
+                      })}
+                    </>
+                  )}
                 </nav>
 
                 {/* Modern Footer - Glass Morphism with Notifications & User Menu */}
@@ -514,6 +597,7 @@ export function Sidebar() {
 
           {/* Debug: Navigation with Aceternity UI hover effects and animations */}
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+            {/* Main Navigation */}
             {navigation.map((item, index) => {
               const isActive = pathname === item.href ||
                 (item.href !== "/app" && pathname.startsWith(item.href));
@@ -705,6 +789,71 @@ export function Sidebar() {
                 </motion.div>
               );
             })}
+
+            {/* Owner Navigation Section */}
+            {isOwner && (
+              <>
+                <div className="pt-4 mt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2 px-3 py-2">
+                    <Crown className="w-4 h-4 text-yellow-600" />
+                    <span className="text-xs font-bold text-yellow-700 uppercase tracking-wider">
+                      Platform Admin
+                    </span>
+                  </div>
+                </div>
+                {ownerNavigation.map((item, index) => {
+                  const isActive = pathname === item.href ||
+                    pathname.startsWith(item.href + "/");
+
+                  return (
+                    <motion.div
+                      key={item.name}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (navigation.length + index) * 0.05, duration: 0.3 }}
+                    >
+                      <Link
+                        href={item.href}
+                        className={cn(
+                          "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
+                          isActive
+                            ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
+                            : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction"
+                        )}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="activeNavOwner"
+                            className="absolute left-0 w-1 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-r-full"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                        <motion.div
+                          className={cn(
+                            "relative",
+                            isActive
+                              ? "text-yellow-600"
+                              : "text-gray-700 group-hover:text-yellow-600"
+                          )}
+                          whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        >
+                          <item.icon className="w-5 h-5 flex-shrink-0" />
+                          {isActive && (
+                            <div className="absolute inset-0 rounded-full bg-yellow-500/20 blur-sm animate-glow-pulse" />
+                          )}
+                        </motion.div>
+                        <span className="relative z-10">{item.name}</span>
+                        <div className={cn(
+                          "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                          "bg-gradient-to-r from-yellow-500/5 to-transparent"
+                        )} />
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </>
+            )}
           </nav>
 
           {/* Modern Footer - Glass Morphism with Notifications & User Menu */}

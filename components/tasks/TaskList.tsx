@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { updateTaskStatus } from '@/app/actions/tasks';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 
 type TaskStatus = Database['public']['Enums']['task_status'];
@@ -61,19 +62,22 @@ interface TaskListProps {
   phases?: Phase[];
 }
 
-const STATUS_CONFIG = {
-  todo: { label: 'To Do', color: 'bg-gray-200 text-gray-700', icon: null, animate: false },
-  in_progress: { label: 'In Progress', color: 'bg-[#001B51] text-white', icon: Wrench, animate: true },
-  review: { label: 'Review', color: 'bg-[#3C3C3C] text-white', icon: null, animate: false },
-  blocked: { label: 'Blocked', color: 'bg-[#DC2626] text-white', icon: AlertTriangle, animate: false },
-  completed: { label: 'Completed', color: 'bg-[#059669] text-white', icon: CheckCircle, animate: false },
+// Status icon mapping (icons are component-specific)
+const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }> | null> = {
+  todo: null,
+  in_progress: Wrench,
+  review: null,
+  blocked: AlertTriangle,
+  completed: CheckCircle,
 };
 
-const PRIORITY_CONFIG = {
-  low: { label: 'Low', color: 'bg-[#059669]/10 text-[#059669] font-bold' },
-  medium: { label: 'Medium', color: 'bg-[#FFB627]/10 text-[#FFB627] font-bold' },
-  high: { label: 'High', color: 'bg-[#DC2626]/10 text-[#DC2626] font-bold' },
-  critical: { label: 'Critical', color: 'bg-purple-100 text-purple-700 font-bold' },
+// Animate in_progress status only
+const STATUS_ANIMATE: Record<string, boolean> = {
+  todo: false,
+  in_progress: true,
+  review: false,
+  blocked: false,
+  completed: false,
 };
 
 type SortField = 'title' | 'project' | 'due_date' | 'priority' | 'status';
@@ -204,8 +208,8 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
     return (
       <div className="space-y-3">
         {sortedTasks.map((task, index) => {
-          const statusConfig = STATUS_CONFIG[task.status];
-          const priorityConfig = PRIORITY_CONFIG[task.priority];
+          const statusConfig = TASK_STATUS_CONFIG[task.status];
+          const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
           const taskIsOverdue = isOverdue(task);
 
           return (
@@ -238,7 +242,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
                       </div>
                     )}
                   </div>
-                  <Badge variant="secondary" className={cn('text-[10px] font-bold shrink-0', priorityConfig.color)}>
+                  <Badge variant="secondary" className={cn('text-[10px] font-bold shrink-0', priorityConfig.badgeColor)}>
                     {priorityConfig.label}
                   </Badge>
                 </div>
@@ -246,12 +250,15 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
                 {/* Middle: Status + Assignee */}
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <motion.div
-                    animate={statusConfig.animate ? { scale: [1, 1.02, 1] } : {}}
+                    animate={STATUS_ANIMATE[task.status] ? { scale: [1, 1.02, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
-                    <Badge className={cn('font-bold text-[10px]', statusConfig.color)}>
+                    <Badge className={cn('font-bold text-[10px]', statusConfig.solidColor)}>
                       <div className="flex items-center gap-1">
-                        {statusConfig.icon && <statusConfig.icon className="w-3 h-3" />}
+                        {STATUS_ICONS[task.status] && (() => {
+                          const Icon = STATUS_ICONS[task.status]!;
+                          return <Icon className="w-3 h-3" />;
+                        })()}
                         {statusConfig.label}
                       </div>
                     </Badge>
@@ -322,8 +329,8 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
         </TableHeader>
         <TableBody>
           {sortedTasks.map((task) => {
-            const statusConfig = STATUS_CONFIG[task.status];
-            const priorityConfig = PRIORITY_CONFIG[task.priority];
+            const statusConfig = TASK_STATUS_CONFIG[task.status];
+            const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
             const taskIsOverdue = isOverdue(task);
 
             return (
@@ -407,7 +414,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
 
                 {/* Priority */}
                 <TableCell>
-                  <Badge variant="secondary" className={cn('font-bold', priorityConfig.color)}>
+                  <Badge variant="secondary" className={cn('font-bold', priorityConfig.badgeColor)}>
                     {priorityConfig.label}
                   </Badge>
                 </TableCell>
@@ -415,7 +422,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
                 {/* Status (Inline Edit) */}
                 <TableCell>
                   <motion.div
-                    animate={statusConfig.animate ? { scale: [1, 1.05, 1] } : {}}
+                    animate={STATUS_ANIMATE[task.status] ? { scale: [1, 1.05, 1] } : {}}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
                     <Select
@@ -424,17 +431,23 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
                         handleStatusChange(task.id, value as TaskStatus, task.status)
                       }
                     >
-                      <SelectTrigger className={cn('w-[140px] h-8 font-bold', statusConfig.color)}>
+                      <SelectTrigger className={cn('w-[140px] h-8 font-bold', statusConfig.solidColor)}>
                         <div className="flex items-center gap-1.5">
-                          {statusConfig.icon && <statusConfig.icon className="w-3 h-3" />}
+                          {STATUS_ICONS[task.status] && (() => {
+                            const Icon = STATUS_ICONS[task.status]!;
+                            return <Icon className="w-3 h-3" />;
+                          })()}
                           <SelectValue />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(STATUS_CONFIG).map(([value, config]) => (
+                        {Object.entries(TASK_STATUS_CONFIG).map(([value, config]) => (
                           <SelectItem key={value} value={value}>
                             <div className="flex items-center gap-1.5">
-                              {config.icon && <config.icon className="w-3 h-3" />}
+                              {STATUS_ICONS[value] && (() => {
+                                const Icon = STATUS_ICONS[value]!;
+                                return <Icon className="w-3 h-3" />;
+                              })()}
                               {config.label}
                             </div>
                           </SelectItem>

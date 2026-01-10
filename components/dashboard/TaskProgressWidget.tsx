@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { CheckSquare, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatPercentWhole } from '@/lib/utils';
 import type { TaskProgressData } from '@/types/dashboard';
 
 export interface TaskProgressWidgetProps {
@@ -99,7 +99,7 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          {Math.round(percentage)}%
+          {formatPercentWhole(percentage)}
         </motion.span>
         <span className="text-xs text-gray-500">Complete</span>
       </div>

@@ -30,7 +30,7 @@ export function ProjectsPageClient({ role }: ProjectsPageClientProps) {
   console.log('[ProjectsPageClient] Rendering with role:', role);
 
   // Only show button for authorized roles
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return null;
   }
 

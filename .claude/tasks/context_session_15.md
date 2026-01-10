@@ -77,7 +77,7 @@ mcp__supabase__apply_migration name:"add_message_attachments" query:"<SQL>"
 mcp__supabase__apply_migration name:"push_subscriptions" query:"<SQL>"
 
 # After migrations, regenerate types
-mcp__supabase__generate_typescript_types
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 ### 2. Firebase Project Setup

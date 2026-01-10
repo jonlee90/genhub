@@ -66,6 +66,13 @@ All routes require authentication via NextAuth.
 |-------|------|-------------|
 | `/app/admin/seed-data` | Demo data seeding | - |
 
+### Owner (Platform Admin)
+| Route | Page | Data Source |
+|-------|------|-------------|
+| `/app/owner/companies` | All companies list | getAllCompanies |
+| `/app/owner/users` | All users list | getAllUsers |
+| `/app/owner/invites` | Admin invitations | getPendingAdminInvitations |
+
 ---
 
 ## Client Portal Routes
@@ -89,6 +96,8 @@ No authentication required.
 | `/sign-in` | Sign in | NextAuth |
 | `/sign-up` | Sign up | NextAuth |
 | `/invite/[token]` | Team invite | Accept invitation |
+| `/admin-invite` | Admin invite validation | Accept admin invite |
+| `/admin-invite/signup` | Admin signup form | Create admin account |
 
 ---
 
@@ -172,11 +181,11 @@ Home | Projects | Tasks | Chat | Menu
 
 | Category | Count |
 |----------|-------|
-| App routes | 18 |
+| App routes | 21 |
 | Client portal | 2 |
-| Public routes | 4 |
+| Public routes | 6 |
 | API routes | 4 |
-| **Total** | 28 |
+| **Total** | 33 |
 
 ---
 

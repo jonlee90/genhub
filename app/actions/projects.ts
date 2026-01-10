@@ -195,8 +195,8 @@ export async function createProject(formData: FormData) {
   const { userId, companyId, role, supabase } = userContext;
   console.log('Creating project with context:', { userId, companyId, role });
 
-  // Check permissions - only GC Admin and Project Manager can create projects
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  // Check permissions - only Admin and Project Manager can create projects
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to create projects' };
   }
 
@@ -387,7 +387,7 @@ export async function updateProject(formData: FormData) {
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to update projects' };
   }
 
@@ -478,7 +478,7 @@ export async function updateProjectStatus(projectId: string, status: 'active' | 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to update project status' };
   }
 
@@ -537,7 +537,7 @@ export async function assignProjectTeamMember(projectId: string, userId: string,
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to assign team members' };
   }
 
@@ -607,7 +607,7 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
   console.log('[addProjectTeamMember] User context:', { companyId, role });
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     console.error('[addProjectTeamMember] Insufficient permissions - User role:', role);
     return { error: 'Insufficient permissions to add team members' };
   }
@@ -651,7 +651,7 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
   console.log('[addProjectTeamMember] User not already on team, proceeding with insert');
 
   // Validate role is one of the allowed roles
-  const validRoles = ['gc_admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client'];
+  const validRoles = ['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client'];
   if (!validRoles.includes(userRole)) {
     console.error('[addProjectTeamMember] Invalid role:', userRole);
     return { error: 'Invalid role selected' };
@@ -698,7 +698,7 @@ export async function removeProjectTeamMember(projectId: string, userId: string)
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'gc_admin' && role !== 'project_manager') {
+  if (role !== 'admin' && role !== 'project_manager') {
     return { error: 'Insufficient permissions to remove team members' };
   }
 

@@ -45,8 +45,10 @@ Module not found: Can't resolve 'fs'
 mcp__supabase__list_tables
 mcp__supabase__execute_sql
 mcp__supabase__apply_migration
-mcp__supabase__generate_typescript_types
 mcp__supabase__get_advisors type:"security"
+
+# For type generation, use Bash:
+npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
 **NEVER use psql, CLI, or direct connections.**
