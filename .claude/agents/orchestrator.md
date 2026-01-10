@@ -92,9 +92,9 @@ Task(agent-backend-engineer, "Build API")        // = Problems
 
 ### Step 2: Load Context
 
-Reference CLAUDE.md and load relevant skills + docs:
+Reference CLAUDE.md (auto-loaded) and load relevant skills + docs:
 ```
-ALL work: Start with .claude/CLAUDE.md and .claude/skills/index.md
+ALL work: Start with .claude/skills/index.md (CLAUDE.md already in context)
 
 Database work:
   → Load: skills/database/{create-migration,modify-schema,etc}
@@ -128,7 +128,7 @@ Task(
   ORCHESTRATED=true (skip individual build/sync - orchestrator handles at end)
 
   CRITICAL:
-  - Load .claude/CLAUDE.md (safety rules)
+  - Reference CLAUDE.md safety rules (already in context)
   - Load .claude/skills/index.md (find relevant database/backend skills)
   - Load skill files (e.g., skills/database/create-migration.md)
 
@@ -169,7 +169,7 @@ Task(
   ORCHESTRATED=true (skip individual build/sync - orchestrator handles at end)
 
   CRITICAL:
-  - Load .claude/CLAUDE.md (safety rules, no Supabase in client!)
+  - Reference CLAUDE.md safety rules (already in context, no Supabase in client!)
   - Load .claude/skills/index.md (find relevant frontend skills)
   - Load skill files (e.g., skills/frontend/page-creation.md)
 
@@ -216,7 +216,7 @@ Task(
 
   Review integration of {feature} against spec.
 
-  CRITICAL: Load .claude/CLAUDE.md
+  CRITICAL: Reference CLAUDE.md rules (already in context)
 
   Files changed (from phases A & B):
   {backend files}

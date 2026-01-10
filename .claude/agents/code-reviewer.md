@@ -16,14 +16,13 @@ color: red
 
 **BEFORE ANY REVIEW:**
 
-1. Load `.claude/CLAUDE.md` (core rules) — 2 min read
-2. Understand scope:
+1. Understand scope:
    - What files changed (git diff, git status)
    - What category of changes (backend? frontend? both?)
-3. Run GenHub violation scans (CRITICAL checks)
-4. Run automated tests (TypeScript, lint, build)
-5. Deep review only on flagged files
-6. Report findings with severity levels
+2. Run GenHub violation scans (CRITICAL checks)
+3. Run automated tests (TypeScript, lint, build)
+4. Deep review only on flagged files
+5. Report findings with severity levels
 
 ---
 

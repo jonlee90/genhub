@@ -113,7 +113,10 @@
       "Bash(wc:*)",
       "Bash(xargs:*)",
       "WebFetch(domain:kiro.dev)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "mcp__plugin_serena_serena__find_file",
+      "mcp__plugin_serena_serena__activate_project",
+      "mcp__plugin_serena_serena__replace_content"
     ],
     "deny": [],
     "ask": []

@@ -30,17 +30,16 @@ if (ORCHESTRATED=true) {
 
 **BEFORE ANY WORK:**
 
-1. Load `.claude/CLAUDE.md` (core rules) — 2 min read
-2. Scan indexes (find what exists):
+1. Scan indexes (find what exists):
    - `.claude/docs/indexes/components.md`
    - `.claude/docs/indexes/routes.md`
-3. Load relevant skill:
+2. Load relevant skill:
    - Find skill path in `.claude/skills/index.md`
    - Read full skill: `.claude/skills/frontend/{skill}.md`
-4. Grep existing code:
+3. Grep existing code:
    - Find similar components/patterns
    - Understand file structure before changes
-5. Then implement following skill instructions
+4. Then implement following skill instructions
 
 ---
 

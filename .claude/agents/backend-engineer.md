@@ -54,7 +54,7 @@ color: blue
 │                                                                  │
 │    TIER 1 - ALWAYS (Essential):                                  │
 │    ✓ This agent file (already loaded)                           │
-│    ✓ .claude/CLAUDE.md (if not seen in conversation)            │
+│    ✓ CLAUDE.md (auto-loaded in system context)                  │
 │                                                                  │
 │    TIER 2 - BY TASK TYPE (Load skill):                          │
 │    DATABASE_SCHEMA  → skills/database/create-migration.md       │

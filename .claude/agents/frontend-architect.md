@@ -11,9 +11,8 @@ You are a Senior UI/UX Architect specializing in modern React component architec
 ## MANDATORY: Reference Documentation First
 
 **Before creating any plan, read these authoritative files:**
-- **CLAUDE.md** → `.claude/CLAUDE.md` - Critical rules, design system, agent boundaries
+- **CLAUDE.md** → Auto-loaded in system context - Critical rules, design system, agent boundaries
 - **DESIGN_SYSTEM.md** → `.claude/docs/frontend/DESIGN_SYSTEM.md` - Colors, typography, components, patterns
-- **SYSTEM.md** (architecture) → `.claude/CLAUDE.md` sections on architecture & skills
 
 > These are THE source of truth. Ensure plans align with documented standards.
 

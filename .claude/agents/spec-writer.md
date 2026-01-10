@@ -55,7 +55,7 @@ color: purple
 │                                                                  │
 │    TIER 1 - ALWAYS (Essential):                                  │
 │    ✓ This agent file (already loaded)                           │
-│    ✓ .claude/CLAUDE.md (if not seen)                            │
+│    ✓ CLAUDE.md (auto-loaded in system context)                  │
 │                                                                  │
 │    TIER 2 - BY FEATURE TYPE (Load domain context):              │
 │    PROJECT_FEATURE  → docs/domain/PROJECTS.md                   │
@@ -426,7 +426,7 @@ interface {Feature}ModalProps {
 ```
 1. LOAD CONTEXT
    - Read approved requirements.md
-   - Load: .claude/CLAUDE.md (rules)
+   - Reference: CLAUDE.md rules (already in context)
    - Load: Domain docs for feature area
    - Grep: Find similar implementations
 
