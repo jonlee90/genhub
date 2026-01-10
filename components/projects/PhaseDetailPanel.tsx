@@ -10,6 +10,7 @@ import { applyTaskTemplates } from '@/app/actions/phases';
 import type { Database } from '@/types/database.types';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
+import { TaskModal } from '@/components/tasks/TaskModal';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -76,6 +77,10 @@ export function PhaseDetailPanel({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [applyingTemplates, setApplyingTemplates] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  // Debug: Log when editingTask changes
+  console.log('[PhaseDetailPanel] editingTask state:', editingTask?.id, editingTask?.title);
 
   const statusConfig = {
     not_started: { label: 'Not Started', color: 'text-gray-700' },
@@ -342,19 +347,29 @@ export function PhaseDetailPanel({
           </motion.div>
         ) : (
           <div className="space-y-2.5 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-            {tasks.map((task, index) => {
+            {tasks.map((task) => {
               const taskStatus = TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG];
               const StatusIcon = taskStatus.icon;
               const isOverdue = isTaskOverdue(task.due_date, task.status);
 
               return (
-                <motion.div
+                <div
                   key={task.id}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-[#001B51]/40 hover:shadow-construction transition-all duration-200 cursor-pointer group"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + index * 0.03 }}
-                  whileHover={{ y: -2 }}
+                  role="button"
+                  tabIndex={0}
+                  className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-[#001B51]/40 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    console.log('[PhaseDetailPanel] Task clicked:', task.id, task.title);
+                    setEditingTask(task);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      console.log('[PhaseDetailPanel] Task key activated:', task.id, task.title);
+                      setEditingTask(task);
+                    }
+                  }}
                 >
                   <div className="flex items-start gap-3.5">
                     {/* Status Icon */}
@@ -410,12 +425,28 @@ export function PhaseDetailPanel({
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>
         )}
       </motion.div>
+
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <TaskModal
+          isOpen={true}
+          onClose={() => setEditingTask(null)}
+          mode="edit"
+          task={editingTask}
+          projects={projects}
+          teamMembers={teamMembers}
+          onSuccess={() => {
+            setEditingTask(null);
+            router.refresh();
+          }}
+        />
+      )}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
