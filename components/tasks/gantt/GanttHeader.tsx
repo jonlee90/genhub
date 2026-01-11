@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { GanttHeaderProps } from './gantt-types';
 
-export function GanttHeader({ config, dateGroups, dateCells }: GanttHeaderProps) {
+export function GanttHeader({ config, dateGroups, dateCells, sortedTasksLength }: GanttHeaderProps) {
   const { sidebarWidth, headerHeight } = config;
   const isMobile = sidebarWidth <= 140;
   return (
@@ -21,7 +21,7 @@ export function GanttHeader({ config, dateGroups, dateCells }: GanttHeaderProps)
             'text-white font-black tracking-wider drop-shadow-sm',
             isMobile ? 'text-xs' : 'text-sm'
           )}>
-            {isMobile ? 'TASK' : 'TASKS'}
+            {sortedTasksLength  + ' TASKS'}
           </span>
         </div>
 

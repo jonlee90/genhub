@@ -2,12 +2,13 @@
  * BaseModal Component
  * Production-grade modal system with construction-themed design
  * Built on Radix UI Dialog with custom construction theme
- * Responsive: Bottom sheet on mobile, centered modal on desktop
+ * Responsive: Bottom sheet on mobile (with drag-to-dismiss), centered modal on desktop
  */
 
 'use client';
 
-import { useEffect } from 'react';
+import { useState } from 'react';
+import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
 import { getModalTheme } from '@/lib/config/modal-themes';
@@ -21,6 +22,11 @@ import {
   BaseModalProps,
   MODAL_MAX_WIDTHS,
 } from './types';
+
+// Drag-to-dismiss constants
+const DRAG_DISMISS_VELOCITY = 500; // px/s - fast swipe dismisses regardless of position
+const DRAG_DISMISS_THRESHOLD = 0.6; // 60% of screen height
+const SPRING_CONFIG = { stiffness: 400, damping: 35 };
 
 export function BaseModal({
   isOpen,
@@ -41,6 +47,8 @@ export function BaseModal({
   closeOnEscape = true,
   formKey,
   maxWidth = 'xl',
+  enableDragToDismiss = true,
+  snapPoints: _snapPoints, // Reserved for future snap point behavior
   className,
   contentClassName,
   headerClassName,
@@ -57,6 +65,7 @@ export function BaseModal({
     currentStep,
     closeOnBackdropClick,
     closeOnEscape,
+    enableDragToDismiss,
   });
 
   // Get theme configuration
@@ -64,6 +73,10 @@ export function BaseModal({
 
   // Detect mobile for bottom sheet behavior
   const isMobile = useMediaQuery('(max-width: 767px)');
+
+  // Drag-to-dismiss state
+  const dragY = useMotionValue(0);
+  const [isDragging, setIsDragging] = useState(false);
 
   console.log('[BaseModal] Device detection:', { isMobile });
 
@@ -74,6 +87,24 @@ export function BaseModal({
     if (!newOpen) {
       onClose();
     }
+  };
+
+  // Handle drag end for dismiss gesture
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsDragging(false);
+    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const draggedPastThreshold = info.offset.y > screenHeight * DRAG_DISMISS_THRESHOLD;
+    const fastSwipe = info.velocity.y > DRAG_DISMISS_VELOCITY;
+
+    if (draggedPastThreshold || fastSwipe) {
+      // Dismiss modal
+      onClose();
+    }
+  };
+
+  // Check if content is scrollable and at top
+  const handleDragStart = () => {
+    setIsDragging(true);
   };
 
   return (
@@ -143,12 +174,29 @@ export function BaseModal({
           />
         </div>
 
-        {/* Mobile: Drag handle */}
-        {isMobile && (
+        {/* Mobile: Drag handle with drag-to-dismiss */}
+        {isMobile && enableDragToDismiss ? (
+          <motion.div
+            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none"
+            aria-hidden="true"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.2 }}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            style={{ y: dragY }}
+            transition={{ type: 'spring', ...SPRING_CONFIG }}
+          >
+            <div className={cn(
+              'h-1.5 w-12 rounded-full transition-colors',
+              isDragging ? 'bg-gray-400' : 'bg-gray-300'
+            )} />
+          </motion.div>
+        ) : isMobile ? (
           <div className="flex justify-center pt-3 pb-2" aria-hidden="true">
             <div className="h-1.5 w-12 bg-gray-300 rounded-full" />
           </div>
-        )}
+        ) : null}
 
         {/* Header */}
         <BaseModalHeader

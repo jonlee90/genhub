@@ -20,6 +20,7 @@ Last updated: 2026-01-10
 | Backend security/patterns | `backend/nextjs-patterns.md` | backend-engineer, code-reviewer |
 | Create API route | `backend/api-route.md` | backend-engineer |
 | **UI creation/redesign** | **`/frontend-design`** | **frontend-engineer** |
+| **Mobile PWA/native feel** | **`frontend/mobile-pwa-design/SKILL.md`** | **frontend-engineer** |
 | New page | `frontend/page-creation.md` | frontend-engineer |
 | Form with validation | `frontend/form-patterns.md` | frontend-engineer |
 | Modal dialog | `frontend/modal-patterns.md` | frontend-engineer |
@@ -30,6 +31,7 @@ Last updated: 2026-01-10
 | Expense workflow | `domain/expense-workflow.md` | both |
 | Chat/realtime | `domain/chat-realtime.md` | both |
 | 3D spatial markers | `domain/spatial-markers.md` | both |
+| **Parallel task dispatch** | **`dispatching-parallel-agents/SKILL.md`** | **orchestrator** |
 
 ### By Agent
 
@@ -49,6 +51,7 @@ Last updated: 2026-01-10
 
 #### frontend-engineer
 - **`/frontend-design` - Production-grade UI (ALWAYS use for new UI/redesign)**
+- **`frontend/mobile-pwa-design/SKILL.md` - Native mobile feel, PWA optimization**
 - `frontend/page-creation.md` - New page setup
 - `frontend/component-patterns.md` - Component architecture
 - `frontend/form-patterns.md` - Forms with validation
@@ -79,6 +82,9 @@ Last updated: 2026-01-10
 - `workflow/code-review.md` - Review checklist
 - `workflow/doc-sync.md` - Doc synchronization
 
+#### Orchestration
+- `dispatching-parallel-agents/SKILL.md` - Parallel agent dispatch for independent tasks
+
 ---
 
 ## Skill Loading Protocol
@@ -102,7 +108,9 @@ Before starting ANY work:
 | **UI creation/redesign** | **`/frontend-design`** | Related frontend skills |
 | New page | `/frontend-design` + `frontend/page-creation.md` | `frontend/responsive.md` |
 | Form UI | `/frontend-design` + `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
+| Mobile native feel | `frontend/mobile-pwa-design/SKILL.md` | `frontend/responsive.md` |
 | GenHub domain feature | `domain/{feature}.md` | Related backend/frontend skills |
+| Multiple independent tasks | `dispatching-parallel-agents/SKILL.md` | - |
 
 ---
 
@@ -154,13 +162,14 @@ All skills follow this structure:
 
 ## Stats
 
-- **Total skills**: 28 (complete)
+- **Total skills**: 30 (complete)
 - **Database**: 6 skills ✓
 - **Backend**: 6 skills ✓
-- **Frontend**: 6 skills ✓
+- **Frontend**: 7 skills ✓ (includes mobile-pwa-design)
 - **Domain**: 6 skills ✓
 - **Integration**: 4 skills ✓
 - **Workflow**: 3 skills ✓
+- **Orchestration**: 1 skill ✓
 
 ---
 

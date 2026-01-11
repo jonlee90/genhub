@@ -56,6 +56,12 @@ export interface BaseModalProps {
   formKey?: string | number;
   maxWidth?: ModalSize;
 
+  // Mobile gestures
+  /** Enable drag-to-dismiss on mobile bottom sheet. Default: true */
+  enableDragToDismiss?: boolean;
+  /** Snap points for bottom sheet as fractions (e.g., [0.5, 0.9]). Default: undefined */
+  snapPoints?: number[];
+
   // Styling
   className?: string;
   contentClassName?: string;

@@ -275,7 +275,31 @@ Pass/Fail
 
 ## HANDOFF PATTERNS
 
-### Backend → Frontend
+### Compressed Handoff Template (Token-Efficient)
+
+**Backend → Frontend:**
+```markdown
+HANDOFF → frontend-engineer
+
+Files: app/actions/{feature}.ts
+Actions: createEntity, getEntities, updateEntity, deleteEntity
+Types: Entity { id, name, status, project_id }
+Domain: load memory "genhub-domain-{feature}" if needed
+Task: Create UI components for {describe requirements}
+Skill: mobile-pwa-design/SKILL.md (if mobile)
+```
+
+**Frontend → Review:**
+```markdown
+HANDOFF → code-reviewer
+
+Files: components/{feature}/*.tsx, app/app/{feature}/page.tsx
+Domain: {feature} (for domain memory context)
+Backend: app/actions/{feature}.ts (already validated)
+Focus: Integration, acceptance criteria, mobile responsive
+```
+
+### Detailed Backend → Frontend (When More Context Needed)
 
 Backend returns:
 ```

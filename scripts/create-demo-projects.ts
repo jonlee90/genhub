@@ -257,12 +257,12 @@ async function getPhaseStatus(projectCompletion: number, phaseIndex: number): Pr
 }
 
 async function getTaskStatus(phaseStatus: string, taskIndex: number, totalTasks: number): Promise<string> {
-  if (phaseStatus === 'completed') return 'done'
+  if (phaseStatus === 'completed') return 'completed'
   if (phaseStatus === 'not_started') return 'todo'
 
-  // For in_progress phases, make some tasks done, some in_progress, some todo
+  // For in_progress phases, make some tasks completed, some in_progress, some todo
   const progress = Math.random()
-  if (taskIndex < totalTasks * 0.4) return 'done'
+  if (taskIndex < totalTasks * 0.4) return 'completed'
   if (taskIndex < totalTasks * 0.7) return 'in_progress'
   return 'todo'
 }

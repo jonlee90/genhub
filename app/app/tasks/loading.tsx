@@ -1,8 +1,9 @@
 import { Skeleton } from '@/components/ui/skeleton';
+import { TaskListSkeleton } from '@/components/tasks/TaskListSkeleton';
 
 export default function TasksLoading() {
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6 relative overflow-hidden">
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
         <div className="absolute inset-0" style={{
@@ -20,16 +21,24 @@ export default function TasksLoading() {
         {/* Construction border */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
-        <div className="flex items-start justify-between pt-4">
+        <div className="flex items-start justify-between pt-2 md:pt-4">
           <div className="space-y-3">
-            <Skeleton className="h-12 w-48 bg-construction-blue/10" />
+            <Skeleton className="h-8 md:h-12 w-32 md:w-48 bg-construction-blue/10" />
           </div>
-          <Skeleton className="h-14 w-40 bg-construction-blue/10" />
+          <Skeleton className="h-10 md:h-14 w-28 md:w-40 bg-construction-blue/10" />
         </div>
       </div>
 
-      {/* Stats Grid Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* Project Filter Skeleton */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2">
+        <Skeleton className="h-9 w-16 shrink-0 bg-gray-100" />
+        <Skeleton className="h-9 w-24 shrink-0 bg-gray-100" />
+        <Skeleton className="h-9 w-28 shrink-0 bg-gray-100" />
+        <Skeleton className="h-9 w-20 shrink-0 bg-gray-100" />
+      </div>
+
+      {/* Stats Grid Skeleton - Hidden on mobile */}
+      <div className="hidden md:grid grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
             <div className="flex items-center justify-between mb-3">
@@ -42,8 +51,13 @@ export default function TasksLoading() {
         ))}
       </div>
 
-      {/* Kanban Board Skeleton */}
-      <div className="bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
+      {/* Mobile: Task List Skeleton */}
+      <div className="md:hidden">
+        <TaskListSkeleton count={5} />
+      </div>
+
+      {/* Desktop: Kanban Board Skeleton */}
+      <div className="hidden md:block bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
         {/* View Toggle & Filters */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -58,7 +72,7 @@ export default function TasksLoading() {
 
         {/* Kanban Columns */}
         <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-4">
             {['Backlog', 'In Progress', 'Review', 'Completed'].map((column, colIdx) => (
               <div key={column} className="bg-gray-50 rounded-lg p-3 min-h-[400px]">
                 {/* Column Header */}

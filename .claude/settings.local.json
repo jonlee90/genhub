@@ -1,4 +1,12 @@
 {
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "8000",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": "1",
+    "DISABLE_COST_WARNINGS": "1",
+    "USE_BUILTIN_RIPGREP": "1",
+    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
+    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "0"
+  },
   "permissions": {
     "allow": [
       "Bash(do sed -i 's/construction-orange/construction-accent/g; s/#FF6B35/#F59E0B/g' \"$file\")",
@@ -140,7 +148,8 @@
       "Bash(git -C /Users/jonathanlee/Desktop/genhub show --name-only 62595a8)",
       "Bash(git -C /Users/jonathanlee/Desktop/genhub log --all --source --grep=\"team_invitations\" --oneline)",
       "Bash(mcp__supabase__list_tables:*)",
-      "mcp__plugin_serena_serena__think_about_collected_information"
+      "mcp__plugin_serena_serena__think_about_collected_information",
+      "Bash(npm run sync-docs:*)"
     ],
     "deny": [],
     "ask": []
@@ -149,5 +158,9 @@
   "enabledMcpjsonServers": [
     "supabase",
     "playwright"
-  ]
+  ],
+  "statusLine": {
+    "type": "command",
+    "command": "python3 .claude/scripts/context-monitor.py"
+  }
 }

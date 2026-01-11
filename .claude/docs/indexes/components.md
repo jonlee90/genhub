@@ -2,7 +2,7 @@
 
 > Quick lookup for UI components. For patterns, see `.claude/skills/frontend/`
 
-Last updated: 2026-01-10
+Last updated: 2026-01-10 (BottomSheetModal, ResponsiveModal, TaskModal mobile integration)
 
 ---
 
@@ -14,6 +14,7 @@ Last updated: 2026-01-10
 | Button | Client | Primary actions |
 | Card | Client | Content containers |
 | BaseModal | Client | Modal dialogs (use instead of Dialog) |
+| ResponsiveModal | Client | Auto-switches: BottomSheetModal on mobile, BaseModal on desktop |
 | Input | Client | Text inputs |
 | Textarea | Client | Multi-line inputs |
 | Label | Client | Form labels |
@@ -67,12 +68,19 @@ Last updated: 2026-01-10
 | ProjectFilesTab | Client | Files & photos tab container |
 | PhotoGallerySection | Client | Photo grid with primary photo selection |
 | PhotoLightbox | Client | Full-screen photo viewer with actions |
+| InfoCard | Client | Mobile-first info display card with touch-optimized fields, compact mode, stat grid |
+| ProjectOverview | Client | Project overview tab content |
+| ProjectTaskSummary | Client | Mobile PWA task analytics card with budget tracking, status indicators, contributors |
+| ProjectExpenseSummary | Client | Expense summary widget |
 
 ### Tasks (`components/tasks/`)
 | Component | Type | Purpose |
 |-----------|------|---------|
 | TaskCard | Client | Task list item |
-| TaskList | Client | Task list view |
+| TaskList | Client | Task list view (responsive) |
+| TaskListMobile | Client | Mobile card list with swipe actions |
+| TaskListSkeleton | Client | Mobile skeleton loading state |
+| TasksPageClient | Client | Tasks page client wrapper |
 | TaskKanban | Client | Kanban board |
 | TaskModal | Client | Task detail modal |
 | TaskForm | Client | Create/edit form |
@@ -119,8 +127,10 @@ Last updated: 2026-01-10
 ### Team (`components/team/`)
 | Component | Type | Purpose |
 |-----------|------|---------|
-| TeamMemberCard | Client | Member list item |
+| TeamMemberCard | Client | Member card (mobile) |
 | TeamMemberList | Client | Team table |
+| TeamListSkeleton | Client | Team loading skeleton |
+| TeamPageClient | Client | Team page client wrapper |
 | InviteModal | Client | Invite form |
 | RoleSelect | Client | Role dropdown |
 | SubcontractorCard | Client | Sub profile |
@@ -150,6 +160,22 @@ Last updated: 2026-01-10
 |-----------|------|---------|
 | FeatureBanner | Client | Feature announcements |
 | FeatureGate | Client | Feature availability |
+
+### Mobile (`components/mobile/`)
+| Component | Type | Purpose |
+|-----------|------|---------|
+| SwipeableCard | Client | Swipe gesture card with left/right actions |
+| PullToRefresh | Client | Pull-to-refresh wrapper for lists |
+| SkeletonCard | Client | Loading placeholder cards (5 variants) |
+| TouchButton | Client | Touch-optimized button with haptic |
+| MobileInput | Client | Touch-optimized form input (56px, 16px font) |
+| StickySubmitButton | Client | Fixed bottom submit button |
+| FloatingActionButton | Client | FAB for create actions |
+| SegmentedControl | Client | iOS-style segmented tabs |
+| OfflineIndicator | Client | Online/offline status banner |
+| SearchInput | Client | Mobile search with debounce |
+| FilterButton | Client | Filter button with active count badge |
+| BottomSheetModal | Client | Native-feel bottom sheet with drag gesture, snap points |
 
 ### PWA (`components/pwa/`)
 | Component | Type | Purpose |
@@ -261,12 +287,13 @@ interface EntityListProps {
 | email/ | ~2 | Email templates |
 | feature-flags/ | ~2 | Feature management |
 | pwa/ | ~2 | PWA components |
+| mobile/ | ~11 | Mobile touch primitives |
 | settings/ | ~3 | Settings |
 | forms/ | ~8 | Form components |
 | admin/ | ~3 | Admin tools |
 | owner/ | ~1 | Owner management |
 | admin-invite/ | ~2 | Admin invite flow |
-| **Total** | ~213+ | - |
+| **Total** | ~224+ | - |
 
 ---
 

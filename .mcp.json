@@ -4,12 +4,26 @@
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=fozwbpqgkcduwxqvmkjd"
     },
-    "playwright" : {
+    "playwright": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@0.0.52", 
+        "@playwright/mcp@0.0.52",
         "--config",
         "./playwright-mcp-config.json"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
       ]
     }
   }

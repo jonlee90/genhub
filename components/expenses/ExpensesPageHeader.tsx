@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Receipt } from 'lucide-react';
 import { CreateExpenseModal } from './CreateExpenseModal';
+import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 
-// Debug: Client component for expenses page header with modal trigger
+// Client component for expenses page header with modal trigger
 interface Project {
   id: string;
   name: string;
@@ -24,6 +25,13 @@ interface ExpensesPageHeaderProps {
 
 export function ExpensesPageHeader({ projects, tasks }: ExpensesPageHeaderProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const { registerCreateModal, unregisterCreateModal } = useBottomNav();
+
+  // Register create modal data for bottom nav
+  useEffect(() => {
+    registerCreateModal('/app/expenses', { projects, tasks });
+    return () => unregisterCreateModal('/app/expenses');
+  }, [projects, tasks, registerCreateModal, unregisterCreateModal]);
 
   // Debug: Track modal state
   console.log('[ExpensesPageHeader] Modal open:', showCreateModal);

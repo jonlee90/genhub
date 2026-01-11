@@ -112,6 +112,7 @@ export interface GanttTaskBarProps {
 // Props for GanttHeader component
 export interface GanttHeaderProps {
   config: GanttConfig;
+  sortedTasksLength: number;
   dateGroups: DateGroup[];
   dateCells: DateCell[];
 }

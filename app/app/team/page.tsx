@@ -1,7 +1,7 @@
 import { createUserClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { TeamMemberTable } from '@/components/team/TeamMemberTable';
+import { TeamPageClient } from '@/components/team/TeamPageClient';
 import { Database } from '@/types/database.types';
 import { Users, UserCog, HardHat, Hammer, UserPlus, Shield } from 'lucide-react';
 
@@ -253,12 +253,20 @@ export default async function TeamPage() {
         </div>
       )}
 
-      {/* Team Member Table */}
+      {/* Team Member List/Table - responsive client component */}
       <div className="relative">
-        <TeamMemberTable
+        <TeamPageClient
           members={membersWithProjectCount}
           currentUserRole={companyUser.role}
           companyId={companyUser.company_id}
+          stats={{
+            total: totalMembers,
+            active: activeMembers,
+            invited: invitedMembers,
+            admins,
+            projectManagers,
+            fieldWorkers,
+          }}
         />
       </div>
 

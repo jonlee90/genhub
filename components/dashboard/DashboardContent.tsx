@@ -78,16 +78,6 @@ function QuickActionsSection({
       variants={sectionVariants}
       className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 md:p-6"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#001B51]/10 flex items-center justify-center">
-            <Plus className="w-4 h-4 text-[#001B51]" />
-          </div>
-          <h2 className="text-base font-semibold text-gray-900">Quick Actions</h2>
-        </div>
-      </div>
-
       {/* Action Buttons Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {quickActionConfig.map((action, index) => {

@@ -6,11 +6,23 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
+// Routes where the mobile header should be hidden (page has its own header)
+const HIDE_HEADER_ROUTES = ["/app/tasks"];
+
 // Debug: Simplified mobile header - navigation moved to bottom nav
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const notificationCount = 3;
+
+  // Hide header on specific routes that have their own mobile header
+  const shouldHideHeader = HIDE_HEADER_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (shouldHideHeader) {
+    return null;
+  }
 
   // Debug: Check if we're on the dashboard (home) or a sub-page
   const isDashboard = pathname === "/app";

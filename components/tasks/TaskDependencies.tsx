@@ -107,7 +107,7 @@ export function TaskDependencies({
                           : 'bg-yellow-100 text-yellow-700'
                       )}
                     >
-                      {dep.depends_on.status === 'completed' ? 'Done' : 'Pending'}
+                      {dep.depends_on.status === 'completed' ? 'Completed' : 'Pending'}
                     </Badge>
                   </div>
                   <Button

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { HardHat } from 'lucide-react';
 import { CreateProjectModal } from './CreateProjectModal';
+import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import type { Database } from '@/types/database.types';
 
 type Project = Database['public']['Tables']['projects']['Row'] & {
@@ -26,8 +27,17 @@ interface ProjectsPageClientProps {
  */
 export function ProjectsPageClient({ role }: ProjectsPageClientProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { registerCreateModal, unregisterCreateModal } = useBottomNav();
 
   console.log('[ProjectsPageClient] Rendering with role:', role);
+
+  // Register create modal data for bottom nav (only if user can create projects)
+  useEffect(() => {
+    if (role === 'admin' || role === 'project_manager') {
+      registerCreateModal('/app/projects', { role });
+      return () => unregisterCreateModal('/app/projects');
+    }
+  }, [role, registerCreateModal, unregisterCreateModal]);
 
   // Only show button for authorized roles
   if (role !== 'admin' && role !== 'project_manager') {

@@ -56,10 +56,10 @@ interface KanbanBoardProps {
 
 const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: string }[] = [
   { id: 'todo', title: 'To Do', shortTitle: 'To Do', color: 'bg-gray-50' },
-  { id: 'in_progress', title: 'In Progress', shortTitle: 'In Progress', color: 'bg-[#001B51]/5' },
-  { id: 'review', title: 'Review', shortTitle: 'Review', color: 'bg-[#3C3C3C]/5' },
-  { id: 'blocked', title: 'Blocked', shortTitle: 'Blocked', color: 'bg-[#DC2626]/5' },
-  { id: 'completed', title: 'Completed', shortTitle: 'Done', color: 'bg-[#059669]/5' },
+  { id: 'in_progress', title: 'In Progress', shortTitle: 'In Progress', color: 'bg-gray-50' },
+  { id: 'review', title: 'Review', shortTitle: 'Review', color: 'bg-gray-50' },
+  { id: 'blocked', title: 'Blocked', shortTitle: 'Blocked', color: 'bg-gray-50' },
+  { id: 'completed', title: 'Completed', shortTitle: 'Completed', color: 'bg-gray-50' },
 ];
 
 // Valid status values for checking drop targets

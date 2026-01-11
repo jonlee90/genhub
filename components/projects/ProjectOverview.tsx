@@ -226,6 +226,7 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
             >
               <ProjectTaskSummary
                 taskStats={taskStats}
+                projectBudget={project.budget}
               />
             </motion.div>
           )}

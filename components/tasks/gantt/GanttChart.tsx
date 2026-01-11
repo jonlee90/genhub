@@ -282,14 +282,18 @@ export function GanttChart({
     <div className={cn('bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden', className)}>
       {/* Header with time scale toggle */}
       <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <h3 className="text-sm sm:text-lg font-black text-construction-blue">
-            {isMobile ? 'TIMELINE' : 'PROJECT TIMELINE'}
-          </h3>
-          <span className="text-xs sm:text-sm text-gray-500">
-            {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
-          </span>
-        </div>
+        
+        {isMobile ? '' 
+          :  
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h3 className="text-sm sm:text-lg font-black text-construction-blue">
+              PROJECT TIMELINE
+            </h3>
+            <span className="text-xs sm:text-sm text-gray-500">
+              {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
+            </span>
+          </div>
+        }
         <GanttViewToggle timeScale={timeScale} onTimeScaleChange={setTimeScale} isMobile={isMobile} />
       </div>
 
@@ -318,7 +322,7 @@ export function GanttChart({
         >
           <div className="relative bg-white" style={{ width: totalWidth }}>
             {/* Header */}
-            <GanttHeader config={config} dateGroups={dateGroups} dateCells={dateCells} />
+            <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
 
             {/* Timeline grid and task rows */}
             <div className="relative bg-white" style={{ height: totalHeight }}>

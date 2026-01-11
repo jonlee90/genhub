@@ -118,22 +118,6 @@ export function Sidebar({ isOwner = false }: SidebarProps) {
 
   return (
     <>
-      {/* Debug: Mobile hamburger button - Touch-optimized (44x44px minimum) */}
-      <motion.button
-        onClick={() => setIsMobileMenuOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-11 h-11 rounded-lg bg-construction-blue text-white shadow-construction-lg hover:bg-blue-700 active:bg-blue-800 transition-colors"
-        whileTap={{ scale: 0.95 }}
-        aria-label="Open navigation menu"
-      >
-        <Menu className="w-6 h-6" />
-        {/* Debug: Visual feedback ring on active */}
-        <motion.div
-          className="absolute inset-0 rounded-lg border-2 border-white/20"
-          initial={{ scale: 1, opacity: 0 }}
-          whileTap={{ scale: 1.2, opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        />
-      </motion.button>
 
       {/* Debug: Mobile Drawer with AnimatePresence for smooth transitions */}
       <AnimatePresence mode="wait">

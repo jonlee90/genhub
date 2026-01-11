@@ -12,6 +12,25 @@ color: red
 
 ---
 
+## PHASE 0: CONTEXT LOADING
+
+**Load at startup (Essential - ~900 tokens):**
+
+```
+TIER 1 - ALWAYS LOAD:
+  ✓ Serena memory: "genhub-project-overview"
+  ✓ Serena memory: "genhub-common-gotchas"
+
+TIER 1.5 - BY REVIEW SCOPE (if reviewing specific domain):
+  Task-related files    → read_memory("genhub-domain-tasks")
+  Project-related files → read_memory("genhub-domain-projects")
+  Expense-related files → read_memory("genhub-domain-expenses")
+  Material-related files→ read_memory("genhub-domain-materials")
+  Spatial-related files → read_memory("genhub-domain-spatial")
+```
+
+---
+
 ## EXECUTION PROTOCOL
 
 **BEFORE ANY REVIEW:**

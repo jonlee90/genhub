@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, CheckCircle2 } from 'lucide-react';
-import { cn, formatPercentWhole } from '@/lib/utils';
+import { formatPercentWhole } from '@/lib/utils';
 
 // Debug: TopProjectsCard - Display top 5 projects by task completion ratio (weighted by total tasks)
 interface TopProjectsCardProps {
@@ -86,25 +86,6 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
     return rankedProjects.filter(p => p.id === projectFilter).slice(0, 1);
   }, [rankedProjects, projectFilter]);
 
-  // Debug: Get color based on completion ratio
-  const getRatioColor = (ratio: number) => {
-    if (ratio >= 0.8) return 'text-construction-green';
-    if (ratio >= 0.5) return 'text-construction-blue';
-    return 'text-construction-accent';
-  };
-
-  const getRatioBgColor = (ratio: number) => {
-    if (ratio >= 0.8) return 'bg-construction-green/10 border-construction-green/20';
-    if (ratio >= 0.5) return 'bg-construction-blue/10 border-construction-blue/20';
-    return 'bg-construction-accent/10 border-construction-accent/20';
-  };
-
-  const getProgressColor = (ratio: number) => {
-    if (ratio >= 0.8) return 'bg-construction-green';
-    if (ratio >= 0.5) return 'bg-construction-blue';
-    return 'bg-construction-accent';
-  };
-
   // Debug: Empty state handling
   if (displayedProjects.length === 0) {
     return (
@@ -146,7 +127,7 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
             Top Projects by Tasks
           </h3>
           <div className="ml-auto text-xs font-mono uppercase tracking-wider text-construction-blue/60">
-            Done / Total
+            Completed / Total
           </div>
         </div>
 
@@ -166,12 +147,8 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
             >
               {/* Debug: Project row container with hover effect */}
               <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-gray-50 to-transparent hover:from-construction-blue/5 hover:to-construction-blue/10 border-2 border-transparent hover:border-construction-blue/20 transition-all duration-300">
-                {/* Debug: Rank badge with mechanical styling */}
-                <div className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-lg border-2 font-black text-sm transition-transform group-hover/item:scale-110",
-                  getRatioBgColor(project.completionRatio),
-                  getRatioColor(project.completionRatio)
-                )}>
+                {/* Debug: Rank badge with neutral styling */}
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 font-black text-sm transition-transform group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                   {index + 1}
                 </div>
 
@@ -196,10 +173,7 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
                         duration: 0.8,
                         ease: [0.23, 1, 0.32, 1]
                       }}
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        getProgressColor(project.completionRatio)
-                      )}
+                      className="h-full rounded-full transition-all bg-construction-blue"
                     />
                     {/* Debug: Shimmer effect on progress bar */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover/item:opacity-100 group-hover/item:animate-shimmer transition-opacity" />
@@ -213,11 +187,7 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
 
                 {/* Debug: Task count badge */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <div className={cn(
-                    "px-3 py-1.5 rounded-lg border-2 font-black text-base transition-all group-hover/item:scale-110",
-                    getRatioBgColor(project.completionRatio),
-                    getRatioColor(project.completionRatio)
-                  )}>
+                  <div className="px-3 py-1.5 rounded-lg border-2 font-black text-base transition-all group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                     {project.completedTasks}/{project.totalTasks}
                   </div>
                   <span className="text-xs font-mono uppercase tracking-wider text-gray-500">

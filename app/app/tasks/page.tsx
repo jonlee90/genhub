@@ -36,9 +36,11 @@ async function getTasks() {
         .select(`
           id,
           name,
+          budget,
           status,
           health_score,
           completion_percentage,
+          end_date,
           project_phases (
             id,
             name,
@@ -179,9 +181,11 @@ async function getTasks() {
     .select(`
       id,
       name,
+      budget,
       status,
       health_score,
       completion_percentage,
+      end_date,
       project_phases (
         id,
         name,

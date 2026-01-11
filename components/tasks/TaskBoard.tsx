@@ -51,6 +51,7 @@ type Phase = {
 type Project = {
   id: string;
   name: string;
+  budget?: number | null;
   status?: string;
   health_score?: number | null;
   completion_percentage?: number | null;
@@ -91,6 +92,10 @@ interface TaskBoardProps {
   externalProjectFilter?: string;
   /** External project filter change handler */
   onExternalProjectFilterChange?: (projectId: string) => void;
+  /** Hide all filters (useful when filters are managed externally, e.g., mobile layout) */
+  hideFilters?: boolean;
+  /** Ref to attach to the results count element (for mobile header visibility) */
+  resultsCountRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function TaskBoard({
@@ -105,6 +110,8 @@ export function TaskBoard({
   topTeamMembers = [],
   externalProjectFilter,
   onExternalProjectFilterChange,
+  hideFilters = false,
+  resultsCountRef,
 }: TaskBoardProps) {
   console.log('[TaskBoard] Rendering', {
     isProjectContext: !!projectId,
@@ -283,6 +290,20 @@ export function TaskBoard({
     };
   }, [initialTasks, projectFilter, isProjectContext]);
 
+  // Compute project budget based on filter
+  const projectBudget = useMemo(() => {
+    if (isProjectContext || !projects || projects.length === 0) return undefined;
+    
+    if (projectFilter === 'all') {
+      // Sum all project budgets
+      return projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
+    } else {
+      // Get selected project's budget
+      const selectedProject = projects.find(p => p.id === projectFilter);
+      return selectedProject ? Number(selectedProject.budget) || 0 : 0;
+    }
+  }, [projects, projectFilter, isProjectContext]);
+
   // Handle view change
   const handleViewChange = (newView: 'kanban' | 'list') => {
     setView(newView);
@@ -349,7 +370,7 @@ export function TaskBoard({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <ProjectTaskSummary taskStats={computedTaskStats} />
+          <ProjectTaskSummary taskStats={computedTaskStats} projectBudget={projectBudget} />
         </motion.div>
       )}
 
@@ -373,7 +394,10 @@ export function TaskBoard({
 
       {/* Results count (Tasks page only) */}
       {!isProjectContext && (
-        <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
+        <div
+          ref={resultsCountRef}
+          className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue"
+        >
           <div className="flex items-center gap-1.5 md:gap-2">
             <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
             <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
@@ -387,8 +411,8 @@ export function TaskBoard({
         </div>
       )}
       
-      {/* Toolbar */}
-      {isProjectContext ? (
+      {/* Toolbar - hidden when hideFilters is true */}
+      {!hideFilters && isProjectContext ? (
         // Project context toolbar - Phase filter + View toggle
         <Card className="border-2 border-gray-200 shadow-construction">
           <CardContent className="p-4">
@@ -453,7 +477,7 @@ export function TaskBoard({
             </div>
           </CardContent>
         </Card>
-      ) : (
+      ) : !hideFilters ? (
         // Tasks page context toolbar - Full filters
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           {/* Filters */}
@@ -493,7 +517,7 @@ export function TaskBoard({
             </Button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* View Content */}
       {view === 'kanban' ? (

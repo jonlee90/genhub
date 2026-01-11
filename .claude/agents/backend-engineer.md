@@ -52,11 +52,19 @@ color: blue
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. LOAD RESOURCES (Tiered Strategy)                              │
 │                                                                  │
-│    TIER 1 - ALWAYS (Essential):                                  │
+│    TIER 1 - ALWAYS (Essential - ~1500 tokens):                   │
 │    ✓ This agent file (already loaded)                           │
 │    ✓ CLAUDE.md (auto-loaded in system context)                  │
 │    ✓ Serena memory: read_memory("genhub-database-schema")       │
 │    ✓ Serena memory: read_memory("genhub-server-actions")        │
+│    ✓ Serena memory: read_memory("genhub-common-gotchas")        │
+│                                                                  │
+│    TIER 1.5 - BY DOMAIN KEYWORDS (Load domain memory):          │
+│    "task" in prompt      → read_memory("genhub-domain-tasks")   │
+│    "project" in prompt   → read_memory("genhub-domain-projects")│
+│    "expense" in prompt   → read_memory("genhub-domain-expenses")│
+│    "material" in prompt  → read_memory("genhub-domain-materials")│
+│    "spatial" | "3d" | "marker" → read_memory("genhub-domain-spatial")│
 │                                                                  │
 │    TIER 2 - BY TASK TYPE (Load skill):                          │
 │    DATABASE_SCHEMA  → skills/database/create-migration.md       │

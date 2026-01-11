@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { HardHat, Trophy, Award } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
 
 // Debug: TopTeamMembersCard - Display top 5 team members by completed tasks
 interface TopTeamMembersCardProps {
@@ -127,13 +126,8 @@ export function TopTeamMembersCard({
             >
               {/* Debug: Member row container with hover effect */}
               <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-gray-50 to-transparent hover:from-construction-blue/5 hover:to-construction-blue/10 border-2 border-transparent hover:border-construction-blue/20 transition-all duration-300">
-                {/* Debug: Rank badge with special styling for #1 */}
-                <div className={cn(
-                  "flex items-center justify-center w-10 h-10 rounded-lg border-2 font-black text-sm transition-transform group-hover/item:scale-110",
-                  index === 0
-                    ? "bg-construction-green/10 border-construction-green/20 text-construction-green"
-                    : "bg-construction-blue/10 border-construction-blue/20 text-construction-blue"
-                )}>
+                {/* Debug: Rank badge with neutral styling */}
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 font-black text-sm transition-transform group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                   {index + 1}
                 </div>
 
@@ -210,10 +204,7 @@ export function TopTeamMembersCard({
                         duration: 0.8,
                         ease: [0.23, 1, 0.32, 1]
                       }}
-                      className={cn(
-                        "h-full rounded-full transition-all",
-                        index === 0 ? "bg-construction-green" : "bg-construction-blue"
-                      )}
+                      className="h-full rounded-full transition-all bg-construction-blue"
                     />
                     {/* Debug: Shimmer effect on progress bar */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover/item:opacity-100 group-hover/item:animate-shimmer transition-opacity" />
@@ -222,16 +213,11 @@ export function TopTeamMembersCard({
 
                 {/* Debug: Completed tasks count badge */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <div className={cn(
-                    "px-3 py-1.5 rounded-lg border-2 font-black text-lg transition-all group-hover/item:scale-110",
-                    index === 0
-                      ? "bg-construction-green/10 border-construction-green/20 text-construction-green"
-                      : "bg-construction-blue/10 border-construction-blue/20 text-construction-blue"
-                  )}>
+                  <div className="px-3 py-1.5 rounded-lg border-2 font-black text-lg transition-all group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                     {member.completed_tasks}
                   </div>
                   <span className="text-xs font-mono uppercase tracking-wider text-gray-500">
-                    Done
+                    Completed
                   </span>
                 </div>
               </div>

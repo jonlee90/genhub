@@ -10,7 +10,6 @@ import {
   Calendar,
   User,
   Flag,
-  FolderOpen,
   Layers,
   DollarSign,
   FileText,
@@ -36,7 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+// Avatar component removed - was unused
 import { cn } from '@/lib/utils';
 import { createTask, updateTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { TaskMaterialsManager, type TempMaterial } from './TaskMaterialsManager';
@@ -49,7 +48,7 @@ import { AssigneeMultiSelect } from './AssigneeMultiSelect';
 import { getTaskExpenses } from '@/app/actions/expenses';
 import type { TaskAssignee } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';
-import { BaseModal } from '@/components/ui/BaseModal';
+import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
@@ -489,7 +488,7 @@ function TaskModalForm({
   // Render Step 1: Task Type Selection (Create mode only)
   if (mode === 'create' && currentStep === 1) {
     return (
-      <BaseModal
+      <ResponsiveModal
         isOpen={true}
         onClose={onClose}
         icon={ClipboardList}
@@ -497,6 +496,8 @@ function TaskModalForm({
         subtitle="Choose the type of task you want to create"
         theme="default"
         maxWidth="2xl"
+        snapPoints={['half', 'full']}
+        initialSnapPoint="half"
         rightActions={
           <Button
             type="button"
@@ -505,7 +506,7 @@ function TaskModalForm({
               console.log('[TaskModalForm] Moving to step 2 with taskType:', taskType);
               setCurrentStep(2);
             }}
-            className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
+            className="h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90 active:scale-[0.98] transition-transform"
           >
             Next
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -544,7 +545,7 @@ function TaskModalForm({
             disabled={isPending}
           />
         </motion.div>
-      </BaseModal>
+      </ResponsiveModal>
     );
   }
 
@@ -575,7 +576,7 @@ function TaskModalForm({
   );
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={modalIcon}
@@ -584,6 +585,8 @@ function TaskModalForm({
       badges={approvalBadge || undefined}
       theme="default"
       maxWidth="2xl"
+      snapPoints={['half', 'full']}
+      initialSnapPoint="full"
       formKey={mode === 'edit' && task ? `edit-${task.id}` : 'create'}
       leftActions={
         mode === 'create' ? (
@@ -595,7 +598,7 @@ function TaskModalForm({
               setCurrentStep(1);
             }}
             disabled={isPending}
-            className="h-10 px-4"
+            className="h-10 min-h-[44px] px-4 active:scale-[0.98] transition-transform"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
@@ -614,7 +617,7 @@ function TaskModalForm({
           form="task-form"
           disabled={isPending || !selectedProjectId || !title.trim()}
           className={cn(
-            'h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700'
+            'h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700 active:scale-[0.98] transition-transform'
           )}
         >
           {isPending ? (
@@ -840,9 +843,10 @@ function TaskModalForm({
           </div>
 
           {/* Status & Phase Row - Phase conditional (Subtask 2.2) */}
+          {/* Mobile: Stack vertically, Desktop: 2 columns */}
           <div className={cn(
             'grid gap-4',
-            isFieldVisible(taskType, 'phase', mode) ? 'grid-cols-2' : 'grid-cols-1'
+            isFieldVisible(taskType, 'phase', mode) ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
           )}>
             {/* Status field - Edit mode only */}
             {mode === 'edit' && (
@@ -904,7 +908,8 @@ function TaskModalForm({
           </div>
 
           {/* Assignees & Priority Row */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Mobile: Stack vertically, Desktop: 2 columns */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="assignee" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <User className="h-4 w-4 text-gray-400" />
@@ -946,9 +951,10 @@ function TaskModalForm({
           </div>
 
           {/* Date Range Row - Start Date conditional (Subtask 2.3) */}
+          {/* Mobile: Stack vertically, Desktop: 2 columns */}
           <div className={cn(
             'grid gap-4',
-            isFieldVisible(taskType, 'startDate', mode) ? 'grid-cols-2' : 'grid-cols-1'
+            isFieldVisible(taskType, 'startDate', mode) ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
           )}>
             {/* Start Date - Hidden for admin tasks (Subtask 2.3) */}
             {isFieldVisible(taskType, 'startDate', mode) && (
@@ -991,10 +997,11 @@ function TaskModalForm({
           </div>
 
           {/* Costs Row - Conditional rendering and dynamic labels (Subtasks 2.4, 2.5) */}
+          {/* Mobile: Stack vertically, Desktop: 2 columns */}
           {isFieldVisible(taskType, 'plannedCost', mode) && (
             <div className={cn(
               'grid gap-4',
-              isFieldVisible(taskType, 'actualCost', mode) ? 'grid-cols-2' : 'grid-cols-1'
+              isFieldVisible(taskType, 'actualCost', mode) ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
             )}>
               {/* Planned Cost with dynamic label (Subtask 2.5) */}
               <div className="space-y-2">
@@ -1100,12 +1107,12 @@ function TaskModalForm({
           </motion.div>
         </div>
       </form>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }
 
 // Main modal component - handles open/close and passes props to form
-// BaseModal now handles responsive behavior (bottom sheet on mobile, centered on desktop)
+// ResponsiveModal provides: BottomSheetModal on mobile, BaseModal on desktop
 export function TaskModal({
   isOpen,
   onClose,

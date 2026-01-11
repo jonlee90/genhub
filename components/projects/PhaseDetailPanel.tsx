@@ -332,7 +332,7 @@ export function PhaseDetailPanel({
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#059669]" />
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-500 truncate">Done</p>
+                    <p className="text-xs text-gray-500 truncate">Completed</p>
                     <p className="text-sm font-bold text-[#059669] tabular-nums">{stats.completedTasks}</p>
                   </div>
                 </motion.div>
@@ -415,7 +415,7 @@ export function PhaseDetailPanel({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#059669] rounded-full" />
-                  <span className="text-[10px] text-gray-500">Done</span>
+                  <span className="text-[10px] text-gray-500">Completed</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#3B82F6] rounded-full" />
