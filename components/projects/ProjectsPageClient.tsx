@@ -4,10 +4,6 @@ import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { SearchInput } from '@/components/mobile/SearchInput';
-import { MobileStatusTabs } from '@/components/mobile/MobileStatusTabs';
-import { FilterButton } from '@/components/mobile/FilterButton';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from './CreateProjectModal';
@@ -18,13 +14,7 @@ import { Button } from '@/components/ui/button';
 import {
   Building2,
   HardHat,
-  Home,
-  UtensilsCrossed,
-  Coffee,
-  Factory,
   X,
-  Wrench,
-  Hammer,
   ShieldAlert,
 } from 'lucide-react';
 import type { Database } from '@/types/database.types';
@@ -42,34 +32,6 @@ interface ProjectsPageClientProps {
   role: string | null;
 }
 
-// Status filter tabs for mobile
-const PROJECT_STATUS_TABS = [
-  { value: 'all', label: 'All' },
-  { value: 'active', label: 'Active' },
-  { value: 'on_hold', label: 'On Hold' },
-  { value: 'completed', label: 'Completed' },
-];
-
-// Project type options for filter
-const PROJECT_TYPE_OPTIONS = [
-  { value: 'all', label: 'All Types', icon: null },
-  { value: 'residential', label: 'Residential', icon: Home },
-  { value: 'restaurant', label: 'Restaurant', icon: UtensilsCrossed },
-  { value: 'cafe', label: 'Cafe', icon: Coffee },
-  { value: 'commercial_office', label: 'Commercial Office', icon: Building2 },
-  { value: 'industrial', label: 'Industrial', icon: Factory },
-];
-
-// Sort options for filter
-const SORT_OPTIONS = [
-  { value: 'created_at', label: 'Newest First' },
-  { value: 'name', label: 'Name (A-Z)' },
-  { value: 'client', label: 'Client (A-Z)' },
-  { value: 'start_date', label: 'Start Date' },
-  { value: 'health_score', label: 'Health Score' },
-  { value: 'completion', label: 'Completion %' },
-];
-
 export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) {
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -78,43 +40,14 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   // UI states
-  const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showHeader, setShowHeader] = useState(false);
 
   const router = useRouter();
   const isMobile = useIsMobile();
   const { registerCreateModal, unregisterCreateModal } = useBottomNav();
 
-  // Refs for scroll-based header visibility
+  // Refs
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
-  const resultsCountRef = useRef<HTMLDivElement>(null);
-
-  // Track results count element position to show/hide header
-  useEffect(() => {
-    if (!isMobile) return;
-
-    const setupListener = () => {
-      const scrollContainer = pullToRefreshRef.current?.getScrollContainer();
-      if (!scrollContainer) return;
-
-      const checkResultsPosition = () => {
-        if (!resultsCountRef.current) return;
-        const rect = resultsCountRef.current.getBoundingClientRect();
-        setShowHeader(rect.top <= 133);
-      };
-
-      checkResultsPosition();
-      scrollContainer.addEventListener('scroll', checkResultsPosition, { passive: true });
-
-      return () => {
-        scrollContainer.removeEventListener('scroll', checkResultsPosition);
-      };
-    };
-
-    const timeoutId = setTimeout(setupListener, 50);
-    return () => clearTimeout(timeoutId);
-  }, [isMobile]);
 
   // Register create modal data for bottom nav
   useEffect(() => {
@@ -130,13 +63,6 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
     router.refresh();
   }, [router]);
 
-  // Calculate active filter count (excluding status - shown in tabs)
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    if (typeFilter !== 'all') count++;
-    if (sortBy !== 'created_at') count++;
-    return count;
-  }, [typeFilter, sortBy]);
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
@@ -185,44 +111,6 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
     return filtered;
   }, [projects, searchQuery, statusFilter, typeFilter, sortBy]);
 
-  // Calculate status counts (filtered by search and type, NOT by status)
-  const statusCounts = useMemo(() => {
-    const projectsForCounting = projects.filter((project) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          project.name.toLowerCase().includes(query) ||
-          project.client_name.toLowerCase().includes(query) ||
-          project.address?.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-      if (typeFilter !== 'all' && project.project_type !== typeFilter) {
-        return false;
-      }
-      return true;
-    });
-
-    const counts: Record<string, number> = {
-      all: projectsForCounting.length,
-      active: 0,
-      on_hold: 0,
-      completed: 0,
-    };
-
-    projectsForCounting.forEach((project) => {
-      if (project.status in counts) {
-        counts[project.status]++;
-      }
-    });
-
-    return counts;
-  }, [projects, searchQuery, typeFilter]);
-
-  // Add counts to status tabs
-  const tabsWithCounts = PROJECT_STATUS_TABS.map((tab) => ({
-    ...tab,
-    count: statusCounts[tab.value] || 0,
-  }));
 
   // Clear all filters
   const clearFilters = useCallback(() => {
@@ -316,44 +204,6 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
   if (isMobile) {
     return (
       <div className="flex flex-col h-full">
-        {/* Fixed header - shows when scrolled past results count */}
-        <header
-          className={`
-            fixed top-0 left-0 right-0 z-30
-            bg-white/95 backdrop-blur-sm border-b border-gray-200
-            px-4 py-3 space-y-3
-            transition-all duration-200 ease-out
-            will-change-transform
-            ${
-              showHeader
-                ? 'translate-y-0 opacity-100 pointer-events-auto'
-                : '-translate-y-full opacity-0 pointer-events-none'
-            }
-          `}
-        >
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search projects..."
-            debounce={300}
-          />
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <MobileStatusTabs
-                tabs={tabsWithCounts}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                showCounts={true}
-              />
-            </div>
-            <FilterButton
-              onClick={() => setShowFilterSheet(true)}
-              count={activeFilterCount}
-              className="flex-shrink-0"
-            />
-          </div>
-        </header>
-
         <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
           <div className="p-4 pb-32">
             {/* Blueprint Grid Background */}
@@ -372,9 +222,9 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
             </div>
 
             {/* Industrial Header */}
-            <div className="relative mb-5">
+            <div className="relative mb-4">
               <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-              <div className="flex flex-col gap-4 pt-2">
+              <div className="flex flex-col gap-3 pt-2">
                 <div className="flex items-start justify-between gap-3">
                   <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
                     PROJECTS
@@ -390,37 +240,23 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
                     </Button>
                   )}
                 </div>
-
-                <SearchInput
-                  value={searchQuery}
-                  onChange={setSearchQuery}
-                  placeholder="Search projects..."
-                  debounce={300}
-                />
-
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 min-w-0">
-                    <MobileStatusTabs
-                      tabs={tabsWithCounts}
-                      value={statusFilter}
-                      onChange={setStatusFilter}
-                      showCounts={true}
-                    />
-                  </div>
-                  <FilterButton
-                    onClick={() => setShowFilterSheet(true)}
-                    count={activeFilterCount}
-                    className="flex-shrink-0"
-                  />
-                </div>
               </div>
             </div>
 
+            {/* Filters - same as desktop */}
+            <ProjectFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              typeFilter={typeFilter}
+              onTypeChange={setTypeFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+
             {/* Results count */}
-            <div
-              ref={resultsCountRef}
-              className="flex items-center gap-2 px-3 py-2 mb-4 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue"
-            >
+            <div className="flex items-center gap-2 px-3 py-2 my-4 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
               <div className="flex items-center gap-1.5">
                 <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-construction-blue">
@@ -471,78 +307,6 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
             )}
           </div>
         </PullToRefresh>
-
-        {/* Filter bottom sheet */}
-        <BottomSheet
-          isOpen={showFilterSheet}
-          onClose={() => setShowFilterSheet(false)}
-          title="Filters"
-          description="Filter projects by type and sort order"
-        >
-          <div className="px-5 py-4 space-y-6">
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700">Project Type</label>
-              <div className="space-y-2">
-                {PROJECT_TYPE_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => setTypeFilter(option.value)}
-                      className={`w-full h-12 px-4 rounded-xl text-left font-medium transition-colors flex items-center gap-3 ${
-                        typeFilter === option.value
-                          ? 'bg-[#001B51] text-white'
-                          : 'bg-gray-100 text-gray-700 active:bg-gray-200'
-                      }`}
-                    >
-                      {Icon && (
-                        <Icon
-                          className={`w-5 h-5 ${typeFilter === option.value ? 'text-white' : 'text-gray-500'}`}
-                        />
-                      )}
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <label className="text-sm font-semibold text-gray-700">Sort By</label>
-              <div className="space-y-2">
-                {SORT_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setSortBy(option.value)}
-                    className={`w-full h-12 px-4 rounded-xl text-left font-medium transition-colors ${
-                      sortBy === option.value
-                        ? 'bg-[#001B51] text-white'
-                        : 'bg-gray-100 text-gray-700 active:bg-gray-200'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {activeFilterCount > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  setTypeFilter('all');
-                  setSortBy('created_at');
-                  setShowFilterSheet(false);
-                }}
-                className="w-full h-12 px-4 rounded-xl text-center font-medium text-[#DC2626] bg-red-50 active:bg-red-100 transition-colors"
-              >
-                Clear All Filters
-              </button>
-            )}
-          </div>
-        </BottomSheet>
 
         <CreateProjectModal
           isOpen={showCreateModal}

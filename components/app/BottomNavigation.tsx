@@ -10,6 +10,7 @@ import {
   HardHat,
   CheckSquare,
   Package,
+  Receipt,
   Plus,
   LucideIcon,
 } from 'lucide-react';
@@ -30,12 +31,13 @@ interface NavItem {
   logoImage?: boolean;
 }
 
-// Bottom navigation items for mobile - 5 core items
+// Bottom navigation items for mobile - 6 core items
 const navigationItems: NavItem[] = [
   { name: 'Home', href: '/app', icon: Home },
   { name: 'Projects', href: '/app/projects', icon: HardHat, createModalType: 'project' },
   { name: 'Tasks', href: '/app/tasks', icon: CheckSquare, createModalType: 'task' },
   { name: 'Materials', href: '/app/materials', icon: Package },
+  { name: 'Expenses', href: '/app/expenses', icon: Receipt, createModalType: 'expense' },
   { name: 'Menu', href: '#more', logoImage: true, isMore: true },
 ];
 
@@ -64,12 +66,9 @@ export function BottomNavigation() {
 
   // Check if "More" menu items are active
   const isMoreActive = () => {
-    const moreRoutes = ['/app/expenses', '/app/chat', '/app/team', '/app/settings', '/app/notifications'];
+    const moreRoutes = ['/app/chat', '/app/team', '/app/settings', '/app/notifications'];
     return moreRoutes.some(route => pathname.startsWith(route));
   };
-
-  // Check if expenses page is active (for More menu create action)
-  const isExpensesActive = pathname.startsWith('/app/expenses');
 
   // Handle navigation item click
   const handleNavClick = (item: NavItem, active: boolean, e: React.MouseEvent) => {
@@ -81,13 +80,9 @@ export function BottomNavigation() {
     // Otherwise, let the link navigate normally
   };
 
-  // Handle More button click when Expenses is active
+  // Handle More button click
   const handleMoreClick = () => {
-    if (isExpensesActive && hasCreateModal('/app/expenses')) {
-      openCreateModal('expense');
-    } else {
-      setIsMoreMenuOpen(true);
-    }
+    setIsMoreMenuOpen(true);
   };
 
   // Get modal data for each type
@@ -123,12 +118,10 @@ export function BottomNavigation() {
             const hasCreate = item.createModalType && hasCreateModal(item.href);
             const isLogoItem = item.logoImage;
 
-            // For More button, check if expenses is active
-            const moreShowsPlus = item.isMore && isExpensesActive && hasCreateModal('/app/expenses');
-            const showPlusIcon = (active && hasCreate) || moreShowsPlus;
+            const showPlusIcon = active && hasCreate;
 
             if (item.isMore) {
-              // More button opens modal or create action
+              // More button opens menu
               return (
                 <button
                   key={item.name}
@@ -137,66 +130,44 @@ export function BottomNavigation() {
                     'flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors',
                     'active:bg-gray-100'
                   )}
-                  aria-label={moreShowsPlus ? 'Create expense' : 'Open more menu'}
+                  aria-label="Open more menu"
                 >
                   <motion.div
                     className="relative flex flex-col items-center"
                     whileTap={{ scale: 0.95 }}
                   >
-                    {showPlusIcon ? (
-                      /* 3D Plus Button - Elevated with depth effect */
-                      <div
-                        className={cn(
-                          'flex items-center justify-center w-11 h-11 rounded-xl',
-                          'bg-gradient-to-b from-[#0a2d6e] to-[#001B51]',
-                          'text-white',
-                          /* 3D depth effect - layered shadows */
-                          'shadow-[0_4px_0_0_#000d2a,0_6px_8px_-2px_rgba(0,27,81,0.4),0_2px_4px_-1px_rgba(0,0,0,0.2)]',
-                          /* Inner highlight for 3D illusion */
-                          'border-t border-t-[#1a4080]/50',
-                          /* Pressed state - moves down, shadow shrinks */
-                          'active:translate-y-[2px]',
-                          'active:shadow-[0_2px_0_0_#000d2a,0_3px_4px_-2px_rgba(0,27,81,0.3)]',
-                          'active:from-[#001B51] active:to-[#00132e]',
-                          'transition-all duration-100'
-                        )}
-                      >
-                        <Plus className="w-5 h-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" strokeWidth={2.5} />
-                      </div>
-                    ) : (
-                      <div
-                        className={cn(
-                          'flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200',
-                          active || moreShowsPlus
-                            ? 'bg-construction-blue text-white'
-                            : 'text-gray-500'
-                        )}
-                      >
-                        {isLogoItem ? (
-                          <Image
-                            src="/icon-192.png"
-                            alt="GenHub Logo"
-                            width={20}
-                            height={20}
-                            className="object-contain"
-                          />
-                        ) : Icon ? (
-                          <Icon className="w-5 h-5" />
-                        ) : null}
-                      </div>
-                    )}
+                    <div
+                      className={cn(
+                        'flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200',
+                        active
+                          ? 'bg-construction-blue text-white'
+                          : 'text-gray-500'
+                      )}
+                    >
+                      {isLogoItem ? (
+                        <Image
+                          src="/icon-192.png"
+                          alt="GenHub Logo"
+                          width={20}
+                          height={20}
+                          className="object-contain"
+                        />
+                      ) : Icon ? (
+                        <Icon className="w-5 h-5" />
+                      ) : null}
+                    </div>
                     <span
                       className={cn(
                         'text-[10px] font-bold transition-colors',
-                        active || moreShowsPlus
+                        active
                           ? 'mt-0.5 text-construction-blue'
                           : '-mt-1.5 text-gray-500'
                       )}
                     >
-                      {moreShowsPlus ? 'Create ' + item.name : item.name}
+                      {item.name}
                     </span>
                     {/* Active indicator dot */}
-                    {(active || moreShowsPlus) && (
+                    {active && (
                       <motion.div
                         layoutId="bottomNavIndicator"
                         className="absolute -bottom-1 w-1 h-1 rounded-full bg-construction-blue"
