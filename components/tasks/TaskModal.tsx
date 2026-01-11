@@ -11,6 +11,7 @@ import {
   User,
   Flag,
   Layers,
+  FolderKanban,
   DollarSign,
   FileText,
   AlertCircle,
@@ -179,14 +180,6 @@ function TaskModalForm({
     return null;
   });
 
-  // DEBUG: Log modal rendering
-  console.log('[TaskModalForm] Rendering in mode:', mode, {
-    taskId: task?.id,
-    taskTitle: task?.title,
-    taskType: task?.task_type,
-    approvalStatus: task?.approval_status,
-    creator: task?.creator?.name,
-  });
 
   // Step state for create mode (Step 1: Select Type, Step 2: Fill Form)
   const [currentStep, setCurrentStep] = useState<1 | 2>(mode === 'edit' ? 2 : 1);
@@ -197,14 +190,9 @@ function TaskModalForm({
     return null;
   });
 
-  // DEBUG: Get field visibility config based on task type and mode
+  // Get field visibility config based on task type and mode
   const config = useMemo(() => {
-    const cfg = getTaskTypeConfig(taskType);
-    console.log('[TaskModalForm] Field config for task type:', taskType, {
-      mode,
-      config: cfg,
-    });
-    return cfg;
+    return getTaskTypeConfig(taskType);
   }, [taskType, mode]);
 
   // Approval workflow state
@@ -233,9 +221,7 @@ function TaskModalForm({
     if (mode === 'edit' && task) return task.priority;
     // Use config defaults for priority
     const cfg = getTaskTypeConfig(taskType);
-    const defaultPriority = cfg.defaults.priority || 'medium';
-    console.log('[TaskModalForm] Setting default priority for taskType:', taskType, 'to', defaultPriority);
-    return defaultPriority;
+    return cfg.defaults.priority || 'medium';
   });
   const [phaseId, setPhaseId] = useState(() => {
     if (mode === 'edit' && task) return task.phase_id || 'none';
@@ -246,9 +232,7 @@ function TaskModalForm({
     // Use config defaults for start date
     const cfg = getTaskTypeConfig(taskType);
     if (cfg.defaults.startDate === 'today') {
-      const today = new Date().toISOString().split('T')[0];
-      console.log('[TaskModalForm] Setting default start date to today:', today);
-      return today;
+      return new Date().toISOString().split('T')[0];
     }
     return '';
   });
@@ -287,48 +271,41 @@ function TaskModalForm({
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const phases = selectedProject?.project_phases || [];
 
-  // Debug: Fetch expenses for task (Subtask 5.2)
+  // Fetch expenses for task
   const fetchExpenses = async () => {
     if (!task?.id) {
-      console.log('[TaskModalForm] No task ID, skipping expense fetch');
       return;
     }
 
-    console.log('[TaskModalForm] Fetching expenses for task:', task.id);
     setExpensesLoading(true);
 
     try {
       const result = await getTaskExpenses(task.id);
       if (result.success && result.data) {
         setExpenses(result.data);
-        console.log('[TaskModalForm] Loaded expenses:', result.data.length);
       } else {
-        console.error('[TaskModalForm] Failed to load expenses:', result.error);
         setExpenses([]);
       }
-    } catch (error) {
-      console.error('[TaskModalForm] Error fetching expenses:', error);
+    } catch {
       setExpenses([]);
     } finally {
       setExpensesLoading(false);
     }
   };
 
-  // Debug: Fetch expenses when modal opens in edit mode (Subtask 5.2)
+  // Fetch expenses when modal opens in edit mode
   // fetchExpenses is excluded from deps as it's a stable function reference
   // task.id and mode changes trigger refetch when modal opens in edit mode
   useEffect(() => {
     if (task?.id && mode === 'edit') {
-      console.log('[TaskModalForm] Modal opened in edit mode, fetching expenses');
       fetchExpenses();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.id, mode]);
 
-  // Debug: Callback for expense added (Subtask 5.4)
+  // Callback for expense added
   // CRITICAL: Only refresh expenses, do NOT call onSuccess (which closes the modal)
   const handleExpenseAdded = async () => {
-    console.log('[TaskModalForm] Expense added successfully, refreshing expense list');
     await fetchExpenses();
     // NOTE: Do NOT call onSuccess() here - that would close the TaskModal
     // We only want to refresh the expense list so user can see the new expense
@@ -337,14 +314,6 @@ function TaskModalForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // DEBUG: Log form submission
-    console.log('[TaskModalForm] Submitting form', {
-      mode,
-      taskType,
-      title,
-      selectedProjectId,
-    });
 
     const formData = new FormData();
     formData.append('title', title);
@@ -360,13 +329,11 @@ function TaskModalForm({
     // Add receipt photo URL if available
     if (receiptPreview) {
       formData.append('receipt_photo_url', receiptPreview);
-      console.log('[TaskModalForm] Adding receipt_photo_url to form');
     }
 
     // Add task_type for new tasks
     if (mode === 'create' && taskType) {
       formData.append('task_type', taskType);
-      console.log('[TaskModalForm] Adding task_type to form:', taskType);
     }
 
     if (mode === 'edit' && task) {
@@ -378,7 +345,6 @@ function TaskModalForm({
     // Add multi-assignee data
     if (selectedAssignees.length > 0) {
       formData.append('assignee_ids', JSON.stringify(selectedAssignees));
-      console.log('[TaskModalForm] Adding assignee_ids to form:', selectedAssignees);
     }
 
     startTransition(async () => {
@@ -390,10 +356,8 @@ function TaskModalForm({
         if (result?.error) {
           setError(result.error);
         } else {
-          // Debug: If creating task with temp materials, associate them now
+          // If creating task with temp materials, associate them now
           if (mode === 'create' && result?.task && tempMaterials.length > 0) {
-            console.log('[TaskModalForm] Task created, associating', tempMaterials.length, 'temp materials');
-
             try {
               // Associate all temp materials with the newly created task
               const materialPromises = tempMaterials.map(async (tempMaterial) => {
@@ -422,11 +386,8 @@ function TaskModalForm({
               });
 
               await Promise.all(materialPromises);
-              console.log('[TaskModalForm] All temp materials associated successfully');
-            } catch (materialError) {
-              console.error('[TaskModalForm] Error associating materials:', materialError);
-              // Don't fail the task creation, just log the error
-              // Materials can be added manually after
+            } catch {
+              // Materials can be added manually after task creation
             }
           }
 
@@ -446,12 +407,6 @@ function TaskModalForm({
   // Handler for approval status updates
   const handleApprovalAction = async (newStatus: ApprovalStatus) => {
     if (!task?.id) return;
-
-    console.log('[TaskModalForm] Updating approval status:', {
-      taskId: task.id,
-      newStatus,
-      approvalNotes,
-    });
 
     setIsApprovalPending(true);
     setError(null);
@@ -503,7 +458,6 @@ function TaskModalForm({
             type="button"
             disabled={!taskType}
             onClick={() => {
-              console.log('[TaskModalForm] Moving to step 2 with taskType:', taskType);
               setCurrentStep(2);
             }}
             className="h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90 active:scale-[0.98] transition-transform"
@@ -522,24 +476,19 @@ function TaskModalForm({
           <TaskTypeSelector
             selectedType={taskType}
             onSelect={(type) => {
-              console.log('[TaskModalForm] Task type selected:', type);
               setTaskType(type);
 
-              // Apply task type defaults (Subtask 2.6)
+              // Apply task type defaults
               const cfg = getTaskTypeConfig(type);
-              console.log('[TaskModalForm] Applying defaults for type:', type, cfg.defaults);
 
               // Apply default priority
               if (cfg.defaults.priority) {
                 setPriority(cfg.defaults.priority);
-                console.log('[TaskModalForm] Set priority to:', cfg.defaults.priority);
               }
 
               // Apply default start date
               if (cfg.defaults.startDate === 'today') {
-                const today = new Date().toISOString().split('T')[0];
-                setStartDate(today);
-                console.log('[TaskModalForm] Set start date to today:', today);
+                setStartDate(new Date().toISOString().split('T')[0]);
               }
             }}
             disabled={isPending}
@@ -594,7 +543,6 @@ function TaskModalForm({
             type="button"
             variant="ghost"
             onClick={() => {
-              console.log('[TaskModalForm] Going back to step 1');
               setCurrentStep(1);
             }}
             disabled={isPending}
@@ -685,24 +633,19 @@ function TaskModalForm({
               <TaskTypeSelector
                 selectedType={taskType}
                 onSelect={(type) => {
-                  console.log('[TaskModalForm] Task type selected:', type);
                   setTaskType(type);
 
-                  // Apply task type defaults (Subtask 2.6)
+                  // Apply task type defaults
                   const cfg = getTaskTypeConfig(type);
-                  console.log('[TaskModalForm] Applying defaults for type:', type, cfg.defaults);
 
                   // Apply default priority
                   if (cfg.defaults.priority) {
                     setPriority(cfg.defaults.priority);
-                    console.log('[TaskModalForm] Set priority to:', cfg.defaults.priority);
                   }
 
                   // Apply default start date
                   if (cfg.defaults.startDate === 'today') {
-                    const today = new Date().toISOString().split('T')[0];
-                    setStartDate(today);
-                    console.log('[TaskModalForm] Set start date to today:', today);
+                    setStartDate(new Date().toISOString().split('T')[0]);
                   }
                 }}
                 disabled={isPending}
@@ -718,6 +661,36 @@ function TaskModalForm({
             transition={{ duration: 0.2 }}
             className="space-y-5"
           >
+              {/* Project Selection - Required for create mode */}
+              {mode === 'create' && (
+                <div className="space-y-2">
+                  <Label htmlFor="project" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <FolderKanban className="h-4 w-4 text-gray-400" />
+                    Project <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={selectedProjectId}
+                    onValueChange={(value) => {
+                      setSelectedProjectId(value);
+                      // Reset phase when project changes
+                      setPhaseId('none');
+                    }}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger id="project" className="h-11 border-gray-200">
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* Approval Status Section - Conditional rendering based on task type (Subtask 2.9) */}
               {isFieldVisible(taskType, 'approvalWorkflow', mode) && task && (
                 <div className="p-4 rounded-xl border-2 border-amber-200 bg-amber-50">
@@ -1050,7 +1023,6 @@ function TaskModalForm({
           <TaskReceiptUpload
             receiptUrl={receiptPreview}
             onReceiptChange={(file, preview) => {
-              console.log('[TaskModal] Receipt changed:', { hasFile: !!file, hasPreview: !!preview });
               setReceiptFile(file);
               setReceiptPreview(preview);
             }}
@@ -1128,14 +1100,6 @@ export function TaskModal({
   // Generate a unique key for the form based on mode and task ID
   // This forces React to remount the form component with fresh state
   const formKey = mode === 'edit' && task ? `edit-${task.id}` : 'create';
-
-  // DEBUG: Log modal state
-  console.log('[TaskModal] Rendering modal:', {
-    isOpen,
-    mode,
-    taskId: task?.id,
-    formKey,
-  });
 
   if (!isOpen) return null;
 

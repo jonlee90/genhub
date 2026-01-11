@@ -4,7 +4,7 @@
 // Shows all task metadata: title, description, status, priority, dates, assignee, phase, location, costs
 
 import { Calendar, User, MapPin, DollarSign, Flag, Clock } from 'lucide-react';
-import { cn, formatPercent } from '@/lib/utils';
+import { cn, formatPercent, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { TaskDetails } from './TaskDetailPanel';
 
@@ -19,18 +19,6 @@ export interface TaskDetailsTabProps {
  * Read-only for Phase 4, edit functionality in future phase
  */
 export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
-  console.log('[TaskDetailsTab] Rendering task:', task.id);
-
-  // Debug: Format date helper
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
   // Get status/priority configs from shared color system
   const statusConfig = TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG] || TASK_STATUS_CONFIG.todo;
   const priorityConfig = TASK_PRIORITY_CONFIG[task.priority as keyof typeof TASK_PRIORITY_CONFIG] || TASK_PRIORITY_CONFIG.medium;

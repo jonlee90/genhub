@@ -38,13 +38,8 @@ export function DashboardStats({
   projects,
   budget,
 }: DashboardStatsProps) {
-  // Debug: Log component render with budget prop
-  console.log('[DashboardStats] Rendering with budget:', budget);
-
-  // Debug: Calculate all stats reactively using useMemo
+  // Calculate all stats reactively using useMemo
   const stats = useMemo(() => {
-    console.log('[DashboardStats] Recalculating stats for', tasks.length, 'tasks');
-
     // Total tasks from filtered array
     const totalTasks = tasks.length;
 
@@ -65,14 +60,6 @@ export function DashboardStats({
       (sum, t) => sum + (Number(t.planned_cost) || 0),
       0
     );
-
-    console.log('[DashboardStats] Calculated stats:', {
-      totalTasks,
-      totalActiveProjects,
-      totalActualCost,
-      totalPlannedCost,
-      budget,
-    });
 
     return {
       totalTasks,

@@ -53,7 +53,7 @@ export function ProjectsPageClient({ role }: ProjectsPageClientProps) {
           console.log('[ProjectsPageClient] Opening create project modal');
           setIsCreateModalOpen(true);
         }}
-        className="relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
+        className="relative w-full h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
       >
         <HardHat className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
         <span className="font-black text-sm md:text-base">NEW</span>

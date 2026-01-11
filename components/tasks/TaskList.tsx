@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/select';
 import { Calendar, AlertTriangle, Ban, ArrowUpDown, Wrench, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { updateTaskStatus } from '@/app/actions/tasks';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
@@ -150,16 +150,6 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
-
-  const formatDate = (date: string) => {
-    // Parse date components manually to avoid UTC timezone issues
-    const [year, month, day] = date.split('T')[0].split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   const isOverdue = (task: Task) => {

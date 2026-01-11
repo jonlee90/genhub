@@ -29,10 +29,8 @@ interface ProjectTaskStats {
 }
 
 export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsCardProps) {
-  // Debug: Calculate task stats per project and rank by weighted completion score
+  // Calculate task stats per project and rank by weighted completion score
   const rankedProjects = useMemo(() => {
-    console.log('[TopProjectsCard] Calculating project rankings from', tasks.length, 'tasks');
-
     // Group tasks by project
     const projectStats = new Map<string, { completed: number; total: number }>();
 
@@ -71,8 +69,6 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
 
     // Sort by weighted score (highest first)
     projectsWithStats.sort((a, b) => b.weightedScore - a.weightedScore);
-
-    console.log('[TopProjectsCard] Ranked projects:', projectsWithStats.slice(0, 5));
 
     return projectsWithStats;
   }, [tasks, projects]);

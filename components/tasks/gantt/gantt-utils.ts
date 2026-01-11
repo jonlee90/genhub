@@ -324,10 +324,38 @@ export function isDateInView(date: Date, config: GanttConfig): boolean {
   return date >= config.viewStartDate && date <= config.viewEndDate;
 }
 
+// Input task type for transformation - from database with relations
+interface TaskInput {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  due_date: string | null;
+  start_date: string | null;
+  created_at: string;
+  updated_at: string;
+  assignee?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  project?: {
+    id: string;
+    name: string;
+  } | null;
+  phase?: {
+    id: string;
+    name: string;
+  } | null;
+  [key: string]: unknown; // Allow additional properties from database row
+}
+
 /**
  * Transform tasks to include calculated dates
  */
-export function transformTasksForGantt(tasks: any[]): GanttTask[] {
+export function transformTasksForGantt(tasks: TaskInput[]): GanttTask[] {
   return tasks.map((task) => {
     // Use due_date if available, otherwise use created_at + 7 days
     const endDate = task.due_date

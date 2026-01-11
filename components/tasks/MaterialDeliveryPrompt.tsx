@@ -65,35 +65,19 @@ export function MaterialDeliveryPrompt({
   projectId,
   onExpenseCreated,
 }: MaterialDeliveryPromptProps) {
-  console.log('[MaterialDeliveryPrompt] Component mounted', {
-    isOpen,
-    materialAssignment: materialAssignment?.id,
-    taskId,
-    projectId,
-  });
-
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Early return if no material assignment
+  // Early return if no material assignment
   if (!materialAssignment) {
-    console.log('[MaterialDeliveryPrompt] No material assignment provided');
     return null;
   }
 
   /**
-   * Debug: Handle expense creation from material
+   * Handle expense creation from material
    * Uses createExpenseFromMaterial action with correct signature
    */
   const handleCreateExpense = async () => {
-    console.log('[MaterialDeliveryPrompt] Creating expense from material', {
-      materialAssignmentId: materialAssignment.id,
-      taskId,
-      projectId,
-      amount: materialAssignment.total_cost,
-      description: materialAssignment.material.product_name,
-    });
-
     setIsCreating(true);
     setError(null);
 
@@ -107,9 +91,7 @@ export function MaterialDeliveryPrompt({
         category: 'materials',
       });
 
-      console.log('[MaterialDeliveryPrompt] Expense creation result', result);
-
-      // Fix H2: Check success flag for consistency with server action pattern
+      // Check success flag for consistency with server action pattern
       if (!result.success || result.error) {
         setError(result.error || 'Failed to create expense');
         setIsCreating(false);
@@ -117,25 +99,22 @@ export function MaterialDeliveryPrompt({
       }
 
       // Success - close dialog and notify parent
-      console.log('[MaterialDeliveryPrompt] Expense created successfully');
       onClose();
       onExpenseCreated?.();
     } catch (err) {
-      console.error('[MaterialDeliveryPrompt] Error creating expense', err);
       setError(err instanceof Error ? err.message : 'Failed to create expense');
       setIsCreating(false);
     }
   };
 
   /**
-   * Debug: Handle dismissing the prompt
+   * Handle dismissing the prompt
    */
   const handleDismiss = () => {
-    console.log('[MaterialDeliveryPrompt] User dismissed prompt');
     onClose();
   };
 
-  // Debug: Calculate total cost from material assignment
+  // Calculate total cost from material assignment
   const totalCost = materialAssignment.total_cost || 0;
 
   return (

@@ -15,6 +15,9 @@ type TaskType = Database['public']['Enums']['task_type'];
 type ApprovalStatus = Database['public']['Enums']['approval_status'];
 type ActivityAction = Database['public']['Enums']['activity_action'];
 
+// Supabase client type alias for cleaner function signatures
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
 // Types for multi-assignee support
 export interface AssigneeOption {
   id: string;
@@ -30,6 +33,30 @@ export interface TaskAssignee {
   type: 'user' | 'subcontractor';
 }
 
+// Form action state types
+export interface CreateTaskFormState {
+  success?: boolean;
+  error?: string | null;
+  task?: Task | null;
+  fieldErrors?: Record<string, string[]> | null;
+}
+
+// Types for Supabase joined data (PostgREST returns objects for FK joins)
+interface TaskAssigneeJoin {
+  id: string;
+  name: string;
+  avatar_url: string | null;
+}
+
+interface TaskPhaseJoin {
+  id: string;
+  name: string;
+}
+
+interface ActivityUserJoin {
+  name: string;
+}
+
 // ============================================
 // Validation Schemas
 // ============================================
@@ -42,7 +69,7 @@ const createTaskSchema = z.object({
   assignee_id: z.string().uuid('Invalid assignee ID').optional().nullable(),
   start_date: z.string().optional().nullable(),
   due_date: z.string().optional().nullable(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
   task_type: z.enum(['work', 'purchase', 'approval', 'admin']).default('work'),
   receipt_photo_url: z.string().url('Invalid receipt photo URL').optional().nullable(),
@@ -67,7 +94,7 @@ const updateTaskSchema = z.object({
   assignee_id: z.string().uuid('Invalid assignee ID').optional().nullable(),
   start_date: z.string().optional().nullable(),
   due_date: z.string().optional().nullable(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
+  priority: z.enum(['low', 'medium', 'high', 'critical']).optional(),
   planned_cost: z.number().min(0).optional().nullable(),
   actual_cost: z.number().min(0).optional().nullable(),
   phase_id: z.string().uuid('Invalid phase ID').optional().nullable(),
@@ -371,7 +398,7 @@ async function updateTaskAssignees(
 /**
  * Create a new task
  */
-export async function createTask(prevState: any, formData: FormData) {
+export async function createTask(prevState: CreateTaskFormState | null, formData: FormData) {
   // Get user context
   const userContext = await getUserContext();
   if ('error' in userContext) {
@@ -1737,13 +1764,13 @@ export async function getTaskDetails(taskId: string): Promise<{
     due_date: task.due_date || undefined,
     start_date: task.start_date || undefined,
     assignee: task.assignee ? {
-      id: (task.assignee as any).id,
-      name: (task.assignee as any).name,
-      avatar_url: (task.assignee as any).avatar_url || undefined,
+      id: (task.assignee as unknown as TaskAssigneeJoin).id,
+      name: (task.assignee as unknown as TaskAssigneeJoin).name,
+      avatar_url: (task.assignee as unknown as TaskAssigneeJoin).avatar_url || undefined,
     } : undefined,
     phase: task.phase ? {
-      id: (task.phase as any).id,
-      name: (task.phase as any).name,
+      id: (task.phase as unknown as TaskPhaseJoin).id,
+      name: (task.phase as unknown as TaskPhaseJoin).name,
     } : undefined,
     spatial_marker: spatialMarker ? {
       id: spatialMarker.id,
@@ -1826,11 +1853,11 @@ export async function getTaskActivity(taskId: string): Promise<{
     return { error: 'Failed to fetch activity log' };
   }
 
-  // Transform data - infer action from old_value/new_value changes
+  // Transform data - infer action from old_value/new_value/comment changes
   const activityLog = (activities || []).map((activity) => ({
     id: activity.id,
-    action: (activity.comment ? 'comment' : activity.old_value ? 'update' : 'create') as ActivityAction,
-    user_name: (activity.user as any)?.name || 'Unknown User',
+    action: (activity.comment ? 'comment' : activity.old_value ? 'updated' : 'created') as ActivityAction,
+    user_name: (activity.user as unknown as ActivityUserJoin | null)?.name || 'Unknown User',
     timestamp: activity.created_at,
     old_value: activity.old_value || undefined,
     new_value: activity.new_value || undefined,

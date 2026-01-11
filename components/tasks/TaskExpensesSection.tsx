@@ -90,29 +90,17 @@ export function TaskExpensesSection({
   projects,
   tasks,
 }: TaskExpensesSectionProps) {
-  // Debug: State for create expense modal
+  // State for create expense modal
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  console.log('Debug: TaskExpensesSection rendering', {
-    taskId,
-    taskTitle,
-    expensesCount: expenses.length,
-  });
-
-  // Debug: Calculate expense totals
+  // Calculate expense totals
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   const approvedAmount = expenses
     .filter(e => e.status === 'approved' || e.status === 'paid')
     .reduce((sum, e) => sum + e.amount, 0);
 
-  console.log('Debug: Expense totals', {
-    total: totalAmount,
-    approved: approvedAmount,
-  });
-
-  // Debug: Handle expense created callback
+  // Handle expense created callback
   const handleExpenseCreated = async () => {
-    console.log('Debug: Expense created successfully, closing modal and refreshing list');
     setShowCreateModal(false);
     // Refresh expense list in TaskModal
     if (onExpenseAdded) {
@@ -122,7 +110,7 @@ export function TaskExpensesSection({
 
   return (
     <div className="space-y-3">
-      {/* Debug: Header with totals and add button */}
+      {/* Header with totals and add button */}
       <div className="flex items-center justify-between pb-2 border-b border-gray-200">
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4 text-construction-blue" />
@@ -140,7 +128,6 @@ export function TaskExpensesSection({
           type="button"
           size="sm"
           onClick={() => {
-            console.log('Debug: Opening create expense modal');
             setShowCreateModal(true);
           }}
           className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
@@ -170,13 +157,6 @@ export function TaskExpensesSection({
           {expenses.map((expense, index) => {
             const status = STATUS_CONFIG[expense.status];
             const StatusIcon = status.icon;
-
-            console.log('Debug: Rendering expense', {
-              id: expense.id,
-              description: expense.description,
-              amount: expense.amount,
-              status: expense.status,
-            });
 
             return (
               <motion.div

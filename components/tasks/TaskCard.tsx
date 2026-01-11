@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText, MapPin, Box } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
@@ -127,17 +127,6 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
       .slice(0, 2);
   };
 
-  const formatDate = (date: string) => {
-    // Parse date components manually to avoid UTC timezone issues
-    // new Date("2025-12-15") is interpreted as midnight UTC, which displays
-    // as the previous day in timezones behind UTC (e.g., US timezones)
-    const [year, month, day] = date.split('T')[0].split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const formatCurrency = (amount: number) => {
     if (amount >= 1000) {
       return `$${(amount / 1000).toFixed(1)}k`;
@@ -150,12 +139,9 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
   // Debug: P4.7 - Check if task has 3D location
   const has3DLocation = !!task.spatial_marker_id;
 
-  // Debug: Get task type configuration with fallback to 'work'
+  // Get task type configuration with fallback to 'work'
   const taskTypeConfig = TASK_TYPE_CONFIG[task.task_type as keyof typeof TASK_TYPE_CONFIG] || TASK_TYPE_CONFIG.work;
   const TaskTypeIcon = taskTypeConfig.icon;
-
-  // Debug: Log task type for visibility
-  console.log('[TaskCard] Task type for', task.title, ':', task.task_type, '- Config:', taskTypeConfig.label, 'Has 3D location:', has3DLocation);
 
   return (
     <motion.div
@@ -175,15 +161,12 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
       })}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      {/* Debug: Separate click handler from drag handler to prevent positioning conflicts */}
+      {/* Separate click handler from drag handler to prevent positioning conflicts */}
       <div
         onClick={(e) => {
-          // Debug: Only trigger modal if not dragging AND not in drag preview
+          // Only trigger modal if not dragging AND not in drag preview
           if (!isSortableDragging && !isDragging) {
-            console.log('[TaskCard] Click handler fired for task:', task.title);
             onTaskClick?.(task);
-          } else {
-            console.log('[TaskCard] Click prevented - dragging:', isSortableDragging, 'isDragOverlay:', isDragging);
           }
         }}
         className="relative"
@@ -343,7 +326,6 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
                     href={`/app/projects/${task.project.id}/spatial?marker=${task.spatial_marker_id}`}
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent task card click
-                      console.log('[TaskCard] Navigating to 3D view for marker:', task.spatial_marker_id);
                     }}
                     className={cn(
                       'flex items-center gap-1.5 px-2 py-1',

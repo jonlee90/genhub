@@ -21,6 +21,9 @@ export interface ModalTheme {
   iconGradientTo: string;
 }
 
+// Type for theme names available in MODAL_THEMES
+export type ModalThemeName = 'default' | 'low' | 'medium' | 'high' | 'danger' | 'warning' | 'success' | 'info' | 'purchase' | string;
+
 export const MODAL_THEMES: Record<string, ModalTheme> = {
   // Default: Construction Navy Blue - Professional, trustworthy
   default: {

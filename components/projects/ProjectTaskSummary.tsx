@@ -109,9 +109,9 @@ export function ProjectTaskSummary({
   };
 
   const getCompletionColor = () => {
-    if (completionRate >= 100) return 'bg-[#059669]';
-    if (completionRate >= 50) return 'bg-[#001B51]';
-    return 'bg-gray-400';
+    if (completionRate >= 100) return 'bg-[#DC2626]';
+    if (completionRate >= 50) return 'bg-[#F59E0B]';
+    return 'bg-[#001B51]';
   };
 
   return (

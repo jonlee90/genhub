@@ -113,10 +113,6 @@ export function TaskBoard({
   hideFilters = false,
   resultsCountRef,
 }: TaskBoardProps) {
-  console.log('[TaskBoard] Rendering', {
-    isProjectContext: !!projectId,
-    taskCount: initialTasks.length
-  });
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();

@@ -1,28 +1,27 @@
 'use client';
 
-// Debug: Phase 4 - Expenses Tab (display expenses linked to task)
-// Fetches and displays expenses with status, receipt links, and total summary
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Receipt, Loader2, ExternalLink } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { getTaskExpenses } from '@/app/actions/expenses';
 
-// Debug: Expense type (from server action)
-type Expense = {
+type ExpenseStatus = 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
+type ExpenseCategory = 'permits' | 'materials' | 'labor' | 'equipment' | 'subcontractor' | 'utilities' | 'professional' | 'other';
+
+interface Expense {
   id: string;
   description: string;
   amount: number;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
+  status: ExpenseStatus;
   expense_date: string;
   vendor_name: string | null;
-  category: 'permits' | 'materials' | 'labor' | 'equipment' | 'subcontractor' | 'utilities' | 'professional' | 'other';
-};
+  category: ExpenseCategory;
+}
 
-// Debug: Component props
 export interface ExpensesTabProps {
   taskId: string;
-  hasBudgetVisibility?: boolean; // NEW: Controls cost visibility (default: true)
+  /** Controls cost visibility */
+  hasBudgetVisibility?: boolean;
 }
 
 /**
@@ -31,28 +30,23 @@ export interface ExpensesTabProps {
  * Calculates total expenses
  */
 export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabProps) {
-  console.log('[ExpensesTab] Rendering for task:', taskId, 'hasBudgetVisibility:', hasBudgetVisibility);
-
-  // Debug: State
+  // Component state
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Fetch expenses on mount
+  // Fetch expenses on mount
   useEffect(() => {
     const fetchExpenses = async () => {
-      console.log('[ExpensesTab] Fetching expenses for task:', taskId);
       setLoading(true);
       setError(null);
 
       const result = await getTaskExpenses(taskId);
 
       if (result.error) {
-        console.error('[ExpensesTab] Error:', result.error);
         setError(result.error);
         setExpenses([]);
       } else if (result.data) {
-        console.log('[ExpensesTab] Expenses loaded:', result.data.length);
         setExpenses(result.data as Expense[]);
       }
 
@@ -73,16 +67,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
     return colors[status] || 'bg-gray-400 text-white';
   };
 
-  // Debug: Format date helper
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  // Debug: Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">

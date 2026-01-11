@@ -1,7 +1,7 @@
 'use client';
 
 import { FolderKanban, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -29,29 +29,6 @@ function getDaysUntil(dateString: string): number {
   targetDate.setHours(0, 0, 0, 0);
   const diffTime = targetDate.getTime() - today.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
-/**
- * Format date as "Jan 15" for current year, "Jan 15, 2024" for past years
- */
-function formatDateShort(dateString: string): string {
-  const date = new Date(dateString);
-  const today = new Date();
-  const isCurrentYear = date.getFullYear() === today.getFullYear();
-
-  if (isCurrentYear) {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  }
-
-  // Include year for past dates
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 /**
@@ -85,7 +62,7 @@ function getProjectDateIndicator(endDate: string | null | undefined): {
   } else {
     // Past date - show compact date
     return {
-      display: formatDateShort(endDate),
+      display: formatDate(endDate),
       colorClass: 'text-red-500',
       daysLeft,
     };

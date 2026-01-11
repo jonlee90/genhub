@@ -7,16 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Package, Loader2, TrendingUp, AlertTriangle, CheckCircle2, Truck, Wrench } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { updateMaterialAssignment, getMaterialAssignmentsByTask } from '@/app/actions/materials';
 import { useToast } from '@/hooks/use-toast';
 
 interface Material {
   id: string;
   product_name: string;
-  sku: string;
-  category: string;
-  unit_of_measure: string;
+  sku: string | null;
+  category: string | null;
+  unit_of_measure: string | null;
   product_image_url: string | null;
 }
 
@@ -24,7 +24,7 @@ interface MaterialAssignment {
   id: string;
   quantity: number;
   unit_cost: number;
-  total_cost: number;
+  total_cost: number | null;
   procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
   purchaser_type: 'gc' | 'pm' | 'subcontractor';
   ordered_date: string | null;
@@ -78,32 +78,28 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
   }, [taskId]);
 
   const loadMaterials = async () => {
-    console.log('[TaskMaterials] Loading materials for taskId:', taskId);
     setIsLoading(true);
 
     // Use server action for proper authentication
     const result = await getMaterialAssignmentsByTask(taskId);
 
-    console.log('[TaskMaterials] Server action result:', result);
-
     if (result.success && result.data) {
       // Transform data to match expected interface
-      const transformedData = result.data.map((assignment: any) => ({
-        id: assignment.id,
-        quantity: assignment.quantity,
-        unit_cost: assignment.unit_cost,
-        total_cost: assignment.total_cost,
-        procurement_status: assignment.procurement_status,
-        purchaser_type: assignment.purchaser_type,
-        ordered_date: assignment.ordered_date,
-        estimated_delivery_date: assignment.estimated_delivery_date,
-        delivered_date: assignment.delivered_date,
-        installed_date: assignment.installed_date,
-        material: assignment.material
+      // Data shape from getMaterialAssignmentsByTask server action (from database)
+      const transformedData = result.data.map((assignment: Record<string, unknown>) => ({
+        id: assignment.id as string,
+        quantity: assignment.quantity as number,
+        unit_cost: assignment.unit_cost as number,
+        total_cost: (assignment.total_cost as number | null) ?? null,
+        procurement_status: assignment.procurement_status as MaterialAssignment['procurement_status'],
+        purchaser_type: assignment.purchaser_type as MaterialAssignment['purchaser_type'],
+        ordered_date: (assignment.ordered_date as string | null) ?? null,
+        estimated_delivery_date: (assignment.estimated_delivery_date as string | null) ?? null,
+        delivered_date: (assignment.delivered_date as string | null) ?? null,
+        installed_date: (assignment.installed_date as string | null) ?? null,
+        material: assignment.material as Material,
       }));
       setMaterials(transformedData);
-    } else {
-      console.error('[TaskMaterials] Error:', result.error);
     }
 
     setIsLoading(false);
@@ -142,16 +138,7 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
     }).format(amount);
   };
 
-  const formatDate = (date: string | null) => {
-    if (!date) return 'Not set';
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
-
-  const totalCost = materials.reduce((sum, m) => sum + m.total_cost, 0);
+  const totalCost = materials.reduce((sum, m) => sum + (m.total_cost ?? 0), 0);
 
   if (isLoading) {
     return (
@@ -256,7 +243,7 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                         </div>
                         <div>
                           <span className="text-gray-600">Total:</span>{' '}
-                          <span className="font-bold text-construction-blue">{formatCurrency(assignment.total_cost)}</span>
+                          <span className="font-bold text-construction-blue">{formatCurrency(assignment.total_cost ?? 0)}</span>
                         </div>
                       </div>
 

@@ -1,25 +1,20 @@
 'use client';
 
-// Debug: Phase 4 - Attachments Tab (display files and images linked to task)
-// Fetches and displays attachments with image preview and file download functionality
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Paperclip, FileText, Image as ImageIcon, Loader2, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTaskAttachments } from '@/app/actions/tasks';
 
-// Debug: Attachment type (from server action)
-type Attachment = {
+interface Attachment {
   id: string;
   file_name: string;
   file_url: string;
   file_type?: string | null;
-  file_size?: number | null | undefined;
+  file_size?: number | null;
   thumbnail_url?: string | null;
   created_at: string;
-};
+}
 
-// Debug: Component props
 export interface AttachmentsTabProps {
   taskId: string;
 }
@@ -30,28 +25,23 @@ export interface AttachmentsTabProps {
  * Images open in new tab on click, files download
  */
 export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
-  console.log('[AttachmentsTab] Rendering for task:', taskId);
-
-  // Debug: State
+  // Component state
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Fetch attachments on mount
+  // Fetch attachments on mount
   useEffect(() => {
     const fetchAttachments = async () => {
-      console.log('[AttachmentsTab] Fetching attachments for task:', taskId);
       setLoading(true);
       setError(null);
 
       const result = await getTaskAttachments(taskId);
 
       if (result.error) {
-        console.error('[AttachmentsTab] Error:', result.error);
         setError(result.error);
         setAttachments([]);
       } else if (result.data) {
-        console.log('[AttachmentsTab] Attachments loaded:', result.data.length);
         setAttachments(result.data);
       }
 

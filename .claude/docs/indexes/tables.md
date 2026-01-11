@@ -2,7 +2,7 @@
 
 > Quick lookup for database tables. For full schema details, see `docs/law/DB_SCHEMA.md`
 
-Last updated: 2026-01-10
+Last updated: 2026-01-11
 
 ---
 
@@ -41,8 +41,8 @@ Last updated: 2026-01-10
 | push_subscriptions | Push tokens | → users | Yes |
 | kakao_connections | KakaoTalk links | → users | Yes |
 | stripe_customers | Billing | → users | Yes |
-| owners | Platform owners | → user_profiles | Yes |
-| admin_invitations | Admin invites | → companies | Yes |
+| owners | Platform owners | → next_auth.users | Yes |
+| admin_invitations | Admin invites | → owners | Yes |
 | projects_3d_models | Project models | → projects | Yes |
 | default_3d_models | Default models | - | Yes |
 | company_default_models | Company models | → default_3d_models | Yes |

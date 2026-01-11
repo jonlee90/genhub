@@ -11,6 +11,24 @@ interface TaskPageProps {
   params: Promise<{ id: string }>;
 }
 
+// Type definitions for Supabase query results
+interface UserProfile {
+  id: string;
+  name: string;
+  email?: string;
+  avatar_url: string | null;
+}
+
+interface ActivityRecord {
+  id: string;
+  user_id: string | null;
+  old_value: string | null;
+  new_value: string | null;
+  comment: string | null;
+  created_at: string;
+  task_id: string;
+}
+
 async function getTask(taskId: string) {
   const supabase = await createClient();
   const session = await auth();
@@ -68,51 +86,74 @@ async function getTask(taskId: string) {
       .in('id', userIds);
 
     if (users) {
+      const userProfiles = users as UserProfile[];
       if (task.assignee_id) {
-        (task as any).assignee = users.find((u: any) => u.id === task.assignee_id) || null;
+        (task as Record<string, unknown>).assignee = userProfiles.find((u) => u.id === task.assignee_id) || null;
       }
       if (task.created_by) {
-        (task as any).creator = users.find((u: any) => u.id === task.created_by) || null;
+        (task as Record<string, unknown>).creator = userProfiles.find((u) => u.id === task.created_by) || null;
       }
     }
   }
 
   // Get task activity
-  const { data: activity } = await supabase
+  const { data: activityRaw } = await supabase
     .from('task_activity')
     .select('*')
     .eq('task_id', taskId)
     .order('created_at', { ascending: false });
 
-  // Fetch user profiles for activity separately
-  if (activity && activity.length > 0) {
-    const activityUserIds = activity
-      .filter((a: any) => a.user_id)
-      .map((a: any) => a.user_id);
+  // Fetch user profiles for activity separately and transform
+  let activity: Array<{
+    id: string;
+    action: string;
+    old_value: string | null;
+    new_value: string | null;
+    comment: string | null;
+    created_at: string;
+    user: { id: string; name: string; avatar_url: string | null } | null;
+  }> = [];
+  if (activityRaw && activityRaw.length > 0) {
+    const records = activityRaw as ActivityRecord[];
+    const activityUserIds = records
+      .filter((a) => a.user_id)
+      .map((a) => a.user_id as string);
 
+    const activityUsers: Record<string, UserProfile> = {};
     if (activityUserIds.length > 0) {
-      const { data: activityUsers } = await supabase
+      const { data: users } = await supabase
         .from('user_profiles')
         .select('id, name, avatar_url')
         .in('id', activityUserIds);
 
-      if (activityUsers) {
-        (activity as any[]).forEach((a: any) => {
-          if (a.user_id) {
-            a.user = activityUsers.find((u: any) => u.id === a.user_id) || null;
-          }
+      if (users) {
+        (users as UserProfile[]).forEach((u) => {
+          activityUsers[u.id] = u;
         });
       }
     }
+
+    // Transform activity to match Activity type from TaskActivityLog
+    // Infer action from data since action column doesn't exist
+    activity = records.map((a) => ({
+      id: a.id,
+      action: a.comment ? 'comment' : a.old_value ? 'updated' : 'created',
+      old_value: a.old_value,
+      new_value: a.new_value,
+      comment: a.comment,
+      created_at: a.created_at,
+      user: a.user_id && activityUsers[a.user_id] ? activityUsers[a.user_id] : null,
+    }));
   }
 
-  // Get task dependencies
-  const { data: dependencies } = await supabase
+  // Get task dependencies (tasks that this task depends on)
+  const { data: dependenciesRaw } = await supabase
     .from('task_dependencies')
     .select(`
       id,
+      task_id,
       depends_on_task_id,
-      depends_on:tasks (
+      depends_on_task:tasks!depends_on_task_id (
         id,
         title,
         status
@@ -120,19 +161,50 @@ async function getTask(taskId: string) {
     `)
     .eq('task_id', taskId);
 
-  // Get tasks that depend on this task
-  const { data: dependents } = await supabase
+  // Transform dependencies to match Dependency type expected by TaskDependencies
+  interface DependencyRecord {
+    id: string;
+    task_id: string;
+    depends_on_task_id: string;
+    depends_on_task: { id: string; title: string; status: string } | null;
+  }
+  const dependencies = (dependenciesRaw as DependencyRecord[] || [])
+    .filter((d) => d.depends_on_task !== null)
+    .map((d) => ({
+      id: d.id,
+      depends_on_task_id: d.depends_on_task_id,
+      depends_on: d.depends_on_task!,
+    }));
+
+  // Get tasks that depend on this task (tasks blocked by this task)
+  const { data: dependentsRaw } = await supabase
     .from('task_dependencies')
     .select(`
       id,
       task_id,
-      task:tasks (
+      depends_on_task_id,
+      blocking_task:tasks!task_id (
         id,
         title,
         status
       )
     `)
     .eq('depends_on_task_id', taskId);
+
+  // Transform dependents to match Dependent type expected by TaskDependencies
+  interface DependentRecord {
+    id: string;
+    task_id: string;
+    depends_on_task_id: string;
+    blocking_task: { id: string; title: string; status: string } | null;
+  }
+  const dependents = (dependentsRaw as DependentRecord[] || [])
+    .filter((d) => d.blocking_task !== null)
+    .map((d) => ({
+      id: d.id,
+      task_id: d.task_id,
+      task: d.blocking_task!,
+    }));
 
   // Get all project phases for phase selector
   const { data: phases } = await supabase

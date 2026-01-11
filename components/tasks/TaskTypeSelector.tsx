@@ -9,7 +9,6 @@ import type { Database } from '@/types/database.types';
 type TaskType = Database['public']['Enums']['task_type'];
 type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
 
-// Debug: Icon mapping helper (Task 0040)
 const ICON_MAP: Record<string, typeof Hammer> = {
   Hammer,
   ShoppingCart,
@@ -99,32 +98,26 @@ export function TaskTypeSelector({
   onSelect,
   disabled = false,
 }: TaskTypeSelectorProps) {
-  console.log('[TaskTypeSelector] Rendering with selectedType:', selectedType);
-
-  // Debug: Fetch task types from database (Task 0040)
+  // Fetch task types from database
   const [taskTypes, setTaskTypes] = useState(DEFAULT_TASK_TYPES);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTaskTypes = async () => {
-      console.log('[TaskTypeSelector] Fetching task types from database...');
       setIsLoading(true);
 
       try {
         const result = await getTaskTypes();
 
         if (result.success && result.taskTypes && result.taskTypes.length > 0) {
-          console.log('[TaskTypeSelector] Loaded', result.taskTypes.length, 'task types from database');
           // TODO: Map database types to display format - for now use defaults
           // const mappedTypes = result.taskTypes.map(convertTaskTypeConfig);
           // setTaskTypes(mappedTypes);
           setTaskTypes(DEFAULT_TASK_TYPES);
         } else {
-          console.warn('[TaskTypeSelector] Using default task types - no database types found');
           setTaskTypes(DEFAULT_TASK_TYPES);
         }
-      } catch (error) {
-        console.error('[TaskTypeSelector] Error fetching task types, using defaults:', error);
+      } catch {
         setTaskTypes(DEFAULT_TASK_TYPES);
       } finally {
         setIsLoading(false);
@@ -157,7 +150,6 @@ export function TaskTypeSelector({
               key={taskType.type}
               type="button"
               onClick={() => {
-                console.log('[TaskTypeSelector] Selected type:', taskType.type);
                 onSelect(taskType.type);
               }}
               disabled={disabled}

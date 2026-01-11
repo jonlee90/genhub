@@ -1,6 +1,8 @@
 # GenHub - Core Database Schema
 
 > Detailed schema for main tables. For quick lookup, see `indexes/tables.md`.
+>
+> Last updated: 2026-01-11
 
 ---
 
@@ -29,7 +31,7 @@ created_at, updated_at
 id uuid PK
 company_id uuid FK → companies
 user_id uuid FK → next_auth.users
-role user_role  -- gc_admin, project_manager, foreman, field_worker, subcontractor, client
+role user_role  -- admin, project_manager, foreman, field_worker, subcontractor, client
 status member_status  -- active, invited, inactive
 invited_by uuid FK, invited_at, joined_at
 created_at, updated_at
@@ -259,6 +261,37 @@ companies (root)
 ├── materials
 └── subcontractors
 ```
+
+---
+
+## Owner/Admin Tables
+
+### owners
+```sql
+id uuid PK
+user_id uuid FK → next_auth.users (UNIQUE)
+email text NOT NULL (UNIQUE)
+name text NOT NULL
+is_active boolean DEFAULT true
+created_at, updated_at
+```
+**Purpose**: Platform super users with access to ALL companies
+**RLS**: Self-view only; admin operations via service role
+**Helpers**: `is_user_owner(user_id)` - check if user is active owner
+
+### admin_invitations
+```sql
+id uuid PK
+email text NOT NULL
+name text (optional)
+invitation_token uuid UNIQUE DEFAULT gen_random_uuid()
+invited_by uuid FK → owners
+invited_at, expires_at (7 days default)
+used_at timestamptz (null until accepted)
+created_at, updated_at
+```
+**Purpose**: Owners invite new company admins who create their own companies
+**RLS**: No user-facing policies; managed via service role
 
 ---
 

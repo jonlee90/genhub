@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { createTask } from '@/app/actions/tasks';
+import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { TaskMaterialsManager } from './TaskMaterialsManager';
 import { TaskReceiptUpload } from './TaskReceiptUpload';
@@ -51,11 +51,11 @@ interface CreateTaskFormProps {
 }
 
 // Debug: Initial state matching createTask action return type
-const initialState = {
-  error: undefined as string | undefined,
-  fieldErrors: undefined as Record<string, string[]> | undefined,
-  success: false as boolean,
-  task: undefined as any,
+const initialState: CreateTaskFormState = {
+  error: null,
+  fieldErrors: null,
+  success: false,
+  task: null,
 };
 
 // Debug: Step configuration for multi-step form flow
@@ -83,15 +83,7 @@ export function CreateTaskForm({
   onSuccess,
   onCancel,
 }: CreateTaskFormProps) {
-  console.log('[CreateTaskForm] Rendering with props:', {
-    projectCount: projects.length,
-    teamMemberCount: teamMembers.length,
-    preselectedProjectId,
-    preselectedPhaseId
-  });
-
   const router = useRouter();
-  // @ts-expect-error - useActionState typing is overly strict with action return types
   const [state, formAction, isPending] = useActionState(createTask, initialState);
   const [selectedProjectId, setSelectedProjectId] = useState(preselectedProjectId || '');
 
@@ -111,20 +103,17 @@ export function CreateTaskForm({
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const phases = selectedProject?.project_phases || [];
 
-  // Debug: Handle task creation success
+  // Handle task creation success
   useEffect(() => {
     if (state?.success && state?.task) {
-      console.log('[CreateTaskForm] Task created successfully:', state.task.id);
-
-      // Debug: For Purchase tasks, go to materials step after task creation
+      // For Purchase tasks, go to materials step after task creation
       if (selectedTaskType === 'purchase' && currentStep === 2) {
-        console.log('[CreateTaskForm] Purchase task created, going to materials step');
         setCreatedTaskId(state.task.id);
         setCurrentStep(3);
         return;
       }
 
-      // Debug: For other tasks or after materials step, call success callback
+      // For other tasks or after materials step, call success callback
       if (onSuccess) {
         onSuccess();
       } else {
@@ -133,34 +122,30 @@ export function CreateTaskForm({
     }
   }, [state, router, onSuccess, selectedTaskType, currentStep]);
 
-  // Debug: Handle type selection
+  // Handle type selection
   const handleTypeSelect = (type: TaskType) => {
-    console.log('[CreateTaskForm] Task type selected:', type);
     setSelectedTaskType(type);
   };
 
-  // Debug: Handle step navigation
+  // Handle step navigation
   const handleNextStep = () => {
-    console.log('[CreateTaskForm] Moving to next step from:', currentStep);
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handlePrevStep = () => {
-    console.log('[CreateTaskForm] Moving to previous step from:', currentStep);
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      // Debug: Clear task type when going back to step 1
+      // Clear task type when going back to step 1
       if (currentStep === 2) {
         setSelectedTaskType(null);
       }
     }
   };
 
-  // Debug: Handle skip materials step for purchase tasks
+  // Handle skip materials step for purchase tasks
   const handleSkipMaterials = () => {
-    console.log('[CreateTaskForm] Skipping materials step');
     if (onSuccess) {
       onSuccess();
     } else if (createdTaskId) {
@@ -465,7 +450,6 @@ export function CreateTaskForm({
                 <TaskReceiptUpload
                   receiptUrl={receiptPreview}
                   onReceiptChange={(file, preview) => {
-                    console.log('[CreateTaskForm] Receipt changed:', { hasFile: !!file, hasPreview: !!preview });
                     setReceiptFile(file);
                     setReceiptPreview(preview);
                   }}
@@ -567,7 +551,6 @@ export function CreateTaskForm({
                   <Button
                     type="button"
                     onClick={() => {
-                      console.log('[CreateTaskForm] Finishing with materials');
                       if (onSuccess) {
                         onSuccess();
                       } else {

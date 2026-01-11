@@ -141,7 +141,7 @@ export function ResponsiveModal({
       isOpen={isOpen}
       onClose={onClose}
       icon={icon}
-      title={title}
+      title={title || ''}
       subtitle={subtitle}
       badges={badges}
       leftActions={leftActions}
@@ -164,5 +164,3 @@ export function ResponsiveModal({
     </BaseModal>
   );
 }
-
-export type { ResponsiveModalProps };

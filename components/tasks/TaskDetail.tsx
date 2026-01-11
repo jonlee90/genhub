@@ -57,7 +57,7 @@ import { TaskMaterials } from './TaskMaterials';
 import { BlockedReasonModal } from './BlockedReasonModal';
 import { TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { updateTask, updateTaskStatus, deleteTask, updateApprovalStatus } from '@/app/actions/tasks';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { Database } from '@/types/database.types';
 
@@ -100,11 +100,72 @@ const APPROVAL_STATUS_CONFIG: Record<ApprovalStatus, {
   },
 };
 
+// Task type with all properties used in this component
+interface TaskWithRelations {
+  id: string;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: TaskPriority;
+  task_type: TaskType | null;
+  approval_status: ApprovalStatus | null;
+  approval_notes: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  due_date: string | null;
+  start_date: string | null;
+  planned_cost: number | null;
+  actual_cost: number | null;
+  blocked_reason: string | null;
+  phase_id: string | null;
+  project_id: string;
+  assignee_id: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  creator?: { name: string } | null;
+  assignee?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar_url: string | null;
+  } | null;
+  phase?: { id: string; name: string } | null;
+}
+
+// Activity log entry (matches TaskActivityLog's Activity type)
+interface TaskActivityEntry {
+  id: string;
+  action: string;
+  old_value: string | null;
+  new_value: string | null;
+  comment: string | null;
+  created_at: string;
+  user: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  } | null;
+}
+
+// Dependency types (match TaskDependencies component)
+interface Dependency {
+  id: string;
+  depends_on_task_id: string;
+  depends_on: { id: string; title: string; status: string };
+}
+
+interface Dependent {
+  id: string;
+  task_id: string;
+  task: { id: string; title: string; status: string };
+}
+
 interface TaskDetailProps {
-  task: any;
-  activity: any[];
-  dependencies: any[];
-  dependents: any[];
+  task: TaskWithRelations;
+  activity: TaskActivityEntry[];
+  dependencies: Dependency[];
+  dependents: Dependent[];
   phases: Array<{ id: string; name: string }>;
   teamMembers: Array<{
     id: string;
@@ -133,8 +194,6 @@ export function TaskDetail({
   teamMembers,
   userRole,
 }: TaskDetailProps) {
-  console.log('[TaskDetail] Rendering task:', { id: task.id, task_type: task.task_type, approval_status: task.approval_status });
-
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -233,9 +292,8 @@ export function TaskDetail({
     }
   };
 
-  // Debug: Handle approval workflow actions
+  // Handle approval workflow actions
   const handleApprovalAction = async (action: ApprovalStatus) => {
-    console.log('[TaskDetail] Approval action:', action);
     setApprovalAction(action);
 
     // For approved, execute immediately; for others, show notes modal
@@ -247,14 +305,12 @@ export function TaskDetail({
   };
 
   const executeApproval = async (status: ApprovalStatus, notes: string) => {
-    console.log('[TaskDetail] Executing approval:', { status, notes });
     setIsUpdatingApproval(true);
     setError(null);
 
     const result = await updateApprovalStatus(task.id, status, notes);
 
     if (result?.error) {
-      console.error('[TaskDetail] Approval error:', result.error);
       setError(result.error);
     } else {
       setSuccessMessage(`Task ${status === 'approved' ? 'approved' : status === 'rejected' ? 'rejected' : 'sent for revision'} successfully`);
@@ -274,14 +330,6 @@ export function TaskDetail({
       .join('')
       .toUpperCase()
       .slice(0, 2);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   const formatCurrency = (amount: number) => {

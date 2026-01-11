@@ -1,15 +1,11 @@
 'use client';
 
-// Debug: Phase 4 - Activity Tab (display chronological activity log for task)
-// Fetches and displays task activity with user, action, timestamp, and details
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Activity, Loader2, Clock, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTaskActivity } from '@/app/actions/tasks';
 
-// Debug: Activity type (from server action)
-type TaskActivity = {
+interface TaskActivity {
   id: string;
   action: string;
   user_name: string;
@@ -17,9 +13,8 @@ type TaskActivity = {
   old_value?: string;
   new_value?: string;
   comment?: string;
-};
+}
 
-// Debug: Component props
 export interface ActivityTabProps {
   taskId: string;
 }
@@ -30,28 +25,23 @@ export interface ActivityTabProps {
  * Each entry shows user, action, timestamp, and optional details
  */
 export function ActivityTab({ taskId }: ActivityTabProps) {
-  console.log('[ActivityTab] Rendering for task:', taskId);
-
-  // Debug: State
+  // Component state
   const [activities, setActivities] = useState<TaskActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Fetch activity on mount
+  // Fetch activity on mount
   useEffect(() => {
     const fetchActivity = async () => {
-      console.log('[ActivityTab] Fetching activity for task:', taskId);
       setLoading(true);
       setError(null);
 
       const result = await getTaskActivity(taskId);
 
       if (result.error) {
-        console.error('[ActivityTab] Error:', result.error);
         setError(result.error);
         setActivities([]);
       } else if (result.data) {
-        console.log('[ActivityTab] Activity loaded:', result.data.length);
         setActivities(result.data);
       }
 

@@ -7,8 +7,75 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // ============================================
-// Date Formatting Helpers (for ProjectCard)
+// Date Formatting Helpers
 // ============================================
+
+/**
+ * Format a date to a short localized string (e.g., "Jan 15" or "Jan 15, 2024")
+ * Handles timezone issues by parsing date components manually for date-only strings.
+ *
+ * @param date - Date string, Date object, null, or undefined
+ * @param options - Formatting options
+ * @returns Formatted date string or fallback text
+ *
+ * @example
+ * formatDate('2025-01-15') => "Jan 15"
+ * formatDate('2024-06-20') => "Jun 20, 2024" (if not current year)
+ * formatDate(null) => "Not set"
+ */
+export function formatDate(
+	date: string | Date | null | undefined,
+	options: {
+		/** Text to show when date is null/undefined (default: "Not set") */
+		fallback?: string;
+		/** Always include year even for current year dates (default: false) */
+		includeYear?: boolean;
+	} = {}
+): string {
+	const { fallback = 'Not set', includeYear = false } = options;
+
+	if (!date) return fallback;
+
+	try {
+		let dateObj: Date;
+
+		if (typeof date === 'string') {
+			// Handle date-only strings (e.g., "2025-01-15" or "2025-01-15T00:00:00")
+			// Parse manually to avoid UTC timezone issues that can shift dates
+			const dateOnlyMatch = date.match(/^(\d{4})-(\d{2})-(\d{2})/);
+			if (dateOnlyMatch) {
+				const [, year, month, day] = dateOnlyMatch.map(Number);
+				dateObj = new Date(year, month - 1, day);
+			} else {
+				dateObj = new Date(date);
+			}
+		} else {
+			dateObj = date;
+		}
+
+		if (isNaN(dateObj.getTime())) {
+			return fallback;
+		}
+
+		const now = new Date();
+		const isCurrentYear = dateObj.getFullYear() === now.getFullYear();
+
+		if (isCurrentYear && !includeYear) {
+			return dateObj.toLocaleDateString('en-US', {
+				month: 'short',
+				day: 'numeric',
+			});
+		}
+
+		return dateObj.toLocaleDateString('en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric',
+		});
+	} catch {
+		return fallback;
+	}
+}
 
 /**
  * Format a date to a human-readable relative time string
@@ -145,15 +212,6 @@ export function getBudgetVarianceDisplay(
 	} else {
 		displayText = `Over ${formatBudget(Math.abs(variance))}`;
 	}
-
-	console.log('[getBudgetVarianceDisplay]', {
-		planned: plannedAmount,
-		actual: actualAmount,
-		variance,
-		isUnder,
-		displayText,
-		percentVariance,
-	});
 
 	return {
 		variance,

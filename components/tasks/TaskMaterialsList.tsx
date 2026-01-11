@@ -125,39 +125,29 @@ export function TaskMaterialsList({
   onTempMaterialRemove,
   onTempMaterialQuantityChange,
 }: TaskMaterialsListProps) {
-  console.log('[TaskMaterialsList] Rendering:', {
-    mode,
-    materialsCount: materials.length,
-    tempMaterialsCount: tempMaterials.length,
-    totalCost
-  });
-
-  // Debug: State management
+  // State management
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
-  // Debug: MaterialDeliveryPrompt state (Subtask 9.1)
+  // MaterialDeliveryPrompt state
   const [deliveredMaterial, setDeliveredMaterial] = useState<MaterialAssignment | null>(null);
   const [showDeliveryPrompt, setShowDeliveryPrompt] = useState(false);
 
-  // Debug: Expense link tracking (Subtask 9.4)
+  // Expense link tracking
   const [expenseLinks, setExpenseLinks] = useState<Record<string, boolean>>({});
 
-  // Debug: Check expense links on mount and when materials change (Subtask 9.4)
+  // Check expense links on mount and when materials change
   useEffect(() => {
     const checkExpenseLinks = async () => {
       if (materials.length === 0) return;
 
-      console.log('[TaskMaterialsList] Checking expense links for', materials.length, 'materials');
-
-      // Fix H1: Check links in parallel instead of sequential for better performance
+      // Check links in parallel for better performance
       const linkPromises = materials.map(async (material) => {
         const result = await getMaterialExpenseLink(material.id);
         if (result.success && result.expenseId) {
-          console.log('[TaskMaterialsList] Material', material.id, 'has linked expense:', result.expenseId);
           return { id: material.id, hasLink: true };
         }
         return { id: material.id, hasLink: false };
@@ -170,13 +160,12 @@ export function TaskMaterialsList({
       });
 
       setExpenseLinks(links);
-      console.log('[TaskMaterialsList] Expense link check complete:', Object.keys(links).length, 'linked');
     };
 
     checkExpenseLinks();
   }, [materials]);
 
-  // Debug: Format currency
+  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -185,23 +174,20 @@ export function TaskMaterialsList({
     }).format(amount);
   };
 
-  // Debug: Handle remove material
+  // Handle remove material
   const handleRemove = async (assignmentId: string, materialName: string) => {
-    console.log('[TaskMaterialsList] Removing assignment:', assignmentId);
     setRemovingId(assignmentId);
 
     startTransition(async () => {
       const result = await removeMaterialFromTask(assignmentId);
 
       if (result.success) {
-        console.log('[TaskMaterialsList] Material removed successfully');
         toast({
           title: 'Material Removed',
           description: `Removed ${materialName} from task`,
         });
         onRemove();
       } else {
-        console.error('[TaskMaterialsList] Failed to remove material:', result.error);
         toast({
           title: 'Failed to Remove',
           description: result.error || 'An error occurred',
@@ -213,21 +199,18 @@ export function TaskMaterialsList({
     });
   };
 
-  // Debug: Handle quantity update
+  // Handle quantity update
   const handleQuantityUpdate = async (assignmentId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
 
-    console.log('[TaskMaterialsList] Updating quantity for', assignmentId, 'to', newQuantity);
     setUpdatingId(assignmentId);
 
     startTransition(async () => {
       const result = await updateMaterialQuantity(assignmentId, newQuantity);
 
       if (result.success) {
-        console.log('[TaskMaterialsList] Quantity updated successfully');
         onQuantityUpdate();
       } else {
-        console.error('[TaskMaterialsList] Failed to update quantity:', result.error);
         toast({
           title: 'Failed to Update',
           description: result.error || 'An error occurred',
@@ -239,12 +222,11 @@ export function TaskMaterialsList({
     });
   };
 
-  // Debug: Handle status update (Subtask 9.2)
+  // Handle status update
   const handleStatusUpdate = async (
     assignment: MaterialAssignment,
     newStatus: 'needed' | 'ordered' | 'delivered' | 'installed'
   ) => {
-    console.log('[TaskMaterialsList] Updating status for', assignment.id, 'to', newStatus);
     setUpdatingStatusId(assignment.id);
 
     startTransition(async () => {
@@ -254,19 +236,13 @@ export function TaskMaterialsList({
       });
 
       if (result.success) {
-        console.log('[TaskMaterialsList] Status updated successfully to:', newStatus);
-
-        // Fix H3: Check expense link BEFORE showing success toast to prevent race conditions
+        // Check expense link BEFORE showing success toast to prevent race conditions
         if (newStatus === 'delivered') {
-          console.log('[TaskMaterialsList] Material delivered, checking for expense link');
           const expenseLink = await getMaterialExpenseLink(assignment.id);
 
           if (expenseLink.success && !expenseLink.expenseId) {
-            console.log('[TaskMaterialsList] No expense linked, showing delivery prompt');
             setDeliveredMaterial(assignment);
             setShowDeliveryPrompt(true);
-          } else if (expenseLink.success && expenseLink.expenseId) {
-            console.log('[TaskMaterialsList] Expense already linked, skipping prompt');
           }
         }
 
@@ -283,7 +259,6 @@ export function TaskMaterialsList({
           onQuantityUpdate(); // Fallback to existing refresh
         }
       } else {
-        console.error('[TaskMaterialsList] Failed to update status:', result.error);
         toast({
           title: 'Failed to Update Status',
           description: result.error || 'An error occurred',
@@ -295,7 +270,7 @@ export function TaskMaterialsList({
     });
   };
 
-  // Debug: Empty state (check both materials and tempMaterials)
+  // Empty state (check both materials and tempMaterials)
   const isEmpty = mode === 'edit'
     ? materials.length === 0
     : tempMaterials.length === 0;
@@ -361,7 +336,7 @@ export function TaskMaterialsList({
                     </span>
                     <span className="text-gray-300">|</span>
 
-                    {/* Debug: Status Dropdown (Subtask 9.2) */}
+                    {/* Status Dropdown */}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button
@@ -399,7 +374,7 @@ export function TaskMaterialsList({
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Debug: Expense Linked Indicator (Subtask 9.4) */}
+                    {/* Expense Linked Indicator */}
                     {expenseLinks[assignment.id] && (
                       <div
                         className="flex items-center gap-0.5 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200"
@@ -613,11 +588,10 @@ export function TaskMaterialsList({
         </span>
       </div>
 
-      {/* Debug: Material Delivery Expense Prompt (Subtask 9.3) */}
+      {/* Material Delivery Expense Prompt */}
       <MaterialDeliveryPrompt
         isOpen={showDeliveryPrompt}
         onClose={() => {
-          console.log('[TaskMaterialsList] Closing delivery prompt');
           setShowDeliveryPrompt(false);
           setDeliveredMaterial(null);
         }}
@@ -625,7 +599,6 @@ export function TaskMaterialsList({
         taskId={taskId}
         projectId={projectId}
         onExpenseCreated={async () => {
-          console.log('[TaskMaterialsList] Expense created, refreshing data');
           setShowDeliveryPrompt(false);
           setDeliveredMaterial(null);
 

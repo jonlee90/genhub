@@ -149,7 +149,9 @@
       "Bash(git -C /Users/jonathanlee/Desktop/genhub log --all --source --grep=\"team_invitations\" --oneline)",
       "Bash(mcp__supabase__list_tables:*)",
       "mcp__plugin_serena_serena__think_about_collected_information",
-      "Bash(npm run sync-docs:*)"
+      "Bash(npm run sync-docs:*)",
+      "Skill(refactor-code)",
+      "Bash(npm run gen-index:*)"
     ],
     "deny": [],
     "ask": []

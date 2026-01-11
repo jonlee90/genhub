@@ -47,9 +47,6 @@ interface KanbanColumnProps {
 }
 
 export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isMobile = false }: KanbanColumnProps) {
-  // Debug logging for development
-  console.log('[KanbanColumn] Rendering column:', { id, title, taskCount: tasks.length, isMobile });
-
   const { setNodeRef, isOver } = useDroppable({
     id,
   });

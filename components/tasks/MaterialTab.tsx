@@ -42,8 +42,6 @@ export interface MaterialTabProps {
  * Calculates total cost summary
  */
 export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabProps) {
-  console.log('[MaterialTab] Rendering for task:', taskId, 'hasBudgetVisibility:', hasBudgetVisibility);
-
   // Debug: State
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,18 +50,15 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
   // Debug: Fetch materials on mount
   useEffect(() => {
     const fetchMaterials = async () => {
-      console.log('[MaterialTab] Fetching materials for task:', taskId);
       setLoading(true);
       setError(null);
 
       const result = await getTaskMaterials(taskId);
 
       if (result.error) {
-        console.error('[MaterialTab] Error:', result.error);
         setError(result.error);
         setMaterials([]);
       } else if (result.data) {
-        console.log('[MaterialTab] Materials loaded:', result.data.length);
         setMaterials(result.data as MaterialAssignment[]);
       }
 

@@ -67,15 +67,13 @@ type TabType = 'details' | 'materials' | 'expenses' | 'attachments' | 'activity'
  * Tabs: Details | Materials | Expenses | Attachments | Activity
  */
 export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVisibility = true }: TaskDetailPanelProps) {
-  console.log('[TaskDetailPanel] Rendering', { taskId, isOpen, userRole, hasBudgetVisibility });
-
-  // Debug: Tab and data state
+  // Tab and data state
   const [activeTab, setActiveTab] = useState<TabType>('details');
   const [taskData, setTaskData] = useState<TaskDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Fetch task details when panel opens
+  // Fetch task details when panel opens
   useEffect(() => {
     if (!taskId || !isOpen) {
       setTaskData(null);
@@ -84,18 +82,15 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
     }
 
     const fetchTask = async () => {
-      console.log('[TaskDetailPanel] Fetching task details:', taskId);
       setLoading(true);
       setError(null);
 
       const result = await getTaskDetails(taskId);
 
       if (result.error) {
-        console.error('[TaskDetailPanel] Error fetching task:', result.error);
         setError(result.error);
         setTaskData(null);
       } else if (result.data) {
-        console.log('[TaskDetailPanel] Task details loaded:', result.data);
         setTaskData(result.data);
       }
 
@@ -105,7 +100,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
     fetchTask();
   }, [taskId, isOpen]);
 
-  // Debug: Reset tab when panel opens
+  // Reset tab when panel opens
   useEffect(() => {
     if (isOpen) {
       setActiveTab('details');

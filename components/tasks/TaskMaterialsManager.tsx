@@ -74,82 +74,66 @@ export function TaskMaterialsManager({
   tempMaterials = [],
   onTempMaterialsChange,
 }: TaskMaterialsManagerProps) {
-  console.log('[TaskMaterialsManager] Rendering with props:', {
-    taskId,
-    projectId,
-    mode,
-    tempMaterialsCount: tempMaterials.length
-  });
-
-  // Debug: State management
+  // State management
   const [activeTab, setActiveTab] = useState<TabType>(mode === 'edit' ? 'assigned' : 'search');
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Load materials when in edit mode
+  // Load materials when in edit mode
   const loadMaterials = useCallback(async () => {
     if (!taskId) {
-      console.log('[TaskMaterialsManager] No taskId, skipping load');
       return;
     }
 
-    console.log('[TaskMaterialsManager] Loading materials for task:', taskId);
     setIsLoading(true);
     setError(null);
 
     const result = await getTaskMaterials(taskId);
 
     if (result.success && result.data) {
-      console.log('[TaskMaterialsManager] Loaded', result.data.length, 'materials');
       setMaterials(result.data as MaterialAssignment[]);
     } else {
-      console.error('[TaskMaterialsManager] Error loading materials:', result.error);
       setError(result.error || 'Failed to load materials');
     }
 
     setIsLoading(false);
   }, [taskId]);
 
-  // Debug: Initial load
+  // Initial load
   useEffect(() => {
     if (mode === 'edit' && taskId) {
       loadMaterials();
     }
   }, [mode, taskId, loadMaterials]);
 
-  // Debug: Handle material added callback
+  // Handle material added callback
   const handleMaterialAdded = useCallback(() => {
-    console.log('[TaskMaterialsManager] Material added, refreshing list');
     loadMaterials();
     onMaterialsChange?.();
     // Switch to assigned tab to show the newly added material
     setActiveTab('assigned');
   }, [loadMaterials, onMaterialsChange]);
 
-  // Debug: Handle material removed callback
+  // Handle material removed callback
   const handleMaterialRemoved = useCallback(() => {
-    console.log('[TaskMaterialsManager] Material removed, refreshing list');
     loadMaterials();
     onMaterialsChange?.();
   }, [loadMaterials, onMaterialsChange]);
 
-  // Debug: Handle material quantity updated callback
+  // Handle material quantity updated callback
   const handleQuantityUpdated = useCallback(() => {
-    console.log('[TaskMaterialsManager] Quantity updated, refreshing list');
     loadMaterials();
     onMaterialsChange?.();
   }, [loadMaterials, onMaterialsChange]);
 
-  // Debug: Calculate total cost (edit mode uses materials, create mode uses tempMaterials)
+  // Calculate total cost (edit mode uses materials, create mode uses tempMaterials)
   const totalCost = mode === 'edit'
     ? materials.reduce((sum, m) => sum + (m.total_cost || 0), 0)
     : tempMaterials.reduce((sum, m) => sum + (m.price * m.quantity), 0);
 
-  // Debug: Get material count for badge
+  // Get material count for badge
   const materialCount = mode === 'edit' ? materials.length : tempMaterials.length;
-
-  // Debug: Render main interface for edit mode
   return (
     <div className="space-y-4">
       {/* Tab Navigation */}
@@ -238,7 +222,6 @@ export function TaskMaterialsManager({
                 mode={mode}
                 tempMaterials={tempMaterials}
                 onTempMaterialAdd={(material) => {
-                  console.log('[TaskMaterialsManager] Adding temp material:', material);
                   onTempMaterialsChange?.([...tempMaterials, material]);
                   setActiveTab('assigned');
                 }}
@@ -265,13 +248,11 @@ export function TaskMaterialsManager({
                 mode={mode}
                 tempMaterials={tempMaterials}
                 onTempMaterialRemove={(productId) => {
-                  console.log('[TaskMaterialsManager] Removing temp material:', productId);
                   onTempMaterialsChange?.(
                     tempMaterials.filter(m => m.product_id !== productId)
                   );
                 }}
                 onTempMaterialQuantityChange={(productId, quantity) => {
-                  console.log('[TaskMaterialsManager] Updating temp material quantity:', productId, quantity);
                   onTempMaterialsChange?.(
                     tempMaterials.map(m =>
                       m.product_id === productId ? { ...m, quantity } : m

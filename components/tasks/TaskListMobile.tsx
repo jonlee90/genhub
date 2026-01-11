@@ -5,7 +5,7 @@ import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Ban, FolderKanban, Check, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
@@ -95,14 +95,6 @@ export function TaskListMobile({
       .slice(0, 2);
   };
 
-  const formatDate = (date: string) => {
-    const [year, month, day] = date.split('T')[0].split('-').map(Number);
-    return new Date(year, month - 1, day).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   const handleComplete = async (task: Task) => {
     if (task.status === 'completed' || pendingActions.has(task.id)) return;
 
@@ -110,8 +102,8 @@ export function TaskListMobile({
 
     try {
       await updateTaskStatus(task.id, 'completed');
-    } catch (error) {
-      console.error('Failed to complete task:', error);
+    } catch {
+      // Task completion failed - UI will remain in pending state briefly
     } finally {
       setPendingActions((prev) => {
         const next = new Set(prev);
@@ -133,8 +125,8 @@ export function TaskListMobile({
 
     try {
       await deleteTask(task.id);
-    } catch (error) {
-      console.error('Failed to delete task:', error);
+    } catch {
+      // Task deletion failed - UI will remain in pending state briefly
     } finally {
       setPendingActions((prev) => {
         const next = new Set(prev);

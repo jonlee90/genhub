@@ -68,9 +68,7 @@ export function TaskMaterialSearch({
   tempMaterials = [],
   onTempMaterialAdd,
 }: TaskMaterialSearchProps) {
-  console.log('[TaskMaterialSearch] Rendering:', { taskId, projectId, mode, tempMaterialsCount: tempMaterials.length });
-
-  // Debug: State management
+  // State management
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState<HomeDepotProduct[]>([]);
   const [isSearching, startSearch] = useTransition();
@@ -79,7 +77,7 @@ export function TaskMaterialSearch({
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
-  // Debug: Debounced search
+  // Debounced search
   useEffect(() => {
     if (!searchQuery.trim()) {
       setProducts([]);
@@ -88,18 +86,16 @@ export function TaskMaterialSearch({
     }
 
     const timeoutId = setTimeout(() => {
-      console.log('[TaskMaterialSearch] Debounced search triggered:', searchQuery);
       handleSearch();
     }, 500);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  // Debug: Search handler
+  // Search handler
   const handleSearch = useCallback(() => {
     if (!searchQuery.trim()) return;
 
-    console.log('[TaskMaterialSearch] Executing search for:', searchQuery);
     startSearch(async () => {
       const result = await searchProducts({
         query: searchQuery,
@@ -107,10 +103,8 @@ export function TaskMaterialSearch({
       });
 
       if (result.success && result.data) {
-        console.log('[TaskMaterialSearch] Found', result.data.products.length, 'products');
         setProducts(result.data.products);
       } else {
-        console.error('[TaskMaterialSearch] Search error:', result.error);
         toast({
           title: 'Search Failed',
           description: result.error || 'Failed to search products',
@@ -121,30 +115,27 @@ export function TaskMaterialSearch({
     });
   }, [searchQuery, toast]);
 
-  // Debug: Get quantity for a product
+  // Get quantity for a product
   const getQuantity = (productId: string) => quantities[productId] || 1;
 
-  // Debug: Update quantity for a product
+  // Update quantity for a product
   const updateQuantity = (productId: string, delta: number) => {
     setQuantities(prev => {
       const current = prev[productId] || 1;
       const newValue = Math.max(1, current + delta);
-      console.log('[TaskMaterialSearch] Updating quantity for', productId, ':', current, '->', newValue);
       return { ...prev, [productId]: newValue };
     });
   };
 
-  // Debug: Set quantity directly
+  // Set quantity directly
   const setQuantity = (productId: string, value: number) => {
     const newValue = Math.max(1, value);
-    console.log('[TaskMaterialSearch] Setting quantity for', productId, 'to', newValue);
     setQuantities(prev => ({ ...prev, [productId]: newValue }));
   };
 
-  // Debug: Add product to task (edit mode) or to temp list (create mode)
+  // Add product to task (edit mode) or to temp list (create mode)
   const handleAddProduct = async (product: HomeDepotProduct) => {
     const quantity = getQuantity(product.id);
-    console.log('[TaskMaterialSearch] Adding product:', product.name, 'quantity:', quantity, 'mode:', mode);
 
     // Create mode: add to temporary materials list
     if (mode === 'create') {
@@ -171,7 +162,6 @@ export function TaskMaterialSearch({
         stock_status: product.stockStatus,
       };
 
-      console.log('[TaskMaterialSearch] Adding to temp materials:', tempMaterial);
       onTempMaterialAdd?.(tempMaterial);
 
       // Reset quantity for this product
@@ -203,7 +193,6 @@ export function TaskMaterialSearch({
     const result = await addProductToTask(product, taskId, projectId, quantity);
 
     if (result.success) {
-      console.log('[TaskMaterialSearch] Product added successfully');
       toast({
         title: 'Material Added',
         description: `Added ${quantity}x ${product.name} to task`,
@@ -216,7 +205,6 @@ export function TaskMaterialSearch({
       onMaterialAdded();
     } else {
       const errorMessage = 'error' in result ? result.error : 'An error occurred';
-      console.error('[TaskMaterialSearch] Failed to add product:', errorMessage);
       toast({
         title: 'Failed to Add Material',
         description: errorMessage || 'An error occurred',
@@ -227,7 +215,7 @@ export function TaskMaterialSearch({
     setAddingProductId(null);
   };
 
-  // Debug: Format currency
+  // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

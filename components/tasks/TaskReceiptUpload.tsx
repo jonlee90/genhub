@@ -40,22 +40,9 @@ export function TaskReceiptUpload({
   const [preview, setPreview] = useState<string | null>(receiptUrl || null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  console.log('[TaskReceiptUpload] Rendering with:', {
-    hasReceiptUrl: !!receiptUrl,
-    hasPreview: !!preview,
-    disabled,
-    compact,
-  });
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    console.log('[TaskReceiptUpload] File selected:', {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
 
     setIsProcessing(true);
 
@@ -71,7 +58,6 @@ export function TaskReceiptUpload({
   };
 
   const handleRemoveReceipt = () => {
-    console.log('[TaskReceiptUpload] Removing receipt');
     setPreview(null);
     onReceiptChange(null, null);
     if (fileInputRef.current) fileInputRef.current.value = '';
