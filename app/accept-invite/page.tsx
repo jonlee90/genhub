@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { AcceptInviteContent } from './AcceptInviteContent';
 import { validateInvitationToken } from '@/app/actions/accept-invite';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Accept Invitation | GenHub',
   description: 'Accept your team invitation and join GenHub',

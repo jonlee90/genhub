@@ -244,7 +244,7 @@ export function BottomNavigation() {
                         : '-mt-1.5 text-gray-500'
                     )}
                   >
-                    {active && showPlusIcon ? 'Create ' + item.name : item.name}
+                    {active && showPlusIcon ? 'Add ' + item.name : item.name}
                   </span>
                   {/* Active indicator dot */}
                   {active && (

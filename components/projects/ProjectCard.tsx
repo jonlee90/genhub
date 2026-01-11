@@ -1,113 +1,151 @@
-"use client";
+'use client';
 
 /**
- * ProjectCard Component - V2 Hero Image Design
+ * ProjectCard Component - Unified Responsive Design
  *
- * A modern project card with:
- * - Consistent construction-blue header (all card types)
- * - Color-coded project type icon (unique per type)
- * - Hero image placeholder (neutral gradient)
- * - Client/Budget info row
- * - 2x2 stats grid
- * - Footer with address and start date
+ * A single responsive project card that adapts to mobile and desktop:
+ * - Responsive sizing (smaller on mobile, larger on desktop)
+ * - Construction-blue header with project type icon
+ * - Hero image/placeholder section
+ * - Client & Budget row
+ * - 2x2 stats grid (status, progress, schedule, team)
+ * - Footer with address and date
  *
- * Debug: Construction-themed design for GenHub PWA
- * Updated: Unified card styling with color differentiation via icons only
+ * Performance optimizations:
+ * - Single component for both mobile/desktop (no duplicate code)
+ * - CSS-based animations instead of per-item framer-motion
+ * - Memoized theme lookups
  */
 
+import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from "framer-motion";
 import { Users, Calendar, MapPin } from 'lucide-react';
 import type { Database } from '@/types/database.types';
 import { cn, formatBudget, formatPercentWhole } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
 import { getProjectTheme, PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
 
-// Debug: Type definitions
 type Project = Database['public']['Tables']['projects']['Row'] & {
   project_phases?: Array<{
     id: string;
     status: string;
     completion_percentage: number | null;
   }>;
+  stats?: {
+    schedule: { daysRemaining: number | null };
+    teamSize: number;
+  };
 };
 
 interface ProjectCardProps {
   project: Project | ProjectWithStats;
+  className?: string;
 }
 
-export function ProjectCard({ project }: ProjectCardProps) {
-  // Debug: Get theme configuration based on project type
+/**
+ * Calculate days remaining from end date if stats not available
+ */
+function calculateDaysRemaining(endDate: string | null | undefined): number | null {
+  if (!endDate) return null;
+  const end = new Date(endDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffTime = end.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+function ProjectCardComponent({ project, className }: ProjectCardProps) {
+  // Get theme configuration based on project type
   const theme = getProjectTheme(project.project_type);
   const TypeIcon = theme.icon;
   const statusConfig = PROJECT_STATUS_CONFIG[project.status as keyof typeof PROJECT_STATUS_CONFIG];
 
-  // Debug: Calculate completion percentage
+  // Calculate completion percentage
   const completionPercentage = project.completion_percentage || 0;
 
-  // Debug: Get stats if available
+  // Get stats if available
   const hasStats = 'stats' in project && project.stats;
   const stats = hasStats ? project.stats : null;
 
-  // Debug: Get image URL or use placeholder gradient
+  // Calculate days remaining
+  const daysRemaining = stats?.schedule?.daysRemaining ?? calculateDaysRemaining(project.end_date);
+
+  // Get image URL or use placeholder
   const imageUrl = project.image_url;
+
+  // Handle Google Maps click
+  const handleAddressClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        `${project.address}${project.city ? `, ${project.city}` : ''}`
+      )}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
 
   return (
     <Link href={`/app/projects/${project.id}`} className="block h-full">
-      <motion.article
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -6 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+      <article
         className={cn(
-          "group relative h-full rounded-xl overflow-hidden",
-          "bg-white border border-gray-200",
-          "shadow-sm hover:shadow-xl",
-          "transition-shadow duration-300",
-          "cursor-pointer"
+          'group relative h-full rounded-xl overflow-hidden',
+          'bg-white border border-gray-200',
+          'shadow-sm hover:shadow-xl active:shadow-md',
+          'transition-all duration-300',
+          'cursor-pointer',
+          'hover:-translate-y-1.5 md:hover:-translate-y-2',
+          'active:scale-[0.98] md:active:scale-100',
+          className
         )}
       >
-        {/* Debug: Unified Header Section - Construction Blue */}
-        <header className={cn(
-          "relative px-4 py-3",
-          theme.headerBg,
-          theme.headerText
-        )}>
-          <div className="flex items-start justify-between gap-3">
-            {/* Debug: Project Type Label & Name */}
+        {/* Header Section - Construction Blue */}
+        <header
+          className={cn(
+            'relative px-3 md:px-4 py-2.5 md:py-3',
+            theme.headerBg,
+            theme.headerText
+          )}
+        >
+          <div className="flex items-start justify-between gap-2 md:gap-3">
+            {/* Project Type Label & Name */}
             <div className="flex-1 min-w-0">
-              <p className={cn(
-                "text-[10px] font-bold uppercase tracking-[0.15em] mb-0.5",
-                theme.accentColor
-              )}>
+              <p
+                className={cn(
+                  'text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] mb-0.5',
+                  theme.accentColor
+                )}
+              >
                 {theme.labelFull}
               </p>
-              <h3 className="text-lg font-bold leading-tight line-clamp-1 tracking-tight">
+              <h3 className="text-base md:text-lg font-bold leading-tight line-clamp-1 tracking-tight">
                 {project.name}
               </h3>
             </div>
 
-            {/* Debug: Color-Coded Type Icon (unique per project type) */}
-            <div className={cn(
-              "shrink-0 p-2.5 rounded-lg bg-white/95 backdrop-blur-sm",
-              "border border-white/20 shadow-sm"
-            )}>
+            {/* Color-Coded Type Icon */}
+            <div
+              className={cn(
+                'shrink-0 p-2 md:p-2.5 rounded-lg bg-white/95 backdrop-blur-sm',
+                'border border-white/20 shadow-sm'
+              )}
+            >
               <TypeIcon
-                className={cn("h-5 w-5", theme.iconColor)}
+                className={cn('h-4 w-4 md:h-5 md:w-5', theme.iconColor)}
                 strokeWidth={2.5}
               />
             </div>
           </div>
 
-          {/* Debug: Decorative bottom edge */}
+          {/* Decorative bottom edge */}
           <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-black/10" />
         </header>
 
-        {/* Debug: Hero Image / Placeholder Section */}
-        <div className="relative h-36 overflow-hidden">
+        {/* Hero Image / Placeholder Section */}
+        <div className="relative h-28 md:h-36 overflow-hidden">
           {imageUrl ? (
-            // Debug: Actual image when available
             <Image
               src={imageUrl}
               alt={`${project.name} site view`}
@@ -116,12 +154,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            // Debug: Neutral gradient placeholder with blueprint grid
-            <div className={cn(
-              "absolute inset-0 bg-gradient-to-br",
-              theme.placeholderGradient
-            )}>
-              {/* Debug: Blueprint grid pattern overlay */}
+            <div className={cn('absolute inset-0 bg-gradient-to-br', theme.placeholderGradient)}>
+              {/* Blueprint grid pattern overlay */}
               <div
                 className="absolute inset-0 opacity-30"
                 style={{
@@ -129,27 +163,24 @@ export function ProjectCard({ project }: ProjectCardProps) {
                     linear-gradient(rgba(0,27,81,0.1) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(0,27,81,0.1) 1px, transparent 1px)
                   `,
-                  backgroundSize: '20px 20px'
+                  backgroundSize: '16px 16px',
                 }}
               />
 
-              {/* Debug: Centered icon with project-specific color */}
+              {/* Centered icon */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className={cn(
-                  "p-4 rounded-xl",
-                  theme.iconBg
-                )}>
+                <div className={cn('p-3 md:p-4 rounded-xl', theme.iconBg)}>
                   <TypeIcon
-                    className={cn("h-12 w-12", theme.iconColor, "opacity-40")}
+                    className={cn('h-8 w-8 md:h-12 md:w-12', theme.iconColor, 'opacity-40')}
                     strokeWidth={1.5}
                   />
                 </div>
               </div>
 
-              {/* Debug: Address hint if available */}
+              {/* Address hint if available */}
               {project.address && (
-                <div className="absolute bottom-2 left-3 right-3">
-                  <p className="text-[10px] text-gray-600 truncate font-medium">
+                <div className="absolute bottom-1.5 md:bottom-2 left-2 md:left-3 right-2 md:right-3">
+                  <p className="text-[9px] md:text-[10px] text-gray-600 truncate font-medium">
                     {project.address}
                     {project.city && `, ${project.city}`}
                   </p>
@@ -158,16 +189,16 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </div>
           )}
 
-          {/* Debug: Subtle gradient overlay for depth */}
+          {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent" />
         </div>
 
-        {/* Debug: Content Section */}
-        <div className="p-4 space-y-3">
-          {/* Debug: Client & Budget Row */}
-          <div className="flex items-start justify-between gap-4">
+        {/* Content Section */}
+        <div className="p-3 md:p-4 space-y-2.5 md:space-y-3">
+          {/* Client & Budget Row */}
+          <div className="flex items-start justify-between gap-3 md:gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
                 Client
               </p>
               <p className="text-sm font-semibold text-gray-900 truncate">
@@ -175,7 +206,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
                 Budget
               </p>
               <p className="text-sm font-bold text-construction-blue">
@@ -184,25 +215,29 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </div>
           </div>
 
-          {/* Debug: Divider */}
+          {/* Divider */}
           <div className="h-px bg-gray-100" />
 
-          {/* Debug: Stats Grid - 2x2 */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          {/* Stats Grid - 2x2 */}
+          <div className="grid grid-cols-2 gap-x-3 md:gap-x-4 gap-y-1.5 md:gap-y-2">
             {/* Status */}
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
                 Status
               </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={cn(
-                  "inline-block w-1.5 h-1.5 rounded-full",
-                  statusConfig?.dotColor || 'bg-gray-400'
-                )} />
-                <span className={cn(
-                  "text-sm font-semibold",
-                  statusConfig?.textColor || 'text-gray-700'
-                )}>
+              <div className="flex items-center gap-1 md:gap-1.5 mt-0.5">
+                <span
+                  className={cn(
+                    'inline-block w-1.5 h-1.5 rounded-full',
+                    statusConfig?.dotColor || 'bg-gray-400'
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-xs md:text-sm font-semibold',
+                    statusConfig?.textColor || 'text-gray-700'
+                  )}
+                >
                   {statusConfig?.label || project.status}
                 </span>
               </div>
@@ -210,19 +245,17 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
             {/* Progress */}
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
                 Progress
               </p>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-construction-blue rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${completionPercentage}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+              <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
+                <div className="flex-1 h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-construction-blue rounded-full transition-all duration-700 ease-out"
+                    style={{ width: `${completionPercentage}%` }}
                   />
                 </div>
-                <span className="text-sm font-bold text-construction-blue shrink-0 tabular-nums">
+                <span className="text-xs md:text-sm font-bold text-construction-blue shrink-0 tabular-nums">
                   {formatPercentWhole(completionPercentage)}
                 </span>
               </div>
@@ -230,13 +263,13 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
             {/* Schedule */}
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
                 Schedule
               </p>
               <div className="flex items-center gap-1 mt-0.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-sm font-semibold text-gray-700">
-                  {stats?.schedule.daysRemaining ?? '--'}
+                <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400" />
+                <span className="text-xs md:text-sm font-semibold text-gray-700">
+                  {daysRemaining ?? '--'}
                   <span className="text-gray-400 font-normal ml-0.5">days</span>
                 </span>
               </div>
@@ -244,12 +277,12 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
             {/* Members */}
             <div>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
                 Team
               </p>
               <div className="flex items-center gap-1 mt-0.5">
-                <Users className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-sm font-semibold text-gray-700">
+                <Users className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400" />
+                <span className="text-xs md:text-sm font-semibold text-gray-700">
                   {stats?.teamSize ?? 0}
                   <span className="text-gray-400 font-normal ml-0.5">members</span>
                 </span>
@@ -257,71 +290,114 @@ export function ProjectCard({ project }: ProjectCardProps) {
             </div>
           </div>
 
-          {/* Debug: Divider */}
+          {/* Divider */}
           <div className="h-px bg-gray-100" />
 
-          {/* Debug: Footer - Google Maps Address Link */}
+          {/* Footer - Address & Date */}
           <div className="flex items-center justify-between">
-            {/* Debug: If address exists, show clickable Google Maps link */}
             {project.address ? (
               <button
                 type="button"
-                onClick={(e) => {
-                  // Debug: Prevent parent Link navigation
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('[ProjectCard] Opening Google Maps for address:', project.address);
-                  // Open Google Maps in new tab
-                  window.open(
-                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                      `${project.address}${project.city ? `, ${project.city}` : ''}`
-                    )}`,
-                    '_blank',
-                    'noopener,noreferrer'
-                  );
-                }}
+                onClick={handleAddressClick}
                 className={cn(
-                  "flex items-center gap-1.5 group/link",
-                  "text-construction-blue hover:text-construction-blue/80",
-                  "transition-colors duration-200",
-                  "bg-transparent border-none cursor-pointer p-0"
+                  'flex items-center gap-1 md:gap-1.5 group/link',
+                  'text-construction-blue hover:text-construction-blue/80',
+                  'transition-colors duration-200',
+                  'bg-transparent border-none cursor-pointer p-0 min-w-0'
                 )}
               >
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
-                <span className="text-xs font-medium group-hover/link:underline truncate max-w-[200px]">
+                <MapPin className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
+                <span className="text-[10px] md:text-xs font-medium group-hover/link:underline truncate max-w-[150px] md:max-w-[200px]">
                   {project.address}
                   {project.city && `, ${project.city}`}
                 </span>
               </button>
             ) : (
-              // Debug: Fallback when no address is available
-              <div className="flex items-center gap-1.5 text-gray-300">
-                <MapPin className="h-3.5 w-3.5" />
-                <span className="text-xs">No address</span>
+              <div className="flex items-center gap-1 md:gap-1.5 text-gray-300">
+                <MapPin className="h-3 w-3 md:h-3.5 md:w-3.5" />
+                <span className="text-[10px] md:text-xs">No address</span>
               </div>
             )}
 
-            {/* Debug: Start date display (right side) */}
-            <span className="text-[11px] text-gray-400 font-medium shrink-0">
+            <span className="text-[10px] md:text-[11px] text-gray-400 font-medium shrink-0">
               {project.start_date
                 ? new Date(project.start_date).toLocaleDateString('en-US', {
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
                   })
-                : 'Not started'
-              }
+                : 'Not started'}
             </span>
           </div>
         </div>
 
-        {/* Debug: Hover indicator line at bottom - project type color accent */}
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 h-1",
-          "opacity-0 group-hover:opacity-100",
-          "transition-opacity duration-300",
-          theme.borderAccent.replace('border-t-', 'bg-')
-        )} />
-      </motion.article>
+        {/* Hover/active indicator line at bottom */}
+        <div
+          className={cn(
+            'absolute bottom-0 left-0 right-0 h-1',
+            'opacity-0 group-hover:opacity-100 group-active:opacity-100',
+            'transition-opacity duration-300',
+            theme.borderAccent.replace('border-t-', 'bg-')
+          )}
+        />
+      </article>
     </Link>
+  );
+}
+
+// Memoize the component to prevent unnecessary re-renders
+export const ProjectCard = memo(ProjectCardComponent);
+
+/**
+ * ProjectCardSkeleton - Loading placeholder (responsive)
+ */
+export function ProjectCardSkeleton() {
+  return (
+    <div className="w-full bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+      {/* Header skeleton */}
+      <div className="bg-gray-200 px-3 md:px-4 py-2.5 md:py-3">
+        <div className="flex items-start justify-between gap-2 md:gap-3">
+          <div className="flex-1">
+            <div className="h-2 w-16 bg-gray-300 rounded mb-1" />
+            <div className="h-4 md:h-5 w-32 bg-gray-300 rounded" />
+          </div>
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-lg" />
+        </div>
+      </div>
+
+      {/* Image skeleton */}
+      <div className="h-28 md:h-36 bg-gray-100" />
+
+      {/* Content skeleton */}
+      <div className="p-3 md:p-4 space-y-2.5 md:space-y-3">
+        <div className="flex justify-between">
+          <div>
+            <div className="h-2 w-10 bg-gray-200 rounded mb-1" />
+            <div className="h-4 w-24 bg-gray-200 rounded" />
+          </div>
+          <div className="text-right">
+            <div className="h-2 w-10 bg-gray-200 rounded mb-1" />
+            <div className="h-4 w-16 bg-gray-200 rounded" />
+          </div>
+        </div>
+
+        <div className="h-px bg-gray-100" />
+
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i}>
+              <div className="h-2 w-12 bg-gray-200 rounded mb-1" />
+              <div className="h-3 w-16 bg-gray-200 rounded" />
+            </div>
+          ))}
+        </div>
+
+        <div className="h-px bg-gray-100" />
+
+        <div className="flex justify-between">
+          <div className="h-3 w-32 bg-gray-200 rounded" />
+          <div className="h-3 w-12 bg-gray-200 rounded" />
+        </div>
+      </div>
+    </div>
   );
 }

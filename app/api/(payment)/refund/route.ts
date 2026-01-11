@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server';
 import { stripe } from '@/utils/stripe';
 import { auth } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
 	// Check if payments are enabled
 	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
