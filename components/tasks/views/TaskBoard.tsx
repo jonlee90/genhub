@@ -2,15 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { KanbanBoard } from './KanbanBoard';
-import { TaskList } from './TaskList';
-import { TaskFilters } from './TaskFilters';
-import { TaskModal } from './TaskModal';
-import { GanttChart } from './gantt/GanttChart';
+import { KanbanBoard } from '../kanban/KanbanBoard';
+import { TaskList } from '../list/TaskList';
+import { TaskFilters } from '../shared/TaskFilters';
+import { TaskModal } from '../modals/TaskModal';
+import { GanttChart } from '../gantt/GanttChart';
 import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
-import { TopProjectsCard } from './TopProjectsCard';
-import { TopTeamMembersCard } from './TopTeamMembersCard';
-import { transformTasksForGantt } from './gantt/gantt-utils';
+import { TopProjectsCard } from '../analytics/TopProjectsCard';
+import { TopTeamMembersCard } from '../analytics/TopTeamMembersCard';
+import { transformTasksForGantt } from '../gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

@@ -2,7 +2,7 @@
 
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { TaskCard } from './TaskCard';
+import { TaskCard } from '../list/TaskCard';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HardHat } from 'lucide-react';

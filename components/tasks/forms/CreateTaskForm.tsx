@@ -18,8 +18,8 @@ import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide
 import { motion, AnimatePresence } from 'framer-motion';
 import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
-import { TaskMaterialsManager } from './TaskMaterialsManager';
-import { TaskReceiptUpload } from './TaskReceiptUpload';
+import { TaskMaterialsManager } from '../materials/TaskMaterialsManager';
+import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
 import type { Database } from '@/types/database.types';
 
 type TaskType = Database['public']['Enums']['task_type'];

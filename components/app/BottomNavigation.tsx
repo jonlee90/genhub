@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { MoreMenu } from './MoreMenu';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
-import { TaskModal } from '@/components/tasks/TaskModal';
+import { TaskModal } from '@/components/tasks/modals/TaskModal';
 import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
 
 // Navigation item configuration with create modal mapping
@@ -187,8 +187,10 @@ export function BottomNavigation() {
                     )}
                     <span
                       className={cn(
-                        'text-[10px] font-bold mt-0.5 transition-colors',
-                        active || moreShowsPlus ? 'text-construction-blue' : 'text-gray-500'
+                        'text-[10px] font-bold transition-colors',
+                        active || moreShowsPlus
+                          ? 'mt-0.5 text-construction-blue'
+                          : '-mt-1.5 text-gray-500'
                       )}
                     >
                       {moreShowsPlus ? 'Create ' + item.name : item.name}
@@ -265,8 +267,10 @@ export function BottomNavigation() {
                   )}
                   <span
                     className={cn(
-                      'text-[10px] font-bold mt-0.5 transition-colors',
-                      active ? 'text-construction-blue' : 'text-gray-500'
+                      'text-[10px] font-bold transition-colors',
+                      active
+                        ? 'mt-0.5 text-construction-blue'
+                        : '-mt-1.5 text-gray-500'
                     )}
                   >
                     {active && showPlusIcon ? 'Create ' + item.name : item.name}

@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import { CreateTaskForm } from '@/components/tasks/CreateTaskForm';
+import { CreateTaskForm } from '@/components/tasks/forms/CreateTaskForm';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 

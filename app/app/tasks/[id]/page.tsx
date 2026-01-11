@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import { TaskDetail } from '@/components/tasks/TaskDetail';
+import { TaskDetail } from '@/components/tasks/detail/TaskDetail';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, FolderOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';

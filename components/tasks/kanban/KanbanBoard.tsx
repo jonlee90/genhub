@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
-import { TaskCard } from './TaskCard';
+import { TaskCard } from '../list/TaskCard';
 import { updateTaskStatus } from '@/app/actions/tasks';
 import { BackgroundBoxes } from '@/components/ui/aceternity/background-boxes';
 import { motion } from 'framer-motion';

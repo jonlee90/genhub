@@ -66,6 +66,112 @@ export default async function Page() {
 
 ---
 
+## Tasks Page Layout
+
+### Desktop Layout
+```tsx
+<div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+  {/* Blueprint Grid Background */}
+  <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
+    <div className="absolute inset-0" style={{
+      backgroundImage: `
+        linear-gradient(to right, currentColor 1px, transparent 1px),
+        linear-gradient(to bottom, currentColor 1px, transparent 1px)
+      `,
+      backgroundSize: '40px 40px',
+      color: '#001B51',
+    }} />
+  </div>
+
+  {/* Industrial Header */}
+  <div className="relative">
+    <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+    <div className="flex flex-col gap-4 pt-2 md:pt-4">
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue">
+          TASKS
+        </h1>
+        <TaskModalTrigger projects={projects} teamMembers={teamMembers} />
+      </div>
+      <ProjectFilterHeader projects={projects} selectedProjectId={filter} />
+    </div>
+  </div>
+
+  {/* Task Summary Stats */}
+  <ProjectTaskSummary taskStats={stats} projectBudget={budget} />
+
+  {/* Gantt Chart Timeline */}
+  <GanttChart tasks={ganttTasks} dependencies={deps} />
+
+  {/* Results Count Banner */}
+  <div className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
+    <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
+    <span className="text-sm font-mono font-bold uppercase text-construction-blue">Status</span>
+    <div className="h-4 w-px bg-construction-blue/30" />
+    <span className="text-sm font-bold text-gray-700">
+      {filtered.length} of {total.length} tasks
+    </span>
+  </div>
+
+  {/* Filters & View Toggle */}
+  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <TaskFilters {...filterProps} />
+    <ViewToggle view={view} onViewChange={setView} />
+  </div>
+
+  {/* Task Board (Kanban or List) */}
+  {view === 'kanban' ? <KanbanBoard tasks={tasks} /> : <TaskList tasks={tasks} />}
+
+  {/* Analytics Cards */}
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <TopProjectsCard />
+    <TopTeamMembersCard />
+  </div>
+</div>
+```
+
+### Mobile Layout (Full-Height with Fixed Header)
+```tsx
+<div className="flex flex-col h-full">
+  {/* Fixed header - shows when scrolled past results count */}
+  <header className={cn(
+    'fixed top-0 left-0 right-0 z-30',
+    'bg-white/95 backdrop-blur-sm border-b border-gray-200',
+    'px-4 py-3 space-y-3',
+    'transition-all duration-200',
+    showHeader ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+  )}>
+    <SearchInput value={search} onChange={setSearch} placeholder="Search tasks..." />
+    <div className="flex items-center gap-2">
+      <MobileStatusTabs tabs={statusTabs} value={status} onChange={setStatus} />
+      <FilterButton onClick={() => setShowFilters(true)} count={activeFilters} />
+    </div>
+  </header>
+
+  {/* Task list with pull-to-refresh */}
+  <PullToRefresh onRefresh={handleRefresh} className="flex-1">
+    <div className="p-4 pb-32">
+      {/* Page header (scrolls away) */}
+      <div className="relative mb-5">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+        <ProjectFilterHeader projects={projects} />
+        <TaskModalTrigger />
+      </div>
+
+      {/* Task Board */}
+      <TaskBoard initialTasks={tasks} hideFilters resultsCountRef={ref} />
+    </div>
+  </PullToRefresh>
+
+  {/* Filter bottom sheet */}
+  <BottomSheet isOpen={showFilters} onClose={() => setShowFilters(false)} title="Filters">
+    {/* Filter options */}
+  </BottomSheet>
+</div>
+```
+
+---
+
 ## Section Header Pattern
 
 ```tsx

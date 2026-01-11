@@ -192,6 +192,187 @@ export function DataList({ items, view }: Props) {
 
 ---
 
+## Mobile Task Patterns
+
+### Scroll-Based Header Visibility
+```tsx
+// Header shows when results count element is 133px or less from viewport top
+const [showHeader, setShowHeader] = useState(false);
+
+useEffect(() => {
+  const scrollContainer = pullToRefreshRef.current?.getScrollContainer();
+  if (!scrollContainer) return;
+
+  const checkResultsPosition = () => {
+    const rect = resultsCountRef.current.getBoundingClientRect();
+    setShowHeader(rect.top <= 133);
+  };
+
+  scrollContainer.addEventListener('scroll', checkResultsPosition, { passive: true });
+  return () => scrollContainer.removeEventListener('scroll', checkResultsPosition);
+}, []);
+
+// Header transitions
+<header className={cn(
+  'fixed top-0 left-0 right-0 z-30',
+  'bg-white/95 backdrop-blur-sm border-b border-gray-200',
+  'transition-all duration-200 ease-out will-change-transform',
+  showHeader
+    ? 'translate-y-0 opacity-100 pointer-events-auto'
+    : '-translate-y-full opacity-0 pointer-events-none'
+)} />
+```
+
+### Mobile Status Tabs (Horizontal Scroll)
+```tsx
+<div className="overflow-x-auto scrollbar-hide">
+  <div className="flex gap-2 py-3 min-w-max">
+    {STATUS_TABS.map((tab) => (
+      <button
+        key={tab.value}
+        onClick={() => setStatus(tab.value)}
+        className={cn(
+          'flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm min-h-[44px]',
+          isActive
+            ? 'bg-construction-blue text-white shadow-construction-lg'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+        )}
+      >
+        {tab.label}
+        <span className={cn(
+          'min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black',
+          isActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
+        )}>
+          {tab.count}
+        </span>
+      </button>
+    ))}
+  </div>
+</div>
+```
+
+### Mobile Kanban (Tab-Based Single Column)
+```tsx
+// Mobile: show one column at a time with tab navigation
+<div className="md:hidden">
+  {/* Sticky status tabs */}
+  <div className="sticky top-0 z-20 bg-white border-b-2 border-gray-200 mb-4 -mx-4 px-4">
+    <div className="overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 py-3 min-w-max">
+        {COLUMNS.map(column => (
+          <motion.button
+            key={column.id}
+            onClick={() => setMobileActiveStatus(column.id)}
+            className={cn(
+              'relative flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm min-h-[44px]',
+              isActive
+                ? 'bg-construction-blue text-white'
+                : 'bg-gray-100 text-gray-700'
+            )}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isActive && (
+              <motion.div
+                layoutId="mobileActiveTab"
+                className="absolute inset-0 bg-construction-blue rounded-lg"
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{column.shortTitle}</span>
+            <span className="relative z-10 px-1.5 rounded-full text-xs font-black">
+              {count}
+            </span>
+          </motion.button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  {/* Single column view based on active tab */}
+  {COLUMNS.map(column => (
+    <motion.div
+      key={column.id}
+      animate={{ display: isActive ? 'block' : 'none' }}
+    >
+      {isActive && <KanbanColumn {...column} isMobile />}
+    </motion.div>
+  ))}
+</div>
+```
+
+### Swipe Actions on Task Cards
+```tsx
+<SwipeableCard
+  onSwipeRight={task.status !== 'completed' ? () => handleComplete(task) : undefined}
+  onSwipeLeft={() => handleDelete(task)}
+  leftActionIcon={<Check className="w-6 h-6" />}
+  rightActionIcon={<Trash2 className="w-6 h-6" />}
+>
+  <button
+    onClick={() => onTaskClick?.(task)}
+    className={cn(
+      'w-full text-left p-4',
+      'border-l-4 border-[#001B51]',
+      'active:bg-gray-50 transition-colors'
+    )}
+  >
+    {/* Task content */}
+  </button>
+</SwipeableCard>
+```
+
+### Pull-to-Refresh Pattern
+```tsx
+<PullToRefresh
+  ref={pullToRefreshRef}
+  onRefresh={async () => {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    router.refresh();
+  }}
+  className="flex-1"
+>
+  <div className="p-4 pb-32">
+    {/* Page content */}
+  </div>
+</PullToRefresh>
+```
+
+### Bottom Sheet for Filters
+```tsx
+<BottomSheet
+  isOpen={showFilterSheet}
+  onClose={() => setShowFilterSheet(false)}
+  title="Filters"
+  description="Filter tasks by project"
+>
+  <div className="px-5 py-4 space-y-6">
+    {/* Filter options with 44px touch targets */}
+    <div className="space-y-3">
+      <label className="text-sm font-semibold text-gray-700">Project</label>
+      <div className="space-y-2">
+        {projects.map(project => (
+          <button
+            key={project.id}
+            onClick={() => {
+              setProjectFilter(project.id);
+              setShowFilterSheet(false);
+            }}
+            className={cn(
+              'w-full h-12 px-4 rounded-xl text-left font-medium transition-colors',
+              selected ? 'bg-[#001B51] text-white' : 'bg-gray-100 text-gray-700'
+            )}
+          >
+            {project.name}
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+</BottomSheet>
+```
+
+---
+
 ## Touch Optimization
 
 ### Touch Targets

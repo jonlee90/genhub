@@ -151,7 +151,9 @@
       "mcp__plugin_serena_serena__think_about_collected_information",
       "Bash(npm run sync-docs:*)",
       "Skill(refactor-code)",
-      "Bash(npm run gen-index:*)"
+      "Bash(npm run gen-index:*)",
+      "Bash(for comp in TaskFormModal DashboardStats)",
+      "Bash(do echo \"=== $comp ===\")"
     ],
     "deny": [],
     "ask": []

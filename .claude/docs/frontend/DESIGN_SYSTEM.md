@@ -150,6 +150,117 @@ className="hover:shadow-md transition-shadow"
 
 ---
 
+## Task Status & Priority System
+
+### Task Status Configuration
+```tsx
+const TASK_STATUS_CONFIG = {
+  todo: { label: 'To Do', solidColor: 'bg-gray-500 text-white' },
+  in_progress: { label: 'In Progress', solidColor: 'bg-blue-600 text-white' },
+  review: { label: 'Review', solidColor: 'bg-yellow-500 text-white' },
+  blocked: { label: 'Blocked', solidColor: 'bg-red-600 text-white' },
+  completed: { label: 'Completed', solidColor: 'bg-green-600 text-white' },
+};
+```
+
+### Task Priority Configuration
+```tsx
+const TASK_PRIORITY_CONFIG = {
+  low: { label: 'Low', badgeColor: 'bg-gray-100 text-gray-600' },
+  medium: { label: 'Medium', badgeColor: 'bg-blue-100 text-blue-700' },
+  high: { label: 'High', badgeColor: 'bg-orange-100 text-orange-700' },
+  critical: { label: 'Critical', badgeColor: 'bg-red-100 text-red-700' },
+};
+```
+
+### Task Type Badges (Industrial Theme)
+```tsx
+const TASK_TYPE_CONFIG = {
+  work: {
+    label: 'Work',
+    icon: Hammer,
+    color: 'bg-construction-blue text-white',
+    description: 'Labor/Work Task',
+  },
+  purchase: {
+    label: 'Purchase',
+    icon: ShoppingCart,
+    color: 'bg-[#059669] text-white',
+    description: 'Material Purchase',
+  },
+  approval: {
+    label: 'Approval',
+    icon: ClipboardCheck,
+    color: 'bg-[#FFB627] text-white',
+    description: 'Permit/Inspection',
+  },
+  admin: {
+    label: 'Admin',
+    icon: FileText,
+    color: 'bg-construction-accent text-white',
+    description: 'Administrative Task',
+  },
+};
+
+// Usage
+<div className={cn(
+  'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2',
+  taskTypeConfig.color,
+  'border-black/10'
+)}>
+  <TaskTypeIcon className="h-3 w-3 drop-shadow-sm" strokeWidth={2.5} />
+  <span className="text-[10px] font-black tracking-wide uppercase">
+    {taskTypeConfig.label}
+  </span>
+</div>
+```
+
+### Material Badge (Industrial Stamped Metal)
+```tsx
+// Stamped metal badge with decorative rivets
+<div className="relative">
+  {/* Shadow layer */}
+  <div className="absolute inset-0 bg-construction-accent rounded-lg blur-sm opacity-40 translate-y-0.5" />
+
+  {/* Main badge with rivets */}
+  <div className="relative bg-gradient-to-br from-construction-accent via-construction-accent to-[#2a2a2a] border-2 border-[#2a2a2a] rounded-lg px-2.5 py-1.5 shadow-lg">
+    {/* Corner rivets */}
+    <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+    <div className="absolute top-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+    <div className="absolute bottom-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+    <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+
+    <div className="flex items-center gap-1.5">
+      <LayersIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+      <span className="text-[10px] font-black text-white/90 tracking-wider">
+        {count}
+      </span>
+    </div>
+  </div>
+</div>
+```
+
+### 3D Location Badge
+```tsx
+// Badge linking to spatial viewer
+<a
+  href={`/app/projects/${projectId}/spatial?marker=${markerId}`}
+  className={cn(
+    'flex items-center gap-1.5 px-2 py-1',
+    'bg-gradient-to-r from-construction-blue/10 to-construction-blue/5',
+    'border border-construction-blue/30',
+    'rounded-md',
+    'hover:bg-construction-blue/20 hover:border-construction-blue/50',
+    'transition-all duration-200'
+  )}
+>
+  <Box className="h-3 w-3 text-construction-blue" />
+  <span className="text-[11px] font-black text-construction-blue">3D</span>
+</a>
+```
+
+---
+
 ## Icon System
 
 ### Library: Lucide React Only

@@ -132,6 +132,371 @@ const PRIORITY_CONFIG = {
 
 ---
 
+## Task Components
+
+### TaskCard (Kanban/List View)
+```tsx
+// Location: components/tasks/list/TaskCard.tsx
+// Draggable task card with industrial construction theme
+
+<Card className={cn(
+  'p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group',
+  'border-l-4 border-construction-blue',  // Always blue left border
+  isBlocked && 'bg-red-50'
+)}>
+  {/* Edit indicator on hover */}
+  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 z-10">
+    <div className="bg-construction-blue text-white p-1.5 rounded-lg shadow-lg">
+      <Pencil className="w-3 h-3" />
+    </div>
+  </div>
+
+  {/* Material Badge (stamped metal style) - see DESIGN_SYSTEM.md */}
+  {hasMaterials && <MaterialBadge count={count} className="absolute top-2 right-2" />}
+
+  {/* Task Type Badge */}
+  <div className="mb-2">
+    <TaskTypeBadge type={task.task_type} />
+  </div>
+
+  {/* Title + Priority */}
+  <div className="flex items-start justify-between gap-2">
+    <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
+    <Badge className={cn('shrink-0 font-bold text-[10px]', priorityConfig.badgeColor)}>
+      {priorityConfig.label}
+    </Badge>
+  </div>
+
+  {/* Project/Phase context */}
+  <p className="text-xs text-muted-foreground truncate">
+    {task.project?.name} / {phase?.name}
+  </p>
+
+  {/* Footer: Due date, Status indicators, Materials cost, 3D location, Assignee */}
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
+      {/* Due date with overdue styling */}
+      {task.due_date && (
+        <div className={cn('flex items-center gap-1 text-xs', isOverdue ? 'text-red-600' : 'text-muted-foreground')}>
+          <Calendar className="h-3 w-3" />
+          {formatDate(task.due_date)}
+        </div>
+      )}
+
+      {/* Status indicators */}
+      {isBlocked && <Ban className="h-3 w-3 text-red-600" />}
+      {isOverdue && !isBlocked && <AlertTriangle className="h-3 w-3 text-orange-600" />}
+
+      {/* Material cost badge */}
+      {hasMaterials && (
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-construction-accent/10 rounded-md">
+          <Package className="h-3 w-3 text-construction-accent" />
+          <span className="text-[11px] font-black text-construction-accent">
+            {formatCurrency(task.materialStats.totalCost)}
+          </span>
+        </div>
+      )}
+
+      {/* 3D Location link */}
+      {has3DLocation && <Location3DBadge projectId={task.project?.id} markerId={task.spatial_marker_id} />}
+    </div>
+
+    {/* Assignee avatar */}
+    {task.assignee && (
+      <Avatar className="h-6 w-6">
+        <AvatarImage src={task.assignee.avatar_url} />
+        <AvatarFallback className="text-xs">{getInitials(task.assignee.name)}</AvatarFallback>
+      </Avatar>
+    )}
+  </div>
+
+  {/* Blocked reason */}
+  {isBlocked && task.blocked_reason && (
+    <p className="text-xs text-red-600 bg-red-100 p-1.5 rounded truncate">
+      {task.blocked_reason}
+    </p>
+  )}
+</Card>
+```
+
+### MobileTaskCard (Swipeable)
+```tsx
+// Location: components/tasks/list/TaskListMobile.tsx
+// Card with swipe-to-complete and swipe-to-delete actions
+
+<SwipeableCard
+  onSwipeRight={() => handleComplete(task)}
+  onSwipeLeft={() => handleDelete(task)}
+  leftActionIcon={<Check className="w-6 h-6" />}
+  rightActionIcon={<Trash2 className="w-6 h-6" />}
+>
+  <button
+    onClick={() => onTaskClick?.(task)}
+    className={cn(
+      'w-full text-left p-4',
+      'border-l-4 border-[#001B51]',
+      'active:bg-gray-50 transition-colors',
+      task.status === 'blocked' && 'bg-red-50'
+    )}
+  >
+    {/* Header: Title + Priority */}
+    <div className="flex items-start justify-between gap-3 mb-2">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          {task.status === 'blocked' && <Ban className="h-4 w-4 text-red-500" />}
+          {taskIsOverdue && <AlertTriangle className="h-4 w-4 text-orange-500" />}
+          <h3 className="font-bold text-gray-900 line-clamp-2 text-[15px]">{task.title}</h3>
+        </div>
+      </div>
+      <Badge className={cn('text-[10px] font-bold shrink-0', priorityConfig.badgeColor)}>
+        {priorityConfig.label}
+      </Badge>
+    </div>
+
+    {/* Project/Phase */}
+    {(task.project || phaseName) && (
+      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+        <FolderKanban className="h-3 w-3" />
+        <span className="truncate">{task.project?.name} / {phaseName}</span>
+      </div>
+    )}
+
+    {/* Footer: Status, Due Date, Assignee */}
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-2">
+        <Badge className={cn('text-[10px] font-bold', statusConfig.solidColor)}>
+          {statusConfig.label}
+        </Badge>
+        {task.due_date && (
+          <div className={cn('flex items-center gap-1 text-xs', taskIsOverdue ? 'text-red-600' : 'text-gray-500')}>
+            <Calendar className="h-3 w-3" />
+            {formatDate(task.due_date)}
+          </div>
+        )}
+      </div>
+      {task.assignee && (
+        <Avatar className="h-6 w-6">
+          <AvatarFallback className="text-[10px] bg-[#001B51] text-white">
+            {getInitials(task.assignee.name)}
+          </AvatarFallback>
+        </Avatar>
+      )}
+    </div>
+  </button>
+</SwipeableCard>
+```
+
+### KanbanBoard
+```tsx
+// Location: components/tasks/kanban/KanbanBoard.tsx
+// Drag-and-drop kanban with responsive mobile/desktop views
+
+// Desktop: All 5 columns side-by-side
+<div className="hidden md:flex gap-4 overflow-x-auto pb-4">
+  {COLUMNS.map(column => (
+    <KanbanColumn
+      key={column.id}
+      id={column.id}
+      title={column.title}
+      tasks={tasksByStatus[column.id]}
+      onTaskClick={onTaskClick}
+    />
+  ))}
+</div>
+
+// Mobile: Tab-based single column view
+<div className="md:hidden">
+  {/* Sticky status tabs */}
+  <div className="sticky top-0 z-20 bg-white border-b-2 mb-4">
+    <MobileStatusTabs
+      columns={COLUMNS}
+      activeStatus={mobileActiveStatus}
+      onStatusChange={setMobileActiveStatus}
+    />
+  </div>
+
+  {/* Single active column */}
+  {mobileActiveStatus && (
+    <KanbanColumn
+      {...activeColumn}
+      isMobile={true}
+    />
+  )}
+</div>
+```
+
+### TaskDetailPanel (Slide-out Drawer)
+```tsx
+// Location: components/tasks/detail/TaskDetailPanel.tsx
+// Desktop: 500px right drawer, Mobile: 70vh bottom sheet
+
+<div className={cn(
+  'fixed bg-white shadow-2xl z-50 transition-transform duration-300',
+  // Desktop: slide from right
+  'md:top-0 md:right-0 md:w-[500px] md:h-full md:border-l-4 md:border-l-[#001B51]',
+  isOpen ? 'md:translate-x-0' : 'md:translate-x-full',
+  // Mobile: slide from bottom
+  'bottom-0 left-0 right-0 rounded-t-2xl border-t-4 border-t-[#001B51]',
+  isOpen ? 'translate-y-0' : 'translate-y-full'
+)}>
+  {/* Mobile drag handle */}
+  <div className="md:hidden flex justify-center pt-2 pb-1">
+    <div className="w-12 h-1 bg-gray-300 rounded-full" />
+  </div>
+
+  {/* Header */}
+  <div className="border-b-2 p-4 flex items-center justify-between bg-gradient-to-r from-[#001B51]/5">
+    <h2 className="font-black uppercase text-lg text-[#001B51] truncate">
+      {taskData?.title}
+    </h2>
+    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+      <X className="h-5 w-5" />
+    </button>
+  </div>
+
+  {/* Tab Navigation */}
+  <div className="border-b flex overflow-x-auto bg-gray-50">
+    {['details', 'materials', 'expenses', 'attachments', 'activity'].map(tab => (
+      <button
+        key={tab}
+        onClick={() => setActiveTab(tab)}
+        className={cn(
+          'px-4 py-3 font-bold uppercase text-xs whitespace-nowrap relative',
+          activeTab === tab ? 'text-[#001B51] bg-white' : 'text-gray-500'
+        )}
+      >
+        {tab}
+        {badgeCount > 0 && (
+          <span className={cn(
+            'px-1.5 py-0.5 rounded text-xs font-bold ml-2',
+            activeTab === tab ? 'bg-[#001B51] text-white' : 'bg-gray-300'
+          )}>
+            {badgeCount}
+          </span>
+        )}
+        {activeTab === tab && (
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#001B51]" />
+        )}
+      </button>
+    ))}
+  </div>
+
+  {/* Tab Content */}
+  <div className="overflow-y-auto" style={{ height: 'calc(100% - 120px)' }}>
+    {activeTab === 'details' && <TaskDetailsTab task={taskData} />}
+    {activeTab === 'materials' && <MaterialTab taskId={taskId} />}
+    {activeTab === 'expenses' && <ExpensesTab taskId={taskId} />}
+    {activeTab === 'attachments' && <AttachmentsTab taskId={taskId} />}
+    {activeTab === 'activity' && <ActivityTab taskId={taskId} />}
+  </div>
+</div>
+```
+
+### TaskFilters
+```tsx
+// Location: components/tasks/shared/TaskFilters.tsx
+// Filter bar for search, project, assignee, priority
+
+<div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+  {/* Search */}
+  <div className="relative flex-1 max-w-sm">
+    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <Input
+      placeholder="Search tasks..."
+      value={searchQuery}
+      onChange={(e) => onSearchChange(e.target.value)}
+      className="pl-9"
+    />
+  </div>
+
+  {/* Project Filter */}
+  {!hideProjectFilter && (
+    <Select value={projectFilter} onValueChange={onProjectChange}>
+      <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectValue placeholder="All Projects" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="all">All Projects</SelectItem>
+        {projects.map(project => (
+          <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )}
+
+  {/* Assignee Filter */}
+  <Select value={assigneeFilter} onValueChange={onAssigneeChange}>
+    <SelectTrigger className="w-full sm:w-[180px]">
+      <SelectValue placeholder="All Assignees" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Assignees</SelectItem>
+      <SelectItem value="unassigned">Unassigned</SelectItem>
+      {teamMembers.map(member => (
+        <SelectItem key={member.id} value={member.id}>{member.name}</SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+
+  {/* Priority Filter */}
+  <Select value={priorityFilter} onValueChange={onPriorityChange}>
+    <SelectTrigger className="w-full sm:w-[150px]">
+      <SelectValue placeholder="All Priorities" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Priorities</SelectItem>
+      <SelectItem value="high">High</SelectItem>
+      <SelectItem value="medium">Medium</SelectItem>
+      <SelectItem value="low">Low</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+```
+
+### ViewToggle
+```tsx
+// Toggle between Kanban and List views
+
+<div className="flex items-center gap-1 rounded-lg border p-1">
+  <Button
+    variant={view === 'kanban' ? 'secondary' : 'ghost'}
+    size="sm"
+    onClick={() => handleViewChange('kanban')}
+    className={cn('gap-2', view === 'kanban' && 'bg-construction-blue text-white')}
+  >
+    <LayoutGrid className="h-4 w-4" />
+    <span className="hidden sm:inline">Kanban</span>
+  </Button>
+  <Button
+    variant={view === 'list' ? 'secondary' : 'ghost'}
+    size="sm"
+    onClick={() => handleViewChange('list')}
+    className={cn('gap-2', view === 'list' && 'bg-construction-blue text-white')}
+  >
+    <List className="h-4 w-4" />
+    <span className="hidden sm:inline">List</span>
+  </Button>
+</div>
+```
+
+### GanttChart
+```tsx
+// Location: components/tasks/gantt/GanttChart.tsx
+// Collapsible timeline with drag-to-reschedule tasks
+// Configurable time scales: day, week, month
+// Dependency lines between tasks
+// Today marker with current time indicator
+
+<GanttChart
+  tasks={ganttTasks}
+  dependencies={taskDependencies}
+  onTaskClick={handleTaskClick}
+  onTaskDateChange={handleTaskDateChange}
+/>
+```
+
+---
+
 ## Card Patterns
 
 ### Task Card

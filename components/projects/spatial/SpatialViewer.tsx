@@ -15,7 +15,7 @@ import { SpatialMarkerPin } from './SpatialMarkerPin';
 import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
 import { TaskLinker } from './TaskLinker';
 import { MarkerCreationModal } from './MarkerCreationModal';
-import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel';
+import { TaskDetailPanel } from '@/components/tasks/detail/TaskDetailPanel';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';
 import { cn } from '@/lib/utils';
 import { createDefaultModel } from '@/lib/xeokit/default-models';

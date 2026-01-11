@@ -39,13 +39,13 @@ import {
 // Avatar component removed - was unused
 import { cn } from '@/lib/utils';
 import { createTask, updateTask, updateApprovalStatus } from '@/app/actions/tasks';
-import { TaskMaterialsManager, type TempMaterial } from './TaskMaterialsManager';
+import { TaskMaterialsManager, type TempMaterial } from '../materials/TaskMaterialsManager';
 import { CreatorBadge } from '@/components/ui/CreatorBadge';
-import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
+import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from '../forms/TaskTypeSelector';
 import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
-import { TaskExpensesSection, type TaskExpense } from './TaskExpensesSection';
-import { TaskReceiptUpload } from './TaskReceiptUpload';
-import { AssigneeMultiSelect } from './AssigneeMultiSelect';
+import { TaskExpensesSection, type TaskExpense } from '../expenses/TaskExpensesSection';
+import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
+import { AssigneeMultiSelect } from '../forms/AssigneeMultiSelect';
 import { getTaskExpenses } from '@/app/actions/expenses';
 import type { TaskAssignee } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';

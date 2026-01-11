@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import { TasksPageClient } from '@/components/tasks/TasksPageClient';
+import { TasksPageClient } from '@/components/tasks/views/TasksPageClient';
 
 interface TasksPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

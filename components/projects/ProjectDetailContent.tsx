@@ -29,10 +29,10 @@ import { cn, formatPercentWhole } from '@/lib/utils';
 import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
-import { TaskBoard } from '@/components/tasks/TaskBoard';
+import { TaskBoard } from '@/components/tasks/views/TaskBoard';
 import { ProjectFilesTab } from './files/ProjectFilesTab';
 import type { Database } from '@/types/database.types';
-import { DashboardStats } from '../tasks/DashboardStats';
+import { DashboardStats } from '../tasks/mia/DashboardStats';
 import { InfoCard } from './InfoCard';
 
 type Project = Database['public']['Tables']['projects']['Row'];
