@@ -1,9 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Building2, CheckCircle2 } from 'lucide-react';
 import { formatPercentWhole } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 // Debug: TopProjectsCard - Display top 5 projects by task completion ratio (weighted by total tasks)
 interface TopProjectsCardProps {
@@ -127,28 +127,22 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
           </div>
         </div>
 
-        {/* Debug: Project list with staggered animations */}
+        {/* Project list with CSS staggered animations */}
         <div className="space-y-3">
           {displayedProjects.map((project, index) => (
-            <motion.div
+            <div
               key={project.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: index * 0.08,
-                duration: 0.4,
-                ease: [0.23, 1, 0.32, 1]
-              }}
-              className="group/item relative"
+              className="group/item relative animate-in fade-in slide-in-from-left-4"
+              style={{ animationDelay: `${index * 80}ms`, animationFillMode: 'both' }}
             >
-              {/* Debug: Project row container with hover effect */}
+              {/* Project row container with hover effect */}
               <div className="flex items-center gap-4 p-4 rounded-lg bg-gradient-to-r from-gray-50 to-transparent hover:from-construction-blue/5 hover:to-construction-blue/10 border-2 border-transparent hover:border-construction-blue/20 transition-all duration-300">
-                {/* Debug: Rank badge with neutral styling */}
+                {/* Rank badge with neutral styling */}
                 <div className="flex items-center justify-center w-10 h-10 rounded-lg border-2 font-black text-sm transition-transform group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                   {index + 1}
                 </div>
 
-                {/* Debug: Project info section */}
+                {/* Project info section */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <h4 className="font-bold text-gray-900 truncate group-hover/item:text-construction-blue transition-colors">
@@ -159,29 +153,26 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
                     )}
                   </div>
 
-                  {/* Debug: Progress bar with animated width */}
+                  {/* Progress bar with CSS animated width */}
                   <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${project.completionRatio * 100}%` }}
-                      transition={{
-                        delay: index * 0.08 + 0.2,
-                        duration: 0.8,
-                        ease: [0.23, 1, 0.32, 1]
+                    <div
+                      className="h-full rounded-full bg-construction-blue transition-all duration-700 ease-out"
+                      style={{
+                        width: `${project.completionRatio * 100}%`,
+                        animationDelay: `${index * 80 + 200}ms`
                       }}
-                      className="h-full rounded-full transition-all bg-construction-blue"
                     />
-                    {/* Debug: Shimmer effect on progress bar */}
+                    {/* Shimmer effect on progress bar */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover/item:opacity-100 group-hover/item:animate-shimmer transition-opacity" />
                   </div>
 
-                  {/* Debug: Completion percentage label */}
+                  {/* Completion percentage label */}
                   <p className="text-xs font-medium text-gray-500 mt-1">
                     {formatPercentWhole(project.completionRatio * 100)} Complete
                   </p>
                 </div>
 
-                {/* Debug: Task count badge */}
+                {/* Task count badge */}
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
                   <div className="px-3 py-1.5 rounded-lg border-2 font-black text-base transition-all group-hover/item:scale-110 bg-gray-100 border-gray-300 text-construction-blue">
                     {project.completedTasks}/{project.totalTasks}
@@ -191,7 +182,7 @@ export function TopProjectsCard({ tasks, projects, projectFilter }: TopProjectsC
                   </span>
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

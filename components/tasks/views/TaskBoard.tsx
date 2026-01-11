@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense, lazy } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KanbanBoard } from '../kanban/KanbanBoard';
 import { TaskList } from '../list/TaskList';
 import { TaskFilters } from '../shared/TaskFilters';
 import { TaskModal } from '../modals/TaskModal';
-import { GanttChart } from '../gantt/GanttChart';
 import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
 import { TopProjectsCard } from '../analytics/TopProjectsCard';
 import { TopTeamMembersCard } from '../analytics/TopTeamMembersCard';
@@ -14,12 +14,25 @@ import { transformTasksForGantt } from '../gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { LayoutGrid, List, Plus } from 'lucide-react';
+import { LayoutGrid, List, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import { useToast } from '@/hooks/use-toast';
 import type { Database } from '@/types/database.types';
 import type { TaskStats } from '@/app/actions/projects';
+
+// OPTIMIZATION: Dynamic import GanttChart to reduce initial bundle
+// GanttChart includes heavy deps: @dnd-kit/*, date-fns, etc.
+const GanttChart = dynamic(() => import('../gantt/GanttChart').then(mod => ({ default: mod.GanttChart })), {
+  loading: () => (
+    <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
+      <div className="flex items-center justify-center gap-3 text-gray-500">
+        <Loader2 className="h-5 w-5 animate-spin" />
+        <span className="text-sm font-medium">Loading timeline...</span>
+      </div>
+    </div>
+  ),
+  ssr: false, // GanttChart uses window for resize detection
+});
 
 type Task = Database['public']['Tables']['tasks']['Row'] & {
   assignee?: {
@@ -343,11 +356,7 @@ export function TaskBoard({
     <div className="space-y-3 md:space-y-4">
       {/* New Task Button (Project context) */}
       {shouldShowNewTaskButton && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
           <Button
             onClick={handleOpenCreateModal}
             size="lg"
@@ -356,34 +365,26 @@ export function TaskBoard({
             <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform duration-300" />
             <span className="font-bold text-sm md:text-base">New Task</span>
           </Button>
-        </motion.div>
+        </div>
       )}
 
       {/* Task Summary - Only show on Tasks page (not in project context) */}
       {!isProjectContext && computedTaskStats && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
           <ProjectTaskSummary taskStats={computedTaskStats} projectBudget={projectBudget} />
-        </motion.div>
+        </div>
       )}
 
       {/* Gantt Chart Timeline - Above Task Board */}
       {filteredTasks.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
           <GanttChart
             tasks={ganttTasks}
             dependencies={taskDependencies}
             onTaskClick={handleTaskClick}
             onTaskDateChange={handleTaskDateChange}
           />
-        </motion.div>
+        </div>
       )}
 
 
