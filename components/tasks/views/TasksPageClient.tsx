@@ -259,30 +259,32 @@ export function TasksPageClient({
               : '-translate-y-full opacity-0 pointer-events-none'}
           `}
         >
-          {/* Search input */}
+     
+
+          {/* Status filter tabs (x-scrollable) */}
+          <div className="flex flex-row items-end gap-2">
+                   {/* Search input */}
           <SearchInput
             value={searchQuery}
             onChange={setSearchQuery}
             placeholder="Search tasks..."
             debounce={300}
+            className={'w-full'}
           />
 
-          {/* Status filter tabs (x-scrollable) */}
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0">
-              <MobileStatusTabs
-                tabs={tabsWithCounts}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                showCounts={true}
-              />
-            </div>
             <FilterButton
               onClick={() => setShowFilterSheet(true)}
               count={activeFilterCount}
               className="flex-shrink-0"
             />
+             
           </div>
+          <MobileStatusTabs
+                tabs={tabsWithCounts}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                showCounts={true}
+              />
         </header>
 
 

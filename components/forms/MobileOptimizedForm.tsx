@@ -417,7 +417,7 @@ export function MobileOptimizedForm({ onSubmit, className }: MobileOptimizedForm
       </div>
 
       {/* Debug: Submit Button - Sticky at bottom on mobile */}
-      <div className="fixed md:static bottom-0 left-0 right-0 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-t-0 border-gray-200 shadow-construction-lg md:shadow-none z-30">
+      <div className="fixed md:static bottom-20 left-0 right-0 p-4 md:p-0 bg-white md:bg-transparent border-t-2 md:border-t-0 border-gray-200 shadow-construction-lg md:shadow-none z-30">
         <motion.button
           type="submit"
           disabled={isSubmitting}

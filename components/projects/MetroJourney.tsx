@@ -103,8 +103,7 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
               size="sm"
               className="border-2 border-[#001B51]/20 text-[#001B51] hover:bg-[#001B51]/5 font-semibold"
             >
-              <Settings className="h-4 w-4 mr-2" />
-              Manage Phases
+              <Settings className="h-4 w-4" />
             </Button>
           </div>
         </div>

@@ -155,7 +155,7 @@ export function InstallPrompt() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 25 }}
-          className="fixed bottom-0 left-0 right-0 z-40 px-4 pb-4 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-md"
+          className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-4 sm:bottom-6 sm:left-auto sm:right-6 sm:max-w-md"
         >
           {/* Install prompt card */}
           <div className="relative bg-white rounded-none sm:rounded-lg shadow-construction-xl border-l-8 border-construction-blue overflow-hidden">

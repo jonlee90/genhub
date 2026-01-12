@@ -29,7 +29,7 @@ export default async function AppLayout({
 				<div className="flex flex-col flex-1 overflow-hidden">
 
 					{/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
-					<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 md:p-0 ">
+					<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pb-20 md:pb-0 md:p-0">
 						{children}
 					</main>
 				</div>
