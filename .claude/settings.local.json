@@ -154,7 +154,9 @@
       "Bash(npm run gen-index:*)",
       "Bash(for comp in TaskFormModal DashboardStats)",
       "Bash(do echo \"=== $comp ===\")",
-      "Skill(senior-prompt-engineer)"
+      "Skill(senior-prompt-engineer)",
+      "WebFetch(domain:localhost)",
+      "WebFetch(domain:ui.aceternity.com)"
     ],
     "deny": [],
     "ask": []

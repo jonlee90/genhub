@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Bell, BellOff, Mail, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Bell, BellOff, Mail, ShieldAlert, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
- * ChatNotificationPreferences - Simplified notification settings
- * Clean Card pattern matching Projects/Tasks design system
+ * ChatNotificationPreferences - Mobile-first notification settings
+ * Touch-friendly cards with 44px minimum tap targets
  * Maintains all existing toggle functionality
  */
 export function ChatNotificationPreferences() {
@@ -52,7 +51,7 @@ export function ChatNotificationPreferences() {
   const getStatusBadge = () => {
     if (permission === 'granted') {
       return (
-        <Badge className="bg-construction-green/10 text-construction-green border border-construction-green/30 text-xs font-bold">
+        <Badge className="bg-[#059669]/10 text-[#059669] border border-[#059669]/30 text-xs font-bold px-2 py-0.5">
           <CheckCircle2 className="h-3 w-3 mr-1" />
           ACTIVE
         </Badge>
@@ -60,48 +59,48 @@ export function ChatNotificationPreferences() {
     }
     if (permission === 'denied') {
       return (
-        <Badge className="bg-construction-red/10 text-construction-red border border-construction-red/30 text-xs font-bold">
+        <Badge className="bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30 text-xs font-bold px-2 py-0.5">
           <ShieldAlert className="h-3 w-3 mr-1" />
           BLOCKED
         </Badge>
       );
     }
     return (
-      <Badge className="bg-construction-yellow/10 text-construction-yellow border border-construction-yellow/30 text-xs font-bold">
+      <Badge className="bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/30 text-xs font-bold px-2 py-0.5">
         STANDBY
       </Badge>
     );
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       {/* Push Notifications Card */}
-      <Card className="border-2 border-gray-200 shadow-construction hover:border-construction-blue/30 transition-colors">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex items-center justify-between gap-4 md:gap-6">
+      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 transition-colors">
+        <div className="p-4 md:p-5">
+          <div className="flex items-start justify-between gap-4">
             {/* Left: Icon + Content */}
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
-              {/* Icon */}
-              <div className="p-2.5 md:p-3 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
-                <Bell className="h-5 w-5 md:h-6 md:w-6 text-construction-blue" />
+              {/* Icon - 44px touch target */}
+              <div className="p-2.5 bg-construction-blue/10 rounded-xl border-2 border-construction-blue/20 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Bell className="h-5 w-5 text-construction-blue" />
               </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <h3 className="text-base md:text-lg font-black text-construction-blue uppercase tracking-tight">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <h3 className="text-base md:text-lg font-bold text-construction-blue">
                     Push Notifications
                   </h3>
                   {getStatusBadge()}
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Receive real-time alerts even when the application is minimized or closed.
+                  Receive real-time alerts even when app is closed
                 </p>
 
                 {/* Blocked Warning */}
                 {permission === 'denied' && (
-                  <div className="mt-3 p-2.5 bg-construction-red/5 border-l-4 border-construction-red rounded-r">
-                    <p className="text-xs text-construction-red font-medium">
+                  <div className="mt-3 p-3 bg-[#DC2626]/5 border-l-4 border-[#DC2626] rounded-r-lg">
+                    <p className="text-xs text-[#DC2626] font-medium">
                       Notifications blocked in browser settings. Enable to receive push alerts.
                     </p>
                   </div>
@@ -109,15 +108,22 @@ export function ChatNotificationPreferences() {
               </div>
             </div>
 
-            {/* Right: Switch */}
-            <div className="flex flex-col items-center gap-1.5 shrink-0">
+            {/* Right: Switch with touch-friendly area */}
+            <div
+              className={cn(
+                'flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg',
+                'min-w-[60px] min-h-[60px] justify-center',
+                (isLoading || permission === 'denied') && 'opacity-50'
+              )}
+            >
               <Switch
                 checked={pushEnabled}
                 onCheckedChange={handlePushToggle}
                 disabled={isLoading || permission === 'denied'}
                 className={cn(
-                  'data-[state=checked]:bg-construction-green data-[state=unchecked]:bg-gray-300',
-                  isLoading && 'opacity-50 cursor-wait'
+                  'data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300',
+                  'scale-110',
+                  isLoading && 'cursor-wait'
                 )}
               />
               <span className="text-xs font-bold text-gray-500 uppercase">
@@ -125,54 +131,59 @@ export function ChatNotificationPreferences() {
               </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Email Notifications Card */}
-      <Card className="border-2 border-gray-200 shadow-construction hover:border-construction-blue/30 transition-colors">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex items-center justify-between gap-4 md:gap-6">
+      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 transition-colors">
+        <div className="p-4 md:p-5">
+          <div className="flex items-start justify-between gap-4">
             {/* Left: Icon + Content */}
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
-              {/* Icon */}
-              <div className="p-2.5 md:p-3 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
-                <Mail className="h-5 w-5 md:h-6 md:w-6 text-construction-blue" />
+              {/* Icon - 44px touch target */}
+              <div className="p-2.5 bg-construction-blue/10 rounded-xl border-2 border-construction-blue/20 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Mail className="h-5 w-5 text-construction-blue" />
               </div>
 
               {/* Content */}
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base md:text-lg font-black text-construction-blue uppercase tracking-tight mb-1">
+              <div className="flex-1 min-w-0 pt-0.5">
+                <h3 className="text-base md:text-lg font-bold text-construction-blue mb-1.5">
                   Email Notifications
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Receive daily message summaries and important updates via email.
+                  Daily summaries and important updates via email
                 </p>
               </div>
             </div>
 
-            {/* Right: Switch */}
-            <div className="flex flex-col items-center gap-1.5 shrink-0">
+            {/* Right: Switch with touch-friendly area */}
+            <div
+              className={cn(
+                'flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg',
+                'min-w-[60px] min-h-[60px] justify-center'
+              )}
+            >
               <Switch
                 checked={emailEnabled}
                 onCheckedChange={handleEmailToggle}
-                className="data-[state=checked]:bg-construction-green data-[state=unchecked]:bg-gray-300"
+                className="data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300 scale-110"
               />
               <span className="text-xs font-bold text-gray-500 uppercase">
                 {emailEnabled ? 'ON' : 'OFF'}
               </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Info Banner */}
-      <div className="flex items-start gap-3 p-3 md:p-4 bg-construction-blue/5 rounded-lg border-l-4 border-construction-blue">
-        <div className="p-1.5 bg-construction-blue rounded shrink-0">
-          <BellOff className="h-4 w-4 text-white" />
         </div>
-        <p className="text-sm text-gray-700">
-          <span className="font-bold text-construction-blue">Note:</span>{' '}
-          In-app notifications are always enabled and cannot be disabled to ensure critical job site communications are never missed.
+      </div>
+
+      {/* Info Banner - More compact on mobile */}
+      <div className="flex items-start gap-3 p-3 md:p-4 bg-construction-blue/5 rounded-xl border border-construction-blue/10">
+        <div className="p-1.5 bg-construction-blue rounded-lg shrink-0">
+          <Info className="h-4 w-4 text-white" />
+        </div>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          <span className="font-semibold text-construction-blue">Note:</span>{' '}
+          In-app notifications are always enabled for critical job site communications.
         </p>
       </div>
     </div>

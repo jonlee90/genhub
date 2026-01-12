@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTaskLinkedMaterials } from '@/app/actions/materials';
@@ -16,16 +16,21 @@ interface MaterialsListProps {
 }
 
 /**
- * MaterialsList Component
+ * MaterialsList Component - Mobile PWA Optimized
  *
  * Paginated grid of MaterialCard components.
  *
  * Features:
  * - Paginated grid (12 materials per page)
- * - Pagination controls (Previous, Page X of Y, Next)
+ * - Mobile-friendly pagination controls (touch-optimized)
  * - Loading skeleton during fetch
  * - Empty state when no materials
  * - Responsive grid (1 col mobile, 2 cols tablet, 3 cols desktop)
+ *
+ * Design Principles:
+ * - 44px+ touch targets on pagination buttons
+ * - Active states for touch feedback
+ * - Construction theme styling
  *
  * @component
  */
@@ -35,8 +40,6 @@ export function MaterialsList({
   initialTotalPages = 1,
   className = '',
 }: MaterialsListProps) {
-  console.log('[MaterialsList] Initializing with', initialMaterials.length, 'materials');
-
   const [materials, setMaterials] = useState<MaterialWithStats[]>(initialMaterials);
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -79,13 +82,18 @@ export function MaterialsList({
     return (
       <div
         className={cn(
-          'border-2 border-gray-200 rounded-lg p-12 shadow-construction bg-white',
+          'bg-white rounded-xl overflow-hidden',
+          'border-2 border-gray-200 shadow-sm p-8 md:p-12',
           className
         )}
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <Package className="w-16 h-16 text-gray-300 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2">No Materials Linked</h3>
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
+            <Package className="w-8 h-8 text-gray-300" />
+          </div>
+          <h3 className="text-lg font-bold text-[#001B51] mb-2">
+            No Materials Linked
+          </h3>
           <p className="text-sm text-gray-600 max-w-md">
             Start by adding materials to your tasks. Materials linked to tasks will appear here
             for tracking and analysis.
@@ -97,6 +105,21 @@ export function MaterialsList({
 
   return (
     <div className={className}>
+      {/* Section Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 rounded-lg bg-[#001B51] flex items-center justify-center">
+          <Package className="w-4 h-4 text-white" />
+        </div>
+        <div>
+          <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            Linked Materials
+          </h3>
+          <p className="text-xs text-gray-500">
+            {materials.length} of {totalPages * 12}+ materials
+          </p>
+        </div>
+      </div>
+
       {/* Materials Grid */}
       {isLoading ? (
         <MaterialsListSkeleton />
@@ -112,41 +135,56 @@ export function MaterialsList({
         </div>
       )}
 
-      {/* Pagination Controls */}
+      {/* Pagination Controls - Mobile Optimized */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-6">
+        <div className="flex items-center justify-center gap-3">
+          {/* Previous Button */}
           <button
             onClick={handlePrevious}
             disabled={page === 1 || isLoading}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all',
+              'h-12 px-4 rounded-xl font-semibold text-sm',
+              'flex items-center gap-2',
+              'transition-all duration-150',
+              'active:scale-[0.98]',
               'border-2 border-gray-200',
               page === 1 || isLoading
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 active:bg-gray-50'
             )}
           >
-            <ChevronLeft className="w-4 h-4" />
-            Previous
+            <ChevronLeft className="w-5 h-5" />
+            <span className="hidden sm:inline">Previous</span>
           </button>
 
-          <div className="text-sm font-semibold text-gray-700">
-            Page {page} of {totalPages}
+          {/* Page Indicator */}
+          <div className="flex items-center gap-2 px-4 h-12 bg-gray-50 rounded-xl border-2 border-gray-200">
+            <span className="text-sm font-bold text-[#001B51]">
+              {page}
+            </span>
+            <span className="text-sm text-gray-400">/</span>
+            <span className="text-sm font-medium text-gray-600">
+              {totalPages}
+            </span>
           </div>
 
+          {/* Next Button */}
           <button
             onClick={handleNext}
             disabled={page === totalPages || isLoading}
             className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm transition-all',
+              'h-12 px-4 rounded-xl font-semibold text-sm',
+              'flex items-center gap-2',
+              'transition-all duration-150',
+              'active:scale-[0.98]',
               'border-2 border-gray-200',
               page === totalPages || isLoading
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
+                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 active:bg-gray-50'
             )}
           >
-            Next
-            <ChevronRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       )}

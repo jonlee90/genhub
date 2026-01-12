@@ -2,9 +2,9 @@ import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
- * SettingsSectionHeader - Reusable section header for settings page
- * Follows the consistent design pattern from Projects/Tasks pages
- * Uses construction-themed styling with icon + title + description
+ * SettingsSectionHeader - Mobile-first section header for settings page
+ * Touch-friendly design with 44px minimum tap targets
+ * Uses construction-themed styling matching Projects/Tasks pages
  */
 
 interface SettingsSectionHeaderProps {
@@ -25,23 +25,37 @@ export function SettingsSectionHeader({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3',
-        'bg-gradient-to-r from-construction-blue/5 to-transparent',
-        'rounded-lg border-l-4 border-construction-blue',
-        disabled && 'opacity-50'
+        'flex items-center gap-3 md:gap-4',
+        disabled && 'opacity-40'
       )}
     >
-      {/* Icon Container */}
-      <div className="p-2 md:p-2.5 bg-construction-blue rounded-lg shrink-0">
-        <Icon className="h-5 w-5 md:h-6 md:w-6 text-white" />
+      {/* Icon Container - 44px minimum touch target, matching construction theme */}
+      <div className={cn(
+        'p-2.5 md:p-3 rounded-xl shrink-0',
+        'min-w-[44px] min-h-[44px] flex items-center justify-center',
+        'border-2 transition-all duration-300',
+        disabled
+          ? 'bg-gray-100 border-gray-200'
+          : 'bg-construction-blue/10 border-construction-blue/20'
+      )}>
+        <Icon className={cn(
+          'h-5 w-5 md:h-6 md:w-6',
+          disabled ? 'text-gray-400' : 'text-construction-blue'
+        )} />
       </div>
 
       {/* Text Content */}
-      <div className="min-w-0">
-        <h2 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight leading-tight">
+      <div className="min-w-0 flex-1">
+        <h2 className={cn(
+          'text-lg md:text-xl font-black uppercase tracking-tighter leading-tight',
+          disabled ? 'text-gray-400' : 'text-construction-blue'
+        )}>
           {title}
         </h2>
-        <p className="text-xs md:text-sm text-gray-500 leading-snug">
+        <p className={cn(
+          'text-sm leading-snug mt-0.5',
+          disabled ? 'text-gray-400' : 'text-gray-500'
+        )}>
           {description}
         </p>
       </div>

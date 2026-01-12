@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Package, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Package, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toggleTracking } from '@/app/actions/materials';
 import type { MaterialWithStats } from '@/app/actions/materials';
@@ -17,20 +17,20 @@ interface MaterialCardProps {
 }
 
 /**
- * MaterialCard Component
+ * MaterialCard Component - Mobile PWA Optimized
  *
- * Reusable card displaying:
+ * Touch-friendly card displaying material information with:
  * - Product image or placeholder icon
  * - Product name (truncated)
- * - Category badge
  * - Stats (Total Quantity, Task Count)
  * - Price + Stock status
  * - Track/Untrack button with optimistic UI
  *
- * Features:
+ * Design Principles:
+ * - Mobile-first with 44px+ touch targets
+ * - High contrast for outdoor visibility
+ * - Active states for touch feedback
  * - Optimistic UI updates
- * - Error handling with rollback
- * - Loading state
  *
  * @component
  */
@@ -41,8 +41,6 @@ export function MaterialCard({
   onTrackingChange,
   className = '',
 }: MaterialCardProps) {
-  console.log('[MaterialCard] Rendering material:', material.product_name);
-
   const [isTracked, setIsTracked] = useState(material.is_tracked);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,95 +65,147 @@ export function MaterialCard({
     }
   };
 
+  // Stock status badge styles
+  const getStockStatusStyle = (status: string | null | undefined) => {
+    const s = status?.toLowerCase() || '';
+    if (s.includes('in stock') || s === 'available') {
+      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    }
+    if (s.includes('low') || s.includes('limited')) {
+      return 'bg-amber-100 text-amber-700 border-amber-200';
+    }
+    if (s.includes('out') || s === 'unavailable') {
+      return 'bg-red-100 text-red-700 border-red-200';
+    }
+    return 'bg-gray-100 text-gray-600 border-gray-200';
+  };
+
   return (
     <div
       className={cn(
-        'border-2 border-gray-200 rounded-lg p-4 shadow-construction hover:shadow-construction-lg transition-all',
-        'bg-white',
+        'bg-white rounded-xl overflow-hidden',
+        'border-2 border-gray-200 shadow-sm',
+        'transition-all duration-200',
+        'active:scale-[0.99] active:shadow-md',
         className
       )}
     >
-      {/* Image */}
-      <div className="h-32 mb-3 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+      {/* Image Header */}
+      <div className="relative h-36 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
         {material.product_image_url ? (
           <Image
             src={material.product_image_url}
             alt={material.product_name}
-            width={200}
-            height={128}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <Package className="w-12 h-12 text-gray-400" />
+          <Package className="w-14 h-14 text-gray-300" />
         )}
-      </div>
 
-      {/* Product Name */}
-      <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2 min-h-[2.5rem]">
-        {material.product_name}
-      </h3>
+        {/* Tracked Badge */}
+        {isTracked && (
+          <div className="absolute top-2 left-2 px-2 py-1 bg-[#001B51] text-white text-xs font-bold rounded-lg flex items-center gap-1">
+            <Eye className="w-3 h-3" />
+            Tracked
+          </div>
+        )}
 
-      {/* SKU */}
-      {material.sku && (
-        <p className="text-xs text-gray-500 mb-2">SKU: {material.sku}</p>
-      )}
-
-      {/* Stats Row */}
-      <div className="flex items-center justify-between mb-3 text-sm">
-        <div className="flex flex-col">
-          <span className="text-gray-500 text-xs">Quantity</span>
-          <span className="font-bold text-gray-900">{material.total_quantity}</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-gray-500 text-xs">Tasks</span>
-          <span className="font-bold text-gray-900">{material.task_count}</span>
+        {/* Stock Status Badge */}
+        <div
+          className={cn(
+            'absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded-lg border',
+            getStockStatusStyle(material.stock_status)
+          )}
+        >
+          {material.stock_status || 'Unknown'}
         </div>
       </div>
 
-      {/* Price & Stock */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <p className="text-lg font-bold text-gray-900">
-            ${material.unit_price.toFixed(2)}
-          </p>
-          <p className="text-xs text-gray-500">{material.stock_status || 'Unknown'}</p>
+      {/* Content */}
+      <div className="p-4 space-y-3">
+        {/* Product Name */}
+        <h3 className="font-bold text-[#001B51] line-clamp-2 min-h-[2.75rem] text-base leading-snug">
+          {material.product_name}
+        </h3>
+
+        {/* SKU */}
+        {material.sku && (
+          <p className="text-xs text-gray-500 font-mono">SKU: {material.sku}</p>
+        )}
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-0.5">
+              Quantity
+            </span>
+            <span className="text-lg font-bold text-[#001B51]">
+              {material.total_quantity}
+            </span>
+          </div>
+          <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-0.5">
+              Tasks
+            </span>
+            <span className="text-lg font-bold text-[#001B51]">
+              {material.task_count}
+            </span>
+          </div>
         </div>
-        {showPriceChange && (
-          <PriceChangeIndicator percent={priceChangePercent} />
+
+        {/* Price & Change */}
+        <div className="flex items-center justify-between py-2 border-t border-gray-100">
+          <div>
+            <span className="text-xs text-gray-500 block">Unit Price</span>
+            <span className="text-xl font-black text-[#001B51]">
+              ${material.unit_price.toFixed(2)}
+            </span>
+          </div>
+          {showPriceChange && (
+            <PriceChangeIndicator percent={priceChangePercent} />
+          )}
+        </div>
+
+        {/* Track/Untrack Button - Touch-friendly */}
+        <button
+          onClick={handleToggleTracking}
+          disabled={isLoading}
+          className={cn(
+            'w-full h-12 px-4 rounded-xl font-semibold text-sm',
+            'flex items-center justify-center gap-2',
+            'transition-all duration-150',
+            'active:scale-[0.98]',
+            'disabled:opacity-50 disabled:pointer-events-none',
+            isTracked
+              ? 'bg-gray-100 text-gray-700 border-2 border-gray-200 active:bg-gray-200'
+              : 'bg-[#001B51] text-white active:bg-[#001B51]/90'
+          )}
+        >
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : isTracked ? (
+            <>
+              <EyeOff className="w-5 h-5" />
+              Untrack
+            </>
+          ) : (
+            <>
+              <Eye className="w-5 h-5" />
+              Track Material
+            </>
+          )}
+        </button>
+
+        {/* Error/Success Feedback */}
+        {error && (
+          <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+            <p className="text-xs text-red-700">{error}</p>
+          </div>
         )}
       </div>
-
-      {/* Track/Untrack Button */}
-      <button
-        onClick={handleToggleTracking}
-        disabled={isLoading}
-        className={cn(
-          'w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2',
-          isTracked
-            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            : 'bg-[#001B51] text-white hover:bg-[#002B71]',
-          isLoading && 'opacity-50 cursor-not-allowed'
-        )}
-      >
-        {isLoading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : isTracked ? (
-          <>
-            <EyeOff className="w-4 h-4" />
-            Untrack
-          </>
-        ) : (
-          <>
-            <Eye className="w-4 h-4" />
-            Track
-          </>
-        )}
-      </button>
-
-      {/* Error Message */}
-      {error && (
-        <p className="text-xs text-red-600 mt-2 text-center">{error}</p>
-      )}
     </div>
   );
 }

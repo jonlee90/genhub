@@ -12,9 +12,9 @@ import {
   XCircle,
   ChevronRight,
   Zap,
+  ArrowRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import {
   getKakaoConnection,
@@ -161,16 +161,16 @@ export function KakaoTalkSettings() {
 
   if (isLoading) {
     return (
-      <Card className="border-2 border-gray-200 shadow-construction">
-        <CardContent className="p-8">
+      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction">
+        <div className="p-6 md:p-8">
           <div className="flex items-center justify-center gap-3 py-8">
             <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
-            <p className="text-base font-bold text-gray-500 uppercase">
+            <p className="text-base font-semibold text-gray-500">
               Loading connection status...
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
@@ -183,11 +183,11 @@ export function KakaoTalkSettings() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-4"
+      className="space-y-3 md:space-y-4"
     >
       {/* Connection Status Card */}
-      <Card className="border-2 border-gray-200 shadow-construction">
-        <CardContent className="p-4 md:p-6 space-y-4">
+      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden">
+        <div className="p-4 md:p-5 space-y-4">
           {/* Status Badge */}
           <AnimatePresence mode="wait">
             {connectionState.isConnected ? (
@@ -196,19 +196,20 @@ export function KakaoTalkSettings() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-construction-green/10 border border-construction-green/30 rounded-lg"
+                className="inline-flex items-center gap-3 px-4 py-3 bg-[#059669]/10 border border-[#059669]/30 rounded-xl"
               >
                 <motion.div
                   animate={{ scale: [1, 1.1, 1] }}
                   transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#059669]/20 rounded-lg"
                 >
-                  <CheckCircle2 className="h-5 w-5 text-construction-green" />
+                  <CheckCircle2 className="h-6 w-6 text-[#059669]" />
                 </motion.div>
                 <div>
-                  <p className="text-sm font-bold text-construction-green uppercase">
+                  <p className="text-base font-bold text-[#059669]">
                     Connected
                   </p>
-                  <p className="text-xs text-construction-green/70">
+                  <p className="text-sm text-[#059669]/70">
                     All communications synced
                   </p>
                 </div>
@@ -219,14 +220,16 @@ export function KakaoTalkSettings() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="inline-flex items-center gap-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg"
+                className="inline-flex items-center gap-3 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl"
               >
-                <XCircle className="h-5 w-5 text-gray-500" />
+                <div className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-200 rounded-lg">
+                  <XCircle className="h-6 w-6 text-gray-500" />
+                </div>
                 <div>
-                  <p className="text-sm font-bold text-gray-600 uppercase">
+                  <p className="text-base font-bold text-gray-600">
                     Not Connected
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     No active integration
                   </p>
                 </div>
@@ -244,7 +247,7 @@ export function KakaoTalkSettings() {
             >
               {/* Connection Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 border border-gray-200 rounded-xl min-h-[56px]">
                   <div className="flex items-center gap-2">
                     <MessageCircle className="h-4 w-4 text-construction-blue" />
                     <span className="text-xs font-bold text-gray-600 uppercase">
@@ -256,7 +259,7 @@ export function KakaoTalkSettings() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 border border-gray-200 rounded-xl min-h-[56px]">
                   <div className="flex items-center gap-2">
                     <Link2 className="h-4 w-4 text-gray-500" />
                     <span className="text-xs font-bold text-gray-600 uppercase">
@@ -269,15 +272,17 @@ export function KakaoTalkSettings() {
                 </div>
               </div>
 
-              {/* Two-Way Sync Toggle */}
-              <div className="flex items-center justify-between p-4 bg-construction-yellow/5 border border-construction-yellow/30 rounded-lg">
+              {/* Two-Way Sync Toggle - Touch-friendly */}
+              <div className="flex items-center justify-between p-4 bg-[#F59E0B]/5 border border-[#F59E0B]/30 rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Zap className="h-5 w-5 text-construction-yellow" />
+                  <div className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#F59E0B]/20 rounded-lg">
+                    <Zap className="h-5 w-5 text-[#F59E0B]" />
+                  </div>
                   <div>
-                    <p className="text-sm font-bold text-construction-blue uppercase">
+                    <p className="text-base font-bold text-construction-blue">
                       Two-Way Sync
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-sm text-gray-500">
                       {connectionState.twoWaySync
                         ? 'Messages sync bidirectionally'
                         : 'One-way sync only'}
@@ -285,14 +290,21 @@ export function KakaoTalkSettings() {
                   </div>
                 </div>
 
-                <div className="flex flex-col items-center gap-1">
+                <div
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg',
+                    'min-w-[60px] min-h-[60px] justify-center',
+                    isTogglingSync && 'opacity-50'
+                  )}
+                >
                   <Switch
                     checked={connectionState.twoWaySync}
                     onCheckedChange={handleSyncToggle}
                     disabled={isTogglingSync}
                     className={cn(
-                      'data-[state=checked]:bg-construction-green data-[state=unchecked]:bg-gray-300',
-                      isTogglingSync && 'opacity-50 cursor-wait'
+                      'data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300',
+                      'scale-110',
+                      isTogglingSync && 'cursor-wait'
                     )}
                   />
                   <span className="text-xs font-bold text-gray-500 uppercase">
@@ -312,39 +324,48 @@ export function KakaoTalkSettings() {
               className="space-y-4 pt-2"
             >
               {/* Benefits List */}
-              <div className="p-4 bg-construction-blue/5 border-l-4 border-construction-blue rounded-r-lg">
+              <div className="p-4 bg-construction-blue/5 border-l-4 border-construction-blue rounded-r-xl">
                 <p className="text-sm font-bold text-construction-blue mb-2">
                   Connect to enable:
                 </p>
-                <ul className="space-y-1.5 text-sm text-gray-600">
+                <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue" />
-                    Sync messages between GenHub and KakaoTalk
+                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <span>Sync messages between GenHub and KakaoTalk</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue" />
-                    Receive notifications via KakaoTalk
+                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <span>Receive notifications via KakaoTalk</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue" />
-                    Enable two-way team communication
+                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <span>Enable two-way team communication</span>
                   </li>
                 </ul>
               </div>
 
-              {/* Connect Button */}
-              <Button
+              {/* Connect Button - Touch-friendly with 56px height */}
+              <button
                 onClick={handleConnect}
-                className="w-full h-12 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold uppercase shadow-construction hover:shadow-construction-lg transition-all"
+                className={cn(
+                  'w-full h-14 px-6',
+                  'bg-construction-blue text-white',
+                  'font-bold text-base',
+                  'rounded-xl',
+                  'flex items-center justify-center gap-3',
+                  'active:scale-[0.98] active:bg-construction-blue/90',
+                  'transition-all duration-150',
+                  'shadow-sm'
+                )}
               >
-                <Link2 className="h-5 w-5 mr-2" />
+                <Link2 className="h-5 w-5" />
                 Connect KakaoTalk Account
-                <ChevronRight className="h-5 w-5 ml-auto" />
-              </Button>
+                <ArrowRight className="h-5 w-5 ml-auto" />
+              </button>
             </motion.div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Disconnect Section (only when connected) */}
       {connectionState.isConnected && (
@@ -356,50 +377,69 @@ export function KakaoTalkSettings() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
             >
-              <Card className="border-2 border-construction-red/50 bg-construction-red/5">
-                <CardContent className="p-4 md:p-6 space-y-4">
+              <div className="bg-[#DC2626]/5 border-2 border-[#DC2626]/30 rounded-xl overflow-hidden">
+                <div className="p-4 md:p-5 space-y-4">
                   <div className="flex items-start gap-3">
-                    <AlertTriangle className="h-6 w-6 text-construction-red shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-base font-bold text-construction-red uppercase">
+                    <div className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-[#DC2626]/10 rounded-lg shrink-0">
+                      <AlertTriangle className="h-5 w-5 text-[#DC2626]" />
+                    </div>
+                    <div className="pt-1">
+                      <p className="text-base font-bold text-[#DC2626]">
                         Confirm Disconnection
                       </p>
                       <p className="text-sm text-gray-600 mt-1">
-                        This will disconnect your KakaoTalk account and disable all message sync. This action cannot be undone.
+                        This will disconnect your KakaoTalk account and disable all message sync.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <Button
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
                       onClick={handleDisconnect}
                       disabled={isDisconnecting}
-                      className="flex-1 bg-construction-red hover:bg-construction-red/90 text-white font-bold uppercase"
+                      className={cn(
+                        'flex-1 h-12 px-4',
+                        'bg-[#DC2626] text-white',
+                        'font-bold text-sm',
+                        'rounded-xl',
+                        'flex items-center justify-center gap-2',
+                        'active:scale-[0.98] active:bg-[#DC2626]/90',
+                        'transition-all duration-150',
+                        isDisconnecting && 'opacity-50 pointer-events-none'
+                      )}
                     >
                       {isDisconnecting ? (
                         <>
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                           Disconnecting...
                         </>
                       ) : (
                         <>
-                          <Unlink className="h-4 w-4 mr-2" />
+                          <Unlink className="h-4 w-4" />
                           Confirm Disconnect
                         </>
                       )}
-                    </Button>
+                    </button>
 
-                    <Button
+                    <button
                       onClick={() => setShowDisconnectConfirm(false)}
                       disabled={isDisconnecting}
-                      variant="outline"
-                      className="flex-1 font-bold uppercase"
+                      className={cn(
+                        'flex-1 h-12 px-4',
+                        'bg-white text-gray-700',
+                        'font-bold text-sm',
+                        'rounded-xl',
+                        'border-2 border-gray-300',
+                        'flex items-center justify-center',
+                        'active:scale-[0.98] active:bg-gray-50',
+                        'transition-all duration-150'
+                      )}
                     >
                       Cancel
-                    </Button>
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </motion.div>
           ) : (
             <motion.div
@@ -408,15 +448,23 @@ export function KakaoTalkSettings() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <Button
+              <button
                 onClick={() => setShowDisconnectConfirm(true)}
-                variant="outline"
-                className="w-full h-11 border-2 border-construction-red/30 text-construction-red hover:bg-construction-red/5 font-bold uppercase"
+                className={cn(
+                  'w-full h-12 px-4',
+                  'bg-white text-[#DC2626]',
+                  'font-semibold text-sm',
+                  'rounded-xl',
+                  'border-2 border-[#DC2626]/30',
+                  'flex items-center justify-center gap-2',
+                  'active:scale-[0.98] active:bg-[#DC2626]/5',
+                  'transition-all duration-150'
+                )}
               >
-                <Unlink className="h-4 w-4 mr-2" />
+                <Unlink className="h-4 w-4" />
                 Disconnect KakaoTalk
                 <ChevronRight className="h-4 w-4 ml-auto" />
-              </Button>
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

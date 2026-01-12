@@ -8,14 +8,14 @@ interface MaterialsListSkeletonProps {
 }
 
 /**
- * MaterialsListSkeleton Component
+ * MaterialsListSkeleton Component - Mobile PWA Optimized
  *
  * Loading skeleton for MaterialsList.
- * Displays 12 skeleton cards in same grid layout as MaterialsList.
+ * Displays skeleton cards matching the redesigned MaterialCard layout.
  *
  * Features:
- * - Matches MaterialCard layout
- * - Pulse animation
+ * - Matches MaterialCard layout exactly
+ * - Smooth pulse animation
  * - Responsive grid (1 col mobile, 2 cols tablet, 3 cols desktop)
  *
  * @component
@@ -24,47 +24,50 @@ export function MaterialsListSkeleton({
   count = 12,
   className = '',
 }: MaterialsListSkeletonProps) {
-  console.log('[MaterialsListSkeleton] Rendering', count, 'skeleton cards');
-
   return (
     <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4', className)}>
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="border-2 border-gray-200 rounded-lg p-4 shadow-construction bg-white"
+          className="bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm"
         >
-          {/* Image Placeholder */}
-          <div className="h-32 mb-3 bg-gray-200 rounded-lg animate-pulse" />
+          {/* Image Header Placeholder */}
+          <div className="h-36 bg-gradient-to-br from-gray-100 to-gray-50 animate-pulse" />
 
-          {/* Product Name Placeholder */}
-          <div className="h-5 bg-gray-200 rounded mb-2 animate-pulse" />
-          <div className="h-5 bg-gray-200 rounded w-3/4 mb-2 animate-pulse" />
-
-          {/* SKU Placeholder */}
-          <div className="h-3 bg-gray-200 rounded w-1/2 mb-3 animate-pulse" />
-
-          {/* Stats Row Placeholder */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex flex-col gap-1">
-              <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-8 bg-gray-200 rounded animate-pulse" />
+          {/* Content */}
+          <div className="p-4 space-y-3">
+            {/* Product Name Placeholder */}
+            <div className="space-y-2">
+              <div className="h-5 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="h-5 bg-gray-200 rounded-lg w-3/4 animate-pulse" />
             </div>
-            <div className="flex flex-col gap-1">
-              <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
-              <div className="h-4 w-8 bg-gray-200 rounded animate-pulse" />
+
+            {/* SKU Placeholder */}
+            <div className="h-3 bg-gray-100 rounded w-24 animate-pulse" />
+
+            {/* Stats Row Placeholder */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                <div className="h-2 bg-gray-200 rounded w-12 mb-1.5 animate-pulse" />
+                <div className="h-5 bg-gray-200 rounded w-8 animate-pulse" />
+              </div>
+              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+                <div className="h-2 bg-gray-200 rounded w-12 mb-1.5 animate-pulse" />
+                <div className="h-5 bg-gray-200 rounded w-8 animate-pulse" />
+              </div>
             </div>
+
+            {/* Price Placeholder */}
+            <div className="flex items-center justify-between py-2 border-t border-gray-100">
+              <div>
+                <div className="h-3 bg-gray-100 rounded w-14 mb-1 animate-pulse" />
+                <div className="h-6 bg-gray-200 rounded w-20 animate-pulse" />
+              </div>
+            </div>
+
+            {/* Button Placeholder */}
+            <div className="h-12 bg-gray-100 rounded-xl animate-pulse" />
           </div>
-
-          {/* Price & Stock Placeholder */}
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <div className="h-5 w-16 bg-gray-200 rounded mb-1 animate-pulse" />
-              <div className="h-3 w-12 bg-gray-200 rounded animate-pulse" />
-            </div>
-          </div>
-
-          {/* Button Placeholder */}
-          <div className="h-9 bg-gray-200 rounded-lg animate-pulse" />
         </div>
       ))}
     </div>
