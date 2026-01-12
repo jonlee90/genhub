@@ -74,26 +74,26 @@ export function LoadingStates({
         className
       )}
     >
-      <div className="bg-white border-2 border-[#001B51] rounded-lg shadow-construction max-w-md w-full mx-4 p-6">
+      <div className="bg-white border-2 border-[#001B51] rounded-lg shadow-construction max-w-md w-full mx-4 p-4 md:p-6">
         {/* Header with icon */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={cn('p-2 rounded-lg', config.bgColor)}>
-              <Icon className={cn('w-6 h-6', config.color)} />
+        <div className="flex items-start justify-between mb-3 md:mb-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className={cn('p-1.5 md:p-2 rounded-lg', config.bgColor)}>
+              <Icon className={cn('w-5 h-5 md:w-6 md:h-6', config.color)} />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#001B51]">
+              <h3 className="text-base md:text-lg font-bold text-[#001B51]">
                 {config.title}
               </h3>
-              <p className="text-sm text-gray-600">{config.description}</p>
+              <p className="text-xs md:text-sm text-gray-600">{config.description}</p>
             </div>
           </div>
 
-          {/* Cancel button */}
+          {/* Cancel button - touch-friendly size */}
           {state.cancellable && onCancel && (
             <button
               onClick={onCancel}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors"
               aria-label="Cancel loading"
             >
               <X className="w-5 h-5 text-gray-500" />
@@ -102,19 +102,19 @@ export function LoadingStates({
         </div>
 
         {/* Progress bar */}
-        <div className="mb-4">
+        <div className="mb-3 md:mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-xs md:text-sm font-medium text-gray-700">
               Progress: {Math.round(state.progress)}%
             </span>
             {state.estimatedTime && state.estimatedTime > 0 && (
-              <span className="text-sm text-gray-500">
+              <span className="text-xs md:text-sm text-gray-500">
                 ~{Math.round(state.estimatedTime)}s remaining
               </span>
             )}
           </div>
 
-          <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-2 md:h-3 bg-gray-200 rounded-full overflow-hidden">
             <div
               className={cn(
                 'h-full transition-all duration-300 rounded-full',
@@ -125,9 +125,9 @@ export function LoadingStates({
           </div>
         </div>
 
-        {/* Loading spinner */}
+        {/* Loading spinner - responsive size */}
         <div className="flex items-center justify-center">
-          <Loader2 className="w-8 h-8 text-[#001B51] animate-spin" />
+          <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-[#001B51] animate-spin" />
         </div>
       </div>
     </div>
@@ -166,11 +166,11 @@ export function ModelDownloadProgress({
   console.log('[ModelDownloadProgress] Rendering:', { progress, fileName });
 
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-      <div className="flex items-center gap-3 mb-3">
-        <Download className="w-5 h-5 text-[#001B51]" />
+    <div className="bg-white border-2 border-gray-200 rounded-lg p-3 md:p-4 shadow-construction">
+      <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
+        <Download className="w-4 h-4 md:w-5 md:h-5 text-[#001B51] flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate">
+          <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
             {fileName}
           </p>
           {fileSize && (
@@ -182,7 +182,7 @@ export function ModelDownloadProgress({
         {onCancel && (
           <button
             onClick={onCancel}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-gray-100 active:bg-gray-200 rounded-lg transition-colors"
             aria-label="Cancel download"
           >
             <X className="w-4 h-4 text-gray-500" />
@@ -190,14 +190,14 @@ export function ModelDownloadProgress({
         )}
       </div>
 
-      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="w-full h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
           className="h-full bg-[#001B51] transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <p className="text-xs text-gray-500 mt-2 text-right">
+      <p className="text-xs text-gray-500 mt-1.5 md:mt-2 text-right">
         {Math.round(progress)}%
       </p>
     </div>

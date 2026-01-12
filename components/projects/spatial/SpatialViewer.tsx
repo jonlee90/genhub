@@ -16,8 +16,14 @@ import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
 import { TaskLinker } from './TaskLinker';
 import { MarkerCreationModal } from './MarkerCreationModal';
 import { TaskDetailPanel } from '@/components/tasks/detail/TaskDetailPanel';
+// Mobile components for spatial viewer redesign
+import { MarkerFilterSheet } from './MarkerFilterSheet';
+import { MarkerListSheet } from './MarkerListSheet';
+import { MarkerFAB } from './MarkerFAB';
+import { WebGLFallback } from './WebGLFallback';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { createDefaultModel } from '@/lib/xeokit/default-models';
 import { getMarkersByProject, updateMarker } from '@/app/actions/spatial';
 import type { SpatialMarker } from '@/types/spatial';
@@ -126,6 +132,13 @@ export function SpatialViewer({
     markers: [],
   });
 
+  // Mobile redesign: Sheet and FAB state
+  const [activeSheet, setActiveSheet] = useState<'filter' | 'markers' | null>(null);
+  const [selectedFilterCategories, setSelectedFilterCategories] = useState<Set<string>>(new Set());
+
+  // Mobile redesign: Use hook for mobile detection
+  const isMobile = useIsMobile();
+
   // Determine if we should use default model
   // Check if the modelHighURL is a placeholder (starts with 'defaults/')
   const isPlaceholderURL = modelHighURL?.startsWith('defaults/') || modelHighURL?.startsWith('/defaults/');
@@ -135,16 +148,40 @@ export function SpatialViewer({
   // Debug: Permission checks
   const canEditMarkers = userRole === 'admin' || userRole === 'project_manager';
 
-  // Debug: Phase 6 - Mobile detection
-  const [isMobile, setIsMobile] = useState(false);
+  // Mobile redesign: Sheet handlers
+  const openFilterSheet = useCallback(() => {
+    setActiveSheet('filter');
+  }, []);
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+  const openMarkersSheet = useCallback(() => {
+    setActiveSheet('markers');
+  }, []);
+
+  const closeSheet = useCallback(() => {
+    setActiveSheet(null);
+  }, []);
+
+  // Mobile redesign: FAB click handler - open context menu at center for marker creation
+  const handleFABClick = useCallback(() => {
+    if (!canEditMarkers) return;
+    // On mobile, open context menu in center of screen for marker type selection
+    setContextMenuPosition({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    });
+    setClickedPosition({ x: 0, y: 0, z: 0 }); // Default position, will be updated on actual placement
+    setContextMenuOpen(true);
+  }, [canEditMarkers]);
+
+  // Mobile redesign: Handle filter category changes from MarkerFilterSheet
+  const handleFilterCategoriesChange = useCallback((categories: Set<string>) => {
+    setSelectedFilterCategories(categories);
+    // Convert category selections to MarkerFilters format
+    const markerTypes = Array.from(categories);
+    setActiveFilters((prev) => ({
+      ...prev,
+      markerTypes: markerTypes.length > 0 ? markerTypes : [],
+    }));
   }, []);
 
   // Debug: Phase 6 - Detect WebGL support on mount
@@ -362,6 +399,15 @@ export function SpatialViewer({
     }
   }, []);
 
+  // Mobile redesign: Handle marker selection from MarkerListSheet
+  const handleMarkerListSelect = useCallback((markerId: string) => {
+    const marker = markers.find((m) => m.id === markerId);
+    if (marker) {
+      handleMarkerClick(marker);
+    }
+    closeSheet();
+  }, [markers, handleMarkerClick, closeSheet]);
+
   const handleMarkerDragEnd = useCallback(
     async (marker: SpatialMarker, newPosition: { x: number; y: number; z: number }) => {
       console.log('[SpatialViewer] Marker dragged to new position:', marker.id, newPosition);
@@ -474,30 +520,31 @@ export function SpatialViewer({
     milestone: markers.filter((m) => m.type === 'progress').length,
   };
 
+  // Mobile redesign: Convert markers to MarkerListItem format for MarkerListSheet
+  const markerListItems = visibleMarkers.map((m) => ({
+    id: m.id,
+    title: m.title,
+    category: m.type,
+    position: { x: m.position_x, y: m.position_y, z: m.position_z },
+  }));
+
   // Debug: Phase 6 - WebGL fallback message
   if (!webglSupported) {
     return (
-      <div className="relative w-full h-full bg-gray-100 flex flex-col items-center justify-center p-8 text-center">
-        <div className="bg-yellow-50 border-2 border-yellow-500 rounded-lg p-8 max-w-md shadow-construction">
-          <div className="flex justify-center mb-4">
-            <svg className="h-16 w-16 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-black uppercase mb-2 text-[#001B51]">3D Viewer Not Supported</h2>
-          <p className="text-gray-600 mb-4">
-            Your browser does not support WebGL, which is required for the 3D viewer.
-          </p>
-          <p className="text-sm text-gray-500">
-            Please use a modern browser like Chrome, Firefox, Safari, or Edge.
-          </p>
-        </div>
-      </div>
+      <WebGLFallback
+        onRetry={() => window.location.reload()}
+        className={className}
+      />
     );
   }
 
   return (
-    <div className={cn('relative w-full h-full bg-gray-100', className)}>
+    <div className={cn(
+      'relative w-full bg-gray-100',
+      // Mobile: use dvh for proper mobile viewport handling
+      'min-h-[calc(100dvh-200px)] md:h-full',
+      className
+    )}>
       {/* Debug: 3D Viewer Canvas (base layer) */}
       <ThreeDViewerCanvas
         projectId={projectId}
@@ -566,14 +613,64 @@ export function SpatialViewer({
           />
         ))}
 
-      {/* Debug: Filter Panel (bottom-left) */}
-      {isModelReady && (
+      {/* Debug: Filter Panel (bottom-left) - Desktop only */}
+      {isModelReady && !isMobile && (
         <MarkerFilterPanel
           activeFilters={activeFilters}
           onFilterChange={setActiveFilters}
           markerCounts={markerCounts}
           className="absolute bottom-4 left-4 z-30"
         />
+      )}
+
+      {/* Mobile redesign: Mobile action buttons for opening sheets */}
+      {isModelReady && isMobile && (
+        <div className="absolute bottom-4 left-4 z-30 flex flex-col gap-2">
+          {/* Filter button */}
+          <button
+            onClick={openFilterSheet}
+            className={cn(
+              'w-12 h-12 rounded-xl',
+              'bg-white/90 backdrop-blur-sm',
+              'border-2 border-gray-200',
+              'shadow-lg',
+              'flex items-center justify-center',
+              'active:scale-[0.98] active:bg-gray-100',
+              'transition-all duration-150'
+            )}
+            aria-label="Open filter options"
+          >
+            <svg className="w-5 h-5 text-[#001B51]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+          </button>
+          {/* Markers list button */}
+          <button
+            onClick={openMarkersSheet}
+            className={cn(
+              'w-12 h-12 rounded-xl',
+              'bg-white/90 backdrop-blur-sm',
+              'border-2 border-gray-200',
+              'shadow-lg',
+              'flex items-center justify-center',
+              'active:scale-[0.98] active:bg-gray-100',
+              'transition-all duration-150',
+              'relative'
+            )}
+            aria-label="Open markers list"
+          >
+            <svg className="w-5 h-5 text-[#001B51]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            {/* Marker count badge */}
+            {visibleMarkers.length > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[#001B51] text-white text-xs font-bold flex items-center justify-center">
+                {visibleMarkers.length > 99 ? '99+' : visibleMarkers.length}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
       {/* Debug: Context Menu (right-click on 3D surface) */}
@@ -675,6 +772,34 @@ export function SpatialViewer({
             );
           })}
         </div>
+      )}
+
+      {/* Mobile redesign: MarkerFAB - Mobile only */}
+      {isModelReady && isMobile && (
+        <MarkerFAB
+          onClick={handleFABClick}
+          disabled={!canEditMarkers}
+        />
+      )}
+
+      {/* Mobile redesign: MarkerFilterSheet - Mobile only */}
+      {isMobile && (
+        <MarkerFilterSheet
+          isOpen={activeSheet === 'filter'}
+          onClose={closeSheet}
+          selectedCategories={selectedFilterCategories}
+          onApplyFilters={handleFilterCategoriesChange}
+        />
+      )}
+
+      {/* Mobile redesign: MarkerListSheet - Mobile only */}
+      {isMobile && (
+        <MarkerListSheet
+          isOpen={activeSheet === 'markers'}
+          onClose={closeSheet}
+          markers={markerListItems}
+          onMarkerSelect={handleMarkerListSelect}
+        />
       )}
 
       {/* Debug: Error overlay */}

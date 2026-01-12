@@ -34,3 +34,7 @@ export {
   MaterialMarkerListItem,
   MaterialStatusLegend,
 } from './MaterialMarkers';
+
+// Spatial Viewer Redesign - Mobile PWA Components
+export { MarkerFilterSheet } from './MarkerFilterSheet';
+export type { MarkerFilterSheetProps } from './MarkerFilterSheet';

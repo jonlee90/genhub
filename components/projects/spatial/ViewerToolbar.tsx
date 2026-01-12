@@ -15,6 +15,7 @@ import {
   Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 
 export type CameraPreset = 'top' | 'front' | 'side' | 'isometric';
@@ -37,6 +38,7 @@ export function ViewerToolbar({
 }: ViewerToolbarProps) {
   console.log('[ViewerToolbar] Rendering', { hasViewer: !!viewer });
 
+  const isMobile = useIsMobile();
   const [activeMode, setActiveMode] = useState<InteractionMode>('rotate');
   const [showCameraMenu, setShowCameraMenu] = useState(false);
 
@@ -97,6 +99,114 @@ export function ViewerToolbar({
     { preset: 'isometric' as CameraPreset, icon: Box, label: 'Isometric' },
   ];
 
+  // Mobile layout: Fixed bottom bar with horizontal buttons
+  if (isMobile) {
+    return (
+      <div
+        className={cn(
+          'fixed bottom-20 left-1/2 -translate-x-1/2 z-20',
+          'bg-white border-2 border-gray-200 rounded-xl shadow-construction',
+          'px-2 py-2',
+          'pb-[max(0.5rem,env(safe-area-inset-bottom))]',
+          'transition-all duration-300',
+          className
+        )}
+      >
+        <div className="flex items-center gap-1">
+          {/* Interaction Mode Buttons */}
+          {toolbarButtons.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              onClick={() => handleInteractionMode(mode)}
+              className={cn(
+                'min-w-[44px] min-h-[44px]',
+                'flex items-center justify-center',
+                'rounded-lg',
+                'transition-all duration-150',
+                'active:scale-[0.98]',
+                activeMode === mode
+                  ? 'bg-[#001B51] text-white active:bg-[#001B51]/90'
+                  : 'bg-gray-50 text-gray-700 active:bg-gray-100'
+              )}
+              title={label}
+              aria-label={label}
+              aria-pressed={activeMode === mode}
+            >
+              <Icon className="w-5 h-5" />
+            </button>
+          ))}
+
+          {/* Divider */}
+          <div className="w-px h-8 bg-gray-200 mx-1" />
+
+          {/* Camera Button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowCameraMenu(!showCameraMenu)}
+              className={cn(
+                'min-w-[44px] min-h-[44px]',
+                'flex items-center justify-center',
+                'rounded-lg',
+                'bg-gray-50 text-[#001B51]',
+                'transition-all duration-150',
+                'active:scale-[0.98] active:bg-gray-100'
+              )}
+              title="Camera Presets"
+              aria-label="Camera Presets"
+              aria-expanded={showCameraMenu}
+              aria-haspopup="menu"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
+
+            {/* Camera Preset Menu - positioned above on mobile */}
+            {showCameraMenu && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 min-w-[160px] bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden">
+                <div className="h-1 bg-[#001B51]" />
+                <div className="p-2">
+                  {cameraPresets.map(({ preset, icon: Icon, label }) => (
+                    <button
+                      key={preset}
+                      onClick={() => handleCameraPreset(preset)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-3 rounded-lg',
+                        'min-h-[44px]',
+                        'transition-all duration-150',
+                        'text-gray-700',
+                        'active:scale-[0.98] active:bg-gray-100'
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="font-medium text-sm">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reset Button */}
+          <button
+            onClick={handleResetView}
+            className={cn(
+              'min-w-[44px] min-h-[44px]',
+              'flex items-center justify-center',
+              'rounded-lg',
+              'bg-gray-50 text-gray-700',
+              'transition-all duration-150',
+              'active:scale-[0.98] active:bg-gray-100'
+            )}
+            title="Reset View"
+            aria-label="Reset View"
+          >
+            <RotateCcw className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout: Floating panel top-right (existing behavior)
   return (
     <div
       className={cn(
@@ -120,11 +230,14 @@ export function ViewerToolbar({
                 'group relative flex items-center gap-3 px-3 py-2 rounded',
                 'transition-all duration-200',
                 'hover:bg-gray-50',
+                'active:scale-[0.98]',
                 activeMode === mode
-                  ? 'bg-[#001B51] text-white'
+                  ? 'bg-[#001B51] text-white active:bg-[#001B51]/90'
                   : 'bg-white text-gray-700 hover:text-[#001B51]'
               )}
               title={label}
+              aria-label={label}
+              aria-pressed={activeMode === mode}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
 
@@ -158,8 +271,12 @@ export function ViewerToolbar({
             'w-full bg-white border-2 border-gray-200 rounded-lg shadow-construction',
             'px-4 py-3 flex items-center gap-3',
             'hover:bg-gray-50 transition-colors',
+            'active:scale-[0.98]',
             'group'
           )}
+          aria-label="Camera Presets"
+          aria-expanded={showCameraMenu}
+          aria-haspopup="menu"
         >
           <Maximize2 className="w-5 h-5 text-[#001B51]" />
           <span className="font-semibold text-sm uppercase tracking-wide text-gray-900 hidden lg:block">
@@ -180,8 +297,10 @@ export function ViewerToolbar({
                   className={cn(
                     'w-full flex items-center gap-3 px-3 py-2 rounded',
                     'hover:bg-gray-50 transition-colors',
+                    'active:scale-[0.98]',
                     'text-gray-700 hover:text-[#001B51]'
                   )}
+                  aria-label={label}
                 >
                   <Icon className="w-5 h-5" />
                   <span className="font-semibold text-sm uppercase tracking-wide">{label}</span>
@@ -200,9 +319,11 @@ export function ViewerToolbar({
           'px-4 py-3 flex items-center gap-3',
           'hover:bg-[#001B51] hover:text-white hover:border-[#001B51]',
           'transition-all duration-200',
+          'active:scale-[0.98]',
           'group'
         )}
         title="Reset View"
+        aria-label="Reset View"
       >
         <RotateCcw className="w-5 h-5 text-gray-700 group-hover:text-white" />
         <span className="font-semibold text-sm uppercase tracking-wide text-gray-900 group-hover:text-white hidden lg:block">

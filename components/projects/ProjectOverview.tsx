@@ -320,14 +320,14 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
               className="hidden"
             />
 
-            {/* Section Header */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-construction-blue rounded-lg">
-                <Box className="w-5 h-5 text-white" />
+            {/* Section Header - Mobile: Compact, Desktop: Full */}
+            <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <div className="p-1.5 md:p-2 bg-construction-blue rounded-lg">
+                <Box className="w-4 h-4 md:w-5 md:h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold">3D Spatial Viewer</h2>
-                <p className="text-sm text-gray-600">Visualize and interact with the project model</p>
+                <h2 className="text-base md:text-lg font-bold">3D Spatial Viewer</h2>
+                <p className="hidden md:block text-sm text-gray-600">Visualize and interact with the project model</p>
               </div>
             </div>
 
@@ -357,7 +357,9 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
             )}
 
             {/* 3D Viewer with Toolbar (Phase 3 enhanced) */}
-            <div className="relative h-[600px] md:h-[800px]">
+            {/* Mobile: min-h-[400px] or calc height for flexibility */}
+            {/* Desktop: Fixed heights for optimal viewing */}
+            <div className="relative min-h-[400px] h-[calc(100dvh-250px)] md:min-h-0 md:h-[600px] lg:h-[800px]">
               <SpatialViewer
                 projectId={project.id}
                 modelHighURL={activeModel?.xkt_file_url}
@@ -394,7 +396,8 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
             </div>
 
             {/* Bottom Grid: Stats + Markers */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            {/* Mobile: Stack vertically, Desktop: Side-by-side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pb-[env(safe-area-inset-bottom)]">
               <ModelStatsDisplay
                 stats={{
                   objectCount: activeModel?.element_count || (project.project_type === 'residential' ? 7 : undefined),
