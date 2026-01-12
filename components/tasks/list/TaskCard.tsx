@@ -5,81 +5,25 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, Package, Wrench, Pencil, Layers as LayersIcon, Hammer, ShoppingCart, ClipboardCheck, FileText, MapPin, Box } from 'lucide-react';
+import { Calendar, AlertTriangle, Ban, Package, Pencil, Layers as LayersIcon, Box } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { Database } from '@/types/database.types';
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-  materialStats?: {
-    count: number;
-    totalCost: number;
-  };
-};
-
-// Phase type for project context
-type Phase = {
-  id: string;
-  name: string;
-  order_index?: number;
-};
+import { getTaskTypeDisplayConfig } from '@/lib/config/task-type-display';
+import type { TaskWithRelations, Phase } from '@/types/task.types';
 
 interface TaskCardProps {
-  task: Task;
+  task: TaskWithRelations;
   isDragging?: boolean;
-  onTaskClick?: (task: Task) => void;
+  onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we're in project context - show phase from this array instead of task.phase */
   phases?: Phase[];
   /** Show edit indicator on hover - default true when phases provided */
   showEditIndicator?: boolean;
 }
 
-// Note: Priority colors now come from shared config: TASK_PRIORITY_CONFIG
 // All cards use construction-blue border for consistent branding
 const CARD_BORDER = 'border-l-4 border-construction-blue';
-
-// Debug: Task type config - industrial construction-themed badges
-const TASK_TYPE_CONFIG = {
-  work: {
-    label: 'Work',
-    icon: Hammer,
-    color: 'bg-construction-blue text-white',
-    description: 'Labor/Work Task',
-  },
-  purchase: {
-    label: 'Purchase',
-    icon: ShoppingCart,
-    color: 'bg-[#059669] text-white',
-    description: 'Material Purchase',
-  },
-  approval: {
-    label: 'Approval',
-    icon: ClipboardCheck,
-    color: 'bg-[#FFB627] text-white',
-    description: 'Permit/Inspection',
-  },
-  admin: {
-    label: 'Admin',
-    icon: FileText,
-    color: 'bg-construction-accent text-white',
-    description: 'Administrative Task',
-  },
-};
 
 export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator }: TaskCardProps) {
   const {
@@ -91,7 +35,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
     isDragging: isSortableDragging,
   } = useSortable({ id: task.id });
 
-  // Debug: When in DragOverlay (isDragging=true), don't apply transform
+  // When in DragOverlay (isDragging=true), don't apply transform
   // The DragOverlay handles positioning via its own internal transform
   const style = isDragging ? {} : {
     transform: CSS.Transform.toString(transform),
@@ -136,11 +80,11 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
 
   const hasMaterials = task.materialStats && task.materialStats.count > 0;
 
-  // Debug: P4.7 - Check if task has 3D location
+  // Check if task has 3D location
   const has3DLocation = !!task.spatial_marker_id;
 
   // Get task type configuration with fallback to 'work'
-  const taskTypeConfig = TASK_TYPE_CONFIG[task.task_type as keyof typeof TASK_TYPE_CONFIG] || TASK_TYPE_CONFIG.work;
+  const taskTypeConfig = getTaskTypeDisplayConfig(task.task_type);
   const TaskTypeIcon = taskTypeConfig.icon;
 
   return (
@@ -150,7 +94,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
       {...attributes}
       {...listeners}
       className="touch-manipulation"
-      // Debug: Disable animations when in DragOverlay to prevent positioning issues
+      // Disable animations when in DragOverlay to prevent positioning issues
       animate={isDragging ? false : (isSortableDragging ? {
         opacity: 0.5,
         scale: 0.95

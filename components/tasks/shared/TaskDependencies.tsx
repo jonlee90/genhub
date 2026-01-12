@@ -5,35 +5,16 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, X, ArrowRight, ArrowLeft, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { addTaskDependency, removeTaskDependency } from '@/app/actions/tasks';
+import { X, ArrowRight, ArrowLeft, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { removeTaskDependency } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
-
-interface Dependency {
-  id: string;
-  depends_on_task_id: string;
-  depends_on: {
-    id: string;
-    title: string;
-    status: string;
-  };
-}
-
-interface Dependent {
-  id: string;
-  task_id: string;
-  task: {
-    id: string;
-    title: string;
-    status: string;
-  };
-}
+import type { TaskDependency, TaskDependent } from '@/types/task.types';
 
 interface TaskDependenciesProps {
   taskId: string;
   projectId: string;
-  dependencies: Dependency[];
-  dependents: Dependent[];
+  dependencies: TaskDependency[];
+  dependents: TaskDependent[];
 }
 
 const STATUS_ICON = {

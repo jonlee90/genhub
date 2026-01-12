@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { getTaskLinkedMaterials } from '@/app/actions/materials';
-import type { MaterialWithStats } from '@/app/actions/materials';
+import { getTaskLinkedMaterials, type MaterialWithStats } from '@/app/actions/materials';
 import { MaterialCard } from './MaterialCard';
 import { MaterialsListSkeleton } from './MaterialsListSkeleton';
 
@@ -54,9 +53,6 @@ export function MaterialsList({
       setMaterials(result.data.materials);
       setPage(result.data.page);
       setTotalPages(result.data.totalPages);
-      console.log('[MaterialsList] Loaded page', newPage, 'with', result.data.materials.length, 'materials');
-    } else {
-      console.error('[MaterialsList] Failed to fetch materials:', result.error);
     }
   };
 

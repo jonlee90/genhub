@@ -27,38 +27,11 @@ import { updateTaskStatus } from '@/app/actions/tasks';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import { TaskListMobile } from './TaskListMobile';
-import type { Database } from '@/types/database.types';
-
-type TaskStatus = Database['public']['Enums']['task_status'];
-type TaskPriority = Database['public']['Enums']['task_priority'];
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-};
-
-// Phase type for project context
-type Phase = {
-  id: string;
-  name: string;
-  order_index?: number;
-};
+import type { TaskWithRelations, Phase, TaskStatus } from '@/types/task.types';
 
 interface TaskListProps {
-  tasks: Task[];
-  onTaskClick?: (task: Task) => void;
+  tasks: TaskWithRelations[];
+  onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we're in project context - look up phase from this array */
   phases?: Phase[];
 }
@@ -152,7 +125,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
       .slice(0, 2);
   };
 
-  const isOverdue = (task: Task) => {
+  const isOverdue = (task: TaskWithRelations) => {
     if (!task.due_date || task.status === 'completed') return false;
     // Parse due date properly to avoid UTC timezone issues
     const [year, month, day] = task.due_date.split('T')[0].split('-').map(Number);
@@ -163,7 +136,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
   };
 
   // Get phase name - from phases array in project context, or from task.phase otherwise
-  const getPhaseName = (task: Task) => {
+  const getPhaseName = (task: TaskWithRelations) => {
     if (phases) {
       const phase = phases.find((p) => p.id === task.phase_id);
       return phase?.name || '-';
@@ -207,7 +180,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
     );
   }
 
-  // Debug: Desktop Table View
+  // Desktop Table View
   return (
     <div className="bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
       <Table>

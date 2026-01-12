@@ -56,7 +56,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
     fetchExpenses();
   }, [taskId]);
 
-  // Debug: Status badge color helper
+  // Status badge color helper
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       submitted: 'bg-gray-400 text-white',
@@ -77,7 +77,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
     );
   }
 
-  // Debug: Error state
+  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
@@ -87,7 +87,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
     );
   }
 
-  // Debug: Empty state
+  // Empty state
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12">
@@ -98,7 +98,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
     );
   }
 
-  // Debug: Calculate total expenses
+  // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const approvedExpenses = expenses
     .filter(e => e.status === 'approved')
@@ -106,14 +106,14 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
 
   return (
     <div className="space-y-4">
-      {/* Debug: Expenses List */}
+      {/* Expenses List */}
       <div className="space-y-3">
         {expenses.map(expense => (
           <div
             key={expense.id}
             className="border-2 border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
           >
-            {/* Debug: Header with category and amount */}
+            {/* Header with category and amount */}
             <div className="flex justify-between items-start mb-2">
               <div className="flex-1">
                 <h4 className="font-bold text-sm text-gray-900">{expense.category}</h4>
@@ -132,14 +132,14 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
               </div>
             </div>
 
-            {/* Debug: Notes */}
+            {/* Notes */}
             {expense.description && (
               <p className="text-sm text-gray-600 mb-2 border-l-2 border-gray-300 pl-3">
                 {expense.description}
               </p>
             )}
 
-            {/* Debug: Status and Receipt */}
+            {/* Status and Receipt */}
             <div className="flex items-center justify-between gap-2 mt-3">
               <span className={cn(
                 'px-2 py-1 rounded text-xs font-bold uppercase',
@@ -165,7 +165,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
         ))}
       </div>
 
-      {/* Debug: Total Summary (conditionally hidden) */}
+      {/* Total Summary (conditionally hidden) */}
       {hasBudgetVisibility && (
         <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
           <div className="flex justify-between items-center mb-2">

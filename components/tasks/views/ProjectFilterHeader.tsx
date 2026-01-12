@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderKanban, Clock } from 'lucide-react';
+import { FolderKanban, Clock, CheckSquare } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import {
   Select,
@@ -9,13 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import type { TaskProject } from '@/types/task.types';
 
-type Project = {
-  id: string;
-  name: string;
-  status?: string;
-  end_date?: string | null;
-};
+type Project = TaskProject;
 
 /**
  * Calculate days remaining until the target date
@@ -107,14 +103,20 @@ interface ProjectFilterHeaderProps {
   projects: Project[];
   selectedProjectId: string;
   onProjectChange: (projectId: string) => void;
+  /** Total task count for the selected project (or all projects if 'all' selected) */
+  taskCount?: number;
+  /** Map of project ID to task count for each project in the dropdown */
+  projectTaskCounts?: Record<string, number>;
 }
 
 export function ProjectFilterHeader({
   projects,
   selectedProjectId,
   onProjectChange,
+  taskCount,
+  projectTaskCounts,
 }: ProjectFilterHeaderProps) {
-  const displayText = selectedProjectId === 'all'
+  const projectName = selectedProjectId === 'all'
     ? 'All Projects'
     : projects.find((p) => p.id === selectedProjectId)?.name || 'Select Project';
 
@@ -136,7 +138,15 @@ export function ProjectFilterHeader({
               <div className="w-2 h-2 rounded-full bg-construction-blue animate-pulse" />
             )}
             <SelectValue placeholder="All Projects">
-              {displayText}
+              <span className="flex items-center gap-1">
+                {projectName}
+                {taskCount !== undefined && (
+                  <span className="inline-flex items-center gap-0.5 text-gray-500">
+                    (<CheckSquare className="w-3 h-3" />
+                    <span>{taskCount}</span>)
+                  </span>
+                )}
+              </span>
             </SelectValue>
           </div>
         </SelectTrigger>
@@ -146,9 +156,9 @@ export function ProjectFilterHeader({
         >
           <SelectItem
             value="all"
-            className="font-medium"
+            className="font-medium [&>span]:flex-1 [&>span]:w-full"
           >
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2 w-full" style={{ width: '100%' }}>
               <FolderKanban className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <span className="flex-1">All Projects</span>
               <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
@@ -161,25 +171,37 @@ export function ProjectFilterHeader({
 
           {sortProjectsByDaysLeft(projects).map((project) => {
             const dateIndicator = getProjectDateIndicator(project.end_date);
+            const projectTaskCount = projectTaskCounts?.[project.id] ?? 0;
             return (
               <SelectItem
                 key={project.id}
                 value={project.id}
-                className="font-medium"
+                className="font-medium [&>span]:flex-1 [&>span]:w-full"
               >
-                <div className="flex items-center gap-2 w-full">
-                  <div
-                    className={cn(
-                      "w-2 h-2 rounded-full flex-shrink-0",
-                      project.status === 'active' && "bg-green-500",
-                      project.status === 'on_hold' && "bg-yellow-500",
-                      project.status === 'completed' && "bg-blue-500",
-                      !project.status && "bg-gray-400"
-                    )}
-                  />
-                  <span className="truncate flex-1">{project.name}</span>
+                <div className="flex items-center justify-between w-full min-w-0 gap-3" style={{ width: '100%' }}>
+                  {/* Left side: Status indicator + Project name + Task count */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0",
+                        project.status === 'active' && "bg-green-500",
+                        project.status === 'on_hold' && "bg-yellow-500",
+                        project.status === 'completed' && "bg-blue-500",
+                        !project.status && "bg-gray-400"
+                      )}
+                    />
+                    <span className="truncate">{project.name}</span>
+                    <span className="flex items-center gap-0.5 text-xs text-gray-500 flex-shrink-0">
+                      <CheckSquare className="w-3 h-3" />
+                      <span>{projectTaskCount}</span>
+                    </span>
+                  </div>
+                  {/* Right side: Days left - pushed to far right */}
                   {dateIndicator && (
-                    <span className={"flex justify-between gap-1 text-xs flex-shrink-0 ml-auto"}>
+                    <span className={cn(
+                      "flex items-center gap-1 text-xs flex-shrink-0 ml-auto",
+                      dateIndicator.colorClass
+                    )}>
                       <Clock className="w-3 h-3" />
                       {dateIndicator.display}
                     </span>

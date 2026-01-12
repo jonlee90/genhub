@@ -1,6 +1,6 @@
 'use client';
 
-// Debug: Phase 4 - Task Details Tab (read-only task information display)
+// Phase 4 - Task Details Tab (read-only task information display)
 // Shows all task metadata: title, description, status, priority, dates, assignee, phase, location, costs
 
 import { Calendar, User, MapPin, DollarSign, Flag, Clock } from 'lucide-react';
@@ -8,7 +8,7 @@ import { cn, formatPercent, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { TaskDetails } from './TaskDetailPanel';
 
-// Debug: Component props
+// Component props
 export interface TaskDetailsTabProps {
   task: TaskDetails;
   userRole: string; // For future edit permissions
@@ -25,7 +25,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Debug: Status and Priority Badges */}
+      {/* Status and Priority Badges */}
       <div className="flex gap-2 flex-wrap">
         <div className={cn(
           'px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border',
@@ -43,7 +43,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
       </div>
 
-      {/* Debug: Description */}
+      {/* Description */}
       {task.description && (
         <div className="border-l-4 border-l-[#001B51] pl-4">
           <h3 className="text-xs font-bold uppercase text-gray-500 mb-2">Description</h3>
@@ -51,9 +51,9 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
       )}
 
-      {/* Debug: Key Details Grid */}
+      {/* Key Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Debug: Assignee */}
+        {/* Assignee */}
         <div className="border-2 border-gray-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
             <User className="h-4 w-4" />
@@ -79,7 +79,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           )}
         </div>
 
-        {/* Debug: Phase */}
+        {/* Phase */}
         <div className="border-2 border-gray-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
             <Flag className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           </span>
         </div>
 
-        {/* Debug: Start Date */}
+        {/* Start Date */}
         <div className="border-2 border-gray-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
             <Calendar className="h-4 w-4" />
@@ -99,7 +99,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           <span className="font-semibold text-sm">{formatDate(task.start_date)}</span>
         </div>
 
-        {/* Debug: Due Date */}
+        {/* Due Date */}
         <div className="border-2 border-gray-200 rounded-lg p-3">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
             <Calendar className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
       </div>
 
-      {/* Debug: 3D Location (if spatial marker exists) */}
+      {/* 3D Location (if spatial marker exists) */}
       {task.spatial_marker && (
         <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#001B51] mb-3">
@@ -145,7 +145,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
       )}
 
-      {/* Debug: Cost Summary */}
+      {/* Cost Summary */}
       {(task.planned_cost !== undefined || task.actual_cost !== undefined) && (
         <div className="border-2 border-gray-200 rounded-lg p-4">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-3">
@@ -188,7 +188,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
       )}
 
-      {/* Debug: Metadata */}
+      {/* Metadata */}
       <div className="border-t border-gray-200 pt-4 text-xs text-gray-500 space-y-1">
         <p>
           <span className="font-semibold">Created:</span> {formatDate(task.created_at)}

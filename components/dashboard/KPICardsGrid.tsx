@@ -1,6 +1,5 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import {
   FolderKanban,
   CheckSquare,
@@ -38,7 +37,6 @@ function getVariant(
       return 'danger';
 
     case 'schedule':
-      // Calculate on-time percentage
       const total = kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
       if (total === 0) return 'default';
       const onTimePercent = (kpis.scheduleOnTime / total) * 100;
@@ -71,39 +69,19 @@ function formatCurrency(amount: number): string {
 }
 
 /**
- * Animation variants for staggered entrance
+ * KPICardsGrid - Mobile-first KPI card grid
+ *
+ * Features:
+ * - Horizontal scroll on mobile (2 cards visible)
+ * - 3 columns on tablet, 6 columns on desktop
+ * - Touch-friendly cards with 44px+ tap targets
+ * - Snap scrolling on mobile
  */
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-};
-
 export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
-  console.log('[KPICardsGrid] Rendering:', { isLoading, activeProjects: kpis?.activeProjects });
-
   // Loading state: render 6 skeleton cards
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
         {Array.from({ length: 6 }).map((_, index) => (
           <KPICard
             key={`skeleton-${index}`}
@@ -128,7 +106,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
   const cards: Array<Omit<KPICardProps, 'isLoading'> & { key: string }> = [
     {
       key: 'active-projects',
-      title: 'Active Projects',
+      title: 'Projects',
       value: kpis.activeProjects,
       subtitle: `${kpis.totalProjects} total`,
       icon: FolderKanban,
@@ -144,7 +122,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     },
     {
       key: 'tasks-week',
-      title: 'Tasks This Week',
+      title: 'Tasks',
       value: kpis.tasksThisWeek,
       subtitle: kpis.tasksOverdue > 0
         ? `${kpis.tasksOverdue} overdue`
@@ -155,23 +133,23 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     },
     {
       key: 'budget-health',
-      title: 'Budget Health',
+      title: 'Budget',
       value: formatPercentWhole(kpis.budgetUtilization),
-      subtitle: `${formatCurrency(kpis.totalActualSpend)} of ${formatCurrency(kpis.totalPlannedBudget)}`,
+      subtitle: `${formatCurrency(kpis.totalActualSpend)} spent`,
       icon: Wallet,
       variant: getVariant('budget', kpis),
       trend: kpis.budgetUtilization > 100
         ? {
             value: Math.round(kpis.budgetUtilization - 100),
             direction: 'up',
-            label: 'over budget',
+            label: 'over',
           }
         : undefined,
       href: '/app/budget',
     },
     {
       key: 'schedule-status',
-      title: 'Schedule Status',
+      title: 'Schedule',
       value: formatPercentWhole(scheduleOnTimePercentRaw),
       subtitle: kpis.scheduleDelayed > 0
         ? `${kpis.scheduleDelayed} delayed`
@@ -182,7 +160,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     },
     {
       key: 'pending-approvals',
-      title: 'Pending Approvals',
+      title: 'Approvals',
       value: kpis.pendingExpenses + kpis.pendingApprovals,
       subtitle: kpis.pendingExpenseAmount > 0
         ? formatCurrency(kpis.pendingExpenseAmount)
@@ -193,11 +171,11 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     },
     {
       key: 'team-size',
-      title: 'Team Size',
+      title: 'Team',
       value: kpis.teamSize,
       subtitle: kpis.unassignedTasks > 0
-        ? `${kpis.unassignedTasks} unassigned tasks`
-        : 'All tasks assigned',
+        ? `${kpis.unassignedTasks} unassigned`
+        : 'All assigned',
       icon: Users,
       variant: getVariant('team', kpis),
       href: '/app/team',
@@ -205,25 +183,19 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
   ];
 
   return (
-    <motion.div
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
       {cards.map((card) => (
-        <motion.div key={card.key} variants={itemVariants}>
-          <KPICard
-            title={card.title}
-            value={card.value}
-            subtitle={card.subtitle}
-            icon={card.icon}
-            trend={card.trend}
-            variant={card.variant}
-            href={card.href}
-          />
-        </motion.div>
+        <KPICard
+          key={card.key}
+          title={card.title}
+          value={card.value}
+          subtitle={card.subtitle}
+          icon={card.icon}
+          trend={card.trend}
+          variant={card.variant}
+          href={card.href}
+        />
       ))}
-    </motion.div>
+    </div>
   );
 }

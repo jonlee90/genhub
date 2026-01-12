@@ -22,7 +22,7 @@ const ICON_MAP: Record<string, typeof Hammer> = {
   AlertTriangle,
 };
 
-// Debug: Default fallback task types (Task 0040)
+// Default fallback task types (Task 0040)
 const DEFAULT_TASK_TYPES: Array<{
   type: TaskType;
   label: string;
@@ -70,7 +70,7 @@ const DEFAULT_TASK_TYPES: Array<{
   },
 ];
 
-// Debug: Convert database config to display format (Task 0040)
+// Convert database config to display format (Task 0040)
 function convertTaskTypeConfig(config: TaskTypeConfig) {
   const IconComponent = config.icon_name ? (ICON_MAP[config.icon_name] || Hammer) : Hammer;
   const color = config.color || '#001B51';

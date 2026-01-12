@@ -1,7 +1,6 @@
 'use client';
 
-import { type LucideIcon, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { type LucideIcon, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
@@ -22,9 +21,9 @@ export interface KPICardProps {
 
 const variantStyles = {
   default: {
-    border: 'border-gray-200 hover:border-[#001B51]/30',
+    border: 'border-gray-200',
+    activeBorder: 'active:border-[#001B51]/40',
     iconBg: 'bg-[#001B51]/10',
-    iconBorder: 'border-[#001B51]/20',
     iconColor: 'text-[#001B51]',
     valueColor: 'text-[#001B51]',
     trendUp: 'text-[#059669]',
@@ -32,9 +31,9 @@ const variantStyles = {
     trendNeutral: 'text-gray-500',
   },
   success: {
-    border: 'border-[#059669]/30 hover:border-[#059669]/50 bg-[#059669]/5',
-    iconBg: 'bg-[#059669]/10',
-    iconBorder: 'border-[#059669]/20',
+    border: 'border-[#059669]/30 bg-[#059669]/5',
+    activeBorder: 'active:border-[#059669]/60',
+    iconBg: 'bg-[#059669]/15',
     iconColor: 'text-[#059669]',
     valueColor: 'text-[#059669]',
     trendUp: 'text-[#059669]',
@@ -42,9 +41,9 @@ const variantStyles = {
     trendNeutral: 'text-gray-500',
   },
   warning: {
-    border: 'border-[#F59E0B]/30 hover:border-[#F59E0B]/50 bg-[#F59E0B]/5',
-    iconBg: 'bg-[#F59E0B]/10',
-    iconBorder: 'border-[#F59E0B]/20',
+    border: 'border-[#F59E0B]/30 bg-[#F59E0B]/5',
+    activeBorder: 'active:border-[#F59E0B]/60',
+    iconBg: 'bg-[#F59E0B]/15',
     iconColor: 'text-[#F59E0B]',
     valueColor: 'text-[#F59E0B]',
     trendUp: 'text-[#059669]',
@@ -52,9 +51,9 @@ const variantStyles = {
     trendNeutral: 'text-gray-500',
   },
   danger: {
-    border: 'border-[#DC2626]/30 hover:border-[#DC2626]/50 bg-[#DC2626]/5',
-    iconBg: 'bg-[#DC2626]/10',
-    iconBorder: 'border-[#DC2626]/20',
+    border: 'border-[#DC2626]/30 bg-[#DC2626]/5',
+    activeBorder: 'active:border-[#DC2626]/60',
+    iconBg: 'bg-[#DC2626]/15',
     iconColor: 'text-[#DC2626]',
     valueColor: 'text-[#DC2626]',
     trendUp: 'text-[#059669]',
@@ -65,16 +64,15 @@ const variantStyles = {
 
 function KPICardSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-3 md:p-4 animate-pulse">
-      <div className="flex items-start justify-between mb-2 md:mb-3">
-        <div className="flex items-center gap-2 md:gap-3">
-          <div className="p-1.5 md:p-2 bg-gray-200 rounded-lg w-8 h-8 md:w-10 md:h-10" />
-          <div className="h-3 md:h-4 w-16 md:w-20 bg-gray-200 rounded" />
+    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse min-h-[120px]">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
+          <div className="h-7 w-16 bg-gray-200 rounded" />
         </div>
-        <div className="h-4 md:h-5 w-12 md:w-14 bg-gray-200 rounded" />
       </div>
-      <div className="h-8 md:h-10 w-20 md:w-24 bg-gray-200 rounded mb-1 md:mb-2" />
-      <div className="h-3 md:h-4 w-24 md:w-32 bg-gray-200 rounded" />
+      <div className="h-4 w-24 bg-gray-200 rounded" />
     </div>
   );
 }
@@ -102,15 +100,12 @@ function TrendIndicator({
         : styles.trendNeutral;
 
   return (
-    <div className={cn('flex items-center gap-1 text-xs md:text-sm font-medium', trendColor)}>
-      <TrendIcon className="w-3 h-3 md:w-4 md:h-4" />
+    <div className={cn('flex items-center gap-1 text-xs font-semibold', trendColor)}>
+      <TrendIcon className="w-3.5 h-3.5" />
       <span>
         {trend.direction !== 'neutral' && (trend.direction === 'up' ? '+' : '-')}
         {Math.abs(trend.value)}%
       </span>
-      {trend.label && (
-        <span className="text-gray-500 text-[10px] md:text-xs ml-0.5">{trend.label}</span>
-      )}
     </div>
   );
 }
@@ -125,8 +120,6 @@ export function KPICard({
   href,
   isLoading = false,
 }: KPICardProps) {
-  console.log('[KPICard] Rendering:', { title, value, variant, isLoading });
-
   if (isLoading) {
     return <KPICardSkeleton />;
   }
@@ -134,48 +127,55 @@ export function KPICard({
   const styles = variantStyles[variant];
 
   const cardContent = (
-    <motion.div
+    <div
       className={cn(
-        'relative bg-white border-2 rounded-lg p-3 md:p-4 transition-colors h-full',
+        'relative bg-white border-2 rounded-xl p-4 h-full min-h-[120px]',
+        'transition-all duration-150',
         styles.border,
-        href && 'cursor-pointer'
+        href && [
+          'cursor-pointer',
+          styles.activeBorder,
+          'active:scale-[0.98] active:bg-gray-50/50',
+        ]
       )}
-      whileHover={{
-        scale: 1.02,
-        boxShadow: '0 4px 12px rgba(0, 27, 81, 0.1)',
-      }}
-      whileTap={href ? { scale: 0.98 } : undefined}
-      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
     >
-      {/* Header: Icon + Title + Trend */}
-      <div className="flex items-start justify-between mb-2 md:mb-3">
-        <div className="flex items-center gap-2 md:gap-3">
-          <div
-            className={cn(
-              'p-1.5 md:p-2 rounded-lg border-2',
-              styles.iconBg,
-              styles.iconBorder
-            )}
-          >
-            <Icon className={cn('w-4 h-4 md:w-5 md:h-5', styles.iconColor)} />
-          </div>
-          <span className="text-xs md:text-sm font-medium text-gray-600 uppercase tracking-wide">
-            {title}
-          </span>
+      {/* Icon + Title Row */}
+      <div className="flex items-start gap-3 mb-2">
+        <div
+          className={cn(
+            'flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center',
+            styles.iconBg
+          )}
+        >
+          <Icon className={cn('w-5 h-5', styles.iconColor)} />
         </div>
-        {trend && <TrendIndicator trend={trend} variant={variant} />}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
+            {title}
+          </p>
+          {/* Value */}
+          <p className={cn('text-2xl md:text-3xl font-black leading-tight', styles.valueColor)}>
+            {value}
+          </p>
+        </div>
+        {/* Trend indicator - top right on mobile */}
+        {trend && (
+          <div className="flex-shrink-0">
+            <TrendIndicator trend={trend} variant={variant} />
+          </div>
+        )}
       </div>
 
-      {/* Value */}
-      <div className={cn('text-2xl md:text-3xl font-black leading-none mb-1', styles.valueColor)}>
-        {value}
+      {/* Subtitle + Link indicator */}
+      <div className="flex items-center justify-between">
+        {subtitle && (
+          <p className="text-sm text-gray-500 truncate">{subtitle}</p>
+        )}
+        {href && (
+          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        )}
       </div>
-
-      {/* Subtitle */}
-      {subtitle && (
-        <div className="text-xs md:text-sm text-gray-500">{subtitle}</div>
-      )}
-    </motion.div>
+    </div>
   );
 
   if (href) {

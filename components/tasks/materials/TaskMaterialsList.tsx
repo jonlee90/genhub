@@ -6,7 +6,7 @@
  * Displays assigned materials for a task with editable quantity and remove functionality.
  * Shows total cost summary at the bottom.
  *
- * Debug: Construction-themed with #001B51 primary, editable quantities
+ * Construction-themed with #001B51 primary, editable quantities
  */
 
 import { useState, useTransition, useEffect } from 'react';
@@ -49,7 +49,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MaterialDeliveryPrompt } from './MaterialDeliveryPrompt';
 import type { TempMaterial } from './TaskMaterialsManager';
 
-// Debug: Interface definitions
+// Interface definitions
 interface Material {
   id: string;
   product_name: string;
@@ -76,11 +76,11 @@ interface MaterialAssignment {
 interface TaskMaterialsListProps {
   materials: MaterialAssignment[];
   totalCost: number;
-  taskId: string;  // Debug: Added for MaterialDeliveryPrompt
-  projectId: string;  // Debug: Added for MaterialDeliveryPrompt
+  taskId: string;  // Added for MaterialDeliveryPrompt
+  projectId: string;  // Added for MaterialDeliveryPrompt
   onRemove: () => void;
   onQuantityUpdate: () => void;
-  onStatusUpdate?: () => void;  // Debug: Added for status change refresh
+  onStatusUpdate?: () => void;  // Added for status change refresh
   // Create mode props
   mode?: 'create' | 'edit';
   tempMaterials?: TempMaterial[];
@@ -88,7 +88,7 @@ interface TaskMaterialsListProps {
   onTempMaterialQuantityChange?: (productId: string, quantity: number) => void;
 }
 
-// Debug: Procurement status configuration
+// Procurement status configuration
 const PROCUREMENT_STATUS_CONFIG = {
   needed: {
     label: 'Need to Order',

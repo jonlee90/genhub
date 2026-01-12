@@ -9,38 +9,11 @@ import { cn, formatDate } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { Database } from '@/types/database.types';
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-  materialStats?: {
-    count: number;
-    totalCost: number;
-  };
-};
-
-type Phase = {
-  id: string;
-  name: string;
-  order_index?: number;
-};
+import type { TaskWithRelations, Phase } from '@/types/task.types';
 
 interface TaskListMobileProps {
-  tasks: Task[];
-  onTaskClick?: (task: Task) => void;
+  tasks: TaskWithRelations[];
+  onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we're in project context - look up phase from this array */
   phases?: Phase[];
   /** Enable swipe-to-complete action */
@@ -69,7 +42,7 @@ export function TaskListMobile({
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
   // Get phase name - from phases array in project context, or from task.phase otherwise
-  const getPhaseName = (task: Task) => {
+  const getPhaseName = (task: TaskWithRelations) => {
     if (phases) {
       const phase = phases.find((p) => p.id === task.phase_id);
       return phase?.name || null;
@@ -77,7 +50,7 @@ export function TaskListMobile({
     return task.phase?.name || null;
   };
 
-  const isOverdue = (task: Task) => {
+  const isOverdue = (task: TaskWithRelations) => {
     if (!task.due_date || task.status === 'completed') return false;
     const [year, month, day] = task.due_date.split('T')[0].split('-').map(Number);
     const dueDate = new Date(year, month - 1, day);
@@ -95,7 +68,7 @@ export function TaskListMobile({
       .slice(0, 2);
   };
 
-  const handleComplete = async (task: Task) => {
+  const handleComplete = async (task: TaskWithRelations) => {
     if (task.status === 'completed' || pendingActions.has(task.id)) return;
 
     setPendingActions((prev) => new Set(prev).add(task.id));
@@ -113,7 +86,7 @@ export function TaskListMobile({
     }
   };
 
-  const handleDelete = async (task: Task) => {
+  const handleDelete = async (task: TaskWithRelations) => {
     if (pendingActions.has(task.id)) return;
 
     // Confirm deletion

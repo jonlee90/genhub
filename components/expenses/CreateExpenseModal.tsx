@@ -8,52 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Upload, Camera, X, FileText, Sparkles, Info, ArrowLeft } from 'lucide-react';
-import { createExpense, processReceiptOCR } from '@/app/actions/expenses';
+import { createExpense } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
-
-interface Project {
-  id: string;
-  name: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  project_id: string;
-}
-
-// Debug: Task context for pre-filling when opened from a task
-interface TaskContext {
-  taskId: string;
-  taskTitle: string;
-  projectId: string;
-  projectName?: string;
-}
-
-interface CreateExpenseModalProps {
-  projects: Project[];
-  tasks: Task[];
-  onClose: () => void;
-  // Debug: Optional task context for pre-filling fields
-  taskContext?: TaskContext;
-}
+import type { CreateExpenseModalProps } from '@/types/expense.types';
 
 export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: CreateExpenseModalProps) {
-  // Debug: Log task context when provided
-  if (taskContext) {
-    console.log('[CreateExpenseModal] Rendering with task context:', {
-      taskId: taskContext.taskId,
-      taskTitle: taskContext.taskTitle,
-      projectId: taskContext.projectId,
-      projectName: taskContext.projectName,
-    });
-  } else {
-    console.log('[CreateExpenseModal] Rendering without task context (standalone mode)');
-  }
-
-  // Debug: Initialize with task context if provided
+  // Initialize with task context if provided
   const [selectedProject, setSelectedProject] = useState<string>(taskContext?.projectId || '');
   const [selectedTask, setSelectedTask] = useState<string>(taskContext?.taskId || '');
   const [description, setDescription] = useState('');
@@ -73,9 +35,6 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
   const projectTasks = selectedProject
     ? tasks.filter(task => task.project_id === selectedProject)
     : [];
-
-  console.log('[CreateExpenseModal] Selected project:', selectedProject);
-  console.log('[CreateExpenseModal] Filtered tasks:', projectTasks);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -132,18 +91,6 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
       return;
     }
 
-    // Debug: Log submission data
-    console.log('[CreateExpenseModal] Submitting expense with data:', {
-      project_id: selectedProject,
-      task_id: selectedTask && selectedTask !== 'no-task' ? selectedTask : undefined,
-      description,
-      amount: parseFloat(amount),
-      category,
-      expense_date: expenseDate,
-      vendor_name: vendorName || undefined,
-      fromTaskContext: !!taskContext,
-    });
-
     startTransition(async () => {
       // In a real implementation, upload the receipt to storage first
       // const receiptUrl = await uploadReceiptToStorage(receiptFile);
@@ -153,28 +100,21 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
         task_id: selectedTask && selectedTask !== 'no-task' ? selectedTask : undefined,
         description,
         amount: parseFloat(amount),
-        category: category as any,
+        category: category as 'materials' | 'labor' | 'equipment' | 'permits' | 'transportation' | 'meals' | 'lodging' | 'other',
         expense_date: expenseDate,
         vendor_name: vendorName || undefined,
         receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
       });
 
       if (result.success) {
-        console.log('[CreateExpenseModal] Expense created successfully', {
-          expenseId: result.data?.id,
-          fromTaskContext: !!taskContext,
-        });
         toast({
           title: 'Expense Added Successfully',
           description: taskContext
             ? `Expense added to task: ${taskContext.taskTitle}`
             : 'Your expense has been added and is now under review.',
         });
-        // Call onClose which triggers handleExpenseCreated in TaskExpensesSection
-        // This will close CreateExpenseModal and refresh the expense list in TaskModal
         onClose();
       } else {
-        console.error('[CreateExpenseModal] Failed to create expense:', result.error);
         toast({
           title: 'Error',
           description: result.error || 'Failed to submit expense',
@@ -186,13 +126,6 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
 
   // Validation state for submit button
   const isValid = selectedProject && description && amount && parseFloat(amount) > 0;
-
-  console.log('[CreateExpenseModal] Validation state:', {
-    selectedProject,
-    description,
-    amount,
-    isValid,
-  });
 
   return (
     <BaseModal
@@ -208,10 +141,7 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
           <Button
             type="button"
             variant="ghost"
-            onClick={() => {
-              console.log('[CreateExpenseModal] Back button clicked - returning to TaskModal');
-              onClose();
-            }}
+            onClick={onClose}
             disabled={isPending}
             className="h-10 px-4 font-medium text-[#001B51] hover:bg-[#001B51]/10 hover:text-[#001B51] transition-colors"
           >

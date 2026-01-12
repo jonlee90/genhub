@@ -7,7 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Home,
-  HardHat,
+  FolderKanban,
   CheckSquare,
   Package,
   Receipt,
@@ -34,7 +34,7 @@ interface NavItem {
 // Bottom navigation items for mobile - 6 core items
 const navigationItems: NavItem[] = [
   { name: 'Home', href: '/app', icon: Home },
-  { name: 'Projects', href: '/app/projects', icon: HardHat, createModalType: 'project' },
+  { name: 'Projects', href: '/app/projects', icon: FolderKanban, createModalType: 'project' },
   { name: 'Tasks', href: '/app/tasks', icon: CheckSquare, createModalType: 'task' },
   { name: 'Materials', href: '/app/materials', icon: Package },
   { name: 'Expenses', href: '/app/expenses', icon: Receipt, createModalType: 'expense' },

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import config from "@/config";
 import "./globals.css";
 import { GoogleTagManager } from '@next/third-parties/google'
@@ -11,7 +11,6 @@ import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistr
 export const metadata: Metadata = {
   ...config.metadata,
   manifest: '/manifest.json',
-  themeColor: '#001B51',
   icons: {
     icon: [
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
@@ -21,18 +20,20 @@ export const metadata: Metadata = {
       { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
     ]
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-    viewportFit: 'cover'
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'GenHub'
   }
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover',
+  themeColor: '#001B51'
 };
 
 export default function RootLayout({

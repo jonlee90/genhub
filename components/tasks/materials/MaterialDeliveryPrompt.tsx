@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Truck, DollarSign, AlertTriangle, Package } from 'lucide-react';
 import { createExpenseFromMaterial } from '@/app/actions/expenses';
 
-// Debug: Material assignment interface matching TaskMaterialsList structure
+// Material assignment interface matching TaskMaterialsList structure
 interface Material {
   id: string;
   product_name: string;
@@ -53,7 +53,7 @@ interface MaterialDeliveryPromptProps {
  * - Error handling with retry
  * - Construction-themed design (#001B51)
  *
- * Debug: Integrated with TaskMaterialsList for auto-prompt on delivery
+ * Integrated with TaskMaterialsList for auto-prompt on delivery
  *
  * @component
  */
@@ -157,7 +157,7 @@ export function MaterialDeliveryPrompt({
         </Button>
       }
     >
-      {/* Debug: Material Details */}
+      {/* Material Details */}
       <div className="space-y-4">
           {/* Material Info */}
           <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4 space-y-2">
@@ -183,7 +183,7 @@ export function MaterialDeliveryPrompt({
             </div>
           </div>
 
-          {/* Debug: Info Alert */}
+          {/* Info Alert */}
           <Alert className="border-construction-blue/20 bg-construction-blue/5">
             <DollarSign className="h-4 w-4 text-construction-blue" />
             <AlertDescription className="text-sm text-gray-600">
@@ -192,7 +192,7 @@ export function MaterialDeliveryPrompt({
             </AlertDescription>
           </Alert>
 
-          {/* Debug: Error Alert */}
+          {/* Error Alert */}
           {error && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />

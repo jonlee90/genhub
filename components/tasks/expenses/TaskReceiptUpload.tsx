@@ -26,7 +26,7 @@ interface TaskReceiptUploadProps {
  * - Image preview with remove option
  * - Construction-themed design matching expense upload
  *
- * Debug: Used in CreateTaskForm and TaskModal for receipt documentation
+ * Used in CreateTaskForm and TaskModal for receipt documentation
  */
 export function TaskReceiptUpload({
   receiptUrl,

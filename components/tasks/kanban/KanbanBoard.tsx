@@ -16,40 +16,13 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { KanbanColumn } from './KanbanColumn';
 import { TaskCard } from '../list/TaskCard';
 import { updateTaskStatus } from '@/app/actions/tasks';
-import { BackgroundBoxes } from '@/components/ui/aceternity/background-boxes';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { Database } from '@/types/database.types';
-
-type TaskStatus = Database['public']['Enums']['task_status'];
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-};
-
-// Phase type for project context
-type Phase = {
-  id: string;
-  name: string;
-  order_index?: number;
-};
+import type { TaskWithRelations, Phase, TaskStatus } from '@/types/task.types';
 
 interface KanbanBoardProps {
-  tasks: Task[];
-  onTaskClick?: (task: Task) => void;
+  tasks: TaskWithRelations[];
+  onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we're in project context - pass to KanbanColumn for phase lookup */
   phases?: Phase[];
 }
@@ -66,9 +39,9 @@ const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: strin
 const VALID_STATUSES = new Set<string>(['todo', 'in_progress', 'review', 'blocked', 'completed']);
 
 export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
-  const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [isPending, startTransition] = useTransition();
-  // Debug: Mobile-specific state - track active column/status tab
+  // Mobile-specific state - track active column/status tab
   const [mobileActiveStatus, setMobileActiveStatus] = useState<TaskStatus>('todo');
 
   // Stable ID for DndContext to prevent hydration mismatch
@@ -101,7 +74,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
       acc[column.id] = optimisticTasks.filter((task) => task.status === column.id);
       return acc;
     },
-    {} as Record<TaskStatus, Task[]>
+    {} as Record<TaskStatus, TaskWithRelations[]>
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -152,7 +125,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
     }
   };
 
-  // Debug: Get task count for each status (for mobile tabs)
+  // Get task count for each status (for mobile tabs)
   const getStatusCount = (status: TaskStatus) => {
     return tasksByStatus[status]?.length || 0;
   };
@@ -167,7 +140,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Debug: Mobile Status Tabs - Sticky at top, scrollable */}
+        {/* Mobile Status Tabs - Sticky at top, scrollable */}
         <div className="md:hidden sticky top-0 z-20 bg-white border-b-2 border-gray-200 mb-4 -mx-4 px-4 shadow-construction">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 py-3 min-w-max">
@@ -187,7 +160,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
                     )}
                     whileTap={{ scale: 0.95 }}
                   >
-                    {/* Debug: Active indicator */}
+                    {/* Active indicator */}
                     {isActive && (
                       <motion.div
                         layoutId="mobileActiveTab"
@@ -198,7 +171,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
 
                     <span className="relative z-10">{column.shortTitle}</span>
 
-                    {/* Debug: Task count badge */}
+                    {/* Task count badge */}
                     <span
                       className={cn(
                         "relative z-10 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black",
@@ -216,7 +189,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
           </div>
         </div>
 
-        {/* Debug: Desktop view - All columns side by side */}
+        {/* Desktop view - All columns side by side */}
         <div className="hidden md:flex gap-4 overflow-x-auto pb-4 relative z-10">
           {COLUMNS.map((column) => (
             <KanbanColumn
@@ -231,7 +204,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
           ))}
         </div>
 
-        {/* Debug: Mobile view - Single column based on active status tab */}
+        {/* Mobile view - Single column based on active status tab */}
         <div className="md:hidden relative z-10">
           {COLUMNS.map((column) => {
             const isActive = mobileActiveStatus === column.id;

@@ -9,18 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-type Project = {
-  id: string;
-  name: string;
-};
-
-type TeamMember = {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-};
+import type { TaskProject, TeamMember } from '@/types/task.types';
 
 interface TaskFiltersProps {
   searchQuery: string;
@@ -31,7 +20,7 @@ interface TaskFiltersProps {
   onAssigneeChange: (value: string) => void;
   priorityFilter: string;
   onPriorityChange: (value: string) => void;
-  projects: Project[];
+  projects: TaskProject[];
   teamMembers: TeamMember[];
   /** Hide project filter when it's displayed elsewhere (e.g., page header) */
   hideProjectFilter?: boolean;

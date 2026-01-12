@@ -50,7 +50,6 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
   // Load phases when project is selected
   useEffect(() => {
     if (selectedProject) {
-      console.log('Loading phases for project:', selectedProject);
       setIsLoadingPhases(true);
       setSelectedPhase('');
       setSelectedTask('');
@@ -58,9 +57,7 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
 
       getProjectPhases(selectedProject)
         .then((result) => {
-          console.log('Phases response:', result);
           if (!result.success) {
-            console.error('Error loading phases:', result.error);
             toast({
               title: 'Error',
               description: result.error || 'Failed to load project phases',
@@ -68,13 +65,11 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
             });
             setPhases([]);
           } else {
-            console.log('Setting phases:', result.data);
             setPhases(result.data || []);
           }
           setIsLoadingPhases(false);
         })
         .catch((err) => {
-          console.error('Unexpected error loading phases:', err);
           toast({
             title: 'Error',
             description: `Unexpected error: ${err.message}`,
@@ -92,15 +87,12 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
   // Load tasks when phase is selected
   useEffect(() => {
     if (selectedPhase) {
-      console.log('Loading tasks for phase:', selectedPhase);
       setIsLoadingTasks(true);
       setSelectedTask('');
 
       getPhaseTasks(selectedPhase)
         .then((result) => {
-          console.log('Tasks response:', result);
           if (!result.success) {
-            console.error('Error loading tasks:', result.error);
             toast({
               title: 'Error',
               description: result.error || 'Failed to load tasks',
@@ -108,13 +100,11 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
             });
             setTasks([]);
           } else {
-            console.log('Setting tasks:', result.data);
             setTasks(result.data || []);
           }
           setIsLoadingTasks(false);
         })
         .catch((err) => {
-          console.error('Unexpected error loading tasks:', err);
           toast({
             title: 'Error',
             description: `Unexpected error: ${err.message}`,
@@ -141,11 +131,6 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
     }
 
     startTransition(async () => {
-      // Debug: Log product before passing to server action
-      console.log('AssignMaterialModal - product being passed:', product);
-      console.log('AssignMaterialModal - product.name:', product?.name);
-      console.log('AssignMaterialModal - product keys:', Object.keys(product || {}));
-
       // Ensure the product is a plain object for serialization
       // Server Actions serialize objects - ensure all properties are preserved
       const plainProduct = {
@@ -167,11 +152,8 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
         reviewCount: product.reviewCount,
       };
 
-      console.log('AssignMaterialModal - plain product:', plainProduct);
-
       // First, create the material from Home Depot product
-      // Pass the actual HomeDepotProduct object directly
-      const materialResult = await createMaterialFromHomeDepot(plainProduct as any);
+      const materialResult = await createMaterialFromHomeDepot(plainProduct);
 
       if (!materialResult.success || !materialResult.data) {
         toast({
@@ -360,7 +342,7 @@ export function AssignMaterialModal({ product, projects, onClose }: AssignMateri
               <Label htmlFor="purchaser" className="text-sm font-bold text-gray-700">
                 Who Will Purchase? *
               </Label>
-              <Select value={purchaserType} onValueChange={(v: any) => setPurchaserType(v)}>
+              <Select value={purchaserType} onValueChange={(v: 'gc' | 'pm' | 'subcontractor') => setPurchaserType(v)}>
                 <SelectTrigger id="purchaser" className="border-2">
                   <SelectValue />
                 </SelectTrigger>

@@ -13,7 +13,7 @@ async function getTasks() {
 
   if (!session?.user?.id) {
     if (process.env.NODE_ENV === 'development') {
-      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [], topTeamMembers: [] };
+      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [] };
     }
     redirect('/');
   }
@@ -28,7 +28,7 @@ async function getTasks() {
 
   if (!companyUser) {
     if (process.env.NODE_ENV === 'development') {
-      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [], topTeamMembers: [] };
+      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [] };
     }
     redirect('/app/onboarding');
   }
@@ -36,7 +36,7 @@ async function getTasks() {
   const companyId = companyUser.company_id;
 
   // OPTIMIZATION: Run all independent queries in parallel
-  const [projectsResult, teamMembersResult, tasksResult, topTeamMembersResult] = await Promise.all([
+  const [projectsResult, teamMembersResult, tasksResult] = await Promise.all([
     // Get all projects for this company (for filtering and modal)
     supabase
       .from('projects')
@@ -89,27 +89,20 @@ async function getTasks() {
       `)
       .eq('project.company_id', companyId)
       .order('created_at', { ascending: false }),
-
-    // Fetch top team members using database function
-    supabase.rpc('get_top_team_members_by_completed_tasks', {
-      p_company_id: companyId,
-      limit_count: 5
-    }),
   ]);
 
   const projects = projectsResult.data || [];
   const teamMembers = teamMembersResult.data?.map((tm) => tm.user_profiles) || [];
   const tasks = tasksResult.data || [];
-  const topTeamMembers = topTeamMembersResult.data || [];
 
   if (tasksResult.error) {
     console.error('Error fetching tasks:', tasksResult.error);
-    return { tasks: [], projects, teamMembers, taskDependencies: [], topTeamMembers };
+    return { tasks: [], projects, teamMembers, taskDependencies: [] };
   }
 
   // If no tasks, return early
   if (tasks.length === 0) {
-    return { tasks: [], projects, teamMembers, taskDependencies: [], topTeamMembers };
+    return { tasks: [], projects, teamMembers, taskDependencies: [] };
   }
 
   // Collect unique IDs for batch fetching
@@ -173,12 +166,11 @@ async function getTasks() {
     projects,
     teamMembers,
     taskDependencies: dependenciesResult.data || [],
-    topTeamMembers,
   };
 }
 
 export default async function TasksPage({ searchParams }: TasksPageProps) {
-  const { tasks, projects, teamMembers, taskDependencies, topTeamMembers } = await getTasks();
+  const { tasks, projects, teamMembers, taskDependencies } = await getTasks();
   const params = await searchParams;
 
   // Get view mode from URL or default to kanban
@@ -190,7 +182,6 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
       projects={projects}
       teamMembers={teamMembers}
       taskDependencies={taskDependencies || []}
-      topTeamMembers={topTeamMembers || []}
       initialView={viewMode as 'kanban' | 'list'}
     />
   );

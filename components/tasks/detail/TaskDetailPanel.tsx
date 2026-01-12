@@ -1,6 +1,6 @@
 'use client';
 
-// Debug: Phase 4 - Task Detail Panel (slide-out drawer)
+// Phase 4 - Task Detail Panel (slide-out drawer)
 // Main panel component with tab navigation for task details, materials, expenses, attachments, activity
 
 import { useState, useEffect } from 'react';
@@ -13,7 +13,7 @@ import { ExpensesTab } from './ExpensesTab';
 import { AttachmentsTab } from './AttachmentsTab';
 import { ActivityTab } from './ActivityTab';
 
-// Debug: Task details type (from server action)
+// Task details type (from server action)
 export type TaskDetails = {
   id: string;
   title: string;
@@ -47,7 +47,7 @@ export type TaskDetails = {
   updated_at: string;
 };
 
-// Debug: Component props
+// Component props
 export interface TaskDetailPanelProps {
   taskId: string | null;
   isOpen: boolean;
@@ -56,7 +56,7 @@ export interface TaskDetailPanelProps {
   hasBudgetVisibility?: boolean; // NEW: Controls cost visibility (default: true)
 }
 
-// Debug: Tab type
+// Tab type
 type TabType = 'details' | 'materials' | 'expenses' | 'attachments' | 'activity';
 
 /**
@@ -107,12 +107,12 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
     }
   }, [isOpen]);
 
-  // Debug: Don't render if closed
+  // Don't render if closed
   if (!isOpen) return null;
 
   return (
     <>
-      {/* Debug: Overlay (mobile only) */}
+      {/* Overlay (mobile only) */}
       <div
         className={cn(
           'fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300',
@@ -122,7 +122,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
         aria-hidden="true"
       />
 
-      {/* Debug: Panel Container - Bottom sheet on mobile, side drawer on desktop */}
+      {/* Panel Container - Bottom sheet on mobile, side drawer on desktop */}
       <div
         className={cn(
           'fixed bg-white shadow-2xl z-50 transition-transform duration-300 ease-out',
@@ -140,12 +140,12 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
         aria-modal="true"
         aria-labelledby="task-panel-title"
       >
-        {/* Debug: Mobile Drag Handle (visual affordance) */}
+        {/* Mobile Drag Handle (visual affordance) */}
         <div className="md:hidden flex justify-center pt-2 pb-1">
           <div className="w-12 h-1 bg-gray-300 rounded-full" />
         </div>
 
-        {/* Debug: Header with title and close button */}
+        {/* Header with title and close button */}
         <div className="border-b-2 border-gray-200 p-4 flex items-center justify-between bg-gradient-to-r from-[#001B51]/5 to-transparent">
           <h2
             id="task-panel-title"
@@ -173,10 +173,10 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
           </button>
         </div>
 
-        {/* Debug: Tab Navigation */}
+        {/* Tab Navigation */}
         <div className="border-b border-gray-200 flex overflow-x-auto bg-gray-50">
           {(['details', 'materials', 'expenses', 'attachments', 'activity'] as TabType[]).map(tab => {
-            // Debug: Get badge count for tab
+            // Get badge count for tab
             const getBadgeCount = () => {
               if (!taskData) return null;
               switch (tab) {
@@ -216,7 +216,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                     {badgeCount}
                   </span>
                 )}
-                {/* Debug: Active tab indicator */}
+                {/* Active tab indicator */}
                 {activeTab === tab && (
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#001B51]" />
                 )}
@@ -225,7 +225,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
           })}
         </div>
 
-        {/* Debug: Tab Content */}
+        {/* Tab Content */}
         <div className="overflow-y-auto" style={{ height: 'calc(100% - 120px)' }}>
           {loading ? (
             <div className="flex flex-col items-center justify-center h-32 gap-3">

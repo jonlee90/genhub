@@ -51,7 +51,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     fetchActivity();
   }, [taskId]);
 
-  // Debug: Format timestamp helper
+  // Format timestamp helper
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -78,7 +78,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     });
   };
 
-  // Debug: Get action display text
+  // Get action display text
   const getActionDisplay = (activity: TaskActivity) => {
     const action = activity.action.replace(/_/g, ' ');
 
@@ -110,7 +110,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     return <span className="capitalize">{action}</span>;
   };
 
-  // Debug: Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -120,7 +120,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     );
   }
 
-  // Debug: Error state
+  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
@@ -130,7 +130,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     );
   }
 
-  // Debug: Empty state
+  // Empty state
   if (activities.length === 0) {
     return (
       <div className="text-center py-12">
@@ -143,7 +143,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
 
   return (
     <div className="space-y-1">
-      {/* Debug: Activity Timeline */}
+      {/* Activity Timeline */}
       {activities.map((activity, index) => (
         <div
           key={activity.id}
@@ -153,7 +153,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
             'border-l-2 border-transparent hover:border-l-[#001B51]'
           )}
         >
-          {/* Debug: Timeline dot */}
+          {/* Timeline dot */}
           <div className="flex flex-col items-center gap-1 pt-1">
             <div className="w-2.5 h-2.5 rounded-full bg-[#001B51] shrink-0" />
             {index < activities.length - 1 && (
@@ -161,9 +161,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
             )}
           </div>
 
-          {/* Debug: Activity content */}
+          {/* Activity content */}
           <div className="flex-1 min-w-0 pb-2">
-            {/* Debug: User and action */}
+            {/* User and action */}
             <div className="flex items-start gap-2 mb-1">
               <User className="h-4 w-4 text-gray-400 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
@@ -174,14 +174,14 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
               </div>
             </div>
 
-            {/* Debug: Comment (if exists) */}
+            {/* Comment (if exists) */}
             {activity.comment && (
               <div className="ml-6 mt-2 p-2 bg-gray-100 rounded border-l-2 border-l-gray-300">
                 <p className="text-sm text-gray-700 italic">{activity.comment}</p>
               </div>
             )}
 
-            {/* Debug: Timestamp */}
+            {/* Timestamp */}
             <div className="ml-6 mt-1 flex items-center gap-1 text-xs text-gray-500">
               <Clock className="h-3 w-3" />
               {formatTimestamp(activity.timestamp)}
@@ -190,7 +190,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
         </div>
       ))}
 
-      {/* Debug: Summary */}
+      {/* Summary */}
       <div className="border-t border-gray-200 pt-4 mt-4 text-xs text-gray-500 text-center">
         <p>{activities.length} activity log{activities.length !== 1 ? 's' : ''}</p>
       </div>

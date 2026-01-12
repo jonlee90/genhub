@@ -3,65 +3,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Receipt, FileText, Image as ImageIcon, DollarSign, Calendar, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// Debug: Expense card component for grid display
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  expense_date: string;
-  vendor_name: string | null;
-  receipt_url: string | null;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
-  created_at: string;
-  project: {
-    id: string;
-    name: string;
-  } | null;
-  task?: {
-    id: string;
-    title: string;
-  } | null;
-  submitter?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
-}
-
-interface ExpenseCardProps {
-  expense: Expense;
-}
-
-const STATUS_CONFIG = {
-  submitted: {
-    label: 'Submitted',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
-  },
-  under_review: {
-    label: 'Under Review',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
-  },
-  approved: {
-    label: 'Approved',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-  },
-  rejected: {
-    label: 'Rejected',
-    color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
-  },
-  paid: {
-    label: 'Paid',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-  },
-};
+import type { ExpenseCardProps, ExpenseStatus } from '@/types/expense.types';
+import { EXPENSE_STATUS_CONFIG } from '@/types/expense.types';
 
 export function ExpenseCard({ expense }: ExpenseCardProps) {
-  // Debug: Render expense card
-  console.log('[ExpenseCard] Rendering expense:', expense.id);
-
-  const statusConfig = STATUS_CONFIG[expense.status];
+  const statusConfig = EXPENSE_STATUS_CONFIG[expense.status as ExpenseStatus];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {

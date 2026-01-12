@@ -83,10 +83,16 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
         </div>
       )}
 
-      {/* Column Content */}
+      {/* Column Content - Scrollable with optimized height */}
       <div
         ref={setNodeRef}
-        className="p-3 min-h-[200px] bg-white"
+        className={cn(
+          "p-3 min-h-[200px] bg-white overflow-y-auto scroll-smooth",
+          "scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100",
+          isMobile
+            ? "max-h-[calc(100dvh-240px)]" // Mobile: Account for sticky tabs + bottom nav
+            : "max-h-[calc(100vh-150px)]"  // Desktop: Account for page header + padding
+        )}
       >
         <SortableContext
           items={tasks.map((t) => t.id)}

@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { CheckSquare, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { CheckSquare, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import type { TaskProgressData } from '@/types/dashboard';
 
@@ -12,36 +11,25 @@ export interface TaskProgressWidgetProps {
 }
 
 const STATUS_CONFIG = [
-  { key: 'completed', label: 'Completed', color: 'bg-[#059669]' },
-  { key: 'inProgress', label: 'In Progress', color: 'bg-[#3B82F6]' },
-  { key: 'blocked', label: 'Blocked', color: 'bg-[#F59E0B]' },
-  { key: 'overdue', label: 'Overdue', color: 'bg-[#DC2626]' },
+  { key: 'completed', label: 'Completed', color: 'bg-[#059669]', textColor: 'text-[#059669]' },
+  { key: 'inProgress', label: 'In Progress', color: 'bg-[#3B82F6]', textColor: 'text-[#3B82F6]' },
+  { key: 'blocked', label: 'Blocked', color: 'bg-[#F59E0B]', textColor: 'text-[#F59E0B]' },
+  { key: 'overdue', label: 'Overdue', color: 'bg-[#DC2626]', textColor: 'text-[#DC2626]' },
 ] as const;
 
 function TaskProgressWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 md:p-5 animate-pulse">
-      {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 bg-gray-200 rounded-lg w-8 h-8" />
-        <div className="h-4 w-24 bg-gray-200 rounded" />
+    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-gray-200 rounded-lg" />
+        <div className="h-5 w-28 bg-gray-200 rounded" />
       </div>
-
-      {/* Progress Ring + Center Content */}
       <div className="flex flex-col items-center mb-4">
-        <div className="w-28 h-28 md:w-32 md:h-32 bg-gray-200 rounded-full" />
+        <div className="w-28 h-28 bg-gray-200 rounded-full" />
       </div>
-
-      {/* Status Breakdown */}
       <div className="space-y-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 bg-gray-200 rounded-full" />
-              <div className="h-3 w-20 bg-gray-200 rounded" />
-            </div>
-            <div className="h-3 w-8 bg-gray-200 rounded" />
-          </div>
+          <div key={i} className="h-10 bg-gray-100 rounded-lg" />
         ))}
       </div>
     </div>
@@ -54,7 +42,7 @@ interface ProgressRingProps {
   strokeWidth?: number;
 }
 
-function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRingProps) {
+function ProgressRing({ percentage, size = 112, strokeWidth = 10 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -77,7 +65,7 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
           strokeWidth={strokeWidth}
         />
         {/* Progress circle */}
-        <motion.circle
+        <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
@@ -86,22 +74,16 @@ function ProgressRing({ percentage, size = 120, strokeWidth = 10 }: ProgressRing
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset }}
-          transition={{ duration: 1, ease: 'easeOut' }}
+          strokeDashoffset={strokeDashoffset}
+          className="transition-all duration-700 ease-out"
         />
       </svg>
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <motion.span
-          className="text-2xl md:text-3xl font-black text-[#001B51]"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
+        <span className="text-2xl font-black text-[#001B51]">
           {formatPercentWhole(percentage)}
-        </motion.span>
-        <span className="text-xs text-gray-500">Complete</span>
+        </span>
+        <span className="text-xs text-gray-500 font-medium">Complete</span>
       </div>
     </div>
   );
@@ -118,87 +100,75 @@ function VelocityTrend({ trend }: { trend: number }) {
         : 'text-gray-500';
 
   return (
-    <div className={cn('flex items-center gap-1 text-xs font-medium', trendColor)}>
-      <TrendIcon className="w-3 h-3" />
+    <div className={cn('flex items-center gap-1 text-xs font-semibold', trendColor)}>
+      <TrendIcon className="w-3.5 h-3.5" />
       <span>
         {direction !== 'neutral' && (direction === 'up' ? '+' : '')}
         {trend}%
       </span>
-      <span className="text-gray-500 ml-0.5">velocity</span>
     </div>
   );
 }
 
 export function TaskProgressWidget({ progress, isLoading = false }: TaskProgressWidgetProps) {
-  console.log('[TaskProgressWidget] Rendering:', { progress, isLoading });
-
   if (isLoading) {
     return <TaskProgressWidgetSkeleton />;
   }
 
   return (
     <Link href="/app/tasks" className="block h-full">
-      <motion.div
+      <div
         className={cn(
-          'bg-white border-2 border-gray-200 rounded-lg p-4 md:p-5 h-full',
-          'hover:border-[#001B51]/30 transition-colors cursor-pointer'
+          'bg-white border-2 border-gray-200 rounded-xl p-4 h-full',
+          'transition-all duration-150',
+          'active:scale-[0.99] active:bg-gray-50/50'
         )}
-        whileHover={{
-          scale: 1.02,
-          boxShadow: '0 4px 12px rgba(0, 27, 81, 0.1)',
-        }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-[#001B51]/10 border-2 border-[#001B51]/20 rounded-lg">
-              <CheckSquare className="w-4 h-4 text-[#001B51]" />
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#001B51]/10 rounded-lg">
+              <CheckSquare className="w-5 h-5 text-[#001B51]" />
             </div>
-            <span className="text-xs md:text-sm font-medium text-gray-600 uppercase tracking-wide">
-              Task Progress
-            </span>
+            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+              Tasks
+            </h3>
           </div>
-          {progress.velocityTrend !== 0 && (
-            <VelocityTrend trend={progress.velocityTrend} />
-          )}
+          <div className="flex items-center gap-2">
+            {progress.velocityTrend !== 0 && (
+              <VelocityTrend trend={progress.velocityTrend} />
+            )}
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </div>
         </div>
 
         {/* Progress Ring */}
         <div className="flex flex-col items-center mb-4">
-          <ProgressRing
-            percentage={progress.completionRate}
-            size={120}
-            strokeWidth={10}
-          />
-          <p className="mt-2 text-xs text-gray-500">
+          <ProgressRing percentage={progress.completionRate} />
+          <p className="mt-2 text-sm text-gray-500 font-medium">
             {progress.completed} of {progress.total} tasks
           </p>
         </div>
 
         {/* Status Breakdown */}
         <div className="space-y-2">
-          {STATUS_CONFIG.map(({ key, label, color }) => {
+          {STATUS_CONFIG.map(({ key, label, color, textColor }) => {
             const count = progress[key as keyof TaskProgressData] as number;
             return (
-              <motion.div
+              <div
                 key={key}
-                className="flex items-center justify-between"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: STATUS_CONFIG.findIndex(s => s.key === key) * 0.1 }}
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg"
               >
                 <div className="flex items-center gap-2">
                   <span className={cn('w-2.5 h-2.5 rounded-full', color)} />
-                  <span className="text-xs md:text-sm text-gray-600">{label}</span>
+                  <span className="text-sm text-gray-600 font-medium">{label}</span>
                 </div>
-                <span className="text-xs md:text-sm font-semibold text-gray-900">{count}</span>
-              </motion.div>
+                <span className={cn('text-sm font-bold', textColor)}>{count}</span>
+              </div>
             );
           })}
         </div>
-      </motion.div>
+      </div>
     </Link>
   );
 }

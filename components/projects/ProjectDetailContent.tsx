@@ -21,7 +21,7 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
-  HardHat,
+  FolderKanban,
   FolderOpen,
   Target,
 } from 'lucide-react';
@@ -137,7 +137,7 @@ export function ProjectDetailContent({
       case 'industrial':
         return <Factory className={iconClass} />;
       default:
-        return <HardHat className={iconClass} />;
+        return <FolderKanban className={iconClass} />;
     }
   };
 

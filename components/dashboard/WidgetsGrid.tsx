@@ -1,14 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import {
-  FolderKanban,
-  CheckSquare,
-  Wallet,
-  Clock,
-  Users,
-  Package,
-} from 'lucide-react';
+import { FolderKanban } from 'lucide-react';
 import { ProjectStatusWidget } from './ProjectStatusWidget';
 import { TaskProgressWidget } from './TaskProgressWidget';
 import { BudgetSummaryWidget } from './BudgetSummaryWidget';
@@ -26,71 +18,20 @@ export interface WidgetsGridProps {
  * Widget configuration for consistent rendering
  */
 const WIDGET_CONFIG = [
-  {
-    key: 'project-status',
-    title: 'Project Status',
-    icon: FolderKanban,
-  },
-  {
-    key: 'task-progress',
-    title: 'Task Progress',
-    icon: CheckSquare,
-  },
-  {
-    key: 'budget-summary',
-    title: 'Budget Summary',
-    icon: Wallet,
-  },
-  {
-    key: 'schedule-health',
-    title: 'Schedule Health',
-    icon: Clock,
-  },
-  {
-    key: 'team-activity',
-    title: 'Team Activity',
-    icon: Users,
-  },
-  {
-    key: 'materials-status',
-    title: 'Materials Status',
-    icon: Package,
-  },
+  { key: 'project-status', title: 'Project Status', icon: FolderKanban },
+  { key: 'task-progress', title: 'Task Progress', icon: FolderKanban },
+  { key: 'budget-summary', title: 'Budget Summary', icon: FolderKanban },
+  { key: 'schedule-health', title: 'Schedule Health', icon: FolderKanban },
+  { key: 'team-activity', title: 'Team Activity', icon: FolderKanban },
+  { key: 'materials-status', title: 'Materials Status', icon: FolderKanban },
 ] as const;
-
-/**
- * Animation variants for staggered entrance
- */
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring' as const,
-      stiffness: 300,
-      damping: 24,
-    },
-  },
-};
 
 /**
  * Loading skeleton for individual widget
  */
 function WidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 animate-pulse h-[280px]">
+    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-[280px]">
       {/* Header skeleton */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -100,28 +41,26 @@ function WidgetSkeleton() {
       <div className="space-y-3">
         <div className="h-4 w-full bg-gray-200 rounded" />
         <div className="h-4 w-3/4 bg-gray-200 rounded" />
-        <div className="h-20 w-full bg-gray-200 rounded mt-4" />
+        <div className="h-20 w-full bg-gray-100 rounded mt-4" />
       </div>
     </div>
   );
 }
 
 /**
- * WidgetsGrid - Container for all 6 dashboard widgets
+ * WidgetsGrid - Mobile-first container for dashboard widgets
  *
  * Features:
- * - Responsive grid: 1 col mobile, 2 cols desktop
- * - Consistent widget wrapper styling
- * - Staggered entrance animations
+ * - Single column on mobile, 2 columns on tablet/desktop
+ * - Consistent spacing and styling
  * - Loading state with skeletons
+ * - Touch-friendly cards
  */
 export function WidgetsGrid({ data, isLoading = false }: WidgetsGridProps) {
-  console.log('[WidgetsGrid] Rendering:', { isLoading });
-
   // Loading state: render 6 skeleton widgets
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {WIDGET_CONFIG.map((widget) => (
           <WidgetSkeleton key={widget.key} />
         ))}
@@ -130,59 +69,42 @@ export function WidgetsGrid({ data, isLoading = false }: WidgetsGridProps) {
   }
 
   return (
-    <motion.div
-      className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Project Status Widget */}
-      <motion.div variants={itemVariants}>
-        <ProjectStatusWidget
-          status={data.projectStatus}
-          isLoading={isLoading}
-        />
-      </motion.div>
+      <ProjectStatusWidget
+        status={data.projectStatus}
+        isLoading={isLoading}
+      />
 
       {/* Task Progress Widget */}
-      <motion.div variants={itemVariants}>
-        <TaskProgressWidget
-          progress={data.taskProgress}
-          isLoading={isLoading}
-        />
-      </motion.div>
+      <TaskProgressWidget
+        progress={data.taskProgress}
+        isLoading={isLoading}
+      />
 
       {/* Budget Summary Widget */}
-      <motion.div variants={itemVariants}>
-        <BudgetSummaryWidget
-          budget={data.budgetSummary}
-          isLoading={isLoading}
-        />
-      </motion.div>
+      <BudgetSummaryWidget
+        budget={data.budgetSummary}
+        isLoading={isLoading}
+      />
 
       {/* Schedule Health Widget */}
-      <motion.div variants={itemVariants}>
-        <ScheduleHealthWidget
-          health={data.scheduleHealth}
-          isLoading={isLoading}
-        />
-      </motion.div>
+      <ScheduleHealthWidget
+        health={data.scheduleHealth}
+        isLoading={isLoading}
+      />
 
       {/* Team Activity Widget */}
-      <motion.div variants={itemVariants}>
-        <TeamActivityWidget
-          activity={data.teamActivity}
-          isLoading={isLoading}
-        />
-      </motion.div>
+      <TeamActivityWidget
+        activity={data.teamActivity}
+        isLoading={isLoading}
+      />
 
       {/* Materials Status Widget */}
-      <motion.div variants={itemVariants}>
-        <MaterialsStatusWidget
-          materials={data.materialsStatus}
-          isLoading={isLoading}
-        />
-      </motion.div>
-    </motion.div>
+      <MaterialsStatusWidget
+        materials={data.materialsStatus}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }

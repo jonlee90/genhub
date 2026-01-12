@@ -6,7 +6,7 @@
  * Compact search interface for finding Home Depot products within the task modal.
  * Uses debounced search and displays results as compact cards with quick-add functionality.
  *
- * Debug: Construction-themed with #001B51 primary, debounced 500ms search
+ * Construction-themed with #001B51 primary, debounced 500ms search
  */
 
 import { useState, useTransition, useCallback, useEffect } from 'react';
@@ -28,7 +28,7 @@ import { searchProducts, addProductToTask } from '@/app/actions/materials';
 import { useToast } from '@/hooks/use-toast';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
-// Debug: Interface definitions
+// Interface definitions
 import type { TempMaterial } from './TaskMaterialsManager';
 
 interface TaskMaterialSearchProps {
@@ -40,7 +40,7 @@ interface TaskMaterialSearchProps {
   onTempMaterialAdd?: (material: TempMaterial) => void;
 }
 
-// Debug: Stock status configuration
+// Stock status configuration
 const STOCK_STATUS_CONFIG = {
   in_stock: {
     label: 'In Stock',

@@ -284,7 +284,6 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
               Trade Specialization <span className="text-red-600">*</span>
             </Label>
             <Select
-              name="trade_specialization"
               value={selectedTrade}
               onValueChange={(value) => setSelectedTrade(value as TradeType)}
               disabled={isPending || state?.success || isUploadingDocs}
@@ -300,6 +299,8 @@ export function AddSubcontractorModal({ isOpen, onClose, companyId }: AddSubcont
                 ))}
               </SelectContent>
             </Select>
+            {/* Hidden input for form submission - Radix Select doesn't submit values natively */}
+            <input type="hidden" name="trade_specialization" value={selectedTrade} />
             {(state?.fieldErrors as any)?.trade_specialization && (
               <p className="text-sm text-red-600 font-medium">
                 {(state!.fieldErrors as any).trade_specialization[0]}

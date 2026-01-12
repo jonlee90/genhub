@@ -1,10 +1,9 @@
 import type { Database } from '@/types/database.types';
 
-// Debug: Task type from database enums
 type TaskType = Database['public']['Enums']['task_type'];
 
 /**
- * Debug: Field visibility interface
+ * Field visibility interface
  * Defines which fields are visible for each task type
  */
 export interface FieldVisibility {
@@ -25,7 +24,7 @@ export interface FieldVisibility {
 }
 
 /**
- * Debug: Field configuration interface
+ * Field configuration interface
  * Includes visibility, labels, defaults, and styling for each task type
  */
 export interface FieldConfig {
@@ -43,7 +42,7 @@ export interface FieldConfig {
 }
 
 /**
- * Debug: Task type field configuration
+ * Task type field configuration
  * Maps each task type to its field configuration
  */
 export const TASK_TYPE_CONFIG: Record<TaskType, FieldConfig> = {
@@ -159,17 +158,16 @@ export const TASK_TYPE_CONFIG: Record<TaskType, FieldConfig> = {
 };
 
 /**
- * Debug: Helper to get config for a task type
+ * Get config for a task type
  * Returns the field configuration for the given task type
  * Defaults to 'work' if type is null
  */
 export function getTaskTypeConfig(type: TaskType | null): FieldConfig {
-  console.log('Debug: Getting task type config for type:', type);
   return type ? TASK_TYPE_CONFIG[type] : TASK_TYPE_CONFIG.work;
 }
 
 /**
- * Debug: Helper to check if a field should be visible
+ * Check if a field should be visible
  * Returns true if the field is visible for the given task type and mode
  * Edit-only fields (actualCost, expensesSection, addExpenseButton) only visible in edit mode
  */
@@ -178,17 +176,13 @@ export function isFieldVisible(
   field: keyof FieldVisibility,
   mode: 'create' | 'edit'
 ): boolean {
-  console.log('Debug: Checking field visibility -', { type, field, mode });
   const config = getTaskTypeConfig(type);
   const visible = config.visibility[field];
 
-  // Debug: Some fields are only visible in edit mode
+  // Some fields are only visible in edit mode
   if (field === 'actualCost' || field === 'expensesSection' || field === 'addExpenseButton') {
-    const result = visible && mode === 'edit';
-    console.log(`Debug: Edit-only field ${field}, visible:`, result);
-    return result;
+    return visible && mode === 'edit';
   }
 
-  console.log(`Debug: Field ${field} visibility:`, visible);
   return visible;
 }

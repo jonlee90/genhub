@@ -1,13 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import {
   CheckSquare,
   DollarSign,
   CheckCircle,
   AlertTriangle,
   AlertCircle,
-  Users,
   Package,
   Clock,
   Target,
@@ -306,7 +304,7 @@ export function ProjectTaskSummary({
         {(isOverBudget || isNearBudget) && (
           <div
             className={cn(
-              'flex items-center gap-3 p-3 rounded-xl mb-4',
+              'flex items-center gap-3 p-3 rounded-xl',
               'transition-all duration-200',
               isOverBudget
                 ? 'bg-red-50 border border-red-200'
@@ -347,63 +345,6 @@ export function ProjectTaskSummary({
                   ? 'Review task costs to get back on track'
                   : `${formatPercent(budgetUtilization)} of budget used`}
               </p>
-            </div>
-          </div>
-        )}
-
-        {/* Top Contributors Section */}
-        {taskStats.topAssignees.length > 0 && (
-          <div className="pt-4 border-t border-gray-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Top Contributors
-                </span>
-              </div>
-              {taskStats.unassignedCount > 0 && (
-                <span className="text-[11px] text-gray-400">
-                  +{taskStats.unassignedCount} unassigned
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {taskStats.topAssignees.map((assignee) => (
-                <div
-                  key={assignee.id}
-                  className={cn(
-                    'flex items-center gap-2.5 px-3 py-2.5',
-                    'bg-gray-50 border border-gray-100 rounded-xl',
-                    'min-h-[44px]', // Touch-friendly
-                    'active:scale-[0.98] active:bg-gray-100',
-                    'transition-all duration-150'
-                  )}
-                >
-                  {assignee.avatar_url ? (
-                    <Image
-                      src={assignee.avatar_url}
-                      alt={assignee.name}
-                      width={28}
-                      height={28}
-                      className="w-7 h-7 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-[#001B51] flex items-center justify-center">
-                      <span className="text-xs text-white font-bold">
-                        {assignee.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900 leading-tight">
-                      {assignee.name.split(' ')[0]}
-                    </span>
-                    <span className="text-[11px] text-gray-500">
-                      {assignee.taskCount} task{assignee.taskCount !== 1 ? 's' : ''}
-                    </span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         )}

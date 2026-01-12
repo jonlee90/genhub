@@ -6,7 +6,7 @@
  * Main wrapper component for managing materials within a task modal.
  * Provides tabbed interface for searching Home Depot products and viewing/editing assigned materials.
  *
- * Debug: Construction-themed design with #001B51 primary color
+ * Construction-themed design with #001B51 primary color
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -18,7 +18,7 @@ import { TaskMaterialSearch } from './TaskMaterialSearch';
 import { TaskMaterialsList } from './TaskMaterialsList';
 import { getTaskMaterials } from '@/app/actions/materials';
 
-// Debug: Interface definitions
+// Interface definitions
 interface TaskMaterialsManagerProps {
   taskId?: string;          // For edit mode (existing task)
   projectId: string;        // Required for material assignment
@@ -50,7 +50,7 @@ interface MaterialAssignment {
   };
 }
 
-// Debug: Temporary material for create mode (before task exists)
+// Temporary material for create mode (before task exists)
 export interface TempMaterial {
   product_id: string;
   product_name: string;
@@ -63,7 +63,7 @@ export interface TempMaterial {
   stock_status: string;
 }
 
-// Debug: Tab type for interface
+// Tab type for interface
 type TabType = 'search' | 'assigned';
 
 export function TaskMaterialsManager({

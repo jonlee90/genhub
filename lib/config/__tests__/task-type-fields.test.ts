@@ -7,11 +7,11 @@ import {
 } from '../task-type-fields';
 
 /**
- * Debug: Unit tests for task type field visibility configuration
+ * Unit tests for task type field visibility configuration
  */
 describe('Task Type Field Configuration', () => {
   describe('getTaskTypeConfig', () => {
-    // Debug: Test work type configuration
+    // Test work type configuration
     it('returns correct config for work type', () => {
       const config = getTaskTypeConfig('work');
 
@@ -21,7 +21,7 @@ describe('Task Type Field Configuration', () => {
       expect(config.defaults.startDate).toBe('today');
     });
 
-    // Debug: Test purchase type configuration
+    // Test purchase type configuration
     it('returns correct config for purchase type', () => {
       const config = getTaskTypeConfig('purchase');
 
@@ -30,7 +30,7 @@ describe('Task Type Field Configuration', () => {
       expect(config.defaults.startDate).toBe('today');
     });
 
-    // Debug: Test approval type configuration
+    // Test approval type configuration
     it('returns correct config for approval type', () => {
       const config = getTaskTypeConfig('approval');
 
@@ -41,7 +41,7 @@ describe('Task Type Field Configuration', () => {
       expect(config.defaults.startDate).toBe('today');
     });
 
-    // Debug: Test admin type configuration
+    // Test admin type configuration
     it('returns correct config for admin type', () => {
       const config = getTaskTypeConfig('admin');
 
@@ -51,7 +51,7 @@ describe('Task Type Field Configuration', () => {
       expect(config.defaults.priority).toBe('low');
     });
 
-    // Debug: Test null type defaults to work
+    // Test null type defaults to work
     it('defaults to work config when type is null', () => {
       const config = getTaskTypeConfig(null);
       const workConfig = getTaskTypeConfig('work');
@@ -61,7 +61,7 @@ describe('Task Type Field Configuration', () => {
   });
 
   describe('isFieldVisible', () => {
-    // Debug: Test edit-only fields in create mode
+    // Test edit-only fields in create mode
     it('hides edit-only fields in create mode', () => {
       expect(isFieldVisible('work', 'actualCost', 'create')).toBe(false);
       expect(isFieldVisible('work', 'expensesSection', 'create')).toBe(false);
@@ -71,21 +71,21 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('purchase', 'expensesSection', 'create')).toBe(false);
     });
 
-    // Debug: Test edit-only fields in edit mode
+    // Test edit-only fields in edit mode
     it('shows edit-only fields in edit mode for work type', () => {
       expect(isFieldVisible('work', 'actualCost', 'edit')).toBe(true);
       expect(isFieldVisible('work', 'expensesSection', 'edit')).toBe(true);
       expect(isFieldVisible('work', 'addExpenseButton', 'edit')).toBe(true);
     });
 
-    // Debug: Test edit-only fields in edit mode for purchase type
+    // Test edit-only fields in edit mode for purchase type
     it('shows edit-only fields in edit mode for purchase type', () => {
       expect(isFieldVisible('purchase', 'actualCost', 'edit')).toBe(true);
       expect(isFieldVisible('purchase', 'expensesSection', 'edit')).toBe(true);
       expect(isFieldVisible('purchase', 'addExpenseButton', 'edit')).toBe(true);
     });
 
-    // Debug: Test materials section visibility
+    // Test materials section visibility
     it('shows materials section only for purchase tasks', () => {
       expect(isFieldVisible('work', 'materialsSection', 'create')).toBe(false);
       expect(isFieldVisible('purchase', 'materialsSection', 'create')).toBe(true);
@@ -93,7 +93,7 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('admin', 'materialsSection', 'create')).toBe(false);
     });
 
-    // Debug: Test approval workflow visibility
+    // Test approval workflow visibility
     it('shows approval workflow only for approval tasks', () => {
       expect(isFieldVisible('work', 'approvalWorkflow', 'create')).toBe(false);
       expect(isFieldVisible('purchase', 'approvalWorkflow', 'create')).toBe(false);
@@ -101,7 +101,7 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('admin', 'approvalWorkflow', 'create')).toBe(false);
     });
 
-    // Debug: Test phase field visibility
+    // Test phase field visibility
     it('hides phase field for admin tasks', () => {
       expect(isFieldVisible('work', 'phase', 'create')).toBe(true);
       expect(isFieldVisible('purchase', 'phase', 'create')).toBe(true);
@@ -109,7 +109,7 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('admin', 'phase', 'create')).toBe(false);
     });
 
-    // Debug: Test start date field visibility
+    // Test start date field visibility
     it('hides start date field for admin tasks', () => {
       expect(isFieldVisible('work', 'startDate', 'create')).toBe(true);
       expect(isFieldVisible('purchase', 'startDate', 'create')).toBe(true);
@@ -117,7 +117,7 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('admin', 'startDate', 'create')).toBe(false);
     });
 
-    // Debug: Test cost fields for approval and admin
+    // Test cost fields for approval and admin
     it('hides cost fields for approval and admin tasks', () => {
       expect(isFieldVisible('approval', 'plannedCost', 'create')).toBe(false);
       expect(isFieldVisible('admin', 'plannedCost', 'create')).toBe(false);
@@ -126,7 +126,7 @@ describe('Task Type Field Configuration', () => {
       expect(isFieldVisible('purchase', 'plannedCost', 'create')).toBe(true);
     });
 
-    // Debug: Test always-visible fields
+    // Test always-visible fields
     it('always shows required fields for all task types', () => {
       const taskTypes: Array<'work' | 'purchase' | 'approval' | 'admin'> = ['work', 'purchase', 'approval', 'admin'];
       const alwaysVisibleFields: Array<keyof import('../task-type-fields').FieldVisibility> = [
@@ -147,7 +147,7 @@ describe('Task Type Field Configuration', () => {
   });
 
   describe('TASK_TYPE_CONFIG', () => {
-    // Debug: Test all task types are defined
+    // Test all task types are defined
     it('defines configuration for all task types', () => {
       expect(TASK_TYPE_CONFIG.work).toBeDefined();
       expect(TASK_TYPE_CONFIG.purchase).toBeDefined();
@@ -155,7 +155,7 @@ describe('Task Type Field Configuration', () => {
       expect(TASK_TYPE_CONFIG.admin).toBeDefined();
     });
 
-    // Debug: Test each config has required properties
+    // Test each config has required properties
     it('each config has all required properties', () => {
       const taskTypes: Array<'work' | 'purchase' | 'approval' | 'admin'> = ['work', 'purchase', 'approval', 'admin'];
 

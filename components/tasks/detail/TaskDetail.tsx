@@ -67,7 +67,7 @@ type TaskType = Database['public']['Enums']['task_type'];
 type ApprovalStatus = Database['public']['Enums']['approval_status'];
 type UserRole = Database['public']['Enums']['user_role'];
 
-// Debug: Approval status configuration
+// Approval status configuration
 const APPROVAL_STATUS_CONFIG: Record<ApprovalStatus, {
   label: string;
   color: string;
@@ -204,18 +204,18 @@ export function TaskDetail({
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'materials' | 'activity' | 'dependencies'>('overview');
 
-  // Debug: Approval workflow state
+  // Approval workflow state
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState<ApprovalStatus | null>(null);
   const [approvalNotes, setApprovalNotes] = useState('');
   const [isUpdatingApproval, setIsUpdatingApproval] = useState(false);
 
-  // Debug: Task type determination (default to 'work' for legacy tasks)
+  // Task type determination (default to 'work' for legacy tasks)
   const taskType: TaskType = task.task_type || 'work';
   const isApprovalTask = taskType === 'approval';
   const isPurchaseTask = taskType === 'purchase';
 
-  // Debug: Determine if cost fields should be shown (not for approval tasks)
+  // Determine if cost fields should be shown (not for approval tasks)
   const showCostFields = !isApprovalTask;
 
   const canEdit = userRole === 'admin' || userRole === 'project_manager' ||
@@ -388,7 +388,7 @@ export function TaskDetail({
 
         {/* Task Type, Status and Priority Badges */}
         <div className="flex items-center gap-3 flex-wrap">
-          {/* Debug: Task Type Badge - always show, read-only */}
+          {/* Task Type Badge - always show, read-only */}
           <TaskTypeBadge type={taskType} />
 
           <Badge
@@ -411,7 +411,7 @@ export function TaskDetail({
             {TASK_PRIORITY_CONFIG[task.priority as TaskPriority].label} Priority
           </Badge>
 
-          {/* Debug: Approval Status Badge for Approval Tasks */}
+          {/* Approval Status Badge for Approval Tasks */}
           {isApprovalTask && task.approval_status && (
             <Badge
               className={cn(
@@ -723,7 +723,7 @@ export function TaskDetail({
                               </div>
                             </div>
 
-                            {/* Debug: Actual Cost - READ-ONLY (auto-calculated by trigger) */}
+                            {/* Actual Cost - READ-ONLY (auto-calculated by trigger) */}
                             <div className="space-y-2">
                               <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
                                 Actual Cost
@@ -989,7 +989,7 @@ export function TaskDetail({
             </CardContent>
           </Card>
 
-          {/* Debug: Approval Workflow Card - Only for approval-type tasks */}
+          {/* Approval Workflow Card - Only for approval-type tasks */}
           {isApprovalTask && canApprove && task.approval_status === 'pending' && (
             <Card className="border-2 border-amber-200 shadow-construction">
               <CardHeader className="border-b-2 border-amber-100 bg-gradient-to-r from-amber-50 to-white">
@@ -1032,7 +1032,7 @@ export function TaskDetail({
             </Card>
           )}
 
-          {/* Debug: Approval Info Card - Show approval details when approved/rejected/revision */}
+          {/* Approval Info Card - Show approval details when approved/rejected/revision */}
           {isApprovalTask && task.approval_status && task.approval_status !== 'pending' && (
             <Card className={cn(
               'border-2 shadow-construction',
@@ -1160,7 +1160,7 @@ export function TaskDetail({
         onConfirm={handleBlockedConfirm}
       />
 
-      {/* Debug: Approval Notes Modal */}
+      {/* Approval Notes Modal */}
       <AlertDialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
         <AlertDialogContent className="border-2">
           <AlertDialogHeader>

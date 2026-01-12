@@ -7,75 +7,23 @@ import { TaskModalTrigger } from '../modals/TaskModalTrigger';
 import { TaskModal } from '../modals/TaskModal';
 import { ProjectFilterHeader } from './ProjectFilterHeader';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { SearchInput } from '@/components/mobile/SearchInput';
-import { MobileStatusTabs } from '@/components/mobile/MobileStatusTabs';
-import { FilterButton } from '@/components/mobile/FilterButton';
+import { BlueprintBackground } from '@/components/shared';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CheckSquare } from 'lucide-react';
-import type { Database } from '@/types/database.types';
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-  materialStats?: {
-    count: number;
-    totalCost: number;
-  };
-};
-
-type Phase = {
-  id: string;
-  name: string;
-  order_index: number;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  budget?: number | null;
-  status?: string;
-  health_score?: number | null;
-  completion_percentage?: number | null;
-  end_date?: string | null;
-  project_phases?: Phase[];
-};
-
-type TeamMember = {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-};
-
-type TopTeamMember = {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  completed_tasks: number;
-};
-
-type TaskDependency = Database['public']['Tables']['task_dependencies']['Row'];
+import type {
+  TaskWithRelations,
+  TaskProject,
+  TeamMember,
+  TaskDependencyRow,
+} from '@/types/task.types';
 
 interface TasksPageClientProps {
-  tasks: Task[];
-  projects: Project[];
+  tasks: TaskWithRelations[];
+  projects: TaskProject[];
   teamMembers: TeamMember[];
-  taskDependencies: TaskDependency[];
-  topTeamMembers: TopTeamMember[];
+  taskDependencies: TaskDependencyRow[];
   initialView: 'kanban' | 'list';
 }
 
@@ -94,7 +42,6 @@ export function TasksPageClient({
   projects,
   teamMembers,
   taskDependencies,
-  topTeamMembers,
   initialView,
 }: TasksPageClientProps) {
   const [projectFilter, setProjectFilter] = useState<string>('all');
@@ -103,41 +50,21 @@ export function TasksPageClient({
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const router = useRouter();
-  const isMobile = useIsMobile();
+  const isMobileQuery = useIsMobile();
   const { registerCreateModal, unregisterCreateModal } = useBottomNav();
 
-  // Refs for scroll-based header visibility
-  const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
-  const resultsCountRef = useRef<HTMLDivElement>(null);
-  const [showHeader, setShowHeader] = useState(false);
-
-  // Track results count element position to show/hide header
-  // Header shows when results count is 133px or less from viewport top
+  // Track if component has mounted to avoid hydration mismatch
+  // Server renders desktop layout, client switches to mobile after mount if needed
+  const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
-    if (!isMobile) return;
+    setHasMounted(true);
+  }, []);
 
-    // Delay to ensure refs are populated after mount
-    const setupListener = () => {
-      const scrollContainer = pullToRefreshRef.current?.getScrollContainer();
-      if (!scrollContainer) return;
+  // Only use mobile detection after hydration to prevent mismatch
+  const isMobile = hasMounted && isMobileQuery;
 
-      const checkResultsPosition = () => {
-        if (!resultsCountRef.current) return;
-        const rect = resultsCountRef.current.getBoundingClientRect();
-        setShowHeader(rect.top <= 133);
-      };
-
-      checkResultsPosition();
-      scrollContainer.addEventListener('scroll', checkResultsPosition, { passive: true });
-
-      return () => {
-        scrollContainer.removeEventListener('scroll', checkResultsPosition);
-      };
-    };
-
-    const timeoutId = setTimeout(setupListener, 50);
-    return () => clearTimeout(timeoutId);
-  }, [isMobile]);
+  // Ref for pull-to-refresh
+  const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
 
   // Register create modal data for bottom nav
   useEffect(() => {
@@ -190,6 +117,25 @@ export function TasksPageClient({
       return true;
     });
   }, [tasks, searchQuery, statusFilter, projectFilter]);
+
+  // Calculate task count for the selected project (used in ProjectFilterHeader)
+  const projectTaskCount = useMemo(() => {
+    if (projectFilter === 'all') {
+      return tasks.length;
+    }
+    return tasks.filter((task) => task.project_id === projectFilter).length;
+  }, [tasks, projectFilter]);
+
+  // Calculate task counts for each project (for dropdown display)
+  const projectTaskCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    tasks.forEach((task) => {
+      if (task.project_id) {
+        counts[task.project_id] = (counts[task.project_id] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [tasks]);
 
   // Calculate status counts for all tabs (filtered by project and search, but NOT by status)
   const statusCounts = useMemo(() => {
@@ -246,110 +192,38 @@ export function TasksPageClient({
   if (isMobile) {
     return (
       <div className="flex flex-col h-full">
-        {/* Fixed header - initially hidden, shows when scrolled past results count */}
-        <header
-          className={`
-            fixed top-0 left-0 right-0 z-30
-            bg-white/95 backdrop-blur-sm border-b border-gray-200
-            px-4 py-3 space-y-3
-            transition-all duration-200 ease-out
-            will-change-transform
-            ${showHeader
-              ? 'translate-y-0 opacity-100 pointer-events-auto'
-              : '-translate-y-full opacity-0 pointer-events-none'}
-          `}
-        >
-     
-
-          {/* Status filter tabs (x-scrollable) */}
-          <div className="flex flex-row items-end gap-2">
-                   {/* Search input */}
-          <SearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search tasks..."
-            debounce={300}
-            className={'w-full'}
-          />
-
-            <FilterButton
-              onClick={() => setShowFilterSheet(true)}
-              count={activeFilterCount}
-              className="flex-shrink-0"
-            />
-             
-          </div>
-          <MobileStatusTabs
-                tabs={tabsWithCounts}
-                value={statusFilter}
-                onChange={setStatusFilter}
-                showCounts={true}
-              />
-        </header>
-
-
         {/* Task list with pull-to-refresh */}
         <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
           <div className="p-4 pb-32">
-            {/* Blueprint Grid Background */}
-            <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-10">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(to right, currentColor 1px, transparent 1px),
-                    linear-gradient(to bottom, currentColor 1px, transparent 1px)
-                  `,
-                  backgroundSize: '40px 40px',
-                  color: '#001B51',
-                }}
-              />
-            </div>
+          <BlueprintBackground />
 
-
-      {/* Industrial Header with Blueprint Aesthetic */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
-          }}
-        />
-      </div>
-            <div className="relative mb-5">
+            <div className="relative mb-4">
               {/* Construction border */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-
-              <div className="flex flex-col gap-4 pt-2 md:pt-4">
-                {/* Title Row */}
-                <div className="flex items-start justify-between gap-3">
-                    
-                  {/* Prominent Project Filter */}
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <ProjectFilterHeader
-                      projects={projects}
-                      selectedProjectId={projectFilter}
-                      onProjectChange={setProjectFilter}
-                    />
-
-                    {/* Selected project indicator on mobile */}
-                    {projectFilter !== 'all' && (
-                      <div className="sm:hidden text-xs text-gray-500">
-                        Showing tasks for selected project only
-                      </div>
-                    )}
-                  </div>
-
+                <div className="flex items-start pt-2 justify-between gap-3">
+                  <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
+                    TASKS
+                  </h1>
+                  
                   {/* Action Button with Construction Theme */}
                   <TaskModalTrigger projects={projects} teamMembers={teamMembers} />
                 </div>
-              </div>
             </div>
+
+            {/* Project Filter - Sticky on mobile */}
+            {/* z-30 ensures this appears above the gantt chart header which uses z-20 */}
+            <div className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+              <ProjectFilterHeader
+                projects={projects}
+                selectedProjectId={projectFilter}
+                onProjectChange={setProjectFilter}
+                taskCount={projectTaskCount}
+                projectTaskCounts={projectTaskCounts}
+              />
+            </div>
+             
+
+
 
             {/* Task Board - will use list view on mobile */}
             <TaskBoard
@@ -358,11 +232,17 @@ export function TasksPageClient({
               projects={projects}
               teamMembers={teamMembers}
               initialView="list"
-              topTeamMembers={topTeamMembers}
               externalProjectFilter={projectFilter}
               onExternalProjectFilterChange={setProjectFilter}
               hideFilters
-              resultsCountRef={resultsCountRef}
+              // Mobile search/filter props
+              mobileSearchQuery={searchQuery}
+              onMobileSearchChange={setSearchQuery}
+              mobileStatusFilter={statusFilter}
+              onMobileStatusChange={setStatusFilter}
+              mobileStatusTabs={tabsWithCounts}
+              mobileActiveFilterCount={activeFilterCount}
+              onMobileFilterClick={() => setShowFilterSheet(true)}
             />
 
             {/* Empty state */}
@@ -462,20 +342,7 @@ export function TasksPageClient({
   // Desktop layout (unchanged)
   const pageContent = (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
-      {/* Blueprint Grid Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
-          }}
-        />
-      </div>
+      <BlueprintBackground />
 
       {/* Industrial Header with Blueprint Aesthetic */}
       <div className="relative">
@@ -502,6 +369,8 @@ export function TasksPageClient({
               projects={projects}
               selectedProjectId={projectFilter}
               onProjectChange={setProjectFilter}
+              taskCount={projectTaskCount}
+              projectTaskCounts={projectTaskCounts}
             />
 
             {/* Selected project indicator on mobile */}
@@ -521,7 +390,6 @@ export function TasksPageClient({
         projects={projects}
         teamMembers={teamMembers}
         initialView={initialView}
-        topTeamMembers={topTeamMembers}
         externalProjectFilter={projectFilter}
         onExternalProjectFilterChange={setProjectFilter}
       />

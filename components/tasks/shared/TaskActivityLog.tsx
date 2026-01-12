@@ -2,31 +2,17 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, MessageSquare, RefreshCw, CheckCircle, AlertTriangle, Wrench, HardHat, Calendar, User, Settings } from 'lucide-react';
+import { Send, MessageSquare, RefreshCw, AlertTriangle, Wrench, HardHat, Calendar, User, Settings } from 'lucide-react';
 import { addTaskComment } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface Activity {
-  id: string;
-  action: string;
-  old_value: string | null;
-  new_value: string | null;
-  comment: string | null;
-  created_at: string;
-  user: {
-    id: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-}
+import type { TaskActivity } from '@/types/task.types';
 
 interface TaskActivityLogProps {
   taskId: string;
-  activity: Activity[];
+  activity: TaskActivity[];
 }
 
 const ACTION_CONFIG = {
@@ -80,7 +66,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
     });
   };
 
-  const renderActivityContent = (item: Activity) => {
+  const renderActivityContent = (item: TaskActivity) => {
     const config = ACTION_CONFIG[item.action as keyof typeof ACTION_CONFIG] || {
       icon: RefreshCw,
       color: 'text-gray-600',

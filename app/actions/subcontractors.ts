@@ -15,12 +15,19 @@ type SubcontractorUpdate = Database['public']['Tables']['subcontractors']['Updat
 // Validation Schemas
 // ============================================
 
+const tradeTypeValues = [
+  'general', 'electrical', 'plumbing', 'hvac', 'carpentry', 'masonry',
+  'roofing', 'flooring', 'painting', 'drywall', 'concrete', 'landscaping',
+  'demolition', 'steel_work', 'glass_glazing', 'fire_protection', 'insulation', 'other'
+] as const;
+
 const createSubcontractorSchema = z.object({
   company_name: z.string().min(1, 'Company name is required').max(200).transform((v) => v.trim()),
   contact_name: z.string().min(1, 'Contact name is required').max(200).transform((v) => v.trim()),
   email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()),
   phone: z.string().optional().transform((v) => v ? v.trim() : v),
   address: z.string().optional().transform((v) => v ? v.trim() : v),
+  trade_specialization: z.enum(tradeTypeValues).optional().default('general'),
   license_number: z.string().optional().transform((v) => v ? v.trim() : v),
   license_expiry: z.string().optional(), // ISO date string
   insurance_provider: z.string().optional().transform((v) => v ? v.trim() : v),
@@ -36,6 +43,7 @@ const updateSubcontractorSchema = z.object({
   email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()).optional(),
   phone: z.string().optional().transform((v) => v ? v.trim() : v),
   address: z.string().optional().transform((v) => v ? v.trim() : v),
+  trade_specialization: z.enum(tradeTypeValues).optional(),
   license_number: z.string().optional().transform((v) => v ? v.trim() : v),
   license_expiry: z.string().optional(),
   insurance_provider: z.string().optional().transform((v) => v ? v.trim() : v),
@@ -126,6 +134,7 @@ export async function createSubcontractor(formData: FormData) {
     email: formData.get('email'),
     phone: formData.get('phone') || undefined,
     address: formData.get('address') || undefined,
+    trade_specialization: formData.get('trade_specialization') || 'general',
     license_number: formData.get('license_number') || undefined,
     license_expiry: formData.get('license_expiry') || undefined,
     insurance_provider: formData.get('insurance_provider') || undefined,
@@ -181,6 +190,7 @@ export async function createSubcontractor(formData: FormData) {
       email: data.email,
       phone: data.phone || null,
       address: data.address || null,
+      trade_specialization: data.trade_specialization || 'general',
       license_number: data.license_number || null,
       license_expiry: data.license_expiry || null,
       insurance_provider: data.insurance_provider || null,
@@ -240,6 +250,7 @@ export async function updateSubcontractor(data: {
   email?: string;
   phone?: string;
   address?: string;
+  trade_specialization?: string;
   license_number?: string;
   license_expiry?: string;
   insurance_provider?: string;

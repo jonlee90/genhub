@@ -37,7 +37,7 @@ export function SubcontractorList({
     const query = searchQuery.toLowerCase();
     return subcontractors.filter((sub) => {
       const companyName = sub.company_name?.toLowerCase() || '';
-      const trade = (sub as any).trade_specialization?.toLowerCase() || '';
+      const trade = sub.trade_specialization?.toLowerCase() || '';
       const contactName = sub.contact_name?.toLowerCase() || '';
       const email = sub.email?.toLowerCase() || '';
 

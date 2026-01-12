@@ -1,29 +1,17 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import type { TaskProject, TeamMember } from '@/types/task.types';
 
 // Types for modal data that pages can register
 interface CreateModalData {
-  projects?: Array<{
-    id: string;
-    name: string;
-    project_phases?: Array<{
-      id: string;
-      name: string;
-      order_index: number;
-    }>;
-  }>;
+  projects?: TaskProject[];
   tasks?: Array<{
     id: string;
     title: string;
     project_id: string;
   }>;
-  teamMembers?: Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  }>;
+  teamMembers?: TeamMember[];
   role?: string | null;
 }
 

@@ -166,14 +166,14 @@ function TaskModalForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Debug: Expense state for TaskExpensesSection (Subtask 5.2)
+  // Expense state for TaskExpensesSection (Subtask 5.2)
   const [expenses, setExpenses] = useState<TaskExpense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
 
-  // Debug: Temporary materials for create mode (will be associated after task creation)
+  // Temporary materials for create mode (will be associated after task creation)
   const [tempMaterials, setTempMaterials] = useState<TempMaterial[]>([]);
 
-  // Debug: Receipt photo state
+  // Receipt photo state
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(() => {
     if (mode === 'edit' && task?.receipt_photo_url) return task.receipt_photo_url;

@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
 
-// Debug: Task expense interface
+// Task expense interface
 export interface TaskExpense {
   id: string;
   description: string;
@@ -25,7 +25,7 @@ export interface TaskExpense {
   category: string;
 }
 
-// Debug: Props for TaskExpensesSection
+// Props for TaskExpensesSection
 interface TaskExpensesSectionProps {
   taskId: string;
   taskTitle: string;
@@ -37,7 +37,7 @@ interface TaskExpensesSectionProps {
   tasks: Array<{ id: string; title: string; project_id: string }>;
 }
 
-// Debug: Status configuration for expense badges
+// Status configuration for expense badges
 const STATUS_CONFIG = {
   submitted: {
     icon: Clock,
@@ -71,7 +71,7 @@ const STATUS_CONFIG = {
   },
 };
 
-// Debug: Format currency helper
+// Format currency helper
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -79,7 +79,7 @@ const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
-// Debug: TaskExpensesSection component
+// TaskExpensesSection component
 export function TaskExpensesSection({
   taskId,
   taskTitle,
@@ -137,7 +137,7 @@ export function TaskExpensesSection({
         </Button>
       </div>
 
-      {/* Debug: Summary row with totals */}
+      {/* Summary row with totals */}
       {expenses.length > 0 && (
         <div className="flex items-center gap-4 p-2 bg-gray-50 rounded-lg text-sm">
           <div>
@@ -151,7 +151,7 @@ export function TaskExpensesSection({
         </div>
       )}
 
-      {/* Debug: Expense list */}
+      {/* Expense list */}
       {expenses.length > 0 ? (
         <div className="space-y-2 max-h-48 overflow-y-auto">
           {expenses.map((expense, index) => {
@@ -190,7 +190,7 @@ export function TaskExpensesSection({
           })}
         </div>
       ) : (
-        // Debug: Empty state
+        // Empty state
         <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
           <Receipt className="h-8 w-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500">No expenses yet</p>
@@ -200,7 +200,7 @@ export function TaskExpensesSection({
         </div>
       )}
 
-      {/* Debug: Create Expense Modal with task context */}
+      {/* Create Expense Modal with task context */}
       {showCreateModal && (
         <CreateExpenseModal
           projects={projects}

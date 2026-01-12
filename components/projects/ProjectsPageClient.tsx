@@ -15,6 +15,7 @@ import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
+import { BlueprintBackground } from '@/components/shared';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from './CreateProjectModal';
@@ -24,7 +25,7 @@ import { ProjectSummary, type PortfolioSummaryStats } from './ProjectSummary';
 import { Button } from '@/components/ui/button';
 import {
   Building2,
-  HardHat,
+  FolderKanban,
   X,
   ShieldAlert,
 } from 'lucide-react';
@@ -33,27 +34,6 @@ import type { ProjectWithStats } from '@/app/actions/projects';
 // ============================================
 // Extracted Components for Better Performance
 // ============================================
-
-/**
- * Blueprint grid background - extracted to prevent re-renders
- */
-const BlueprintBackground = memo(function BlueprintBackground() {
-  return (
-    <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-10">
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          color: '#001B51',
-        }}
-      />
-    </div>
-  );
-});
 
 /**
  * Results count indicator - memoized
@@ -105,7 +85,7 @@ const EmptyState = memo(function EmptyState({
             transition={{ duration: 0.6, type: 'spring', stiffness: 200 }}
           >
             <div className="relative p-5 md:p-8 bg-gradient-to-br from-construction-blue to-blue-700 rounded-2xl md:rounded-3xl shadow-construction-xl">
-              <HardHat className="h-12 w-12 md:h-20 md:w-20 text-white" />
+              <FolderKanban className="h-12 w-12 md:h-20 md:w-20 text-white" />
               <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent rounded-full animate-pulse" />
             </div>
           </motion.div>
@@ -143,7 +123,7 @@ const EmptyState = memo(function EmptyState({
                 className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white"
               >
                 <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
-                <HardHat className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
+                <FolderKanban className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
                 START PROJECT
               </Button>
             </motion.div>
@@ -451,11 +431,9 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
           <div className="p-4 pb-32">
             <BlueprintBackground />
 
-            {/* Industrial Header */}
             <div className="relative mb-4">
               <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-              <div className="flex flex-col gap-3 pt-2">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start pt-2 justify-between gap-3">
                   <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
                     PROJECTS
                   </h1>
@@ -465,12 +443,11 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
                       onClick={() => setShowCreateModal(true)}
                       className="relative h-11 px-4 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg transition-all group overflow-hidden text-white"
                     >
-                      <HardHat className="mr-1.5 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                      <FolderKanban className="mr-1.5 h-4 w-4 group-hover:rotate-12 transition-transform" />
                       <span className="font-black text-sm">NEW PROJECT</span>
                     </Button>
                   )}
                 </div>
-              </div>
             </div>
 
             {/* Portfolio Summary */}
@@ -534,7 +511,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
                 onClick={() => setShowCreateModal(true)}
                 className="relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
               >
-                <HardHat className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
+                <FolderKanban className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
                 <span className="font-black text-sm md:text-base">NEW</span>
                 <span className="hidden sm:inline font-black text-sm md:text-base ml-1">
                   PROJECT

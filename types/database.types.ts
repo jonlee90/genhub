@@ -2041,6 +2041,7 @@ export type Database = {
           notes: string | null
           performance_rating: number | null
           phone: string | null
+          trade_specialization: Database["public"]["Enums"]["trade_type"] | null
           updated_at: string
         }
         Insert: {
@@ -2059,6 +2060,7 @@ export type Database = {
           notes?: string | null
           performance_rating?: number | null
           phone?: string | null
+          trade_specialization?: Database["public"]["Enums"]["trade_type"] | null
           updated_at?: string
         }
         Update: {
@@ -2077,6 +2079,7 @@ export type Database = {
           notes?: string | null
           performance_rating?: number | null
           phone?: string | null
+          trade_specialization?: Database["public"]["Enums"]["trade_type"] | null
           updated_at?: string
         }
         Relationships: [

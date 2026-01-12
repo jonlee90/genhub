@@ -16,7 +16,7 @@ import {
   DollarSign,
   Calendar,
   Users,
-  HardHat,
+  FolderKanban,
   FileText,
   Check,
   ChevronDown,
@@ -499,7 +499,7 @@ export function CreateProjectForm({
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      icon={HardHat}
+      icon={FolderKanban}
       title={modalTitle}
       subtitle={modalSubtitle}
       badges={stepBadges}

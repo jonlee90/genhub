@@ -17,32 +17,13 @@ import {
 import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
-import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
+import { TaskTypeSelector, TaskTypeBadge } from './TaskTypeSelector';
 import { TaskMaterialsManager } from '../materials/TaskMaterialsManager';
 import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
-import type { Database } from '@/types/database.types';
-
-type TaskType = Database['public']['Enums']['task_type'];
-
-interface Project {
-  id: string;
-  name: string;
-  project_phases?: Array<{
-    id: string;
-    name: string;
-    order_index: number;
-  }>;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-}
+import type { TaskType, TaskProject, TeamMember } from '@/types/task.types';
 
 interface CreateTaskFormProps {
-  projects: Project[];
+  projects: TaskProject[];
   teamMembers: TeamMember[];
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
@@ -50,7 +31,7 @@ interface CreateTaskFormProps {
   onCancel?: () => void;
 }
 
-// Debug: Initial state matching createTask action return type
+// Initial state matching createTask action return type
 const initialState: CreateTaskFormState = {
   error: null,
   fieldErrors: null,
@@ -58,7 +39,7 @@ const initialState: CreateTaskFormState = {
   task: null,
 };
 
-// Debug: Step configuration for multi-step form flow
+// Step configuration for multi-step form flow
 // Work: Type -> Details (2 steps)
 // Purchase: Type -> Details -> Materials (3 steps)
 // Approval: Type -> Details (2 steps)
@@ -87,16 +68,16 @@ export function CreateTaskForm({
   const [state, formAction, isPending] = useActionState(createTask, initialState);
   const [selectedProjectId, setSelectedProjectId] = useState(preselectedProjectId || '');
 
-  // Debug: Multi-step form state
+  // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedTaskType, setSelectedTaskType] = useState<TaskType | null>(null);
   const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
 
-  // Debug: Receipt photo state
+  // Receipt photo state
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
 
-  // Debug: Calculate total steps based on task type
+  // Calculate total steps based on task type
   const totalSteps = getStepCount(selectedTaskType);
 
   // Get phases for selected project
@@ -153,7 +134,7 @@ export function CreateTaskForm({
     }
   };
 
-  // Debug: Determine if cost fields should be shown (not for approval tasks)
+  // Determine if cost fields should be shown (not for approval tasks)
   const showCostFields = selectedTaskType !== 'approval';
 
   return (
@@ -164,12 +145,12 @@ export function CreateTaskForm({
             <CardTitle className="text-xl font-black text-construction-blue">
               Create New Task
             </CardTitle>
-            {/* Debug: Show selected task type badge after selection */}
+            {/* Show selected task type badge after selection */}
             {selectedTaskType && currentStep > 1 && (
               <TaskTypeBadge type={selectedTaskType} />
             )}
           </div>
-          {/* Debug: Step indicator */}
+          {/* Step indicator */}
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span className="font-bold text-construction-blue">Step {currentStep}</span>
             <span>of {totalSteps}</span>
@@ -178,7 +159,7 @@ export function CreateTaskForm({
           </div>
         </div>
 
-        {/* Debug: Progress bar */}
+        {/* Progress bar */}
         <div className="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-construction-blue"
@@ -222,7 +203,7 @@ export function CreateTaskForm({
                 disabled={isPending}
               />
 
-              {/* Debug: Navigation for Step 1 */}
+              {/* Navigation for Step 1 */}
               <div className="flex justify-end gap-4 mt-8 pt-6 border-t-2 border-gray-100">
                 <Button
                   type="button"
@@ -341,7 +322,7 @@ export function CreateTaskForm({
                       <SelectContent>
                         <SelectItem value="none">No phase</SelectItem>
                         {phases
-                          .sort((a, b) => a.order_index - b.order_index)
+                          .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
                           .map((phase) => (
                             <SelectItem key={phase.id} value={phase.id}>
                               {phase.name}
@@ -462,7 +443,7 @@ export function CreateTaskForm({
                   <input type="hidden" name="receipt_photo_url" value={receiptPreview} />
                 )}
 
-                {/* Debug: Navigation for Step 2 */}
+                {/* Navigation for Step 2 */}
                 <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100">
                   <Button
                     type="button"
@@ -531,14 +512,14 @@ export function CreateTaskForm({
                   </div>
                 </div>
 
-                {/* Debug: Materials Manager in edit mode */}
+                {/* Materials Manager in edit mode */}
                 <TaskMaterialsManager
                   taskId={createdTaskId}
                   projectId={selectedProjectId}
                   mode="edit"
                 />
 
-                {/* Debug: Navigation for Step 3 */}
+                {/* Navigation for Step 3 */}
                 <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100">
                   <Button
                     type="button"

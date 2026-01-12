@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { HardHat } from 'lucide-react';
+import { FolderKanban } from 'lucide-react';
 import { CreateProjectForm } from './CreateProjectForm';
 
 interface CreateProjectModalProps {
@@ -26,19 +26,15 @@ export function CreateProjectModal({
   const router = useRouter();
   const [formKey, setFormKey] = useState(0);
 
-  console.log('[CreateProjectModal] Rendering:', { isOpen, formKey });
-
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      console.log('[CreateProjectModal] Modal opened, resetting form');
       setFormKey(Date.now());
     }
   }, [isOpen]);
 
   // Handle close with cleanup
   const handleClose = () => {
-    console.log('[CreateProjectModal] Closing modal');
     onClose();
     // Reset form on close
     setTimeout(() => {
@@ -47,7 +43,6 @@ export function CreateProjectModal({
   };
 
   const handleSuccess = (projectId: string) => {
-    console.log('[CreateProjectModal] Project created:', projectId);
     // Close modal
     handleClose();
     // Refresh page to show new project

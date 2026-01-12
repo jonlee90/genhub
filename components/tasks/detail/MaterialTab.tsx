@@ -1,6 +1,6 @@
 'use client';
 
-// Debug: Phase 4 - Material Tab (display materials linked to task)
+// Phase 4 - Material Tab (display materials linked to task)
 // Fetches and displays material assignments with status badges and cost totals
 
 import { useState, useEffect } from 'react';
@@ -8,7 +8,7 @@ import { Package, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTaskMaterials } from '@/app/actions/materials';
 
-// Debug: Material assignment type (from server action)
+// Material assignment type (from server action)
 type MaterialAssignment = {
   id: string;
   quantity: number;
@@ -30,7 +30,7 @@ type MaterialAssignment = {
   };
 };
 
-// Debug: Component props
+// Component props
 export interface MaterialTabProps {
   taskId: string;
   hasBudgetVisibility?: boolean; // NEW: Controls cost visibility (default: true)
@@ -42,12 +42,12 @@ export interface MaterialTabProps {
  * Calculates total cost summary
  */
 export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabProps) {
-  // Debug: State
+  // State
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Debug: Fetch materials on mount
+  // Fetch materials on mount
   useEffect(() => {
     const fetchMaterials = async () => {
       setLoading(true);
@@ -68,7 +68,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     fetchMaterials();
   }, [taskId]);
 
-  // Debug: Material status color helper
+  // Material status color helper
   const getMaterialStatusColor = (status: string) => {
     const colors: Record<string, string> = {
       needed: 'bg-gray-400',
@@ -79,7 +79,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     return colors[status] || 'bg-gray-400';
   };
 
-  // Debug: Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -89,7 +89,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     );
   }
 
-  // Debug: Error state
+  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
@@ -99,7 +99,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     );
   }
 
-  // Debug: Empty state
+  // Empty state
   if (materials.length === 0) {
     return (
       <div className="text-center py-12">
@@ -110,12 +110,12 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     );
   }
 
-  // Debug: Calculate total cost
+  // Calculate total cost
   const totalCost = materials.reduce((sum, m) => sum + (m.unit_cost * m.quantity), 0);
 
   return (
     <div className="space-y-4">
-      {/* Debug: Materials Table */}
+      {/* Materials Table */}
       <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50 border-b-2 border-gray-200">
@@ -135,7 +135,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
                   index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                 )}
               >
-                {/* Debug: Material name and SKU */}
+                {/* Material name and SKU */}
                 <td className="p-3">
                   <div className="font-semibold text-sm">{material.material.product_name}</div>
                   {material.material.sku && (
@@ -145,12 +145,12 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
                   )}
                 </td>
 
-                {/* Debug: Quantity */}
+                {/* Quantity */}
                 <td className="p-3 text-center">
                   <span className="font-bold text-sm">{material.quantity}</span>
                 </td>
 
-                {/* Debug: Status badge */}
+                {/* Status badge */}
                 <td className="p-3 text-center">
                   <span className={cn(
                     'px-2 py-1 rounded text-xs font-bold uppercase text-white inline-block',
@@ -160,7 +160,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
                   </span>
                 </td>
 
-                {/* Debug: Cost (conditionally hidden based on budget visibility) */}
+                {/* Cost (conditionally hidden based on budget visibility) */}
                 <td className="p-3 text-right">
                   {hasBudgetVisibility ? (
                     <>
@@ -181,7 +181,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
         </table>
       </div>
 
-      {/* Debug: Total Cost Summary (conditionally hidden) */}
+      {/* Total Cost Summary (conditionally hidden) */}
       {hasBudgetVisibility && (
         <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
           <div className="flex justify-between items-center">

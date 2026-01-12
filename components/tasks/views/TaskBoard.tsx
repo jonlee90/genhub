@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, Suspense, lazy } from 'react';
+import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { KanbanBoard } from '../kanban/KanbanBoard';
@@ -9,19 +9,26 @@ import { TaskFilters } from '../shared/TaskFilters';
 import { TaskModal } from '../modals/TaskModal';
 import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
 import { TopProjectsCard } from '../analytics/TopProjectsCard';
-import { TopTeamMembersCard } from '../analytics/TopTeamMembersCard';
 import { transformTasksForGantt } from '../gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
+import { SearchInput } from '@/components/mobile/SearchInput';
+import { MobileStatusTabs } from '@/components/mobile/MobileStatusTabs';
+import { FilterButton } from '@/components/mobile/FilterButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { LayoutGrid, List, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import type { Database } from '@/types/database.types';
 import type { TaskStats } from '@/app/actions/projects';
+import type {
+  TaskWithRelations,
+  Phase,
+  TaskProject,
+  TeamMember,
+  TaskDependencyRow,
+} from '@/types/task.types';
 
-// OPTIMIZATION: Dynamic import GanttChart to reduce initial bundle
-// GanttChart includes heavy deps: @dnd-kit/*, date-fns, etc.
+// Dynamic import GanttChart to reduce initial bundle
 const GanttChart = dynamic(() => import('../gantt/GanttChart').then(mod => ({ default: mod.GanttChart })), {
   loading: () => (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
@@ -31,66 +38,20 @@ const GanttChart = dynamic(() => import('../gantt/GanttChart').then(mod => ({ de
       </div>
     </div>
   ),
-  ssr: false, // GanttChart uses window for resize detection
+  ssr: false,
 });
 
-type Task = Database['public']['Tables']['tasks']['Row'] & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-  materialStats?: {
-    count: number;
-    totalCost: number;
-  };
-};
-
-type Phase = {
-  id: string;
-  name: string;
-  order_index?: number;
-};
-
-type Project = {
-  id: string;
-  name: string;
-  budget?: number | null;
-  status?: string;
-  health_score?: number | null;
-  completion_percentage?: number | null;
-  project_phases?: Phase[];
-};
-
-type TopTeamMember = {
-  id: string;
-  name: string;
-  avatar_url?: string;
-  completed_tasks: number;
-};
-
-type TeamMember = {
-  id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-};
-
-type TaskDependency = Database['public']['Tables']['task_dependencies']['Row'];
+/** Status tab configuration for mobile */
+interface StatusTab {
+  value: string;
+  label: string;
+  count?: number;
+}
 
 interface TaskBoardProps {
-  initialTasks: Task[];
-  taskDependencies?: TaskDependency[];
-  projects: Project[];
+  initialTasks: TaskWithRelations[];
+  taskDependencies?: TaskDependencyRow[];
+  projects: TaskProject[];
   teamMembers: TeamMember[];
   initialView: 'kanban' | 'list';
   /** When provided, we're in project context - shows phase filter and New Task button */
@@ -99,8 +60,6 @@ interface TaskBoardProps {
   phases?: Phase[];
   /** Whether to show the New Task button (default: true when projectId is provided) */
   showNewTaskButton?: boolean;
-  /** Top 5 team members by completed tasks (for dashboard stats) */
-  topTeamMembers?: TopTeamMember[];
   /** External project filter control - when provided, filter is managed externally */
   externalProjectFilter?: string;
   /** External project filter change handler */
@@ -109,6 +68,22 @@ interface TaskBoardProps {
   hideFilters?: boolean;
   /** Ref to attach to the results count element (for mobile header visibility) */
   resultsCountRef?: React.RefObject<HTMLDivElement | null>;
+
+  // Mobile search/filter props (Tasks page only)
+  /** Search query for mobile - controlled externally */
+  mobileSearchQuery?: string;
+  /** Handler for mobile search query change */
+  onMobileSearchChange?: (query: string) => void;
+  /** Status filter for mobile - controlled externally */
+  mobileStatusFilter?: string;
+  /** Handler for mobile status filter change */
+  onMobileStatusChange?: (status: string) => void;
+  /** Status tabs with counts for mobile */
+  mobileStatusTabs?: StatusTab[];
+  /** Active filter count for mobile filter button badge */
+  mobileActiveFilterCount?: number;
+  /** Handler for opening the filter bottom sheet on mobile */
+  onMobileFilterClick?: () => void;
 }
 
 export function TaskBoard({
@@ -120,11 +95,18 @@ export function TaskBoard({
   projectId,
   phases,
   showNewTaskButton,
-  topTeamMembers = [],
   externalProjectFilter,
   onExternalProjectFilterChange,
   hideFilters = false,
   resultsCountRef,
+  // Mobile search/filter props
+  mobileSearchQuery,
+  onMobileSearchChange,
+  mobileStatusFilter,
+  onMobileStatusChange,
+  mobileStatusTabs,
+  mobileActiveFilterCount,
+  onMobileFilterClick,
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -147,10 +129,10 @@ export function TaskBoard({
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('edit');
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
 
   // Handle task click to open edit modal
-  const handleTaskClick = (task: Task) => {
+  const handleTaskClick = (task: TaskWithRelations) => {
     setSelectedTask(task);
     setModalMode('edit');
     setIsModalOpen(true);
@@ -389,22 +371,32 @@ export function TaskBoard({
 
 
 
-      {/* Results count (Tasks page only) */}
-      {!isProjectContext && (
-        <div
-          ref={resultsCountRef}
-          className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue"
-        >
-          <div className="flex items-center gap-1.5 md:gap-2">
-            <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
-            <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
-              Status
-            </span>
+      {/* Mobile Search, Filter, and Status Tabs (Tasks page only) */}
+      {!isProjectContext && mobileStatusTabs && onMobileSearchChange && onMobileStatusChange && onMobileFilterClick && (
+        <div ref={resultsCountRef}>
+          {/* Search and Filter Row */}
+          <div className="flex flex-row items-center gap-2">
+            <SearchInput
+              value={mobileSearchQuery || ''}
+              onChange={onMobileSearchChange}
+              placeholder="Search tasks..."
+              debounce={300}
+              className="w-full"
+            />
+            <FilterButton
+              onClick={onMobileFilterClick}
+              count={mobileActiveFilterCount || 0}
+              className="flex-shrink-0"
+            />
           </div>
-          <div className="h-4 w-px bg-construction-blue/30" />
-          <span className="text-xs md:text-sm font-bold text-gray-700">
-            {filteredTasks.length} of {initialTasks.length} tasks
-          </span>
+
+          {/* Status filter tabs */}
+          <MobileStatusTabs
+            tabs={mobileStatusTabs}
+            value={mobileStatusFilter || 'all'}
+            onChange={onMobileStatusChange}
+            showCounts={true}
+          />
         </div>
       )}
       
@@ -531,18 +523,15 @@ export function TaskBoard({
         />
       )}
 
-      {/* Top Projects & Team Members - Only show on Tasks page (not in project context) */}
+      {/* Top Projects - Only show on Tasks page (not in project context) */}
       {!isProjectContext && filteredTasks.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mt-4 md:mt-6">
+        <div className="mt-4 md:mt-6">
           <TopProjectsCard
             tasks={filteredTasks}
             projects={projects}
             projectFilter={projectFilter}
-          />
-          <TopTeamMembersCard
-            topTeamMembers={topTeamMembers}
-            tasks={filteredTasks}
-            projectFilter={projectFilter}
+            topContributors={computedTaskStats?.topAssignees}
+            unassignedCount={computedTaskStats?.unassignedCount}
           />
         </div>
       )}

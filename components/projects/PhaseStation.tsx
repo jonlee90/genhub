@@ -9,7 +9,7 @@ import {
   Rocket,
   FileText,
   ShoppingCart,
-  HardHat,
+  FolderKanban,
   CheckCircle2,
   Sparkles,
   Calendar,
@@ -44,7 +44,7 @@ const getPhaseIcon = (phaseName: string) => {
   if (name.includes('pre-construction') || name.includes('design')) return FileText;
   if (name.includes('procurement')) return ShoppingCart;
   if (name.includes('post') || name.includes('closeout') || name.includes('completion')) return CheckCircle2;
-  if (name.includes('construction') || name.includes('execution')) return HardHat;
+  if (name.includes('construction') || name.includes('execution')) return FolderKanban;
   return Sparkles; // Default icon
 };
 
@@ -62,8 +62,6 @@ export function PhaseStation({
   isSelected,
   onClick,
 }: PhaseStationProps) {
-  console.log('[PhaseStation] Rendering phase:', phase.name, { isCurrent, isSelected });
-
   const isCompleted = phase.status === 'completed';
   const isInProgress = phase.status === 'in_progress';
   const hasBlockers = (stats?.blockedTasks || 0) > 0;

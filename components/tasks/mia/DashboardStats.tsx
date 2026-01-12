@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { CheckSquare, Building2, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Debug: DashboardStats - Main dashboard component with 8 metrics
+// DashboardStats - Main dashboard component with 8 metrics
 interface DashboardStatsProps {
   // Filtered tasks array - stats calculated from this
   tasks: Array<{
@@ -69,7 +69,7 @@ export function DashboardStats({
     };
   }, [tasks, projectFilter, projects, budget]);
 
-  // Debug: Format currency values
+  // Format currency values
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

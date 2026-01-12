@@ -4,8 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Package, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { toggleTracking } from '@/app/actions/materials';
-import type { MaterialWithStats } from '@/app/actions/materials';
+import { toggleTracking, type MaterialWithStats } from '@/app/actions/materials';
 import { PriceChangeIndicator } from './PriceChangeIndicator';
 
 interface MaterialCardProps {
@@ -58,9 +57,7 @@ export function MaterialCard({
       // Rollback on error
       setIsTracked(previousState);
       setError(result.error || 'Failed to update tracking');
-      console.error('[MaterialCard] Toggle tracking error:', result.error);
     } else {
-      console.log('[MaterialCard] Tracking toggled successfully');
       onTrackingChange?.();
     }
   };

@@ -51,7 +51,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     fetchAttachments();
   }, [taskId]);
 
-  // Debug: Format file size helper
+  // Format file size helper
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return 'Unknown size';
     if (bytes < 1024) return `${bytes} B`;
@@ -59,7 +59,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Debug: Loading state
+  // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -69,7 +69,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     );
   }
 
-  // Debug: Error state
+  // Error state
   if (error) {
     return (
       <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
@@ -79,7 +79,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     );
   }
 
-  // Debug: Empty state
+  // Empty state
   if (attachments.length === 0) {
     return (
       <div className="text-center py-12">
@@ -90,13 +90,13 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     );
   }
 
-  // Debug: Separate images from other files
+  // Separate images from other files
   const images = attachments.filter(a => a.file_type?.startsWith('image/'));
   const files = attachments.filter(a => !a.file_type?.startsWith('image/'));
 
   return (
     <div className="space-y-6">
-      {/* Debug: Images Section */}
+      {/* Images Section */}
       {images.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -125,7 +125,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                   className="w-full h-full object-cover"
                   loading="lazy"
                 />
-                {/* Debug: Overlay on hover */}
+                {/* Overlay on hover */}
                 <div className={cn(
                   'absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100',
                   'transition-opacity duration-200',
@@ -133,7 +133,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 )}>
                   <ImageIcon className="h-8 w-8 text-white" />
                 </div>
-                {/* Debug: File name label */}
+                {/* File name label */}
                 <div className={cn(
                   'absolute bottom-0 left-0 right-0 bg-black/70 p-2',
                   'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
@@ -146,7 +146,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
         </div>
       )}
 
-      {/* Debug: Files Section */}
+      {/* Files Section */}
       {files.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
@@ -172,12 +172,12 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                   'group'
                 )}
               >
-                {/* Debug: File icon */}
+                {/* File icon */}
                 <div className="p-2 bg-gray-100 rounded group-hover:bg-[#001B51] transition-colors">
                   <FileText className="h-6 w-6 text-gray-600 group-hover:text-white transition-colors" />
                 </div>
 
-                {/* Debug: File details */}
+                {/* File details */}
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm text-gray-900 truncate">
                     {file.file_name}
@@ -188,7 +188,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                   </p>
                 </div>
 
-                {/* Debug: Download icon */}
+                {/* Download icon */}
                 <Download className="h-5 w-5 text-gray-400 group-hover:text-[#001B51] transition-colors shrink-0" />
               </a>
             ))}
@@ -196,7 +196,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
         </div>
       )}
 
-      {/* Debug: Summary */}
+      {/* Summary */}
       <div className="border-t border-gray-200 pt-4 text-xs text-gray-500">
         <p>
           Total: {attachments.length} attachment{attachments.length !== 1 ? 's' : ''}

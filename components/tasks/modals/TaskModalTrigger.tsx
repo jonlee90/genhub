@@ -5,23 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Wrench } from 'lucide-react';
 import { TaskModal } from '../modals/TaskModal';
+import type { TaskProject, TeamMember } from '@/types/task.types';
 
 interface TaskModalTriggerProps {
-  projects: Array<{
-    id: string;
-    name: string;
-    project_phases?: Array<{
-      id: string;
-      name: string;
-      order_index: number;
-    }>;
-  }>;
-  teamMembers: Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  }>;
+  projects: TaskProject[];
+  teamMembers: TeamMember[];
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   variant?: 'default' | 'outline' | 'ghost';
@@ -56,7 +44,7 @@ export function TaskModalTrigger({
         variant={variant}
         className={
           className || (variant === 'default'
-            ? 'relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white'
+            ? 'relative h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white'
             : '')
         }
       >

@@ -3,62 +3,21 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Receipt, Plus, X, ShieldAlert, Wrench, DollarSign } from 'lucide-react';
+import { Receipt, X, ShieldAlert, Wrench, DollarSign } from 'lucide-react';
 import { ExpenseCard } from './ExpenseCard';
 import { ExpenseFilters } from './ExpenseFilters';
 import { CreateExpenseModal } from './CreateExpenseModal';
 import { ExpenseDetailModal } from './ExpenseDetailModal';
-
-// Debug: Type definitions for expenses list
-interface Project {
-  id: string;
-  name: string;
-}
-
-interface Task {
-  id: string;
-  title: string;
-  project_id: string;
-}
-
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  expense_date: string;
-  vendor_name: string | null;
-  receipt_url: string | null;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
-  created_at: string;
-  project: {
-    id: string;
-    name: string;
-  } | null;
-  task?: {
-    id: string;
-    title: string;
-  } | null;
-  submitter?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
-}
-
-interface ExpensesListProps {
-  initialExpenses: Expense[];
-  projects: Project[];
-  tasks: Task[];
-  searchParams: { [key: string]: string | string[] | undefined };
-}
+import type {
+  ExpenseWithRelations,
+  ExpenseProject,
+  ExpenseTask,
+  ExpensesListProps,
+} from '@/types/expense.types';
 
 export function ExpensesList({ initialExpenses, projects, tasks, searchParams }: ExpensesListProps) {
-  // Debug: Track component rendering
-  console.log('[ExpensesList] Rendering with', initialExpenses.length, 'expenses');
-
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [projectFilter, setProjectFilter] = useState<string>('all');
@@ -67,14 +26,6 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams }:
   // Apply filters and sorting
   const filteredExpenses = useMemo(() => {
     let filtered = [...initialExpenses];
-
-    // Debug: Log filtering
-    console.log('[ExpensesList] Filtering expenses:', {
-      searchQuery,
-      statusFilter,
-      projectFilter,
-      sortBy,
-    });
 
     // Search filter
     if (searchQuery) {
@@ -116,7 +67,6 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams }:
       }
     });
 
-    console.log('[ExpensesList] Filtered to', filtered.length, 'expenses');
     return filtered;
   }, [initialExpenses, searchQuery, statusFilter, projectFilter, sortBy]);
 

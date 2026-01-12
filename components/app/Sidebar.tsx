@@ -190,8 +190,11 @@ export function Sidebar({ isOwner = false }: SidebarProps) {
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
                   {/* Main Navigation */}
                   {navigation.map((item, index) => {
+                    // Only active if exact match OR starts with href/ AND no other nav item exactly matches
                     const isActive = pathname === item.href ||
-                      (item.href !== "/app" && pathname.startsWith(item.href));
+                      (item.href !== "/app" &&
+                       pathname.startsWith(item.href + "/") &&
+                       !navigation.some(other => other.href !== item.href && pathname === other.href));
                     const hasChildren = item.children && item.children.length > 0;
                     const isExpanded = expandedItems[item.name];
                     const isChildActive = hasChildren && item.children!.some(
@@ -583,8 +586,11 @@ export function Sidebar({ isOwner = false }: SidebarProps) {
           <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
             {/* Main Navigation */}
             {navigation.map((item, index) => {
+              // Only active if exact match OR starts with href/ AND no other nav item exactly matches
               const isActive = pathname === item.href ||
-                (item.href !== "/app" && pathname.startsWith(item.href));
+                (item.href !== "/app" &&
+                 pathname.startsWith(item.href + "/") &&
+                 !navigation.some(other => other.href !== item.href && pathname === other.href));
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedItems[item.name];
               const isChildActive = hasChildren && item.children!.some(

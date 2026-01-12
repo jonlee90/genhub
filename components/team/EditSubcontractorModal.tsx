@@ -16,6 +16,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Loader2,
@@ -34,6 +41,28 @@ import {
 import { toast } from 'sonner';
 
 type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
+type TradeType = Database['public']['Enums']['trade_type'];
+
+const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
+  { value: 'general', label: 'General' },
+  { value: 'electrical', label: 'Electrical' },
+  { value: 'plumbing', label: 'Plumbing' },
+  { value: 'hvac', label: 'HVAC' },
+  { value: 'carpentry', label: 'Carpentry' },
+  { value: 'masonry', label: 'Masonry' },
+  { value: 'roofing', label: 'Roofing' },
+  { value: 'flooring', label: 'Flooring' },
+  { value: 'painting', label: 'Painting' },
+  { value: 'drywall', label: 'Drywall' },
+  { value: 'concrete', label: 'Concrete' },
+  { value: 'landscaping', label: 'Landscaping' },
+  { value: 'demolition', label: 'Demolition' },
+  { value: 'steel_work', label: 'Steel Work' },
+  { value: 'glass_glazing', label: 'Glass & Glazing' },
+  { value: 'fire_protection', label: 'Fire Protection' },
+  { value: 'insulation', label: 'Insulation' },
+  { value: 'other', label: 'Other' },
+];
 
 interface EditSubcontractorModalProps {
   isOpen: boolean;
@@ -61,6 +90,9 @@ export function EditSubcontractorModal({
     subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : ''
   );
   const [address, setAddress] = useState(subcontractor.address || '');
+  const [selectedTrade, setSelectedTrade] = useState<TradeType>(
+    subcontractor.trade_specialization || 'general'
+  );
   const [licenseNumber, setLicenseNumber] = useState(subcontractor.license_number || '');
   const [licenseExpiry, setLicenseExpiry] = useState(
     subcontractor.license_expiry ? subcontractor.license_expiry.split('T')[0] : ''
@@ -82,6 +114,7 @@ export function EditSubcontractorModal({
     setEmail(subcontractor.email || '');
     setPhone(subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : '');
     setAddress(subcontractor.address || '');
+    setSelectedTrade(subcontractor.trade_specialization || 'general');
     setLicenseNumber(subcontractor.license_number || '');
     setLicenseExpiry(
       subcontractor.license_expiry ? subcontractor.license_expiry.split('T')[0] : ''
@@ -121,6 +154,7 @@ export function EditSubcontractorModal({
           email: email,
           phone: phone || undefined,
           address: address || undefined,
+          trade_specialization: selectedTrade,
           license_number: licenseNumber || undefined,
           license_expiry: licenseExpiry || undefined,
           insurance_provider: insuranceProvider || undefined,
@@ -207,6 +241,38 @@ export function EditSubcontractorModal({
           />
           {fieldErrors?.company_name && (
             <p className="text-sm text-red-600 font-medium">{fieldErrors.company_name[0]}</p>
+          )}
+        </div>
+
+        {/* Trade Specialization - Required */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="edit_trade_specialization"
+            className="text-gray-900 font-semibold flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4 text-construction-blue" />
+            Trade Specialization <span className="text-red-600">*</span>
+          </Label>
+          <Select
+            value={selectedTrade}
+            onValueChange={(value) => setSelectedTrade(value as TradeType)}
+            disabled={isDisabled}
+          >
+            <SelectTrigger className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue">
+              <SelectValue placeholder="Select trade" />
+            </SelectTrigger>
+            <SelectContent>
+              {TRADE_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(fieldErrors as any)?.trade_specialization && (
+            <p className="text-sm text-red-600 font-medium">
+              {(fieldErrors as any).trade_specialization[0]}
+            </p>
           )}
         </div>
 

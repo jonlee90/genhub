@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { UserPlus, X, Users, Mail, Phone, HardHat } from 'lucide-react';
+import { UserPlus, X, Users, Mail, Phone, FolderKanban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,11 +37,11 @@ interface ProjectTeamProps {
 }
 
 const ROLE_CONFIG = {
-  admin: { label: 'Admin', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: HardHat },
-  project_manager: { label: 'Project Manager', color: 'bg-construction-blue/10 text-construction-blue border-construction-blue', icon: HardHat },
-  foreman: { label: 'Foreman', color: 'bg-construction-green/10 text-construction-green border-construction-green/30', icon: HardHat },
-  field_worker: { label: 'Field Worker', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: HardHat },
-  subcontractor: { label: 'Subcontractor', color: 'bg-construction-accent/10 text-construction-accent border-construction-accent/30', icon: HardHat },
+  admin: { label: 'Admin', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: FolderKanban },
+  project_manager: { label: 'Project Manager', color: 'bg-construction-blue/10 text-construction-blue border-construction-blue', icon: FolderKanban },
+  foreman: { label: 'Foreman', color: 'bg-construction-green/10 text-construction-green border-construction-green/30', icon: FolderKanban },
+  field_worker: { label: 'Field Worker', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: FolderKanban },
+  subcontractor: { label: 'Subcontractor', color: 'bg-construction-accent/10 text-construction-accent border-construction-accent/30', icon: FolderKanban },
   client: { label: 'Client', color: 'bg-pink-100 text-pink-800 border-pink-200', icon: Users },
 };
 
@@ -51,20 +51,17 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleRemove = async (memberId: string, userId: string) => {
-    console.log('[ProjectTeam] Removing team member:', { memberId, userId });
     setRemovingId(memberId);
     try {
       await removeProjectTeamMember(projectId, userId);
-      console.log('[ProjectTeam] Team member removed successfully');
-    } catch (error) {
-      console.error('[ProjectTeam] Failed to remove team member:', error);
+    } catch {
+      // Error handling could be improved with toast notification
     } finally {
       setRemovingId(null);
     }
   };
 
   const handleOpenModal = () => {
-    console.log('[ProjectTeam] Opening Add Member modal');
     setModalOpen(true);
   };
 

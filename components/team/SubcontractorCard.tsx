@@ -172,9 +172,9 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
             </h3>
             <Badge
               variant="outline"
-              className={`${TRADE_COLORS.general} font-semibold border-2`}
+              className={`${TRADE_COLORS[subcontractor.trade_specialization || 'general']} font-semibold border-2`}
             >
-              {'General Contractor'}
+              {TRADE_LABELS[subcontractor.trade_specialization || 'general']}
             </Badge>
           </div>
 

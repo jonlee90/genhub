@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronRight, ChevronLeft, HardHat } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, FolderKanban } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import {
@@ -191,7 +191,7 @@ export function OnboardingTour({
                   {currentStep.icon ? (
                     <span className="text-2xl">{currentStep.icon}</span>
                   ) : (
-                    <HardHat className="w-6 h-6 text-white" />
+                    <FolderKanban className="w-6 h-6 text-white" />
                   )}
                 </div>
                 <div>
@@ -282,7 +282,7 @@ export function OnboardingTour({
                 {currentStepIndex === totalSteps - 1 ? (
                   <>
                     Finish
-                    <HardHat className="w-4 h-4" />
+                    <FolderKanban className="w-4 h-4" />
                   </>
                 ) : (
                   <>

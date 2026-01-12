@@ -5,7 +5,7 @@
 
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, AlertCircle, RotateCw, X, HardHat } from 'lucide-react';
+import { Loader2, AlertCircle, RotateCw, X, FolderKanban } from 'lucide-react';
 import { useModelLoading } from '@/lib/hooks/use-model-loading';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -98,7 +98,7 @@ export function ModelLoader({
     return (
       <div className={cn('flex items-center justify-center h-full bg-gray-100', className)}>
         <div className="text-center">
-          <HardHat className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+          <FolderKanban className="w-12 h-12 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-500">No model loaded</p>
         </div>
       </div>
