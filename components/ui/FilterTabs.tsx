@@ -1,65 +1,46 @@
 'use client';
 
 /**
- * MobileStatusTabs Component
+ * FilterTabs Component - Reusable, Responsive Filter Tabs
  *
- * @deprecated This component has been replaced by the more flexible FilterTabs component
- * in components/ui/FilterTabs.tsx. The new component supports:
- * - Full responsive design (mobile, tablet, desktop)
- * - Generic filtering (not just task statuses)
- * - Reusable across projects, tasks, and other entities
- *
- * Please use FilterTabs instead:
- * import { FilterTabs } from '@/components/ui/FilterTabs';
- *
- * Migration example:
- * <MobileStatusTabs tabs={tabs} value={value} onChange={onChange} />
- * becomes:
- * <FilterTabs tabs={tabs} value={value} onChange={onChange} useStatusGradients={true} />
- *
- * This file is kept for reference but should not be used in new code.
- *
- * ---
- *
- * Horizontally scrollable status filter tabs optimized for mobile.
- * Designed for the tasks page to filter by all 5 task statuses.
+ * A flexible filter tabs component that adapts across breakpoints:
+ * - Mobile (<768px): Horizontal scroll with snap, touch-optimized
+ * - Tablet (768px-1024px): Scrollable if needed, otherwise full width
+ * - Desktop (>1024px): Grid layout with all tabs visible
  *
  * Features:
  * - Smooth Framer Motion animations with spring physics
- * - X-scrollable with hidden scrollbar
- * - Snap scrolling for better UX
- * - 44px minimum tap targets
+ * - Responsive design with different layouts per breakpoint
+ * - 44px minimum tap targets on mobile/tablet
  * - Animated gradient background for active state
- * - Status count badges
- * - Touch-friendly spacing
+ * - Optional count badges
+ * - Touch-friendly spacing and feedback
  * - High contrast for outdoor visibility
+ * - Haptic feedback on mobile
+ * - Auto-scroll to active tab
+ * - Status-specific or generic gradients
  */
 
 import { useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { TASK_STATUS_CONFIG } from '@/lib/config/task-colors';
-import { Circle, Play, Eye, Ban, CheckCircle } from 'lucide-react';
 
-// Status icons for visual indication
-const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  all: Circle,
-  todo: Circle,
-  in_progress: Play,
-  review: Eye,
-  blocked: Ban,
-  completed: CheckCircle,
-};
-
-interface StatusTab {
+export interface FilterTab {
+  /** Unique identifier */
   value: string;
+  /** Display label */
   label: string;
+  /** Optional icon component */
+  icon?: React.ComponentType<{ className?: string }>;
+  /** Optional count badge */
   count?: number;
+  /** Optional gradient override (e.g., "from-blue-600 to-blue-700") */
+  gradient?: string;
 }
 
-interface MobileStatusTabsProps {
-  /** Available status tabs */
-  tabs: StatusTab[];
+interface FilterTabsProps {
+  /** Available filter tabs */
+  tabs: FilterTab[];
   /** Currently selected value */
   value: string;
   /** Called when selection changes */
@@ -68,15 +49,21 @@ interface MobileStatusTabsProps {
   showCounts?: boolean;
   /** Additional className */
   className?: string;
+  /** Layout ID for Framer Motion (unique per instance) */
+  layoutId?: string;
+  /** Use status-specific gradients (task status colors) */
+  useStatusGradients?: boolean;
 }
 
-export function MobileStatusTabs({
+export function FilterTabs({
   tabs,
   value,
   onChange,
   showCounts = true,
   className,
-}: MobileStatusTabsProps) {
+  layoutId = 'filterTabBackground',
+  useStatusGradients = false,
+}: FilterTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
@@ -90,7 +77,7 @@ export function MobileStatusTabs({
       const containerWidth = container.offsetWidth;
       const activeLeft = activeEl.offsetLeft;
       const activeWidth = activeEl.offsetWidth;
-      const scrollLeft = activeLeft - (containerWidth / 2) + (activeWidth / 2);
+      const scrollLeft = activeLeft - containerWidth / 2 + activeWidth / 2;
 
       container.scrollTo({
         left: Math.max(0, scrollLeft),
@@ -114,21 +101,33 @@ export function MobileStatusTabs({
     [value, onChange]
   );
 
-  // Get status-specific gradient for animated background
-  const getStatusGradient = (status: string) => {
-    if (status === 'all') {
-      return 'from-[#001B51] to-[#002868]'; // Navy gradient
+  // Get gradient for animated background
+  const getGradient = (tab: FilterTab) => {
+    // Use custom gradient if provided
+    if (tab.gradient) {
+      return tab.gradient;
     }
 
-    const gradients: Record<string, string> = {
-      todo: 'from-gray-500 to-gray-600',
-      in_progress: 'from-blue-600 to-blue-700',
-      review: 'from-yellow-500 to-yellow-600',
-      blocked: 'from-red-600 to-red-700',
-      completed: 'from-green-600 to-green-700',
-    };
+    // Use status-specific gradients if enabled
+    if (useStatusGradients) {
+      const statusGradients: Record<string, string> = {
+        all: 'from-[#001B51] to-[#002868]', // Navy gradient
+        todo: 'from-gray-500 to-gray-600',
+        in_progress: 'from-blue-600 to-blue-700',
+        review: 'from-yellow-500 to-yellow-600',
+        blocked: 'from-red-600 to-red-700',
+        completed: 'from-green-600 to-green-700',
+        // Project statuses
+        planning: 'from-amber-500 to-amber-600',
+        active: 'from-blue-600 to-blue-700',
+        on_hold: 'from-orange-500 to-orange-600',
+      };
 
-    return gradients[status] || 'from-[#001B51] to-[#002868]';
+      return statusGradients[tab.value] || 'from-[#001B51] to-[#002868]';
+    }
+
+    // Default GenHub navy gradient
+    return 'from-[#001B51] to-[#002868]';
   };
 
   return (
@@ -139,21 +138,24 @@ export function MobileStatusTabs({
         'relative flex items-center gap-2',
         'p-1.5 bg-gray-100 rounded-xl',
         'border-2 border-gray-200',
-        // Scrollable with hidden scrollbar
+        // Mobile: Scrollable with hidden scrollbar
         'overflow-x-auto scrollbar-hide',
-        // Snap scrolling
         'snap-x snap-mandatory',
-        // Smooth scroll behavior
         'scroll-smooth',
+        // Tablet: Allow wrapping if needed
+        'md:overflow-x-auto',
+        // Desktop: Grid layout, no scroll
+        'lg:grid lg:overflow-x-visible',
         className
       )}
       style={{
         WebkitOverflowScrolling: 'touch',
+        gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
       }}
     >
       {tabs.map((tab) => {
         const isActive = tab.value === value;
-        const Icon = STATUS_ICONS[tab.value] || Circle;
+        const Icon = tab.icon;
 
         return (
           <button
@@ -165,9 +167,12 @@ export function MobileStatusTabs({
               // Base styles - position relative for motion background
               'relative z-10',
               'flex-shrink-0 snap-start',
-              'inline-flex items-center gap-2',
-              // Touch-friendly sizing (44px min height)
+              'inline-flex items-center justify-center gap-2',
+              // Touch-friendly sizing
+              // Mobile/Tablet: 44px min height
               'h-11 px-4',
+              // Desktop: Can be slightly more compact if needed
+              'lg:h-10 lg:px-3',
               'rounded-lg',
               // Typography
               'font-bold text-sm',
@@ -176,13 +181,13 @@ export function MobileStatusTabs({
               // Touch feedback
               'active:scale-[0.97]',
               // Text color based on active state
-              isActive
-                ? 'text-white'
-                : 'text-gray-600 hover:text-gray-900'
+              isActive ? 'text-white' : 'text-gray-600 hover:text-gray-900',
+              // Desktop: Full width in grid
+              'lg:w-full'
             )}
           >
             {/* Content layer */}
-            <Icon className="w-4 h-4 flex-shrink-0" />
+            {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
             <span className="whitespace-nowrap">{tab.label}</span>
 
             {/* Count badge */}
@@ -204,11 +209,11 @@ export function MobileStatusTabs({
             {/* Animated background with Framer Motion */}
             {isActive && (
               <motion.div
-                layoutId="mobileStatusTabBackground"
+                layoutId={layoutId}
                 className={cn(
                   'absolute inset-0 rounded-lg',
                   'bg-gradient-to-r shadow-md',
-                  getStatusGradient(tab.value)
+                  getGradient(tab)
                 )}
                 transition={{
                   type: 'spring',

@@ -3,11 +3,45 @@
  *
  * UI display settings for task types (icons, colors, labels).
  * Separate from task-type-fields.ts which handles form field visibility.
+ *
+ * IMPORTANT: Components should prefer fetching task types from the database
+ * using getTaskTypes() action and mapping via convertTaskTypeConfig().
+ * These constants are used as fallbacks and for backward compatibility.
  */
 
-import { Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
+import {
+  Hammer,
+  ShoppingCart,
+  ClipboardCheck,
+  FileText,
+  Wrench,
+  HardHat,
+  Ruler,
+  Package,
+  Clipboard,
+  Pencil,
+  CheckCircle2,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { TaskType } from '@/types/db/enums';
+
+/**
+ * Icon mapping for all available task type icons
+ * Used when converting database task type configs to display format
+ */
+export const TASK_TYPE_ICON_MAP: Record<string, LucideIcon> = {
+  Hammer,
+  ShoppingCart,
+  ClipboardCheck,
+  FileText,
+  Wrench,
+  HardHat,
+  Ruler,
+  Package,
+  Clipboard,
+  Pencil,
+  CheckCircle2,
+};
 
 /**
  * Task type display configuration

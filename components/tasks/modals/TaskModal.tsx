@@ -51,7 +51,7 @@ import { AutoExpenseToggle } from '../forms/AutoExpenseToggle';
 import { PrimaryAssigneeSelector, type AssigneeOption } from '../forms/PrimaryAssigneeSelector';
 import { getTaskExpenses, createExpenseFromTask } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
-import type { TaskAssignee } from '@/app/actions/tasks';
+import type { TaskAssignee, AssigneeOption as TaskAssigneeOption } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';
 import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
@@ -130,6 +130,7 @@ interface TaskModalProps {
   preselectedPhaseId?: string;
   onSuccess?: () => void;
   tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
+  assignees?: TaskAssigneeOption[]; // Optional: Pre-fetched assignees to avoid N+1 queries
 }
 
 // Note: Status and Priority colors now come from shared config: TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG
@@ -161,6 +162,7 @@ function TaskModalForm({
   onClose,
   onSuccess,
   tasks = [], // Default to empty array
+  assignees, // Optional: Pre-fetched assignees
 }: Omit<TaskModalProps, 'isOpen'>) {
   const router = useRouter();
   const { toast } = useToast();
@@ -448,7 +450,20 @@ function TaskModalForm({
           }
 
           // Auto-create expense if enabled (Task 3.4)
-          if (mode === 'edit' && autoExpenseEnabled && task?.id) {
+          // Only create expense if:
+          // 1. In edit mode
+          // 2. Auto-expense is enabled
+          // 3. Task exists
+          // 4. No expenses already exist for this task
+          // 5. Task has an actual cost
+          if (
+            mode === 'edit' &&
+            autoExpenseEnabled &&
+            task?.id &&
+            expenses.length === 0 &&
+            actualCost &&
+            parseFloat(actualCost) > 0
+          ) {
             try {
               const expenseResult = await createExpenseFromTask(task.id);
               if (expenseResult.data) {
@@ -457,6 +472,8 @@ function TaskModalForm({
                   description: `Expense for $${parseFloat(actualCost).toFixed(2)} has been created from this task.`,
                   variant: 'default',
                 });
+                // Refresh expenses list to show the new expense
+                await fetchExpenses();
               } else if (expenseResult.error) {
                 console.error('Failed to create expense:', expenseResult.error);
                 toast({
@@ -972,6 +989,7 @@ function TaskModalForm({
                 selectedAssignees={selectedAssignees}
                 onChange={setSelectedAssignees}
                 disabled={isPending}
+                assignees={assignees}
               />
             </div>
 
@@ -1203,6 +1221,7 @@ export function TaskModal({
   preselectedPhaseId,
   onSuccess,
   tasks = [], // Default to empty array
+  assignees, // Optional: Pre-fetched assignees
 }: TaskModalProps) {
   // Generate a unique key for the form based on mode and task ID
   // This forces React to remount the form component with fresh state
@@ -1222,6 +1241,7 @@ export function TaskModal({
       onClose={onClose}
       onSuccess={onSuccess}
       tasks={tasks}
+      assignees={assignees}
     />
   );
 }

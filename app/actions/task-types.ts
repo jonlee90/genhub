@@ -217,7 +217,7 @@ export async function createTaskType(formData: FormData): Promise<{
 
 /**
  * Update an existing task type
- * Cannot update if is_default = true
+ * Allows updating all task types including default ones
  */
 export async function updateTaskType(
   id: string,
@@ -240,19 +240,12 @@ export async function updateTaskType(
   // Check if task type exists and belongs to company
   const { data: existing } = await supabase
     .from('task_type_configs')
-    .select('company_id, is_default')
+    .select('company_id')
     .eq('id', id)
     .maybeSingle();
 
   if (!existing || existing.company_id !== companyId) {
     return { error: 'Task type not found' };
-  }
-
-  // Cannot edit default types
-  if (existing.is_default) {
-    return {
-      error: 'Cannot edit default task types. Create a new custom type instead.',
-    };
   }
 
   const rawData = {

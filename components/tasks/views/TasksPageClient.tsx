@@ -12,6 +12,7 @@ import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { ClipboardList } from 'lucide-react';
+import { getProjectAssignees, type AssigneeOption } from '@/app/actions/tasks';
 import type {
   TaskWithRelations,
   TaskProject,
@@ -49,6 +50,7 @@ export function TasksPageClient({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
   const router = useRouter();
   const isMobileQuery = useIsMobile();
   const { registerCreateModal, unregisterCreateModal } = useBottomNav();
@@ -62,6 +64,24 @@ export function TasksPageClient({
 
   // Only use mobile detection after hydration to prevent mismatch
   const isMobile = hasMounted && isMobileQuery;
+
+  // Fetch assignees when project filter changes (Option A: Page-level fetch)
+  // This eliminates the N+1 query pattern by fetching assignees once
+  useEffect(() => {
+    // Only fetch assignees if a specific project is selected
+    if (projectFilter && projectFilter !== 'all') {
+      getProjectAssignees(projectFilter).then((result) => {
+        if (result.data) {
+          setAssignees(result.data);
+        } else {
+          setAssignees([]);
+        }
+      });
+    } else {
+      // Clear assignees when 'all' projects selected
+      setAssignees([]);
+    }
+  }, [projectFilter]);
 
   // Ref for pull-to-refresh
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
@@ -211,7 +231,6 @@ export function TasksPageClient({
             </div>
 
             {/* Project Filter - Sticky on mobile */}
-            {/* z-30 ensures this appears above the gantt chart header which uses z-20 */}
             <div className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100">
               <ProjectFilterHeader
                 projects={projects}
@@ -243,6 +262,7 @@ export function TasksPageClient({
               mobileStatusTabs={tabsWithCounts}
               mobileActiveFilterCount={activeFilterCount}
               onMobileFilterClick={() => setShowFilterSheet(true)}
+              assignees={assignees}
             />
 
             {/* Empty state */}
@@ -334,6 +354,7 @@ export function TasksPageClient({
           projects={projects}
           teamMembers={teamMembers}
           onSuccess={handleCreateSuccess}
+          assignees={assignees}
         />
       </div>
     );
@@ -392,6 +413,7 @@ export function TasksPageClient({
         initialView={initialView}
         externalProjectFilter={projectFilter}
         onExternalProjectFilterChange={setProjectFilter}
+        assignees={assignees}
       />
 
       {/* Decorative bottom border */}

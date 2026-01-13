@@ -4,37 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { GanttTaskBar } from './GanttTaskBar';
 import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
-import {
-  Wrench,
-  ShoppingCart,
-  ClipboardList,
-  FileText,
-  type LucideIcon,
-} from 'lucide-react';
+import { getTaskTypeInfo } from '@/components/tasks/forms/TaskTypeSelector';
 import type { TaskType } from '@/types/db/enums';
-
-const TASK_TYPE_CONFIG: Record<TaskType, { icon: LucideIcon; label: string; color: string }> = {
-  work: {
-    icon: Wrench,
-    label: 'Work',
-    color: 'text-construction-blue',
-  },
-  purchase: {
-    icon: ShoppingCart,
-    label: 'Purchase',
-    color: 'text-emerald-600',
-  },
-  approval: {
-    icon: ClipboardList,
-    label: 'Approval',
-    color: 'text-amber-600',
-  },
-  admin: {
-    icon: FileText,
-    label: 'Admin',
-    color: 'text-gray-600',
-  },
-};
 
 interface GanttTaskRowProps {
   task: GanttTask;
@@ -98,18 +69,18 @@ export function GanttTaskRow({
           {/* Title row with icon and duration badge */}
           <div className="flex items-center gap-1.5">
             {/* Task type icon */}
-            {task.task_type && TASK_TYPE_CONFIG[task.task_type] && (() => {
-              const typeConfig = TASK_TYPE_CONFIG[task.task_type];
-              const IconComponent = typeConfig.icon;
+            {task.task_type && (() => {
+              const typeInfo = getTaskTypeInfo(task.task_type as TaskType);
+              const IconComponent = typeInfo.icon;
               return (
                 <IconComponent
                   className={cn(
                     'shrink-0',
-                    typeConfig.color,
+                    typeInfo.textClass,
                     isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'
                   )}
                   strokeWidth={2}
-                  aria-label={typeConfig.label}
+                  aria-label={typeInfo.name}
                 />
               );
             })()}

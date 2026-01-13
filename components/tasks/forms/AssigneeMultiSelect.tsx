@@ -14,18 +14,28 @@ interface AssigneeMultiSelectProps {
   selectedAssignees: TaskAssignee[];
   onChange: (assignees: TaskAssignee[]) => void;
   disabled?: boolean;
+  assignees?: AssigneeOption[]; // Optional: Pre-fetched assignees to avoid N+1 queries
 }
 
 function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
-export function AssigneeMultiSelect({ projectId, selectedAssignees, onChange, disabled }: AssigneeMultiSelectProps) {
+export function AssigneeMultiSelect({ projectId, selectedAssignees, onChange, disabled, assignees }: AssigneeMultiSelectProps) {
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<AssigneeOption[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Use pre-fetched assignees if provided, otherwise fetch them
   useEffect(() => {
+    // If assignees are provided via props, use them directly
+    if (assignees) {
+      setOptions(assignees);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise, fall back to fetching (backward compatibility)
     if (projectId) {
       setLoading(true);
       getProjectAssignees(projectId).then(result => {
@@ -33,7 +43,7 @@ export function AssigneeMultiSelect({ projectId, selectedAssignees, onChange, di
         setLoading(false);
       });
     }
-  }, [projectId]);
+  }, [projectId, assignees]);
 
   const users = options.filter(o => o.type === 'user');
   const subcontractors = options.filter(o => o.type === 'subcontractor');

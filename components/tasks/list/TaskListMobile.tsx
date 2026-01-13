@@ -2,13 +2,10 @@
 
 import { useState } from 'react';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, FolderKanban, Check, Trash2 } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { TaskCard } from './TaskCard';
+import { FolderKanban, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
-import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { TaskWithRelations, Phase } from '@/types/db/task';
 
 interface TaskListMobileProps {
@@ -41,32 +38,6 @@ export function TaskListMobile({
 }: TaskListMobileProps) {
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
-  // Get phase name - from phases array in project context, or from task.phase otherwise
-  const getPhaseName = (task: TaskWithRelations) => {
-    if (phases) {
-      const phase = phases.find((p) => p.id === task.phase_id);
-      return phase?.name || null;
-    }
-    return task.phase?.name || null;
-  };
-
-  const isOverdue = (task: TaskWithRelations) => {
-    if (!task.due_date || task.status === 'completed') return false;
-    const [year, month, day] = task.due_date.split('T')[0].split('-').map(Number);
-    const dueDate = new Date(year, month - 1, day);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return dueDate < today;
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const handleComplete = async (task: TaskWithRelations) => {
     if (task.status === 'completed' || pendingActions.has(task.id)) return;
@@ -127,11 +98,7 @@ export function TaskListMobile({
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
         {tasks.map((task, index) => {
-          const statusConfig = TASK_STATUS_CONFIG[task.status];
-          const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
-          const taskIsOverdue = isOverdue(task);
           const isPending = pendingActions.has(task.id);
-          const phaseName = getPhaseName(task);
 
           return (
             <motion.div
@@ -153,98 +120,12 @@ export function TaskListMobile({
                 rightActionIcon={<Trash2 className="w-6 h-6" />}
                 disabled={isPending}
               >
-                <button
-                  onClick={() => onTaskClick?.(task)}
-                  disabled={isPending}
-                  className={cn(
-                    'w-full text-left p-4',
-                    'border-l-4 border-[#001B51]',
-                    'active:bg-gray-50 transition-colors',
-                    task.status === 'blocked' && 'bg-red-50'
-                  )}
-                >
-                  {/* Header: Title + Priority */}
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        {task.status === 'blocked' && (
-                          <Ban className="h-4 w-4 text-red-500 flex-shrink-0" />
-                        )}
-                        {taskIsOverdue && task.status !== 'blocked' && (
-                          <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                        )}
-                        <h3 className="font-bold text-gray-900 line-clamp-2 text-[15px]">
-                          {task.title}
-                        </h3>
-                      </div>
-                    </div>
-                    <Badge
-                      variant="secondary"
-                      className={cn('text-[10px] font-bold shrink-0', priorityConfig.badgeColor)}
-                    >
-                      {priorityConfig.label}
-                    </Badge>
-                  </div>
-
-                  {/* Project/Phase Info */}
-                  {(task.project || phaseName) && (
-                    <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                      <FolderKanban className="h-3 w-3" />
-                      <span className="truncate">
-                        {phases ? (
-                          // Project context - show only phase
-                          phaseName
-                        ) : (
-                          // Tasks page - show project / phase
-                          <>
-                            {task.project?.name}
-                            {phaseName && ` / ${phaseName}`}
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Footer: Status, Due Date, Assignee */}
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      {/* Status Badge */}
-                      <Badge className={cn('text-[10px] font-bold', statusConfig.solidColor)}>
-                        {statusConfig.label}
-                      </Badge>
-
-                      {/* Due Date */}
-                      {task.due_date && (
-                        <div
-                          className={cn(
-                            'flex items-center gap-1 text-xs',
-                            taskIsOverdue ? 'text-red-600' : 'text-gray-500'
-                          )}
-                        >
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(task.due_date)}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Assignee */}
-                    {task.assignee && (
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage src={task.assignee.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px] bg-[#001B51] text-white">
-                          {getInitials(task.assignee.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-
-                  {/* Blocked Reason */}
-                  {task.status === 'blocked' && task.blocked_reason && (
-                    <p className="text-xs text-red-600 bg-red-100 p-2 rounded mt-2 line-clamp-2">
-                      {task.blocked_reason}
-                    </p>
-                  )}
-                </button>
+                <TaskCard
+                  task={task}
+                  onTaskClick={onTaskClick}
+                  phases={phases}
+                  expenseStats={task.expenseStats}
+                />
               </SwipeableCard>
             </motion.div>
           );

@@ -12,7 +12,7 @@ import { TopProjectsCard } from '../analytics/TopProjectsCard';
 import { transformTasksForGantt } from '../gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { SearchInput } from '@/components/mobile/SearchInput';
-import { MobileStatusTabs } from '@/components/mobile/MobileStatusTabs';
+import { FilterTabs } from '@/components/ui/FilterTabs';
 import { FilterButton } from '@/components/mobile/FilterButton';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,6 +20,7 @@ import { LayoutGrid, List, Plus, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { TaskStats } from '@/app/actions/projects';
+import type { AssigneeOption } from '@/app/actions/tasks';
 import type {
   TaskWithRelations,
   Phase,
@@ -84,6 +85,8 @@ interface TaskBoardProps {
   mobileActiveFilterCount?: number;
   /** Handler for opening the filter bottom sheet on mobile */
   onMobileFilterClick?: () => void;
+  /** Optional: Pre-fetched assignees to avoid N+1 queries in task modals */
+  assignees?: AssigneeOption[];
 }
 
 export function TaskBoard({
@@ -98,6 +101,7 @@ export function TaskBoard({
   externalProjectFilter,
   onExternalProjectFilterChange,
   hideFilters = false,
+  assignees,
   resultsCountRef,
   // Mobile search/filter props
   mobileSearchQuery,
@@ -391,11 +395,13 @@ export function TaskBoard({
           </div>
 
           {/* Status filter tabs */}
-          <MobileStatusTabs
+          <FilterTabs
             tabs={mobileStatusTabs}
             value={mobileStatusFilter || 'all'}
             onChange={onMobileStatusChange}
             showCounts={true}
+            useStatusGradients={true}
+            layoutId="taskStatusTabs"
           />
         </div>
       )}
@@ -547,6 +553,7 @@ export function TaskBoard({
         preselectedProjectId={projectId}
         onSuccess={handleModalSuccess}
         tasks={initialTasks}
+        assignees={assignees}
       />
     </div>
   );

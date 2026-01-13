@@ -76,6 +76,14 @@ export interface TaskMaterialStats {
   totalCost: number;
 }
 
+/**
+ * Expense statistics for a task
+ */
+export interface TaskExpenseStats {
+  count: number;
+  totalAmount: number;
+}
+
 // =============================================================================
 // Task with Relations
 // =============================================================================
@@ -89,6 +97,7 @@ export type TaskWithRelations = TaskRow & {
   project?: TaskProjectRelation | null;
   phase?: TaskPhaseRelation | null;
   materialStats?: TaskMaterialStats;
+  expenseStats?: TaskExpenseStats;
 };
 
 /**

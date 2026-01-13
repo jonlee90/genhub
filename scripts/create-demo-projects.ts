@@ -1,6 +1,6 @@
 import { config } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
-import { Database } from '../types/database.types'
+import { Database } from '../types/db'
 
 // Load environment variables
 config()

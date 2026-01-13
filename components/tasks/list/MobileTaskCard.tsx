@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, AlertTriangle, CheckCircle, Wrench, Circle } from 'lucide-react';
+import { Calendar, Clock, User, AlertTriangle, CheckCircle, Wrench, Circle, Receipt } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { TaskStatus } from '@/types/db/enums';
@@ -25,6 +25,11 @@ interface MobileTaskCardProps {
   onPress?: (task: MobileTask) => void;
   /** Optional className for container */
   className?: string;
+  /** Optional expense stats to display */
+  expenseStats?: {
+    count: number;
+    totalAmount: number;
+  };
 }
 
 // Status icons for mobile display
@@ -45,7 +50,7 @@ const STATUS_ICONS: Record<TaskStatus, React.ComponentType<{ className?: string 
  * - Quick-glance information hierarchy
  * - Works well in bright outdoor conditions
  */
-export function MobileTaskCard({ task, onPress, className }: MobileTaskCardProps) {
+export function MobileTaskCard({ task, onPress, className, expenseStats }: MobileTaskCardProps) {
   const statusConfig = TASK_STATUS_CONFIG[task.status];
   const StatusIcon = STATUS_ICONS[task.status];
 
@@ -87,6 +92,13 @@ export function MobileTaskCard({ task, onPress, className }: MobileTaskCardProps
       .join('')
       .toUpperCase()
       .slice(0, 2);
+  };
+
+  const formatCurrency = (amount: number) => {
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(1)}k`;
+    }
+    return `$${amount.toFixed(0)}`;
   };
 
   return (
@@ -138,6 +150,16 @@ export function MobileTaskCard({ task, onPress, className }: MobileTaskCardProps
       <h3 className="text-base font-bold text-gray-900 line-clamp-2 mb-3 leading-snug">
         {task.title}
       </h3>
+
+      {/* Expense Badge */}
+      {expenseStats && expenseStats.count > 0 && (
+        <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
+          <Receipt className="w-4 h-4 text-amber-700 flex-shrink-0" />
+          <span className="text-sm font-semibold text-amber-900">
+            {expenseStats.count} expense{expenseStats.count !== 1 ? 's' : ''} • {formatCurrency(expenseStats.totalAmount)}
+          </span>
+        </div>
+      )}
 
       {/* Footer: Due Date & Assignee */}
       <div className="flex items-center justify-between gap-3 min-h-[44px]">

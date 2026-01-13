@@ -22,7 +22,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getHomeDepotProduct } from '@/lib/services/home-depot-api';
-import type { Database } from '@/types/database.types';
+import type { Database } from '@/types/db';
 
 // Use Node.js runtime (not edge) because we need nodemailer compatibility
 export const dynamic = 'force-dynamic';

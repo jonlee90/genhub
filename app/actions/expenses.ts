@@ -642,24 +642,17 @@ export async function matchLineItemToMaterial(
  */
 export async function getTaskExpenses(taskId: string) {
   try {
-    // Debug: Validate taskId
     if (!taskId) {
-      console.error('Debug: getTaskExpenses - taskId is required');
       return { success: false, error: 'Task ID is required' };
     }
 
-    // Debug: Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      console.error('Debug: getTaskExpenses - unauthorized');
       return { success: false, error: 'Unauthorized' };
     }
 
-    console.log('Debug: getTaskExpenses - fetching expenses for task:', taskId);
-
     const supabase = await createClient();
 
-    // Debug: Query expenses for this task
     const { data: expenses, error } = await supabase
       .from('expenses')
       .select('id, description, amount, status, expense_date, vendor_name, category')
@@ -667,18 +660,72 @@ export async function getTaskExpenses(taskId: string) {
       .order('expense_date', { ascending: false });
 
     if (error) {
-      console.error('Debug: getTaskExpenses - query error:', error);
+      console.error('[getTaskExpenses] Query error:', error);
       return { success: false, error: 'Failed to fetch task expenses' };
     }
-
-    console.log('Debug: getTaskExpenses - found expenses:', expenses?.length || 0);
 
     return {
       success: true,
       data: expenses || [],
     };
   } catch (error) {
-    console.error('Debug: getTaskExpenses - unexpected error:', error);
+    console.error('[getTaskExpenses] Unexpected error:', error);
+    return { success: false, error: 'Failed to fetch task expenses' };
+  }
+}
+
+/**
+ * Get expense stats for multiple tasks in a single query (batch)
+ * Eliminates N+1 query problem when displaying task cards with expense info
+ *
+ * @param taskIds - Array of task UUIDs to fetch expenses for
+ * @returns Object keyed by task_id with expense stats (count, totalAmount)
+ */
+export async function getBatchTaskExpenses(taskIds: string[]) {
+  try {
+    // Handle empty array
+    if (!taskIds || taskIds.length === 0) {
+      return { success: true, data: {} };
+    }
+
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Fetch all expenses for the given task IDs in one query
+    const { data: expenses, error } = await supabase
+      .from('expenses')
+      .select('task_id, amount')
+      .in('task_id', taskIds);
+
+    if (error) {
+      console.error('[getBatchTaskExpenses] Query error:', error);
+      return { success: false, error: 'Failed to fetch task expenses' };
+    }
+
+    // Aggregate expenses by task_id
+    const expenseStats: Record<string, { count: number; totalAmount: number }> = {};
+
+    for (const expense of expenses || []) {
+      if (!expense.task_id) continue;
+
+      if (!expenseStats[expense.task_id]) {
+        expenseStats[expense.task_id] = { count: 0, totalAmount: 0 };
+      }
+
+      expenseStats[expense.task_id].count++;
+      expenseStats[expense.task_id].totalAmount += expense.amount || 0;
+    }
+
+    return {
+      success: true,
+      data: expenseStats,
+    };
+  } catch (error) {
+    console.error('[getBatchTaskExpenses] Unexpected error:', error);
     return { success: false, error: 'Failed to fetch task expenses' };
   }
 }
@@ -696,18 +743,13 @@ export async function createExpenseFromMaterial(data: {
   category: 'materials';
 }) {
   try {
-    // Debug: Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      console.error('Debug: createExpenseFromMaterial - unauthorized');
       return { success: false, error: 'Unauthorized' };
     }
 
-    console.log('Debug: createExpenseFromMaterial - creating expense from material', data);
-
     const supabase = await createClient();
 
-    // Debug: Get user's company
     const { data: companyUser, error: companyError } = await supabase
       .from('company_users')
       .select('company_id')
@@ -716,11 +758,11 @@ export async function createExpenseFromMaterial(data: {
       .single();
 
     if (companyError || !companyUser) {
-      console.error('Debug: createExpenseFromMaterial - company error:', companyError);
+      console.error('[createExpenseFromMaterial] Company error:', companyError);
       return { success: false, error: 'User not associated with a company' };
     }
 
-    // Debug: Check if material assignment already has linked expense
+    // Check if material assignment already has linked expense
     const { data: existingLink } = await supabase
       .from('expense_line_items')
       .select('expense_id')
@@ -728,11 +770,10 @@ export async function createExpenseFromMaterial(data: {
       .single();
 
     if (existingLink) {
-      console.log('Debug: createExpenseFromMaterial - material already has linked expense');
       return { success: true, alreadyLinked: true };
     }
 
-    // Debug: Create expense
+    // Create expense
     const { data: expense, error: expenseError } = await supabase
       .from('expenses')
       .insert({
@@ -750,11 +791,11 @@ export async function createExpenseFromMaterial(data: {
       .single();
 
     if (expenseError) {
-      console.error('Debug: createExpenseFromMaterial - expense creation error:', expenseError);
+      console.error('[createExpenseFromMaterial] Expense creation error:', expenseError);
       return { success: false, error: 'Failed to create expense' };
     }
 
-    // Debug: Create expense line item linking to material assignment
+    // Create expense line item linking to material assignment
     const { error: lineItemError } = await supabase
       .from('expense_line_items')
       .insert({
@@ -766,13 +807,11 @@ export async function createExpenseFromMaterial(data: {
       });
 
     if (lineItemError) {
-      console.error('Debug: createExpenseFromMaterial - line item error:', lineItemError);
+      console.error('[createExpenseFromMaterial] Line item error:', lineItemError);
       return { success: false, error: 'Failed to link expense to material' };
     }
 
-    console.log('Debug: createExpenseFromMaterial - expense created successfully:', expense.id);
-
-    // Debug: Revalidate paths
+    // Revalidate paths
     revalidatePath('/app/expenses');
     revalidatePath(`/app/tasks/${data.task_id}`);
     revalidatePath(`/app/projects/${data.project_id}`);
@@ -790,8 +829,6 @@ export async function createExpenseFromMaterial(data: {
  */
 export async function getMaterialExpenseLink(materialAssignmentId: string) {
   try {
-    console.log('Debug: getMaterialExpenseLink - checking for material:', materialAssignmentId);
-
     const supabase = await createClient();
 
     const { data, error } = await supabase
@@ -802,18 +839,16 @@ export async function getMaterialExpenseLink(materialAssignmentId: string) {
 
     if (error && error.code !== 'PGRST116') {
       // PGRST116 is "not found" error, which is expected
-      console.error('Debug: getMaterialExpenseLink - query error:', error);
+      console.error('[getMaterialExpenseLink] Query error:', error);
       return { success: false, error: 'Failed to check material expense link' };
     }
-
-    console.log('Debug: getMaterialExpenseLink - linked expense:', data?.expense_id || null);
 
     return {
       success: true,
       expenseId: data?.expense_id || null,
     };
   } catch (error) {
-    console.error('Debug: getMaterialExpenseLink - unexpected error:', error);
+    console.error('[getMaterialExpenseLink] Unexpected error:', error);
     return { success: false, error: 'Failed to check material expense link' };
   }
 }

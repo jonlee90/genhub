@@ -257,6 +257,29 @@ async function getProjectData(id: string) {
         task.materialStats = statsByTask[task.id] || { count: 0, totalCost: 0 };
       });
     }
+
+    // Fetch expense counts and totals for each task
+    const { data: expenseStats } = await supabase
+      .from('expenses')
+      .select('task_id, amount')
+      .in('task_id', taskIds);
+
+    if (expenseStats) {
+      // Aggregate expense stats per task
+      const statsByTask = expenseStats.reduce((acc: any, expense: any) => {
+        if (!acc[expense.task_id]) {
+          acc[expense.task_id] = { count: 0, totalAmount: 0 };
+        }
+        acc[expense.task_id].count += 1;
+        acc[expense.task_id].totalAmount += Number(expense.amount || 0);
+        return acc;
+      }, {});
+
+      // Attach expense stats to tasks
+      (project.tasks as any[]).forEach((task: any) => {
+        task.expenseStats = statsByTask[task.id] || { count: 0, totalAmount: 0 };
+      });
+    }
   }
 
   // Fetch task dependencies for Gantt chart

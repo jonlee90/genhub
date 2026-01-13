@@ -6,6 +6,8 @@ import { TaskCard } from '../list/TaskCard';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HardHat } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getBatchTaskExpenses } from '@/app/actions/expenses';
 import type { TaskStatus } from '@/types/db/enums';
 import type { TasksRow } from '@/types/db/tables/tasks';
 
@@ -49,6 +51,43 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
+
+  // Fetch and cache expense stats for all tasks in this column
+  const [expenseStats, setExpenseStats] = useState<Record<string, { count: number; totalAmount: number }>>({});
+  const [expenseStatsLoading, setExpenseStatsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAllExpenses = async () => {
+      setExpenseStatsLoading(true);
+
+      try {
+        // Extract task IDs
+        const taskIds = tasks.map((task) => task.id);
+
+        // Batch fetch all expense stats in one query
+        const result = await getBatchTaskExpenses(taskIds);
+
+        if (result.success && result.data) {
+          setExpenseStats(result.data);
+        } else {
+          console.error('[KanbanColumn] Error fetching batch expenses:', result.error);
+          setExpenseStats({});
+        }
+      } catch (error) {
+        console.error('[KanbanColumn] Unexpected error fetching expenses:', error);
+        setExpenseStats({});
+      }
+
+      setExpenseStatsLoading(false);
+    };
+
+    if (tasks.length > 0) {
+      fetchAllExpenses();
+    } else {
+      // Clear stats when no tasks
+      setExpenseStats({});
+    }
+  }, [tasks]);
 
   return (
     <motion.div
@@ -116,7 +155,13 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
               </motion.div>
             ) : (
               tasks.map((task) => (
-                <TaskCard key={task.id} task={task} onTaskClick={onTaskClick} phases={phases} />
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onTaskClick={onTaskClick}
+                  phases={phases}
+                  expenseStats={expenseStats[task.id]}
+                />
               ))
             )}
           </div>

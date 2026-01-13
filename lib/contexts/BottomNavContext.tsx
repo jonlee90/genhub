@@ -13,6 +13,7 @@ interface CreateModalData {
   }>;
   teamMembers?: TeamMember[];
   role?: string | null;
+  companyId?: string;
 }
 
 // Map of route patterns to their modal types

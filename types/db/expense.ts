@@ -51,6 +51,8 @@ export interface ExpenseWithRelations {
 export interface ExpenseProject {
   id: string;
   name: string;
+  status?: 'active' | 'on_hold' | 'completed';
+  end_date?: string | null;
 }
 
 /**

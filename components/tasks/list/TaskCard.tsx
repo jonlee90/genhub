@@ -5,7 +5,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, Package, Pencil, Layers as LayersIcon, Box } from 'lucide-react';
+import { Calendar, AlertTriangle, Ban, Package, Pencil, Layers as LayersIcon, Box, Receipt } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
@@ -20,12 +20,17 @@ interface TaskCardProps {
   phases?: Phase[];
   /** Show edit indicator on hover - default true when phases provided */
   showEditIndicator?: boolean;
+  /** Optional expense stats to display */
+  expenseStats?: {
+    count: number;
+    totalAmount: number;
+  };
 }
 
 // All cards use construction-blue border for consistent branding
 const CARD_BORDER = 'border-l-4 border-construction-blue';
 
-export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator }: TaskCardProps) {
+export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator, expenseStats }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -79,6 +84,7 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
   };
 
   const hasMaterials = task.materialStats && task.materialStats.count > 0;
+  const hasExpenses = expenseStats && expenseStats.count > 0;
 
   // Check if task has 3D location
   const has3DLocation = !!task.spatial_marker_id;
@@ -133,52 +139,20 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
             </div>
           )}
 
-          {/* Material Badge - Industrial Stamped Metal Style - hidden when edit indicator is showing */}
-          {hasMaterials && (
-            <motion.div
-              className={cn(
-                "absolute top-2 right-2 z-10",
-                shouldShowEditIndicator && "group-hover:hidden"
-              )}
-              initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 15 }}
-              title={`${task.materialStats!.count} materials - ${formatCurrency(task.materialStats!.totalCost)}`}
-            >
-              {/* Stamped Metal Badge Design */}
-              <div className="relative">
-                {/* Shadow layers for depth */}
-                <div className="absolute inset-0 bg-construction-accent rounded-lg blur-sm opacity-40 translate-y-0.5" />
-
-                {/* Main badge with rivets */}
-                <div className="relative bg-gradient-to-br from-construction-accent via-construction-accent to-[#2a2a2a] border-2 border-[#2a2a2a] rounded-lg px-2.5 py-1.5 shadow-lg">
-                  {/* Decorative corner rivets */}
-                  <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
-                  <div className="absolute top-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
-                  <div className="absolute bottom-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
-                  <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
-
-                  {/* Content */}
-                  <div className="flex items-center gap-1.5">
-                    {/* Stacked layers icon for materials */}
-                    <div className="relative">
-                      <LayersIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
-                    </div>
-
-                    {/* Count badge */}
-                    <div className="flex flex-col items-start leading-none">
-                      <span className="text-[10px] font-black text-white/90 tracking-wider drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
-                        {task.materialStats!.count}
-                      </span>
-                      <span className="text-[8px] font-bold text-white/70 tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
-                        MAT
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Priority Badge - Top Right Corner - hidden when edit indicator is showing */}
+          <motion.div
+            className={cn(
+              "absolute top-2 right-2 z-10",
+              shouldShowEditIndicator && "group-hover:hidden"
+            )}
+            initial={{ scale: 0, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+          >
+            <Badge variant="secondary" className={cn('font-bold text-[10px] px-2 py-0.5', priorityConfig.badgeColor)}>
+              {priorityConfig.label}
+            </Badge>
+          </motion.div>
 
           {/* Task Type Badge - Industrial Construction Theme */}
           <div className="mb-2">
@@ -197,13 +171,53 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
             </div>
           </div>
 
-          {/* Title and Priority */}
+          {/* Title and Material Badge */}
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
               <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
-              <Badge variant="secondary" className={cn('shrink-0 font-bold text-[10px] px-2 py-0.5', priorityConfig.badgeColor)}>
-                {priorityConfig.label}
-              </Badge>
+              {/* Material Badge - Industrial Stamped Metal Style */}
+              {hasMaterials && (
+                <motion.div
+                  className="shrink-0"
+                  initial={{ scale: 0, rotate: -10 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                  title={`${task.materialStats!.count} materials - ${formatCurrency(task.materialStats!.totalCost)}`}
+                >
+                  {/* Stamped Metal Badge Design */}
+                  <div className="relative">
+                    {/* Shadow layers for depth */}
+                    <div className="absolute inset-0 bg-construction-accent rounded-lg blur-sm opacity-40 translate-y-0.5" />
+
+                    {/* Main badge with rivets */}
+                    <div className="relative bg-gradient-to-br from-construction-accent via-construction-accent to-[#2a2a2a] border-2 border-[#2a2a2a] rounded-lg px-2.5 py-1.5 shadow-lg">
+                      {/* Decorative corner rivets */}
+                      <div className="absolute top-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+                      <div className="absolute top-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+                      <div className="absolute bottom-0.5 left-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+                      <div className="absolute bottom-0.5 right-0.5 w-1 h-1 bg-gray-400 rounded-full shadow-inner" />
+
+                      {/* Content */}
+                      <div className="flex items-center gap-1.5">
+                        {/* Stacked layers icon for materials */}
+                        <div className="relative">
+                          <LayersIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+                        </div>
+
+                        {/* Count badge */}
+                        <div className="flex flex-col items-start leading-none">
+                          <span className="text-[10px] font-black text-white/90 tracking-wider drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+                            {task.materialStats!.count}
+                          </span>
+                          <span className="text-[8px] font-bold text-white/70 tracking-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]">
+                            MAT
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
             </div>
 
             {/* Project/Phase - show project name in tasks context, only phase in project context */}
@@ -260,6 +274,16 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
                     <Package className="h-3 w-3 text-construction-accent" />
                     <span className="text-[11px] font-black text-construction-accent tracking-tight">
                       {formatCurrency(task.materialStats!.totalCost)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Expense Display */}
+                {hasExpenses && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 border border-amber-300/60 rounded-md" title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? 's' : ''} - ${formatCurrency(expenseStats!.totalAmount)}`}>
+                    <Receipt className="h-3 w-3 text-amber-600" />
+                    <span className="text-[11px] font-black text-amber-700 tracking-tight">
+                      {formatCurrency(expenseStats!.totalAmount)}
                     </span>
                   </div>
                 )}

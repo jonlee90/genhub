@@ -5,7 +5,8 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Receipt, X, ShieldAlert, Wrench, DollarSign } from 'lucide-react';
 import { ExpenseCard } from './ExpenseCard';
-import { ExpenseFilters } from './ExpenseFilters';
+import { FilterBar } from '@/components/ui/FilterBar';
+import { ExpenseProjectFilter } from './ExpenseProjectFilter';
 import { CreateExpenseModal } from './CreateExpenseModal';
 import { ExpenseDetailModal } from './ExpenseDetailModal';
 import type {
@@ -22,6 +23,19 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('created_at');
+
+  // Calculate expense counts and amounts per project
+  const { projectExpenseCounts, projectExpenseAmounts } = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const amounts: Record<string, number> = {};
+    initialExpenses.forEach((expense) => {
+      if (expense.project?.id) {
+        counts[expense.project.id] = (counts[expense.project.id] || 0) + 1;
+        amounts[expense.project.id] = (amounts[expense.project.id] || 0) + expense.amount;
+      }
+    });
+    return { projectExpenseCounts: counts, projectExpenseAmounts: amounts };
+  }, [initialExpenses]);
 
   // Apply filters and sorting
   const filteredExpenses = useMemo(() => {
@@ -69,6 +83,14 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
 
     return filtered;
   }, [initialExpenses, searchQuery, statusFilter, projectFilter, sortBy]);
+
+  // Calculate current expense count for the selected project
+  const currentExpenseCount = useMemo(() => {
+    if (projectFilter === 'all') {
+      return initialExpenses.length;
+    }
+    return projectExpenseCounts[projectFilter] || 0;
+  }, [projectFilter, initialExpenses.length, projectExpenseCounts]);
 
   // Empty State - No Expenses Created Yet
   if (initialExpenses.length === 0) {
@@ -190,31 +212,57 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
 
   return (
     <div className="space-y-4 md:space-y-6">
-      {/* Filters */}
-      <ExpenseFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        projectFilter={projectFilter}
-        onProjectChange={setProjectFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        projects={projects}
-      />
-
-      {/* Results count - Industrial Style */}
-      <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
-        <div className="flex items-center gap-1.5 md:gap-2">
-          <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
-          <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
-            Status
-          </span>
-        </div>
-        <div className="h-4 w-px bg-construction-blue/30" />
-        <span className="text-xs md:text-sm font-bold text-gray-700">
-          {filteredExpenses.length} of {initialExpenses.length} expenses
-        </span>
+      {/* Filters - Sticky on Mobile */}
+      <div className="sticky top-0 md:relative z-40 md:z-auto pt-[env(safe-area-inset-top)] md:pt-0 bg-white md:bg-transparent">
+        <FilterBar
+          searchConfig={{
+            placeholder: 'Search expenses...',
+            value: searchQuery,
+            onChange: setSearchQuery,
+            colSpan: 'half'
+          }}
+          filters={[
+            {
+              name: 'status',
+              value: statusFilter,
+              onChange: setStatusFilter,
+              options: [
+                { label: 'All Statuses', value: 'all' },
+                { label: 'Submitted', value: 'submitted' },
+                { label: 'Under Review', value: 'under_review' },
+                { label: 'Approved', value: 'approved' },
+                { label: 'Rejected', value: 'rejected' },
+                { label: 'Paid', value: 'paid' }
+              ],
+              placeholder: 'All Statuses'
+            },
+            {
+              name: 'sort',
+              value: sortBy,
+              onChange: setSortBy,
+              options: [
+                { label: 'Latest First', value: 'created_at' },
+                { label: 'Expense Date', value: 'date' },
+                { label: 'Amount (High to Low)', value: 'amount_high' },
+                { label: 'Amount (Low to High)', value: 'amount_low' },
+                { label: 'Description (A-Z)', value: 'description' },
+                { label: 'Status', value: 'status' }
+              ],
+              placeholder: 'Sort By',
+              colSpan: 'auto'
+            }
+          ]}
+        >
+          {/* Project Filter with expense counts and total amounts */}
+          <ExpenseProjectFilter
+            projects={projects}
+            selectedProjectId={projectFilter}
+            onProjectChange={setProjectFilter}
+            expenseCount={currentExpenseCount}
+            projectExpenseCounts={projectExpenseCounts}
+            projectExpenseAmounts={projectExpenseAmounts}
+          />
+        </FilterBar>
       </div>
 
       {/* No Results State */}

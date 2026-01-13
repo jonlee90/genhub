@@ -110,7 +110,7 @@ async function getTasks() {
   const taskIds = tasks.map((t: any) => t.id);
 
   // OPTIMIZATION: Run secondary queries in parallel
-  const [assigneesResult, materialStatsResult, dependenciesResult] = await Promise.all([
+  const [assigneesResult, materialStatsResult, expenseStatsResult, dependenciesResult] = await Promise.all([
     // Fetch user profiles for assignees
     assigneeIds.length > 0
       ? supabase
@@ -123,6 +123,12 @@ async function getTasks() {
     supabase
       .from('material_assignments')
       .select('task_id, quantity, total_cost')
+      .in('task_id', taskIds),
+
+    // Fetch expense counts and totals for each task
+    supabase
+      .from('expenses')
+      .select('task_id, amount')
       .in('task_id', taskIds),
 
     // Fetch task dependencies for Gantt chart
@@ -158,6 +164,24 @@ async function getTasks() {
     // Attach material stats to tasks
     (tasks as any[]).forEach((task: any) => {
       task.materialStats = statsByTask[task.id] || { count: 0, totalCost: 0 };
+    });
+  }
+
+  // Aggregate expense stats per task
+  const expenseStats = expenseStatsResult.data || [];
+  if (expenseStats.length > 0) {
+    const statsByTask = expenseStats.reduce((acc: any, expense: any) => {
+      if (!acc[expense.task_id]) {
+        acc[expense.task_id] = { count: 0, totalAmount: 0 };
+      }
+      acc[expense.task_id].count += 1;
+      acc[expense.task_id].totalAmount += Number(expense.amount || 0);
+      return acc;
+    }, {});
+
+    // Attach expense stats to tasks
+    (tasks as any[]).forEach((task: any) => {
+      task.expenseStats = statsByTask[task.id] || { count: 0, totalAmount: 0 };
     });
   }
 

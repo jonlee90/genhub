@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Package } from 'lucide-react';
 import { MaterialSummary } from './MaterialSummary';
 import { MaterialsSearch } from './MaterialsSearch';
+import { FilterBar } from '@/components/ui/FilterBar';
 import { TrackedMaterialsCarousel } from './TrackedMaterialsCarousel';
 import { MaterialsList } from './MaterialsList';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
@@ -48,6 +49,7 @@ export function MaterialsPageClient({
   initialTotalPages,
 }: MaterialsPageClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [projectFilter, setProjectFilter] = useState('all');
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -169,6 +171,33 @@ export function MaterialsPageClient({
               </ErrorBoundary>
             </div>
 
+            {/* Project Filters - Sticky on Mobile */}
+            <div className="mb-5">
+              <FilterBar
+                searchConfig={{
+                  placeholder: 'Search materials...',
+                  value: searchQuery,
+                  onChange: setSearchQuery,
+                  colSpan: 'half'
+                }}
+                filters={[
+                  {
+                    name: 'project',
+                    value: projectFilter,
+                    onChange: setProjectFilter,
+                    options: [
+                      { label: 'All Projects', value: 'all' },
+                      ...projects.map((project) => ({
+                        label: project.name,
+                        value: project.id
+                      }))
+                    ],
+                    placeholder: 'All Projects'
+                  }
+                ]}
+              />
+            </div>
+
             {/* Search Section - ref for header visibility */}
             <div ref={searchSectionRef} className="mb-5">
               <MaterialsSearch projects={projects} />
@@ -258,6 +287,31 @@ export function MaterialsPageClient({
             </div>
           )}
         </ErrorBoundary>
+
+        {/* Project Filters */}
+        <FilterBar
+          searchConfig={{
+            placeholder: 'Search materials...',
+            value: searchQuery,
+            onChange: setSearchQuery,
+            colSpan: 'half'
+          }}
+          filters={[
+            {
+              name: 'project',
+              value: projectFilter,
+              onChange: setProjectFilter,
+              options: [
+                { label: 'All Projects', value: 'all' },
+                ...projects.map((project) => ({
+                  label: project.name,
+                  value: project.id
+                }))
+              ],
+              placeholder: 'All Projects'
+            }
+          ]}
+        />
 
         {/* Materials Search Interface */}
         <MaterialsSearch projects={projects} />

@@ -311,7 +311,6 @@ export function TaskTypeManager() {
                       size="sm"
                       onClick={() => setDeletingType(type)}
                       className="hover:bg-red-50 hover:text-red-600 font-semibold transition-colors"
-                      disabled={type.is_default ?? false}
                     >
                       <Trash2 className="h-4 w-4 mr-1.5" />
                       Delete
@@ -445,7 +444,7 @@ export function TaskTypeManager() {
           onClose={() => setEditingType(null)}
           icon={Pencil}
           title="Edit Task Type"
-          subtitle={(editingType.is_default ?? false) ? 'Default task types are read-only' : 'Update task type settings'}
+          subtitle={(editingType.is_default ?? false) ? 'Customize default task type' : 'Update task type settings'}
           maxWidth="md"
           leftActions={
             <Button
@@ -457,63 +456,18 @@ export function TaskTypeManager() {
             </Button>
           }
           rightActions={
-            (editingType.is_default ?? false) ? null : (
-              <Button
-                type="submit"
-                form="edit-task-type-form"
-                className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-              >
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Save Changes
-              </Button>
-            )
+            <Button
+              type="submit"
+              form="edit-task-type-form"
+              className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
+            >
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              Save Changes
+            </Button>
           }
         >
-          {(editingType.is_default ?? false) ? (
-            // Debug: Read-only warning for default types
-            <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-bold text-amber-900 mb-1">Default Task Type</h4>
-                    <p className="text-sm text-amber-700">
-                      This is a system default task type and cannot be edited or deleted.
-                      Create a custom task type instead if you need different settings.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Display current values */}
-              <div className="space-y-4 opacity-60">
-                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                  <div
-                    className="p-3 rounded-lg border-2"
-                    style={{
-                      backgroundColor: `${editingType.color || '#3b82f6'}15`,
-                      borderColor: `${editingType.color || '#3b82f6'}30`,
-                    }}
-                  >
-                    {(() => {
-                      const Icon = AVAILABLE_ICONS[editingType.icon_name as keyof typeof AVAILABLE_ICONS] || Hammer;
-                      return <Icon className="h-6 w-6" style={{ color: editingType.color || '#3b82f6' }} />;
-                    })()}
-                  </div>
-                  <div>
-                    <div className="font-black text-construction-blue uppercase text-lg">
-                      {editingType.name}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {editingType.description || 'No description'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            // Debug: Editable form
-            <form id="edit-task-type-form" onSubmit={handleUpdate} className="space-y-5">
+          {/* Editable form for all task types */}
+          <form id="edit-task-type-form" onSubmit={handleUpdate} className="space-y-5">
               {/* Name field */}
               <div className="space-y-2">
                 <Label htmlFor="edit-name" className="text-sm font-bold text-gray-900">
@@ -606,7 +560,6 @@ export function TaskTypeManager() {
                 </Label>
               </div>
             </form>
-          )}
         </BaseModal>
       )}
 
@@ -620,45 +573,29 @@ export function TaskTypeManager() {
                 Delete Task Type
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-3 text-base">
-                {(deletingType.is_default ?? false) ? (
-                  <>
-                    <p className="font-bold text-red-600">
-                      Cannot delete default task types!
-                    </p>
-                    <p className="text-gray-700">
-                      This is a system default task type. If you don't want to use it,
-                      mark it as inactive instead.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-gray-700">
-                      Are you sure you want to delete{' '}
-                      <span className="font-bold text-gray-900">"{deletingType.name}"</span>?
-                    </p>
-                    <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
-                      <p className="text-sm text-amber-800">
-                        <strong>Note:</strong> This is a soft delete. Existing tasks will keep
-                        this type, but it won't be available for new tasks.
-                      </p>
-                    </div>
-                  </>
-                )}
+                <p className="text-gray-700">
+                  Are you sure you want to delete{' '}
+                  <span className="font-bold text-gray-900">"{deletingType.name}"</span>?
+                </p>
+                <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-800">
+                    <strong>Note:</strong> This is a soft delete. Existing tasks will keep
+                    this type, but it won't be available for new tasks.
+                  </p>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="border-2 font-semibold">
                 Cancel
               </AlertDialogCancel>
-              {!(deletingType.is_default ?? false) && (
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-red-600 hover:bg-red-700 text-white font-bold"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Task Type
-                </AlertDialogAction>
-              )}
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Task Type
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

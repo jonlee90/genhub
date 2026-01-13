@@ -39,7 +39,7 @@ async function getExpensesData() {
       // Get all projects for this company
       const { data: projects } = await supabase
         .from('projects')
-        .select('id, name')
+        .select('id, name, status, end_date')
         .eq('company_id', companyUser.company_id)
         .eq('status', 'active')
         .order('name');
@@ -108,7 +108,7 @@ async function getExpensesData() {
   // Get all projects for this company
   const { data: projects } = await supabase
     .from('projects')
-    .select('id, name')
+    .select('id, name, status, end_date')
     .eq('company_id', companyUser.company_id)
     .eq('status', 'active')
     .order('name');

@@ -467,6 +467,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
               onTypeChange={setTypeFilter}
               sortBy={sortBy}
               onSortChange={setSortBy}
+              projects={projects}
             />
 
             {/* Results count */}
@@ -539,6 +540,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
         onTypeChange={setTypeFilter}
         sortBy={sortBy}
         onSortChange={setSortBy}
+        projects={projects}
       />
 
       {/* Results count */}

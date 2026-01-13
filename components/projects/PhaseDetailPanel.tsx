@@ -224,7 +224,7 @@ export function PhaseDetailPanel({
         )}
 
 
-        {/* Action Buttons */}
+        {/* Action Buttons 
         <motion.div
           className="flex flex-col gap-3 pt-2"
           initial={{ opacity: 0, y: 20 }}
@@ -251,7 +251,7 @@ export function PhaseDetailPanel({
           </Button>
           
         </motion.div>
-
+*/}
         {/* Progress Card - Creative Phase Progress Dashboard */}
         <motion.div
           className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm"
