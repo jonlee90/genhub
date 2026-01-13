@@ -18,8 +18,9 @@ import {
   Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { signOut, useSession } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { Session } from 'next-auth';
 
 // Navigation grid items - designed for quick access
 const navGridItems = [
@@ -76,11 +77,11 @@ const navGridItems = [
 interface MoreMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  session: Session | null;
 }
 
-export function MoreMenu({ isOpen, onClose }: MoreMenuProps) {
+export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
   const pathname = usePathname();
-  const { data: session } = useSession();
 
   // Lock body scroll when menu is open
   useEffect(() => {

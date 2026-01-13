@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/user/UserMenu";
+import type { Session } from 'next-auth';
 
 // Debug: Aceternity UI enhanced sidebar with construction theme
 interface NavigationItem {
@@ -55,9 +56,10 @@ const ownerNavigation: NavigationItem[] = [
 
 interface SidebarProps {
   isOwner?: boolean;
+  session: Session | null;
 }
 
-export function Sidebar({ isOwner = false }: SidebarProps) {
+export function Sidebar({ isOwner = false, session }: SidebarProps) {
   const pathname = usePathname();
   const notificationCount = 3; // Mock notification count
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -527,7 +529,7 @@ export function Sidebar({ isOwner = false }: SidebarProps) {
                             {/* Subtle glow on hover */}
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-construction-blue/0 via-construction-blue/5 to-construction-blue/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                            <UserMenu />
+                            <UserMenu session={session} />
                           </div>
                         </motion.div>
                       </div>
@@ -923,7 +925,7 @@ export function Sidebar({ isOwner = false }: SidebarProps) {
                       {/* Subtle glow on hover */}
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-construction-blue/0 via-construction-blue/5 to-construction-blue/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                      <UserMenu />
+                      <UserMenu session={session} />
                     </div>
                   </motion.div>
                 </div>

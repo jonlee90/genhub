@@ -20,6 +20,7 @@ import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
 import { TaskModal } from '@/components/tasks/modals/TaskModal';
 import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
+import type { Session } from 'next-auth';
 
 // Navigation item configuration with create modal mapping
 interface NavItem {
@@ -41,7 +42,11 @@ const navigationItems: NavItem[] = [
   { name: 'Menu', href: '#more', logoImage: true, isMore: true },
 ];
 
-export function BottomNavigation() {
+interface BottomNavigationProps {
+  session: Session | null;
+}
+
+export function BottomNavigation({ session }: BottomNavigationProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
@@ -262,7 +267,7 @@ export function BottomNavigation() {
       </nav>
 
       {/* More Menu Modal */}
-      <MoreMenu isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} />
+      <MoreMenu isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} session={session} />
 
       {/* Create Project Modal */}
       {openModal === 'project' && (
@@ -288,7 +293,7 @@ export function BottomNavigation() {
       {/* Create Expense Modal */}
       {openModal === 'expense' && expenseData && (
         <CreateExpenseModal
-          projects={expenseData.projects || []}
+          projects={(expenseData.projects || []) as any}
           tasks={expenseData.tasks || []}
           onClose={() => {
             closeCreateModal();

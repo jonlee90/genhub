@@ -2583,7 +2583,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_dashboard_kpis: {
+        Row: {
+          active_projects: number | null
+          approved_expense_amount: number | null
+          archived_projects: number | null
+          at_risk_tasks: number | null
+          blocked_tasks: number | null
+          company_id: string | null
+          completed_projects: number | null
+          completed_tasks: number | null
+          delayed_tasks: number | null
+          due_this_week_tasks: number | null
+          due_today_tasks: number | null
+          in_progress_tasks: number | null
+          last_updated: string | null
+          materials_delivered: number | null
+          materials_needed: number | null
+          materials_ordered: number | null
+          on_hold_projects: number | null
+          on_time_tasks: number | null
+          overdue_tasks: number | null
+          pending_approval_tasks: number | null
+          pending_expense_amount: number | null
+          pending_expenses: number | null
+          team_size: number | null
+          todo_tasks: number | null
+          total_actual_cost: number | null
+          total_budget: number | null
+          total_materials: number | null
+          total_planned_cost: number | null
+          total_projects: number | null
+          total_tasks: number | null
+          unassigned_tasks: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       acquire_dm_lock: {
@@ -2593,6 +2636,23 @@ export type Database = {
       find_dm_room: {
         Args: { user1_id: string; user2_id: string }
         Returns: string
+      }
+      get_chat_rooms_with_metadata: {
+        Args: { p_company_id: string; p_user_id: string }
+        Returns: {
+          company_id: string
+          created_at: string
+          id: string
+          last_message: Json
+          last_read_at: string
+          muted_until: string
+          name: string
+          participant_count: number
+          project_id: string
+          type: string
+          unread_count: number
+          updated_at: string
+        }[]
       }
       get_project_material_summary: {
         Args: { project_uuid: string }
@@ -2605,6 +2665,10 @@ export type Database = {
           total_expense_amount: number
           total_materials_cost: number
         }[]
+      }
+      get_projects_with_stats: {
+        Args: { p_company_id: string; p_limit?: number; p_offset?: number }
+        Returns: Json
       }
       get_task_analytics: {
         Args: { p_company_id: string; project_filter: string }
@@ -2664,6 +2728,7 @@ export type Database = {
       is_user_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_user_gc_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_user_owner: { Args: { p_user_id: string }; Returns: boolean }
+      refresh_dashboard_kpis: { Args: never; Returns: undefined }
       seed_company_templates: {
         Args: { p_company_id: string }
         Returns: undefined

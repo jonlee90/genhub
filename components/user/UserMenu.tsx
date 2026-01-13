@@ -1,11 +1,15 @@
 "use client";
 import React, { useState } from 'react';
 import { ChevronDown, LogOut, User } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { signOut } from 'next-auth/react';
+import type { Session } from 'next-auth';
 
-export default function UserMenu() {
+interface UserMenuProps {
+	session: Session | null;
+}
+
+export default function UserMenu({ session }: UserMenuProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const { data: session } = useSession();
 	const user = session?.user;
 
 	const handleSignOut = () => {

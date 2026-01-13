@@ -215,13 +215,26 @@ export async function createTask() { ... }  // Server Actions
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│ TASK: Regenerate TypeScript types                                │
+│ TASK: Regenerate TypeScript types + Update schema docs          │
 │ USE:  Bash: source <(grep -E '^SUPABASE_' .env.local |          │
 │       xargs -I {} echo "export {}") && npx supabase gen types   │
 │       typescript --project-id "$SUPABASE_PROJECT_ID"            │
 │       > types/database.types.ts                                  │
 │ WHEN: After ANY schema change (ALWAYS)                          │
-│ WHY:  Token-efficient (doesn't return file to context)          │
+│                                                                  │
+│ TYPES: Use domain-specific files (NOT database.types.ts):       │
+│       - types/db/task.ts (TaskRow, TaskStatus, TaskWithX...)    │
+│       - types/db/expense.ts (ExpenseRow, ExpenseWithRelations)  │
+│       - types/db/spatial.ts (spatial types)                     │
+│       - types/db/chat.ts (chat types)                           │
+│       - types/db/enums.ts (ALL enums, small file ~100 lines)    │
+│       - types/db/tables/*.ts (individual table Row types)       │
+│                                                                  │
+│ DOCS:  For understanding schema structure:                      │
+│       - .claude/docs/indexes/tables.md (quick lookup)           │
+│       - .claude/docs/backend/SCHEMA_*.md (detailed docs)        │
+│                                                                  │
+│ WHY:  Domain files are small & focused; database.types.ts huge  │
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
@@ -380,9 +393,10 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/utils/supabase/server'
 import { auth } from '@/lib/auth'
-import type { Database } from '@/types/database.types'
-
-type Entity = Database['public']['Tables']['entities']['Row']
+// Import domain-specific types (NOT the huge database.types.ts)
+import type { TaskRow, TaskStatus } from '@/types/db/task'
+// OR from table directly:
+import type { TasksRow } from '@/types/db/tables/tasks'
 
 // Validation schema
 const CreateEntitySchema = z.object({
@@ -526,15 +540,16 @@ ELSE:
 
 ```
 1. Load skill: skills/database/create-migration.md
-2. MCP: mcp__supabase__list_tables (check for conflicts)
-3. Design schema using Standard Table Template
-4. MCP: mcp__supabase__apply_migration (full SQL)
-5. MCP: mcp__supabase__execute_sql (verify table created)
+2. Check existing schema: .claude/docs/indexes/tables.md (quick lookup)
+3. MCP: mcp__supabase__list_tables (check for conflicts)
+4. Design schema using Standard Table Template
+5. MCP: mcp__supabase__apply_migration (full SQL)
+6. MCP: mcp__supabase__execute_sql (verify table created)
    query: "SELECT * FROM pg_policies WHERE tablename = '{table}'"
-6. MCP: mcp__supabase__get_advisors type: "security"
-7. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
-8. Save migration: supabase/migrations/YYYYMMDDHHMMSS_{name}.sql
-9. IF MODE=FULL:
+7. MCP: mcp__supabase__get_advisors type: "security"
+8. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+9. Save migration: supabase/migrations/YYYYMMDDHHMMSS_{name}.sql
+10. IF MODE=FULL:
    - /kc:build
    - /kc:sync-docs --source=database/{table}
 ```
@@ -543,12 +558,13 @@ ELSE:
 
 ```
 1. Load skill: skills/database/modify-schema.md
-2. MCP: mcp__supabase__list_tables (get current schema)
-3. Plan ALTER TABLE statement
-4. MCP: mcp__supabase__apply_migration
-5. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
-6. Update affected Server Actions (if needed)
-7. IF MODE=FULL:
+2. Check existing schema: .claude/docs/indexes/tables.md or relevant SCHEMA_*.md
+3. MCP: mcp__supabase__list_tables (get current schema)
+4. Plan ALTER TABLE statement
+5. MCP: mcp__supabase__apply_migration
+6. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+7. Update affected Server Actions (if needed)
+8. IF MODE=FULL:
    - /kc:build
    - /kc:sync-docs
 ```
@@ -821,29 +837,31 @@ Issues: [CRITICAL issues if any]
 ### Example 1: Add Column to Existing Table
 
 ```
-1. MCP: mcp__supabase__list_tables (verify current schema)
-2. MCP: mcp__supabase__apply_migration
+1. Check schema: .claude/docs/indexes/tables.md (quick lookup for features table)
+2. MCP: mcp__supabase__list_tables (verify current schema)
+3. MCP: mcp__supabase__apply_migration
    name: "add_priority_to_features"
    query: "ALTER TABLE public.features ADD COLUMN priority text DEFAULT 'medium';"
-3. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
-4. Serena: find_symbol "updateFeature" (update action if needed)
-5. /kc:build
+4. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+5. Serena: find_symbol "updateFeature" (update action if needed)
+6. /kc:build
 ```
 
 ### Example 2: Create New Feature Table + CRUD
 
 ```
 1. Load: skills/database/create-migration.md
-2. MCP: mcp__supabase__list_tables (check for conflicts)
-3. Design schema using Standard Table Template
-4. MCP: mcp__supabase__apply_migration (full SQL)
-5. MCP: mcp__supabase__get_advisors type: "security"
-6. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
-7. Save: supabase/migrations/YYYYMMDDHHMMSS_create_features.sql
-8. Create: app/actions/features.ts (CRUD actions)
-9. /kc:build
-10. /kc:sync-docs --source=database/features
-11. HANDOFF: frontend-engineer with interfaces
+2. Check schema: .claude/docs/indexes/tables.md (verify no conflicts)
+3. MCP: mcp__supabase__list_tables (check for conflicts)
+4. Design schema using Standard Table Template
+5. MCP: mcp__supabase__apply_migration (full SQL)
+6. MCP: mcp__supabase__get_advisors type: "security"
+7. Bash: npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
+8. Save: supabase/migrations/YYYYMMDDHHMMSS_create_features.sql
+9. Create: app/actions/features.ts (CRUD actions)
+10. /kc:build
+11. /kc:sync-docs --source=database/features
+12. HANDOFF: frontend-engineer with interfaces
 ```
 
 ### Example 3: Debug Slow Query

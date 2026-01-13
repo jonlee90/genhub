@@ -80,7 +80,7 @@ async function getExpensesData() {
 
       return {
         expenses: expenses || [],
-        projects: projects || [],
+        projects: (projects || []) as any[],
         tasks: tasks || [],
         role: companyUser.role,
         companyId: companyUser.company_id,

@@ -479,6 +479,107 @@ async function getQuickActionData(
 }
 
 // ============================================
+// Optimized Helper Functions for Materialized View
+// ============================================
+
+/**
+ * Get top assignees by task count (for team activity widget)
+ */
+async function getTopAssignees(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string
+): Promise<{ id: string; name: string; avatarUrl: string | null; taskCount: number }[]> {
+  // Get task assignees with user profiles
+  const { data: tasks, error } = await supabase
+    .from('tasks')
+    .select(`
+      id,
+      projects!inner (company_id),
+      task_assignees (
+        user_id,
+        user_profiles!task_assignees_user_id_fkey (
+          id,
+          name,
+          avatar_url
+        )
+      )
+    `)
+    .eq('projects.company_id', companyId);
+
+  if (error || !tasks) {
+    console.error('[getTopAssignees] Error:', error);
+    return [];
+  }
+
+  const assigneeCounts = new Map<string, { id: string; name: string; avatarUrl: string | null; count: number }>();
+
+  for (const task of tasks) {
+    const taskAssignees = task.task_assignees as Array<{
+      user_id: string | null;
+      user_profiles: { id: string; name: string | null; avatar_url: string | null } | null;
+    }> | null;
+
+    if (taskAssignees) {
+      for (const assignee of taskAssignees) {
+        if (assignee.user_id && assignee.user_profiles) {
+          const existing = assigneeCounts.get(assignee.user_id);
+          if (existing) {
+            existing.count++;
+          } else {
+            assigneeCounts.set(assignee.user_id, {
+              id: assignee.user_id,
+              name: assignee.user_profiles.name || 'Unknown',
+              avatarUrl: assignee.user_profiles.avatar_url,
+              count: 1,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return Array.from(assigneeCounts.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      avatarUrl: a.avatarUrl,
+      taskCount: a.count,
+    }));
+}
+
+/**
+ * Get expenses by category (for budget summary widget)
+ */
+async function getExpensesByCategory(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string
+): Promise<{ category: string; amount: number }[]> {
+  const { data: expenses, error } = await supabase
+    .from('expenses')
+    .select('category, amount, projects!inner (company_id)')
+    .eq('projects.company_id', companyId);
+
+  if (error || !expenses) {
+    console.error('[getExpensesByCategory] Error:', error);
+    return [];
+  }
+
+  const categoryMap = new Map<string, number>();
+
+  for (const expense of expenses) {
+    const category = expense.category || 'other';
+    const amount = Number(expense.amount) || 0;
+    categoryMap.set(category, (categoryMap.get(category) || 0) + amount);
+  }
+
+  return Array.from(categoryMap.entries())
+    .map(([category, amount]) => ({ category, amount }))
+    .sort((a, b) => b.amount - a.amount);
+}
+
+// ============================================
 // Main Dashboard Data Action
 // ============================================
 
@@ -489,7 +590,7 @@ async function getQuickActionData(
  * @returns Dashboard data aggregated from multiple tables
  */
 export async function getDashboardData(): Promise<DashboardDataResult> {
-  console.log('[getDashboardData] Starting dashboard data fetch...');
+  console.log('[getDashboardData] Starting dashboard data fetch (optimized with mv_dashboard_kpis)...');
 
   // Get user context
   const userContext = await getUserContext();
@@ -502,92 +603,91 @@ export async function getDashboardData(): Promise<DashboardDataResult> {
   console.log('[getDashboardData] Fetching for company:', companyId);
 
   try {
-    // Fetch all data in parallel
-    const [projectStats, taskStats, expenseStats, materialStats, teamStats, quickActionData] = await Promise.all([
-      getProjectStats(supabase, companyId),
-      getTaskStats(supabase, companyId),
-      getExpenseStats(supabase, companyId),
-      getMaterialStats(supabase, companyId),
-      getTeamStats(supabase, companyId),
+    // Fetch pre-aggregated KPIs from materialized view (1 query instead of 6!)
+    const { data: kpiData, error: kpiError } = await supabase
+      .from('mv_dashboard_kpis')
+      .select('*')
+      .eq('company_id', companyId)
+      .single();
+
+    if (kpiError || !kpiData) {
+      console.error('[getDashboardData] Error fetching KPIs from materialized view:', kpiError);
+      // Fallback to original implementation if view doesn't have data yet
+      return { error: 'Failed to load dashboard data. Please try refreshing.' };
+    }
+
+    // Fetch additional data that requires joins (top assignees, quick actions, expense categories)
+    const [topAssignees, quickActionData, expensesByCategory] = await Promise.all([
+      getTopAssignees(supabase, companyId),
       getQuickActionData(supabase, companyId),
+      getExpensesByCategory(supabase, companyId),
     ]);
 
-    console.log('[getDashboardData] Raw stats:', {
-      projects: projectStats.total,
-      tasks: taskStats.total,
-      pendingExpenses: expenseStats.pendingCount,
-      materials: materialStats.total,
-      team: teamStats.totalMembers,
+    console.log('[getDashboardData] Raw KPI data from view:', {
+      projects: kpiData.total_projects,
+      tasks: kpiData.total_tasks,
+      pendingExpenses: kpiData.pending_expenses,
+      materials: kpiData.total_materials,
+      team: kpiData.team_size,
       quickActionProjects: quickActionData.projects.length,
     });
 
     // Calculate derived metrics
-    const totalPlannedBudget = projectStats.totalBudget;
-    const totalActualSpend = taskStats.totalActualCost + expenseStats.approvedAmount;
+    const totalPlannedBudget = Number(kpiData.total_budget) || 0;
+    const totalActualSpend = (Number(kpiData.total_actual_cost) || 0) + (Number(kpiData.approved_expense_amount) || 0);
     const budgetUtilization = totalPlannedBudget > 0
       ? Math.round((totalActualSpend / totalPlannedBudget) * 100)
       : 0;
 
-    const completionRate = taskStats.total > 0
-      ? Math.round((taskStats.completed / taskStats.total) * 100)
+    const completionRate = (kpiData.total_tasks ?? 0) > 0
+      ? Math.round(((kpiData.completed_tasks ?? 0) / (kpiData.total_tasks ?? 0)) * 100)
       : 0;
 
-    const totalScheduleTasks = taskStats.onTime + taskStats.atRisk + taskStats.delayed;
+    const totalScheduleTasks = (kpiData.on_time_tasks ?? 0) + (kpiData.at_risk_tasks ?? 0) + (kpiData.delayed_tasks ?? 0);
     const onTimePercent = totalScheduleTasks > 0
-      ? Math.round((taskStats.onTime / totalScheduleTasks) * 100)
+      ? Math.round(((kpiData.on_time_tasks ?? 0) / totalScheduleTasks) * 100)
       : 100;
 
-    // Get top 5 assignees
-    const topAssignees = Array.from(taskStats.assigneeCounts.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5)
-      .map((a) => ({
-        id: a.id,
-        name: a.name,
-        avatarUrl: a.avatarUrl,
-        taskCount: a.count,
-      }));
-
-    // Assemble dashboard data
+    // Assemble dashboard data from materialized view
     const kpis: DashboardKPIs = {
-      activeProjects: projectStats.active,
-      totalProjects: projectStats.total,
+      activeProjects: kpiData.active_projects ?? 0,
+      totalProjects: kpiData.total_projects ?? 0,
       projectsTrend: 0, // TODO: Calculate from historical data
 
-      tasksThisWeek: taskStats.dueThisWeek,
-      tasksDueToday: taskStats.dueToday,
-      tasksOverdue: taskStats.overdue,
+      tasksThisWeek: kpiData.due_this_week_tasks ?? 0,
+      tasksDueToday: kpiData.due_today_tasks ?? 0,
+      tasksOverdue: kpiData.overdue_tasks ?? 0,
 
       budgetUtilization,
       totalPlannedBudget,
       totalActualSpend,
 
-      scheduleOnTime: taskStats.onTime,
-      scheduleAtRisk: taskStats.atRisk,
-      scheduleDelayed: taskStats.delayed,
+      scheduleOnTime: kpiData.on_time_tasks ?? 0,
+      scheduleAtRisk: kpiData.at_risk_tasks ?? 0,
+      scheduleDelayed: kpiData.delayed_tasks ?? 0,
 
-      pendingExpenses: expenseStats.pendingCount,
-      pendingExpenseAmount: expenseStats.pendingAmount,
-      pendingApprovals: taskStats.pendingApproval,
+      pendingExpenses: kpiData.pending_expenses ?? 0,
+      pendingExpenseAmount: Number(kpiData.pending_expense_amount) || 0,
+      pendingApprovals: kpiData.pending_approval_tasks ?? 0,
 
-      teamSize: teamStats.totalMembers,
-      unassignedTasks: taskStats.unassigned,
+      teamSize: kpiData.team_size ?? 0,
+      unassignedTasks: kpiData.unassigned_tasks ?? 0,
     };
 
     const projectStatus: ProjectStatusData = {
-      active: projectStats.active,
-      onHold: projectStats.onHold,
-      completed: projectStats.completed,
-      archived: projectStats.archived,
+      active: kpiData.active_projects ?? 0,
+      onHold: kpiData.on_hold_projects ?? 0,
+      completed: kpiData.completed_projects ?? 0,
+      archived: kpiData.archived_projects ?? 0,
     };
 
     const taskProgress: TaskProgressData = {
-      total: taskStats.total,
-      completed: taskStats.completed,
-      inProgress: taskStats.inProgress,
-      todo: taskStats.todo,
-      blocked: taskStats.blocked,
-      overdue: taskStats.overdue,
+      total: kpiData.total_tasks ?? 0,
+      completed: kpiData.completed_tasks ?? 0,
+      inProgress: kpiData.in_progress_tasks ?? 0,
+      todo: kpiData.todo_tasks ?? 0,
+      blocked: kpiData.blocked_tasks ?? 0,
+      overdue: kpiData.overdue_tasks ?? 0,
       completionRate,
       velocityTrend: 0, // TODO: Calculate from historical data
     };
@@ -598,30 +698,30 @@ export async function getDashboardData(): Promise<DashboardDataResult> {
       variance: totalPlannedBudget - totalActualSpend,
       utilizationPercent: budgetUtilization,
       pendingExpenses: {
-        count: expenseStats.pendingCount,
-        amount: expenseStats.pendingAmount,
+        count: kpiData.pending_expenses ?? 0,
+        amount: Number(kpiData.pending_expense_amount) || 0,
       },
-      expensesByCategory: expenseStats.byCategory,
+      expensesByCategory,
     };
 
     const scheduleHealth: ScheduleHealthData = {
-      onTime: taskStats.onTime,
-      atRisk: taskStats.atRisk,
-      overdue: taskStats.delayed,
+      onTime: kpiData.on_time_tasks ?? 0,
+      atRisk: kpiData.at_risk_tasks ?? 0,
+      overdue: kpiData.delayed_tasks ?? 0,
       onTimePercent,
     };
 
     const teamActivity: TeamActivityData = {
-      totalMembers: teamStats.totalMembers,
+      totalMembers: kpiData.team_size ?? 0,
       topAssignees,
-      unassignedTasks: taskStats.unassigned,
+      unassignedTasks: kpiData.unassigned_tasks ?? 0,
     };
 
     const materialsStatus: MaterialsStatusData = {
-      needed: materialStats.needed,
-      ordered: materialStats.ordered,
-      delivered: materialStats.delivered,
-      total: materialStats.total,
+      needed: kpiData.materials_needed ?? 0,
+      ordered: kpiData.materials_ordered ?? 0,
+      delivered: kpiData.materials_delivered ?? 0,
+      total: kpiData.total_materials ?? 0,
     };
 
     const data: DashboardData = {
@@ -635,7 +735,7 @@ export async function getDashboardData(): Promise<DashboardDataResult> {
       quickActionData,
     };
 
-    console.log('[getDashboardData] Successfully assembled dashboard data');
+    console.log('[getDashboardData] Successfully assembled dashboard data from materialized view');
     return { data };
   } catch (error) {
     console.error('[getDashboardData] Unexpected error:', error);

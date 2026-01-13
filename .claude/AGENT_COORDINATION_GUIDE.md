@@ -26,7 +26,7 @@ Status: ✓ completed | ✗ failed
 Files: [list of files modified]
 Issues: [CRITICAL issues if any found]
 Actions: app/actions/feature.ts with functions: [list]
-Types: Feature, CreateFeatureInput from database.types.ts
+Types: Import from types/db/{domain}.ts (e.g., types/db/task.ts, types/db/expense.ts)
 ```
 
 ### Orchestrator Responsibilities

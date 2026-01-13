@@ -102,7 +102,14 @@ utils/supabase/
 └── user.ts
 
 types/
-├── database.types.ts       # Supabase types (auto-generated)
+├── database.types.ts       # Supabase types (auto-generated, DO NOT import)
+├── db/                     # Domain-specific types (USE THESE)
+│   ├── task.ts             # Task types
+│   ├── expense.ts          # Expense types
+│   ├── spatial.ts          # Spatial types
+│   ├── chat.ts             # Chat types
+│   ├── enums.ts            # All enums (~100 lines)
+│   └── tables/             # Individual table Row types
 └── next-auth.d.ts          # Session extensions
 
 .claude/
@@ -146,8 +153,10 @@ import { z } from 'zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-// 4. Types
-import type { Task } from '@/types/database.types';
+// 4. Types (from domain-specific files, NOT database.types.ts)
+import type { TaskRow } from '@/types/db/task';
+// OR from table directly:
+import type { TasksRow } from '@/types/db/tables/tasks';
 ```
 
 ---

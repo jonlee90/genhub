@@ -23,7 +23,21 @@
 npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
-**IMPORTANT:** Do NOT use `mcp__supabase__generate_typescript_types` - it returns the entire file to context (~10,000+ tokens). The bash redirect approach costs ~50 tokens.
+**IMPORTANT:**
+- Do NOT use `mcp__supabase__generate_typescript_types` - it returns the entire file to context (~10,000+ tokens).
+- Do NOT import from `types/database.types.ts` in code - use domain-specific files in `types/db/` instead.
+- The bash redirect approach costs ~50 tokens.
+
+### For Type Imports in Code
+
+**Use domain-specific files** (small & focused):
+- `types/db/task.ts` - Task types (TaskRow, TaskStatus, etc.)
+- `types/db/expense.ts` - Expense types
+- `types/db/spatial.ts` - Spatial/3D types
+- `types/db/enums.ts` - All enum types (~100 lines)
+- `types/db/tables/{table}.ts` - Individual table Row types
+
+**DO NOT** import from `types/database.types.ts` (huge file, wastes tokens).
 
 ### When to Run
 - After ANY database migration (`apply_migration`)

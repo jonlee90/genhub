@@ -14,6 +14,24 @@
 - Types regenerated in `types/database.types.ts`
 - Understanding of the data flow
 
+## Type Imports
+
+**IMPORTANT**: Use domain-specific type files (NOT `types/database.types.ts`):
+- `types/db/task.ts` - Task types (TaskRow, TaskStatus, TaskWithAssignees...)
+- `types/db/expense.ts` - Expense types (ExpenseRow, ExpenseWithRelations...)
+- `types/db/spatial.ts` - Spatial/3D types
+- `types/db/chat.ts` - Chat types
+- `types/db/enums.ts` - All enum types (small, ~100 lines)
+- `types/db/tables/{table}.ts` - Individual table Row types
+
+## Schema Documentation
+
+For understanding tables and schema:
+- **Quick lookup**: `.claude/docs/indexes/tables.md`
+- **Core tables**: `.claude/docs/backend/SCHEMA_CORE.md`
+- **Enums**: `.claude/docs/backend/SCHEMA_ENUMS.md`
+- **Spatial tables**: `.claude/docs/backend/SCHEMA_SPATIAL.md`
+
 ---
 
 ## Quick Reference
@@ -25,10 +43,10 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
-
-type Entity = Database['public']['Tables']['entity_name']['Row'];
-type EntityInsert = Database['public']['Tables']['entity_name']['Insert'];
+// IMPORTANT: Import from domain-specific files (NOT database.types.ts)
+import type { TaskRow, TaskStatus } from '@/types/db/task';
+// OR from table directly:
+import type { TasksRow } from '@/types/db/tables/tasks';
 
 // Validation schema
 const createEntitySchema = z.object({

@@ -135,7 +135,7 @@ export async function getChatRooms(): Promise<{
   rooms?: ChatRoomWithUnread[];
   error?: string;
 }> {
-  console.log('[getChatRooms] Fetching chat rooms...');
+  console.log('[getChatRooms] Fetching chat rooms (optimized with get_chat_rooms_with_metadata)...');
 
   // Get user context
   const userContext = await getUserContext();
@@ -145,96 +145,61 @@ export async function getChatRooms(): Promise<{
 
   const { userId, companyId, supabase } = userContext;
 
-  // Get chat rooms that user participates in
-  // Join with chat_participants to filter by current user
-  const { data: rooms, error: roomsError } = await supabase
-    .from('chat_rooms')
-    .select(`
-      *,
-      chat_participants!inner (
-        user_id,
-        last_read_at,
-        muted_until
-      )
-    `)
-    .eq('company_id', companyId)
-    .eq('chat_participants.user_id', userId)
-    .order('updated_at', { ascending: false }) as { data: any[] | null; error: any };
+  // Use optimized database function (1 query instead of 1 + N*4!)
+  const { data: rooms, error: roomsError } = await (supabase.rpc as any)('get_chat_rooms_with_metadata', {
+    p_company_id: companyId,
+    p_user_id: userId,
+  });
 
   if (roomsError) {
     console.error('[getChatRooms] Error fetching rooms:', roomsError);
     return { error: 'Failed to load chat rooms' };
   }
 
-  console.log('[getChatRooms] Found', rooms?.length || 0, 'rooms');
+  console.log('[getChatRooms] Found', rooms?.length || 0, 'rooms with metadata (single query)');
 
-  // For each room, calculate unread count and get last message
-  const roomsWithUnread: ChatRoomWithUnread[] = await Promise.all(
-    (rooms || []).map(async (room) => {
-      // Calculate unread count using get_unread_count function
-      const { data: unreadData, error: unreadError } = await (supabase.rpc as any)('get_unread_count', {
-        p_chat_room_id: room.id,
-        p_user_id: userId,
-      });
+  // Transform the data to match expected interface
+  const roomsWithUnread: ChatRoomWithUnread[] = (rooms || []).map((room: any) => {
+    // Parse last_message JSONB if it exists
+    let lastMessage: MessageWithSender | undefined = undefined;
+    if (room.last_message) {
+      lastMessage = {
+        id: room.last_message.id,
+        chat_room_id: room.id,
+        sender_id: room.last_message.sender_id,
+        content: room.last_message.content,
+        reply_to_id: room.last_message.reply_to_id || null,
+        entity_references: null,
+        edited_at: room.last_message.edited_at || null,
+        deleted_at: null,
+        created_at: room.last_message.created_at,
+        updated_at: room.last_message.created_at,
+        sender: room.last_message.sender ? {
+          id: room.last_message.sender.id,
+          name: room.last_message.sender.name,
+          email: room.last_message.sender.email,
+          avatar_url: room.last_message.sender.avatar_url,
+        } : null,
+      } as MessageWithSender;
+    }
 
-      const unreadCount = unreadError ? 0 : (unreadData || 0);
-
-      console.log('[getChatRooms] Room', room.id, 'unread count:', unreadCount);
-
-      // Get last message
-      const { data: lastMessageData } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_room_id', (room as any).id)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single() as { data: any | null; error: any };
-
-      // Fetch sender profile if message exists
-      let lastMessage = null;
-      if (lastMessageData) {
-        const { data: senderProfile } = await supabase
-          .from('user_profiles')
-          .select('id, name, email, avatar_url')
-          .eq('id', (lastMessageData as any).sender_id)
-          .single() as { data: any | null; error: any };
-
-        lastMessage = {
-          ...(lastMessageData as any),
-          sender: senderProfile || null,
-        };
-      }
-
-      // Get participant count
-      const { count: participantCount } = await supabase
-        .from('chat_participants')
-        .select('*', { count: 'exact', head: true })
-        .eq('chat_room_id', (room as any).id);
-
-      // Get current user's participant record for muted_until
-      const participantRecord = ((room as any).chat_participants as Array<{ user_id: string; muted_until: string | null }>)?.find(
-        (p) => p.user_id === userId
-      );
-
-      return {
-        ...(room as any),
-        unread_count: unreadCount as number,
-        last_message: lastMessage ? (lastMessage as unknown as MessageWithSender) : undefined,
-        participant_count: participantCount || 0,
-        muted_until: participantRecord?.muted_until || null,
-      };
-    })
-  );
-
-  // Sort by last message activity (most recent first)
-  roomsWithUnread.sort((a, b) => {
-    const aTime = a.last_message?.created_at || a.created_at;
-    const bTime = b.last_message?.created_at || b.created_at;
-    return new Date(bTime).getTime() - new Date(aTime).getTime();
+    return {
+      id: room.id,
+      name: room.name,
+      type: room.type,
+      company_id: room.company_id,
+      project_id: room.project_id,
+      created_at: room.created_at,
+      updated_at: room.updated_at,
+      unread_count: room.unread_count,
+      last_message: lastMessage,
+      participant_count: room.participant_count,
+      muted_until: room.muted_until,
+    };
   });
 
-  console.log('[getChatRooms] Returning', roomsWithUnread.length, 'rooms with metadata');
+  // Already sorted by updated_at DESC in the database function
+  console.log('[getChatRooms] Returning', roomsWithUnread.length, 'rooms with metadata (optimized)');
 
   return { success: true, rooms: roomsWithUnread };
 }

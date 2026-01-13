@@ -307,10 +307,16 @@ Actions: app/actions/materials.ts
 - createMaterial(input: CreateMaterialInput): Promise<Material>
 - getMaterials(): Promise<Material[]>
 
-Types: Material, CreateMaterialInput from database.types.ts
+Types: Import from domain-specific files:
+- types/db/{domain}.ts (e.g., task.ts, expense.ts, spatial.ts)
+- types/db/enums.ts (for enum types)
+- types/db/tables/{table}.ts (for specific table Row types)
+
+Schema docs: .claude/docs/indexes/tables.md or SCHEMA_*.md (for understanding)
 ```
 
 Frontend receives this context for correct imports.
+IMPORTANT: Never import from types/database.types.ts (huge file).
 
 ---
 

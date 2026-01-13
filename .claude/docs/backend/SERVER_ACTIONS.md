@@ -60,9 +60,10 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
-
-type Entity = Database['public']['Tables']['entities']['Row'];
+// Use domain-specific types (NOT database.types.ts)
+import type { TaskRow, TaskStatus } from '@/types/db/task';
+// OR from table directly:
+import type { TasksRow } from '@/types/db/tables/tasks';
 
 // 1. Validation Schema
 const createEntitySchema = z.object({

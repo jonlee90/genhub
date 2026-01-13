@@ -14,6 +14,25 @@
 - Understanding of which company/project the data belongs to
 - Knowledge of related tables for foreign keys
 
+## Type Imports
+
+**IMPORTANT**: Use domain-specific type files (NOT `types/database.types.ts`):
+- `types/db/task.ts` - Task types
+- `types/db/expense.ts` - Expense types
+- `types/db/spatial.ts` - Spatial/3D types
+- `types/db/chat.ts` - Chat types
+- `types/db/enums.ts` - All enum types (small, ~100 lines)
+- `types/db/tables/{table}.ts` - Individual table Row types
+
+## Schema Documentation
+
+For understanding existing tables and schema:
+- **Quick lookup**: `.claude/docs/indexes/tables.md`
+- **Core tables**: `.claude/docs/backend/SCHEMA_CORE.md`
+- **Enums**: `.claude/docs/backend/SCHEMA_ENUMS.md`
+- **Spatial tables**: `.claude/docs/backend/SCHEMA_SPATIAL.md`
+- **RLS patterns**: `.claude/docs/backend/SCHEMA_RLS.md`
+
 ---
 
 ## Quick Reference

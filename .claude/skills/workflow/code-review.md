@@ -222,11 +222,12 @@ const data: any = await fetch(...)  // ❌
 
 ### Types Checklist
 ```markdown
-- [ ] database.types.ts regenerated after schema changes
+- [ ] database.types.ts regenerated after schema changes (but imports from types/db/*)
+- [ ] Types imported from types/db/{domain}.ts (NOT database.types.ts)
 - [ ] Props interfaces for all components
 - [ ] Server Action return types explicit
 - [ ] No 'any' types
-- [ ] Enums from database used correctly
+- [ ] Enums from types/db/enums.ts used correctly
 - [ ] Nullable fields handled
 ```
 

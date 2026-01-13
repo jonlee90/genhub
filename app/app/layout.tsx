@@ -7,12 +7,16 @@ import { OfflineBanner } from "../../components/pwa/OfflineBanner";
 import { InstallPrompt } from "../../components/pwa/InstallPrompt";
 import { isOwner } from "@/app/actions/owner";
 import { BottomNavProvider } from "@/lib/contexts/BottomNavContext";
+import { auth } from "@/lib/auth";
 
 export default async function AppLayout({
 	children
 }: {
 	children: React.ReactNode
 }) {
+	// Fetch session once at layout level to avoid multiple API calls
+	const session = await auth();
+
 	// Check if current user is a platform owner
 	const ownerStatus = await isOwner();
 
@@ -23,7 +27,7 @@ export default async function AppLayout({
 				<OfflineBanner />
 
 				{/* Sidebar - Desktop Only */}
-				<Sidebar isOwner={ownerStatus} />
+				<Sidebar isOwner={ownerStatus} session={session} />
 
 				{/* Main Content Area */}
 				<div className="flex flex-col flex-1 overflow-hidden">
@@ -35,7 +39,7 @@ export default async function AppLayout({
 				</div>
 
 				{/* Bottom Navigation - Mobile Only */}
-				<BottomNavigation />
+				<BottomNavigation session={session} />
 
 				{/* Toast Notifications */}
 				<Toaster position="top-right" richColors />

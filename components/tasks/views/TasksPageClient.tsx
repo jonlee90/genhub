@@ -93,7 +93,8 @@ export function TasksPageClient({
       teamMembers,
     });
     return () => unregisterCreateModal('/app/tasks');
-  }, [projects, teamMembers, registerCreateModal, unregisterCreateModal]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registerCreateModal, unregisterCreateModal]);
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {

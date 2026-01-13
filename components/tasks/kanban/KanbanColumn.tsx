@@ -6,27 +6,8 @@ import { TaskCard } from '../list/TaskCard';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HardHat } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { getBatchTaskExpenses } from '@/app/actions/expenses';
 import type { TaskStatus } from '@/types/db/enums';
-import type { TasksRow } from '@/types/db/tables/tasks';
-
-type Task = TasksRow & {
-  assignee?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  project?: {
-    id: string;
-    name: string;
-  } | null;
-  phase?: {
-    id: string;
-    name: string;
-  } | null;
-};
+import type { TaskWithRelations } from '@/types/db/task';
 
 // Phase type for project context
 type Phase = {
@@ -39,8 +20,8 @@ interface KanbanColumnProps {
   id: TaskStatus;
   title: string;
   color: string;
-  tasks: Task[];
-  onTaskClick?: (task: Task) => void;
+  tasks: TaskWithRelations[];
+  onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we're in project context - pass to TaskCard for phase lookup */
   phases?: Phase[];
   /** Mobile mode - full width layout */
@@ -51,43 +32,6 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
-
-  // Fetch and cache expense stats for all tasks in this column
-  const [expenseStats, setExpenseStats] = useState<Record<string, { count: number; totalAmount: number }>>({});
-  const [expenseStatsLoading, setExpenseStatsLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchAllExpenses = async () => {
-      setExpenseStatsLoading(true);
-
-      try {
-        // Extract task IDs
-        const taskIds = tasks.map((task) => task.id);
-
-        // Batch fetch all expense stats in one query
-        const result = await getBatchTaskExpenses(taskIds);
-
-        if (result.success && result.data) {
-          setExpenseStats(result.data);
-        } else {
-          console.error('[KanbanColumn] Error fetching batch expenses:', result.error);
-          setExpenseStats({});
-        }
-      } catch (error) {
-        console.error('[KanbanColumn] Unexpected error fetching expenses:', error);
-        setExpenseStats({});
-      }
-
-      setExpenseStatsLoading(false);
-    };
-
-    if (tasks.length > 0) {
-      fetchAllExpenses();
-    } else {
-      // Clear stats when no tasks
-      setExpenseStats({});
-    }
-  }, [tasks]);
 
   return (
     <motion.div
@@ -160,7 +104,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
                   task={task}
                   onTaskClick={onTaskClick}
                   phases={phases}
-                  expenseStats={expenseStats[task.id]}
+                  expenseStats={task.expenseStats}
                 />
               ))
             )}

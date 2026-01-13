@@ -11,7 +11,19 @@
 ## Prerequisites
 
 - Check `docs/indexes/enums.md` for existing enums
-- Enums are defined in `types/database.types.ts`
+
+## Type Imports
+
+**IMPORTANT**: Use `types/db/enums.ts` (NOT `types/database.types.ts`):
+- `types/db/enums.ts` - All enum types in one small file (~100 lines)
+- Example: `import type { TaskStatus, TaskPriority } from '@/types/db/enums'`
+
+## Schema Documentation
+
+For understanding database enums:
+- **Enums reference**: `.claude/docs/indexes/enums.md`
+- **Enum details**: `.claude/docs/backend/SCHEMA_ENUMS.md`
+- **Tables using enums**: `.claude/docs/indexes/tables.md`
 
 ---
 

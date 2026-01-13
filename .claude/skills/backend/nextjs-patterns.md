@@ -595,4 +595,4 @@ console.error('[updateTask] Error:', error);
 - [ ] Return type consistent (`{ data?, error? }`)
 - [ ] `revalidatePath()` called after mutations
 - [ ] Logging with action context `[ACTION_NAME]`
-- [ ] Types imported from `@/types/database.types`
+- [ ] Types imported from `@/types/db/{domain}` (NOT database.types.ts)

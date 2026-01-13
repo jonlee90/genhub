@@ -228,12 +228,13 @@ After creating enum, regenerate types:
 npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
-Access in code:
+Access in code (use domain-specific files):
 ```typescript
-import { Database } from '@/types/database.types'
+import type { TaskStatus } from '@/types/db/enums'
+// 'todo' | 'in_progress' | 'blocked' | 'completed'
 
-type TaskStatus = Database['public']['Enums']['task_status']
-// 'todo' | 'in_progress' | 'blocked' | 'done'
+// All enums are in types/db/enums.ts (small file, ~100 lines)
+import type { TaskPriority, ExpenseStatus } from '@/types/db/enums'
 ```
 
 ---
