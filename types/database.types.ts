@@ -2060,7 +2060,9 @@ export type Database = {
           notes?: string | null
           performance_rating?: number | null
           phone?: string | null
-          trade_specialization?: Database["public"]["Enums"]["trade_type"] | null
+          trade_specialization?:
+            | Database["public"]["Enums"]["trade_type"]
+            | null
           updated_at?: string
         }
         Update: {
@@ -2079,7 +2081,9 @@ export type Database = {
           notes?: string | null
           performance_rating?: number | null
           phone?: string | null
-          trade_specialization?: Database["public"]["Enums"]["trade_type"] | null
+          trade_specialization?:
+            | Database["public"]["Enums"]["trade_type"]
+            | null
           updated_at?: string
         }
         Relationships: [
@@ -2136,6 +2140,7 @@ export type Database = {
           assigned_by: string | null
           created_at: string
           id: string
+          is_primary: boolean
           subcontractor_id: string | null
           task_id: string
           updated_at: string
@@ -2146,6 +2151,7 @@ export type Database = {
           assigned_by?: string | null
           created_at?: string
           id?: string
+          is_primary?: boolean
           subcontractor_id?: string | null
           task_id: string
           updated_at?: string
@@ -2156,6 +2162,7 @@ export type Database = {
           assigned_by?: string | null
           created_at?: string
           id?: string
+          is_primary?: boolean
           subcontractor_id?: string | null
           task_id?: string
           updated_at?: string

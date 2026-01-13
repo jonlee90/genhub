@@ -33,6 +33,35 @@ export interface TaskAssignee {
   type: 'user' | 'subcontractor';
 }
 
+// Extended update input for auto-expense feature
+export interface UpdateTaskInput {
+  id: string;
+  title?: string;
+  description?: string | null;
+  assignee_id?: string | null;
+  start_date?: string | null;
+  due_date?: string | null;
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  planned_cost?: number | null;
+  actual_cost?: number | null;
+  phase_id?: string | null;
+  receipt_photo_url?: string | null;
+  status?: 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed';
+  // Auto-expense extension fields
+  autoCreateExpense?: boolean;
+  primaryAssigneeId?: string;
+}
+
+// Result type for update with expense creation
+export interface UpdateTaskResult {
+  success: boolean;
+  task?: Task;
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+  expenseId?: string; // Populated if expense was created
+  expenseError?: string; // Error message if expense creation failed but task saved
+}
+
 // Form action state types
 export interface CreateTaskFormState {
   success?: boolean;
@@ -716,6 +745,223 @@ export async function updateTask(formData: FormData) {
   revalidatePath(`/app/projects/${projectId}`);
 
   return { success: true, task };
+}
+
+/**
+ * Update a task with optional auto-expense creation
+ * Extended version that supports UpdateTaskInput interface with autoCreateExpense flag
+ *
+ * @param input - UpdateTaskInput with optional autoCreateExpense and primaryAssigneeId
+ * @returns UpdateTaskResult with optional expenseId if expense was created
+ */
+export async function updateTaskWithExpense(input: UpdateTaskInput): Promise<UpdateTaskResult> {
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { success: false, error: userContext.error };
+  }
+
+  const { userId, companyId, supabase } = userContext;
+
+  // Validate input
+  const validation = updateTaskSchema.safeParse(input);
+  if (!validation.success) {
+    return {
+      success: false,
+      error: 'Validation failed',
+      fieldErrors: validation.error.flatten().fieldErrors
+    };
+  }
+
+  const { id, ...updateData } = validation.data;
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, id, companyId);
+  if ('error' in taskCheck) {
+    return { success: false, error: taskCheck.error };
+  }
+
+  const { task: existingTask, projectId } = taskCheck;
+
+  // Prepare update
+  const taskUpdate: TaskUpdate = {};
+  if (updateData.title !== undefined) taskUpdate.title = updateData.title;
+  if (updateData.description !== undefined) taskUpdate.description = updateData.description;
+  if (updateData.assignee_id !== undefined) taskUpdate.assignee_id = updateData.assignee_id;
+  if (updateData.start_date !== undefined) taskUpdate.start_date = updateData.start_date;
+  if (updateData.due_date !== undefined) taskUpdate.due_date = updateData.due_date;
+  if (updateData.priority !== undefined) taskUpdate.priority = updateData.priority as TaskPriority;
+  if (updateData.planned_cost !== undefined) taskUpdate.planned_cost = updateData.planned_cost;
+  if (updateData.actual_cost !== undefined) taskUpdate.actual_cost = updateData.actual_cost;
+  if (updateData.phase_id !== undefined) taskUpdate.phase_id = updateData.phase_id;
+  if (updateData.status !== undefined) taskUpdate.status = updateData.status as TaskStatus;
+
+  // Update task first (task always saves regardless of expense outcome)
+  const { data: task, error: updateError } = await supabase
+    .from('tasks')
+    .update(taskUpdate)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error('[updateTaskWithExpense] Error updating task:', updateError);
+    return { success: false, error: 'Failed to update task. Please try again.' };
+  }
+
+  // Log activity for significant changes
+  if (updateData.actual_cost !== undefined && updateData.actual_cost !== existingTask.actual_cost) {
+    await logTaskActivity(
+      supabase,
+      id,
+      userId,
+      'updated',
+      `actual_cost: ${existingTask.actual_cost ?? 0}`,
+      `actual_cost: ${updateData.actual_cost}`
+    );
+  }
+
+  // Handle primary assignee update if provided
+  if (input.primaryAssigneeId) {
+    // Determine assignee type by checking which table the ID exists in
+    const { data: userCheck } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', input.primaryAssigneeId)
+      .maybeSingle();
+
+    const assigneeType: 'user' | 'subcontractor' = userCheck ? 'user' : 'subcontractor';
+
+    const primaryResult = await setPrimaryAssignee(id, input.primaryAssigneeId, assigneeType);
+    if (primaryResult.error) {
+      console.warn('[updateTaskWithExpense] Failed to set primary assignee:', primaryResult.error);
+      // Continue - this is not a critical failure
+    }
+  }
+
+  // Result object to build up
+  const result: UpdateTaskResult = { success: true, task };
+
+  // Handle auto-expense creation if requested
+  if (input.autoCreateExpense && task.actual_cost && task.actual_cost > 0) {
+    try {
+      // Import createExpenseFromTask dynamically to avoid circular imports
+      const { createExpenseFromTask } = await import('@/app/actions/expenses');
+      const expenseResult = await createExpenseFromTask(id);
+
+      if (expenseResult.success && expenseResult.data) {
+        result.expenseId = expenseResult.data.id;
+        // Revalidate expense routes
+        revalidatePath('/app/expenses');
+      } else if (expenseResult.error) {
+        // Task saved but expense creation failed - report error but don't fail
+        result.expenseError = expenseResult.error;
+        console.warn('[updateTaskWithExpense] Expense creation failed:', expenseResult.error);
+      }
+    } catch (error) {
+      // Task saved but expense creation threw - report error but don't fail
+      result.expenseError = 'Failed to create expense from task';
+      console.error('[updateTaskWithExpense] Expense creation exception:', error);
+    }
+  }
+
+  // Revalidate paths
+  revalidatePath('/app/tasks');
+  revalidatePath(`/app/tasks/${id}`);
+  revalidatePath(`/app/projects/${projectId}`);
+
+  return result;
+}
+
+/**
+ * Set the primary assignee for a task
+ * Only one assignee per task can be primary (used for vendor_name in auto-expense)
+ *
+ * @param taskId - Task UUID
+ * @param assigneeId - User or Subcontractor UUID
+ * @param assigneeType - 'user' or 'subcontractor'
+ * @returns Success or error
+ */
+export async function setPrimaryAssignee(
+  taskId: string,
+  assigneeId: string,
+  assigneeType: 'user' | 'subcontractor'
+): Promise<{ success: boolean; error?: string }> {
+  console.log('[setPrimaryAssignee] Setting primary assignee:', { taskId, assigneeId, assigneeType });
+
+  // Validate inputs
+  const inputSchema = z.object({
+    taskId: z.string().uuid('Invalid task ID'),
+    assigneeId: z.string().uuid('Invalid assignee ID'),
+    assigneeType: z.enum(['user', 'subcontractor']),
+  });
+
+  const validation = inputSchema.safeParse({ taskId, assigneeId, assigneeType });
+  if (!validation.success) {
+    return { success: false, error: validation.error.issues[0].message };
+  }
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { success: false, error: userContext.error };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  // Verify task access
+  const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
+  if ('error' in taskCheck) {
+    return { success: false, error: taskCheck.error };
+  }
+
+  const { projectId } = taskCheck;
+
+  // Build the query based on assignee type
+  const assigneeColumn = assigneeType === 'user' ? 'user_id' : 'subcontractor_id';
+
+  // First check if this assignee is already assigned to the task
+  const { data: existingAssignee, error: checkError } = await supabase
+    .from('task_assignees')
+    .select('id, is_primary')
+    .eq('task_id', taskId)
+    .eq(assigneeColumn, assigneeId)
+    .maybeSingle();
+
+  if (checkError) {
+    console.error('[setPrimaryAssignee] Error checking existing assignee:', checkError);
+    return { success: false, error: 'Failed to check assignee status' };
+  }
+
+  if (!existingAssignee) {
+    // Assignee not found - they need to be added to the task first
+    return { success: false, error: 'Assignee is not assigned to this task' };
+  }
+
+  if (existingAssignee.is_primary) {
+    // Already primary, no change needed
+    return { success: true };
+  }
+
+  // Update to set this assignee as primary
+  // The trigger will automatically clear other primaries
+  const { error: updateError } = await supabase
+    .from('task_assignees')
+    .update({ is_primary: true })
+    .eq('id', existingAssignee.id);
+
+  if (updateError) {
+    console.error('[setPrimaryAssignee] Error updating primary status:', updateError);
+    return { success: false, error: 'Failed to set primary assignee' };
+  }
+
+  // Revalidate paths
+  revalidatePath('/app/tasks');
+  revalidatePath(`/app/tasks/${taskId}`);
+  revalidatePath(`/app/projects/${projectId}`);
+
+  console.log('[setPrimaryAssignee] Primary assignee set successfully');
+  return { success: true };
 }
 
 /**

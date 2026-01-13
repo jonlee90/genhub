@@ -956,3 +956,322 @@ export async function getExpenseAnalytics(filters?: {
     return { error: 'Failed to fetch expense analytics' };
   }
 }
+
+// ============================================
+// Vendor Options for Combobox
+// ============================================
+
+/**
+ * Vendor option interface for the VendorCombobox component
+ */
+export interface VendorOption {
+  id: string;
+  name: string;
+  type: 'member' | 'subcontractor';
+  displayName: string;
+}
+
+/**
+ * Get vendor options for the VendorCombobox component
+ * Returns combined list of company members and subcontractors
+ * sorted alphabetically within groups (Members first, then Subcontractors)
+ *
+ * @param companyId - Company UUID to fetch vendors for
+ * @returns Array of VendorOption or error
+ */
+export async function getVendorOptions(
+  companyId: string
+): Promise<{ data?: VendorOption[]; error?: string }> {
+  try {
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Verify user belongs to this company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('company_id', companyId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (companyError || !companyUser) {
+      return { error: 'User not authorized for this company' };
+    }
+
+    // Fetch active company members with their profiles
+    const { data: members, error: membersError } = await supabase
+      .from('company_users')
+      .select(`
+        user_id,
+        user_profiles!inner (
+          id,
+          name
+        )
+      `)
+      .eq('company_id', companyId)
+      .eq('status', 'active');
+
+    if (membersError) {
+      console.error('[getVendorOptions] Error fetching members:', membersError);
+      return { error: 'Failed to fetch company members' };
+    }
+
+    // Fetch active subcontractors
+    const { data: subcontractors, error: subError } = await supabase
+      .from('subcontractors')
+      .select('id, company_name')
+      .eq('company_id', companyId)
+      .eq('is_active', true);
+
+    if (subError) {
+      console.error('[getVendorOptions] Error fetching subcontractors:', subError);
+      return { error: 'Failed to fetch subcontractors' };
+    }
+
+    // Build vendor options list
+    const vendorOptions: VendorOption[] = [];
+
+    // Add members (sorted alphabetically)
+    const memberOptions: VendorOption[] = (members || [])
+      .filter((m) => m.user_id && m.user_profiles)
+      .map((m) => {
+        const profile = m.user_profiles as unknown as { id: string; name: string };
+        return {
+          id: profile.id,
+          name: profile.name,
+          type: 'member' as const,
+          displayName: `${profile.name} (Member)`,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Add subcontractors (sorted alphabetically)
+    const subOptions: VendorOption[] = (subcontractors || [])
+      .map((s) => ({
+        id: s.id,
+        name: s.company_name,
+        type: 'subcontractor' as const,
+        displayName: `${s.company_name} (Subcontractor)`,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    // Combine: Members first, then Subcontractors
+    vendorOptions.push(...memberOptions, ...subOptions);
+
+    return { data: vendorOptions };
+  } catch (error) {
+    console.error('[getVendorOptions] Unexpected error:', error);
+    return { error: 'Failed to fetch vendor options' };
+  }
+}
+
+// ============================================
+// Auto-Expense Creation from Task
+// ============================================
+
+// Category mapping from task_type to expense_category
+const TASK_TYPE_TO_EXPENSE_CATEGORY: Record<string, ExpenseCategory> = {
+  work: 'labor',
+  purchase: 'materials',
+  approval: 'permits',
+  admin: 'other',
+};
+
+// Input schema for createExpenseFromTask
+const createExpenseFromTaskSchema = z.object({
+  taskId: z.string().uuid('Invalid task ID'),
+});
+
+/**
+ * Create an expense from a task's actual_cost
+ * Used by the auto-expense toggle feature when saving a task with actual_cost > 0
+ *
+ * Field mappings:
+ * - amount: task.actual_cost
+ * - description: task.title (prefixed with "Task expense:")
+ * - project_id: task.project_id
+ * - task_id: task.id
+ * - expense_date: current date
+ * - category: derived from task.task_type
+ * - vendor_name: primary assignee name (user.name or subcontractor.company_name)
+ *
+ * @param taskId - Task UUID to create expense from
+ * @returns Created expense or error
+ */
+export async function createExpenseFromTask(
+  taskId: string
+): Promise<{ success: boolean; data?: Expense; error?: string }> {
+  console.log('[createExpenseFromTask] Creating expense from task:', taskId);
+
+  try {
+    // Validate input
+    const validation = createExpenseFromTaskSchema.safeParse({ taskId });
+    if (!validation.success) {
+      return { success: false, error: validation.error.issues[0].message };
+    }
+
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+
+    const supabase = await createClient();
+
+    // Get user's company
+    const { data: companyUser, error: companyError } = await supabase
+      .from('company_users')
+      .select('company_id')
+      .eq('user_id', session.user.id)
+      .eq('status', 'active')
+      .single();
+
+    if (companyError || !companyUser) {
+      return { success: false, error: 'User not associated with a company' };
+    }
+
+    // Fetch task with project info
+    const { data: task, error: taskError } = await supabase
+      .from('tasks')
+      .select(`
+        id,
+        title,
+        actual_cost,
+        project_id,
+        task_type,
+        created_by,
+        projects!inner (
+          id,
+          company_id
+        )
+      `)
+      .eq('id', taskId)
+      .single();
+
+    if (taskError || !task) {
+      console.error('[createExpenseFromTask] Task not found:', taskError);
+      return { success: false, error: 'Task not found' };
+    }
+
+    // Verify task belongs to user's company
+    const project = task.projects as unknown as { id: string; company_id: string };
+    if (project.company_id !== companyUser.company_id) {
+      return { success: false, error: 'Insufficient permissions to access this task' };
+    }
+
+    // Verify task has actual_cost > 0
+    if (!task.actual_cost || task.actual_cost <= 0) {
+      return { success: false, error: 'Task has no actual cost to expense' };
+    }
+
+    // Check if expense already exists for this task
+    const { data: existingExpense } = await supabase
+      .from('expenses')
+      .select('id')
+      .eq('task_id', taskId)
+      .maybeSingle();
+
+    if (existingExpense) {
+      return { success: false, error: 'An expense already exists for this task' };
+    }
+
+    // Fetch primary assignee for vendor_name
+    let vendorName: string | null = null;
+
+    const { data: primaryAssignee } = await supabase
+      .from('task_assignees')
+      .select(`
+        user_id,
+        subcontractor_id,
+        user:user_profiles (
+          id,
+          name
+        ),
+        subcontractor:subcontractors (
+          id,
+          company_name,
+          contact_name
+        )
+      `)
+      .eq('task_id', taskId)
+      .eq('is_primary', true)
+      .maybeSingle();
+
+    if (primaryAssignee) {
+      if (primaryAssignee.user_id && primaryAssignee.user) {
+        // User assignee - use their name
+        const user = primaryAssignee.user as unknown as { id: string; name: string };
+        vendorName = user.name;
+      } else if (primaryAssignee.subcontractor_id && primaryAssignee.subcontractor) {
+        // Subcontractor assignee - use company_name
+        const sub = primaryAssignee.subcontractor as unknown as {
+          id: string;
+          company_name: string;
+          contact_name: string;
+        };
+        vendorName = sub.company_name;
+      }
+    }
+
+    // If no primary assignee, try to get creator name
+    if (!vendorName && task.created_by) {
+      const { data: creator } = await supabase
+        .from('user_profiles')
+        .select('name')
+        .eq('id', task.created_by)
+        .single();
+
+      if (creator) {
+        vendorName = creator.name;
+      }
+    }
+
+    // Map task_type to expense category
+    const category = TASK_TYPE_TO_EXPENSE_CATEGORY[task.task_type] || 'other';
+
+    // Create the expense
+    const expenseData: ExpenseInsert = {
+      company_id: companyUser.company_id,
+      project_id: task.project_id,
+      task_id: task.id,
+      description: `Task expense: ${task.title}`,
+      amount: task.actual_cost,
+      category: category,
+      expense_date: new Date().toISOString().split('T')[0], // Today's date
+      vendor_name: vendorName,
+      submitted_by: session.user.id,
+      status: 'submitted',
+    };
+
+    const { data: expense, error: insertError } = await supabase
+      .from('expenses')
+      .insert(expenseData)
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('[createExpenseFromTask] Error creating expense:', insertError);
+      return { success: false, error: 'Failed to create expense' };
+    }
+
+    console.log('[createExpenseFromTask] Expense created successfully:', expense.id);
+
+    // Revalidate paths
+    revalidatePath('/app/expenses');
+    revalidatePath(`/app/tasks/${taskId}`);
+    if (task.project_id) {
+      revalidatePath(`/app/projects/${task.project_id}`);
+    }
+
+    return { success: true, data: expense };
+  } catch (error) {
+    console.error('[createExpenseFromTask] Unexpected error:', error);
+    return { success: false, error: 'Failed to create expense from task' };
+  }
+}
