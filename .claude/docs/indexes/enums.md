@@ -1,197 +1,270 @@
 # GenHub Enums Index
 
-> Quick lookup for database and TypeScript enums.
+> Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-11
-
----
-
-## Database Enums (PostgreSQL)
-
-### User & Team
-
-```sql
--- User roles in company
-user_role: admin | project_manager | foreman | field_worker | subcontractor | client
-
--- Team member status
-member_status: active | invited | inactive
-```
-
-### Projects
-
-```sql
--- Project status
-project_status: active | on_hold | completed | archived
-
--- Phase status
-phase_status: not_started | in_progress | completed
-
--- Legacy project types (deprecated, use text field)
-project_type_old: residential | restaurant_cafe | commercial_office | industrial | restaurant | cafe
-```
-
-### Tasks
-
-```sql
--- Task workflow status
-task_status: todo | in_progress | review | blocked | completed
-
--- Task priority
-task_priority: low | medium | high | critical
-
--- Task type/category
-task_type: work | purchase | approval | admin
-
--- Approval workflow
-approval_status: pending | approved | rejected | revision_requested
-
--- Activity log actions
-activity_action: created | updated | deleted | status_changed | assigned | commented | attachment_added | attachment_removed
-```
-
-### Materials & Expenses
-
-```sql
--- Material category
-material_category: lumber | concrete | electrical | plumbing | hvac | roofing | flooring | paint | hardware | tools | fixtures | insulation | drywall | doors_windows | landscaping | other
-
--- Material procurement status
-procurement_status: needed | ordered | delivered | installed
-
--- Who purchased material
-purchaser_type: gc | pm | subcontractor
-
--- Expense category
-expense_category: materials | labor | equipment | permits | transportation | meals | lodging | other
-
--- Expense approval status
-expense_status: submitted | under_review | approved | rejected | paid
-```
-
-### Files & Photos
-
-```sql
--- Document category
-document_category: contracts | permits | drawings | reports | financial | safety | meeting_notes | specifications | general
-
--- Photo category
-photo_category: site_progress | safety_documentation | permits_approvals | inspection_reports | material_receipts | change_orders | defects_issues | before_after | task_receipts | expense_receipts | general
-```
-
-### 3D Spatial
-
-```sql
--- Spatial marker type
-spatial_marker_type: issue | note | photo | inspection | rfi | safety | material | progress
-
--- Marker status
-spatial_marker_status: open | in_progress | resolved | closed
-```
-
-### System
-
-```sql
--- Trade specializations
-trade_type: general | electrical | plumbing | hvac | carpentry | masonry | roofing | flooring | painting | drywall | concrete | landscaping | demolition | steel_work | glass_glazing | fire_protection | insulation | other
-
--- Attachment parent type
-attachment_entity_type: task | project | phase | profile | subcontractor | material | expense
-
--- Notification types
-notification_type: task_assigned | task_completed | task_overdue | task_blocked | project_update | team_invited | mention | system | material_assigned | material_delivered | material_ordered | expense_submitted | expense_approved | expense_rejected | budget_overrun
-```
+Last updated: 2026-01-12
 
 ---
 
-## TypeScript Types
+## Database Enums
 
-All enums are exported from `types/database.types.ts`:
+### activity_action
+| Value | Description |
+|-------|-------------|
+| `created` | Created |
+| `updated` | Updated |
+| `deleted` | Deleted |
+| `status_changed` | Status Changed |
+| `assigned` | Assigned |
+| `commented` | Commented |
+| `attachment_added` | Attachment Added |
+| `attachment_removed` | Attachment Removed |
 
-```typescript
-import type { Database } from '@/types/database.types';
+### approval_status
+| Value | Description |
+|-------|-------------|
+| `pending` | Pending |
+| `approved` | Approved |
+| `rejected` | Rejected |
+| `revision_requested` | Revision Requested |
 
-// Access enum types
-type TaskStatus = Database['public']['Enums']['task_status'];
-type TaskPriority = Database['public']['Enums']['task_priority'];
-type UserRole = Database['public']['Enums']['user_role'];
-type ExpenseStatus = Database['public']['Enums']['expense_status'];
-// etc.
-```
+### attachment_entity_type
+| Value | Description |
+|-------|-------------|
+| `task` | Task |
+| `project` | Project |
+| `phase` | Phase |
+| `profile` | Profile |
+| `subcontractor` | Subcontractor |
+
+### document_category
+| Value | Description |
+|-------|-------------|
+| `contracts` | Contracts |
+| `permits` | Permits |
+| `drawings` | Drawings |
+| `reports` | Reports |
+| `financial` | Financial |
+| `safety` | Safety |
+| `meeting_notes` | Meeting Notes |
+| `specifications` | Specifications |
+| `general` | General |
+
+### expense_category
+| Value | Description |
+|-------|-------------|
+| `materials` | Materials |
+| `labor` | Labor |
+| `equipment` | Equipment |
+| `permits` | Permits |
+| `transportation` | Transportation |
+| `meals` | Meals |
+| `lodging` | Lodging |
+| `other` | Other |
+
+### expense_status
+| Value | Description |
+|-------|-------------|
+| `submitted` | Submitted |
+| `under_review` | Under Review |
+| `approved` | Approved |
+| `rejected` | Rejected |
+| `paid` | Paid |
+
+### marker_content_type
+| Value | Description |
+|-------|-------------|
+| `photo` | Photo |
+| `file` | File |
+| `note` | Note |
+| `activity` | Activity |
+
+### material_category
+| Value | Description |
+|-------|-------------|
+| `lumber` | Lumber |
+| `concrete` | Concrete |
+| `electrical` | Electrical |
+| `plumbing` | Plumbing |
+| `hvac` | Hvac |
+| `roofing` | Roofing |
+| `flooring` | Flooring |
+| `paint` | Paint |
+| `hardware` | Hardware |
+| `tools` | Tools |
+| `fixtures` | Fixtures |
+| `insulation` | Insulation |
+| `drywall` | Drywall |
+| `doors_windows` | Doors Windows |
+| `landscaping` | Landscaping |
+| `other` | Other |
+
+### member_status
+| Value | Description |
+|-------|-------------|
+| `active` | Active |
+| `invited` | Invited |
+| `inactive` | Inactive |
+
+### notification_type
+| Value | Description |
+|-------|-------------|
+| `task_assigned` | Task Assigned |
+| `task_completed` | Task Completed |
+| `task_overdue` | Task Overdue |
+| `task_blocked` | Task Blocked |
+| `project_update` | Project Update |
+| `team_invited` | Team Invited |
+| `mention` | Mention |
+| `system` | System |
+
+### phase_status
+| Value | Description |
+|-------|-------------|
+| `not_started` | Not Started |
+| `in_progress` | In Progress |
+| `completed` | Completed |
+| `on_hold` | On Hold |
+
+### photo_category
+| Value | Description |
+|-------|-------------|
+| `site_progress` | Site Progress |
+| `safety_documentation` | Safety Documentation |
+| `permits_approvals` | Permits Approvals |
+| `inspection_reports` | Inspection Reports |
+| `material_receipts` | Material Receipts |
+| `change_orders` | Change Orders |
+| `defects_issues` | Defects Issues |
+| `before_after` | Before After |
+| `task_receipts` | Task Receipts |
+| `expense_receipts` | Expense Receipts |
+| `general` | General |
+
+### procurement_status
+| Value | Description |
+|-------|-------------|
+| `needed` | Needed |
+| `ordered` | Ordered |
+| `delivered` | Delivered |
+| `installed` | Installed |
+
+### project_status
+| Value | Description |
+|-------|-------------|
+| `active` | Active |
+| `on_hold` | On Hold |
+| `completed` | Completed |
+| `archived` | Archived |
+| `planning` | Planning |
+| `in_progress` | In Progress |
+
+### project_type
+| Value | Description |
+|-------|-------------|
+| `residential` | Residential |
+| `restaurant` | Restaurant |
+| `cafe` | Cafe |
+| `commercial_office` | Commercial Office |
+| `industrial` | Industrial |
+
+### purchaser_type
+| Value | Description |
+|-------|-------------|
+| `gc` | GC |
+| `pm` | PM |
+| `subcontractor` | Subcontractor |
+
+### spatial_marker_status
+| Value | Description |
+|-------|-------------|
+| `open` | Open |
+| `in_progress` | In Progress |
+| `resolved` | Resolved |
+| `closed` | Closed |
+
+### spatial_marker_type
+| Value | Description |
+|-------|-------------|
+| `issue` | Issue |
+| `note` | Note |
+| `photo` | Photo |
+| `inspection` | Inspection |
+| `rfi` | RFI |
+| `safety` | Safety |
+| `material` | Material |
+| `progress` | Progress |
+
+### spatial_processing_status
+| Value | Description |
+|-------|-------------|
+| `pending` | Pending |
+| `processing` | Processing |
+| `ready` | Ready |
+| `failed` | Failed |
+
+### task_priority
+| Value | Description |
+|-------|-------------|
+| `low` | Low |
+| `medium` | Medium |
+| `high` | High |
+| `critical` | Critical |
+
+### task_status
+| Value | Description |
+|-------|-------------|
+| `todo` | Todo |
+| `in_progress` | In Progress |
+| `review` | Review |
+| `blocked` | Blocked |
+| `completed` | Completed |
+
+### task_type
+| Value | Description |
+|-------|-------------|
+| `work` | Work |
+| `purchase` | Purchase |
+| `approval` | Approval |
+| `admin` | Admin |
+
+### trade_type
+| Value | Description |
+|-------|-------------|
+| `general` | General |
+| `electrical` | Electrical |
+| `plumbing` | Plumbing |
+| `hvac` | HVAC |
+| `carpentry` | Carpentry |
+| `masonry` | Masonry |
+| `roofing` | Roofing |
+| `flooring` | Flooring |
+| `painting` | Painting |
+| `drywall` | Drywall |
+| `concrete` | Concrete |
+| `landscaping` | Landscaping |
+| `demolition` | Demolition |
+| `steel_work` | Steel Work |
+| `glass_glazing` | Glass Glazing |
+| `fire_protection` | Fire Protection |
+| `insulation` | Insulation |
+| `other` | Other |
+
+### user_role
+| Value | Description |
+|-------|-------------|
+| `admin` | Admin |
+| `project_manager` | Project Manager |
+| `foreman` | Foreman |
+| `field_worker` | Field Worker |
+| `subcontractor` | Subcontractor |
+| `client` | Client |
 
 ---
 
-## UI Constants
+## Summary
 
-For UI display, define constants with labels/colors:
-
-```typescript
-// Example: Task status config
-const TASK_STATUS_CONFIG = {
-  todo: { label: 'To Do', color: 'bg-gray-100 text-gray-800' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
-  review: { label: 'Review', color: 'bg-yellow-100 text-yellow-800' },
-  blocked: { label: 'Blocked', color: 'bg-red-100 text-red-800' },
-  completed: { label: 'Completed', color: 'bg-green-100 text-green-800' },
-};
-
-// Example: Priority config
-const TASK_PRIORITY_CONFIG = {
-  low: { label: 'Low', color: 'text-gray-500', icon: 'ChevronDown' },
-  medium: { label: 'Medium', color: 'text-blue-500', icon: 'Minus' },
-  high: { label: 'High', color: 'text-orange-500', icon: 'ChevronUp' },
-  critical: { label: 'Critical', color: 'text-red-500', icon: 'AlertTriangle' },
-};
-```
-
----
-
-## Validation (Zod)
-
-Use Zod for input validation:
-
-```typescript
-import { z } from 'zod';
-
-const taskStatusSchema = z.enum(['todo', 'in_progress', 'review', 'blocked', 'completed']);
-const taskPrioritySchema = z.enum(['low', 'medium', 'high', 'critical']);
-const userRoleSchema = z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']);
-```
-
----
-
-## Adding New Enums
-
-1. Create migration with enum type:
-```sql
-CREATE TYPE public.new_enum AS ENUM ('value1', 'value2', 'value3');
-```
-
-2. Use in table:
-```sql
-ALTER TABLE public.table_name ADD COLUMN status public.new_enum DEFAULT 'value1';
-```
-
-3. Regenerate types:
-```bash
-npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
-```
-
-4. Update this index
-
-See: `.claude/skills/database/enums.md` for full patterns.
-
----
-
-## Enum Stats
-
-| Category | Enum Count |
-|----------|------------|
-| User/Team | 2 |
-| Projects | 3 |
-| Tasks | 5 |
-| Materials/Expenses | 5 |
-| Files | 2 |
-| Spatial | 2 |
-| System | 3 |
-| **Total** | 22 |
+| Metric | Count |
+|--------|-------|
+| Total Enums | 24 |
+| Total Values | 154 |

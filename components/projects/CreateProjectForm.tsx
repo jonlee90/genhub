@@ -32,6 +32,7 @@ import {
   ArrowLeft,
   Sparkles,
   CheckCircle2,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
@@ -547,8 +548,8 @@ export function CreateProjectForm({
               </>
             ) : (
               <>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Create Project
+                <Plus className="mr-2 h-4 w-4" />
+                Add Project
               </>
             )}
           </Button>

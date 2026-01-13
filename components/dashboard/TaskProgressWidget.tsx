@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckSquare, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
+import { ClipboardList, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import type { TaskProgressData } from '@/types/dashboard';
 
@@ -128,7 +128,7 @@ export function TaskProgressWidget({ progress, isLoading = false }: TaskProgress
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-[#001B51]/10 rounded-lg">
-              <CheckSquare className="w-5 h-5 text-[#001B51]" />
+              <ClipboardList className="w-5 h-5 text-[#001B51]" />
             </div>
             <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
               Tasks

@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-11
+Last updated: 2026-01-12
 
 ---
 
@@ -10,33 +10,33 @@ Last updated: 2026-01-11
 
 | Route | Type | Layout |
 |-------|------|--------|
-| /accept-invite/complete | Server | - |
+| / | Server | Yes |
 | /accept-invite | Server | - |
+| /accept-invite/complete | Server | - |
 | /admin-invite | Server | - |
 | /admin-invite/signup | Server | - |
+| /app | Server | Yes |
 | /app/admin/seed-data | Server | - |
 | /app/chat | Server | - |
-| /app/client/:projectId/spatial | Server | - |
-| /app/client/projects/:id | Server | - |
+| /app/client/[projectId]/spatial | Server | - |
+| /app/client/projects/[id] | Server | - |
 | /app/expenses | Server | - |
 | /app/materials | Server | - |
 | /app/owner/companies | Server | - |
 | /app/owner/invites | Server | - |
 | /app/owner/users | Server | - |
-| /app | Server | Yes |
 | /app/profile | Server | - |
-| /app/projects/:id | Server | - |
-| /app/projects/new | Server | - |
 | /app/projects | Server | - |
-| /app/settings/default-models | Server | - |
+| /app/projects/[id] | Server | - |
+| /app/projects/new | Server | - |
 | /app/settings | Server | - |
-| /app/tasks/:id | Server | - |
-| /app/tasks/new | Server | - |
+| /app/settings/default-models | Server | - |
 | /app/tasks | Server | - |
+| /app/tasks/[id] | Server | - |
+| /app/tasks/new | Server | - |
 | /app/team | Server | - |
 | /app/team/subcontractors | Server | - |
 | /login | Server | - |
-| / | Server | Yes |
 | /signup | Server | - |
 | /success | Server | - |
 | /~offline | Client | - |

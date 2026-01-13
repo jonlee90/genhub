@@ -12,7 +12,7 @@
  * <ResponsiveModal
  *   isOpen={isOpen}
  *   onClose={() => setIsOpen(false)}
- *   icon={CheckSquare}
+ *   icon={ClipboardList}
  *   title="Edit Task"
  *   rightActions={<Button>Save</Button>}
  * >

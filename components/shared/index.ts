@@ -9,3 +9,4 @@
  */
 
 export { BlueprintBackground } from './BlueprintBackground';
+export { PortfolioSummary, type PortfolioSummaryStats } from './PortfolioSummary';

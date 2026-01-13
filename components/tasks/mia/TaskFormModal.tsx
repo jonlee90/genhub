@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ClipboardList } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { CreateTaskForm } from '../forms/CreateTaskForm';
 import { Button } from '@/components/ui/button';
 
@@ -96,13 +96,13 @@ export function TaskFormModal({
                     >
                       {/* Icon badge - Minimal, professional */}
                       <div className="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-construction-blue to-construction-blue/80 flex items-center justify-center shadow-lg shadow-construction-blue/20">
-                        <ClipboardList className="w-7 h-7 text-white" strokeWidth={2} />
+                        <Plus className="w-7 h-7 text-white" strokeWidth={2} />
                       </div>
 
                       {/* Title and description */}
                       <div className="space-y-2 pt-0.5">
                         <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-                          Create New Task
+                          Add Task
                         </h2>
                         <p className="text-base text-gray-600 leading-relaxed max-w-lg">
                           Define work scope, assign team members, and set priorities for your project.

@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import {
   Home,
   FolderKanban,
-  CheckSquare,
+  ClipboardList,
   Package,
   Receipt,
   Plus,
@@ -35,7 +35,7 @@ interface NavItem {
 const navigationItems: NavItem[] = [
   { name: 'Home', href: '/app', icon: Home },
   { name: 'Projects', href: '/app/projects', icon: FolderKanban, createModalType: 'project' },
-  { name: 'Tasks', href: '/app/tasks', icon: CheckSquare, createModalType: 'task' },
+  { name: 'Tasks', href: '/app/tasks', icon: ClipboardList, createModalType: 'task' },
   { name: 'Materials', href: '/app/materials', icon: Package },
   { name: 'Expenses', href: '/app/expenses', icon: Receipt, createModalType: 'expense' },
   { name: 'Menu', href: '#more', logoImage: true, isMore: true },

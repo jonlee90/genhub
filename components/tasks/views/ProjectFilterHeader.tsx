@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderKanban, Clock, CheckSquare } from 'lucide-react';
+import { FolderKanban, Clock, ClipboardList } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
 import {
   Select,
@@ -142,7 +142,7 @@ export function ProjectFilterHeader({
                 {projectName}
                 {taskCount !== undefined && (
                   <span className="inline-flex items-center gap-0.5 text-gray-500">
-                    (<CheckSquare className="w-3 h-3" />
+                    (<ClipboardList className="w-3 h-3" />
                     <span>{taskCount}</span>)
                   </span>
                 )}
@@ -192,7 +192,7 @@ export function ProjectFilterHeader({
                     />
                     <span className="truncate">{project.name}</span>
                     <span className="flex items-center gap-0.5 text-xs text-gray-500 flex-shrink-0">
-                      <CheckSquare className="w-3 h-3" />
+                      <ClipboardList className="w-3 h-3" />
                       <span>{projectTaskCount}</span>
                     </span>
                   </div>

@@ -688,6 +688,176 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
   return { success: true, teamMember };
 }
 
+/**
+ * Add a subcontractor to a project team
+ * Only Admins and Project Managers can add subcontractors
+ */
+export async function addSubcontractorToProject(
+  projectId: string,
+  subcontractorId: string
+) {
+  console.log('[addSubcontractorToProject] Starting - Project:', projectId, 'Subcontractor:', subcontractorId);
+
+  // Get user's company and role
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    console.error('[addSubcontractorToProject] User context error:', userContext.error);
+    return { error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+  console.log('[addSubcontractorToProject] User context:', { companyId, role });
+
+  // Check permissions
+  if (role !== 'admin' && role !== 'project_manager') {
+    console.error('[addSubcontractorToProject] Insufficient permissions - User role:', role);
+    return { error: 'Insufficient permissions to add subcontractors' };
+  }
+
+  // Verify project belongs to user's company
+  const { data: existingProject, error: fetchError } = await supabase
+    .from('projects')
+    .select('company_id')
+    .eq('id', projectId)
+    .single();
+
+  if (fetchError || !existingProject) {
+    console.error('[addSubcontractorToProject] Project not found:', fetchError);
+    return { error: 'Project not found' };
+  }
+
+  if (existingProject.company_id !== companyId) {
+    console.error('[addSubcontractorToProject] Project company mismatch');
+    return { error: 'Insufficient permissions to manage this project team' };
+  }
+
+  // Verify subcontractor belongs to user's company and is active
+  const { data: subcontractor, error: subError } = await supabase
+    .from('subcontractors')
+    .select('id, company_id, company_name, is_active')
+    .eq('id', subcontractorId)
+    .single();
+
+  if (subError || !subcontractor) {
+    console.error('[addSubcontractorToProject] Subcontractor not found:', subError);
+    return { error: 'Subcontractor not found' };
+  }
+
+  if (subcontractor.company_id !== companyId) {
+    console.error('[addSubcontractorToProject] Subcontractor company mismatch');
+    return { error: 'Subcontractor not in your company' };
+  }
+
+  if (!subcontractor.is_active) {
+    console.error('[addSubcontractorToProject] Subcontractor is inactive');
+    return { error: 'Cannot add inactive subcontractor to project' };
+  }
+
+  // Check if subcontractor is already on the team
+  const { data: existingMember, error: checkError } = await supabase
+    .from('project_team')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('subcontractor_id', subcontractorId)
+    .maybeSingle();
+
+  if (checkError) {
+    console.error('[addSubcontractorToProject] Error checking existing member:', checkError);
+  }
+
+  if (existingMember) {
+    console.error('[addSubcontractorToProject] Subcontractor already on team');
+    return { error: 'This subcontractor is already assigned to the project' };
+  }
+
+  console.log('[addSubcontractorToProject] Subcontractor not already on team, proceeding with insert');
+
+  // Add subcontractor to team with 'subcontractor' role
+  const { data: teamMember, error: insertError } = await supabase
+    .from('project_team')
+    .insert({
+      project_id: projectId,
+      subcontractor_id: subcontractorId,
+      role: 'subcontractor' as Database['public']['Enums']['user_role'],
+      assigned_by: userContext.userId,
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error('[addSubcontractorToProject] Error adding subcontractor:', insertError);
+    console.error('[addSubcontractorToProject] Error details:', {
+      code: insertError.code,
+      message: insertError.message,
+      details: insertError.details,
+    });
+    return { error: 'Failed to add subcontractor. Please try again.' };
+  }
+
+  console.log('[addSubcontractorToProject] Subcontractor added successfully:', teamMember);
+
+  // Revalidate paths and related caches
+  revalidatePath(`/app/projects/${projectId}`);
+  revalidateTag(`project-${projectId}`);
+
+  return { success: true, teamMember };
+}
+
+/**
+ * Remove a subcontractor from a project team
+ * Only Admins and Project Managers can remove subcontractors
+ */
+export async function removeSubcontractorFromProject(
+  projectId: string,
+  subcontractorId: string
+) {
+  // Get user's company and role
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+
+  // Check permissions
+  if (role !== 'admin' && role !== 'project_manager') {
+    return { error: 'Insufficient permissions to remove subcontractors' };
+  }
+
+  // Verify project belongs to user's company
+  const { data: existingProject, error: fetchError } = await supabase
+    .from('projects')
+    .select('company_id')
+    .eq('id', projectId)
+    .single();
+
+  if (fetchError || !existingProject) {
+    return { error: 'Project not found' };
+  }
+
+  if (existingProject.company_id !== companyId) {
+    return { error: 'Insufficient permissions to manage this project team' };
+  }
+
+  // Remove subcontractor from team
+  const { error: deleteError } = await supabase
+    .from('project_team')
+    .delete()
+    .eq('project_id', projectId)
+    .eq('subcontractor_id', subcontractorId);
+
+  if (deleteError) {
+    console.error('Error removing subcontractor:', deleteError);
+    return { error: 'Failed to remove subcontractor. Please try again.' };
+  }
+
+  // Revalidate paths and related caches
+  revalidatePath(`/app/projects/${projectId}`);
+  revalidateTag(`project-${projectId}`);
+
+  return { success: true };
+}
+
 export async function removeProjectTeamMember(projectId: string, userId: string) {
   // Get user's company and role
   const userContext = await getUserContext();

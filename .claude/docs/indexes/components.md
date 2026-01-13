@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-11
+Last updated: 2026-01-12
 
 ---
 
@@ -12,9 +12,11 @@ Last updated: 2026-01-11
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
 | CheckoutButton | Client | 3 props | CheckoutButton.tsx |
+| ErrorBoundary | Client | 2 props | ErrorBoundary.tsx |
 | Pricing | Client | - | Pricing.tsx |
-| SignIn | Server | - | sign-in.tsx |
-| SignOutButton | Server | - | sign-out.tsx |
+| SessionProvider | Server | - | SessionProvider.tsx |
+| sign-in | Server | - | sign-in.tsx |
+| sign-out | Server | - | sign-out.tsx |
 
 ### admin
 | Component | Type | Props | Path |
@@ -38,13 +40,14 @@ Last updated: 2026-01-11
 ### app/billing
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| Loading | Server | - | app/billing/loading.tsx |
+| BillingInfo | Server | - | app/billing/BillingInfo.tsx |
+| loading | Server | - | app/billing/loading.tsx |
 
 ### app/profile
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| Loading | Server | - | app/profile/loading.tsx |
 | ProfileAndBillingContent | Client | - | app/profile/ProfileAndBillingContent.tsx |
+| loading | Server | - | app/profile/loading.tsx |
 
 ### auth
 | Component | Type | Props | Path |
@@ -72,7 +75,7 @@ Last updated: 2026-01-11
 | EntityPreview | Client | 2 props | chat/EntityPreview.tsx |
 | FilePreview | Client | 3 props | chat/FilePreview.tsx |
 | FileUploader | Client | 3 props | chat/FileUploader.tsx |
-| KakaoSyncIndicator | Client | 4 props | chat/KakaoSyncIndicator.tsx |
+| KakaoSyncIndicator | Client | 16 props | chat/KakaoSyncIndicator.tsx |
 | MarkerLink | Client | 3 props | chat/MarkerLink.tsx |
 | MessageInput | Client | 8 props | chat/MessageInput.tsx |
 | MessageItem | Client | 9 props | chat/MessageItem.tsx |
@@ -103,7 +106,7 @@ Last updated: 2026-01-11
 | DashboardContent | Client | 3 props | dashboard/DashboardContent.tsx |
 | DashboardHeader | Client | 2 props | dashboard/DashboardHeader.tsx |
 | KPICard | Client | 8 props | dashboard/KPICard.tsx |
-| KPICardsGrid | Client | 2 props | dashboard/KPICardsGrid.tsx |
+| KPICardsGrid | Client | 1 props | dashboard/KPICardsGrid.tsx |
 | MaterialsStatusWidget | Client | 2 props | dashboard/MaterialsStatusWidget.tsx |
 | ProjectStatusWidget | Client | 2 props | dashboard/ProjectStatusWidget.tsx |
 | ScheduleHealthWidget | Client | 2 props | dashboard/ScheduleHealthWidget.tsx |
@@ -111,17 +114,22 @@ Last updated: 2026-01-11
 | TeamActivityWidget | Client | 2 props | dashboard/TeamActivityWidget.tsx |
 | WidgetsGrid | Client | 2 props | dashboard/WidgetsGrid.tsx |
 
+### email
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| VerificationEmail | Server | 2 props | email/VerificationEmail.tsx |
+
 ### expenses
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| CreateExpenseModal | Client | 5 props | expenses/CreateExpenseModal.tsx |
-| ExpenseCard | Client | 1 props | expenses/ExpenseCard.tsx |
+| CreateExpenseModal | Client | - | expenses/CreateExpenseModal.tsx |
+| ExpenseCard | Client | - | expenses/ExpenseCard.tsx |
 | ExpenseDetailModal | Client | 2 props | expenses/ExpenseDetailModal.tsx |
 | ExpenseFilters | Client | 9 props | expenses/ExpenseFilters.tsx |
-| ExpensesList | Client | 4 props | expenses/ExpensesList.tsx |
+| ExpenseSummary | Client | 10 props | expenses/ExpenseSummary.tsx |
+| ExpensesList | Client | - | expenses/ExpensesList.tsx |
 | ExpensesListSkeleton | Server | - | expenses/ExpensesListSkeleton.tsx |
 | ExpensesPageHeader | Client | 2 props | expenses/ExpensesPageHeader.tsx |
-| ExpenseSummary | Client | 10 props | expenses/ExpenseSummary.tsx |
 
 ### feature-flags
 | Component | Type | Props | Path |
@@ -138,10 +146,11 @@ Last updated: 2026-01-11
 |-----------|------|-------|------|
 | AssignMaterialModal | Client | 3 props | materials/AssignMaterialModal.tsx |
 | MaterialCard | Client | 5 props | materials/MaterialCard.tsx |
+| MaterialSummary | Client | 3 props | materials/MaterialSummary.tsx |
 | MaterialsList | Client | 4 props | materials/MaterialsList.tsx |
 | MaterialsListSkeleton | Client | 2 props | materials/MaterialsListSkeleton.tsx |
+| MaterialsPageClient | Client | 6 props | materials/MaterialsPageClient.tsx |
 | MaterialsSearch | Client | 1 props | materials/MaterialsSearch.tsx |
-| MaterialSummary | Client | 3 props | materials/MaterialSummary.tsx |
 | PriceChangeIndicator | Client | 2 props | materials/PriceChangeIndicator.tsx |
 | ProductCard | Client | 5 props | materials/ProductCard.tsx |
 | ProductComparisonModal | Client | 4 props | materials/ProductComparisonModal.tsx |
@@ -150,23 +159,26 @@ Last updated: 2026-01-11
 ### mobile
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| FilterButton | Client | 5 props | mobile/FilterButton.tsx |
-| FloatingActionButton | Client | 9 props | mobile/FloatingActionButton.tsx |
-| MobileStatusTabs | Client | 5 props | mobile/MobileStatusTabs.tsx |
+| FilterButton | Client | 10 props | mobile/FilterButton.tsx |
+| FloatingActionButton | Client | 14 props | mobile/FloatingActionButton.tsx |
+| MobileInput | Client | 14 props | mobile/MobileInput.tsx |
+| MobileStatusTabs | Client | 10 props | mobile/MobileStatusTabs.tsx |
 | OfflineIndicator | Client | 1 props | mobile/OfflineIndicator.tsx |
-| SearchInput | Client | 7 props | mobile/SearchInput.tsx |
-| SegmentedControl | Client | 6 props | mobile/SegmentedControl.tsx |
-| SkeletonCard | Client | 2 props | mobile/SkeletonCard.tsx |
-| StickySubmitButton | Client | 9 props | mobile/StickySubmitButton.tsx |
-| SwipeableCard | Client | 13 props | mobile/SwipeableCard.tsx |
+| PullToRefresh | Client | 5 props | mobile/PullToRefresh.tsx |
+| SearchInput | Client | 14 props | mobile/SearchInput.tsx |
+| SegmentedControl | Client | 12 props | mobile/SegmentedControl.tsx |
+| SkeletonCard | Client | 4 props | mobile/SkeletonCard.tsx |
+| StickySubmitButton | Client | 18 props | mobile/StickySubmitButton.tsx |
+| SwipeableCard | Client | 17 props | mobile/SwipeableCard.tsx |
+| TouchButton | Client | 16 props | mobile/TouchButton.tsx |
 
 ### mobile/BottomSheetModal
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| BasicExample | Client | - | mobile/BottomSheetModal/example.tsx |
-| BottomSheetModal | Client | - | mobile/BottomSheetModal/index.tsx |
 | BottomSheetModalFooter | Client | - | mobile/BottomSheetModal/BottomSheetModalFooter.tsx |
 | BottomSheetModalHeader | Client | - | mobile/BottomSheetModal/BottomSheetModalHeader.tsx |
+| example | Client | - | mobile/BottomSheetModal/example.tsx |
+| index | Client | - | mobile/BottomSheetModal/index.tsx |
 
 ### owner
 | Component | Type | Props | Path |
@@ -177,6 +189,7 @@ Last updated: 2026-01-11
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
 | AddMemberModal | Client | 5 props | projects/AddMemberModal.tsx |
+| AddSubcontractorModal | Client | 5 props | projects/AddSubcontractorModal.tsx |
 | CreateProjectForm | Client | 4 props | projects/CreateProjectForm.tsx |
 | CreateProjectFormPage | Client | - | projects/CreateProjectFormPage.tsx |
 | CreateProjectModal | Client | 3 props | projects/CreateProjectModal.tsx |
@@ -185,17 +198,17 @@ Last updated: 2026-01-11
 | MetroJourney | Client | 11 props | projects/MetroJourney.tsx |
 | PhaseDetailPanel | Client | 12 props | projects/PhaseDetailPanel.tsx |
 | PhaseStation | Client | 5 props | projects/PhaseStation.tsx |
-| ProjectCard | Client | 1 props | projects/ProjectCard.tsx |
+| ProjectCard | Client | 2 props | projects/ProjectCard.tsx |
 | ProjectDetailContent | Client | 8 props | projects/ProjectDetailContent.tsx |
 | ProjectExpenseSummary | Client | 3 props | projects/ProjectExpenseSummary.tsx |
 | ProjectFilters | Client | 8 props | projects/ProjectFilters.tsx |
-| ProjectList | Client | 2 props | projects/ProjectList.tsx |
 | ProjectListSkeleton | Server | - | projects/ProjectListSkeleton.tsx |
 | ProjectOverview | Client | 8 props | projects/ProjectOverview.tsx |
 | ProjectSettings | Client | 1 props | projects/ProjectSettings.tsx |
-| ProjectsPageClient | Client | 1 props | projects/ProjectsPageClient.tsx |
+| ProjectSummary | Server | - | projects/ProjectSummary.tsx |
 | ProjectTaskSummary | Client | 3 props | projects/ProjectTaskSummary.tsx |
 | ProjectTeam | Client | 3 props | projects/ProjectTeam.tsx |
+| ProjectsPageClient | Client | 2 props | projects/ProjectsPageClient.tsx |
 
 ### projects/files
 | Component | Type | Props | Path |
@@ -208,8 +221,8 @@ Last updated: 2026-01-11
 | FileVersionHistory | Client | 3 props | projects/files/FileVersionHistory.tsx |
 | PhotoGallerySection | Client | 8 props | projects/files/PhotoGallerySection.tsx |
 | PhotoLightbox | Client | 8 props | projects/files/PhotoLightbox.tsx |
-| ProjectFilesTab | Client | 5 props | projects/files/ProjectFilesTab.tsx |
 | ProjectFileUploader | Client | 4 props | projects/files/ProjectFileUploader.tsx |
+| ProjectFilesTab | Client | 5 props | projects/files/ProjectFilesTab.tsx |
 | ProjectPhotoUploader | Client | 3 props | projects/files/ProjectPhotoUploader.tsx |
 | ReceiptPhotoBadge | Client | 3 props | projects/files/ReceiptPhotoBadge.tsx |
 | SearchFilterPanel | Client | 4 props | projects/files/SearchFilterPanel.tsx |
@@ -217,30 +230,35 @@ Last updated: 2026-01-11
 ### projects/spatial
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
+| 3DViewerCanvas | Client | 7 props | projects/spatial/3DViewerCanvas.tsx |
 | ActivityTimeline | Client | 2 props | projects/spatial/ActivityTimeline.tsx |
 | CameraControls | Client | 2 props | projects/spatial/CameraControls.tsx |
 | ClientSpatialViewer | Client | 7 props | projects/spatial/ClientSpatialViewer.tsx |
 | ConflictDialog | Client | 5 props | projects/spatial/ConflictDialog.tsx |
 | ContentDrawer | Client | 7 props | projects/spatial/ContentDrawer.tsx |
 | Empty3DState | Client | 2 props | projects/spatial/Empty3DState.tsx |
-| ErrorState | Client | 5 props | projects/spatial/ErrorBoundary.tsx |
+| ErrorBoundary | Client | 3 props | projects/spatial/ErrorBoundary.tsx |
 | FileList | Client | 2 props | projects/spatial/FileList.tsx |
 | FileUploader | Client | 2 props | projects/spatial/FileUploader.tsx |
 | FloorPlanUploader | Client | 5 props | projects/spatial/FloorPlanUploader.tsx |
 | FloorPlanViewer | Client | 6 props | projects/spatial/FloorPlanViewer.tsx |
 | IFCUploader | Client | 3 props | projects/spatial/IFCUploader.tsx |
 | InteractionLayer | Client | 5 props | projects/spatial/InteractionLayer.tsx |
-| LoadingStates | Client | 3 props | projects/spatial/LoadingStates.tsx |
 | LODManager | Client | 6 props | projects/spatial/LODManager.tsx |
+| LoadingStates | Client | 3 props | projects/spatial/LoadingStates.tsx |
 | MarkerAnnotationPanel | Client | 5 props | projects/spatial/MarkerAnnotationPanel.tsx |
 | MarkerClusterer | Client | 7 props | projects/spatial/MarkerClusterer.tsx |
 | MarkerCreationModal | Client | 4 props | projects/spatial/MarkerCreationModal.tsx |
+| MarkerFAB | Client | 4 props | projects/spatial/MarkerFAB.tsx |
 | MarkerFilterPanel | Client | 4 props | projects/spatial/MarkerFilterPanel.tsx |
+| MarkerFilterSheet | Client | 8 props | projects/spatial/MarkerFilterSheet.tsx |
 | MarkerFilters | Client | 4 props | projects/spatial/MarkerFilters.tsx |
+| MarkerListItem | Client | 4 props | projects/spatial/MarkerListItem.tsx |
+| MarkerListSheet | Client | 4 props | projects/spatial/MarkerListSheet.tsx |
 | MarkerPanel | Client | 5 props | projects/spatial/MarkerPanel.tsx |
 | MarkerPlacement | Client | 4 props | projects/spatial/MarkerPlacement.tsx |
 | MarkerSearch | Client | 7 props | projects/spatial/MarkerSearch.tsx |
-| MaterialMarkerBadge | Client | - | projects/spatial/MaterialMarkers.tsx |
+| MaterialMarkers | Client | 5 props | projects/spatial/MaterialMarkers.tsx |
 | ModelLoader | Client | 5 props | projects/spatial/ModelLoader.tsx |
 | ModelManagementPanel | Client | 5 props | projects/spatial/ModelManagementPanel.tsx |
 | ModelStatsDisplay | Client | 2 props | projects/spatial/ModelStatsDisplay.tsx |
@@ -253,14 +271,14 @@ Last updated: 2026-01-11
 | PhotoLocationSuggester | Client | 5 props | projects/spatial/PhotoLocationSuggester.tsx |
 | PhotoUploader | Client | 3 props | projects/spatial/PhotoUploader.tsx |
 | SpatialMarkerContextMenu | Client | 2 props | projects/spatial/SpatialMarkerContextMenu.tsx |
-| SpatialMarkerPin | Client | 9 props | projects/spatial/SpatialMarkerPin.tsx |
+| SpatialMarkerPin | Client | 10 props | projects/spatial/SpatialMarkerPin.tsx |
 | SpatialViewer | Client | 8 props | projects/spatial/SpatialViewer.tsx |
 | SpatialViewerWithFilters | Client | 7 props | projects/spatial/SpatialViewerWithFilters.tsx |
-| SpatialViewerWithOnboarding | Client | - | projects/spatial/SpatialViewerWithOnboarding.tsx |
+| SpatialViewerWithOnboarding | Client | 1 props | projects/spatial/SpatialViewerWithOnboarding.tsx |
 | TaskLinker | Client | 8 props | projects/spatial/TaskLinker.tsx |
-| TaskLinker | Client | 8 props | projects/spatial/TaskLinkerEnhanced.tsx |
-| ThreeDViewerCanvas | Client | 7 props | projects/spatial/3DViewerCanvas.tsx |
+| TaskLinkerEnhanced | Client | 8 props | projects/spatial/TaskLinkerEnhanced.tsx |
 | ViewerToolbar | Client | 5 props | projects/spatial/ViewerToolbar.tsx |
+| WebGLFallback | Client | 4 props | projects/spatial/WebGLFallback.tsx |
 
 ### pwa
 | Component | Type | Props | Path |
@@ -277,12 +295,18 @@ Last updated: 2026-01-11
 | KakaoTalkSettings | Client | - | settings/KakaoTalkSettings.tsx |
 | ModelPreviewModal | Client | 3 props | settings/ModelPreviewModal.tsx |
 | ModelUploadModal | Client | 3 props | settings/ModelUploadModal.tsx |
-| PhaseTemplateManager | Client | - | settings/PhaseTemplateManager.tsx |
+| PhaseTemplateManager | Client | 5 props | settings/PhaseTemplateManager.tsx |
 | ProjectConfigurationSection | Client | - | settings/ProjectConfigurationSection.tsx |
 | ProjectTypeManager | Client | - | settings/ProjectTypeManager.tsx |
 | SettingsSectionHeader | Server | 4 props | settings/SettingsSectionHeader.tsx |
-| TaskTemplateManager | Client | - | settings/TaskTemplateManager.tsx |
+| TaskTemplateManager | Client | 4 props | settings/TaskTemplateManager.tsx |
 | TaskTypeManager | Client | - | settings/TaskTypeManager.tsx |
+
+### shared
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| BlueprintBackground | Client | 19 props | shared/BlueprintBackground.tsx |
+| PortfolioSummary | Client | 2 props | shared/PortfolioSummary.tsx |
 
 ### stripe
 | Component | Type | Props | Path |
@@ -290,46 +314,34 @@ Last updated: 2026-01-11
 | PortalButton | Client | - | stripe/PortalButton.tsx |
 | RefundButton | Client | 2 props | stripe/RefundButton.tsx |
 
-### tasks
+### tasks/analytics
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| ActivityTab | Client | 1 props | tasks/ActivityTab.tsx |
-| AssigneeMultiSelect | Client | 4 props | tasks/AssigneeMultiSelect.tsx |
-| AttachmentsTab | Client | 1 props | tasks/AttachmentsTab.tsx |
-| BlockedReasonModal | Client | 3 props | tasks/BlockedReasonModal.tsx |
-| CreateTaskForm | Client | 6 props | tasks/CreateTaskForm.tsx |
-| DashboardStats | Client | 9 props | tasks/DashboardStats.tsx |
-| ExpensesTab | Client | 2 props | tasks/ExpensesTab.tsx |
-| KanbanBoard | Client | 3 props | tasks/KanbanBoard.tsx |
-| KanbanColumn | Client | 7 props | tasks/KanbanColumn.tsx |
-| MaterialDeliveryPrompt | Client | 6 props | tasks/MaterialDeliveryPrompt.tsx |
-| MaterialTab | Client | 2 props | tasks/MaterialTab.tsx |
-| MobileTaskCard | Client | 3 props | tasks/MobileTaskCard.tsx |
-| ProjectFilterHeader | Client | 3 props | tasks/ProjectFilterHeader.tsx |
-| TaskActivityLog | Client | 2 props | tasks/TaskActivityLog.tsx |
-| TaskBoard | Client | 14 props | tasks/TaskBoard.tsx |
-| TaskCard | Client | 5 props | tasks/TaskCard.tsx |
-| TaskDependencies | Client | 4 props | tasks/TaskDependencies.tsx |
-| TaskDetail | Client | 5 props | tasks/TaskDetail.tsx |
-| TaskDetailPanel | Client | 5 props | tasks/TaskDetailPanel.tsx |
-| TaskDetailsTab | Client | 2 props | tasks/TaskDetailsTab.tsx |
-| TaskExpensesSection | Client | 7 props | tasks/TaskExpensesSection.tsx |
-| TaskFilters | Client | 11 props | tasks/TaskFilters.tsx |
-| TaskFormModal | Client | 9 props | tasks/TaskFormModal.tsx |
-| TaskList | Client | 3 props | tasks/TaskList.tsx |
-| TaskListMobile | Client | 5 props | tasks/TaskListMobile.tsx |
-| TaskListSkeleton | Client | 2 props | tasks/TaskListSkeleton.tsx |
-| TaskMaterials | Client | 2 props | tasks/TaskMaterials.tsx |
-| TaskMaterialSearch | Client | 6 props | tasks/TaskMaterialSearch.tsx |
-| TaskMaterialsList | Client | 11 props | tasks/TaskMaterialsList.tsx |
-| TaskMaterialsManager | Client | 7 props | tasks/TaskMaterialsManager.tsx |
-| TaskModal | Client | 10 props | tasks/TaskModal.tsx |
-| TaskModalTrigger | Client | 7 props | tasks/TaskModalTrigger.tsx |
-| TaskReceiptUpload | Client | 5 props | tasks/TaskReceiptUpload.tsx |
-| TasksPageClient | Client | 6 props | tasks/TasksPageClient.tsx |
-| TaskTypeSelector | Client | 3 props | tasks/TaskTypeSelector.tsx |
-| TopProjectsCard | Client | 4 props | tasks/TopProjectsCard.tsx |
-| TopTeamMembersCard | Client | 5 props | tasks/TopTeamMembersCard.tsx |
+| TopProjectsCard | Client | 4 props | tasks/analytics/TopProjectsCard.tsx |
+
+### tasks/detail
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| ActivityTab | Client | 1 props | tasks/detail/ActivityTab.tsx |
+| AttachmentsTab | Client | 1 props | tasks/detail/AttachmentsTab.tsx |
+| ExpensesTab | Client | 3 props | tasks/detail/ExpensesTab.tsx |
+| MaterialTab | Client | 2 props | tasks/detail/MaterialTab.tsx |
+| TaskDetail | Client | 5 props | tasks/detail/TaskDetail.tsx |
+| TaskDetailPanel | Client | 5 props | tasks/detail/TaskDetailPanel.tsx |
+| TaskDetailsTab | Client | 2 props | tasks/detail/TaskDetailsTab.tsx |
+
+### tasks/expenses
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| TaskExpensesSection | Client | 7 props | tasks/expenses/TaskExpensesSection.tsx |
+| TaskReceiptUpload | Client | 5 props | tasks/expenses/TaskReceiptUpload.tsx |
+
+### tasks/forms
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| AssigneeMultiSelect | Client | 4 props | tasks/forms/AssigneeMultiSelect.tsx |
+| CreateTaskForm | Client | 6 props | tasks/forms/CreateTaskForm.tsx |
+| TaskTypeSelector | Client | 3 props | tasks/forms/TaskTypeSelector.tsx |
 
 ### tasks/gantt
 | Component | Type | Props | Path |
@@ -342,6 +354,57 @@ Last updated: 2026-01-11
 | GanttTimeline | Client | 3 props | tasks/gantt/GanttTimeline.tsx |
 | GanttViewToggle | Client | 3 props | tasks/gantt/GanttViewToggle.tsx |
 
+### tasks/kanban
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| KanbanBoard | Client | 4 props | tasks/kanban/KanbanBoard.tsx |
+| KanbanColumn | Client | 9 props | tasks/kanban/KanbanColumn.tsx |
+
+### tasks/list
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| MobileTaskCard | Client | 4 props | tasks/list/MobileTaskCard.tsx |
+| TaskCard | Client | 7 props | tasks/list/TaskCard.tsx |
+| TaskList | Client | 4 props | tasks/list/TaskList.tsx |
+| TaskListMobile | Client | 8 props | tasks/list/TaskListMobile.tsx |
+| TaskListSkeleton | Client | 4 props | tasks/list/TaskListSkeleton.tsx |
+
+### tasks/materials
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| MaterialDeliveryPrompt | Client | 6 props | tasks/materials/MaterialDeliveryPrompt.tsx |
+| TaskMaterialSearch | Client | 6 props | tasks/materials/TaskMaterialSearch.tsx |
+| TaskMaterials | Client | 2 props | tasks/materials/TaskMaterials.tsx |
+| TaskMaterialsList | Client | 11 props | tasks/materials/TaskMaterialsList.tsx |
+| TaskMaterialsManager | Client | 6 props | tasks/materials/TaskMaterialsManager.tsx |
+
+### tasks/mia
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| DashboardStats | Client | 9 props | tasks/mia/DashboardStats.tsx |
+| TaskFormModal | Client | 9 props | tasks/mia/TaskFormModal.tsx |
+
+### tasks/modals
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| BlockedReasonModal | Client | 3 props | tasks/modals/BlockedReasonModal.tsx |
+| TaskModal | Client | 10 props | tasks/modals/TaskModal.tsx |
+| TaskModalTrigger | Client | 8 props | tasks/modals/TaskModalTrigger.tsx |
+
+### tasks/shared
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| TaskActivityLog | Client | 2 props | tasks/shared/TaskActivityLog.tsx |
+| TaskDependencies | Client | 4 props | tasks/shared/TaskDependencies.tsx |
+| TaskFilters | Client | 12 props | tasks/shared/TaskFilters.tsx |
+
+### tasks/views
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| ProjectFilterHeader | Client | 7 props | tasks/views/ProjectFilterHeader.tsx |
+| TaskBoard | Client | 33 props | tasks/views/TaskBoard.tsx |
+| TasksPageClient | Client | 5 props | tasks/views/TasksPageClient.tsx |
+
 ### team
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
@@ -350,7 +413,7 @@ Last updated: 2026-01-11
 | InviteTeamMemberModal | Client | 3 props | team/InviteTeamMemberModal.tsx |
 | SubcontractorCard | Client | 3 props | team/SubcontractorCard.tsx |
 | SubcontractorList | Client | 3 props | team/SubcontractorList.tsx |
-| TeamListSkeleton | Client | 2 props | team/TeamListSkeleton.tsx |
+| TeamListSkeleton | Client | 4 props | team/TeamListSkeleton.tsx |
 | TeamMemberCard | Client | 3 props | team/TeamMemberCard.tsx |
 | TeamMemberTable | Client | 3 props | team/TeamMemberTable.tsx |
 | TeamPageClient | Client | 4 props | team/TeamPageClient.tsx |
@@ -358,38 +421,60 @@ Last updated: 2026-01-11
 ### ui
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| BottomSheet | Client | 8 props | ui/bottom-sheet.tsx |
 | CreatorBadge | Client | 4 props | ui/CreatorBadge.tsx |
+| Footer | Server | - | ui/Footer.tsx |
 | FooterWrapper | Client | - | ui/FooterWrapper.tsx |
-| StateSelect | Client | 10 props | ui/StateSelect.tsx |
-| StateSelectExamples | Client | - | ui/StateSelect.example.tsx |
+| StateSelect.example | Client | - | ui/StateSelect.example.tsx |
+| StateSelect | Client | 20 props | ui/StateSelect.tsx |
+| alert-dialog | Client | - | ui/alert-dialog.tsx |
+| alert | Server | 1 props | ui/alert.tsx |
+| avatar | Client | - | ui/avatar.tsx |
+| badge | Server | 1 props | ui/badge.tsx |
+| bottom-sheet | Client | 8 props | ui/bottom-sheet.tsx |
+| button | Server | 1 props | ui/button.tsx |
+| card | Server | - | ui/card.tsx |
+| checkbox | Client | - | ui/checkbox.tsx |
+| dialog | Client | - | ui/dialog.tsx |
+| dropdown-menu | Client | - | ui/dropdown-menu.tsx |
+| input | Server | - | ui/input.tsx |
+| label | Client | 1 props | ui/label.tsx |
+| popover | Client | - | ui/popover.tsx |
+| progress | Client | 1 props | ui/progress.tsx |
+| scroll-area | Client | - | ui/scroll-area.tsx |
+| select | Client | - | ui/select.tsx |
+| skeleton | Server | - | ui/skeleton.tsx |
+| switch | Client | - | ui/switch.tsx |
+| table | Server | - | ui/table.tsx |
+| tabs | Client | - | ui/tabs.tsx |
+| textarea | Server | - | ui/textarea.tsx |
+| tooltip | Server | - | ui/tooltip.tsx |
 
 ### ui/BaseModal
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| BaseModal | Client | - | ui/BaseModal/index.tsx |
+| BaseModal.example | Client | - | ui/BaseModal/BaseModal.example.tsx |
 | BaseModalFooter | Client | - | ui/BaseModal/BaseModalFooter.tsx |
 | BaseModalHeader | Client | - | ui/BaseModal/BaseModalHeader.tsx |
-| BasicModalExample | Client | - | ui/BaseModal/BaseModal.example.tsx |
 | StepIndicator | Client | - | ui/BaseModal/StepIndicator.tsx |
+| index | Client | - | ui/BaseModal/index.tsx |
 
 ### ui/ResponsiveModal
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| ResponsiveModal | Client | 24 props | ui/ResponsiveModal/index.tsx |
+| index | Client | 24 props | ui/ResponsiveModal/index.tsx |
 
 ### ui/aceternity
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
-| AnimatedTooltip | Client | 4 props | ui/aceternity/animated-tooltip.tsx |
-| BackgroundBoxes | Client | 4 props | ui/aceternity/background-boxes.tsx |
-| FloatingNavbar | Client | 3 props | ui/aceternity/floating-navbar.tsx |
-| HeroHighlight | Client | 3 props | ui/aceternity/hero-highlight.tsx |
-| PlaceholdersVanishInput | Client | - | ui/aceternity/placeholders-vanish-input.tsx |
-| Sidebar | Client | 5 props | ui/aceternity/sidebar.tsx |
-| Stepper | Client | 2 props | ui/aceternity/stepper.tsx |
-| Tabs | Client | 3 props | ui/aceternity/tabs.tsx |
-| TextGenerateEffect | Client | 4 props | ui/aceternity/text-generate-effect.tsx |
+| animated-tooltip | Client | 4 props | ui/aceternity/animated-tooltip.tsx |
+| background-boxes | Client | 4 props | ui/aceternity/background-boxes.tsx |
+| floating-navbar | Client | 3 props | ui/aceternity/floating-navbar.tsx |
+| hero-highlight | Client | 3 props | ui/aceternity/hero-highlight.tsx |
+| placeholders-vanish-input | Client | 4 props | ui/aceternity/placeholders-vanish-input.tsx |
+| sidebar | Client | 5 props | ui/aceternity/sidebar.tsx |
+| stepper | Client | 2 props | ui/aceternity/stepper.tsx |
+| tabs | Client | 3 props | ui/aceternity/tabs.tsx |
+| text-generate-effect | Client | 4 props | ui/aceternity/text-generate-effect.tsx |
 
 ### user
 | Component | Type | Props | Path |
@@ -402,7 +487,7 @@ Last updated: 2026-01-11
 
 | Category | Count |
 |----------|-------|
-| Total Components | 264 |
-| Client Components | 257 |
-| Server Components | 7 |
-| Directories | 31 |
+| Total Components | 301 |
+| Client Components | 280 |
+| Server Components | 21 |
+| Directories | 43 |

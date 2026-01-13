@@ -13,7 +13,7 @@ import {
   FileText,
   AlertTriangle,
   Flag,
-  CheckSquare,
+  ClipboardList,
   Package,
   X,
 } from 'lucide-react';
@@ -261,7 +261,7 @@ export function MarkerFilterPanel({
                 : 'border-gray-200 hover:border-gray-300'
             )}
           >
-            <CheckSquare
+            <ClipboardList
               className={cn(
                 'h-4 w-4 flex-shrink-0',
                 activeFilters.hasTask !== undefined ? 'text-[#001B51]' : 'text-gray-400'

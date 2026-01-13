@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
 import { TaskTypeSelector, TaskTypeBadge } from './TaskTypeSelector';
@@ -142,8 +142,9 @@ export function CreateTaskForm({
       <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <CardTitle className="text-xl font-black text-construction-blue">
-              Create New Task
+            <CardTitle className="text-xl font-black text-construction-blue flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Add Task
             </CardTitle>
             {/* Show selected task type badge after selection */}
             {selectedTaskType && currentStep > 1 && (
@@ -477,11 +478,15 @@ export function CreateTaskForm({
                         </>
                       ) : selectedTaskType === 'purchase' ? (
                         <>
-                          Create & Add Materials
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add & Materials
                           <ChevronRight className="h-4 w-4" />
                         </>
                       ) : (
-                        'Create Task'
+                        <>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Task
+                        </>
                       )}
                     </Button>
                   </div>

@@ -1,14 +1,23 @@
 'use client';
 
 import { useState } from 'react';
-import { UserPlus, X, Users, Mail, Phone, FolderKanban } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  UserPlus,
+  HardHat,
+  X,
+  Users,
+  Mail,
+  Building2,
+  Loader2,
+  ChevronRight,
+} from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
-import { removeProjectTeamMember } from '@/app/actions/projects';
+import { motion, AnimatePresence } from 'framer-motion';
+import { removeProjectTeamMember, removeSubcontractorFromProject } from '@/app/actions/projects';
 import { AddMemberModal } from './AddMemberModal';
+import { AddSubcontractorModal } from './AddSubcontractorModal';
+import { cn } from '@/lib/utils';
 
 interface TeamMember {
   id: string;
@@ -33,24 +42,54 @@ interface TeamMember {
 interface ProjectTeamProps {
   projectId: string;
   team: TeamMember[];
-  companyId: string; // Added to fetch company users
+  companyId: string;
 }
 
+// Role configuration with construction theme colors
 const ROLE_CONFIG = {
-  admin: { label: 'Admin', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: FolderKanban },
-  project_manager: { label: 'Project Manager', color: 'bg-construction-blue/10 text-construction-blue border-construction-blue', icon: FolderKanban },
-  foreman: { label: 'Foreman', color: 'bg-construction-green/10 text-construction-green border-construction-green/30', icon: FolderKanban },
-  field_worker: { label: 'Field Worker', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: FolderKanban },
-  subcontractor: { label: 'Subcontractor', color: 'bg-construction-accent/10 text-construction-accent border-construction-accent/30', icon: FolderKanban },
-  client: { label: 'Client', color: 'bg-pink-100 text-pink-800 border-pink-200', icon: Users },
+  admin: {
+    label: 'Admin',
+    color: 'bg-purple-100 text-purple-800 border-purple-200',
+    borderColor: 'border-l-purple-500',
+  },
+  project_manager: {
+    label: 'Project Manager',
+    color: 'bg-[#001B51]/10 text-[#001B51] border-[#001B51]/20',
+    borderColor: 'border-l-[#001B51]',
+  },
+  foreman: {
+    label: 'Foreman',
+    color: 'bg-[#059669]/10 text-[#059669] border-[#059669]/30',
+    borderColor: 'border-l-[#059669]',
+  },
+  field_worker: {
+    label: 'Field Worker',
+    color: 'bg-gray-100 text-gray-700 border-gray-200',
+    borderColor: 'border-l-gray-400',
+  },
+  subcontractor: {
+    label: 'Subcontractor',
+    color: 'bg-amber-100 text-amber-800 border-amber-200',
+    borderColor: 'border-l-amber-500',
+  },
+  client: {
+    label: 'Client',
+    color: 'bg-pink-100 text-pink-800 border-pink-200',
+    borderColor: 'border-l-pink-500',
+  },
 };
 
 export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
-  // Debug: State for modal and removing members
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [subcontractorModalOpen, setSubcontractorModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'members' | 'subcontractors'>('members');
 
-  const handleRemove = async (memberId: string, userId: string) => {
+  // Separate team members and subcontractors
+  const teamMembers = team.filter((m) => m.user_id !== null);
+  const subcontractors = team.filter((m) => m.subcontractor_id !== null);
+
+  const handleRemoveMember = async (memberId: string, userId: string) => {
     setRemovingId(memberId);
     try {
       await removeProjectTeamMember(projectId, userId);
@@ -61,8 +100,15 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
     }
   };
 
-  const handleOpenModal = () => {
-    setModalOpen(true);
+  const handleRemoveSubcontractor = async (memberId: string, subcontractorId: string) => {
+    setRemovingId(memberId);
+    try {
+      await removeSubcontractorFromProject(projectId, subcontractorId);
+    } catch {
+      // Error handling could be improved with toast notification
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   const getInitials = (name: string) => {
@@ -74,170 +120,346 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
       .slice(0, 2);
   };
 
-  // Group team members by role
-  const teamByRole = team.reduce((acc, member) => {
-    const role = member.role;
-    if (!acc[role]) {
-      acc[role] = [];
-    }
-    acc[role].push(member);
-    return acc;
-  }, {} as Record<string, TeamMember[]>);
-
   return (
-    <div className="space-y-6">
-      {/* Team Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
+    <div className="space-y-4">
+      {/* Team Stats - Mobile optimized grid */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setActiveTab('members')}
+          className={cn(
+            'p-4 rounded-xl border-2 transition-all duration-150',
+            'active:scale-[0.98]',
+            'text-left',
+            activeTab === 'members'
+              ? 'border-[#001B51] bg-[#001B51]/5 shadow-sm'
+              : 'border-gray-200 bg-white'
+          )}
+        >
           <div className="flex items-center justify-between mb-2">
-            <Users className="h-5 w-5 text-construction-blue" />
-            <span className="text-xs font-mono uppercase text-gray-500">Total</span>
+            <Users className={cn(
+              'h-5 w-5',
+              activeTab === 'members' ? 'text-[#001B51]' : 'text-gray-400'
+            )} />
+            <ChevronRight className={cn(
+              'h-4 w-4 transition-transform',
+              activeTab === 'members' ? 'text-[#001B51] rotate-90' : 'text-gray-300'
+            )} />
           </div>
-          <div className="text-3xl font-black text-construction-blue">{team.length}</div>
-          <div className="text-xs font-bold text-gray-600">Team Members</div>
-        </div>
+          <div className={cn(
+            'text-2xl font-black',
+            activeTab === 'members' ? 'text-[#001B51]' : 'text-gray-700'
+          )}>
+            {teamMembers.length}
+          </div>
+          <div className="text-sm font-medium text-gray-600">Team Members</div>
+        </button>
 
-        {Object.entries(teamByRole).slice(0, 3).map(([role, members]) => {
-          const roleConfig = ROLE_CONFIG[role as keyof typeof ROLE_CONFIG] || {
-            label: role,
-            color: 'bg-gray-100 text-gray-800 border-gray-200',
-            icon: Users,
-          };
-
-          return (
-            <div key={role} className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-construction">
-              <div className="flex items-center justify-between mb-2">
-                <roleConfig.icon className="h-5 w-5 text-construction-blue" />
-                <span className="text-xs font-mono uppercase text-gray-500">{roleConfig.label}</span>
-              </div>
-              <div className="text-3xl font-black text-construction-blue">{members.length}</div>
-              <div className="text-xs font-bold text-gray-600 truncate">{roleConfig.label}</div>
-            </div>
-          );
-        })}
+        <button
+          onClick={() => setActiveTab('subcontractors')}
+          className={cn(
+            'p-4 rounded-xl border-2 transition-all duration-150',
+            'active:scale-[0.98]',
+            'text-left',
+            activeTab === 'subcontractors'
+              ? 'border-amber-500 bg-amber-50 shadow-sm'
+              : 'border-gray-200 bg-white'
+          )}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <HardHat className={cn(
+              'h-5 w-5',
+              activeTab === 'subcontractors' ? 'text-amber-600' : 'text-gray-400'
+            )} />
+            <ChevronRight className={cn(
+              'h-4 w-4 transition-transform',
+              activeTab === 'subcontractors' ? 'text-amber-600 rotate-90' : 'text-gray-300'
+            )} />
+          </div>
+          <div className={cn(
+            'text-2xl font-black',
+            activeTab === 'subcontractors' ? 'text-amber-600' : 'text-gray-700'
+          )}>
+            {subcontractors.length}
+          </div>
+          <div className="text-sm font-medium text-gray-600">Subcontractors</div>
+        </button>
       </div>
 
-      {/* Team Members List */}
-      <Card className="border-2 border-gray-200 shadow-construction">
-        <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2 text-lg font-black text-construction-blue">
-                <Users className="h-5 w-5" />
-                Project Team
-              </CardTitle>
-              <CardDescription className="font-medium">
-                {team.length} team member{team.length !== 1 ? 's' : ''} assigned to this project
-              </CardDescription>
-            </div>
-            <Button
-              className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-              onClick={handleOpenModal}
-            >
-              <UserPlus className="h-4 w-4" />
-              Add Member
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          {team.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                <Users className="h-8 w-8 text-gray-400" />
+      {/* Content Card */}
+      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="p-4 border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              {activeTab === 'members' ? (
+                <div className="w-10 h-10 rounded-xl bg-[#001B51]/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-[#001B51]" />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                  <HardHat className="h-5 w-5 text-amber-600" />
+                </div>
+              )}
+              <div className="min-w-0">
+                <h3 className="font-bold text-[#001B51] text-lg">
+                  {activeTab === 'members' ? 'Team Members' : 'Subcontractors'}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {activeTab === 'members'
+                    ? `${teamMembers.length} member${teamMembers.length !== 1 ? 's' : ''}`
+                    : `${subcontractors.length} subcontractor${subcontractors.length !== 1 ? 's' : ''}`}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-gray-700 mb-2">No team members yet</h3>
-              <p className="text-gray-500 mb-4">
-                Add team members to collaborate on this project
-              </p>
-              <Button
-                className="gap-2 bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-                onClick={handleOpenModal}
-              >
-                <UserPlus className="h-4 w-4" />
-                Add First Member
-              </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {team.map((member, index) => {
-                const isUser = !!member.user_profiles;
-                const name = isUser
-                  ? member.user_profiles?.name
-                  : member.subcontractors?.company_name;
-                const subtitle = isUser
-                  ? member.user_profiles?.email
-                  : `${member.subcontractors?.contact_name} - ${member.subcontractors?.trade_specialization}`;
-                const avatar = isUser ? member.user_profiles?.avatar_url : null;
 
-                const roleConfig = ROLE_CONFIG[member.role as keyof typeof ROLE_CONFIG] || {
-                  label: member.role,
-                  color: 'bg-gray-100 text-gray-800 border-gray-200',
-                  icon: Users,
-                };
+            {/* Add Button */}
+            <button
+              onClick={() => activeTab === 'members' ? setMemberModalOpen(true) : setSubcontractorModalOpen(true)}
+              className={cn(
+                'flex items-center gap-2 px-4 h-11',
+                'rounded-xl font-bold text-sm',
+                'transition-all duration-150',
+                'active:scale-[0.98]',
+                activeTab === 'members'
+                  ? 'bg-[#001B51] text-white active:bg-[#001B51]/90'
+                  : 'bg-amber-500 text-white active:bg-amber-600'
+              )}
+            >
+              {activeTab === 'members' ? (
+                <>
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Member</span>
+                </>
+              ) : (
+                <>
+                  <HardHat className="h-4 w-4" />
+                  <span className="hidden sm:inline">Add Sub</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
-                return (
-                  <motion.div
-                    key={member.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="group bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-construction-blue hover:shadow-construction transition-all"
+        {/* Team Member List */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'members' && (
+            <motion.div
+              key="members"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+              className="divide-y divide-gray-100"
+            >
+              {teamMembers.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-700 mb-2">No team members yet</h4>
+                  <p className="text-gray-500 mb-6 text-sm max-w-[280px] mx-auto">
+                    Add team members to collaborate on this project
+                  </p>
+                  <button
+                    onClick={() => setMemberModalOpen(true)}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-6 h-12',
+                      'bg-[#001B51] text-white font-bold rounded-xl',
+                      'active:scale-[0.98] active:bg-[#001B51]/90',
+                      'transition-all duration-150'
+                    )}
                   >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <Avatar className="h-12 w-12 border-2 border-construction-blue/20">
-                          <AvatarImage src={avatar || undefined} />
-                          <AvatarFallback className="bg-construction-blue text-white font-bold">
-                            {name ? getInitials(name) : '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-gray-900 group-hover:text-construction-blue transition-colors truncate">
-                            {name}
-                          </p>
-                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
-                            {isUser ? (
-                              <>
-                                <Mail className="h-3 w-3" />
-                                {subtitle}
-                              </>
-                            ) : (
-                              subtitle
-                            )}
-                          </p>
-                        </div>
-                      </div>
+                    <UserPlus className="h-5 w-5" />
+                    Add First Member
+                  </button>
+                </div>
+              ) : (
+                teamMembers.map((member, index) => {
+                  const name = member.user_profiles?.name || 'Unknown';
+                  const email = member.user_profiles?.email;
+                  const avatar = member.user_profiles?.avatar_url;
 
-                      <div className="flex items-center gap-3">
-                        <Badge className={`px-3 py-1.5 text-xs font-bold border-2 ${roleConfig.color}`}>
+                  const roleConfig = ROLE_CONFIG[member.role as keyof typeof ROLE_CONFIG] || {
+                    label: member.role,
+                    color: 'bg-gray-100 text-gray-800 border-gray-200',
+                    borderColor: 'border-l-gray-400',
+                  };
+
+                  return (
+                    <motion.div
+                      key={member.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      className={cn(
+                        'flex items-center gap-3 p-4',
+                        'border-l-4',
+                        roleConfig.borderColor,
+                        'active:bg-gray-50 transition-colors'
+                      )}
+                    >
+                      <Avatar className="h-12 w-12 border-2 border-gray-200 flex-shrink-0">
+                        <AvatarImage src={avatar || undefined} />
+                        <AvatarFallback className="bg-[#001B51] text-white font-bold text-sm">
+                          {getInitials(name)}
+                        </AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900 truncate text-base">{name}</p>
+                        {email && (
+                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
+                            <Mail className="h-3.5 w-3.5 flex-shrink-0" />
+                            {email}
+                          </p>
+                        )}
+                        <Badge className={cn('mt-1.5 text-xs font-bold border', roleConfig.color)}>
                           {roleConfig.label}
                         </Badge>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                          onClick={() => member.user_id && handleRemove(member.id, member.user_id)}
-                          disabled={removingId === member.id}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Debug: Add Member Modal */}
+                      <button
+                        onClick={() => member.user_id && handleRemoveMember(member.id, member.user_id)}
+                        disabled={removingId === member.id}
+                        className={cn(
+                          'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
+                          'border-2 border-gray-200',
+                          'text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50',
+                          'active:scale-[0.95]',
+                          'transition-all duration-150',
+                          'disabled:opacity-50'
+                        )}
+                      >
+                        {removingId === member.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                      </button>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          )}
+
+          {activeTab === 'subcontractors' && (
+            <motion.div
+              key="subcontractors"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="divide-y divide-gray-100"
+            >
+              {subcontractors.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                    <HardHat className="h-8 w-8 text-amber-500" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-700 mb-2">No subcontractors yet</h4>
+                  <p className="text-gray-500 mb-6 text-sm max-w-[280px] mx-auto">
+                    Add subcontractors to work on this project
+                  </p>
+                  <button
+                    onClick={() => setSubcontractorModalOpen(true)}
+                    className={cn(
+                      'inline-flex items-center gap-2 px-6 h-12',
+                      'bg-amber-500 text-white font-bold rounded-xl',
+                      'active:scale-[0.98] active:bg-amber-600',
+                      'transition-all duration-150'
+                    )}
+                  >
+                    <HardHat className="h-5 w-5" />
+                    Add First Subcontractor
+                  </button>
+                </div>
+              ) : (
+                subcontractors.map((member, index) => {
+                  const sub = member.subcontractors;
+                  const companyName = sub?.company_name || 'Unknown';
+                  const contactName = sub?.contact_name;
+                  const trade = sub?.trade_specialization;
+
+                  return (
+                    <motion.div
+                      key={member.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.03 }}
+                      className={cn(
+                        'flex items-center gap-3 p-4',
+                        'border-l-4 border-l-amber-500',
+                        'active:bg-gray-50 transition-colors'
+                      )}
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-amber-700 text-sm">
+                          {getInitials(companyName)}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-gray-900 truncate text-base">{companyName}</p>
+                        {contactName && (
+                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
+                            <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
+                            {contactName}
+                          </p>
+                        )}
+                        {trade && (
+                          <Badge className="mt-1.5 text-xs font-bold border bg-amber-100 text-amber-800 border-amber-200">
+                            {trade.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </Badge>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          member.subcontractor_id &&
+                          handleRemoveSubcontractor(member.id, member.subcontractor_id)
+                        }
+                        disabled={removingId === member.id}
+                        className={cn(
+                          'w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0',
+                          'border-2 border-gray-200',
+                          'text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50',
+                          'active:scale-[0.95]',
+                          'transition-all duration-150',
+                          'disabled:opacity-50'
+                        )}
+                      >
+                        {removingId === member.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                      </button>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Add Member Modal */}
       <AddMemberModal
         projectId={projectId}
         companyId={companyId}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-        existingMemberIds={team.map((m) => m.user_id).filter((id): id is string => id !== null)}
+        open={memberModalOpen}
+        onOpenChange={setMemberModalOpen}
+        existingMemberIds={teamMembers.map((m) => m.user_id).filter((id): id is string => id !== null)}
+      />
+
+      {/* Add Subcontractor Modal */}
+      <AddSubcontractorModal
+        projectId={projectId}
+        companyId={companyId}
+        open={subcontractorModalOpen}
+        onOpenChange={setSubcontractorModalOpen}
+        existingSubcontractorIds={subcontractors.map((m) => m.subcontractor_id).filter((id): id is string => id !== null)}
       />
     </div>
   );

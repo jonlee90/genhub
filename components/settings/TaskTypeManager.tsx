@@ -347,7 +347,7 @@ export function TaskTypeManager() {
             form="create-task-type-form"
             className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
           >
-            <CheckCircle2 className="mr-2 h-4 w-4" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Task Type
           </Button>
         }

@@ -13,7 +13,7 @@ import {
   Calendar,
   User,
   Layers,
-  CheckSquare,
+  ClipboardList,
   Square,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -353,7 +353,7 @@ export function MarkerFilters({
                       )}
                     >
                       {types.includes(value) ? (
-                        <CheckSquare className="w-4 h-4" />
+                        <ClipboardList className="w-4 h-4" />
                       ) : (
                         <Square className="w-4 h-4" />
                       )}
@@ -366,7 +366,7 @@ export function MarkerFilters({
               {/* Debug: Status filter */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckSquare className="w-4 h-4 text-[#001B51]" />
+                  <ClipboardList className="w-4 h-4 text-[#001B51]" />
                   <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
                     Status
                   </label>
@@ -390,7 +390,7 @@ export function MarkerFilters({
                       )}
                     >
                       {statuses.includes(value) ? (
-                        <CheckSquare className="w-4 h-4" />
+                        <ClipboardList className="w-4 h-4" />
                       ) : (
                         <Square className="w-4 h-4" />
                       )}

@@ -2,7 +2,7 @@
 
 import {
   FolderKanban,
-  CheckSquare,
+  ClipboardList,
   Wallet,
   Clock,
   AlertCircle,
@@ -127,7 +127,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
       subtitle: kpis.tasksOverdue > 0
         ? `${kpis.tasksOverdue} overdue`
         : `${kpis.tasksDueToday} due today`,
-      icon: CheckSquare,
+      icon: ClipboardList,
       variant: getVariant('tasks', kpis),
       href: '/app/tasks',
     },

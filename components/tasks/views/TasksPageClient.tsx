@@ -11,7 +11,7 @@ import { BlueprintBackground } from '@/components/shared';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
-import { CheckSquare } from 'lucide-react';
+import { ClipboardList } from 'lucide-react';
 import type {
   TaskWithRelations,
   TaskProject,
@@ -249,7 +249,7 @@ export function TasksPageClient({
             {filteredTasks.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <CheckSquare className="w-8 h-8 text-gray-400" />
+                  <ClipboardList className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">
                   No tasks found

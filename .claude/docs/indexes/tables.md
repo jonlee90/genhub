@@ -1,173 +1,158 @@
 # GenHub Tables Index
 
-> Quick lookup for database tables. For full schema details, see `docs/law/DB_SCHEMA.md`
+> Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-11
-
----
-
-## Quick Lookup
-
-| Table | Purpose | Key FKs | RLS |
-|-------|---------|---------|-----|
-| companies | Company accounts | - | Yes |
-| user_profiles | User info | → next_auth.users | Yes |
-| company_users | Team membership | → companies, users | Yes |
-| projects | Project management | → companies | Yes |
-| project_phases | Phase tracking | → projects | Yes |
-| project_team | Team assignments | → projects, users | Yes |
-| tasks | Task tracking | → projects, phases | Yes |
-| task_assignees | Multi-assignee junction | → tasks, users, subcontractors | Yes |
-| task_dependencies | Task blocking | → tasks | Yes |
-| task_activity | Task audit log | → tasks | Yes |
-| materials | Material catalog | → companies | Yes |
-| material_assignments | Task materials | → tasks, materials | Yes |
-| tracked_materials | Material tracking | → materials | Yes |
-| material_price_history | Price history | → tracked_materials | Yes |
-| expenses | Expense tracking | → projects, tasks | Yes |
-| expense_line_items | Expense details | → expenses, materials | Yes |
-| subcontractors | Sub profiles | → companies | Yes |
-| team_invitations | Team invites | → companies | Yes |
-| chat_rooms | Chat rooms | → projects, companies | Yes |
-| chat_participants | Room members | → chat_rooms, users | Yes |
-| messages | Chat messages | → chat_rooms, users | Yes |
-| message_reactions | Message reactions | → messages | Yes |
-| message_attachments | Message files | → messages | Yes |
-| project_files | Project documents | → projects, companies | Yes |
-| project_photos | Project photos | → projects, companies | Yes |
-| file_audit_log | File audit | → project_files | Yes |
-| notifications | User notifications | → users | Yes |
-| attachments | Generic attachments | → entities | Yes |
-| push_subscriptions | Push tokens | → users | Yes |
-| kakao_connections | KakaoTalk links | → users | Yes |
-| stripe_customers | Billing | → users | Yes |
-| owners | Platform owners | → next_auth.users | Yes |
-| admin_invitations | Admin invites | → owners | Yes |
-| projects_3d_models | Project models | → projects | Yes |
-| default_3d_models | Default models | - | Yes |
-| company_default_models | Company models | → default_3d_models | Yes |
-| default_marker_configs | Marker defaults | → default_3d_models | Yes |
-| spatial_markers | 3D markers | → projects_3d_models | Yes |
-| marker_content | Marker details | → spatial_markers | Yes |
-| model_elements | Model parts | → projects_3d_models | Yes |
+Last updated: 2026-01-12
 
 ---
 
-## By Category
+## Quick Lookup by Domain
 
 ### Core
-- `companies` - Company accounts
-- `user_profiles` - User info (extends next_auth.users)
-- `company_users` - Team membership, roles
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| companies | 9 | ✓ | Companies |
+| user_profiles | 7 | ✓ | User Profiles |
+| company_users | 11 | ✓ | Company Users |
+| owners | 7 | ✓ | Owners |
+| admin_invitations | 10 | ✓ | Admin Invitations |
 
 ### Projects
-- `projects` - Project records
-- `project_phases` - 5 default phases per project
-- `project_team` - Project member assignments
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| projects | 26 | ✓ | Projects |
+| project_team | 7 | ✓ | Project Team |
+| project_phases | 11 | ✓ | Project Phases |
+| project_type_configs | 11 | ✓ | Project Type Configs |
+| project_files | 18 | ✓ | Project Files |
+| project_photos | 14 | ✓ | Project Photos |
 
 ### Tasks
-- `tasks` - Task records with status/priority
-- `task_assignees` - Multi-assignee junction (users + subcontractors)
-- `task_dependencies` - Blocking relationships
-- `task_activity` - Audit log
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| tasks | 24 | ✓ | Tasks |
+| task_assignees | 8 | ✓ | Task Assignees |
+| task_dependencies | 4 | ✓ | Task Dependencies |
+| task_activity | 7 | ✓ | Task Activity |
+| task_type_configs | 10 | ✓ | Task Type Configs |
+| task_templates | 12 | ✓ | Task Templates |
 
-### Materials & Expenses
-- `materials` - Material catalog
-- `material_assignments` - Materials linked to tasks
-- `tracked_materials` - Active material tracking
-- `material_price_history` - Price tracking
-- `expenses` - Expense records
-- `expense_line_items` - Expense breakdowns
+### Materials
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| materials | 19 | ✓ | Materials |
+| material_assignments | 20 | ✓ | Material Assignments |
+| tracked_materials | 7 | ✓ | Tracked Materials |
+| material_price_history | 7 | ✓ | Material Price History |
+
+### Expenses
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| expenses | 22 | ✓ | Expenses |
+| expense_line_items | 14 | ✓ | Expense Line Items |
+
+### Spatial
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| spatial_markers | 30 | ✓ | Spatial Markers |
+| marker_content | 19 | ✓ | Marker Content |
+| projects_3d_models | 21 | ✓ | Projects 3D Models |
+| model_elements | 13 | ✓ | Model Elements |
+| default_3d_models | 17 | ✓ | Default 3D Models |
+| company_default_models | 7 | ✓ | Company Default Models |
+| default_marker_configs | 19 | ✓ | Default Marker Configs |
 
 ### Team
-- `subcontractors` - Subcontractor profiles
-- `team_invitations` - Pending invites
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| team_invitations | 11 | ✓ | Team Invitations |
+| subcontractors | 17 | ✓ | Subcontractors |
 
 ### Chat
-- `chat_rooms` - Chat rooms (project/company/DM)
-- `chat_participants` - Room membership
-- `messages` - Chat messages
-- `message_reactions` - Emoji reactions
-- `message_attachments` - File attachments
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| chat_rooms | 8 | ✓ | Chat Rooms |
+| chat_participants | 9 | ✓ | Chat Participants |
+| messages | 10 | ✓ | Messages |
+| message_reactions | 5 | ✓ | Message Reactions |
+| message_attachments | 9 | ✓ | Message Attachments |
 
-### Files
-- `project_files` - Documents with versioning
-- `project_photos` - Photos with categories
-- `file_audit_log` - File access audit
+### Templates
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| phase_templates | 9 | ✓ | Phase Templates |
 
-### 3D Spatial
-- `projects_3d_models` - Project-specific 3D models
-- `default_3d_models` - System-wide default models
-- `company_default_models` - Company's default model picks
-- `default_marker_configs` - Default marker configuration
-- `spatial_markers` - 3D markers on models
-- `marker_content` - Marker rich content
-- `model_elements` - Named model parts
+### Integrations
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| kakao_connections | 11 | ✓ | Kakao Connections |
+| stripe_customers | 8 | ✓ | Stripe Customers |
+| push_subscriptions | 10 | ✓ | Push Subscriptions |
 
 ### System
-- `notifications` - User notifications
-- `attachments` - Generic file attachments
-- `push_subscriptions` - FCM tokens
-- `kakao_connections` - KakaoTalk integration
-- `stripe_customers` - Stripe billing
-
-### Owner/Admin
-- `owners` - Platform owner accounts (super-admins)
-- `admin_invitations` - Pending admin invitations to companies
+| Table | Columns | RLS | Description |
+|-------|---------|-----|-------------|
+| attachments | 8 | ✓ | Attachments |
+| notifications | 8 | ✓ | Notifications |
+| file_audit_log | 9 | ✓ | File Audit Log |
 
 ---
 
-## Stats
+## All Tables (Alphabetical)
 
-- **Total tables**: 44
-- **Tables with RLS**: 44/44 (100%)
-- **Tables with triggers**: 12+
-- **Tables in Realtime**: 5+ (messages, notifications, etc.)
+| Table | Schema | Columns | RLS | Rows |
+|-------|--------|---------|-----|------|
+| admin_invitations | public | 10 | ✓ | 1 |
+| attachments | public | 8 | ✓ | 0 |
+| chat_participants | public | 9 | ✓ | 3 |
+| chat_rooms | public | 8 | ✓ | 21 |
+| companies | public | 9 | ✓ | 1 |
+| company_default_models | public | 7 | ✓ | 0 |
+| company_users | public | 11 | ✓ | 2 |
+| default_3d_models | public | 17 | ✓ | 5 |
+| default_marker_configs | public | 19 | ✓ | 47 |
+| expense_line_items | public | 14 | ✓ | 0 |
+| expenses | public | 22 | ✓ | 1 |
+| file_audit_log | public | 9 | ✓ | 2 |
+| kakao_connections | public | 11 | ✓ | 0 |
+| marker_content | public | 19 | ✓ | 0 |
+| material_assignments | public | 20 | ✓ | 4 |
+| material_price_history | public | 7 | ✓ | 0 |
+| materials | public | 19 | ✓ | 7 |
+| message_attachments | public | 9 | ✓ | 0 |
+| message_reactions | public | 5 | ✓ | 0 |
+| messages | public | 10 | ✓ | 10 |
+| model_elements | public | 13 | ✓ | 0 |
+| notifications | public | 8 | ✓ | 5 |
+| owners | public | 7 | ✓ | 1 |
+| phase_templates | public | 9 | ✓ | 50 |
+| project_files | public | 18 | ✓ | 0 |
+| project_phases | public | 11 | ✓ | 101 |
+| project_photos | public | 14 | ✓ | 2 |
+| project_team | public | 7 | ✓ | 2 |
+| project_type_configs | public | 11 | ✓ | 10 |
+| projects | public | 26 | ✓ | 20 |
+| projects_3d_models | public | 21 | ✓ | 21 |
+| push_subscriptions | public | 10 | ✓ | 0 |
+| spatial_markers | public | 30 | ✓ | 88 |
+| stripe_customers | public | 8 | ✓ | 0 |
+| subcontractors | public | 17 | ✓ | 3 |
+| task_activity | public | 7 | ✓ | 0 |
+| task_assignees | public | 8 | ✓ | 8 |
+| task_dependencies | public | 4 | ✓ | 0 |
+| task_templates | public | 12 | ✓ | 218 |
+| task_type_configs | public | 10 | ✓ | 8 |
+| tasks | public | 24 | ✓ | 187 |
+| team_invitations | public | 11 | ✓ | 0 |
+| tracked_materials | public | 7 | ✓ | 2 |
+| user_profiles | public | 7 | ✓ | 2 |
 
 ---
 
-## Key Relationships
+## Summary
 
-```
-companies
-├── company_users → user_profiles
-├── projects
-│   ├── project_phases
-│   ├── project_team
-│   ├── tasks
-│   │   ├── task_assignees → users, subcontractors
-│   │   ├── task_dependencies
-│   │   ├── task_activity
-│   │   └── material_assignments → materials
-│   ├── expenses → expense_line_items
-│   ├── chat_rooms → messages
-│   ├── project_files
-│   └── project_photos
-├── materials
-├── subcontractors
-└── projects_3d_models → spatial_markers
-```
-
----
-
-## Common Patterns
-
-### Company Isolation
-All data scoped by `company_id` via RLS:
-```sql
-company_id = public.get_user_company_id(next_auth.uid())
-```
-
-### Project Access
-Project-scoped data checks `project_team` membership:
-```sql
-EXISTS (SELECT 1 FROM project_team WHERE project_id = ... AND user_id = next_auth.uid())
-```
-
----
-
-## Deep Dive
-
-For full schema details: `.claude/docs/law/DB_SCHEMA.md`
-For RLS patterns: `.claude/skills/database/rls-patterns.md`
-For creating tables: `.claude/skills/database/create-migration.md`
+| Metric | Count |
+|--------|-------|
+| Total Tables | 44 |
+| RLS Enabled | 44 |
+| Total Columns | 543 |

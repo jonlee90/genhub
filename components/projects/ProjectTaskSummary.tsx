@@ -1,7 +1,7 @@
 'use client';
 
 import {
-  CheckSquare,
+  ClipboardList,
   DollarSign,
   CheckCircle,
   AlertTriangle,
@@ -55,7 +55,7 @@ export function ProjectTaskSummary({
         <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
-              <CheckSquare className="w-5 h-5 text-white" />
+              <ClipboardList className="w-5 h-5 text-white" />
             </div>
             <div>
               <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
@@ -69,7 +69,7 @@ export function ProjectTaskSummary({
         {/* Empty State */}
         <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <CheckSquare className="w-8 h-8 text-gray-300" />
+            <ClipboardList className="w-8 h-8 text-gray-300" />
           </div>
           <p className="text-base font-semibold text-gray-700 mb-1.5">
             No tasks created yet
@@ -125,7 +125,7 @@ export function ProjectTaskSummary({
       <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
-            <CheckSquare className="w-5 h-5 text-white" />
+            <ClipboardList className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">

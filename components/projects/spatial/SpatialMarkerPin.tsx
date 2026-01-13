@@ -13,7 +13,7 @@ import {
   FileText,
   AlertTriangle,
   Flag,
-  CheckSquare,
+  ClipboardList,
   Package,
   Paperclip,
   Image,
@@ -277,7 +277,7 @@ export function SpatialMarkerPin({
               <div className="mt-2 pt-2 border-t border-gray-700">
                 {isLinkedToTask ? (
                   <div className="flex items-center gap-1 text-[10px] text-blue-400">
-                    <CheckSquare className="h-3 w-3" />
+                    <ClipboardList className="h-3 w-3" />
                     <span>Click to view linked task</span>
                   </div>
                 ) : (

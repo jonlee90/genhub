@@ -8,7 +8,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckSquare, Filter, Settings, Trash2, Building2 } from 'lucide-react';
+import { ClipboardList, Filter, Settings, Trash2, Building2 } from 'lucide-react';
 import { BottomSheetModal } from './index';
 
 // =============================================================================
@@ -49,7 +49,7 @@ export function FullFeaturedExample() {
       <BottomSheetModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        icon={CheckSquare}
+        icon={ClipboardList}
         title="Edit Task"
         subtitle="Update task details and save changes"
         badges={

@@ -7,7 +7,7 @@ import Image from "next/image";
 import {
   LayoutDashboard,
   FolderKanban,
-  CheckSquare,
+  ClipboardList,
   Package,
   Receipt,
   Users,
@@ -37,7 +37,7 @@ interface NavigationItem {
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/app", icon: LayoutDashboard },
   { name: "Projects", href: "/app/projects", icon: FolderKanban },
-  { name: "Tasks", href: "/app/tasks", icon: CheckSquare },
+  { name: "Tasks", href: "/app/tasks", icon: ClipboardList },
   { name: "Materials", href: "/app/materials", icon: Package },
   { name: "Expenses", href: "/app/expenses", icon: Receipt },
   { name: "Chat", href: "/app/chat", icon: MessageSquare },

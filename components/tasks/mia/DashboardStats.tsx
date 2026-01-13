@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { CheckSquare, Building2, DollarSign } from 'lucide-react';
+import { ClipboardList, Building2, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // DashboardStats - Main dashboard component with 8 metrics
@@ -89,7 +89,7 @@ export function DashboardStats({
           <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2 md:mb-3">
               <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <CheckSquare className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
+                <ClipboardList className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
               </div>
               <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
                 Total

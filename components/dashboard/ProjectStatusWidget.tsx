@@ -84,7 +84,7 @@ function EmptyState() {
           'transition-all duration-150'
         )}
       >
-        <Plus className="w-4 h-4" />
+        <Plus className="w-4 h-4 mr-2" />
         Create Project
       </Link>
     </div>

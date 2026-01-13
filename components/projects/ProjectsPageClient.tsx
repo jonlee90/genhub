@@ -15,17 +15,17 @@ import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { BlueprintBackground } from '@/components/shared';
+import { BlueprintBackground, PortfolioSummary, type PortfolioSummaryStats } from '@/components/shared';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from './CreateProjectModal';
 import { ProjectCard } from './ProjectCard';
 import { ProjectFilters } from './ProjectFilters';
-import { ProjectSummary, type PortfolioSummaryStats } from './ProjectSummary';
 import { Button } from '@/components/ui/button';
 import {
   Building2,
   FolderKanban,
+  Plus,
   X,
   ShieldAlert,
 } from 'lucide-react';
@@ -443,7 +443,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
                       onClick={() => setShowCreateModal(true)}
                       className="relative h-11 px-4 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg transition-all group overflow-hidden text-white"
                     >
-                      <FolderKanban className="mr-1.5 h-4 w-4 group-hover:rotate-12 transition-transform" />
+                      <Plus className="mr-1.5 h-4 w-4 group-hover:rotate-90 transition-transform" />
                       <span className="font-black text-sm">NEW PROJECT</span>
                     </Button>
                   )}
@@ -453,7 +453,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
             {/* Portfolio Summary */}
             {portfolioStats && (
               <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <ProjectSummary portfolioStats={portfolioStats} />
+                <PortfolioSummary stats={portfolioStats} />
               </div>
             )}
 
@@ -511,7 +511,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
                 onClick={() => setShowCreateModal(true)}
                 className="relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
               >
-                <FolderKanban className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-12 transition-transform" />
+                <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
                 <span className="font-black text-sm md:text-base">NEW</span>
                 <span className="hidden sm:inline font-black text-sm md:text-base ml-1">
                   PROJECT
@@ -525,7 +525,7 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
       {/* Portfolio Summary */}
       {portfolioStats && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <ProjectSummary portfolioStats={portfolioStats} />
+          <PortfolioSummary stats={portfolioStats} />
         </div>
       )}
 

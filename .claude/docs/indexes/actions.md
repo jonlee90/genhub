@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-11
+Last updated: 2026-01-12
 
 ---
 
@@ -211,6 +211,8 @@ Last updated: 2026-01-11
 | assignProjectTeamMember | assign project team member | - |
 | addProjectTeamMember | add project team member | - |
 | removeProjectTeamMember | remove project team member | - |
+| addSubcontractorToProject | add subcontractor to project | - |
+| removeSubcontractorFromProject | remove subcontractor from project | - |
 | getProjectsWithStats | get projects with stats | - |
 | getProjectWithStats | get project with stats | - |
 
@@ -332,7 +334,7 @@ Last updated: 2026-01-11
 | tasks | 20 |
 | expenses | 15 |
 | phases | 9 |
-| projects | 8 |
+| projects | 10 |
 | default-models | 7 |
 | owner | 7 |
 | chat-search | 6 |
@@ -355,4 +357,4 @@ Last updated: 2026-01-11
 | dashboard | 1 |
 | seed-demo-data | 1 |
 | team-email-helper | 1 |
-| **Total** | 196 |
+| **Total** | 198 |

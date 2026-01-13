@@ -10,7 +10,7 @@ import {
   DollarSign,
   TrendingUp,
   Users,
-  CheckSquare,
+  ClipboardList,
   Clock,
   FileText,
   Settings,
@@ -502,7 +502,7 @@ export function ProjectDetailContent({
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
             )}
           >
-            <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5" />
+            <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
             <span>Tasks</span>
             {totalTasks > 0 && (
               <span className={cn(

@@ -15,7 +15,7 @@
  * <BottomSheetModal
  *   isOpen={isOpen}
  *   onClose={() => setIsOpen(false)}
- *   icon={CheckSquare}
+ *   icon={ClipboardList}
  *   title="Task Details"
  *   subtitle="Optional description"
  *   rightActions={<Button onClick={handleSubmit}>Save</Button>}

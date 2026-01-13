@@ -24,6 +24,7 @@ import {
   XCircle,
   RotateCcw,
   MessageSquare,
+  Plus,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -499,8 +500,8 @@ function TaskModalForm({
   }
 
   // Render Step 2 (Create mode) or Edit mode
-  const modalIcon = mode === 'create' ? ClipboardList : Pencil;
-  const modalTitleText = mode === 'create' ? 'Create New Task' : 'Edit Task';
+  const modalIcon = mode === 'create' ? Plus : Pencil;
+  const modalTitleText = mode === 'create' ? 'Add Task' : 'Edit Task';
 
   // Create title with inline task type badge
   const modalTitle = (
@@ -577,8 +578,8 @@ function TaskModalForm({
             <>
               {mode === 'create' ? (
                 <>
-                  <ClipboardList className="mr-2 h-4 w-4" />
-                  Create Task
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Task
                 </>
               ) : (
                 <>

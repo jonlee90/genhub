@@ -7,7 +7,7 @@ import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
 import {
   Wrench,
   ShoppingCart,
-  CheckSquare,
+  ClipboardList,
   FileText,
   type LucideIcon,
 } from 'lucide-react';
@@ -28,7 +28,7 @@ const TASK_TYPE_CONFIG: Record<TaskType, { icon: LucideIcon; label: string; colo
     color: 'text-emerald-600',
   },
   approval: {
-    icon: CheckSquare,
+    icon: ClipboardList,
     label: 'Approval',
     color: 'text-amber-600',
   },

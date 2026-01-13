@@ -21,7 +21,10 @@
     "test:chat": "playwright test tests/chat.spec.ts",
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
-    "test:ifc": "tsx scripts/test-ifc-conversion.ts"
+    "test:ifc": "tsx scripts/test-ifc-conversion.ts",
+    "deps:update": "tsx scripts/update-dependencies.ts",
+    "deps:fix": "tsx scripts/update-dependencies.ts --fix",
+    "deps:check": "tsx scripts/update-dependencies.ts --check-stale"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.7.4",

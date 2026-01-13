@@ -2,7 +2,7 @@
 
 > Project management patterns for GenHub
 
-Last updated: 2026-01-09
+Last updated: 2026-01-12
 
 ---
 
@@ -75,12 +75,16 @@ companies
 
 | Action | Purpose | Auth |
 |--------|---------|------|
-| getProjects | List company projects | user |
-| getProject | Get single project with phases | user |
 | createProject | Create new project | admin |
 | updateProject | Update project fields | admin |
-| deleteProject | Soft delete project | owner |
-| updateProjectHealth | Recalculate health score | system |
+| updateProjectStatus | Update project status | admin/pm |
+| assignProjectTeamMember | Assign team member to project | admin/pm |
+| addProjectTeamMember | Add team member to project | admin/pm |
+| removeProjectTeamMember | Remove team member from project | admin/pm |
+| addSubcontractorToProject | Add subcontractor to project team | admin/pm |
+| removeSubcontractorFromProject | Remove subcontractor from project | admin/pm |
+| getProjectsWithStats | List projects with statistics | user |
+| getProjectWithStats | Get single project with stats | user |
 
 ### Key Patterns
 
