@@ -18,7 +18,7 @@ import { TaskCard } from '../list/TaskCard';
 import { updateTaskStatus } from '@/app/actions/tasks';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import type { TaskWithRelations, Phase, TaskStatus } from '@/types/task.types';
+import type { TaskWithRelations, Phase, TaskStatus } from '@/types/db/task';
 
 interface KanbanBoardProps {
   tasks: TaskWithRelations[];

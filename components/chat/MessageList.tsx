@@ -19,7 +19,7 @@ import { markMessagesAsRead } from '@/app/actions/chat';
 import { useMessages, type OptimisticMessage } from '@/lib/hooks/useMessages';
 import { MessageItem } from './MessageItem';
 import { ConnectionStatus } from './ConnectionStatus';
-import { MessageWithSender } from '@/types/chat.types';
+import { MessageWithSender } from '@/types/db/chat';
 import { Loader2 } from 'lucide-react';
 
 interface MessageListProps {

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Database } from '@/types/database.types';
+import type { SubcontractorsRow } from '@/types/db/tables/companies';
+import type { TradeType } from '@/types/db/enums';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -40,8 +41,7 @@ import { toast } from 'sonner';
 import { deactivateSubcontractor } from '@/app/actions/subcontractors';
 import { EditSubcontractorModal } from './EditSubcontractorModal';
 
-type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
-type TradeType = Database['public']['Enums']['trade_type'];
+type Subcontractor = SubcontractorsRow;
 
 interface SubcontractorCardProps {
   subcontractor: Subcontractor;

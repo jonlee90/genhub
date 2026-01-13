@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useEffect, useMemo } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { Database } from '@/types/database.types';
+import type { UserRole, MemberStatus } from '@/types/db/enums';
 import { updateTeamMemberRole, deactivateTeamMember } from '@/app/actions/team';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,9 +48,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { InviteTeamMemberModal } from './InviteTeamMemberModal';
-
-type UserRole = Database['public']['Enums']['user_role'];
-type MemberStatus = Database['public']['Enums']['member_status'];
 
 interface TeamMember {
   id: string;

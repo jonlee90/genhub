@@ -10,10 +10,11 @@ import { ManagePhasesModal } from './ManagePhasesModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { Database } from '@/types/database.types';
+import type { ProjectPhasesRow } from '@/types/db/tables/projects';
+import type { TasksRow } from '@/types/db/tables/tasks';
 
-type Phase = Database['public']['Tables']['project_phases']['Row'];
-type Task = Database['public']['Tables']['tasks']['Row'];
+type Phase = ProjectPhasesRow;
+type Task = TasksRow;
 
 interface PhaseStats {
   phaseId: string;

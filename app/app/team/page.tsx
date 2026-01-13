@@ -2,11 +2,8 @@ import { createUserClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { TeamPageClient } from '@/components/team/TeamPageClient';
-import { Database } from '@/types/database.types';
+import type { UserRole, MemberStatus } from '@/types/db/enums';
 import { Users, UserCog, HardHat, Hammer, UserPlus, Shield } from 'lucide-react';
-
-type UserRole = Database['public']['Enums']['user_role'];
-type MemberStatus = Database['public']['Enums']['member_status'];
 
 interface TeamMemberWithProfile {
   id: string;

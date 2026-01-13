@@ -21,12 +21,12 @@ import { memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Users, Calendar, MapPin } from 'lucide-react';
-import type { Database } from '@/types/database.types';
+import type { ProjectsRow } from '@/types/db/tables/projects';
 import { cn, formatBudget, formatPercentWhole } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
 import { getProjectTheme, PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
 
-type Project = Database['public']['Tables']['projects']['Row'] & {
+type Project = ProjectsRow & {
   project_phases?: Array<{
     id: string;
     status: string;

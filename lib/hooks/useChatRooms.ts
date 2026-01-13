@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getBrowserClient } from '@/utils/supabase/browser';
 import { getChatRooms } from '@/app/actions/chat-queries';
-import type { ChatRoomWithUnread } from '@/types/chat.types';
+import type { ChatRoomWithUnread } from '@/types/db/chat';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface UseChatRoomsOptions {

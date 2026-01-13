@@ -43,7 +43,7 @@ interface PhaseStats {
 }
 
 // Fix C1: Import ExpenseStats instead of duplicating
-import type { ExpenseStats, TaskStats } from '@/app/actions/projects';
+import type { ExpenseStats, TaskStats, TeamCostSummary } from '@/app/actions/projects';
 
 interface ProjectDetailContentProps {
   project: any;
@@ -70,6 +70,7 @@ interface ProjectDetailContentProps {
   userRole?: string; // NEW: For spatial viewer permissions
   projectFiles?: any[]; // NEW: For Files & Photos tab
   projectPhotos?: any[]; // NEW: For Files & Photos tab
+  teamCostSummaries?: TeamCostSummary[]; // NEW: For team cost breakdown
 }
 
 const STATUS_CONFIG = {
@@ -107,8 +108,9 @@ export function ProjectDetailContent({
   userRole = 'field_worker',
   projectFiles = [],
   projectPhotos = [],
+  teamCostSummaries = [],
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length);
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length, 'teamCostSummaries:', teamCostSummaries?.length);
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'files' | 'settings'>('overview');
@@ -584,6 +586,7 @@ export function ProjectDetailContent({
               taskStats={taskStats}
               activeModel={activeModel}
               userRole={userRole}
+              teamCostSummaries={teamCostSummaries}
             />
           </motion.div>
         )}
@@ -600,6 +603,16 @@ export function ProjectDetailContent({
               projectId={project.id}
               companyId={project.company_id}
               team={project.project_team || []}
+              costSummaries={
+                teamCostSummaries && teamCostSummaries.length > 0
+                  ? new Map(
+                      teamCostSummaries.map((s) => [
+                        s.id,
+                        { taskCount: s.taskCount, taskCosts: s.taskCosts, expenseCosts: s.expenseCosts }
+                      ])
+                    )
+                  : undefined
+              }
             />
           </motion.div>
         )}

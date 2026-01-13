@@ -1,7 +1,7 @@
 // P3.8 - Grid-based marker clustering algorithm
 // Performance target: <50ms for 1000 markers
 
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 
 export interface Position3D {
   x: number;

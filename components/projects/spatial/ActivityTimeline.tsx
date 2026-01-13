@@ -5,7 +5,7 @@
 
 import { Activity, Circle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import type { MarkerContent } from '@/types/spatial';
+import type { MarkerContent } from '@/types/db/spatial';
 
 export interface ActivityTimelineProps {
   markerId: string;

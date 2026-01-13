@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { createDefaultModel } from '@/lib/xeokit/default-models';
 import { getMarkersByProject, updateMarker } from '@/app/actions/spatial';
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 import { toast } from 'sonner';
 
 // Debug: Component props (enhanced for Phase 3)

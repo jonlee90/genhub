@@ -4,16 +4,21 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type {
+  PhaseTemplatesRow,
+  PhaseTemplatesInsert,
+  PhaseTemplatesUpdate
+} from '@/types/db/tables/projects';
+import type { TaskTemplatesRow } from '@/types/db/tables/tasks';
 
 // ============================================
 // Types
 // ============================================
 
-type PhaseTemplate = Database['public']['Tables']['phase_templates']['Row'];
-type PhaseTemplateInsert = Database['public']['Tables']['phase_templates']['Insert'];
-type PhaseTemplateUpdate = Database['public']['Tables']['phase_templates']['Update'];
-type TaskTemplate = Database['public']['Tables']['task_templates']['Row'];
+type PhaseTemplate = PhaseTemplatesRow;
+type PhaseTemplateInsert = PhaseTemplatesInsert;
+type PhaseTemplateUpdate = PhaseTemplatesUpdate;
+type TaskTemplate = TaskTemplatesRow;
 
 export interface PhaseTemplateWithTasks extends PhaseTemplate {
   task_templates?: TaskTemplate[];

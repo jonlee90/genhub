@@ -1,8 +1,8 @@
 ---
 name: orchestrator
-description: Coordinates multi-agent work for complex features. Delegates to specialized agents, manages handoffs, validates completion. Use when features require both backend AND frontend work.
+description: "Coordinates multi-agent work for complex features. Delegates to specialized agents, manages handoffs, validates completion. Use when features require both backend AND frontend work."
 tools: all
-model: sonnet
+model: haiku
 color: green
 ---
 

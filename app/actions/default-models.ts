@@ -7,7 +7,7 @@ import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 
 // Type imports - use database types instead of local types
-import { Project3DModel, SpatialMarker } from '@/types/spatial';
+import { Project3DModel, SpatialMarker } from '@/types/db/spatial';
 
 type Task = {
   id: string;

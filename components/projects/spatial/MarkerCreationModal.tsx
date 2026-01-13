@@ -23,7 +23,7 @@ import { PhotoUploader } from './PhotoUploader';
 import { FileUploader } from './FileUploader';
 import { createMarker, uploadMarkerAttachment } from '@/app/actions/spatial';
 import { toast } from 'sonner';
-import { SpatialMarker } from '@/types/spatial';
+import { SpatialMarker } from '@/types/db/spatial';
 
 // Use valid database enum types: "issue" | "note" | "photo" | "inspection" | "rfi" | "safety" | "material" | "progress"
 type MarkerType = 'issue' | 'note' | 'safety' | 'progress';

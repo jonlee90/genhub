@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { Project3DModel } from '@/types/spatial';
+import type { Project3DModel } from '@/types/db/spatial';
 
 export interface ModelManagementPanelProps {
   model: Project3DModel;

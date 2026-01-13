@@ -24,7 +24,8 @@
     "test:ifc": "tsx scripts/test-ifc-conversion.ts",
     "deps:update": "tsx scripts/update-dependencies.ts",
     "deps:fix": "tsx scripts/update-dependencies.ts --fix",
-    "deps:check": "tsx scripts/update-dependencies.ts --check-stale"
+    "deps:check": "tsx scripts/update-dependencies.ts --check-stale",
+    "db:gen-types": "tsx scripts/gen-db-types.ts"
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.7.4",

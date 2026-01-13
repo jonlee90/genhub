@@ -9,7 +9,7 @@ import { cn, formatDate } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { TaskWithRelations, Phase } from '@/types/task.types';
+import type { TaskWithRelations, Phase } from '@/types/db/task';
 
 interface TaskListMobileProps {
   tasks: TaskWithRelations[];

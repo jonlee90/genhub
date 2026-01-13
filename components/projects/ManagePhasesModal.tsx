@@ -28,9 +28,9 @@ import { BaseModal } from '@/components/ui/BaseModal';
 import { createPhase, updatePhaseName, deletePhase } from '@/app/actions/phases';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Database } from '@/types/database.types';
+import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 
-type Phase = Database['public']['Tables']['project_phases']['Row'];
+type Phase = ProjectPhasesRow;
 
 interface ManagePhasesModalProps {
   isOpen: boolean;

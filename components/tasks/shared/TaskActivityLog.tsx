@@ -8,7 +8,7 @@ import { Send, MessageSquare, RefreshCw, AlertTriangle, Wrench, HardHat, Calenda
 import { addTaskComment } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import type { TaskActivity } from '@/types/task.types';
+import type { TaskActivity } from '@/types/db/task';
 
 interface TaskActivityLogProps {
   taskId: string;

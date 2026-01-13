@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type { ProjectFilesRow } from '@/types/db/tables/projects';
+import type { DocumentCategory } from '@/types/db/enums';
 
-type ProjectFile = Database['public']['Tables']['project_files']['Row'];
-type DocumentCategory = Database['public']['Enums']['document_category'];
+type ProjectFile = ProjectFilesRow;
 type FileFilters = {
   category?: DocumentCategory[];
   search?: string;

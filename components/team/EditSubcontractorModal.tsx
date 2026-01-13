@@ -9,7 +9,8 @@
 
 import { useState, useTransition, useEffect, useCallback } from 'react';
 import { updateSubcontractor } from '@/app/actions/subcontractors';
-import { Database } from '@/types/database.types';
+import type { SubcontractorsRow } from '@/types/db/tables/companies';
+import type { TradeType } from '@/types/db/enums';
 import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
@@ -40,8 +41,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
-type TradeType = Database['public']['Enums']['trade_type'];
+type Subcontractor = SubcontractorsRow;
 
 const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
   { value: 'general', label: 'General' },

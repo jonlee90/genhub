@@ -3,9 +3,8 @@
 import { z } from 'zod';
 import { createAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
-
-type UserRole = Database['public']['Enums']['user_role'];
+import type { UserRole } from '@/types/db/enums';
+import type { Database } from '@/types/db/helpers';
 
 // ============================================
 // Validation Schemas

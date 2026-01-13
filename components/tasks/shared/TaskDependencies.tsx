@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { X, ArrowRight, ArrowLeft, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 import { removeTaskDependency } from '@/app/actions/tasks';
 import { cn } from '@/lib/utils';
-import type { TaskDependency, TaskDependent } from '@/types/task.types';
+import type { TaskDependency, TaskDependent } from '@/types/db/task';
 
 interface TaskDependenciesProps {
   taskId: string;

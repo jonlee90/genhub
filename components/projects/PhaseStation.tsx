@@ -17,9 +17,9 @@ import {
 } from 'lucide-react';
 import { AnimatedTooltip } from '@/components/ui/aceternity/animated-tooltip';
 import { cn, formatPercentWhole } from '@/lib/utils';
-import type { Database } from '@/types/database.types';
+import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 
-type Phase = Database['public']['Tables']['project_phases']['Row'];
+type Phase = ProjectPhasesRow;
 
 interface PhaseStats {
   phaseId: string;

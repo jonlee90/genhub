@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { sendMessage } from '@/app/actions/chat';
-import { MessageWithSender, EntityReference } from '@/types/chat.types';
+import { MessageWithSender, EntityReference } from '@/types/db/chat';
 import { Reply, X, Paperclip, Send, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FileUploader } from './FileUploader';

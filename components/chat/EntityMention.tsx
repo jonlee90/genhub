@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X, Building2, ClipboardCheck, Hammer, DollarSign, User as UserIcon } from 'lucide-react';
-import type { EntityType } from '@/types/chat.types';
+import type { EntityType } from '@/types/db/chat';
 
 interface EntityMentionProps {
   type: EntityType;

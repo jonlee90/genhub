@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { NoteEditor } from './NoteEditor'
 import { NoteItem } from './NoteItem'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'
-import type { MarkerContent } from '@/types/spatial'
+import type { MarkerContent } from '@/types/db/spatial'
 
 export interface NotesListProps {
   markerId: string

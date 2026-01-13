@@ -14,7 +14,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getBrowserClient } from '@/utils/supabase/browser';
 import { getMessageById } from '@/app/actions/chat-queries';
-import type { MessageWithSender } from '@/types/chat.types';
+import type { MessageWithSender } from '@/types/db/chat';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // Debug: Message status for optimistic UI

@@ -14,7 +14,7 @@ import { Image, Upload, X, Trash2, Maximize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PhotoUploader } from './PhotoUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'
-import type { MarkerContent } from '@/types/spatial'
+import type { MarkerContent } from '@/types/db/spatial'
 
 export interface PhotoGalleryProps {
   markerId: string

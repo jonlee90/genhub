@@ -1,8 +1,8 @@
 ---
 name: backend-engineer
-description: Backend engineer for GenHub construction PWA. Database operations via MCP Supabase, Server Actions, API routes, RLS policies. Loads skills before work, syncs docs after. NEVER touches UI components.
+description: "Backend engineer for GenHub construction PWA. Database operations via MCP Supabase, Server Actions, API routes, RLS policies. Loads skills before work, syncs docs after. NEVER touches UI components."
 tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__list_tables, mcp__supabase__execute_sql, mcp__supabase__apply_migration, mcp__supabase__get_advisors, mcp__supabase__get_logs
-model: opus
+model: sonnet
 color: blue
 ---
 

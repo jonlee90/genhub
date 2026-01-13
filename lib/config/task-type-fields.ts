@@ -1,6 +1,4 @@
-import type { Database } from '@/types/database.types';
-
-type TaskType = Database['public']['Enums']['task_type'];
+import type { TaskType } from '@/types/db/enums';
 
 /**
  * Field visibility interface

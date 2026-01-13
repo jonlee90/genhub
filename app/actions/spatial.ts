@@ -15,7 +15,7 @@ import type {
   MarkerContentInsert,
   MarkerFilters,
   SpatialProcessingStatus,
-} from '@/types/spatial';
+} from '@/types/db/spatial';
 
 // Debug: Helper to get user context
 async function getUserContext() {

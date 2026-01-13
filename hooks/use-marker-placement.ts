@@ -4,7 +4,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import type { SpatialMarkerType } from '@/types/spatial';
+import type { SpatialMarkerType } from '@/types/db/spatial';
 
 // Debug: Placement state machine
 export type PlacementState = 'idle' | 'placing' | 'confirming' | 'creating';

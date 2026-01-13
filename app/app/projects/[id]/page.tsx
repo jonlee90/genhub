@@ -6,12 +6,13 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProjectDetailContent } from '@/components/projects/ProjectDetailContent';
-import type { Database } from '@/types/database.types';
+import type { ProjectsRow } from '@/types/db/tables/projects';
 import type { TaskStats } from '@/app/actions/projects';
 import { getProjectFiles } from '@/app/actions/project-files';
 import { getProjectPhotosWithReceipts } from '@/app/actions/project-photos';
+import { getProjectTeamCostSummary } from '@/app/actions/projects';
 
-type Project = Database['public']['Tables']['projects']['Row'];
+type Project = ProjectsRow;
 
 async function getProjectData(id: string) {
   const supabase = await createClient();
@@ -469,7 +470,16 @@ async function getProjectData(id: string) {
 
   console.log('[getProjectData] Files:', projectFiles.length, 'Photos:', projectPhotos.length);
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, userRole: companyUser.role || 'field_worker' };
+  // Fetch team cost summaries
+  const teamCostResult = await getProjectTeamCostSummary(id);
+  const teamCostSummaries = teamCostResult.error ? [] : (teamCostResult.data || []);
+  if (teamCostResult.error) {
+    console.warn('[getProjectData] Failed to load team costs:', teamCostResult.error);
+  }
+
+  console.log('[getProjectData] Team cost summaries:', teamCostSummaries.length);
+
+  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, teamCostSummaries, userRole: companyUser.role || 'field_worker' };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -493,9 +503,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, userRole } = data;
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, teamCostSummaries, userRole } = data;
 
-  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
+  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'teamCostSummaries:', teamCostSummaries?.length);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -546,6 +556,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           userRole={userRole}
           projectFiles={projectFiles || []}
           projectPhotos={projectPhotos || []}
+          teamCostSummaries={teamCostSummaries || []}
         />
       </div>
     </div>

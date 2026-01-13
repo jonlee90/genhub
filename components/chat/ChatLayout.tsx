@@ -22,7 +22,7 @@ import { MuteRoomDropdown } from './MuteRoomDropdown';
 import { SearchMessages } from './SearchMessages';
 import { ChatSettings } from './ChatSettings';
 import { ArrowLeft, Users, Settings, MoreVertical, Search } from 'lucide-react';
-import { ChatRoomWithUnread, MessageWithSender } from '@/types/chat.types';
+import { ChatRoomWithUnread, MessageWithSender } from '@/types/db/chat';
 import { useChatRooms } from '@/lib/hooks/useChatRooms';
 
 interface CompanyUser {

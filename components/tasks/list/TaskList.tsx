@@ -27,7 +27,7 @@ import { updateTaskStatus } from '@/app/actions/tasks';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import { TaskListMobile } from './TaskListMobile';
-import type { TaskWithRelations, Phase, TaskStatus } from '@/types/task.types';
+import type { TaskWithRelations, Phase, TaskStatus } from '@/types/db/task';
 
 interface TaskListProps {
   tasks: TaskWithRelations[];

@@ -5,19 +5,28 @@
  * commonly used in UI components.
  */
 
-import type { Database } from './database.types';
 import type { LucideIcon } from 'lucide-react';
+import type {
+  TasksRow,
+  TaskDependenciesRow,
+} from './tables/tasks';
+import type {
+  TaskStatus as DbTaskStatus,
+  TaskPriority as DbTaskPriority,
+  TaskType as DbTaskType,
+  ApprovalStatus as DbApprovalStatus,
+} from './enums';
 
 // =============================================================================
 // Base Types from Database
 // =============================================================================
 
-export type TaskRow = Database['public']['Tables']['tasks']['Row'];
-export type TaskStatus = Database['public']['Enums']['task_status'];
-export type TaskPriority = Database['public']['Enums']['task_priority'];
-export type TaskType = Database['public']['Enums']['task_type'];
-export type ApprovalStatus = Database['public']['Enums']['approval_status'];
-export type TaskDependencyRow = Database['public']['Tables']['task_dependencies']['Row'];
+export type TaskRow = TasksRow;
+export type TaskStatus = DbTaskStatus;
+export type TaskPriority = DbTaskPriority;
+export type TaskType = DbTaskType;
+export type ApprovalStatus = DbApprovalStatus;
+export type TaskDependencyRow = TaskDependenciesRow;
 
 // =============================================================================
 // Joined Relations
@@ -297,7 +306,7 @@ export interface TaskModalProps {
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   onSuccess?: () => void;
-  tasks?: Array<{ id: string; title: string; project_id: string }>;
+  tasks?: Array<{ id: string; title: string; project_id: string; task_type?: string | null }>;
 }
 
 /**

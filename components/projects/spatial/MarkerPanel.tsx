@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { MarkerListItem } from './MarkerListItem';
-import type { SpatialMarker, SpatialMarkerType, SpatialMarkerStatus } from '@/types/spatial';
+import type { SpatialMarker, SpatialMarkerType, SpatialMarkerStatus } from '@/types/db/spatial';
 
 // Debug: Component props
 export interface MarkerPanelProps {

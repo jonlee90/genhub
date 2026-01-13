@@ -10,17 +10,26 @@ import {
   type HomeDepotProduct,
   type HomeDepotSearchParams
 } from '@/lib/services/home-depot-api';
-import type { Database } from '@/types/database.types';
+import type {
+  MaterialsRow,
+  MaterialsInsert,
+  MaterialsUpdate,
+  MaterialAssignmentsRow,
+  MaterialAssignmentsInsert,
+  MaterialAssignmentsUpdate
+} from '@/types/db/tables/materials';
+import type {
+  ProcurementStatus,
+  MaterialCategory,
+  PurchaserType
+} from '@/types/db/enums';
 
-type Material = Database['public']['Tables']['materials']['Row'];
-type MaterialInsert = Database['public']['Tables']['materials']['Insert'];
-type MaterialUpdate = Database['public']['Tables']['materials']['Update'];
-type MaterialAssignment = Database['public']['Tables']['material_assignments']['Row'];
-type MaterialAssignmentInsert = Database['public']['Tables']['material_assignments']['Insert'];
-type MaterialAssignmentUpdate = Database['public']['Tables']['material_assignments']['Update'];
-type ProcurementStatus = Database['public']['Enums']['procurement_status'];
-type MaterialCategory = Database['public']['Enums']['material_category'];
-type PurchaserType = Database['public']['Enums']['purchaser_type'];
+type Material = MaterialsRow;
+type MaterialInsert = MaterialsInsert;
+type MaterialUpdate = MaterialsUpdate;
+type MaterialAssignment = MaterialAssignmentsRow;
+type MaterialAssignmentInsert = MaterialAssignmentsInsert;
+type MaterialAssignmentUpdate = MaterialAssignmentsUpdate;
 
 // ============================================
 // Validation Schemas

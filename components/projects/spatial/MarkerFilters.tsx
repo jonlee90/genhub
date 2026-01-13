@@ -24,7 +24,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
-import type { SpatialMarker, SpatialMarkerType, SpatialMarkerStatus } from '@/types/spatial';
+import type { SpatialMarker, SpatialMarkerType, SpatialMarkerStatus } from '@/types/db/spatial';
 
 export interface MarkerFiltersState {
   types: SpatialMarkerType[];

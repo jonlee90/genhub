@@ -13,9 +13,9 @@ import type {
   ExpenseProject,
   ExpenseTask,
   ExpensesListProps,
-} from '@/types/expense.types';
+} from '@/types/db/expense';
 
-export function ExpensesList({ initialExpenses, projects, tasks, searchParams }: ExpensesListProps) {
+export function ExpensesList({ initialExpenses, projects, tasks, searchParams, companyId }: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,6 +181,7 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams }:
             projects={projects}
             tasks={tasks}
             onClose={() => setShowCreateModal(false)}
+            companyId={companyId}
           />
         )}
       </div>
@@ -284,6 +285,7 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams }:
           projects={projects}
           tasks={tasks}
           onClose={() => setShowCreateModal(false)}
+          companyId={companyId}
         />
       )}
 

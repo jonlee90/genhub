@@ -2,7 +2,7 @@
 name: frontend-engineer
 description: "Frontend engineer for GenHub construction PWA. UI components, styling, client state, forms. Loads skills before work, syncs docs after. NEVER touches database or Server Actions."
 tools: Read, Edit, Write, Glob, Grep, Bash, WebFetch
-model: opus
+model: sonnet
 color: purple
 ---
 

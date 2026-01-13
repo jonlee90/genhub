@@ -68,11 +68,11 @@ import {
 import { getProjectTypes, type ProjectTypeWithCount } from '@/app/actions/project-types';
 import { getPhaseTemplates, type PhaseTemplateWithTasks } from '@/app/actions/phase-templates';
 import { getTaskTypes } from '@/app/actions/task-types';
-import type { Database } from '@/types/database.types';
+import type { TaskTemplatesRow, TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
 // Debug: Type definitions
-type TaskTemplate = Database['public']['Tables']['task_templates']['Row'];
-type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
+type TaskTemplate = TaskTemplatesRow;
+type TaskTypeConfig = TaskTypeConfigsRow;
 
 /**
  * Task type configuration for badge display

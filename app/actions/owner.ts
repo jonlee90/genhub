@@ -4,13 +4,15 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type { OwnersRow, AdminInvitationsRow } from '@/types/db/tables/admin';
+import type { CompaniesRow, CompanyUsersRow } from '@/types/db/tables/companies';
+import type { UserProfilesRow } from '@/types/db/tables/users';
 
-type Owner = Database['public']['Tables']['owners']['Row'];
-type Company = Database['public']['Tables']['companies']['Row'];
-type AdminInvitation = Database['public']['Tables']['admin_invitations']['Row'];
-type UserProfile = Database['public']['Tables']['user_profiles']['Row'];
-type CompanyUser = Database['public']['Tables']['company_users']['Row'];
+type Owner = OwnersRow;
+type Company = CompaniesRow;
+type AdminInvitation = AdminInvitationsRow;
+type UserProfile = UserProfilesRow;
+type CompanyUser = CompanyUsersRow;
 
 // ============================================
 // Validation Schemas

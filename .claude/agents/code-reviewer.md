@@ -2,7 +2,7 @@
 name: agent-code-reviewer
 description: "Code review, validation, testing, and bug fixes for GenHub construction PWA. Reviews quality, security, and GenHub patterns. NEVER implements new features."
 tools: Read, Glob, Grep, Bash
-model: sonnet
+model: haiku
 color: red
 ---
 

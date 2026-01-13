@@ -3,10 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type { ProjectPhotosRow } from '@/types/db/tables/projects';
+import type { PhotoCategory } from '@/types/db/enums';
 
-type ProjectPhoto = Database['public']['Tables']['project_photos']['Row'];
-type PhotoCategory = Database['public']['Enums']['photo_category'];
+type ProjectPhoto = ProjectPhotosRow;
 type PhotoFilters = {
   category?: PhotoCategory[];
   search?: string;

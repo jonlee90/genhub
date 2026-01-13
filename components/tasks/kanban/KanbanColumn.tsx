@@ -6,11 +6,10 @@ import { TaskCard } from '../list/TaskCard';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { HardHat } from 'lucide-react';
-import type { Database } from '@/types/database.types';
+import type { TaskStatus } from '@/types/db/enums';
+import type { TasksRow } from '@/types/db/tables/tasks';
 
-type TaskStatus = Database['public']['Enums']['task_status'];
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
+type Task = TasksRow & {
   assignee?: {
     id: string;
     name: string;

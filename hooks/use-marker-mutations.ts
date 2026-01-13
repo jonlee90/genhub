@@ -20,7 +20,7 @@ import type {
   MarkerContentInsert,
   MarkerContentUpdate,
   MarkerContent,
-} from '@/types/spatial';
+} from '@/types/db/spatial';
 
 // Debug: Hook return types
 export interface UseCreateMarkerReturn {

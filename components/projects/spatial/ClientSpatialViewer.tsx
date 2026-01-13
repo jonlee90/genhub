@@ -17,7 +17,7 @@ import { TaskDetailPanel } from '@/components/tasks/detail/TaskDetailPanel';
 import { cn } from '@/lib/utils';
 import { createDefaultModel } from '@/lib/xeokit/default-models';
 import { getMarkersByProject } from '@/app/actions/spatial';
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 import { toast } from 'sonner';
 
 // Debug: Component props (client-specific, aligned with Phase 5 spec)

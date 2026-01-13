@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { applyTaskTemplates } from '@/app/actions/phases';
-import type { Database } from '@/types/database.types';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/modals/TaskModalTrigger';
 import { TaskModal } from '@/components/tasks/modals/TaskModal';
@@ -15,9 +14,11 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
+import type { ProjectPhasesRow } from '@/types/db/tables/projects';
+import type { TasksRow } from '@/types/db/tables/tasks';
 
-type Phase = Database['public']['Tables']['project_phases']['Row'];
-type Task = Database['public']['Tables']['tasks']['Row'] & {
+type Phase = ProjectPhasesRow;
+type Task = TasksRow & {
   assignees?: Array<{
     id: string;
     user_id: string | null;

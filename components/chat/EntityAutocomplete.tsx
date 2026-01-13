@@ -24,7 +24,7 @@ import {
   Loader2,
   Search,
 } from 'lucide-react';
-import type { EntityType } from '@/types/chat.types';
+import type { EntityType } from '@/types/db/chat';
 
 // Debug: Entity type definitions for autocomplete
 const ENTITY_TYPES = [

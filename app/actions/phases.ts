@@ -4,9 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
-
-type PhaseStatus = Database['public']['Enums']['phase_status'];
+import type { ProjectPhasesRow } from '@/types/db/tables/projects';
+import type { PhaseStatus, TaskType, TaskPriority, TaskStatus } from '@/types/db/enums';
 
 // ============================================
 // Validation Schemas
@@ -500,7 +499,7 @@ export async function createPhase(
   formData: FormData
 ): Promise<{
   success?: boolean;
-  phase?: Database['public']['Tables']['project_phases']['Row'];
+  phase?: ProjectPhasesRow;
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
@@ -582,7 +581,7 @@ export async function updatePhaseName(
   formData: FormData
 ): Promise<{
   success?: boolean;
-  phase?: Database['public']['Tables']['project_phases']['Row'];
+  phase?: ProjectPhasesRow;
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
@@ -891,9 +890,9 @@ export async function applyTaskTemplates(
         phase_id: phaseId,
         title: template.title,
         description: template.description,
-        task_type: template.default_task_type as Database['public']['Enums']['task_type'],
-        priority: template.default_priority as Database['public']['Enums']['task_priority'],
-        status: 'todo' as Database['public']['Enums']['task_status'],
+        task_type: template.default_task_type as TaskType,
+        priority: template.default_priority as TaskPriority,
+        status: 'todo' as TaskStatus,
         created_by: userId,
         start_date,
         due_date,

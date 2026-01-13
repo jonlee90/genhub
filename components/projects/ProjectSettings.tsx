@@ -35,9 +35,9 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { updateProject, updateProjectStatus } from '@/app/actions/projects';
-import type { Database } from '@/types/database.types';
+import type { ProjectsRow } from '@/types/db/tables/projects';
 
-type Project = Database['public']['Tables']['projects']['Row'] & {
+type Project = ProjectsRow & {
   creator?: {
     id: string;
     name: string;

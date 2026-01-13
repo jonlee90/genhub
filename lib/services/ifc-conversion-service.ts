@@ -22,7 +22,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { BoundingBox, FloorInfo } from '@/types/spatial';
+import { BoundingBox, FloorInfo } from '@/types/db/spatial';
 
 // Debug: Conversion service logger
 const log = (message: string, data?: any) => {

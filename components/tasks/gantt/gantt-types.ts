@@ -1,8 +1,9 @@
-import type { Database } from '@/types/database.types';
+import type { TasksRow } from '@/types/db/tables/tasks';
+import type { TaskDependenciesRow } from '@/types/db/tables/tasks';
 
 // Base types from database
-type TaskRow = Database['public']['Tables']['tasks']['Row'];
-type TaskDependencyRow = Database['public']['Tables']['task_dependencies']['Row'];
+type TaskRow = TasksRow;
+type TaskDependencyRow = TaskDependenciesRow;
 
 // Time scale options
 export type TimeScale = 'day' | 'week' | 'month';

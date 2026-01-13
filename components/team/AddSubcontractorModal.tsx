@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useEffect, useCallback } from 'react';
 import { createSubcontractor, uploadSubcontractorDocument } from '@/app/actions/subcontractors';
-import { Database } from '@/types/database.types';
+import type { TradeType } from '@/types/db/enums';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
@@ -33,8 +33,6 @@ import {
   HardHat,
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-type TradeType = Database['public']['Enums']['trade_type'];
 
 interface AddSubcontractorModalProps {
   isOpen: boolean;

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import type { TaskProject, TeamMember } from '@/types/task.types';
+import type { TaskProject, TeamMember } from '@/types/db/task';
 
 // Types for modal data that pages can register
 interface CreateModalData {

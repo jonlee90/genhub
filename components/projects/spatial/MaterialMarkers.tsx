@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { Package, CheckCircle2, Truck, Wrench, MapPin } from 'lucide-react';
-import type { SpatialMarker } from '@/types/spatial.d';
+import type { SpatialMarker } from '@/types/db/spatial';
 
 /**
  * P4.5 - Material marker rendering with status-based color coding

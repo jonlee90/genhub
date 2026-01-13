@@ -10,8 +10,8 @@ import Fuse from 'fuse.js';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import type { SpatialMarker } from '@/types/spatial';
-import type { MarkerWithContent } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
+import type { MarkerWithContent } from '@/types/db/spatial';
 
 export interface MarkerSearchProps {
   markers: (SpatialMarker | MarkerWithContent)[];

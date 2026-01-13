@@ -10,7 +10,7 @@ import { MarkerSearch } from '@/components/projects/spatial/MarkerSearch';
 import { MarkerFilters } from '@/components/projects/spatial/MarkerFilters';
 import { useMarkerClustering } from '@/hooks/use-marker-clustering';
 import { useMarkerFiltering } from '@/hooks/use-marker-filtering';
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 import type { MarkerCluster } from '@/lib/clustering/cluster-algorithm';
 
 // ============================================================================

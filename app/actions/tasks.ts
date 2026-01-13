@@ -4,16 +4,18 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type { TasksRow, TasksInsert, TasksUpdate } from '@/types/db/tables/tasks';
+import type {
+  TaskStatus,
+  TaskPriority,
+  TaskType,
+  ApprovalStatus,
+  ActivityAction
+} from '@/types/db/enums';
 
-type Task = Database['public']['Tables']['tasks']['Row'];
-type TaskInsert = Database['public']['Tables']['tasks']['Insert'];
-type TaskUpdate = Database['public']['Tables']['tasks']['Update'];
-type TaskStatus = Database['public']['Enums']['task_status'];
-type TaskPriority = Database['public']['Enums']['task_priority'];
-type TaskType = Database['public']['Enums']['task_type'];
-type ApprovalStatus = Database['public']['Enums']['approval_status'];
-type ActivityAction = Database['public']['Enums']['activity_action'];
+type Task = TasksRow;
+type TaskInsert = TasksInsert;
+type TaskUpdate = TasksUpdate;
 
 // Supabase client type alias for cleaner function signatures
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;

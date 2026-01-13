@@ -26,7 +26,7 @@ import type {
   TaskProject,
   TeamMember,
   TaskDependencyRow,
-} from '@/types/task.types';
+} from '@/types/db/task';
 
 // Dynamic import GanttChart to reduce initial bundle
 const GanttChart = dynamic(() => import('../gantt/GanttChart').then(mod => ({ default: mod.GanttChart })), {

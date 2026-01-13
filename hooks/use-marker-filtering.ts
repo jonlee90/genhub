@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Fuse from 'fuse.js';
-import type { SpatialMarker, MarkerWithContent } from '@/types/spatial';
+import type { SpatialMarker, MarkerWithContent } from '@/types/db/spatial';
 import type { MarkerFiltersState } from '@/components/projects/spatial/MarkerFilters';
 
 export interface UseMarkerFilteringOptions {

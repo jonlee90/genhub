@@ -2,11 +2,11 @@ import { createUserClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { SubcontractorList } from '@/components/team/SubcontractorList';
-import { Database } from '@/types/database.types';
+import type { SubcontractorsRow } from '@/types/db/tables/companies';
+import type { UserRole } from '@/types/db/enums';
 import { HardHat, Briefcase, AlertTriangle, Shield } from 'lucide-react';
 
-type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
-type UserRole = Database['public']['Enums']['user_role'];
+type Subcontractor = SubcontractorsRow;
 
 export const metadata = {
   title: 'Subcontractors | GenHub',

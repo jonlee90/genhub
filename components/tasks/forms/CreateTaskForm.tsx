@@ -20,7 +20,7 @@ import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
 import { TaskTypeSelector, TaskTypeBadge } from './TaskTypeSelector';
 import { TaskMaterialsManager } from '../materials/TaskMaterialsManager';
 import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
-import type { TaskType, TaskProject, TeamMember } from '@/types/task.types';
+import type { TaskType, TaskProject, TeamMember } from '@/types/db/task';
 
 interface CreateTaskFormProps {
   projects: TaskProject[];

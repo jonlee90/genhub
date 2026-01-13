@@ -4,15 +4,19 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type {
+  ProjectTypeConfigsRow,
+  ProjectTypeConfigsInsert,
+  ProjectTypeConfigsUpdate
+} from '@/types/db/tables/projects';
 
 // ============================================
 // Types
 // ============================================
 
-type ProjectTypeConfig = Database['public']['Tables']['project_type_configs']['Row'];
-type ProjectTypeInsert = Database['public']['Tables']['project_type_configs']['Insert'];
-type ProjectTypeUpdate = Database['public']['Tables']['project_type_configs']['Update'];
+type ProjectTypeConfig = ProjectTypeConfigsRow;
+type ProjectTypeInsert = ProjectTypeConfigsInsert;
+type ProjectTypeUpdate = ProjectTypeConfigsUpdate;
 
 export interface ProjectTypeWithCount extends ProjectTypeConfig {
   project_count?: number;

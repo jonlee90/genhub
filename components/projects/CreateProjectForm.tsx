@@ -37,9 +37,9 @@ import {
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
 import { BaseModal } from '@/components/ui/BaseModal';
-import type { Database } from '@/types/database.types';
+import type { PhaseTemplatesRow } from '@/types/db/tables/projects';
 
-type PhaseTemplate = Database['public']['Tables']['phase_templates']['Row'];
+type PhaseTemplate = PhaseTemplatesRow;
 
 const PROJECT_TYPES = [
   {

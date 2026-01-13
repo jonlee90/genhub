@@ -30,7 +30,7 @@ import { PhotoGallery } from './PhotoGallery';
 import { FileList } from './FileList';
 import { NotesList } from './NotesList';
 import { ActivityTimeline } from './ActivityTimeline';
-import type { SpatialMarker, MarkerContent } from '@/types/spatial';
+import type { SpatialMarker, MarkerContent } from '@/types/db/spatial';
 
 // Debug: Component props
 export interface ContentDrawerProps {

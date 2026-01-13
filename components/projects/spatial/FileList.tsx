@@ -26,7 +26,7 @@ import { FileUploader } from './FileUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'
 import { getFileCategory, formatFileSize } from '@/lib/file-processing'
 import { format } from 'date-fns'
-import type { MarkerContent } from '@/types/spatial'
+import type { MarkerContent } from '@/types/db/spatial'
 
 export interface FileListProps {
   markerId: string

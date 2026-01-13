@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
+import { useState, useTransition, useRef, useEffect } from 'react';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,15 +8,22 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Upload, Camera, X, FileText, Sparkles, Info, ArrowLeft } from 'lucide-react';
-import { createExpense } from '@/app/actions/expenses';
+import { createExpense, getVendorOptions, type VendorOption } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import type { CreateExpenseModalProps } from '@/types/expense.types';
+import type { CreateExpenseModalProps } from '@/types/db/expense';
+import { VendorCombobox } from './VendorCombobox';
+import { getTaskTypeDisplayConfig } from '@/lib/config/task-type-display';
 
-export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: CreateExpenseModalProps) {
+export function CreateExpenseModal({ projects, tasks, onClose, taskContext, companyId }: CreateExpenseModalProps) {
   // Initialize with task context if provided
   const [selectedProject, setSelectedProject] = useState<string>(taskContext?.projectId || '');
+
+  // Vendor options state
+  const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
+  const [vendorLoading, setVendorLoading] = useState(false);
+  const [vendorError, setVendorError] = useState<string | null>(null);
   const [selectedTask, setSelectedTask] = useState<string>(taskContext?.taskId || '');
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
@@ -35,6 +42,44 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
   const projectTasks = selectedProject
     ? tasks.filter(task => task.project_id === selectedProject)
     : [];
+
+  // Count tasks per project
+  const taskCountPerProject = projects.reduce((acc, project) => {
+    acc[project.id] = tasks.filter(task => task.project_id === project.id).length;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[CreateExpenseModal] Projects:', projects);
+    console.log('[CreateExpenseModal] Tasks:', tasks);
+    console.log('[CreateExpenseModal] Task count per project:', taskCountPerProject);
+  }, [projects, tasks, taskCountPerProject]);
+
+  // Fetch vendor options on mount
+  useEffect(() => {
+    if (!companyId) return;
+
+    const fetchVendors = async () => {
+      setVendorLoading(true);
+      setVendorError(null);
+
+      try {
+        const result = await getVendorOptions(companyId);
+        if (result.data) {
+          setVendorOptions(result.data);
+        } else if (result.error) {
+          setVendorError(result.error);
+        }
+      } catch {
+        setVendorError('Failed to load vendor options');
+      } finally {
+        setVendorLoading(false);
+      }
+    };
+
+    fetchVendors();
+  }, [companyId]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -309,6 +354,9 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
+                        <span className="text-gray-500 text-sm ml-2">
+                          ({taskCountPerProject[project.id]} tasks)
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -338,11 +386,19 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="no-task">No task</SelectItem>
-                    {projectTasks.map((task) => (
-                      <SelectItem key={task.id} value={task.id}>
-                        {task.title}
-                      </SelectItem>
-                    ))}
+                    {projectTasks.map((task) => {
+                      const taskTypeLabel = task.task_type
+                        ? getTaskTypeDisplayConfig(task.task_type as any).label
+                        : 'Work';
+                      return (
+                        <SelectItem key={task.id} value={task.id}>
+                          {task.title}
+                          <span className="text-gray-500 text-sm ml-2">
+                            [{taskTypeLabel}]
+                          </span>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
                 {taskContext && (
@@ -419,18 +475,30 @@ export function CreateExpenseModal({ projects, tasks, onClose, taskContext }: Cr
               </div>
             </div>
 
-            {/* Vendor Name */}
+            {/* Vendor Name - VendorCombobox or fallback Input */}
             <div className="space-y-2">
               <Label htmlFor="vendor" className="text-sm font-bold text-gray-700">
                 Vendor Name (Optional)
               </Label>
-              <Input
-                id="vendor"
-                value={vendorName}
-                onChange={(e) => setVendorName(e.target.value)}
-                className="border-2"
-                placeholder="e.g., Home Depot, Lowe's, etc."
-              />
+              {companyId ? (
+                <VendorCombobox
+                  options={vendorOptions}
+                  value={vendorName}
+                  onChange={setVendorName}
+                  placeholder="Select or enter vendor..."
+                  loading={vendorLoading}
+                  error={vendorError}
+                  disabled={isPending}
+                />
+              ) : (
+                <Input
+                  id="vendor"
+                  value={vendorName}
+                  onChange={(e) => setVendorName(e.target.value)}
+                  className="border-2"
+                  placeholder="e.g., Home Depot, Lowe's, etc."
+                />
+              )}
             </div>
           </div>
         </div>

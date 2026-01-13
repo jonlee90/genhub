@@ -19,10 +19,7 @@ import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { deactivateTeamMember } from '@/app/actions/team';
 import { Users, UserMinus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import type { Database } from '@/types/database.types';
-
-type UserRole = Database['public']['Enums']['user_role'];
-type MemberStatus = Database['public']['Enums']['member_status'];
+import type { UserRole, MemberStatus } from '@/types/db/enums';
 
 interface TeamMember {
   id: string;

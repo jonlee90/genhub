@@ -31,7 +31,7 @@ import {
 import { useMarkerPlacement } from '@/hooks/use-marker-placement';
 import { useCreateMarker } from '@/hooks/use-marker-mutations';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';
-import type { SpatialMarkerType } from '@/types/spatial';
+import type { SpatialMarkerType } from '@/types/db/spatial';
 
 // Debug: Component props
 export interface MarkerPlacementProps {

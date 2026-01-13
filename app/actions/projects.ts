@@ -4,12 +4,17 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
 import { getProjectTemplate, type ProjectType } from '@/lib/default-project-templates';
+import type {
+  ProjectsRow,
+  ProjectsInsert,
+  ProjectsUpdate
+} from '@/types/db/tables/projects';
+import type { UserRole } from '@/types/db/enums';
 
-type Project = Database['public']['Tables']['projects']['Row'];
-type ProjectInsert = Database['public']['Tables']['projects']['Insert'];
-type ProjectUpdate = Database['public']['Tables']['projects']['Update'];
+type Project = ProjectsRow;
+type ProjectInsert = ProjectsInsert;
+type ProjectUpdate = ProjectsUpdate;
 
 // ============================================
 // Project Stats Types (for enhanced ProjectCard)
@@ -573,7 +578,7 @@ export async function assignProjectTeamMember(projectId: string, userId: string,
     .insert({
       project_id: projectId,
       user_id: userId,
-      role: userRole as Database['public']['Enums']['user_role'],
+      role: userRole as UserRole,
       assigned_by: userContext.userId,
     })
     .select()
@@ -663,7 +668,7 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
     .insert({
       project_id: projectId,
       user_id: userId,
-      role: userRole as Database['public']['Enums']['user_role'],
+      role: userRole as UserRole,
       assigned_by: userContext.userId,
     })
     .select()
@@ -778,7 +783,7 @@ export async function addSubcontractorToProject(
     .insert({
       project_id: projectId,
       subcontractor_id: subcontractorId,
-      role: 'subcontractor' as Database['public']['Enums']['user_role'],
+      role: 'subcontractor' as UserRole,
       assigned_by: userContext.userId,
     })
     .select()
@@ -1325,5 +1330,273 @@ export async function getProjectWithStats(projectId: string): Promise<{
   } catch (error) {
     console.error('[getProjectWithStats] Unexpected error:', error);
     return { error: 'An unexpected error occurred' };
+  }
+}
+
+// ============================================
+// Team Cost Summary
+// ============================================
+
+/**
+ * Team cost summary interface for project team cost breakdown
+ */
+export interface TeamCostSummary {
+  id: string;
+  name: string;
+  type: 'member' | 'subcontractor';
+  avatarUrl: string | null;
+  role: string;
+  taskCosts: number;
+  expenseCosts: number;
+  totalCosts: number;
+  taskCount: number;
+  expenseCount: number;
+}
+
+/**
+ * Get team cost summary for a project
+ * Aggregates task costs by primary assignee and expense costs by vendor_name match
+ * Returns all project team members and subcontractors with their cost totals
+ *
+ * Performance: Optimized with separate queries to avoid complex CTEs
+ * Target: <500ms for 50 members / 1000 records
+ *
+ * @param projectId - Project UUID to fetch team costs for
+ * @returns Array of TeamCostSummary sorted by totalCosts descending
+ */
+export async function getProjectTeamCostSummary(
+  projectId: string
+): Promise<{ data?: TeamCostSummary[]; error?: string }> {
+  console.log('[getProjectTeamCostSummary] Fetching for project:', projectId);
+
+  try {
+    // Get user context
+    const userContext = await getUserContext();
+    if ('error' in userContext) {
+      return { error: userContext.error };
+    }
+
+    const { companyId, supabase } = userContext;
+
+    // Verify project belongs to user's company
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id, company_id')
+      .eq('id', projectId)
+      .eq('company_id', companyId)
+      .single();
+
+    if (projectError || !project) {
+      console.error('[getProjectTeamCostSummary] Project not found:', projectError);
+      return { error: 'Project not found or access denied' };
+    }
+
+    // 1. Fetch project team members and subcontractors
+    // Note: project_team.user_id references next_auth.users, so we can't directly join user_profiles
+    // We need to fetch the team first, then fetch user_profiles separately
+    const { data: projectTeam, error: teamError } = await supabase
+      .from('project_team')
+      .select(`
+        id,
+        user_id,
+        subcontractor_id,
+        role,
+        subcontractors:subcontractor_id (
+          id,
+          company_name
+        )
+      `)
+      .eq('project_id', projectId);
+
+    if (teamError) {
+      console.error('[getProjectTeamCostSummary] Error fetching team:', teamError);
+      return { error: 'Failed to fetch project team' };
+    }
+
+    if (!projectTeam || projectTeam.length === 0) {
+      console.log('[getProjectTeamCostSummary] No team members found');
+      return { data: [] };
+    }
+
+    // Fetch user_profiles for team members separately (due to cross-schema limitation)
+    const userIds = projectTeam
+      .filter((m) => m.user_id)
+      .map((m) => m.user_id as string);
+
+    const userProfilesMap = new Map<string, { id: string; name: string; avatar_url: string | null }>();
+
+    if (userIds.length > 0) {
+      const { data: userProfiles, error: profilesError } = await supabase
+        .from('user_profiles')
+        .select('id, name, avatar_url')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('[getProjectTeamCostSummary] Error fetching user profiles:', profilesError);
+        // Continue without profiles - will use empty names
+      } else if (userProfiles) {
+        for (const profile of userProfiles) {
+          userProfilesMap.set(profile.id, profile);
+        }
+      }
+    }
+
+    // 2. Fetch task costs by primary assignee (is_primary=true)
+    const { data: taskAssignments, error: taskError } = await supabase
+      .from('task_assignees')
+      .select(`
+        user_id,
+        subcontractor_id,
+        tasks!inner (
+          id,
+          project_id,
+          actual_cost
+        )
+      `)
+      .eq('is_primary', true)
+      .eq('tasks.project_id', projectId);
+
+    if (taskError) {
+      console.error('[getProjectTeamCostSummary] Error fetching task costs:', taskError);
+      // Continue with zero task costs
+    }
+
+    // 3. Fetch expenses for the project
+    const { data: expenses, error: expenseError } = await supabase
+      .from('expenses')
+      .select('id, vendor_name, amount')
+      .eq('project_id', projectId);
+
+    if (expenseError) {
+      console.error('[getProjectTeamCostSummary] Error fetching expenses:', expenseError);
+      // Continue with zero expense costs
+    }
+
+    // Build maps for aggregation
+    // Task costs by user_id
+    const taskCostsByUserId = new Map<string, { total: number; count: number }>();
+    // Task costs by subcontractor_id
+    const taskCostsBySubId = new Map<string, { total: number; count: number }>();
+
+    // Process task assignments
+    for (const assignment of taskAssignments || []) {
+      const task = assignment.tasks as unknown as { id: string; project_id: string; actual_cost: number | null };
+      const cost = Number(task.actual_cost) || 0;
+
+      if (assignment.user_id) {
+        const existing = taskCostsByUserId.get(assignment.user_id) || { total: 0, count: 0 };
+        existing.total += cost;
+        existing.count += 1;
+        taskCostsByUserId.set(assignment.user_id, existing);
+      } else if (assignment.subcontractor_id) {
+        const existing = taskCostsBySubId.get(assignment.subcontractor_id) || { total: 0, count: 0 };
+        existing.total += cost;
+        existing.count += 1;
+        taskCostsBySubId.set(assignment.subcontractor_id, existing);
+      }
+    }
+
+    // Build expense costs by vendor_name (case-insensitive match)
+    // Create lookup maps for names
+    const memberNameMap = new Map<string, string>(); // lowercase name -> user_id
+    const subNameMap = new Map<string, string>(); // lowercase name -> subcontractor_id
+
+    for (const member of projectTeam) {
+      if (member.user_id) {
+        const profile = userProfilesMap.get(member.user_id);
+        if (profile) {
+          memberNameMap.set(profile.name.toLowerCase(), profile.id);
+        }
+      }
+      if (member.subcontractor_id && member.subcontractors) {
+        const sub = member.subcontractors as unknown as { id: string; company_name: string };
+        subNameMap.set(sub.company_name.toLowerCase(), sub.id);
+      }
+    }
+
+    // Expense costs by user_id
+    const expenseCostsByUserId = new Map<string, { total: number; count: number }>();
+    // Expense costs by subcontractor_id
+    const expenseCostsBySubId = new Map<string, { total: number; count: number }>();
+
+    // Process expenses - match vendor_name case-insensitively
+    for (const expense of expenses || []) {
+      if (!expense.vendor_name) continue;
+
+      const vendorNameLower = expense.vendor_name.toLowerCase();
+      const amount = Number(expense.amount) || 0;
+
+      // Try to match to member first
+      const userId = memberNameMap.get(vendorNameLower);
+      if (userId) {
+        const existing = expenseCostsByUserId.get(userId) || { total: 0, count: 0 };
+        existing.total += amount;
+        existing.count += 1;
+        expenseCostsByUserId.set(userId, existing);
+        continue;
+      }
+
+      // Try to match to subcontractor
+      const subId = subNameMap.get(vendorNameLower);
+      if (subId) {
+        const existing = expenseCostsBySubId.get(subId) || { total: 0, count: 0 };
+        existing.total += amount;
+        existing.count += 1;
+        expenseCostsBySubId.set(subId, existing);
+      }
+    }
+
+    // 4. Build final summary for each team member
+    const summaries: TeamCostSummary[] = [];
+
+    for (const member of projectTeam) {
+      if (member.user_id) {
+        const profile = userProfilesMap.get(member.user_id);
+        if (profile) {
+          const taskData = taskCostsByUserId.get(member.user_id) || { total: 0, count: 0 };
+          const expenseData = expenseCostsByUserId.get(member.user_id) || { total: 0, count: 0 };
+
+          summaries.push({
+            id: profile.id,
+            name: profile.name,
+            type: 'member',
+            avatarUrl: profile.avatar_url,
+            role: member.role,
+            taskCosts: taskData.total,
+            expenseCosts: expenseData.total,
+            totalCosts: taskData.total + expenseData.total,
+            taskCount: taskData.count,
+            expenseCount: expenseData.count,
+          });
+        }
+      } else if (member.subcontractor_id && member.subcontractors) {
+        const sub = member.subcontractors as unknown as { id: string; company_name: string };
+        const taskData = taskCostsBySubId.get(member.subcontractor_id) || { total: 0, count: 0 };
+        const expenseData = expenseCostsBySubId.get(member.subcontractor_id) || { total: 0, count: 0 };
+
+        summaries.push({
+          id: sub.id,
+          name: sub.company_name,
+          type: 'subcontractor',
+          avatarUrl: null,
+          role: member.role,
+          taskCosts: taskData.total,
+          expenseCosts: expenseData.total,
+          totalCosts: taskData.total + expenseData.total,
+          taskCount: taskData.count,
+          expenseCount: expenseData.count,
+        });
+      }
+    }
+
+    // Sort by totalCosts descending
+    summaries.sort((a, b) => b.totalCosts - a.totalCosts);
+
+    console.log(`[getProjectTeamCostSummary] Returning ${summaries.length} team members with costs`);
+    return { data: summaries };
+
+  } catch (error) {
+    console.error('[getProjectTeamCostSummary] Unexpected error:', error);
+    return { error: 'Failed to fetch team cost summary' };
   }
 }

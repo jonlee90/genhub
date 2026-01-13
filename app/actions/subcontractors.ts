@@ -4,12 +4,16 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { createUserClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
 import { put, del } from '@vercel/blob';
+import type {
+  SubcontractorsRow,
+  SubcontractorsInsert,
+  SubcontractorsUpdate
+} from '@/types/db/tables/companies';
 
-type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
-type SubcontractorInsert = Database['public']['Tables']['subcontractors']['Insert'];
-type SubcontractorUpdate = Database['public']['Tables']['subcontractors']['Update'];
+type Subcontractor = SubcontractorsRow;
+type SubcontractorInsert = SubcontractorsInsert;
+type SubcontractorUpdate = SubcontractorsUpdate;
 
 // ============================================
 // Validation Schemas

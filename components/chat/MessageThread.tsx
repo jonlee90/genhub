@@ -18,7 +18,7 @@ import { X, MessageSquare, Loader2 } from 'lucide-react';
 import { MessageItem } from './MessageItem';
 import { MessageInput } from './MessageInput';
 import { getThreadMessages } from '@/app/actions/chat';
-import type { MessageWithSender } from '@/types/chat.types';
+import type { MessageWithSender } from '@/types/db/chat';
 
 interface MessageThreadProps {
   parentMessageId: string;

@@ -12,7 +12,7 @@ import { MarkerFilters } from './MarkerFilters';
 import { MarkerPanel } from './MarkerPanel';
 import { useMarkerClustering } from '@/hooks/use-marker-clustering';
 import { useMarkerFiltering } from '@/hooks/use-marker-filtering';
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 import type { MarkerCluster } from '@/lib/clustering/cluster-algorithm';
 import type { MarkerFiltersState } from './MarkerFilters';
 

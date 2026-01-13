@@ -47,19 +47,19 @@ import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields
 import { TaskExpensesSection, type TaskExpense } from '../expenses/TaskExpensesSection';
 import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
 import { AssigneeMultiSelect } from '../forms/AssigneeMultiSelect';
-import { getTaskExpenses } from '@/app/actions/expenses';
+import { AutoExpenseToggle } from '../forms/AutoExpenseToggle';
+import { PrimaryAssigneeSelector, type AssigneeOption } from '../forms/PrimaryAssigneeSelector';
+import { getTaskExpenses, createExpenseFromTask } from '@/app/actions/expenses';
+import { useToast } from '@/hooks/use-toast';
 import type { TaskAssignee } from '@/app/actions/tasks';
 import { addProductToTask } from '@/app/actions/materials';
 import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { Database } from '@/types/database.types';
+import type { TaskType, TaskStatus, ApprovalStatus } from '@/types/db/enums';
+import type { TasksRow } from '@/types/db/tables/tasks';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
-type TaskType = Database['public']['Enums']['task_type'];
-type TaskStatus = Database['public']['Enums']['task_status'];
-type ApprovalStatus = Database['public']['Enums']['approval_status'];
-
-type Task = Database['public']['Tables']['tasks']['Row'] & {
+type Task = TasksRow & {
   assignee?: {
     id: string;
     name: string;
@@ -163,6 +163,7 @@ function TaskModalForm({
   tasks = [], // Default to empty array
 }: Omit<TaskModalProps, 'isOpen'>) {
   const router = useRouter();
+  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -170,6 +171,10 @@ function TaskModalForm({
   // Expense state for TaskExpensesSection (Subtask 5.2)
   const [expenses, setExpenses] = useState<TaskExpense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(false);
+
+  // Auto-expense state (Task 3.4)
+  const [autoExpenseEnabled, setAutoExpenseEnabled] = useState(true);
+  const [primaryAssigneeId, setPrimaryAssigneeId] = useState<string | null>(null);
 
   // Temporary materials for create mode (will be associated after task creation)
   const [tempMaterials, setTempMaterials] = useState<TempMaterial[]>([]);
@@ -271,6 +276,56 @@ function TaskModalForm({
   // Get phases for selected project
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const phases = selectedProject?.project_phases || [];
+
+  // Build assignee options for PrimaryAssigneeSelector (Task 3.4)
+  const assigneeOptions: AssigneeOption[] = useMemo(() => {
+    if (!task?.assignees) return [];
+    return task.assignees
+      .filter((a) => a.user || a.subcontractor)
+      .map((a) => {
+        if (a.user) {
+          return {
+            id: a.user.id,
+            type: 'user' as const,
+            name: a.user.name,
+            avatarUrl: a.user.avatar_url,
+          };
+        }
+        return {
+          id: a.subcontractor!.id,
+          type: 'subcontractor' as const,
+          name: a.subcontractor!.contact_name || a.subcontractor!.company_name,
+          companyName: a.subcontractor!.company_name,
+        };
+      });
+  }, [task?.assignees]);
+
+  // Get primary assignee's name for expense vendor_name
+  // Uses primary assignee if set, otherwise uses first assignee
+  const primaryAssigneeName = useMemo(() => {
+    if (primaryAssigneeId) {
+      const assignee = assigneeOptions.find((a) => a.id === primaryAssigneeId);
+      if (assignee?.name) return assignee.name;
+    }
+    // Fallback to first assignee if primary not set or not found
+    if (assigneeOptions.length > 0) {
+      return assigneeOptions[0].name || null;
+    }
+    return null;
+  }, [primaryAssigneeId, assigneeOptions]);
+
+  // Editable expense category state (Task 3.4)
+  const [expenseCategory, setExpenseCategory] = useState(() => {
+    if (!taskType) return 'other';
+    const categoryMap: Record<string, string> = {
+      purchase: 'materials',
+      labor: 'labor',
+      admin: 'other',
+      approval: 'other',
+      general: 'other',
+    };
+    return categoryMap[taskType] || 'other';
+  });
 
   // Fetch expenses for task
   const fetchExpenses = async () => {
@@ -389,6 +444,29 @@ function TaskModalForm({
               await Promise.all(materialPromises);
             } catch {
               // Materials can be added manually after task creation
+            }
+          }
+
+          // Auto-create expense if enabled (Task 3.4)
+          if (mode === 'edit' && autoExpenseEnabled && task?.id) {
+            try {
+              const expenseResult = await createExpenseFromTask(task.id);
+              if (expenseResult.data) {
+                toast({
+                  title: 'Expense Created',
+                  description: `Expense for $${parseFloat(actualCost).toFixed(2)} has been created from this task.`,
+                  variant: 'default',
+                });
+              } else if (expenseResult.error) {
+                console.error('Failed to create expense:', expenseResult.error);
+                toast({
+                  title: 'Warning',
+                  description: 'Task saved but expense creation failed.',
+                  variant: 'destructive',
+                });
+              }
+            } catch {
+              console.error('Error creating expense from task');
             }
           }
 
@@ -1017,6 +1095,34 @@ function TaskModalForm({
                   />
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Auto-Expense Section (Task 3.4) - Between costs and receipt upload */}
+          {/* Show when: edit mode, actualCost > 0 */}
+          {mode === 'edit' && parseFloat(actualCost) > 0 && (
+            <div className="space-y-4">
+              {/* Primary Assignee Selector - Only when multiple assignees */}
+              {assigneeOptions.length > 1 && (
+                <PrimaryAssigneeSelector
+                  assignees={assigneeOptions}
+                  primaryId={primaryAssigneeId}
+                  onPrimaryChange={setPrimaryAssigneeId}
+                  disabled={isPending}
+                />
+              )}
+
+              {/* Auto-Expense Toggle */}
+              <AutoExpenseToggle
+                enabled={autoExpenseEnabled}
+                onToggle={setAutoExpenseEnabled}
+                actualCost={parseFloat(actualCost) || 0}
+                taskTitle={title}
+                vendorName={primaryAssigneeName}
+                category={expenseCategory}
+                onCategoryChange={setExpenseCategory}
+                disabled={isPending}
+              />
             </div>
           )}
 

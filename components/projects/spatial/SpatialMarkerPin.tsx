@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-import type { SpatialMarker } from '@/types/spatial.d';
+import type { SpatialMarker } from '@/types/db/spatial';
 
 // Local type for priority display
 type PriorityLevel = 'low' | 'medium' | 'high' | 'critical';

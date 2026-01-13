@@ -7,9 +7,7 @@
 
 import { Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { Database } from '@/types/database.types';
-
-type TaskType = Database['public']['Enums']['task_type'];
+import type { TaskType } from '@/types/db/enums';
 
 /**
  * Task type display configuration

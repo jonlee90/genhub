@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { TaskProject } from '@/types/task.types';
+import type { TaskProject } from '@/types/db/task';
 
 type Project = TaskProject;
 

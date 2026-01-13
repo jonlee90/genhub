@@ -50,9 +50,9 @@ import {
 } from '@/app/actions/task-types';
 
 // Debug: Type definitions - Use database types directly to avoid type mismatches
-import type { Database } from '@/types/database.types';
+import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
-type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
+type TaskTypeConfig = TaskTypeConfigsRow;
 
 /**
  * Icon mapping for task type selection

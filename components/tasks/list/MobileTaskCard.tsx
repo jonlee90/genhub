@@ -5,9 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, AlertTriangle, CheckCircle, Wrench, Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { Database } from '@/types/database.types';
-
-type TaskStatus = Database['public']['Enums']['task_status'];
+import type { TaskStatus } from '@/types/db/enums';
 
 // Simplified task type for mobile card
 interface MobileTask {

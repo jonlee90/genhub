@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Wrench } from 'lucide-react';
 import { TaskModal } from '../modals/TaskModal';
-import type { TaskProject, TeamMember } from '@/types/task.types';
+import type { TaskProject, TeamMember } from '@/types/db/task';
 
 interface TaskModalTriggerProps {
   projects: TaskProject[];

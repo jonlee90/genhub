@@ -32,7 +32,8 @@ interface PhaseStats {
 }
 
 // Fix C2: Import ExpenseStats instead of duplicating
-import type { ExpenseStats, TaskStats } from '@/app/actions/projects';
+import type { ExpenseStats, TaskStats, TeamCostSummary } from '@/app/actions/projects';
+import { TeamCostSummaryCard } from './TeamCostSummaryCard';
 
 interface ProjectOverviewProps {
   project: any;
@@ -56,10 +57,11 @@ interface ProjectOverviewProps {
   taskStats?: TaskStats;
   activeModel?: any;
   userRole?: string; // NEW: For spatial viewer permissions
+  teamCostSummaries?: TeamCostSummary[];
 }
 
-export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, taskStats, activeModel, userRole = 'field_worker' }: ProjectOverviewProps) {
-  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole);
+export function ProjectOverview({ project, projects = [], teamMembers = [], phaseTaskStats = [], expenseStats, taskStats, activeModel, userRole = 'field_worker', teamCostSummaries = [] }: ProjectOverviewProps) {
+  console.log('[ProjectOverview] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'teamCostSummaries:', teamCostSummaries?.length);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReplacing, setIsReplacing] = useState(false);
@@ -296,6 +298,13 @@ export function ProjectOverview({ project, projects = [], teamMembers = [], phas
                   </div>
                 )
               }
+            />
+          )}
+
+          {/* Team Cost Summary Card - Below Client Information */}
+          {teamCostSummaries && (
+            <TeamCostSummaryCard
+              summaries={teamCostSummaries}
             />
           )}
 

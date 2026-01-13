@@ -33,7 +33,7 @@ async function getExpensesData() {
         .maybeSingle();
 
       if (!companyUser) {
-        return { expenses: [], projects: [], tasks: [], role: null };
+        return { expenses: [], projects: [], tasks: [], role: null, companyId: undefined };
       }
 
       // Get all projects for this company
@@ -50,7 +50,7 @@ async function getExpensesData() {
 
       const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('id, title, project_id')
+        .select('id, title, project_id, task_type')
         .in('project_id', projectIds)
         .order('created_at');
 
@@ -83,10 +83,11 @@ async function getExpensesData() {
         projects: projects || [],
         tasks: tasks || [],
         role: companyUser.role,
+        companyId: companyUser.company_id,
       };
     } catch (error) {
       console.error('[ExpensesPage] Database error:', error);
-      return { expenses: [], projects: [], tasks: [], role: null };
+      return { expenses: [], projects: [], tasks: [], role: null, companyId: undefined };
     }
   }
 
@@ -117,7 +118,7 @@ async function getExpensesData() {
 
   const { data: tasks } = await supabase
     .from('tasks')
-    .select('id, title, project_id')
+    .select('id, title, project_id, task_type')
     .in('project_id', projectIds)
     .order('created_at');
 
@@ -145,6 +146,7 @@ async function getExpensesData() {
     projects: projects || [],
     tasks: tasks || [],
     role: companyUser.role,
+    companyId: companyUser.company_id,
   };
 }
 
@@ -163,7 +165,7 @@ export default async function ExpensesPage({
     getExpensesData(),
     getExpenseAnalytics(),
   ]);
-  const { expenses, projects, tasks, role } = expensesData;
+  const { expenses, projects, tasks, role, companyId } = expensesData;
   const analytics = analyticsResult.data || null;
 
   return (
@@ -194,7 +196,7 @@ export default async function ExpensesPage({
           </div>
 
           {/* Action Button with Construction Theme */}
-          <ExpensesPageHeader projects={projects} tasks={tasks} />
+          <ExpensesPageHeader projects={projects} tasks={tasks} companyId={companyId} />
         </div>
       </div>
 
@@ -208,6 +210,7 @@ export default async function ExpensesPage({
           projects={projects}
           tasks={tasks}
           searchParams={params}
+          companyId={companyId}
         />
       </Suspense>
 

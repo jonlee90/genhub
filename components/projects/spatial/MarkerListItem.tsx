@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import type { SpatialMarker, SpatialMarkerType } from '@/types/spatial';
+import type { SpatialMarker, SpatialMarkerType } from '@/types/db/spatial';
 import { formatDistanceToNow } from 'date-fns';
 
 // Debug: Component props

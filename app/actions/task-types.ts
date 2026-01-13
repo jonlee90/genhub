@@ -4,15 +4,19 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type {
+  TaskTypeConfigsRow,
+  TaskTypeConfigsInsert,
+  TaskTypeConfigsUpdate
+} from '@/types/db/tables/tasks';
 
 // ============================================
 // Types
 // ============================================
 
-type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
-type TaskTypeInsert = Database['public']['Tables']['task_type_configs']['Insert'];
-type TaskTypeUpdate = Database['public']['Tables']['task_type_configs']['Update'];
+type TaskTypeConfig = TaskTypeConfigsRow;
+type TaskTypeInsert = TaskTypeConfigsInsert;
+type TaskTypeUpdate = TaskTypeConfigsUpdate;
 
 // ============================================
 // Validation Schemas

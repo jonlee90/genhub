@@ -3,8 +3,8 @@
 import { Badge } from '@/components/ui/badge';
 import { Receipt, FileText, Image as ImageIcon, DollarSign, Calendar, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { ExpenseCardProps, ExpenseStatus } from '@/types/expense.types';
-import { EXPENSE_STATUS_CONFIG } from '@/types/expense.types';
+import type { ExpenseCardProps, ExpenseStatus } from '@/types/db/expense';
+import { EXPENSE_STATUS_CONFIG } from '@/types/db/expense';
 
 export function ExpenseCard({ expense }: ExpenseCardProps) {
   const statusConfig = EXPENSE_STATUS_CONFIG[expense.status as ExpenseStatus];

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { ChatRoomWithUnread, MessageWithSender } from '@/types/chat.types';
+import type { ChatRoomWithUnread, MessageWithSender } from '@/types/db/chat';
 
 // ============================================
 // Helper Functions

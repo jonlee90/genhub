@@ -16,10 +16,7 @@
  * - Warning: #F59E0B
  */
 
-import type { Database } from '@/types/database.types';
-
-type TaskStatus = Database['public']['Enums']['task_status'];
-type TaskPriority = Database['public']['Enums']['task_priority'];
+import type { TaskStatus, TaskPriority } from '@/types/db/enums';
 
 // ============================================
 // STATUS CONFIGURATION

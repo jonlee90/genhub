@@ -34,7 +34,7 @@ interface TaskExpensesSectionProps {
   expenses: TaskExpense[];
   onExpenseAdded?: () => void;
   projects: Array<{ id: string; name: string }>;
-  tasks: Array<{ id: string; title: string; project_id: string }>;
+  tasks: Array<{ id: string; title: string; project_id: string; task_type?: string | null }>;
 }
 
 // Status configuration for expense badges

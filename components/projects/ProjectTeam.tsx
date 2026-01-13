@@ -39,10 +39,17 @@ interface TeamMember {
   } | null;
 }
 
+interface CostSummary {
+  taskCount: number;
+  taskCosts: number;
+  expenseCosts: number;
+}
+
 interface ProjectTeamProps {
   projectId: string;
   team: TeamMember[];
   companyId: string;
+  costSummaries?: Map<string, CostSummary>; // Map of member/sub ID to cost summary
 }
 
 // Role configuration with construction theme colors
@@ -79,11 +86,27 @@ const ROLE_CONFIG = {
   },
 };
 
-export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
+export function ProjectTeam({ projectId, team, companyId, costSummaries }: ProjectTeamProps) {
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [subcontractorModalOpen, setSubcontractorModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'subcontractors'>('members');
+
+  // Format currency helper
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  // Get cost summary for a member/subcontractor
+  const getCostSummary = (id: string | null) => {
+    if (!id || !costSummaries) return null;
+    return costSummaries.get(id);
+  };
 
   // Separate team members and subcontractors
   const teamMembers = team.filter((m) => m.user_id !== null);
@@ -278,6 +301,7 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
                   const name = member.user_profiles?.name || 'Unknown';
                   const email = member.user_profiles?.email;
                   const avatar = member.user_profiles?.avatar_url;
+                  const costs = getCostSummary(member.user_profiles?.id || null);
 
                   const roleConfig = ROLE_CONFIG[member.role as keyof typeof ROLE_CONFIG] || {
                     label: member.role,
@@ -316,6 +340,12 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
                         <Badge className={cn('mt-1.5 text-xs font-bold border', roleConfig.color)}>
                           {roleConfig.label}
                         </Badge>
+                        {/* Cost summary line - only show if any values > 0 */}
+                        {costs && (costs.taskCount > 0 || costs.taskCosts > 0 || costs.expenseCosts > 0) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {costs.taskCount} task{costs.taskCount !== 1 ? 's' : ''} | {formatCurrency(costs.taskCosts)} costs | {formatCurrency(costs.expenseCosts)} expenses
+                          </p>
+                        )}
                       </div>
 
                       <button
@@ -380,6 +410,7 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
                   const companyName = sub?.company_name || 'Unknown';
                   const contactName = sub?.contact_name;
                   const trade = sub?.trade_specialization;
+                  const costs = getCostSummary(sub?.id || null);
 
                   return (
                     <motion.div
@@ -411,6 +442,12 @@ export function ProjectTeam({ projectId, team, companyId }: ProjectTeamProps) {
                           <Badge className="mt-1.5 text-xs font-bold border bg-amber-100 text-amber-800 border-amber-200">
                             {trade.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
                           </Badge>
+                        )}
+                        {/* Cost summary line - only show if any values > 0 */}
+                        {costs && (costs.taskCount > 0 || costs.taskCosts > 0 || costs.expenseCosts > 0) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            {costs.taskCount} task{costs.taskCount !== 1 ? 's' : ''} | {formatCurrency(costs.taskCosts)} costs | {formatCurrency(costs.expenseCosts)} expenses
+                          </p>
                         )}
                       </div>
 

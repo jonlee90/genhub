@@ -3,9 +3,9 @@
 import { z } from 'zod';
 import { createAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type { AdminInvitationsRow } from '@/types/db/tables/admin';
 
-type AdminInvitation = Database['public']['Tables']['admin_invitations']['Row'];
+type AdminInvitation = AdminInvitationsRow;
 
 // ============================================
 // Types

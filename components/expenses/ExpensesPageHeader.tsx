@@ -21,17 +21,18 @@ interface Task {
 interface ExpensesPageHeaderProps {
   projects: Project[];
   tasks: Task[];
+  companyId?: string;
 }
 
-export function ExpensesPageHeader({ projects, tasks }: ExpensesPageHeaderProps) {
+export function ExpensesPageHeader({ projects, tasks, companyId }: ExpensesPageHeaderProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const { registerCreateModal, unregisterCreateModal } = useBottomNav();
 
   // Register create modal data for bottom nav
   useEffect(() => {
-    registerCreateModal('/app/expenses', { projects, tasks });
+    registerCreateModal('/app/expenses', { projects, tasks, companyId });
     return () => unregisterCreateModal('/app/expenses');
-  }, [projects, tasks, registerCreateModal, unregisterCreateModal]);
+  }, [projects, tasks, companyId, registerCreateModal, unregisterCreateModal]);
 
   // Debug: Track modal state
   console.log('[ExpensesPageHeader] Modal open:', showCreateModal);
@@ -60,6 +61,7 @@ export function ExpensesPageHeader({ projects, tasks }: ExpensesPageHeaderProps)
             console.log('[ExpensesPageHeader] Closing create expense modal');
             setShowCreateModal(false);
           }}
+          companyId={companyId}
         />
       )}
     </>

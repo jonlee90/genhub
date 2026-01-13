@@ -4,15 +4,21 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
+import type {
+  ExpensesRow,
+  ExpensesInsert,
+  ExpensesUpdate,
+  ExpenseLineItemsRow,
+  ExpenseLineItemsInsert
+} from '@/types/db/tables/expenses';
+import type { ExpenseStatus, ExpenseCategory } from '@/types/db/enums';
+import type { Database } from '@/types/db/helpers';
 
-type Expense = Database['public']['Tables']['expenses']['Row'];
-type ExpenseInsert = Database['public']['Tables']['expenses']['Insert'];
-type ExpenseUpdate = Database['public']['Tables']['expenses']['Update'];
-type ExpenseLineItem = Database['public']['Tables']['expense_line_items']['Row'];
-type ExpenseLineItemInsert = Database['public']['Tables']['expense_line_items']['Insert'];
-type ExpenseStatus = Database['public']['Enums']['expense_status'];
-type ExpenseCategory = Database['public']['Enums']['expense_category'];
+type Expense = ExpensesRow;
+type ExpenseInsert = ExpensesInsert;
+type ExpenseUpdate = ExpensesUpdate;
+type ExpenseLineItem = ExpenseLineItemsRow;
+type ExpenseLineItemInsert = ExpenseLineItemsInsert;
 
 // ============================================
 // Validation Schemas

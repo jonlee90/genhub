@@ -5,7 +5,7 @@ import { MapPin, ExternalLink, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { getMarkerById } from '@/app/actions/spatial';
-import type { SpatialMarker } from '@/types/spatial.d';
+import type { SpatialMarker } from '@/types/db/spatial';
 
 interface MarkerLinkProps {
   markerId: string;

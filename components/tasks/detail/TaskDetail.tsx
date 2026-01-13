@@ -59,13 +59,7 @@ import { TaskTypeBadge, getTaskTypeInfo } from '../forms/TaskTypeSelector';
 import { updateTask, updateTaskStatus, deleteTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { cn, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { Database } from '@/types/database.types';
-
-type TaskStatus = Database['public']['Enums']['task_status'];
-type TaskPriority = Database['public']['Enums']['task_priority'];
-type TaskType = Database['public']['Enums']['task_type'];
-type ApprovalStatus = Database['public']['Enums']['approval_status'];
-type UserRole = Database['public']['Enums']['user_role'];
+import type { TaskStatus, TaskPriority, TaskType, ApprovalStatus, UserRole } from '@/types/db/enums';
 
 // Approval status configuration
 const APPROVAL_STATUS_CONFIG: Record<ApprovalStatus, {

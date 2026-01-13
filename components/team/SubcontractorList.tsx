@@ -1,15 +1,15 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { Database } from '@/types/database.types';
+import type { SubcontractorsRow } from '@/types/db/tables/companies';
+import type { UserRole } from '@/types/db/enums';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Plus, HardHat } from 'lucide-react';
 import { SubcontractorCard } from './SubcontractorCard';
 import { AddSubcontractorModal } from './AddSubcontractorModal';
 
-type Subcontractor = Database['public']['Tables']['subcontractors']['Row'];
-type UserRole = Database['public']['Enums']['user_role'];
+type Subcontractor = SubcontractorsRow;
 
 interface SubcontractorListProps {
   subcontractors: Subcontractor[];

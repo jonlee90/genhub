@@ -13,7 +13,7 @@ import { MessageSquare, Edit, Trash2, MoreVertical } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { parseMarkdown } from '@/lib/text-formatting'
 import { format } from 'date-fns'
-import type { MarkerContent } from '@/types/spatial'
+import type { MarkerContent } from '@/types/db/spatial'
 
 interface NoteItemProps {
   note: MarkerContent

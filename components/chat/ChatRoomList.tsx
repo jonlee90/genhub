@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChatRoomItem } from './ChatRoomItem';
 import { NewDMModal } from './NewDMModal';
-import { ChatRoomWithUnread } from '@/types/chat.types';
+import { ChatRoomWithUnread } from '@/types/db/chat';
 import { Building2, MessageSquare, MessageCircle, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 

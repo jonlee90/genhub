@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageWithSender, EntityReference } from '@/types/chat.types';
+import { MessageWithSender, EntityReference } from '@/types/db/chat';
 import { Reply, Copy, Pencil, Trash2, Ban, Check, Loader2, AlertCircle, RefreshCw, Smile, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';

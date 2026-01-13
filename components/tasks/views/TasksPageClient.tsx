@@ -17,7 +17,7 @@ import type {
   TaskProject,
   TeamMember,
   TaskDependencyRow,
-} from '@/types/task.types';
+} from '@/types/db/task';
 
 interface TasksPageClientProps {
   tasks: TaskWithRelations[];

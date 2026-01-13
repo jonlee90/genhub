@@ -25,10 +25,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Database } from '@/types/database.types';
-
-type UserRole = Database['public']['Enums']['user_role'];
-type MemberStatus = Database['public']['Enums']['member_status'];
+import type { UserRole, MemberStatus } from '@/types/db/enums';
 
 interface TeamMember {
   id: string;

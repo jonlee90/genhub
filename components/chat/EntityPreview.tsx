@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { EntityType } from '@/types/chat.types';
+import type { EntityType } from '@/types/db/chat';
 import { ProjectPreview } from './previews/ProjectPreview';
 import { TaskPreview } from './previews/TaskPreview';
 import { MaterialPreview } from './previews/MaterialPreview';

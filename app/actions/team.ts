@@ -4,15 +4,18 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { createUserClient, createAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
-import type { Database } from '@/types/database.types';
 import { randomUUID } from 'crypto';
 import { sendTeamInvitationEmail } from './team-email-helper';
+import type {
+  CompanyUsersRow,
+  CompanyUsersInsert,
+  CompanyUsersUpdate
+} from '@/types/db/tables/companies';
+import type { UserRole, MemberStatus } from '@/types/db/enums';
 
-type UserRole = Database['public']['Enums']['user_role'];
-type MemberStatus = Database['public']['Enums']['member_status'];
-type CompanyUser = Database['public']['Tables']['company_users']['Row'];
-type CompanyUserInsert = Database['public']['Tables']['company_users']['Insert'];
-type CompanyUserUpdate = Database['public']['Tables']['company_users']['Update'];
+type CompanyUser = CompanyUsersRow;
+type CompanyUserInsert = CompanyUsersInsert;
+type CompanyUserUpdate = CompanyUsersUpdate;
 
 // ============================================
 // Validation Schemas

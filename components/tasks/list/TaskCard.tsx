@@ -10,7 +10,7 @@ import { cn, formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import { getTaskTypeDisplayConfig } from '@/lib/config/task-type-display';
-import type { TaskWithRelations, Phase } from '@/types/task.types';
+import type { TaskWithRelations, Phase } from '@/types/db/task';
 
 interface TaskCardProps {
   task: TaskWithRelations;

@@ -1,10 +1,10 @@
-import { Tables } from './database.types';
+import type { ChatRoomsRow, ChatParticipantsRow, MessagesRow, MessageReactionsRow } from './tables/chat';
 
 // Base types from database
-export type ChatRoom = Tables<'chat_rooms'>;
-export type ChatParticipant = Tables<'chat_participants'>;
-export type Message = Tables<'messages'>;
-export type MessageReaction = Tables<'message_reactions'>;
+export type ChatRoom = ChatRoomsRow;
+export type ChatParticipant = ChatParticipantsRow;
+export type Message = MessagesRow;
+export type MessageReaction = MessageReactionsRow;
 
 // Entity reference types for @mentions
 export type EntityType = 'user' | 'task' | 'project' | 'material' | 'expense';

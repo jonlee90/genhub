@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {  Hammer, ShoppingCart, ClipboardCheck, FileText, Check, Loader2, Wrench, Package, Users, HardHat, Truck, AlertTriangle } from 'lucide-react';
 import { getTaskTypes } from '@/app/actions/task-types';
-import type { Database } from '@/types/database.types';
+import type { TaskType } from '@/types/db/enums';
+import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
-type TaskType = Database['public']['Enums']['task_type'];
-type TaskTypeConfig = Database['public']['Tables']['task_type_configs']['Row'];
+type TaskTypeConfig = TaskTypeConfigsRow;
 
 const ICON_MAP: Record<string, typeof Hammer> = {
   Hammer,

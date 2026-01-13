@@ -5,12 +5,16 @@
  * commonly used in UI components.
  */
 
-import type { Database } from './database.types';
+import type { ExpensesRow } from './tables/expenses';
+import type {
+  ExpenseStatus as DbExpenseStatus,
+  ExpenseCategory as DbExpenseCategory,
+} from './enums';
 
 // Base types from database
-export type ExpenseStatus = Database['public']['Enums']['expense_status'];
-export type ExpenseCategory = Database['public']['Enums']['expense_category'];
-export type ExpenseRow = Database['public']['Tables']['expenses']['Row'];
+export type ExpenseStatus = DbExpenseStatus;
+export type ExpenseCategory = DbExpenseCategory;
+export type ExpenseRow = ExpensesRow;
 
 /**
  * Expense with related project, task, and submitter data
@@ -56,6 +60,7 @@ export interface ExpenseTask {
   id: string;
   title: string;
   project_id: string;
+  task_type?: string | null;
 }
 
 /**
@@ -76,6 +81,7 @@ export interface ExpensesListProps {
   projects: ExpenseProject[];
   tasks: ExpenseTask[];
   searchParams: { [key: string]: string | string[] | undefined };
+  companyId?: string;
 }
 
 /**
@@ -93,6 +99,7 @@ export interface CreateExpenseModalProps {
   tasks: ExpenseTask[];
   onClose: () => void;
   taskContext?: ExpenseTaskContext;
+  companyId?: string;
 }
 
 /**

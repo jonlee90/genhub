@@ -7,7 +7,7 @@ import {
   type MarkerCluster,
   type ClusteringOptions,
 } from '@/lib/clustering/cluster-algorithm';
-import type { SpatialMarker } from '@/types/spatial';
+import type { SpatialMarker } from '@/types/db/spatial';
 
 export interface UseMarkerClusteringOptions extends ClusteringOptions {
   autoCluster?: boolean; // Auto-enable clustering based on camera distance (default: true)

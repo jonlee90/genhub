@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useEffect, useCallback } from 'react';
 import { inviteTeamMember } from '@/app/actions/team';
-import { Database } from '@/types/database.types';
+import type { UserRole } from '@/types/db/enums';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +16,6 @@ import {
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, User, Shield, CheckCircle2, XCircle, UserPlus, Copy, Check, Link2, Share2 } from 'lucide-react';
-
-type UserRole = Database['public']['Enums']['user_role'];
 
 interface InviteTeamMemberModalProps {
   isOpen: boolean;

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { TaskProject, TeamMember } from '@/types/task.types';
+import type { TaskProject, TeamMember } from '@/types/db/task';
 
 interface TaskFiltersProps {
   searchQuery: string;

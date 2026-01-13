@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { ChatRoomWithUnread } from '@/types/chat.types';
+import { ChatRoomWithUnread } from '@/types/db/chat';
 import { BellOff } from 'lucide-react';
 
 interface ChatRoomItemProps {

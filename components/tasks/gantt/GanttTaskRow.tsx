@@ -11,10 +11,7 @@ import {
   FileText,
   type LucideIcon,
 } from 'lucide-react';
-import type { Database } from '@/types/database.types';
-
-// Task type configuration with icons and colors
-type TaskType = Database['public']['Enums']['task_type'];
+import type { TaskType } from '@/types/db/enums';
 
 const TASK_TYPE_CONFIG: Record<TaskType, { icon: LucideIcon; label: string; color: string }> = {
   work: {
