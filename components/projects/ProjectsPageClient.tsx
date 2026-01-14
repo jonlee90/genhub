@@ -11,7 +11,7 @@
  * - Reduced framer-motion usage to essential animations only
  */
 
-import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef, memo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
@@ -28,8 +28,11 @@ import {
   Plus,
   X,
   ShieldAlert,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import type { ProjectWithStats } from '@/app/actions/projects';
+import { getProjectsWithStats } from '@/app/actions/projects';
 
 // ============================================
 // Extracted Components for Better Performance
@@ -234,16 +237,146 @@ const ProjectGrid = memo(function ProjectGrid({
   );
 });
 
+/**
+ * Pagination component - construction blue theme
+ */
+const Pagination = memo(function Pagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  isPending,
+  isMobile,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  isPending: boolean;
+  isMobile: boolean;
+}) {
+  if (totalPages <= 1) return null;
+
+  // Generate page numbers with smart ellipsis
+  const pageNumbers: (number | 'ellipsis')[] = [];
+
+  for (let i = 1; i <= totalPages; i++) {
+    // Always show first, last, current, and neighbors
+    if (
+      i === 1 ||
+      i === totalPages ||
+      Math.abs(i - currentPage) <= 1
+    ) {
+      pageNumbers.push(i);
+    } else if (
+      // Add ellipsis markers
+      (i === 2 && currentPage > 3) ||
+      (i === totalPages - 1 && currentPage < totalPages - 2)
+    ) {
+      if (pageNumbers[pageNumbers.length - 1] !== 'ellipsis') {
+        pageNumbers.push('ellipsis');
+      }
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-1.5 md:gap-2 mt-6">
+      {/* Previous button */}
+      <Button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1 || isPending}
+        className={`
+          h-11 md:h-12 px-3 md:px-4
+          bg-white border-2 border-[#001B51]
+          text-[#001B51] font-bold
+          hover:bg-[#001B51] hover:text-white
+          disabled:opacity-30 disabled:cursor-not-allowed
+          transition-all duration-150
+          active:scale-[0.98]
+          ${isMobile ? 'min-w-[44px]' : ''}
+        `}
+      >
+        <ChevronLeft className="w-5 h-5" />
+        {!isMobile && <span className="ml-1">Prev</span>}
+      </Button>
+
+      {/* Page numbers */}
+      <div className="flex items-center gap-1">
+        {pageNumbers.map((page, idx) => {
+          if (page === 'ellipsis') {
+            return (
+              <span
+                key={`ellipsis-${idx}`}
+                className="px-2 text-gray-400 text-sm md:text-base font-bold"
+              >
+                ...
+              </span>
+            );
+          }
+
+          const isActive = currentPage === page;
+
+          return (
+            <Button
+              key={page}
+              onClick={() => onPageChange(page)}
+              disabled={isPending}
+              className={`
+                h-11 md:h-12 min-w-[44px] md:min-w-[48px] px-2 md:px-3
+                border-2 font-black text-sm md:text-base
+                transition-all duration-150
+                active:scale-[0.98]
+                ${
+                  isActive
+                    ? 'bg-[#001B51] border-[#001B51] text-white'
+                    : 'bg-white border-gray-300 text-gray-700 hover:border-[#001B51] hover:text-[#001B51]'
+                }
+                disabled:opacity-30 disabled:cursor-not-allowed
+              `}
+            >
+              {page}
+            </Button>
+          );
+        })}
+      </div>
+
+      {/* Next button */}
+      <Button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages || isPending}
+        className={`
+          h-11 md:h-12 px-3 md:px-4
+          bg-white border-2 border-[#001B51]
+          text-[#001B51] font-bold
+          hover:bg-[#001B51] hover:text-white
+          disabled:opacity-30 disabled:cursor-not-allowed
+          transition-all duration-150
+          active:scale-[0.98]
+          ${isMobile ? 'min-w-[44px]' : ''}
+        `}
+      >
+        {!isMobile && <span className="mr-1">Next</span>}
+        <ChevronRight className="w-5 h-5" />
+      </Button>
+    </div>
+  );
+});
+
 // ============================================
 // Main Component
 // ============================================
 
 interface ProjectsPageClientProps {
   projects: ProjectWithStats[];
+  totalCount: number;
   role: string | null;
+  companyId: string;
 }
 
-export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) {
+export function ProjectsPageClient({ projects: initialProjects, totalCount, role, companyId }: ProjectsPageClientProps) {
+  // Data states
+  const [projects, setProjects] = useState(initialProjects);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isPending, startTransition] = useTransition();
+
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -252,6 +385,10 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
 
   // UI states
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Constants
+  const PAGE_SIZE = 20;
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -276,6 +413,27 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
     await new Promise((resolve) => setTimeout(resolve, 500));
     router.refresh();
   }, [router]);
+
+  // Pagination handler
+  const handlePageChange = useCallback((newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || isPending) return;
+
+    startTransition(async () => {
+      const offset = (newPage - 1) * PAGE_SIZE;
+      const { projects: newProjects, error } = await getProjectsWithStats(companyId, {
+        limit: PAGE_SIZE,
+        offset,
+      });
+
+      if (newProjects && !error) {
+        setProjects(newProjects);
+        setCurrentPage(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        console.error('[ProjectsPageClient] Error fetching page:', error);
+      }
+    });
+  }, [totalPages, isPending]);
 
   // Filter and sort projects - memoized
   const filteredProjects = useMemo(() => {
@@ -479,7 +637,25 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
             {filteredProjects.length === 0 ? (
               <MobileNoResultsState onClearFilters={clearFilters} />
             ) : (
-              <ProjectGrid projects={filteredProjects} isMobile={true} />
+              <>
+                <ProjectGrid projects={filteredProjects} isMobile={true} />
+
+                {/* Pagination */}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  isPending={isPending}
+                  isMobile={true}
+                />
+
+                {/* Loading indicator */}
+                {isPending && (
+                  <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+                    Loading projects...
+                  </div>
+                )}
+              </>
             )}
           </div>
         </PullToRefresh>
@@ -550,7 +726,25 @@ export function ProjectsPageClient({ projects, role }: ProjectsPageClientProps) 
       {filteredProjects.length === 0 ? (
         <NoResultsState onClearFilters={clearFilters} />
       ) : (
-        <ProjectGrid projects={filteredProjects} isMobile={false} />
+        <>
+          <ProjectGrid projects={filteredProjects} isMobile={false} />
+
+          {/* Pagination */}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            isPending={isPending}
+            isMobile={false}
+          />
+
+          {/* Loading indicator */}
+          {isPending && (
+            <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+              Loading projects...
+            </div>
+          )}
+        </>
       )}
 
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />

@@ -135,6 +135,33 @@ export function formatShortDistance(date: string | Date | null | undefined): str
 }
 
 // ============================================
+// Currency Formatting Helpers
+// ============================================
+
+/**
+ * Format a currency amount with standard USD formatting
+ * @param amount - The amount in dollars
+ * @param options - Optional Intl.NumberFormatOptions for customization
+ * @returns Formatted currency string (e.g., "$25,000" or "$25,000.00")
+ *
+ * @example
+ * formatCurrency(25000) => "$25,000"
+ * formatCurrency(25000, { minimumFractionDigits: 2 }) => "$25,000.00"
+ */
+export function formatCurrency(
+	amount: number,
+	options?: Intl.NumberFormatOptions
+): string {
+	return new Intl.NumberFormat('en-US', {
+		style: 'currency',
+		currency: 'USD',
+		minimumFractionDigits: 0,
+		maximumFractionDigits: 0,
+		...options,
+	}).format(amount);
+}
+
+// ============================================
 // Budget Formatting Helpers (for ProjectCard)
 // ============================================
 

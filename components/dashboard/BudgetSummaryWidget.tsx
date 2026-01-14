@@ -2,28 +2,12 @@
 
 import { DollarSign, TrendingUp, TrendingDown, Clock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { cn, formatPercent } from '@/lib/utils';
+import { cn, formatPercent, formatBudget } from '@/lib/utils';
 import type { BudgetSummaryData } from '@/types/dashboard';
 
 export interface BudgetSummaryWidgetProps {
   budget: BudgetSummaryData;
   isLoading?: boolean;
-}
-
-/**
- * Format currency with K/M suffixes for large numbers
- */
-function formatCurrency(amount: number, compact = false): string {
-  if (compact && Math.abs(amount) >= 1000000) {
-    return `$${(amount / 1000000).toFixed(1)}M`;
-  }
-  if (compact && Math.abs(amount) >= 1000) {
-    return `$${(amount / 1000).toFixed(1)}K`;
-  }
-  return `$${amount.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })}`;
 }
 
 /**
@@ -134,13 +118,13 @@ export function BudgetSummaryWidget({
         <div className="p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500 font-medium mb-1">Planned</p>
           <p className="text-lg font-bold text-gray-900">
-            {formatCurrency(budget.totalPlanned, true)}
+            {formatBudget(budget.totalPlanned, true)}
           </p>
         </div>
         <div className="p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500 font-medium mb-1">Actual</p>
           <p className="text-lg font-bold text-gray-900">
-            {formatCurrency(budget.totalActual, true)}
+            {formatBudget(budget.totalActual, true)}
           </p>
         </div>
       </div>
@@ -160,7 +144,7 @@ export function BudgetSummaryWidget({
           isUnderBudget ? 'text-[#059669]' : 'text-[#DC2626]'
         )}>
           {isUnderBudget ? 'Under budget: ' : 'Over budget: '}
-          {formatCurrency(Math.abs(budget.variance), true)}
+          {formatBudget(Math.abs(budget.variance), true)}
         </span>
       </div>
 
@@ -183,7 +167,7 @@ export function BudgetSummaryWidget({
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm font-bold text-[#F59E0B]">
-                {formatCurrency(budget.pendingExpenses.amount, true)}
+                {formatBudget(budget.pendingExpenses.amount, true)}
               </span>
               <ChevronRight className="w-4 h-4 text-[#F59E0B]" />
             </div>

@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { KPICard, type KPICardProps } from './KPICard';
 import type { DashboardKPIs } from '@/types/dashboard';
-import { formatPercentWhole } from '@/lib/utils';
+import { formatPercentWhole, formatBudget } from '@/lib/utils';
 
 interface KPICardsGridProps {
   kpis: DashboardKPIs;
@@ -53,19 +53,6 @@ function getVariant(
     default:
       return 'default';
   }
-}
-
-/**
- * Formats currency value for display
- */
-function formatCurrency(amount: number): string {
-  if (amount >= 1_000_000) {
-    return `$${(amount / 1_000_000).toFixed(1)}M`;
-  }
-  if (amount >= 1_000) {
-    return `$${(amount / 1_000).toFixed(0)}K`;
-  }
-  return `$${amount.toFixed(0)}`;
 }
 
 /**
@@ -135,7 +122,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
       key: 'budget-health',
       title: 'Budget',
       value: formatPercentWhole(kpis.budgetUtilization),
-      subtitle: `${formatCurrency(kpis.totalActualSpend)} spent`,
+      subtitle: `${formatBudget(kpis.totalActualSpend)} spent`,
       icon: Wallet,
       variant: getVariant('budget', kpis),
       trend: kpis.budgetUtilization > 100
@@ -163,7 +150,7 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
       title: 'Approvals',
       value: kpis.pendingExpenses + kpis.pendingApprovals,
       subtitle: kpis.pendingExpenseAmount > 0
-        ? formatCurrency(kpis.pendingExpenseAmount)
+        ? formatBudget(kpis.pendingExpenseAmount)
         : 'All caught up',
       icon: AlertCircle,
       variant: getVariant('approvals', kpis),

@@ -198,6 +198,7 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
+// Note: Local formatDate with "Today"/"Tomorrow" logic - differs from shared utils
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
   const today = new Date();

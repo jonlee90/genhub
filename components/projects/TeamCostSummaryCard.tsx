@@ -4,7 +4,7 @@ import { Users, RefreshCw, AlertCircle } from 'lucide-react';
 import { InfoCard } from './InfoCard';
 import { TeamCostRow, type TeamCostSummary } from './TeamCostRow';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 
 /**
  * Props for TeamCostSummaryCard component
@@ -50,15 +50,6 @@ export function TeamCostSummaryCard({
     }),
     { taskCount: 0, taskCosts: 0, expenseCosts: 0 }
   );
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Loading state
   if (loading) {

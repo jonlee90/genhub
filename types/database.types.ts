@@ -2654,6 +2654,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_project_detail_with_stats: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
       get_project_material_summary: {
         Args: { project_uuid: string }
         Returns: {

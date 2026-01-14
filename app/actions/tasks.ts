@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
+import { invalidateDashboardCache } from '@/app/actions/dashboard';
 import type { TasksRow, TasksInsert, TasksUpdate } from '@/types/db/tables/tasks';
 import type {
   TaskStatus,
@@ -578,6 +579,9 @@ export async function createTask(prevState: CreateTaskFormState | null, formData
   // Revalidate paths
   revalidatePath('/app/tasks');
   revalidatePath(`/app/projects/${data.project_id}`);
+
+  // Invalidate dashboard cache (task counts changed)
+  await invalidateDashboardCache(companyId);
 
   return { success: true, task };
 }

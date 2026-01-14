@@ -156,7 +156,8 @@
       "Bash(do echo \"=== $comp ===\")",
       "Skill(senior-prompt-engineer)",
       "WebFetch(domain:localhost)",
-      "WebFetch(domain:ui.aceternity.com)"
+      "WebFetch(domain:ui.aceternity.com)",
+      "Bash(tee:*)"
     ],
     "deny": [],
     "ask": []

@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { FilePreviewModal } from './FilePreviewModal';
 import { FileVersionHistory } from './FileVersionHistory';
 import { deleteProjectFile } from '@/app/actions/project-files';
@@ -65,21 +65,6 @@ function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-/**
- * Format date for display
- */
-function formatDate(dateString: string): string {
-  try {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  } catch {
-    return 'Unknown date';
-  }
 }
 
 export function DocumentCategoryList({

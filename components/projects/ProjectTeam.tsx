@@ -17,27 +17,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { removeProjectTeamMember, removeSubcontractorFromProject } from '@/app/actions/projects';
 import { AddMemberModal } from './AddMemberModal';
 import { AddSubcontractorModal } from './AddSubcontractorModal';
-import { cn } from '@/lib/utils';
-
-interface TeamMember {
-  id: string;
-  user_id: string | null;
-  subcontractor_id: string | null;
-  role: string;
-  assigned_at: string;
-  user_profiles?: {
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  } | null;
-  subcontractors?: {
-    id: string;
-    company_name: string;
-    contact_name: string;
-    trade_specialization: string;
-  } | null;
-}
+import { cn, formatCurrency } from '@/lib/utils';
+import type { ProjectTeamMember } from '@/types/components/projects';
 
 interface CostSummary {
   taskCount: number;
@@ -47,7 +28,7 @@ interface CostSummary {
 
 interface ProjectTeamProps {
   projectId: string;
-  team: TeamMember[];
+  team: ProjectTeamMember[];
   companyId: string;
   costSummaries?: Map<string, CostSummary>; // Map of member/sub ID to cost summary
 }
@@ -91,16 +72,6 @@ export function ProjectTeam({ projectId, team, companyId, costSummaries }: Proje
   const [memberModalOpen, setMemberModalOpen] = useState(false);
   const [subcontractorModalOpen, setSubcontractorModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'subcontractors'>('members');
-
-  // Format currency helper
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Get cost summary for a member/subcontractor
   const getCostSummary = (id: string | null) => {

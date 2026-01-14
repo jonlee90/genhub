@@ -11,7 +11,7 @@ import {
   Settings,
   CheckCircle2,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Project3DModel } from '@/types/db/spatial';
@@ -41,14 +41,6 @@ export function ModelManagementPanel({
       return `${(bytes / 1024).toFixed(1)} KB`;
     }
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   const handleQualityChange = (quality: 'high' | 'medium' | 'low') => {

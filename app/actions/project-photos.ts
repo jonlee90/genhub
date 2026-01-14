@@ -16,7 +16,7 @@ type PhotoFilters = {
   showReceipts?: boolean;
 };
 
-interface UnifiedPhoto {
+export interface UnifiedPhoto {
   id: string;
   url: string;
   thumbnail_url?: string;

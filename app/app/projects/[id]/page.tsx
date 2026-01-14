@@ -6,10 +6,10 @@ import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ProjectDetailContent } from '@/components/projects/ProjectDetailContent';
-import type { ProjectsRow } from '@/types/db/tables/projects';
-import type { TaskStats } from '@/app/actions/projects';
+import type { ProjectsRow, ProjectFilesRow } from '@/types/db/tables/projects';
+import type { TaskStats, TeamCostSummary } from '@/app/actions/projects';
 import { getProjectFiles } from '@/app/actions/project-files';
-import { getProjectPhotosWithReceipts } from '@/app/actions/project-photos';
+import { getProjectPhotosWithReceipts, type UnifiedPhoto } from '@/app/actions/project-photos';
 import { getProjectTeamCostSummary } from '@/app/actions/projects';
 
 type Project = ProjectsRow;
@@ -22,7 +22,7 @@ async function getProjectData(id: string) {
     return null;
   }
 
-  // Get user's company and role
+  // PHASE 0: Auth & Context (Sequential - Required for RLS)
   const { data: companyUser } = await supabase
     .from('company_users')
     .select('company_id, role')
@@ -34,86 +34,104 @@ async function getProjectData(id: string) {
     return null;
   }
 
-  // Get all projects for this company (for modal)
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id, name, project_phases(id, name, order_index)')
-    .eq('company_id', companyUser.company_id)
-    .order('name');
+  // PHASE 1: Initial Data Fetch (Parallel - All Independent)
+  const [
+    { data: projects },
+    { data: teamMembersData },
+    { data: project, error },
+    { data: expenses, error: expensesError },
+  ] = await Promise.all([
+    // Get all projects for this company (for modal)
+    supabase
+      .from('projects')
+      .select('id, name, project_phases(id, name, order_index)')
+      .eq('company_id', companyUser.company_id)
+      .order('name'),
 
-  // Get all team members for this company (for modal)
-  const { data: teamMembersData } = await supabase
-    .from('company_users')
-    .select(`
-      user_id,
-      user_profiles!inner (
-        id,
-        name,
-        email,
-        avatar_url
-      )
-    `)
-    .eq('company_id', companyUser.company_id)
-    .eq('status', 'active');
-
-  const teamMembers = teamMembersData?.map((tm) => tm.user_profiles) || [];
-
-  // Get the specific project
-  const { data: project, error } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      project_phases(
-        id,
-        name,
-        order_index,
-        status,
-        completion_percentage,
-        started_at,
-        completed_at,
-        notes
-      ),
-      project_team(
-        id,
+    // Get all team members for this company (for modal)
+    supabase
+      .from('company_users')
+      .select(`
         user_id,
-        subcontractor_id,
-        role,
-        assigned_at
-      ),
-      tasks(
+        user_profiles!inner (
+          id,
+          name,
+          email,
+          avatar_url
+        )
+      `)
+      .eq('company_id', companyUser.company_id)
+      .eq('status', 'active'),
+
+    // Get the specific project with nested relations
+    supabase
+      .from('projects')
+      .select(`
         id,
-        title,
-        description,
+        name,
         status,
-        priority,
-        task_type,
-        approval_status,
-        phase_id,
-        assignee_id,
+        description,
+        budget,
         start_date,
-        due_date,
-        planned_cost,
-        actual_cost,
-        project_id,
-        blocked_reason,
+        end_date,
+        address,
+        project_type,
+        client_name,
+        client_email,
+        client_phone,
+        company_id,
         created_by,
-        created_at
-      )
-    `)
-    .eq('id', id)
-    .single();
+        created_at,
+        updated_at,
+        project_phases(
+          id,
+          name,
+          order_index,
+          status,
+          completion_percentage,
+          started_at,
+          completed_at
+        ),
+        project_team(
+          id,
+          user_id,
+          subcontractor_id,
+          role,
+          assigned_at
+        ),
+        tasks(
+          id,
+          title,
+          status,
+          priority,
+          task_type,
+          approval_status,
+          phase_id,
+          assignee_id,
+          start_date,
+          due_date,
+          planned_cost,
+          actual_cost,
+          project_id,
+          created_by,
+          created_at
+        )
+      `)
+      .eq('id', id)
+      .single(),
 
-  // Fetch creator profile if project has created_by
-  if (project && project.created_by) {
-    const { data: creator } = await supabase
-      .from('user_profiles')
-      .select('id, name, email, avatar_url')
-      .eq('id', project.created_by)
-      .single();
+    // Fetch expense stats for this project
+    supabase
+      .from('expenses')
+      .select('id, amount, status')
+      .eq('project_id', id)
+  ]);
 
-    if (creator) {
-      (project as any).creator = creator;
-    }
+  const teamMembers = teamMembersData?.map((tm) => tm.user_profiles).filter((p): p is NonNullable<typeof p> => p !== null && p !== undefined) || [];
+
+  // Error handling for Phase 1
+  if (expensesError) {
+    console.error('[getProjectData] Error fetching expenses:', expensesError);
   }
 
   if (error || !project) {
@@ -121,48 +139,157 @@ async function getProjectData(id: string) {
     return null;
   }
 
-  // Fetch user profiles and subcontractors for team members separately
-  if (project.project_team && project.project_team.length > 0) {
-    const userIds = project.project_team
-      .filter((t: any) => t.user_id)
-      .map((t: any) => t.user_id);
-    const subcontractorIds = project.project_team
-      .filter((t: any) => t.subcontractor_id)
-      .map((t: any) => t.subcontractor_id);
+  // PHASE 2: Dependent Queries (Parallel - Depend on Phase 1)
+  // Extract IDs from Phase 1 results
+  const taskIds = project.tasks?.map((t: any) => t.id) || [];
+  const teamUserIds = project.project_team?.filter((t: any) => t.user_id).map((t: any) => t.user_id) || [];
+  const teamSubIds = project.project_team?.filter((t: any) => t.subcontractor_id).map((t: any) => t.subcontractor_id) || [];
+  const assigneeIds = project.tasks?.filter((t: any) => t.assignee_id).map((t: any) => t.assignee_id) || [];
+  const creatorId = project.created_by;
 
-    // Fetch user profiles
-    if (userIds.length > 0) {
-      const { data: profiles } = await supabase
+  // Build parallel queries for Phase 2
+  const phase2Queries = [];
+
+  // Creator profile (conditional)
+  if (creatorId) {
+    phase2Queries.push(
+      supabase
         .from('user_profiles')
         .select('id, name, email, avatar_url')
-        .in('id', userIds);
+        .eq('id', creatorId)
+        .single()
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: null }));
+  }
 
-      // Attach profiles to team members
-      if (profiles) {
-        (project.project_team as any[]).forEach((member: any) => {
-          if (member.user_id) {
-            member.user_profiles = profiles.find((p: any) => p.id === member.user_id) || null;
-          }
-        });
-      }
-    }
+  // Team user profiles (conditional)
+  if (teamUserIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('user_profiles')
+        .select('id, name, email, avatar_url')
+        .in('id', teamUserIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
 
-    // Fetch subcontractors
-    if (subcontractorIds.length > 0) {
-      const { data: subs } = await supabase
+  // Team subcontractors (conditional)
+  if (teamSubIds.length > 0) {
+    phase2Queries.push(
+      supabase
         .from('subcontractors')
         .select('id, company_name, contact_name, trade_specialization')
-        .in('id', subcontractorIds);
+        .in('id', teamSubIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
 
-      // Attach subcontractors to team members
-      if (subs) {
-        (project.project_team as any[]).forEach((member: any) => {
-          if (member.subcontractor_id) {
-            member.subcontractors = subs.find((s: any) => s.id === member.subcontractor_id) || null;
-          }
-        });
+  // Task assignees (conditional)
+  if (assigneeIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('user_profiles')
+        .select('id, name, email, avatar_url')
+        .in('id', assigneeIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
+
+  // Task multi-assignees (conditional)
+  if (taskIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('task_assignees')
+        .select('id, task_id, user_id, subcontractor_id')
+        .in('task_id', taskIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
+
+  // Material stats (conditional)
+  if (taskIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('material_assignments')
+        .select('task_id, quantity, total_cost')
+        .in('task_id', taskIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
+
+  // Expense stats (conditional)
+  if (taskIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('expenses')
+        .select('task_id, amount')
+        .in('task_id', taskIds)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
+
+  // Task dependencies (conditional)
+  if (taskIds.length > 0) {
+    phase2Queries.push(
+      supabase
+        .from('task_dependencies')
+        .select('*')
+        .or(`task_id.in.(${taskIds.join(',')}),depends_on_task_id.in.(${taskIds.join(',')})`)
+    );
+  } else {
+    phase2Queries.push(Promise.resolve({ data: [] }));
+  }
+
+  // Note: Material and expense aggregations are now handled by the RPC function
+  // We keep these minimal queries only for data assembly (attaching stats to tasks)
+  // The heavy aggregation work (200+ lines of JS) is now done in the database
+
+  // Files and photos (Server Actions - run in parallel with DB queries)
+  phase2Queries.push(getProjectFiles(id));
+  phase2Queries.push(getProjectPhotosWithReceipts(id));
+  phase2Queries.push(getProjectTeamCostSummary(id));
+
+  // Execute all Phase 2 queries in parallel
+  const phase2Results = await Promise.all(phase2Queries);
+  const [
+    { data: creator },
+    { data: teamProfiles },
+    { data: teamSubs },
+    { data: assignees },
+    { data: taskAssignees },
+    { data: materialStats },
+    { data: taskExpenseStats },
+    { data: taskDependencies },
+  ] = phase2Results as Array<{ data: any }>;
+
+  const filesResult = phase2Results[8] as Awaited<ReturnType<typeof getProjectFiles>>;
+  const photosResult = phase2Results[9] as Awaited<ReturnType<typeof getProjectPhotosWithReceipts>>;
+  const teamCostResult = phase2Results[10] as Awaited<ReturnType<typeof getProjectTeamCostSummary>>;
+
+  // PHASE 3: Data Assembly (Synchronous - Attach data to objects)
+
+  // Attach creator profile
+  if (creator) {
+    (project as any).creator = creator;
+  }
+
+  // Attach team profiles and subcontractors
+  if (project.project_team && project.project_team.length > 0) {
+    (project.project_team as any[]).forEach((member: any) => {
+      if (member.user_id && teamProfiles && Array.isArray(teamProfiles)) {
+        member.user_profiles = (teamProfiles as any[]).find((p: any) => p.id === member.user_id) || null;
       }
-    }
+      if (member.subcontractor_id && teamSubs && Array.isArray(teamSubs)) {
+        member.subcontractors = (teamSubs as any[]).find((s: any) => s.id === member.subcontractor_id) || null;
+      }
+    });
   }
 
   // Attach phase information to tasks
@@ -174,126 +301,86 @@ async function getProjectData(id: string) {
     });
   }
 
-  // Fetch assignees for tasks
-  if (project.tasks && project.tasks.length > 0) {
-    const assigneeIds = project.tasks
-      .filter((t: any) => t.assignee_id)
-      .map((t: any) => t.assignee_id);
-
-    if (assigneeIds.length > 0) {
-      const { data: assignees } = await supabase
-        .from('user_profiles')
-        .select('id, name, email, avatar_url')
-        .in('id', assigneeIds);
-
-      if (assignees) {
-        (project.tasks as any[]).forEach((task: any) => {
-          if (task.assignee_id) {
-            task.assignee = assignees.find((a: any) => a.id === task.assignee_id) || null;
-          }
-        });
+  // Attach assignees to tasks
+  if (project.tasks && assignees && Array.isArray(assignees)) {
+    (project.tasks as any[]).forEach((task: any) => {
+      if (task.assignee_id) {
+        task.assignee = (assignees as any[]).find((a: any) => a.id === task.assignee_id) || null;
       }
-    }
-
-    // Fetch multi-assignees from task_assignees junction table
-    const taskIds = project.tasks.map((t: any) => t.id);
-    const { data: taskAssignees } = await supabase
-      .from('task_assignees')
-      .select('id, task_id, user_id, subcontractor_id')
-      .in('task_id', taskIds);
-
-    if (taskAssignees && taskAssignees.length > 0) {
-      // Get unique user IDs and subcontractor IDs
-      const userIds = [...new Set(taskAssignees.filter(ta => ta.user_id).map(ta => ta.user_id))] as string[];
-      const subIds = [...new Set(taskAssignees.filter(ta => ta.subcontractor_id).map(ta => ta.subcontractor_id))] as string[];
-
-      // Fetch user profiles
-      const { data: userProfiles } = userIds.length > 0
-        ? await supabase.from('user_profiles').select('id, name, email, avatar_url').in('id', userIds)
-        : { data: [] };
-
-      // Fetch subcontractors
-      const { data: subcontractors } = subIds.length > 0
-        ? await supabase.from('subcontractors').select('id, company_name, contact_name, email').in('id', subIds)
-        : { data: [] };
-
-      // Attach assignees to tasks
-      (project.tasks as any[]).forEach((task: any) => {
-        const taskAssigns = taskAssignees.filter(ta => ta.task_id === task.id);
-        task.assignees = taskAssigns.map(ta => ({
-          id: ta.id,
-          user_id: ta.user_id,
-          subcontractor_id: ta.subcontractor_id,
-          user: ta.user_id ? userProfiles?.find(u => u.id === ta.user_id) || null : null,
-          subcontractor: ta.subcontractor_id ? subcontractors?.find(s => s.id === ta.subcontractor_id) || null : null,
-        }));
-      });
-    } else {
-      // Initialize empty assignees array for all tasks
-      (project.tasks as any[]).forEach((task: any) => {
-        task.assignees = [];
-      });
-    }
-
-    // Fetch material assignment counts and totals for each task
-    const { data: materialStats } = await supabase
-      .from('material_assignments')
-      .select('task_id, quantity, total_cost')
-      .in('task_id', taskIds);
-
-    if (materialStats) {
-      // Aggregate material stats per task
-      const statsByTask = materialStats.reduce((acc: any, stat: any) => {
-        if (!acc[stat.task_id]) {
-          acc[stat.task_id] = { count: 0, totalCost: 0 };
-        }
-        acc[stat.task_id].count += 1;
-        acc[stat.task_id].totalCost += Number(stat.total_cost || 0);
-        return acc;
-      }, {});
-
-      // Attach material stats to tasks
-      (project.tasks as any[]).forEach((task: any) => {
-        task.materialStats = statsByTask[task.id] || { count: 0, totalCost: 0 };
-      });
-    }
-
-    // Fetch expense counts and totals for each task
-    const { data: expenseStats } = await supabase
-      .from('expenses')
-      .select('task_id, amount')
-      .in('task_id', taskIds);
-
-    if (expenseStats) {
-      // Aggregate expense stats per task
-      const statsByTask = expenseStats.reduce((acc: any, expense: any) => {
-        if (!acc[expense.task_id]) {
-          acc[expense.task_id] = { count: 0, totalAmount: 0 };
-        }
-        acc[expense.task_id].count += 1;
-        acc[expense.task_id].totalAmount += Number(expense.amount || 0);
-        return acc;
-      }, {});
-
-      // Attach expense stats to tasks
-      (project.tasks as any[]).forEach((task: any) => {
-        task.expenseStats = statsByTask[task.id] || { count: 0, totalAmount: 0 };
-      });
-    }
+    });
   }
 
-  // Fetch task dependencies for Gantt chart
-  let taskDependencies: any[] = [];
-  if (project.tasks && project.tasks.length > 0) {
-    const taskIds = project.tasks.map((t: any) => t.id);
-    if (taskIds.length > 0) {
-      const { data: dependencies } = await supabase
-        .from('task_dependencies')
-        .select('*')
-        .or(`task_id.in.(${taskIds.join(',')}),depends_on_task_id.in.(${taskIds.join(',')})`);
+  // Process multi-assignees for tasks
+  if (taskAssignees && Array.isArray(taskAssignees) && taskAssignees.length > 0) {
+    // Get unique user IDs and subcontractor IDs for Phase 3 queries
+    const userIds = [...new Set((taskAssignees as any[]).filter(ta => ta.user_id).map(ta => ta.user_id))] as string[];
+    const subIds = [...new Set((taskAssignees as any[]).filter(ta => ta.subcontractor_id).map(ta => ta.subcontractor_id))] as string[];
 
-      taskDependencies = dependencies || [];
-    }
+    // Fetch user profiles and subcontractors for multi-assignees
+    const [
+      { data: userProfiles },
+      { data: subcontractors }
+    ] = await Promise.all([
+      userIds.length > 0
+        ? supabase.from('user_profiles').select('id, name, email, avatar_url').in('id', userIds)
+        : Promise.resolve({ data: [] }),
+      subIds.length > 0
+        ? supabase.from('subcontractors').select('id, company_name, contact_name, email').in('id', subIds)
+        : Promise.resolve({ data: [] })
+    ]);
+
+    // Attach assignees to tasks
+    (project.tasks as any[]).forEach((task: any) => {
+      const taskAssigns = (taskAssignees as any[]).filter((ta: any) => ta.task_id === task.id);
+      task.assignees = taskAssigns.map((ta: any) => ({
+        id: ta.id,
+        user_id: ta.user_id,
+        subcontractor_id: ta.subcontractor_id,
+        user: ta.user_id ? userProfiles?.find((u: any) => u.id === ta.user_id) || null : null,
+        subcontractor: ta.subcontractor_id ? subcontractors?.find((s: any) => s.id === ta.subcontractor_id) || null : null,
+      }));
+    });
+  } else {
+    // Initialize empty assignees array for all tasks
+    (project.tasks as any[]).forEach((task: any) => {
+      task.assignees = [];
+    });
+  }
+
+  // Attach material stats to tasks
+  if (materialStats && Array.isArray(materialStats)) {
+    // Aggregate material stats per task
+    const statsByTask = (materialStats as any[]).reduce((acc: any, stat: any) => {
+      if (!acc[stat.task_id]) {
+        acc[stat.task_id] = { count: 0, totalCost: 0 };
+      }
+      acc[stat.task_id].count += 1;
+      acc[stat.task_id].totalCost += Number(stat.total_cost || 0);
+      return acc;
+    }, {});
+
+    // Attach material stats to tasks
+    (project.tasks as any[]).forEach((task: any) => {
+      task.materialStats = statsByTask[task.id] || { count: 0, totalCost: 0 };
+    });
+  }
+
+  // Attach expense stats to tasks
+  if (taskExpenseStats && Array.isArray(taskExpenseStats)) {
+    // Aggregate expense stats per task
+    const statsByTask = (taskExpenseStats as any[]).reduce((acc: any, expense: any) => {
+      if (!acc[expense.task_id]) {
+        acc[expense.task_id] = { count: 0, totalAmount: 0 };
+      }
+      acc[expense.task_id].count += 1;
+      acc[expense.task_id].totalAmount += Number(expense.amount || 0);
+      return acc;
+    }, {});
+
+    // Attach expense stats to tasks
+    (project.tasks as any[]).forEach((task: any) => {
+      task.expenseStats = statsByTask[task.id] || { count: 0, totalAmount: 0 };
+    });
   }
 
   // Sort phases by order_index with null-safe handling
@@ -305,204 +392,143 @@ async function getProjectData(id: string) {
     });
   }
 
-  // Calculate task stats per phase
-  const phaseTaskStats = project.project_phases?.map((phase: any) => {
-    const phaseTasks = project.tasks?.filter((t: any) => t.phase_id === phase.id) || [];
-    const completedTasks = phaseTasks.filter((t: any) => t.status === 'completed').length;
-    const blockedTasks = phaseTasks.filter((t: any) => t.status === 'blocked').length;
-    const overdueTasks = phaseTasks.filter(
-      (t: any) => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
-    ).length;
+  // PHASE 3B: Compute stats using database function (replaces 300+ lines of JS aggregation)
+  const { data: statsData, error: statsError } = await supabase
+    .rpc('get_project_detail_with_stats', { p_project_id: id });
 
-    return {
-      phaseId: phase.id,
-      totalTasks: phaseTasks.length,
-      completedTasks,
-      blockedTasks,
-      overdueTasks,
-    };
-  });
-
-  // Fetch expense stats for this project
-  const { data: expenses, error: expensesError } = await supabase
-    .from('expenses')
-    .select('id, amount, status')
-    .eq('project_id', id);
-
-  // Fix H2: Add error handling for expense query
-  if (expensesError) {
-    console.error('[getProjectData] Error fetching expenses:', expensesError);
+  if (statsError) {
+    console.error('[getProjectData] Error fetching stats:', statsError);
   }
 
-  // Fix C3: Safe default for null expenses (already handled)
-  const projectExpenses = expenses || [];
-  const expenseStats = {
-    total: projectExpenses.length,
-    approved: projectExpenses.filter(e => e.status === 'approved').length,
-    pending: projectExpenses.filter(e => e.status === 'submitted').length,
-    rejected: projectExpenses.filter(e => e.status === 'rejected').length,
-    totalAmount: projectExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
-    approvedAmount: projectExpenses
-      .filter(e => e.status === 'approved')
-      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
-    pendingAmount: projectExpenses
-      .filter(e => e.status === 'submitted')
-      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
-    rejectedAmount: projectExpenses
-      .filter(e => e.status === 'rejected')
-      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+  // Extract stats from RPC response
+  let phaseTaskStats: any[] = [];
+  let expenseStats: any = {
+    total: 0,
+    approved: 0,
+    pending: 0,
+    rejected: 0,
+    totalAmount: 0,
+    approvedAmount: 0,
+    pendingAmount: 0,
+    rejectedAmount: 0,
+  };
+  let taskStats: TaskStats = {
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    blocked: 0,
+    overdue: 0,
+    totalPlannedCost: 0,
+    totalActualCost: 0,
+    budgetVariance: 0,
+    budgetUtilization: 0,
+    unassignedCount: 0,
+    topAssignees: [],
+    tasksWithMaterials: 0,
+    totalMaterialCost: 0,
   };
 
-  console.log('[getProjectData] Expense stats:', expenseStats);
+  if (statsData && typeof statsData === 'object' && 'project' in statsData) {
+    const statsProject = (statsData as any).project;
 
-  // Calculate task stats
-  const projectTasks = project?.tasks || [];
-  const now = new Date();
+    // Convert phase_task_stats object to array format
+    if (statsProject.phase_task_stats && project.project_phases) {
+      phaseTaskStats = project.project_phases.map((phase: any) => ({
+        phaseId: phase.id,
+        totalTasks: statsProject.phase_task_stats[phase.id]?.totalTasks || 0,
+        completedTasks: statsProject.phase_task_stats[phase.id]?.completedTasks || 0,
+        blockedTasks: statsProject.phase_task_stats[phase.id]?.blockedTasks || 0,
+        overdueTasks: statsProject.phase_task_stats[phase.id]?.overdueTasks || 0,
+      }));
+    }
 
-  // Query tasks with assignee info for workload distribution
-  const { data: tasksForAssignees } = await supabase
-    .from('tasks')
-    .select('id, status, assignee_id')
-    .eq('project_id', id)
-    .not('status', 'eq', 'completed');
+    // Use expense stats from RPC
+    if (statsProject.expense_stats) {
+      expenseStats = statsProject.expense_stats;
+    }
 
-  // Get unique assignee IDs and fetch their profiles
-  const assigneeIds = [...new Set((tasksForAssignees || []).map(t => t.assignee_id).filter(Boolean))] as string[];
-  const { data: assigneeProfiles } = assigneeIds.length > 0
-    ? await supabase
-        .from('user_profiles')
-        .select('id, name, avatar_url')
-        .in('id', assigneeIds)
-    : { data: [] };
+    // Use task stats from RPC
+    if (statsProject.task_stats) {
+      taskStats = {
+        total: statsProject.task_stats.total || 0,
+        completed: statsProject.task_stats.completed || 0,
+        inProgress: statsProject.task_stats.inProgress || 0,
+        blocked: statsProject.task_stats.blocked || 0,
+        overdue: statsProject.task_stats.overdue || 0,
+        totalPlannedCost: statsProject.task_stats.totalPlannedCost || 0,
+        totalActualCost: statsProject.task_stats.totalActualCost || 0,
+        budgetVariance: statsProject.task_stats.budgetVariance || 0,
+        budgetUtilization: statsProject.task_stats.budgetUtilization || 0,
+        unassignedCount: statsProject.task_stats.unassignedCount || 0,
+        topAssignees: statsProject.top_assignees || [],
+        tasksWithMaterials: statsProject.task_stats.tasksWithMaterials || 0,
+        totalMaterialCost: statsProject.task_stats.totalMaterialCost || 0,
+      };
+    }
 
-  // Create a map for quick lookup
-  const profileMap = new Map((assigneeProfiles || []).map(p => [p.id, p]));
+    // Attach material and expense stats to tasks
+    if (project.tasks && Array.isArray(project.tasks)) {
+      project.tasks.forEach((task) => {
+        if (!task.id) return;
 
-  // Combine tasks with their assignee profiles
-  const tasksWithAssignees = (tasksForAssignees || []).map(task => ({
-    ...task,
-    user_profiles: task.assignee_id ? profileMap.get(task.assignee_id) || null : null,
-  }));
+        // Material stats per task
+        if (statsProject.material_stats_by_task && statsProject.material_stats_by_task[task.id]) {
+          (task as any).materialStats = statsProject.material_stats_by_task[task.id];
+        } else {
+          (task as any).materialStats = { count: 0, totalCost: 0 };
+        }
 
-  // Query material assignments for material cost
-  const { data: materialAssignments, error: materialAssignmentsError } = await supabase
-    .from('material_assignments')
-    .select('task_id, total_cost')
-    .eq('project_id', id);
-
-  if (materialAssignmentsError) {
-    console.error('[ProjectDetailPage] Error fetching material assignments:', materialAssignmentsError);
+        // Expense stats per task
+        if (statsProject.expense_stats_by_task && statsProject.expense_stats_by_task[task.id]) {
+          (task as any).expenseStats = statsProject.expense_stats_by_task[task.id];
+        } else {
+          (task as any).expenseStats = { count: 0, totalAmount: 0 };
+        }
+      });
+    }
   }
 
-  const materialCostByTask = new Map<string, number>();
-  const tasksWithMaterialsSet = new Set<string>();
+  console.log('[getProjectData] Expense stats (from RPC):', expenseStats);
+  console.log('[getProjectData] Task stats (from RPC):', taskStats);
 
-  materialAssignments?.forEach(ma => {
-    if (ma.task_id) {
-      tasksWithMaterialsSet.add(ma.task_id);
-      const current = materialCostByTask.get(ma.task_id) || 0;
-      materialCostByTask.set(ma.task_id, current + (Number(ma.total_cost) || 0));
-    }
-  });
-
-  // Calculate task counts
-  const total = projectTasks.length;
-  const completed = projectTasks.filter(t => t.status === 'completed').length;
-  const inProgress = projectTasks.filter(t => t.status === 'in_progress').length;
-  const blocked = projectTasks.filter(t => t.status === 'blocked').length;
-  const overdue = projectTasks.filter(t =>
-    t.due_date && new Date(t.due_date) < now && t.status !== 'completed'
-  ).length;
-
-  // Calculate budget stats
-  const totalPlannedCost = projectTasks.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
-  const totalActualCost = projectTasks.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
-  const budgetVariance = totalPlannedCost - totalActualCost; // positive = under budget
-  const budgetUtilization = totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
-
-  // Calculate workload distribution
-  const assigneeTaskCounts = new Map<string, { id: string; name: string; avatar_url: string | null; taskCount: number }>();
-
-  tasksWithAssignees?.forEach(task => {
-    if (task.assignee_id && task.user_profiles) {
-      const current = assigneeTaskCounts.get(task.assignee_id);
-      if (current) {
-        current.taskCount++;
-      } else {
-        assigneeTaskCounts.set(task.assignee_id, {
-          id: task.user_profiles.id,
-          name: task.user_profiles.name || 'Unknown',
-          avatar_url: task.user_profiles.avatar_url,
-          taskCount: 1,
-        });
-      }
-    }
-  });
-
-  const topAssignees = Array.from(assigneeTaskCounts.values())
-    .sort((a, b) => b.taskCount - a.taskCount)
-    .slice(0, 3);
-
-  const unassignedCount = tasksWithAssignees?.filter(t => !t.assignee_id).length || 0;
-
-  // Calculate material impact
-  const tasksWithMaterials = tasksWithMaterialsSet.size;
-  const totalMaterialCost = Array.from(materialCostByTask.values()).reduce((sum, cost) => sum + cost, 0);
-
-  const taskStats: TaskStats = {
-    total,
-    completed,
-    inProgress,
-    blocked,
-    overdue,
-    totalPlannedCost,
-    totalActualCost,
-    budgetVariance,
-    budgetUtilization,
-    unassignedCount,
-    topAssignees,
-    tasksWithMaterials,
-    totalMaterialCost,
-  };
-
-  console.log('[getProjectData] Task stats:', taskStats);
-
-  // Fetch active 3D model for this project
-  const { data: activeModel } = await supabase
-    .from('projects_3d_models')
-    .select('*')
-    .eq('project_id', id)
-    .eq('is_active', true)
-    .eq('processing_status', 'ready')
-    .maybeSingle();
-
-  console.log('[getProjectData] Active 3D model:', activeModel);
-
-  // Fetch project files and photos for Files & Photos tab
-  const filesResult = await getProjectFiles(id);
-  const projectFiles = filesResult.error ? [] : (filesResult.data || []);
-  if (filesResult.error) {
+  // Use files, photos, and team costs from Phase 2 (already fetched)
+  let projectFiles: ProjectFilesRow[] = [];
+  if ('error' in filesResult) {
     console.warn('[getProjectData] Failed to load files:', filesResult.error);
+  } else {
+    projectFiles = filesResult.data || [];
   }
 
-  const photosResult = await getProjectPhotosWithReceipts(id);
-  const projectPhotos = photosResult.error ? [] : (photosResult.data || []);
-  if (photosResult.error) {
+  let projectPhotos: UnifiedPhoto[] = [];
+  if ('error' in photosResult) {
     console.warn('[getProjectData] Failed to load photos:', photosResult.error);
+  } else {
+    projectPhotos = photosResult.data || [];
   }
 
   console.log('[getProjectData] Files:', projectFiles.length, 'Photos:', projectPhotos.length);
 
-  // Fetch team cost summaries
-  const teamCostResult = await getProjectTeamCostSummary(id);
-  const teamCostSummaries = teamCostResult.error ? [] : (teamCostResult.data || []);
-  if (teamCostResult.error) {
+  let teamCostSummaries: TeamCostSummary[] = [];
+  if ('error' in teamCostResult) {
     console.warn('[getProjectData] Failed to load team costs:', teamCostResult.error);
+  } else {
+    teamCostSummaries = teamCostResult.data || [];
   }
 
   console.log('[getProjectData] Team cost summaries:', teamCostSummaries.length);
 
-  return { project, projects: projects || [], teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, teamCostSummaries, userRole: companyUser.role || 'field_worker' };
+  return {
+    project,
+    projects: projects || [],
+    teamMembers: teamMembers || [],
+    phaseTaskStats,
+    taskDependencies: taskDependencies || [],
+    expenseStats,
+    taskStats,
+    projectFiles,
+    projectPhotos,
+    teamCostSummaries
+  };
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
@@ -526,9 +552,9 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, activeModel, projectFiles, projectPhotos, teamCostSummaries, userRole } = data;
+  const { project, projects, teamMembers, phaseTaskStats, taskDependencies, expenseStats, taskStats, projectFiles, projectPhotos, teamCostSummaries } = data;
 
-  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'teamCostSummaries:', teamCostSummaries?.length);
+  console.log('[ProjectDetailPage] Loading project:', id, 'with expense stats:', expenseStats, 'task stats:', taskStats, 'teamCostSummaries:', teamCostSummaries?.length);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -569,14 +595,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         {/* Project Detail Content */}
         <ProjectDetailContent
           project={project}
-          projects={projects}
-          teamMembers={teamMembers}
+          projects={projects || []}
+          teamMembers={teamMembers || []}
           phaseTaskStats={phaseTaskStats || []}
           taskDependencies={taskDependencies || []}
           expenseStats={expenseStats}
           taskStats={taskStats}
-          activeModel={activeModel || null}
-          userRole={userRole}
           projectFiles={projectFiles || []}
           projectPhotos={projectPhotos || []}
           teamCostSummaries={teamCostSummaries || []}

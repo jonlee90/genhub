@@ -44,34 +44,10 @@ interface PhaseStats {
 
 // Fix C1: Import ExpenseStats instead of duplicating
 import type { ExpenseStats, TaskStats, TeamCostSummary } from '@/app/actions/projects';
+import type { ProjectDetailProps } from '@/types/components/projects';
+import type { TaskWithRelations, TeamMember as TaskBoardTeamMember, Phase } from '@/types/db/task';
 
-interface ProjectDetailContentProps {
-  project: any;
-  projects: Array<{
-    id: string;
-    name: string;
-    project_phases?: Array<{
-      id: string;
-      name: string;
-      order_index: number;
-    }>;
-  }>;
-  teamMembers: Array<{
-    id: string;
-    name: string;
-    email: string;
-    avatar_url: string | null;
-  }>;
-  phaseTaskStats: PhaseStats[];
-  taskDependencies?: any[];
-  expenseStats?: ExpenseStats;
-  taskStats?: TaskStats;
-  activeModel?: any;
-  userRole?: string; // NEW: For spatial viewer permissions
-  projectFiles?: any[]; // NEW: For Files & Photos tab
-  projectPhotos?: any[]; // NEW: For Files & Photos tab
-  teamCostSummaries?: TeamCostSummary[]; // NEW: For team cost breakdown
-}
+type ProjectDetailContentProps = ProjectDetailProps;
 
 const STATUS_CONFIG = {
   active: {
@@ -104,13 +80,11 @@ export function ProjectDetailContent({
   taskDependencies = [],
   expenseStats,
   taskStats,
-  activeModel,
-  userRole = 'field_worker',
   projectFiles = [],
   projectPhotos = [],
   teamCostSummaries = [],
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'userRole:', userRole, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length, 'teamCostSummaries:', teamCostSummaries?.length);
+  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length, 'teamCostSummaries:', teamCostSummaries?.length);
 
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'files' | 'settings'>('overview');
@@ -167,11 +141,11 @@ export function ProjectDetailContent({
 
   // Calculate project statistics
   const totalTasks = project.tasks?.length || 0;
-  const _completedTasks = project.tasks?.filter((t: any) => t.status === 'completed').length || 0;
-  const _inProgressTasks = project.tasks?.filter((t: any) => t.status === 'in_progress').length || 0;
-  const _blockedTasks = project.tasks?.filter((t: any) => t.status === 'blocked').length || 0;
+  const _completedTasks = project.tasks?.filter(t => t.status === 'completed').length || 0;
+  const _inProgressTasks = project.tasks?.filter(t => t.status === 'in_progress').length || 0;
+  const _blockedTasks = project.tasks?.filter(t => t.status === 'blocked').length || 0;
   const _overdueTasks = project.tasks?.filter(
-    (t: any) => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
+    t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
   ).length || 0;
   const teamSize = project.project_team?.length || 0;
 
@@ -415,7 +389,7 @@ export function ProjectDetailContent({
         {/* Task Stats - Only show on Tasks tab */}
         {activeTab === 'tasks' && (
           <DashboardStats
-              tasks={project.tasks || []}
+              tasks={(project.tasks || []) as any}
               projectFilter={project.id}
               projects={projects}
               budget={project.budget}
@@ -584,8 +558,6 @@ export function ProjectDetailContent({
               phaseTaskStats={phaseTaskStats}
               expenseStats={expenseStats}
               taskStats={taskStats}
-              activeModel={activeModel}
-              userRole={userRole}
               teamCostSummaries={teamCostSummaries}
             />
           </motion.div>
@@ -601,7 +573,7 @@ export function ProjectDetailContent({
           >
             <ProjectTeam
               projectId={project.id}
-              companyId={project.company_id}
+              companyId={project.company_id || ''}
               team={project.project_team || []}
               costSummaries={
                 teamCostSummaries && teamCostSummaries.length > 0
@@ -626,13 +598,13 @@ export function ProjectDetailContent({
             transition={{ duration: 0.2 }}
           >
             <TaskBoard
-              initialTasks={project.tasks || []}
+              initialTasks={(project.tasks || []) as TaskWithRelations[]}
               taskDependencies={taskDependencies}
               projects={projects}
-              teamMembers={teamMembers}
+              teamMembers={teamMembers as TaskBoardTeamMember[]}
               initialView="kanban"
               projectId={project.id}
-              phases={project.project_phases || []}
+              phases={(project.project_phases || []) as Phase[]}
             />
           </motion.div>
         )}
@@ -663,7 +635,7 @@ export function ProjectDetailContent({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <ProjectSettings project={project} />
+            <ProjectSettings project={project as any} />
           </motion.div>
         )}
       </AnimatePresence>

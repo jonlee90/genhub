@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
@@ -338,17 +339,18 @@ export async function createProject(formData: FormData) {
         console.log('[createProject] Fetched tasks for marker linking:', createdTasks.length);
 
         // Step 3: Create markers from default configs with auto-linking
+        // Type: createdTasks has { id, title, phase_id } which matches Task in default-models.ts
         const createdMarkers = await createMarkersFromDefaultConfigs(
           project.id,
           defaultModel.id,
-          createdTasks as any
+          createdTasks
         );
 
         if (createdMarkers && createdMarkers.length > 0) {
           const matchStats = {
             total: createdMarkers.length,
-            matched: createdMarkers.filter((m: any) => m.task_id).length,
-            unmatched: createdMarkers.filter((m: any) => !m.task_id).length,
+            matched: createdMarkers.filter(m => m.task_id).length,
+            unmatched: createdMarkers.filter(m => !m.task_id).length,
           };
 
           console.log(`[createProject] ✅ Created markers from default configs: ${matchStats.total} (${matchStats.matched} auto-linked to tasks, ${matchStats.unmatched} unlinked)`);
@@ -984,30 +986,56 @@ function calculateScheduleStatus(
  * Performance: 4 queries + JS loops → 1 RPC call (~1200ms → ~150ms)
  *
  * Includes: task counts, budget variance, schedule status, materials status
+ *
+ * @param options - Pagination options
+ * @param options.limit - Maximum number of projects to return (default: 20)
+ * @param options.offset - Number of projects to skip (default: 0)
  */
-export async function getProjectsWithStats(): Promise<{
+export async function getProjectsWithStats(
+  companyId: string,
+  options?: {
+    limit?: number;
+    offset?: number;
+  }
+): Promise<{
   projects?: ProjectWithStats[];
+  totalCount?: number;
   error?: string
 }> {
-  console.log('[getProjectsWithStats] Starting optimized project fetch...');
+  const limit = options?.limit ?? 20;
+  const offset = options?.offset ?? 0;
 
-  // Get user context
-  const userContext = await getUserContext();
-  if ('error' in userContext) {
-    console.error('[getProjectsWithStats] User context error:', userContext.error);
-    return { error: userContext.error };
-  }
+  console.log(`[getProjectsWithStats] Starting optimized project fetch (limit: ${limit}, offset: ${offset})...`);
 
-  const { companyId, supabase } = userContext;
-  console.log('[getProjectsWithStats] Fetching for company:', companyId);
+  // Note: unstable_cache was removed because createClient() internally calls auth(),
+  // which accesses headers() - a dynamic data source that can't be cached.
+  // The RPC function itself is already optimized (~150ms), and Next.js provides
+  // automatic request memoization, so explicit caching is unnecessary.
+  return await fetchProjectsWithStats(companyId, limit, offset);
+}
+
+// Internal helper function for fetching projects
+async function fetchProjectsWithStats(
+  companyId: string,
+  limit: number,
+  offset: number
+): Promise<{
+  projects?: ProjectWithStats[];
+  totalCount?: number;
+  error?: string
+}> {
+  console.log('[fetchProjectsWithStats] Fetching for company:', companyId);
+
+  // Create Supabase client inside cached function
+  const supabase = await createClient();
 
   try {
     // Call optimized database function - returns JSONB array with pre-aggregated stats
     const { data: result, error: rpcError } = await supabase
       .rpc('get_projects_with_stats', {
         p_company_id: companyId,
-        p_limit: 100, // Adjust as needed for pagination
-        p_offset: 0
+        p_limit: limit,
+        p_offset: offset
       });
 
     if (rpcError) {
@@ -1015,12 +1043,55 @@ export async function getProjectsWithStats(): Promise<{
       return { error: 'Failed to fetch projects' };
     }
 
+    // Get total count for pagination (separate lightweight query)
+    const { count, error: countError } = await supabase
+      .from('projects')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId);
+
+    if (countError) {
+      console.error('[getProjectsWithStats] Count error:', countError);
+      // Continue without count - pagination will be disabled
+    }
+
+    console.log(`[getProjectsWithStats] Total project count: ${count || 0}`);
+
+
     // Result is JSONB - need to parse it as array
-    const projects = (result || []) as any[];
+    // Type: RPC returns JSON with project data + nested stats object
+    type RpcProjectResult = Project & {
+      stats?: {
+        // Task stats
+        total_tasks?: number;
+        completed_tasks?: number;
+        in_progress_tasks?: number;
+        blocked_tasks?: number;
+        todo_tasks?: number;
+        overdue_tasks?: number;
+        actual_spent?: number;
+        planned_cost?: number;
+        // Expense stats
+        expenses_total?: number;
+        expenses_approved?: number;
+        expenses_pending?: number;
+        expenses_rejected?: number;
+        expenses_total_amount?: number | string;
+        expenses_approved_amount?: number | string;
+        expenses_pending_amount?: number | string;
+        // Material stats
+        materials_needed?: number;
+        materials_ordered?: number;
+        materials_delivered?: number;
+        // Team stats
+        team_size?: number;
+      };
+    };
+
+    const projects = (result || []) as RpcProjectResult[];
 
     if (!projects || projects.length === 0) {
       console.log('[getProjectsWithStats] No projects found');
-      return { projects: [] };
+      return { projects: [], totalCount: count || 0 };
     }
 
     console.log(`[getProjectsWithStats] Found ${projects.length} projects with pre-aggregated stats`);
@@ -1029,19 +1100,21 @@ export async function getProjectsWithStats(): Promise<{
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const projectsWithStats: ProjectWithStats[] = projects.map((project: any) => {
-      // Extract stats from database result
+    const projectsWithStats: ProjectWithStats[] = projects.map((project) => {
+      // Extract stats from database result - stats are nested in project.stats
+      const dbStats = project.stats || {};
+
       const taskCounts: TaskCounts = {
-        total: project.total_tasks || 0,
-        completed: project.completed_tasks || 0,
-        in_progress: project.in_progress_tasks || 0,
-        blocked: project.blocked_tasks || 0,
-        todo: project.todo_tasks || 0,
-        overdue: project.overdue_tasks || 0,
+        total: dbStats.total_tasks || 0,
+        completed: dbStats.completed_tasks || 0,
+        in_progress: dbStats.in_progress_tasks || 0,
+        blocked: dbStats.blocked_tasks || 0,
+        todo: dbStats.todo_tasks || 0,
+        overdue: dbStats.overdue_tasks || 0,
       };
 
-      const actualSpent = Number(project.actual_spent) || 0;
-      const plannedCost = Number(project.planned_cost) || 0;
+      const actualSpent = Number(dbStats.actual_spent) || 0;
+      const plannedCost = Number(dbStats.planned_cost) || 0;
       const budget = Number(project.budget) || 0;
 
       // Calculate materials costs from DB aggregated amounts
@@ -1049,13 +1122,13 @@ export async function getProjectsWithStats(): Promise<{
 
       // Expense stats from DB
       const expenseStats: ExpenseStats = {
-        total: project.expenses_total || 0,
-        approved: project.expenses_approved || 0,
-        pending: project.expenses_pending || 0,
-        rejected: project.expenses_rejected || 0,
-        totalAmount: Number(project.expenses_total_amount) || 0,
-        approvedAmount: Number(project.expenses_approved_amount) || 0,
-        pendingAmount: Number(project.expenses_pending_amount) || 0,
+        total: dbStats.expenses_total || 0,
+        approved: dbStats.expenses_approved || 0,
+        pending: dbStats.expenses_pending || 0,
+        rejected: dbStats.expenses_rejected || 0,
+        totalAmount: Number(dbStats.expenses_total_amount) || 0,
+        approvedAmount: Number(dbStats.expenses_approved_amount) || 0,
+        pendingAmount: Number(dbStats.expenses_pending_amount) || 0,
         rejectedAmount: 0, // Not tracked separately in DB function
       };
 
@@ -1071,9 +1144,9 @@ export async function getProjectsWithStats(): Promise<{
 
       // Materials status from DB
       const materialsStatus: MaterialsStatus = {
-        needed: project.materials_needed || 0,
-        ordered: project.materials_ordered || 0,
-        delivered: project.materials_delivered || 0,
+        needed: dbStats.materials_needed || 0,
+        ordered: dbStats.materials_ordered || 0,
+        delivered: dbStats.materials_delivered || 0,
       };
 
       const stats: ProjectStats = {
@@ -1084,7 +1157,7 @@ export async function getProjectsWithStats(): Promise<{
         taskCounts,
         schedule,
         materials: materialsStatus,
-        teamSize: project.team_size || 0,
+        teamSize: dbStats.team_size || 0,
         expenses: expenseStats,
       };
 
@@ -1132,7 +1205,7 @@ export async function getProjectsWithStats(): Promise<{
     });
 
     console.log(`[getProjectsWithStats] Successfully processed ${projectsWithStats.length} projects with stats`);
-    return { projects: projectsWithStats };
+    return { projects: projectsWithStats, totalCount: count || 0 };
 
   } catch (error) {
     console.error('[getProjectsWithStats] Unexpected error:', error);
@@ -1149,13 +1222,27 @@ export async function getProjectWithStats(projectId: string): Promise<{
 }> {
   console.log('[getProjectWithStats] Fetching project:', projectId);
 
-  // Get user context
+  // Get user context (not cached - auth must be per-request)
   const userContext = await getUserContext();
   if ('error' in userContext) {
     return { error: userContext.error };
   }
 
-  const { companyId, supabase } = userContext;
+  const { companyId } = userContext;
+
+  // Note: unstable_cache was removed because createClient() internally calls auth(),
+  // which accesses headers() - a dynamic data source that can't be cached.
+  // Next.js provides automatic request memoization for the same request.
+  return await fetchProjectWithStats(projectId, companyId);
+}
+
+// Internal helper function for fetching project detail
+async function fetchProjectWithStats(projectId: string, companyId: string): Promise<{
+  project?: ProjectWithStats;
+  error?: string;
+}> {
+  // Create Supabase client inside cached function
+  const supabase = await createClient();
 
   try {
     // 1. Fetch project with phases and team
@@ -1326,14 +1413,31 @@ export async function getProjectTeamCostSummary(
 ): Promise<{ data?: TeamCostSummary[]; error?: string }> {
   console.log('[getProjectTeamCostSummary] Fetching for project:', projectId);
 
-  try {
-    // Get user context
-    const userContext = await getUserContext();
-    if ('error' in userContext) {
-      return { error: userContext.error };
-    }
+  // Get user context (not cached - auth must be per-request)
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
 
-    const { companyId, supabase } = userContext;
+  const { companyId } = userContext;
+
+  // Note: unstable_cache was removed because createClient() internally calls auth(),
+  // which accesses headers() - a dynamic data source that can't be cached.
+  // Next.js provides automatic request memoization for the same request.
+  return await fetchProjectTeamCostSummary(projectId, companyId);
+}
+
+// Internal helper function for fetching team cost summary
+async function fetchProjectTeamCostSummary(
+  projectId: string,
+  companyId: string
+): Promise<{ data?: TeamCostSummary[]; error?: string }> {
+  console.log('[fetchProjectTeamCostSummary] Fetching for project:', projectId);
+
+  // Create Supabase client inside cached function
+  const supabase = await createClient();
+
+  try {
 
     // Verify project belongs to user's company
     const { data: project, error: projectError } = await supabase

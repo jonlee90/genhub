@@ -29,28 +29,30 @@ async function getProjects() {
     .maybeSingle();
 
   if (!companyUser) {
-    return { projects: [], role: null };
+    return { projects: [], totalCount: 0, role: null, companyId: '' };
   }
 
-  // Fetch projects with enhanced stats
-  const { projects, error } = await getProjectsWithStats();
+  // Fetch projects with enhanced stats (defaults: limit=20, offset=0)
+  const { projects, totalCount, error } = await getProjectsWithStats(companyUser.company_id);
 
   if (error) {
     console.error('[ProjectsPage] Error fetching projects:', error);
-    return { projects: [], role: companyUser.role };
+    return { projects: [], totalCount: 0, role: companyUser.role, companyId: companyUser.company_id };
   }
 
-  console.log(`[ProjectsPage] Successfully fetched ${projects?.length || 0} projects with stats`);
-  return { projects: projects || [], role: companyUser.role };
+  console.log(`[ProjectsPage] Successfully fetched ${projects?.length || 0} projects with stats (total: ${totalCount || 0})`);
+  return { projects: projects || [], totalCount: totalCount || 0, role: companyUser.role, companyId: companyUser.company_id };
 }
 
 export default async function ProjectsPage() {
-  const { projects, role } = await getProjects();
+  const { projects, totalCount, role, companyId } = await getProjects();
 
   return (
     <ProjectsPageClient
       projects={projects}
+      totalCount={totalCount}
       role={role}
+      companyId={companyId}
     />
   );
 }

@@ -12,8 +12,7 @@ import { Project3DModel, SpatialMarker } from '@/types/db/spatial';
 type Task = {
   id: string;
   title: string;
-  phase_id: string;
-  [key: string]: any;
+  phase_id: string | null;
 };
 
 // Debug: Helper to get user context

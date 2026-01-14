@@ -236,10 +236,14 @@ export async function getMessages(
     return { error: accessCheck.error };
   }
 
-  // Fetch messages without nested relationships
+  // Fetch messages with reply counts in a single query
+  // Using PostgREST subquery aggregation to count replies
   let query = supabase
     .from('messages')
-    .select('*')
+    .select(`
+      *,
+      reply_count:messages!reply_to_id(count)
+    `)
     .eq('chat_room_id', chatRoomId)
     .order('created_at', { ascending: false })
     .limit(limit + 1); // Fetch one extra to determine if there are more
@@ -323,44 +327,40 @@ export async function getMessages(
   const profilesMap = new Map(userProfiles?.map((p: any) => [p.id, p]) || []);
   const repliesMap = new Map(replyToMessages.map((r: any) => [r.id, r]));
 
-  // Combine data and get counts
-  const messagesWithData = await Promise.all(
-    messages.map(async (message: any) => {
-      // Count replies to this message
-      const { count: replyCount } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('reply_to_id', message.id)
-        .is('deleted_at', null);
+  // Combine data - reply_count already included from subquery
+  const messagesWithData = messages.map((message: any) => {
+    // Build message with sender profile
+    const sender = profilesMap.get(message.sender_id);
 
-      // Build message with sender profile
-      const sender = profilesMap.get(message.sender_id);
-
-      // Build reply_to with sender profile if exists
-      let reply_to = null;
-      if (message.reply_to_id) {
-        const replyMsg = repliesMap.get(message.reply_to_id);
-        if (replyMsg) {
-          const replySender = profilesMap.get(replyMsg.sender_id);
-          reply_to = {
-            id: replyMsg.id,
-            content: replyMsg.content,
-            created_at: replyMsg.created_at,
-            sender: replySender || null,
-          };
-        }
+    // Build reply_to with sender profile if exists
+    let reply_to = null;
+    if (message.reply_to_id) {
+      const replyMsg = repliesMap.get(message.reply_to_id);
+      if (replyMsg) {
+        const replySender = profilesMap.get(replyMsg.sender_id);
+        reply_to = {
+          id: replyMsg.id,
+          content: replyMsg.content,
+          created_at: replyMsg.created_at,
+          sender: replySender || null,
+        };
       }
+    }
 
-      return {
-        ...message,
-        sender,
-        reply_to,
-        reply_count: replyCount || 0,
-        reaction_count: 0,
-        attachment_count: 0,
-      };
-    })
-  );
+    // Extract reply count from subquery result (PostgREST returns as array)
+    const replyCount = Array.isArray(message.reply_count)
+      ? (message.reply_count[0]?.count || 0)
+      : (message.reply_count || 0);
+
+    return {
+      ...message,
+      sender,
+      reply_to,
+      reply_count: replyCount,
+      reaction_count: 0,
+      attachment_count: 0,
+    };
+  });
 
   console.log('[getMessages] Returning', messagesWithData.length, 'messages, nextCursor:', nextCursor);
 

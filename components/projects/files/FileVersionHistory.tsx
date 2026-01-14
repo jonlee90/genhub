@@ -47,7 +47,8 @@ function formatFileSize(bytes: number): string {
 }
 
 /**
- * Format date for display
+ * Format date for display with time
+ * Note: Local function includes time formatting - differs from shared utils formatDate
  */
 function formatDate(dateString: string): string {
   try {

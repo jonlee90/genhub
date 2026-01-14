@@ -38,6 +38,7 @@ import { cn } from '@/lib/utils';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
 import { BaseModal } from '@/components/ui/BaseModal';
 import type { PhaseTemplatesRow } from '@/types/db/tables/projects';
+import type { CreateProjectFormState } from '@/types/components/projects';
 
 type PhaseTemplate = PhaseTemplatesRow;
 
@@ -82,12 +83,7 @@ const formSteps = [
   { id: 'timeline', label: 'Timeline' },
 ];
 
-type FormState = {
-  error?: string;
-  fieldErrors?: Record<string, string[]>;
-  success?: boolean;
-  project?: any;
-};
+type FormState = CreateProjectFormState;
 
 // Client-side validation errors
 type ValidationErrors = {
@@ -160,13 +156,14 @@ export function CreateProjectForm({
       console.log('[CreateProjectForm] Project created successfully:', state.project.id);
       setSuccess(true);
 
+      const projectId = state.project.id;
       setTimeout(() => {
         if (isModal && onSuccess) {
           console.log('[CreateProjectForm] Modal mode - calling onSuccess callback');
-          onSuccess(state.project.id);
+          onSuccess(projectId);
         } else {
           console.log('[CreateProjectForm] Page mode - redirecting to project detail');
-          router.push(`/app/projects/${state.project.id}`);
+          router.push(`/app/projects/${projectId}`);
         }
       }, 500);
     }

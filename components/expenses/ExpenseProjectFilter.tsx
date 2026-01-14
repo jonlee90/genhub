@@ -1,7 +1,7 @@
 'use client';
 
 import { FolderKanban, Receipt, DollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -12,18 +12,6 @@ import {
 import type { ExpenseProject } from '@/types/db/expense';
 
 type Project = ExpenseProject;
-
-/**
- * Format currency amount
- */
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
 
 interface ExpenseProjectFilterProps {
   projects: Project[];
