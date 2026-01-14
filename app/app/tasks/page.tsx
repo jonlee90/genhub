@@ -13,27 +13,28 @@ async function getTasks() {
 
   if (!session?.user?.id) {
     if (process.env.NODE_ENV === 'development') {
-      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [] };
+      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [], userRole: null };
     }
     redirect('/');
   }
 
-  // Get user's company first (required for all other queries)
+  // Get user's company and role first (required for all other queries)
   const { data: companyUser } = await supabase
     .from('company_users')
-    .select('company_id')
+    .select('company_id, role')
     .eq('user_id', session.user.id)
     .eq('status', 'active')
     .maybeSingle();
 
   if (!companyUser) {
     if (process.env.NODE_ENV === 'development') {
-      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [] };
+      return { tasks: [], projects: [], teamMembers: [], taskDependencies: [], userRole: null };
     }
     redirect('/app/onboarding');
   }
 
   const companyId = companyUser.company_id;
+  const userRole = companyUser.role;
 
   // OPTIMIZATION: Run all independent queries in parallel
   const [projectsResult, teamMembersResult, tasksResult] = await Promise.all([
@@ -97,12 +98,12 @@ async function getTasks() {
 
   if (tasksResult.error) {
     console.error('Error fetching tasks:', tasksResult.error);
-    return { tasks: [], projects, teamMembers, taskDependencies: [] };
+    return { tasks: [], projects, teamMembers, taskDependencies: [], userRole };
   }
 
   // If no tasks, return early
   if (tasks.length === 0) {
-    return { tasks: [], projects, teamMembers, taskDependencies: [] };
+    return { tasks: [], projects, teamMembers, taskDependencies: [], userRole };
   }
 
   // Collect unique IDs for batch fetching
@@ -190,11 +191,12 @@ async function getTasks() {
     projects,
     teamMembers,
     taskDependencies: dependenciesResult.data || [],
+    userRole,
   };
 }
 
 export default async function TasksPage({ searchParams }: TasksPageProps) {
-  const { tasks, projects, teamMembers, taskDependencies } = await getTasks();
+  const { tasks, projects, teamMembers, taskDependencies, userRole } = await getTasks();
   const params = await searchParams;
 
   // Get view mode from URL or default to kanban
@@ -207,6 +209,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
       teamMembers={teamMembers}
       taskDependencies={taskDependencies || []}
       initialView={viewMode as 'kanban' | 'list'}
+      userRole={userRole}
     />
   );
 }

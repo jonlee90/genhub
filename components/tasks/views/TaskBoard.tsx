@@ -87,6 +87,8 @@ interface TaskBoardProps {
   onMobileFilterClick?: () => void;
   /** Optional: Pre-fetched assignees to avoid N+1 queries in task modals */
   assignees?: AssigneeOption[];
+  /** User role for permission checks */
+  userRole?: string | null;
 }
 
 export function TaskBoard({
@@ -111,6 +113,7 @@ export function TaskBoard({
   mobileStatusTabs,
   mobileActiveFilterCount,
   onMobileFilterClick,
+  userRole,
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -554,6 +557,7 @@ export function TaskBoard({
         onSuccess={handleModalSuccess}
         tasks={initialTasks}
         assignees={assignees}
+        userRole={userRole}
       />
     </div>
   );

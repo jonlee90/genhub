@@ -25,6 +25,7 @@ import {
   RotateCcw,
   MessageSquare,
   Plus,
+  Trash2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +40,7 @@ import {
 } from '@/components/ui/select';
 // Avatar component removed - was unused
 import { cn } from '@/lib/utils';
-import { createTask, updateTask, updateApprovalStatus } from '@/app/actions/tasks';
+import { createTask, updateTask, updateApprovalStatus, deleteTask } from '@/app/actions/tasks';
 import { TaskMaterialsManager, type TempMaterial } from '../materials/TaskMaterialsManager';
 import { CreatorBadge } from '@/components/ui/CreatorBadge';
 import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from '../forms/TaskTypeSelector';
@@ -131,6 +132,7 @@ interface TaskModalProps {
   onSuccess?: () => void;
   tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
   assignees?: TaskAssigneeOption[]; // Optional: Pre-fetched assignees to avoid N+1 queries
+  userRole?: string | null; // User role for permission checks
 }
 
 // Note: Status and Priority colors now come from shared config: TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG
@@ -163,6 +165,7 @@ function TaskModalForm({
   onSuccess,
   tasks = [], // Default to empty array
   assignees, // Optional: Pre-fetched assignees
+  userRole, // User role for permission checks
 }: Omit<TaskModalProps, 'isOpen'>) {
   const router = useRouter();
   const { toast } = useToast();
@@ -206,6 +209,10 @@ function TaskModalForm({
   // Approval workflow state
   const [approvalNotes, setApprovalNotes] = useState('');
   const [isApprovalPending, setIsApprovalPending] = useState(false);
+
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form state - initialized directly from task props for edit mode
   // Using function initializers ensures values are set on first render
@@ -527,6 +534,39 @@ function TaskModalForm({
     }
   };
 
+  // Handler for deleting a task
+  const handleDeleteTask = async () => {
+    if (!task?.id) return;
+
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      const result = await deleteTask(task.id);
+
+      if (result?.error) {
+        setError(result.error);
+        setShowDeleteConfirm(false);
+      } else {
+        toast({
+          title: 'Task Deleted',
+          description: 'The task has been successfully deleted.',
+          variant: 'default',
+        });
+        setTimeout(() => {
+          onSuccess?.();
+          onClose();
+          router.refresh();
+        }, 500);
+      }
+    } catch (err) {
+      setError('An unexpected error occurred while deleting the task');
+      setShowDeleteConfirm(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -647,13 +687,29 @@ function TaskModalForm({
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-        ) : task?.creator ? (
-          <CreatorBadge
-            creatorName={task.creator.name}
-            createdAt={task.created_at}
-            variant="default"
-          />
-        ) : null
+        ) : (
+          <div className="flex items-center gap-2">
+            {/* Delete button for admin and project managers only */}
+            {(userRole === 'admin' || userRole === 'project_manager') && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isPending || isDeleting}
+                className="h-10 min-h-[44px] px-3 text-red-600 hover:text-red-700 hover:bg-red-50 active:scale-[0.98] transition-transform"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+            {task?.creator && (
+              <CreatorBadge
+                creatorName={task.creator.name}
+                createdAt={task.created_at}
+                variant="default"
+              />
+            )}
+          </div>
+        )
       }
       rightActions={
         <Button
@@ -1204,6 +1260,73 @@ function TaskModalForm({
           </motion.div>
         </div>
       </form>
+
+      {/* Delete Confirmation Dialog */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/50"
+              onClick={() => !isDeleting && setShowDeleteConfirm(false)}
+            />
+
+            {/* Confirmation Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative bg-white rounded-2xl shadow-xl p-6 max-w-md w-full"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    Delete Task
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Are you sure you want to delete this task? This action cannot be undone.
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handleDeleteTask}
+                      disabled={isDeleting}
+                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      {isDeleting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </ResponsiveModal>
   );
 }
@@ -1222,6 +1345,7 @@ export function TaskModal({
   onSuccess,
   tasks = [], // Default to empty array
   assignees, // Optional: Pre-fetched assignees
+  userRole, // User role for permission checks
 }: TaskModalProps) {
   // Generate a unique key for the form based on mode and task ID
   // This forces React to remount the form component with fresh state
@@ -1242,6 +1366,7 @@ export function TaskModal({
       onSuccess={onSuccess}
       tasks={tasks}
       assignees={assignees}
+      userRole={userRole}
     />
   );
 }

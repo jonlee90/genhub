@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-12
+Last updated: 2026-01-14
 
 ---
 
@@ -49,7 +49,7 @@ Last updated: 2026-01-12
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | sendMessage | send message | - |
-| markMessagesAsRead | mark messages as read | /app/chat |
+| markMessagesAsRead | mark messages as read | - |
 | getThreadMessages | get thread messages | - |
 | getMessageReplyCount | get message reply count | - |
 | getMessageReplyCounts | get message reply counts | - |
@@ -58,12 +58,12 @@ Last updated: 2026-01-12
 | getMessagesReactions | get messages reactions | - |
 | uploadAttachment | upload attachment | - |
 | getMessageAttachments | get message attachments | - |
-| deleteAttachment | delete attachment | /app/chat |
+| deleteAttachment | delete attachment | - |
 | getMessagesAttachments | get messages attachments | - |
-| muteChatRoom | mute chat room | /app/chat |
+| muteChatRoom | mute chat room | - |
 | createDMRoom | create d m room | - |
-| editMessage | edit message | /app/chat |
-| deleteMessage | delete message | /app/chat |
+| editMessage | edit message | - |
+| deleteMessage | delete message | - |
 | updateChatRoom | update chat room | - |
 | exportTranscript | export transcript | - |
 | getChatRoomParticipants | get chat room participants | - |
@@ -78,6 +78,7 @@ Last updated: 2026-01-12
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | getDashboardData | get dashboard data | - |
+| invalidateDashboardCache | invalidate dashboard cache | - |
 
 ### default-models.ts
 | Action | Purpose | Revalidates |
@@ -87,16 +88,16 @@ Last updated: 2026-01-12
 | createMarkersFromDefaultConfigs | create markers from default configs | - |
 | assignDefaultModel | assign default model | - |
 | getDefaultModelsForCompany | get default models for company | - |
-| uploadCompanyDefaultModel | upload company default model | /app/settings/default-models |
-| resetToSystemDefault | reset to system default | /app/settings/default-models |
+| uploadCompanyDefaultModel | upload company default model | - |
+| resetToSystemDefault | reset to system default | - |
 
 ### expenses.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | createExpense | create expense | - |
-| updateExpense | update expense | /app/expenses |
+| updateExpense | update expense | - |
 | reviewExpense | review expense | - |
-| deleteExpense | delete expense | /app/expenses |
+| deleteExpense | delete expense | - |
 | getExpensesByProject | get expenses by project | - |
 | getExpensesByCompany | get expenses by company | - |
 | getExpenseById | get expense by id | - |
@@ -105,28 +106,31 @@ Last updated: 2026-01-12
 | processReceiptOCR | process receipt o c r | - |
 | matchLineItemToMaterial | match line item to material | - |
 | getTaskExpenses | get task expenses | - |
+| getBatchTaskExpenses | get batch task expenses | - |
 | createExpenseFromMaterial | create expense from material | - |
 | getMaterialExpenseLink | get material expense link | - |
 | getExpenseAnalytics | get expense analytics | - |
+| getVendorOptions | get vendor options | - |
+| createExpenseFromTask | create expense from task | - |
 
 ### kakao.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | getKakaoConnection | get kakao connection | - |
-| updateTwoWaySync | update two way sync | /app/settings |
-| disconnectKakao | disconnect kakao | /app/settings |
+| updateTwoWaySync | update two way sync | - |
+| disconnectKakao | disconnect kakao | - |
 
 ### materials.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | searchProducts | search products | - |
 | getProductDetails | get product details | - |
-| createMaterial | create material | /app/materials |
+| createMaterial | create material | - |
 | createMaterialFromHomeDepot | create material from home depot | - |
 | getMaterialsByCompany | get materials by company | - |
-| assignMaterialToTask | assign material to task | /app/materials |
+| assignMaterialToTask | assign material to task | - |
 | updateMaterialAssignment | update material assignment | - |
-| deleteMaterialAssignment | delete material assignment | /app/materials |
+| deleteMaterialAssignment | delete material assignment | - |
 | getMaterialAssignmentsByTask | get material assignments by task | - |
 | getMaterialAssignmentsByProject | get material assignments by project | - |
 | getProjectMaterialSummary | get project material summary | - |
@@ -134,16 +138,16 @@ Last updated: 2026-01-12
 | getProjectPhases | get project phases | - |
 | getPhaseTasks | get phase tasks | - |
 | getTaskMaterials | get task materials | - |
-| removeMaterialFromTask | remove material from task | /app/materials |
-| updateMaterialQuantity | update material quantity | /app/materials |
+| removeMaterialFromTask | remove material from task | - |
+| updateMaterialQuantity | update material quantity | - |
 | addProductToTask | add product to task | - |
-| linkMaterialToMarker | link material to marker | /app/materials |
+| linkMaterialToMarker | link material to marker | - |
 | getMaterialsByMarker | get materials by marker | - |
 | getTaskLinkedMaterials | get task linked materials | - |
 | getTrackedMaterials | get tracked materials | - |
 | toggleTracking | toggle tracking | - |
 | getMaterialSummaryStats | get material summary stats | - |
-| updateMaterialLeadTime | update material lead time | /app/materials |
+| updateMaterialLeadTime | update material lead time | - |
 
 ### owner.ts
 | Action | Purpose | Revalidates |
@@ -152,18 +156,18 @@ Last updated: 2026-01-12
 | getAllCompanies | get all companies | - |
 | getAllUsers | get all users | - |
 | inviteAdmin | invite admin | - |
-| getPendingAdminInvitations | get pending admin invitations | /app/owner/invites |
-| revokeAdminInvitation | revoke admin invitation | /app/owner/invites |
+| getPendingAdminInvitations | get pending admin invitations | - |
+| revokeAdminInvitation | revoke admin invitation | - |
 | getOwnerDashboardStats | get owner dashboard stats | - |
 
 ### phase-templates.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | getPhaseTemplates | get phase templates | - |
-| createPhaseTemplate | create phase template | /app/settings |
-| updatePhaseTemplate | update phase template | /app/settings |
-| deletePhaseTemplate | delete phase template | /app/settings |
-| reorderPhaseTemplates | reorder phase templates | /app/settings |
+| createPhaseTemplate | create phase template | - |
+| updatePhaseTemplate | update phase template | - |
+| deletePhaseTemplate | delete phase template | - |
+| reorderPhaseTemplates | reorder phase templates | - |
 
 ### phases.ts
 | Action | Purpose | Revalidates |
@@ -198,23 +202,24 @@ Last updated: 2026-01-12
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | getProjectTypes | get project types | - |
-| createProjectType | create project type | /app/settings |
-| updateProjectType | update project type | /app/settings |
-| deleteProjectType | delete project type | /app/settings |
+| createProjectType | create project type | - |
+| updateProjectType | update project type | - |
+| deleteProjectType | delete project type | - |
 
 ### projects.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | createProject | create project | - |
 | updateProject | update project | - |
-| updateProjectStatus | update project status | /app/projects |
+| updateProjectStatus | update project status | - |
 | assignProjectTeamMember | assign project team member | - |
 | addProjectTeamMember | add project team member | - |
-| removeProjectTeamMember | remove project team member | - |
 | addSubcontractorToProject | add subcontractor to project | - |
 | removeSubcontractorFromProject | remove subcontractor from project | - |
+| removeProjectTeamMember | remove project team member | - |
 | getProjectsWithStats | get projects with stats | - |
 | getProjectWithStats | get project with stats | - |
+| getProjectTeamCostSummary | get project team cost summary | - |
 
 ### push.ts
 | Action | Purpose | Revalidates |
@@ -273,18 +278,18 @@ Last updated: 2026-01-12
 |--------|---------|-------------|
 | getTaskTemplates | get task templates | - |
 | createTaskTemplate | create task template | - |
-| updateTaskTemplate | update task template | /app/settings |
-| deleteTaskTemplate | delete task template | /app/settings |
-| reorderTaskTemplates | reorder task templates | /app/settings |
+| updateTaskTemplate | update task template | - |
+| deleteTaskTemplate | delete task template | - |
+| reorderTaskTemplates | reorder task templates | - |
 
 ### task-types.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
 | getTaskTypes | get task types | - |
 | getAllTaskTypes | get all task types | - |
-| createTaskType | create task type | /app/settings |
-| updateTaskType | update task type | /app/settings |
-| deleteTaskType | delete task type | /app/settings |
+| createTaskType | create task type | - |
+| updateTaskType | update task type | - |
+| deleteTaskType | delete task type | - |
 
 ### tasks.ts
 | Action | Purpose | Revalidates |
@@ -292,17 +297,19 @@ Last updated: 2026-01-12
 | getProjectAssignees | get project assignees | - |
 | createTask | create task | - |
 | updateTask | update task | - |
+| updateTaskWithExpense | update task with expense | - |
+| setPrimaryAssignee | set primary assignee | - |
 | updateTaskStatus | update task status | - |
 | addTaskDependency | add task dependency | - |
-| removeTaskDependency | remove task dependency | /app/tasks |
-| addTaskComment | add task comment | /app/tasks |
-| deleteTask | delete task | /app/tasks |
+| removeTaskDependency | remove task dependency | - |
+| addTaskComment | add task comment | - |
+| deleteTask | delete task | - |
 | updateApprovalStatus | update approval status | - |
 | getProjectTasks | get project tasks | - |
-| updateTaskDueDate | update task due date | /app/tasks |
-| updateTaskDates | update task dates | /app/tasks |
+| updateTaskDueDate | update task due date | - |
+| updateTaskDates | update task dates | - |
 | getTaskDependencies | get task dependencies | - |
-| linkTaskToMarker | link task to marker | /app/tasks |
+| linkTaskToMarker | link task to marker | - |
 | getTasksByMarker | get tasks by marker | - |
 | logTaskCompletionToMarker | log task completion to marker | - |
 | getTaskDetails | get task details | - |
@@ -322,39 +329,3 @@ Last updated: 2026-01-12
 | updateTeamMemberRole | update team member role | - |
 | deactivateTeamMember | deactivate team member | - |
 
----
-
-## Summary
-
-| Domain | Action Count |
-|--------|--------------|
-| materials | 25 |
-| spatial | 21 |
-| chat | 20 |
-| tasks | 20 |
-| expenses | 15 |
-| phases | 9 |
-| projects | 10 |
-| default-models | 7 |
-| owner | 7 |
-| chat-search | 6 |
-| chat-queries | 5 |
-| phase-templates | 5 |
-| project-files | 5 |
-| task-templates | 5 |
-| task-types | 5 |
-| project-types | 4 |
-| subcontractors | 4 |
-| kakao | 3 |
-| project-photos | 3 |
-| push | 3 |
-| stripe | 3 |
-| team | 3 |
-| accept-admin-invite | 2 |
-| accept-invite | 2 |
-| auth | 2 |
-| client | 1 |
-| dashboard | 1 |
-| seed-demo-data | 1 |
-| team-email-helper | 1 |
-| **Total** | 198 |

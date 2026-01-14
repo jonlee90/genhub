@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-12
+Last updated: 2026-01-14
 
 ---
 
@@ -10,36 +10,32 @@ Last updated: 2026-01-12
 
 | Route | Type | Layout |
 |-------|------|--------|
-| / | Server | Yes |
+| / | Server | - |
 | /accept-invite | Server | - |
-| /accept-invite/complete | Server | - |
 | /admin-invite | Server | - |
-| /admin-invite/signup | Server | - |
+| /admin/seed-data | Server | Yes |
 | /app | Server | Yes |
-| /app/admin/seed-data | Server | - |
-| /app/chat | Server | - |
-| /app/client/[projectId]/spatial | Server | - |
-| /app/client/projects/[id] | Server | - |
-| /app/expenses | Server | - |
-| /app/materials | Server | - |
-| /app/owner/companies | Server | - |
-| /app/owner/invites | Server | - |
-| /app/owner/users | Server | - |
-| /app/profile | Server | - |
-| /app/projects | Server | - |
-| /app/projects/[id] | Server | - |
-| /app/projects/new | Server | - |
-| /app/settings | Server | - |
-| /app/settings/default-models | Server | - |
-| /app/tasks | Server | - |
-| /app/tasks/[id] | Server | - |
-| /app/tasks/new | Server | - |
-| /app/team | Server | - |
-| /app/team/subcontractors | Server | - |
+| /chat | Server | Yes |
+| /client/[projectId]/spatial | Server | Yes |
+| /client/projects/[id] | Server | Yes |
+| /expenses | Server | Yes |
 | /login | Server | - |
+| /materials | Server | Yes |
+| /owner/companies | Server | Yes |
+| /owner/invites | Server | Yes |
+| /owner/users | Server | Yes |
+| /profile | Server | Yes |
+| /projects | Server | Yes |
+| /projects/[id] | Server | Yes |
+| /projects/new | Server | Yes |
+| /settings | Server | Yes |
+| /settings/default-models | Server | Yes |
 | /signup | Server | - |
-| /success | Server | - |
-| /~offline | Client | - |
+| /tasks | Server | Yes |
+| /tasks/[id] | Server | Yes |
+| /tasks/new | Server | Yes |
+| /team | Server | Yes |
+| /team/subcontractors | Server | Yes |
 
 ---
 
@@ -47,6 +43,7 @@ Last updated: 2026-01-12
 
 | Metric | Count |
 |--------|-------|
-| Total Routes | 30 |
-| App Routes | 21 |
-| Public Routes | 9 |
+| Total Routes | 26 |
+| App Routes | 1 |
+| Public Routes | 25 |
+

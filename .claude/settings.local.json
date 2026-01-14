@@ -157,7 +157,9 @@
       "Skill(senior-prompt-engineer)",
       "WebFetch(domain:localhost)",
       "WebFetch(domain:ui.aceternity.com)",
-      "Bash(tee:*)"
+      "Bash(tee:*)",
+      "Bash(npm run docs:sync:write:*)",
+      "Bash(npm run deps:fix:*)"
     ],
     "deny": [],
     "ask": []

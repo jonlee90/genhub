@@ -25,6 +25,9 @@
     "deps:update": "tsx scripts/update-dependencies.ts",
     "deps:fix": "tsx scripts/update-dependencies.ts --fix",
     "deps:check": "tsx scripts/update-dependencies.ts --check-stale",
+    "docs:sync": "tsx scripts/sync-docs.ts",
+    "docs:sync:write": "tsx scripts/sync-docs.ts --write",
+    "docs:sync:changed": "tsx scripts/sync-docs.ts --changed-files --write",
     "db:gen-types": "tsx scripts/gen-db-types.ts"
   },
   "dependencies": {

@@ -26,6 +26,7 @@ interface TasksPageClientProps {
   teamMembers: TeamMember[];
   taskDependencies: TaskDependencyRow[];
   initialView: 'kanban' | 'list';
+  userRole: string | null;
 }
 
 // Status filter tabs for mobile (all 5 statuses + 'all')
@@ -44,6 +45,7 @@ export function TasksPageClient({
   teamMembers,
   taskDependencies,
   initialView,
+  userRole,
 }: TasksPageClientProps) {
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -264,6 +266,7 @@ export function TasksPageClient({
               mobileActiveFilterCount={activeFilterCount}
               onMobileFilterClick={() => setShowFilterSheet(true)}
               assignees={assignees}
+              userRole={userRole}
             />
 
             {/* Empty state */}
@@ -415,6 +418,7 @@ export function TasksPageClient({
         externalProjectFilter={projectFilter}
         onExternalProjectFilterChange={setProjectFilter}
         assignees={assignees}
+        userRole={userRole}
       />
 
       {/* Decorative bottom border */}
