@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card } from '@/components/ui/card';
@@ -30,7 +31,7 @@ interface TaskCardProps {
 // All cards use construction-blue border for consistent branding
 const CARD_BORDER = 'border-l-4 border-construction-blue';
 
-export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator, expenseStats }: TaskCardProps) {
+export const TaskCard = React.memo(function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator, expenseStats }: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -336,4 +337,4 @@ export function TaskCard({ task, isDragging = false, onTaskClick, phases, showEd
       </div>
     </motion.div>
   );
-}
+});

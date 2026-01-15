@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Calendar, CalendarDays, CalendarRange } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,9 +16,9 @@ const VIEW_OPTIONS = [
   { id: 'day' as TimeScale, label: 'Day', shortLabel: 'D', icon: Calendar },
   { id: 'week' as TimeScale, label: 'Week', shortLabel: 'W', icon: CalendarDays },
   { id: 'month' as TimeScale, label: 'Month', shortLabel: 'M', icon: CalendarRange },
-];
+] as const;
 
-export function GanttViewToggle({ timeScale, onTimeScaleChange, isMobile = false }: GanttViewToggleProps) {
+export const GanttViewToggle = React.memo(function GanttViewToggle({ timeScale, onTimeScaleChange, isMobile = false }: GanttViewToggleProps) {
   return (
     <div className={cn(
       'flex items-center rounded-lg border-2 border-gray-200 bg-white shadow-sm',
@@ -51,4 +52,4 @@ export function GanttViewToggle({ timeScale, onTimeScaleChange, isMobile = false
       })}
     </div>
   );
-}
+});

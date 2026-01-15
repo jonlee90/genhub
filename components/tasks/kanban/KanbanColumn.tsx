@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { TaskCard } from '../list/TaskCard';
@@ -32,6 +33,9 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
+
+  // Memoize task IDs to prevent unnecessary re-renders
+  const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
 
   return (
     <motion.div
@@ -77,7 +81,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
         )}
       >
         <SortableContext
-          items={tasks.map((t) => t.id)}
+          items={taskIds}
           strategy={verticalListSortingStrategy}
         >
           <div className="space-y-2">

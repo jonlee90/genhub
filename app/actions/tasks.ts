@@ -1502,11 +1502,26 @@ export async function getProjectTasks(
     return { error: projectCheck.error };
   }
 
-  // Build query
+  // Build query - explicit field selection for performance (API-TASK-002)
   let query = supabase
     .from('tasks')
     .select(`
-      *,
+      id,
+      title,
+      description,
+      status,
+      priority,
+      task_type,
+      due_date,
+      start_date,
+      phase_id,
+      assignee_id,
+      project_id,
+      spatial_marker_id,
+      blocked_reason,
+      completed_at,
+      created_at,
+      updated_at,
       assignee:user_profiles (
         id,
         name,
@@ -1552,6 +1567,10 @@ export async function getProjectTasks(
   if (filters?.priority) {
     query = query.eq('priority', filters.priority);
   }
+
+  // Add pagination - initial load 50 tasks (API-TASK-003)
+  // TODO: Add pagination parameters to function signature for cursor-based pagination
+  query = query.range(0, 49);
 
   const { data: tasks, error } = await query;
 
@@ -1947,64 +1966,74 @@ export async function getTaskDetails(taskId: string): Promise<{
     return { error: taskCheck.error };
   }
 
-  // Fetch task with all related data
-  const { data: task, error: taskError } = await supabase
-    .from('tasks')
-    .select(`
-      id,
-      title,
-      description,
-      status,
-      priority,
-      due_date,
-      start_date,
-      planned_cost,
-      actual_cost,
-      created_at,
-      updated_at,
-      assignee:user_profiles!tasks_assignee_id_fkey (
+  // API-TASK-006 FIX: Consolidate into parallel queries to eliminate waterfall
+  // Fetch task with all related data + all counts in parallel
+  const [
+    { data: task, error: taskError },
+    { data: spatialMarker },
+    { count: materialCount },
+    { count: expenseCount },
+    { count: attachmentCount }
+  ] = await Promise.all([
+    // Fetch task with assignee and phase joined
+    supabase
+      .from('tasks')
+      .select(`
         id,
-        name,
-        avatar_url
-      ),
-      phase:project_phases!tasks_phase_id_fkey (
-        id,
-        name
-      )
-    `)
-    .eq('id', taskId)
-    .single();
+        title,
+        description,
+        status,
+        priority,
+        due_date,
+        start_date,
+        planned_cost,
+        actual_cost,
+        created_at,
+        updated_at,
+        assignee:user_profiles!tasks_assignee_id_fkey (
+          id,
+          name,
+          avatar_url
+        ),
+        phase:project_phases!tasks_phase_id_fkey (
+          id,
+          name
+        )
+      `)
+      .eq('id', taskId)
+      .single(),
+
+    // Fetch spatial marker (relationship: spatial_markers.task_id → tasks.id)
+    supabase
+      .from('spatial_markers')
+      .select('id, position_x, position_y, position_z, element_id')
+      .eq('task_id', taskId)
+      .maybeSingle(), // Use maybeSingle since not all tasks have markers
+
+    // Get material count
+    supabase
+      .from('material_assignments')
+      .select('id', { count: 'exact', head: true })
+      .eq('task_id', taskId),
+
+    // Get expense count
+    supabase
+      .from('expenses')
+      .select('id', { count: 'exact', head: true })
+      .eq('task_id', taskId),
+
+    // Get attachment count
+    supabase
+      .from('attachments')
+      .select('id', { count: 'exact', head: true })
+      .eq('task_id', taskId)
+      .is('deleted_at', null)
+  ]);
 
   if (taskError || !task) {
     console.error('[getTaskDetails] Error fetching task:', taskError);
     return { error: 'Task not found' };
   }
-
-  // Fetch spatial marker separately (relationship: spatial_markers.task_id → tasks.id)
-  const { data: spatialMarker } = await supabase
-    .from('spatial_markers')
-    .select('id, position_x, position_y, position_z, element_id')
-    .eq('task_id', taskId)
-    .maybeSingle(); // Use maybeSingle since not all tasks have markers
-
-  // Get material count
-  const { count: materialCount } = await supabase
-    .from('material_assignments')
-    .select('id', { count: 'exact', head: true })
-    .eq('task_id', taskId);
-
-  // Get expense count
-  const { count: expenseCount } = await supabase
-    .from('expenses')
-    .select('id', { count: 'exact', head: true })
-    .eq('task_id', taskId);
-
-  // Get attachment count (assuming attachments table exists, else return 0)
-  const { count: attachmentCount } = await supabase
-    .from('attachments')
-    .select('id', { count: 'exact', head: true })
-    .eq('task_id', taskId)
-    .is('deleted_at', null);
 
   // Transform data
   const taskDetails = {

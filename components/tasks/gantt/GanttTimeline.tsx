@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getTodayPosition } from './gantt-utils';
 import type { GanttConfig, DateCell } from './gantt-types';
@@ -10,22 +11,28 @@ interface GanttTimelineProps {
   taskCount: number;
 }
 
-export function GanttTimeline({ config, dateCells, taskCount }: GanttTimelineProps) {
+export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCells, taskCount }: GanttTimelineProps) {
   const { rowHeight, sidebarWidth } = config;
   const totalHeight = taskCount * rowHeight;
   const todayX = getTodayPosition(config);
   const isMobile = sidebarWidth <= 140;
 
-  // Generate weekend rectangles
-  const weekendRects = dateCells
-    .filter((cell) => cell.isWeekend)
-    .map((cell) => ({
-      x: cell.x,
-      width: cell.width,
-    }));
+  // Memoize weekend rectangles to prevent recalculation on every render
+  const weekendRects = useMemo(() =>
+    dateCells
+      .filter((cell) => cell.isWeekend)
+      .map((cell) => ({
+        x: cell.x,
+        width: cell.width,
+      })),
+    [dateCells]
+  );
 
-  // Generate row dividers
-  const rowDividers = Array.from({ length: taskCount }, (_, i) => i * rowHeight);
+  // Memoize row dividers
+  const rowDividers = useMemo(() =>
+    Array.from({ length: taskCount }, (_, i) => i * rowHeight),
+    [taskCount, rowHeight]
+  );
 
   return (
     <svg
@@ -128,4 +135,4 @@ export function GanttTimeline({ config, dateCells, taskCount }: GanttTimelinePro
       </motion.g>
     </svg>
   );
-}
+});

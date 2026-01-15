@@ -158,10 +158,19 @@ export const TASK_TYPE_CONFIG: Record<TaskType, FieldConfig> = {
 /**
  * Get config for a task type
  * Returns the field configuration for the given task type
- * Defaults to 'work' if type is null
+ * Defaults to 'work' if type is null or invalid
  */
 export function getTaskTypeConfig(type: TaskType | null): FieldConfig {
-  return type ? TASK_TYPE_CONFIG[type] : TASK_TYPE_CONFIG.work;
+  if (!type) {
+    return TASK_TYPE_CONFIG.work;
+  }
+  // Defensive check: ensure type is a valid key in TASK_TYPE_CONFIG
+  const config = TASK_TYPE_CONFIG[type];
+  if (!config) {
+    console.warn(`[getTaskTypeConfig] Invalid task type "${type}", falling back to "work"`);
+    return TASK_TYPE_CONFIG.work;
+  }
+  return config;
 }
 
 /**

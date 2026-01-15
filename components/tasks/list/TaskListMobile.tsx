@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { TaskCard } from './TaskCard';
 import { FolderKanban, Check, Trash2 } from 'lucide-react';
@@ -38,8 +38,8 @@ export function TaskListMobile({
 }: TaskListMobileProps) {
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
-
-  const handleComplete = async (task: TaskWithRelations) => {
+  // Memoize handleComplete to prevent unnecessary re-renders of SwipeableCard
+  const handleComplete = useCallback(async (task: TaskWithRelations) => {
     if (task.status === 'completed' || pendingActions.has(task.id)) return;
 
     setPendingActions((prev) => new Set(prev).add(task.id));
@@ -55,9 +55,10 @@ export function TaskListMobile({
         return next;
       });
     }
-  };
+  }, [pendingActions]);
 
-  const handleDelete = async (task: TaskWithRelations) => {
+  // Memoize handleDelete to prevent unnecessary re-renders of SwipeableCard
+  const handleDelete = useCallback(async (task: TaskWithRelations) => {
     if (pendingActions.has(task.id)) return;
 
     // Confirm deletion
@@ -78,7 +79,7 @@ export function TaskListMobile({
         return next;
       });
     }
-  };
+  }, [pendingActions]);
 
   if (tasks.length === 0) {
     return (

@@ -1,10 +1,11 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { createDependencyPath } from './gantt-utils';
 import type { GanttDependencyLinesProps } from './gantt-types';
 
-export function GanttDependencyLines({ lines, hoveredTaskId }: GanttDependencyLinesProps) {
+export const GanttDependencyLines = React.memo(function GanttDependencyLines({ lines, hoveredTaskId }: GanttDependencyLinesProps) {
   if (lines.length === 0) return null;
 
   return (
@@ -65,4 +66,4 @@ export function GanttDependencyLines({ lines, hoveredTaskId }: GanttDependencyLi
       })}
     </svg>
   );
-}
+});

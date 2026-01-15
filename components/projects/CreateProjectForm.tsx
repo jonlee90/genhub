@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createProject } from '@/app/actions/projects';
 import { getPhaseTemplates } from '@/app/actions/phase-templates';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { getProjectTypes } from '@/app/actions/project-types';
+import { MobileInput } from '@/components/mobile/MobileInput';
+import { TouchButton } from '@/components/mobile/TouchButton';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { StateSelect } from '@/components/ui/StateSelect';
@@ -27,7 +28,6 @@ import {
   UtensilsCrossed,
   Coffee,
   Factory,
-  Loader2,
   ArrowRight,
   ArrowLeft,
   Sparkles,
@@ -47,41 +47,36 @@ const PROJECT_TYPES = [
     value: 'residential',
     label: 'Residential',
     icon: Home,
-    description: 'Single-family homes, apartments, condos',
+    description: 'Homes & apartments',
   },
   {
     value: 'restaurant',
     label: 'Restaurant',
     icon: UtensilsCrossed,
-    description: 'Full-service restaurants, dining establishments',
+    description: 'Full-service dining',
   },
   {
     value: 'cafe',
     label: 'Cafe',
     icon: Coffee,
-    description: 'Coffee shops, cafes, small eateries',
+    description: 'Coffee & eateries',
   },
   {
     value: 'commercial_office',
-    label: 'Commercial Office',
+    label: 'Commercial',
     icon: Building2,
-    description: 'Office buildings, retail spaces',
+    description: 'Office & retail',
   },
   {
     value: 'industrial',
     label: 'Industrial',
     icon: Factory,
-    description: 'Warehouses, factories, manufacturing',
+    description: 'Warehouse & factory',
   },
 ];
 
 // Form steps configuration
-const formSteps = [
-  { id: 'type', label: 'Type' },
-  { id: 'details', label: 'Details' },
-  { id: 'location', label: 'Location' },
-  { id: 'timeline', label: 'Timeline' },
-];
+const FORM_STEPS = ['Type', 'Details', 'Location', 'Timeline'];
 
 type FormState = CreateProjectFormState;
 
@@ -118,7 +113,10 @@ export function CreateProjectForm({
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [success, setSuccess] = useState(false);
 
-  // Debug: Phase template preview state
+  // Project type configs (for mapping to phase templates)
+  const [projectTypeConfigs, setProjectTypeConfigs] = useState<Record<string, string>>({});
+
+  // Phase template preview state
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
   const [phaseTemplatesLoading, setPhaseTemplatesLoading] = useState(false);
   const [showPhasePreview, setShowPhasePreview] = useState(false);
@@ -148,31 +146,22 @@ export function CreateProjectForm({
     {}
   );
 
-  console.log('[CreateProjectForm] Rendering:', { isOpen, currentStep, projectType });
-
   // Handle success - redirect or callback
   useEffect(() => {
     if (state.success && state.project) {
-      console.log('[CreateProjectForm] Project created successfully:', state.project.id);
       setSuccess(true);
-
       const projectId = state.project.id;
       setTimeout(() => {
         if (isModal && onSuccess) {
-          console.log('[CreateProjectForm] Modal mode - calling onSuccess callback');
           onSuccess(projectId);
         } else {
-          console.log('[CreateProjectForm] Page mode - redirecting to project detail');
           router.push(`/app/projects/${projectId}`);
         }
       }, 500);
     }
   }, [state.success, state.project, router, isModal, onSuccess]);
 
-  // ============================================
-  // Validation Functions (same as before)
-  // ============================================
-
+  // Validation functions
   const validateEmail = (email: string): string | undefined => {
     if (!email) return undefined;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -195,7 +184,7 @@ export function CreateProjectForm({
     if (!zip) return undefined;
     const zipRegex = /^\d{5}(-\d{4})?$/;
     if (!zipRegex.test(zip)) {
-      return 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)';
+      return 'Please enter a valid ZIP code';
     }
     return undefined;
   };
@@ -203,12 +192,8 @@ export function CreateProjectForm({
   const validateBudget = (budget: string): string | undefined => {
     if (!budget) return undefined;
     const num = parseFloat(budget);
-    if (isNaN(num)) {
-      return 'Budget must be a valid number';
-    }
-    if (num < 0) {
-      return 'Budget must be a positive number';
-    }
+    if (isNaN(num)) return 'Budget must be a valid number';
+    if (num < 0) return 'Budget must be positive';
     return undefined;
   };
 
@@ -216,162 +201,94 @@ export function CreateProjectForm({
     if (!endDate || !startDate) return undefined;
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (end <= start) {
-      return 'End date must be after start date';
-    }
+    if (end <= start) return 'End date must be after start date';
     return undefined;
   };
 
   const validateField = (fieldName: string, value: string): string | undefined => {
-    console.log('[CreateProjectForm] Validating field:', fieldName, value);
-
     switch (fieldName) {
       case 'name':
-        if (!value || value.trim().length === 0) {
-          return 'Project name is required';
-        }
-        if (value.length > 200) {
-          return 'Project name must be less than 200 characters';
-        }
+        if (!value || value.trim().length === 0) return 'Project name is required';
+        if (value.length > 200) return 'Must be less than 200 characters';
         return undefined;
-
       case 'client_name':
-        if (!value || value.trim().length === 0) {
-          return 'Client name is required';
-        }
-        if (value.length > 200) {
-          return 'Client name must be less than 200 characters';
-        }
+        if (!value || value.trim().length === 0) return 'Client name is required';
+        if (value.length > 200) return 'Must be less than 200 characters';
         return undefined;
-
       case 'client_email':
         return validateEmail(value);
-
       case 'client_phone':
         return validatePhone(value);
-
       case 'address':
-        if (!value || value.trim().length === 0) {
-          return 'Address is required';
-        }
+        if (!value || value.trim().length === 0) return 'Address is required';
         return undefined;
-
       case 'zip_code':
         return validateZipCode(value);
-
       case 'start_date':
-        if (!value) {
-          return 'Start date is required';
-        }
+        if (!value) return 'Start date is required';
         return undefined;
-
       case 'end_date':
         return validateEndDate(formValues.start_date, value);
-
       case 'budget':
         return validateBudget(value);
-
       default:
         return undefined;
     }
   };
 
   const validateCurrentStep = (): boolean => {
-    console.log('[CreateProjectForm] Validating step:', currentStep);
-
     const errors: ValidationErrors = {};
     let hasErrors = false;
 
-    // Step 1: Project Details
     if (currentStep === 1) {
       const nameError = validateField('name', formValues.name);
-      if (nameError) {
-        errors.name = nameError;
-        hasErrors = true;
-      }
+      if (nameError) { errors.name = nameError; hasErrors = true; }
 
       const clientNameError = validateField('client_name', formValues.client_name);
-      if (clientNameError) {
-        errors.client_name = clientNameError;
-        hasErrors = true;
-      }
+      if (clientNameError) { errors.client_name = clientNameError; hasErrors = true; }
 
       const emailError = validateField('client_email', formValues.client_email);
-      if (emailError) {
-        errors.client_email = emailError;
-        hasErrors = true;
-      }
+      if (emailError) { errors.client_email = emailError; hasErrors = true; }
 
       const phoneError = validateField('client_phone', formValues.client_phone);
-      if (phoneError) {
-        errors.client_phone = phoneError;
-        hasErrors = true;
-      }
+      if (phoneError) { errors.client_phone = phoneError; hasErrors = true; }
     }
 
-    // Step 2: Location
     if (currentStep === 2) {
       const addressError = validateField('address', formValues.address);
-      if (addressError) {
-        errors.address = addressError;
-        hasErrors = true;
-      }
+      if (addressError) { errors.address = addressError; hasErrors = true; }
 
       const zipError = validateField('zip_code', formValues.zip_code);
-      if (zipError) {
-        errors.zip_code = zipError;
-        hasErrors = true;
-      }
+      if (zipError) { errors.zip_code = zipError; hasErrors = true; }
     }
 
-    // Step 3: Timeline & Budget
     if (currentStep === 3) {
       const startDateError = validateField('start_date', formValues.start_date);
-      if (startDateError) {
-        errors.start_date = startDateError;
-        hasErrors = true;
-      }
+      if (startDateError) { errors.start_date = startDateError; hasErrors = true; }
 
       const endDateError = validateField('end_date', formValues.end_date);
-      if (endDateError) {
-        errors.end_date = endDateError;
-        hasErrors = true;
-      }
+      if (endDateError) { errors.end_date = endDateError; hasErrors = true; }
 
       const budgetError = validateField('budget', formValues.budget);
-      if (budgetError) {
-        errors.budget = budgetError;
-        hasErrors = true;
-      }
+      if (budgetError) { errors.budget = budgetError; hasErrors = true; }
     }
 
     setValidationErrors(errors);
-    console.log('[CreateProjectForm] Validation result:', { hasErrors, errors });
     return !hasErrors;
   };
 
   const handleFieldBlur = (fieldName: string, value: string) => {
-    console.log('[CreateProjectForm] Field blur:', fieldName);
     setTouchedFields(prev => new Set(prev).add(fieldName));
     const error = validateField(fieldName, value);
-    setValidationErrors(prev => ({
-      ...prev,
-      [fieldName]: error,
-    }));
+    setValidationErrors(prev => ({ ...prev, [fieldName]: error }));
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log('[CreateProjectForm] Attempting to proceed to next step from:', currentStep);
-
     const isValid = validateCurrentStep();
+    if (!isValid) return;
 
-    if (!isValid) {
-      console.log('[CreateProjectForm] Validation failed, staying on current step');
-      return;
-    }
-
-    if (currentStep < formSteps.length - 1) {
+    if (currentStep < FORM_STEPS.length - 1) {
       const form = e.currentTarget.closest('form');
       if (form) {
         const formData = new FormData(form);
@@ -381,8 +298,6 @@ export function CreateProjectForm({
         });
         setFormValues(newValues);
       }
-
-      console.log('[CreateProjectForm] Validation passed, proceeding to next step');
       setCurrentStep(currentStep + 1);
     }
   };
@@ -395,103 +310,96 @@ export function CreateProjectForm({
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    console.log('[CreateProjectForm] Form submission attempted');
-
     const isValid = validateCurrentStep();
-
     if (!isValid) {
-      console.log('[CreateProjectForm] Final validation failed, preventing submission');
       e.preventDefault();
       return;
     }
-
-    console.log('[CreateProjectForm] Final validation passed, submitting form');
   };
+
+  // Fetch project type configs on mount (for mapping to phase templates)
+  useEffect(() => {
+    const fetchProjectTypeConfigs = async () => {
+      try {
+        const result = await getProjectTypes();
+        if (result.success && result.projectTypes) {
+          // Create mapping from project type name (lowercase) to config ID
+          const mapping: Record<string, string> = {};
+          result.projectTypes.forEach(pt => {
+            // Map both the config name and a lowercase version
+            const key = pt.name.toLowerCase().replace(/\s+/g, '_');
+            mapping[key] = pt.id;
+            // Also map exact name match
+            mapping[pt.name] = pt.id;
+          });
+          setProjectTypeConfigs(mapping);
+        }
+      } catch {
+        // Silently fail - phase preview is optional
+      }
+    };
+    fetchProjectTypeConfigs();
+  }, []);
 
   // Fetch phase templates when project type changes
   useEffect(() => {
     const fetchPhaseTemplates = async () => {
-      if (!formValues.project_type) {
-        console.log('[CreateProjectForm] No project type selected, skipping phase template fetch');
+      if (!formValues.project_type) return;
+
+      // Map the project type to config name for lookup
+      const typeNameMapping: Record<string, string> = {
+        'residential': 'Residential',
+        'restaurant': 'Restaurant',
+        'cafe': 'Cafe',
+        'commercial_office': 'Commercial Office',
+        'industrial': 'Industrial',
+      };
+      const configName = typeNameMapping[formValues.project_type];
+      const configId = projectTypeConfigs[configName] || projectTypeConfigs[formValues.project_type];
+
+      if (!configId) {
+        // Config not found yet, skip fetching
+        setPhaseTemplates([]);
         return;
       }
 
-      console.log('[CreateProjectForm] Fetching phase templates for project type:', formValues.project_type);
       setPhaseTemplatesLoading(true);
-
       try {
-        const result = await getPhaseTemplates();
-
+        const result = await getPhaseTemplates(configId);
         if (result.success && result.phaseTemplates) {
           setPhaseTemplates(result.phaseTemplates);
-          console.log('[CreateProjectForm] Loaded', result.phaseTemplates.length, 'phase templates');
         } else {
-          console.warn('[CreateProjectForm] Failed to fetch phase templates:', result.error);
           setPhaseTemplates([]);
         }
-      } catch (error) {
-        console.error('[CreateProjectForm] Error fetching phase templates:', error);
+      } catch {
         setPhaseTemplates([]);
       } finally {
         setPhaseTemplatesLoading(false);
       }
     };
-
     fetchPhaseTemplates();
-  }, [formValues.project_type]);
+  }, [formValues.project_type, projectTypeConfigs]);
 
   const handleProjectTypeChange = (value: string) => {
     setProjectType(value);
     setFormValues({ ...formValues, project_type: value });
   };
 
-  // Generate step indicator badges
-  const stepBadges = useMemo(() => {
-    return (
-      <div className="flex items-center gap-2">
-        {formSteps.map((step, idx) => (
-          <div
-            key={step.id}
-            className={cn(
-              'px-2.5 py-1 rounded-full text-xs font-semibold transition-all',
-              idx === currentStep
-                ? 'bg-construction-blue text-white'
-                : idx < currentStep
-                ? 'bg-construction-green text-white'
-                : 'bg-gray-200 text-gray-500'
-            )}
-          >
-            {idx + 1}. {step.label}
-          </div>
-        ))}
-      </div>
-    );
-  }, [currentStep]);
-
-  // Modal title based on current step
+  // Dynamic modal title based on step
   const modalTitle = useMemo(() => {
-    const titles = [
-      'Select Project Type',
-      'Enter Project Details',
-      'Set Project Location',
-      'Define Timeline & Budget',
-    ];
+    const titles = ['Select Project Type', 'Project Details', 'Project Location', 'Timeline & Budget'];
     return titles[currentStep] || 'Create New Project';
   }, [currentStep]);
 
   const modalSubtitle = useMemo(() => {
     const subtitles = [
-      'Choose the type of construction project',
-      'Provide essential information about your project',
-      'Specify where this construction project will take place',
-      'Set your project timeline and budget expectations',
+      'Choose your construction project type',
+      'Enter project and client information',
+      'Specify the project location',
+      'Set timeline and budget',
     ];
     return subtitles[currentStep];
   }, [currentStep]);
-
-  // Note: Do NOT return null when !isOpen
-  // BaseModal handles visibility internally via Radix Dialog
-  // This component must always render to allow Dialog state management
 
   return (
     <BaseModal
@@ -500,583 +408,544 @@ export function CreateProjectForm({
       icon={FolderKanban}
       title={modalTitle}
       subtitle={modalSubtitle}
-      badges={stepBadges}
+      steps={FORM_STEPS}
+      currentStep={currentStep + 1}
       theme="default"
-      maxWidth="4xl"
+      maxWidth="3xl"
       formKey={`create-project-step-${currentStep}`}
       closeOnBackdropClick={false}
       closeOnEscape={true}
       leftActions={
         currentStep > 0 ? (
-          <Button
+          <TouchButton
             type="button"
             variant="ghost"
+            size="lg"
             onClick={handlePrevious}
             disabled={isPending}
-            className="h-10 px-4"
+            icon={ArrowLeft}
+            iconPosition="left"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
             Back
-          </Button>
+          </TouchButton>
         ) : null
       }
       rightActions={
-        currentStep < formSteps.length - 1 ? (
-          <Button
+        currentStep < FORM_STEPS.length - 1 ? (
+          <TouchButton
             type="button"
+            variant="primary"
+            size="lg"
             onClick={handleNext}
             disabled={isPending}
-            className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
+            icon={ArrowRight}
+            iconPosition="right"
           >
-            Next Step
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+            Continue
+          </TouchButton>
         ) : (
-          <Button
+          <TouchButton
             type="submit"
-            form="project-form"
-            disabled={isPending}
-            className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
+            variant="primary"
+            size="lg"
+            loading={isPending}
+            icon={isPending ? undefined : Plus}
+            iconPosition="left"
           >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Project
-              </>
-            )}
-          </Button>
+            {isPending ? 'Creating...' : 'Create Project'}
+          </TouchButton>
         )
       }
     >
       <form id="project-form" action={formAction} onSubmit={handleSubmit}>
-        <div className="space-y-5">
-          {/* Error/Success Messages */}
-          <AnimatePresence mode="wait">
-            {state.error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700"
-              >
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium">{state.error}</span>
-              </motion.div>
-            )}
-            {success && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700"
-              >
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium">
-                  Project created successfully!
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hidden inputs to preserve form values across steps */}
-          {currentStep > 0 && (
-            <input type="hidden" name="project_type" value={formValues.project_type} />
-          )}
-          {currentStep > 1 && (
-            <>
-              <input type="hidden" name="name" value={formValues.name} />
-              <input type="hidden" name="description" value={formValues.description} />
-              <input type="hidden" name="client_name" value={formValues.client_name} />
-              <input type="hidden" name="client_email" value={formValues.client_email} />
-              <input type="hidden" name="client_phone" value={formValues.client_phone} />
-            </>
-          )}
-          {currentStep > 2 && (
-            <>
-              <input type="hidden" name="address" value={formValues.address} />
-              <input type="hidden" name="city" value={formValues.city} />
-              <input type="hidden" name="state" value={formValues.state} />
-              <input type="hidden" name="zip_code" value={formValues.zip_code} />
-            </>
-          )}
-
-          {/* Step 0: Project Type Selection */}
-          {currentStep === 0 && (
+        {/* Error/Success Messages */}
+        <AnimatePresence mode="wait">
+          {state.error && (
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="flex items-center gap-3 p-4 mb-5 bg-red-50 border border-red-200 rounded-xl text-red-700"
             >
-              <input type="hidden" name="project_type" value={projectType} />
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PROJECT_TYPES.map((type) => {
-                  const TypeIcon = type.icon;
-                  const isSelected = projectType === type.value;
+              <AlertCircle className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm font-medium">{state.error}</span>
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="flex items-center gap-3 p-4 mb-5 bg-green-50 border border-green-200 rounded-xl text-green-700"
+            >
+              <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
+              <span className="text-sm font-medium">Project created successfully!</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-                  return (
-                    <motion.button
-                      key={type.value}
-                      type="button"
-                      onClick={() => handleProjectTypeChange(type.value)}
-                      className={cn(
-                        'relative p-5 rounded-xl border-2 transition-all duration-200 text-left',
-                        isSelected
-                          ? 'border-construction-blue bg-construction-blue/5 shadow-md'
-                          : 'border-gray-200 hover:border-construction-blue/50 hover:bg-gray-50'
-                      )}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+        {/* Hidden inputs to preserve form values across steps */}
+        {currentStep > 0 && (
+          <input type="hidden" name="project_type" value={formValues.project_type} />
+        )}
+        {currentStep > 1 && (
+          <>
+            <input type="hidden" name="name" value={formValues.name} />
+            <input type="hidden" name="description" value={formValues.description} />
+            <input type="hidden" name="client_name" value={formValues.client_name} />
+            <input type="hidden" name="client_email" value={formValues.client_email} />
+            <input type="hidden" name="client_phone" value={formValues.client_phone} />
+          </>
+        )}
+        {currentStep > 2 && (
+          <>
+            <input type="hidden" name="address" value={formValues.address} />
+            <input type="hidden" name="city" value={formValues.city} />
+            <input type="hidden" name="state" value={formValues.state} />
+            <input type="hidden" name="zip_code" value={formValues.zip_code} />
+          </>
+        )}
+
+        {/* Step 0: Project Type Selection - Compact Grid */}
+        {currentStep === 0 && (
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2 }}
+          >
+            <input type="hidden" name="project_type" value={projectType} />
+
+            {/* 5-card grid: 3 on top, 2 centered below on desktop; stacked on mobile */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {PROJECT_TYPES.map((type) => {
+                const TypeIcon = type.icon;
+                const isSelected = projectType === type.value;
+
+                return (
+                  <motion.button
+                    key={type.value}
+                    type="button"
+                    onClick={() => handleProjectTypeChange(type.value)}
+                    className={cn(
+                      // Compact card design - all visible without scrolling
+                      'relative p-4 rounded-xl border-2 text-left',
+                      'transition-all duration-200 touch-manipulation',
+                      'active:scale-[0.98]',
+                      'min-h-[100px]',
+                      // Last 2 items centered when on 3-column grid
+                      PROJECT_TYPES.indexOf(type) === 3 && 'sm:col-start-1',
+                      PROJECT_TYPES.indexOf(type) === 4 && 'sm:col-start-2',
+                      isSelected
+                        ? 'border-construction-blue bg-construction-blue/5 shadow-md'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    )}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Icon + Content */}
+                    <div className="flex items-start gap-3">
                       <div className={cn(
-                        'mb-3 flex items-center justify-center w-12 h-12 rounded-lg transition-colors',
+                        'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all',
                         isSelected
-                          ? 'bg-construction-blue'
-                          : 'bg-construction-blue/10'
+                          ? 'bg-construction-blue shadow-sm'
+                          : 'bg-gray-100'
                       )}>
                         <TypeIcon className={cn(
-                          'w-6 h-6 transition-colors',
-                          isSelected ? 'text-white' : 'text-construction-blue'
+                          'w-5 h-5 transition-colors',
+                          isSelected ? 'text-white' : 'text-gray-600'
                         )} />
                       </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={cn(
+                          'font-semibold text-sm leading-tight',
+                          isSelected ? 'text-construction-blue' : 'text-gray-900'
+                        )}>
+                          {type.label}
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+                          {type.description}
+                        </p>
+                      </div>
+                    </div>
 
-                      <h3 className="font-bold text-base text-gray-900 mb-1">{type.label}</h3>
-                      <p className="text-xs text-gray-600 leading-relaxed">{type.description}</p>
-
-                      {isSelected && (
-                        <motion.div
-                          className="absolute -top-2 -right-2 w-7 h-7 bg-construction-blue rounded-full flex items-center justify-center shadow-md"
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ type: "spring", stiffness: 300 }}
-                        >
-                          <Check className="w-4 h-4 text-white" />
-                        </motion.div>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {/* Phase Preview Section */}
-              {phaseTemplates.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="pt-4 border-t border-gray-200"
-                >
-                  <button
-                    type="button"
-                    onClick={() => setShowPhasePreview(!showPhasePreview)}
-                    className="flex items-center gap-2 mb-3 text-construction-blue hover:text-blue-700 transition-colors font-semibold text-sm"
-                  >
-                    {showPhasePreview ? (
-                      <ChevronDown className="h-4 w-4" />
-                    ) : (
-                      <ChevronRight className="h-4 w-4" />
-                    )}
-                    <Layers className="h-4 w-4" />
-                    <span>Phase Preview</span>
-                    <span className="ml-auto px-2 py-0.5 bg-construction-blue/10 text-construction-blue rounded-full text-xs font-semibold">
-                      {phaseTemplates.length} phases
-                    </span>
-                  </button>
-
-                  <AnimatePresence>
-                    {showPhasePreview && (
+                    {/* Selection indicator */}
+                    {isSelected && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                        className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-construction-blue rounded-full flex items-center justify-center shadow-md"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                       >
+                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                      </motion.div>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Phase Preview - Collapsible */}
+            {phaseTemplates.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setShowPhasePreview(!showPhasePreview)}
+                  className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <Layers className="w-4 h-4 text-construction-blue" />
+                    <span>Project Phases</span>
+                    <span className="px-2 py-0.5 bg-construction-blue/10 text-construction-blue text-xs font-semibold rounded-full">
+                      {phaseTemplates.length}
+                    </span>
+                  </div>
+                  {showPhasePreview ? (
+                    <ChevronDown className="w-4 h-4 text-gray-500" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {showPhasePreview && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="pt-3 space-y-1.5">
                         {phaseTemplates.map((template, index) => (
                           <motion.div
                             key={template.id}
-                            initial={{ opacity: 0, x: -20 }}
+                            initial={{ opacity: 0, x: -8 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.03 }}
-                            className="flex items-center gap-2 p-2 bg-construction-blue/5 border-l-2 border-construction-blue rounded text-xs"
+                            className="flex items-center gap-2.5 p-2.5 bg-white border border-gray-100 rounded-lg"
                           >
-                            <div className="flex items-center justify-center w-6 h-6 rounded bg-construction-blue text-white font-bold text-xs">
+                            <div className="w-6 h-6 rounded bg-construction-blue/10 text-construction-blue flex items-center justify-center text-xs font-bold">
                               {index + 1}
                             </div>
-                            <span className="font-semibold text-gray-900">{template.name}</span>
-                            <Check className="ml-auto h-3 w-3 text-construction-green" />
+                            <span className="text-sm font-medium text-gray-800 flex-1">
+                              {template.name}
+                            </span>
+                            <Check className="w-4 h-4 text-construction-green" />
                           </motion.div>
                         ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              )}
-            </motion.div>
-          )}
-
-          {/* Step 1: Project Details */}
-          {currentStep === 1 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              {/* Project Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-construction-blue" />
-                  Project Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="e.g., Smith Residence Renovation"
-                  required
-                  disabled={isPending}
-                  className={cn(
-                    'h-11 border-gray-200',
-                    touchedFields.has('name') && validationErrors.name && 'border-red-500'
+                      </div>
+                    </motion.div>
                   )}
-                  defaultValue={formValues.name}
-                  onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('name', e.target.value)}
-                />
-                {touchedFields.has('name') && validationErrors.name && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {validationErrors.name}
-                  </p>
-                )}
+                </AnimatePresence>
               </div>
+            )}
+          </motion.div>
+        )}
 
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-gray-400" />
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  placeholder="Brief description of the project scope..."
-                  rows={3}
-                  disabled={isPending}
-                  className="border-gray-200 resize-none"
-                  defaultValue={formValues.description}
-                  onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
-                />
-              </div>
+        {/* Step 1: Project Details */}
+        {currentStep === 1 && (
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-5"
+          >
+            {/* Project Name */}
+            <div className="space-y-1.5">
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-construction-blue" />
+                Project Name <span className="text-red-500">*</span>
+              </Label>
+              <MobileInput
+                id="name"
+                name="name"
+                placeholder="e.g., Smith Residence Renovation"
+                required
+                disabled={isPending}
+                error={touchedFields.has('name') ? validationErrors.name : undefined}
+                value={formValues.name}
+                onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
+                onBlur={(e) => handleFieldBlur('name', e.target.value)}
+                inputMode="text"
+                enterKeyHint="next"
+              />
+            </div>
 
-              {/* Client Information */}
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-construction-blue" />
-                  Client Information
-                </h4>
-                <div className="space-y-4">
-                  {/* Client Name */}
-                  <div className="space-y-2">
-                    <Label htmlFor="client_name" className="text-sm font-semibold text-gray-700">
-                      Client Name <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="client_name"
-                      name="client_name"
-                      placeholder="e.g., John Smith"
-                      required
-                      disabled={isPending}
-                      className={cn(
-                        'h-11 border-gray-200',
-                        touchedFields.has('client_name') && validationErrors.client_name && 'border-red-500'
-                      )}
-                      defaultValue={formValues.client_name}
-                      onChange={(e) => setFormValues({ ...formValues, client_name: e.target.value })}
-                      onBlur={(e) => handleFieldBlur('client_name', e.target.value)}
-                    />
-                    {touchedFields.has('client_name') && validationErrors.client_name && (
-                      <p className="text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {validationErrors.client_name}
-                      </p>
-                    )}
-                  </div>
+            {/* Description */}
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-gray-400" />
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Brief description of the project scope..."
+                rows={2}
+                disabled={isPending}
+                className="border-gray-200 resize-none text-sm rounded-xl min-h-[72px]"
+                value={formValues.description}
+                onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
+              />
+            </div>
 
-                  {/* Client Email & Phone */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="client_email" className="text-sm font-semibold text-gray-700">
-                        Email
-                      </Label>
-                      <Input
-                        id="client_email"
-                        name="client_email"
-                        type="email"
-                        placeholder="client@example.com"
-                        disabled={isPending}
-                        className={cn(
-                          'h-11 border-gray-200',
-                          touchedFields.has('client_email') && validationErrors.client_email && 'border-red-500'
-                        )}
-                        defaultValue={formValues.client_email}
-                        onChange={(e) => setFormValues({ ...formValues, client_email: e.target.value })}
-                        onBlur={(e) => handleFieldBlur('client_email', e.target.value)}
-                      />
-                      {touchedFields.has('client_email') && validationErrors.client_email && (
-                        <p className="text-sm text-red-600 flex items-center gap-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {validationErrors.client_email}
-                        </p>
-                      )}
-                    </div>
+            {/* Client Information Section */}
+            <div className="pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users className="w-4 h-4 text-construction-blue" />
+                Client Information
+              </h4>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="client_phone" className="text-sm font-semibold text-gray-700">
-                        Phone
-                      </Label>
-                      <Input
-                        id="client_phone"
-                        name="client_phone"
-                        type="tel"
-                        placeholder="(555) 123-4567"
-                        disabled={isPending}
-                        className={cn(
-                          'h-11 border-gray-200',
-                          touchedFields.has('client_phone') && validationErrors.client_phone && 'border-red-500'
-                        )}
-                        value={formValues.client_phone}
-                        onChange={(e) => setFormValues({ ...formValues, client_phone: formatPhoneNumber(e.target.value) })}
-                        onBlur={(e) => handleFieldBlur('client_phone', e.target.value)}
-                      />
-                      {touchedFields.has('client_phone') && validationErrors.client_phone && (
-                        <p className="text-sm text-red-600 flex items-center gap-1">
-                          <AlertCircle className="w-4 h-4" />
-                          {validationErrors.client_phone}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 2: Location */}
-          {currentStep === 2 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              {/* Street Address */}
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  Street Address <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="address"
-                  name="address"
-                  placeholder="123 Main Street"
-                  required
-                  disabled={isPending}
-                  className={cn(
-                    'h-11 border-gray-200',
-                    touchedFields.has('address') && validationErrors.address && 'border-red-500'
-                  )}
-                  defaultValue={formValues.address}
-                  onChange={(e) => setFormValues({ ...formValues, address: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('address', e.target.value)}
-                />
-                {touchedFields.has('address') && validationErrors.address && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {validationErrors.address}
-                  </p>
-                )}
-              </div>
-
-              {/* City & State */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-sm font-semibold text-gray-700">
-                    City
+              <div className="space-y-4">
+                {/* Client Name */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="client_name" className="text-sm font-medium text-gray-700">
+                    Client Name <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="city"
-                    name="city"
-                    placeholder="City"
-                    disabled={isPending}
-                    className="h-11 border-gray-200"
-                    defaultValue={formValues.city}
-                    onChange={(e) => setFormValues({ ...formValues, city: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state" className="text-sm font-semibold text-gray-700">
-                    State
-                  </Label>
-                  <StateSelect
-                    id="state"
-                    name="state"
-                    placeholder="Select state"
-                    disabled={isPending}
-                    value={formValues.state}
-                    onValueChange={(value) => setFormValues({ ...formValues, state: value })}
-                  />
-                </div>
-              </div>
-
-              {/* ZIP Code */}
-              <div className="space-y-2">
-                <Label htmlFor="zip_code" className="text-sm font-semibold text-gray-700">
-                  ZIP Code
-                </Label>
-                <Input
-                  id="zip_code"
-                  name="zip_code"
-                  placeholder="12345"
-                  disabled={isPending}
-                  className={cn(
-                    'h-11 border-gray-200',
-                    touchedFields.has('zip_code') && validationErrors.zip_code && 'border-red-500'
-                  )}
-                  defaultValue={formValues.zip_code}
-                  onChange={(e) => setFormValues({ ...formValues, zip_code: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('zip_code', e.target.value)}
-                />
-                {touchedFields.has('zip_code') && validationErrors.zip_code && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {validationErrors.zip_code}
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Step 3: Timeline & Budget */}
-          {currentStep === 3 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
-            >
-              {/* Start & End Date */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start_date" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    Start Date <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="start_date"
-                    name="start_date"
-                    type="date"
+                  <MobileInput
+                    id="client_name"
+                    name="client_name"
+                    placeholder="e.g., John Smith"
                     required
                     disabled={isPending}
-                    className={cn(
-                      'h-11 border-gray-200',
-                      touchedFields.has('start_date') && validationErrors.start_date && 'border-red-500'
-                    )}
-                    defaultValue={formValues.start_date}
-                    onChange={(e) => setFormValues({ ...formValues, start_date: e.target.value })}
-                    onBlur={(e) => handleFieldBlur('start_date', e.target.value)}
+                    error={touchedFields.has('client_name') ? validationErrors.client_name : undefined}
+                    value={formValues.client_name}
+                    onChange={(e) => setFormValues({ ...formValues, client_name: e.target.value })}
+                    onBlur={(e) => handleFieldBlur('client_name', e.target.value)}
+                    inputMode="text"
+                    enterKeyHint="next"
                   />
-                  {touchedFields.has('start_date') && validationErrors.start_date && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {validationErrors.start_date}
-                    </p>
-                  )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="end_date" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    Expected End Date
-                  </Label>
-                  <Input
-                    id="end_date"
-                    name="end_date"
-                    type="date"
+                {/* Email & Phone - Side by side */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <MobileInput
+                    id="client_email"
+                    name="client_email"
+                    type="email"
+                    label="Email"
+                    placeholder="client@example.com"
                     disabled={isPending}
-                    className={cn(
-                      'h-11 border-gray-200',
-                      touchedFields.has('end_date') && validationErrors.end_date && 'border-red-500'
-                    )}
-                    defaultValue={formValues.end_date}
-                    onChange={(e) => setFormValues({ ...formValues, end_date: e.target.value })}
-                    onBlur={(e) => handleFieldBlur('end_date', e.target.value)}
+                    error={touchedFields.has('client_email') ? validationErrors.client_email : undefined}
+                    value={formValues.client_email}
+                    onChange={(e) => setFormValues({ ...formValues, client_email: e.target.value })}
+                    onBlur={(e) => handleFieldBlur('client_email', e.target.value)}
+                    inputMode="email"
+                    enterKeyHint="next"
                   />
-                  {touchedFields.has('end_date') && validationErrors.end_date && (
-                    <p className="text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {validationErrors.end_date}
-                    </p>
-                  )}
+                  <MobileInput
+                    id="client_phone"
+                    name="client_phone"
+                    type="tel"
+                    label="Phone"
+                    placeholder="(555) 123-4567"
+                    disabled={isPending}
+                    error={touchedFields.has('client_phone') ? validationErrors.client_phone : undefined}
+                    value={formValues.client_phone}
+                    onChange={(e) => setFormValues({ ...formValues, client_phone: formatPhoneNumber(e.target.value) })}
+                    onBlur={(e) => handleFieldBlur('client_phone', e.target.value)}
+                    inputMode="tel"
+                    enterKeyHint="next"
+                  />
                 </div>
               </div>
+            </div>
+          </motion.div>
+        )}
 
-              {/* Budget */}
-              <div className="space-y-2">
-                <Label htmlFor="budget" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-gray-400" />
-                  Budget ($)
+        {/* Step 2: Location */}
+        {currentStep === 2 && (
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-5"
+          >
+            {/* Street Address */}
+            <div className="space-y-1.5">
+              <Label htmlFor="address" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <MapPin className="h-4 w-4 text-gray-400" />
+                Street Address <span className="text-red-500">*</span>
+              </Label>
+              <MobileInput
+                id="address"
+                name="address"
+                placeholder="123 Main Street"
+                required
+                disabled={isPending}
+                error={touchedFields.has('address') ? validationErrors.address : undefined}
+                value={formValues.address}
+                onChange={(e) => setFormValues({ ...formValues, address: e.target.value })}
+                onBlur={(e) => handleFieldBlur('address', e.target.value)}
+                inputMode="text"
+                enterKeyHint="next"
+              />
+            </div>
+
+            {/* City & State */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <MobileInput
+                id="city"
+                name="city"
+                label="City"
+                placeholder="City"
+                disabled={isPending}
+                value={formValues.city}
+                onChange={(e) => setFormValues({ ...formValues, city: e.target.value })}
+                inputMode="text"
+                enterKeyHint="next"
+              />
+              <div className="space-y-1.5">
+                <Label htmlFor="state" className="text-sm font-medium text-gray-700">
+                  State
                 </Label>
-                <Input
+                <StateSelect
+                  id="state"
+                  name="state"
+                  placeholder="Select state"
+                  disabled={isPending}
+                  value={formValues.state}
+                  onValueChange={(value) => setFormValues({ ...formValues, state: value })}
+                />
+              </div>
+            </div>
+
+            {/* ZIP Code */}
+            <div className="sm:w-1/2">
+              <MobileInput
+                id="zip_code"
+                name="zip_code"
+                label="ZIP Code"
+                placeholder="12345"
+                disabled={isPending}
+                error={touchedFields.has('zip_code') ? validationErrors.zip_code : undefined}
+                value={formValues.zip_code}
+                onChange={(e) => setFormValues({ ...formValues, zip_code: e.target.value })}
+                onBlur={(e) => handleFieldBlur('zip_code', e.target.value)}
+                inputMode="numeric"
+                enterKeyHint="next"
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 3: Timeline & Budget */}
+        {currentStep === 3 && (
+          <motion.div
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-5"
+          >
+            {/* Dates */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="start_date" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  Start Date <span className="text-red-500">*</span>
+                </Label>
+                <input
+                  id="start_date"
+                  name="start_date"
+                  type="date"
+                  required
+                  disabled={isPending}
+                  className={cn(
+                    'block w-full h-12 px-4 text-sm bg-white text-gray-900',
+                    'border rounded-xl transition-all',
+                    touchedFields.has('start_date') && validationErrors.start_date
+                      ? 'border-red-500 focus:ring-red-500/20'
+                      : 'border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20',
+                    'focus:outline-none focus:ring-2',
+                    'disabled:bg-gray-50 disabled:text-gray-500'
+                  )}
+                  value={formValues.start_date}
+                  onChange={(e) => setFormValues({ ...formValues, start_date: e.target.value })}
+                  onBlur={(e) => handleFieldBlur('start_date', e.target.value)}
+                />
+                {touchedFields.has('start_date') && validationErrors.start_date && (
+                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.start_date}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="end_date" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                  <Calendar className="h-4 w-4 text-gray-400" />
+                  Expected End Date
+                </Label>
+                <input
+                  id="end_date"
+                  name="end_date"
+                  type="date"
+                  disabled={isPending}
+                  className={cn(
+                    'block w-full h-12 px-4 text-sm bg-white text-gray-900',
+                    'border rounded-xl transition-all',
+                    touchedFields.has('end_date') && validationErrors.end_date
+                      ? 'border-red-500 focus:ring-red-500/20'
+                      : 'border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20',
+                    'focus:outline-none focus:ring-2',
+                    'disabled:bg-gray-50 disabled:text-gray-500'
+                  )}
+                  value={formValues.end_date}
+                  onChange={(e) => setFormValues({ ...formValues, end_date: e.target.value })}
+                  onBlur={(e) => handleFieldBlur('end_date', e.target.value)}
+                />
+                {touchedFields.has('end_date') && validationErrors.end_date && (
+                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {validationErrors.end_date}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Budget */}
+            <div className="sm:w-1/2">
+              <div className="space-y-1.5">
+                <Label htmlFor="budget" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  Budget
+                </Label>
+                <MobileInput
                   id="budget"
                   name="budget"
                   type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="50000.00"
+                  placeholder="50000"
                   disabled={isPending}
-                  className={cn(
-                    'h-11 border-gray-200',
-                    touchedFields.has('budget') && validationErrors.budget && 'border-red-500'
-                  )}
-                  defaultValue={formValues.budget}
+                  error={touchedFields.has('budget') ? validationErrors.budget : undefined}
+                  value={formValues.budget}
                   onChange={(e) => setFormValues({ ...formValues, budget: e.target.value })}
                   onBlur={(e) => handleFieldBlur('budget', e.target.value)}
+                  inputMode="decimal"
+                  min={0}
+                  step={0.01}
+                  enterKeyHint="done"
                 />
-                {touchedFields.has('budget') && validationErrors.budget && (
-                  <p className="text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {validationErrors.budget}
-                  </p>
-                )}
               </div>
+            </div>
 
-              {/* Ready to Create Banner */}
-              <div className="pt-4 border-t border-gray-200">
-                <div className="bg-construction-blue/5 border border-construction-blue/20 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-construction-blue rounded-lg shrink-0">
-                      <Check className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-base text-construction-blue mb-1">Ready to Create!</h4>
-                      <p className="text-sm text-gray-600">
-                        Click "Create Project" to start your construction journey with automatic phase creation and health tracking.
-                      </p>
-                    </div>
-                  </div>
+            {/* Ready to Create */}
+            <div className="mt-6 p-4 bg-construction-blue/5 border border-construction-blue/20 rounded-xl">
+              <div className="flex items-start gap-3">
+                <div className="p-2 bg-construction-blue rounded-lg shrink-0">
+                  <Check className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-sm text-construction-blue">Ready to Create</h4>
+                  <p className="text-xs text-gray-600 mt-0.5">
+                    Your project will be created with automatic phase setup and health tracking.
+                  </p>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </div>
+            </div>
+          </motion.div>
+        )}
       </form>
     </BaseModal>
   );

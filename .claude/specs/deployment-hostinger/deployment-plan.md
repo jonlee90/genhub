@@ -235,42 +235,37 @@ sudo nano /etc/nginx/sites-available/genhub
 # Paste this configuration:
 ```
 
-```nginx
 server {
-    listen 80;
-    server_name yourdomain.com www.yourdomain.com;
+ listen 80;
+ server_name gamjathepug.com www.gamjathepug.com;
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-    }
+ root /var/www/html/genhub;
+ index index.html index.htm;
 
-    # Static files caching
-    location /_next/static {
-        proxy_pass http://localhost:3000;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
+ location / {
+ proxy_pass http://localhost:3000;
+ proxy_http_version 1.1;
+ proxy_set_header Upgrade $http_upgrade;
+ proxy_set_header Connection "upgrade";
+ proxy_set_header Host $host;
+ proxy_set_header X-Real-IP $remote_addr;
+ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+ proxy_set_header X-Forwarded-Proto $scheme;
+ proxy_cache_bypass $http_upgrade;
+ proxy_read_timeout 86400;
+ }
 
-    # PWA service worker
-    location /sw.js {
-        proxy_pass http://localhost:3000;
-        add_header Cache-Control "no-cache";
-    }
+ # Static files caching
+ location /_next/static {
+ proxy_pass http://localhost:3000;
+ add_header Cache-Control "public, max-age=31536000, immutable";
+ }
 
-    # PWA manifest
-    location /manifest.json {
-        proxy_pass http://localhost:3000;
-        add_header Cache-Control "no-cache";
-    }
-}
+ # PWA service worker
+ location /sw.js {
+ proxy_pass http://localhost:3000;
+ add_header Cache-Control "no-cache";
+ }
 ```
 
 ```bash

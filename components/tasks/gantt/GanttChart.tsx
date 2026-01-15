@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useTransition, useEffect } from 'react';
+import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from 'react';
 import { addDays, format, differenceInCalendarDays } from 'date-fns';
 import {
   DndContext,
@@ -58,7 +58,7 @@ export function GanttChart({
   const [isTablet, setIsTablet] = useState(false);
   const [isDraggingScroll, setIsDraggingScroll] = useState(false);
   const [scrollStart, setScrollStart] = useState({ x: 0, scrollLeft: 0 });
-  const scrollAreaRef = useState<HTMLDivElement | null>(null)[0];
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
   // Detect screen size for responsive config
   useEffect(() => {

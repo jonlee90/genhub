@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, User, AlertTriangle, CheckCircle, Wrench, Circle, Receipt } from 'lucide-react';
@@ -50,7 +51,7 @@ const STATUS_ICONS: Record<TaskStatus, React.ComponentType<{ className?: string 
  * - Quick-glance information hierarchy
  * - Works well in bright outdoor conditions
  */
-export function MobileTaskCard({ task, onPress, className, expenseStats }: MobileTaskCardProps) {
+export const MobileTaskCard = React.memo(function MobileTaskCard({ task, onPress, className, expenseStats }: MobileTaskCardProps) {
   const statusConfig = TASK_STATUS_CONFIG[task.status];
   const StatusIcon = STATUS_ICONS[task.status];
 
@@ -211,7 +212,7 @@ export function MobileTaskCard({ task, onPress, className, expenseStats }: Mobil
       </div>
     </button>
   );
-}
+});
 
 /**
  * MobileTaskCardSkeleton - Loading placeholder

@@ -81,6 +81,21 @@ const DEFAULT_TASK_TYPES: Array<{
   },
 ];
 
+// Valid TaskType enum values for mapping
+const VALID_TASK_TYPES: TaskType[] = ['work', 'purchase', 'approval', 'admin'];
+
+// Derive TaskType enum from config name (case-insensitive match)
+function deriveTaskTypeKey(name: string): TaskType {
+  const normalized = name.toLowerCase().trim();
+  // Direct match
+  if (VALID_TASK_TYPES.includes(normalized as TaskType)) {
+    return normalized as TaskType;
+  }
+  // Partial match (e.g., "Work Tasks" → "work")
+  const match = VALID_TASK_TYPES.find(type => normalized.startsWith(type));
+  return match || 'work'; // Fallback to 'work'
+}
+
 // Convert database config to display format
 function convertTaskTypeConfig(config: TaskTypeConfig) {
   const defaultIcon = DEFAULT_TASK_TYPES[0].icon; // Fallback to first icon
@@ -88,8 +103,11 @@ function convertTaskTypeConfig(config: TaskTypeConfig) {
   const color = config.color || '#3b82f6';
   const colorInfo = TAILWIND_COLORS[color] || TAILWIND_COLORS['#3b82f6']; // Fallback to blue
 
+  // Use derived type key instead of UUID id
+  const typeKey = deriveTaskTypeKey(config.name);
+
   return {
-    id: config.id,
+    id: typeKey, // TaskType enum value, not UUID
     name: config.name,
     description: config.description || '',
     icon: IconComponent,

@@ -1,9 +1,10 @@
 'use client';
 
+import React from 'react';
 import { cn } from '@/lib/utils';
 import type { GanttHeaderProps } from './gantt-types';
 
-export function GanttHeader({ config, dateGroups, dateCells, sortedTasksLength }: GanttHeaderProps) {
+export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups, dateCells, sortedTasksLength }: GanttHeaderProps) {
   const { sidebarWidth, headerHeight } = config;
   const isMobile = sidebarWidth <= 140;
   return (
@@ -51,43 +52,47 @@ export function GanttHeader({ config, dateGroups, dateCells, sortedTasksLength }
 
           {/* Date cells (bottom row) */}
           <div className="absolute inset-x-0 bottom-0 h-1/2">
-            {dateCells.map((cell, index) => (
-              <div
-                key={index}
-                className={cn(
-                  'absolute border-r border-gray-200 flex flex-col items-center justify-center gap-0.5 transition-all duration-200',
-                  // Updated padding: more vertical space for breathing room
-                  isMobile ? 'text-[9px] py-2' : 'text-xs py-3',
-                  cell.isToday && 'bg-construction-blue/15 border-l-2 border-r-2 border-construction-blue shadow-inner ring-1 ring-construction-blue/20',
-                  cell.isWeekend && !cell.isToday && 'bg-gray-100/80',
-                  !cell.isToday && !cell.isWeekend && 'hover:bg-gray-50'
-                )}
-                style={{
-                  left: cell.x,
-                  width: cell.width,
-                  height: '100%',
-                }}
-              >
-                <span className={cn(
-                  'font-bold tracking-wide',
-                  cell.isToday ? 'text-construction-blue' : 'text-gray-600',
-                  isMobile ? 'text-[9px]' : 'text-xs'
-                )}>
-                  {cell.label.split(' ')[0]}
-                </span>
-                {!isMobile && (
+            {dateCells.map((cell, index) => {
+              // Memoize split operation to avoid recalculation
+              const labelParts = cell.label.split(' ');
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    'absolute border-r border-gray-200 flex flex-col items-center justify-center gap-0.5 transition-all duration-200',
+                    // Updated padding: more vertical space for breathing room
+                    isMobile ? 'text-[9px] py-2' : 'text-xs py-3',
+                    cell.isToday && 'bg-construction-blue/15 border-l-2 border-r-2 border-construction-blue shadow-inner ring-1 ring-construction-blue/20',
+                    cell.isWeekend && !cell.isToday && 'bg-gray-100/80',
+                    !cell.isToday && !cell.isWeekend && 'hover:bg-gray-50'
+                  )}
+                  style={{
+                    left: cell.x,
+                    width: cell.width,
+                    height: '100%',
+                  }}
+                >
                   <span className={cn(
-                    'font-black',
-                    cell.isToday ? 'text-construction-blue text-base' : 'text-gray-800 text-sm'
+                    'font-bold tracking-wide',
+                    cell.isToday ? 'text-construction-blue' : 'text-gray-600',
+                    isMobile ? 'text-[9px]' : 'text-xs'
                   )}>
-                    {cell.label.split(' ')[1]}
+                    {labelParts[0]}
                   </span>
-                )}
-              </div>
-            ))}
+                  {!isMobile && (
+                    <span className={cn(
+                      'font-black',
+                      cell.isToday ? 'text-construction-blue text-base' : 'text-gray-800 text-sm'
+                    )}>
+                      {labelParts[1]}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
     </div>
   );
-}
+});

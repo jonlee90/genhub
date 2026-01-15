@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useCallback, useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { GanttTaskBar } from './GanttTaskBar';
@@ -18,7 +19,7 @@ interface GanttTaskRowProps {
   isMobile?: boolean;
 }
 
-export function GanttTaskRow({
+export const GanttTaskRow = React.memo(function GanttTaskRow({
   task,
   position,
   config,
@@ -30,6 +31,23 @@ export function GanttTaskRow({
 }: GanttTaskRowProps) {
   const { sidebarWidth, rowHeight } = config;
   const isHovered = hoveredTaskId === task.id;
+
+  // Memoize click handler
+  const handleClick = useCallback(() => onClick(task), [onClick, task]);
+
+  // Memoize keyboard handler
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(task);
+    }
+  }, [onClick, task]);
+
+  // Memoize task type info to avoid recalculating on every render
+  const taskTypeInfo = useMemo(() => {
+    if (!task.task_type) return null;
+    return getTaskTypeInfo(task.task_type as TaskType);
+  }, [task.task_type]);
 
   return (
     <div
@@ -44,15 +62,10 @@ export function GanttTaskRow({
           isMobile ? 'gap-1.5 px-2 py-1' : 'gap-3 px-3 py-2'
         )}
         style={{ width: sidebarWidth }}
-        onClick={() => onClick(task)}
+        onClick={handleClick}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick(task);
-          }
-        }}
+        onKeyDown={handleKeyDown}
       >
         {/* Assignee avatar - only show on larger mobile/desktop */}
         {task.assignee && !isMobile && (
@@ -68,22 +81,18 @@ export function GanttTaskRow({
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           {/* Title row with icon and duration badge */}
           <div className="flex items-center gap-1.5">
-            {/* Task type icon */}
-            {task.task_type && (() => {
-              const typeInfo = getTaskTypeInfo(task.task_type as TaskType);
-              const IconComponent = typeInfo.icon;
-              return (
-                <IconComponent
-                  className={cn(
-                    'shrink-0',
-                    typeInfo.textClass,
-                    isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'
-                  )}
-                  strokeWidth={2}
-                  aria-label={typeInfo.name}
-                />
-              );
-            })()}
+            {/* Task type icon - extracted from IIFE for better performance */}
+            {taskTypeInfo && (
+              <taskTypeInfo.icon
+                className={cn(
+                  'shrink-0',
+                  taskTypeInfo.textClass,
+                  isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'
+                )}
+                strokeWidth={2}
+                aria-label={taskTypeInfo.name}
+              />
+            )}
             {/* Task title */}
             <span className={cn(
               'font-semibold text-gray-900 truncate flex-1 min-w-0',
@@ -126,4 +135,4 @@ export function GanttTaskRow({
       </div>
     </div>
   );
-}
+});

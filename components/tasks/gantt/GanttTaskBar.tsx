@@ -1,12 +1,13 @@
 'use client';
 
+import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useDraggable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
 import type { GanttTaskBarProps } from './gantt-types';
 import { STATUS_STYLES } from './gantt-types';
 
-export function GanttTaskBar({
+export const GanttTaskBar = React.memo(function GanttTaskBar({
   task,
   position,
   config,
@@ -27,6 +28,27 @@ export function GanttTaskBar({
   const minWidth = isMobile ? 30 : 20;
   const verticalPadding = isMobile ? 6 : 4;
   const barHeight = config.rowHeight - (verticalPadding * 2);
+
+  // Memoized event handlers to prevent recreation on every render
+  const handleMouseEnter = useCallback(() => {
+    if (!isMobile) onHover?.(task.id);
+  }, [isMobile, onHover, task.id]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!isMobile) onHover?.(null);
+  }, [isMobile, onHover]);
+
+  const handleTouchStart = useCallback(() => {
+    if (isMobile) onHover?.(task.id);
+  }, [isMobile, onHover, task.id]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (isMobile) onHover?.(null);
+  }, [isMobile, onHover]);
+
+  const handleClick = useCallback(() => {
+    onClick?.(task);
+  }, [onClick, task]);
 
   const barStyle = {
     left: position.left,
@@ -67,11 +89,11 @@ export function GanttTaskBar({
         boxShadow: '0 8px 16px rgba(0, 27, 81, 0.2)',
         zIndex: 50,
       }}
-      onMouseEnter={() => !isMobile && onHover?.(task.id)}
-      onMouseLeave={() => !isMobile && onHover?.(null)}
-      onTouchStart={() => isMobile && onHover?.(task.id)}
-      onTouchEnd={() => isMobile && onHover?.(null)}
-      onClick={() => onClick?.(task)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onClick={handleClick}
     >
       {/* Progress fill (if task has actual_cost / planned_cost) */}
       {task.planned_cost && task.actual_cost && (
@@ -100,4 +122,4 @@ export function GanttTaskBar({
       )}
     </motion.div>
   );
-}
+});

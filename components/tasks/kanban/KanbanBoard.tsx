@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useOptimistic, useTransition, useId } from 'react';
+import { useState, useOptimistic, useTransition, useId, useMemo } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -68,13 +68,16 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
     })
   );
 
-  // Group tasks by status
-  const tasksByStatus = COLUMNS.reduce(
-    (acc, column) => {
-      acc[column.id] = optimisticTasks.filter((task) => task.status === column.id);
-      return acc;
-    },
-    {} as Record<TaskStatus, TaskWithRelations[]>
+  // Group tasks by status - memoized to prevent recalculation on every render
+  const tasksByStatus = useMemo(() =>
+    COLUMNS.reduce(
+      (acc, column) => {
+        acc[column.id] = optimisticTasks.filter((task) => task.status === column.id);
+        return acc;
+      },
+      {} as Record<TaskStatus, TaskWithRelations[]>
+    ),
+    [optimisticTasks]
   );
 
   const handleDragStart = (event: DragStartEvent) => {

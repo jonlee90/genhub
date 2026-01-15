@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -40,17 +40,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { BaseModal } from '@/components/ui/BaseModal';
 import { TaskActivityLog } from '../shared/TaskActivityLog';
 import { TaskDependencies } from '../shared/TaskDependencies';
 import { TaskMaterials } from '../materials/TaskMaterials';
@@ -204,6 +194,9 @@ export function TaskDetail({
   const [approvalNotes, setApprovalNotes] = useState('');
   const [isUpdatingApproval, setIsUpdatingApproval] = useState(false);
 
+  // Delete confirmation modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
   // Task type determination (default to 'work' for legacy tasks)
   const taskType: TaskType = task.task_type || 'work';
   const isApprovalTask = taskType === 'approval';
@@ -298,6 +291,24 @@ export function TaskDetail({
     }
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const executeApproval = async (status: ApprovalStatus, notes: string) => {
     setIsUpdatingApproval(true);
     setError(null);
@@ -317,23 +328,46 @@ export function TaskDetail({
     setApprovalAction(null);
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  // Memoized tab change handlers to prevent re-renders
+  const handleOverviewTab = useCallback(() => setActiveTab('overview'), []);
+  const handleMaterialsTab = useCallback(() => setActiveTab('materials'), []);
+  const handleActivityTab = useCallback(() => setActiveTab('activity'), []);
+  const handleDependenciesTab = useCallback(() => setActiveTab('dependencies'), []);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
+  // Memoized edit mode toggle
+  const handleEditToggle = useCallback(() => setIsEditMode(!isEditMode), [isEditMode]);
+
+  // Memoized delete handlers
+  const handleDeleteClick = useCallback(() => setShowDeleteModal(true), []);
+  const handleDeleteCancel = useCallback(() => setShowDeleteModal(false), []);
+  const handleDeleteConfirm = useCallback(async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    const result = await deleteTask(task.id);
+
+    if (result?.error) {
+      setError(result.error);
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    } else {
+      router.push('/app/tasks');
+    }
+  }, [task.id, router]);
+
+  // Memoized approval notes handlers
+  const handleApprovalCancel = useCallback(() => {
+    setApprovalNotes('');
+    setApprovalAction(null);
+    setShowApprovalModal(false);
+  }, []);
+
+  const handleApprovalConfirm = useCallback(async () => {
+    if (approvalAction && approvalNotes.trim()) {
+      await executeApproval(approvalAction, approvalNotes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [approvalAction, approvalNotes]);
 
   const StatusIcon = STATUS_ICONS[task.status as TaskStatus];
 
@@ -370,7 +404,7 @@ export function TaskDetail({
               <Button
                 variant="outline"
                 size="lg"
-                onClick={() => setIsEditMode(!isEditMode)}
+                onClick={handleEditToggle}
                 className="gap-2 border-2 border-construction-blue/20 text-construction-blue hover:bg-construction-blue/10 font-semibold"
               >
                 <Pencil className="h-4 w-4" />
@@ -491,7 +525,7 @@ export function TaskDetail({
           {/* Tab Navigation */}
           <div className="flex items-center gap-2 border-b-2 border-gray-200">
             <button
-              onClick={() => setActiveTab('overview')}
+              onClick={handleOverviewTab}
               className={cn(
                 'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
                 activeTab === 'overview'
@@ -503,7 +537,7 @@ export function TaskDetail({
               Overview
             </button>
             <button
-              onClick={() => setActiveTab('materials')}
+              onClick={handleMaterialsTab}
               className={cn(
                 'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
                 activeTab === 'materials'
@@ -515,7 +549,7 @@ export function TaskDetail({
               Materials
             </button>
             <button
-              onClick={() => setActiveTab('activity')}
+              onClick={handleActivityTab}
               className={cn(
                 'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
                 activeTab === 'activity'
@@ -532,7 +566,7 @@ export function TaskDetail({
               )}
             </button>
             <button
-              onClick={() => setActiveTab('dependencies')}
+              onClick={handleDependenciesTab}
               className={cn(
                 'px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]',
                 activeTab === 'dependencies'
@@ -1106,38 +1140,15 @@ export function TaskDetail({
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      className="w-full font-bold gap-2 h-11"
-                      disabled={isDeleting}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {isDeleting ? 'Deleting...' : 'Delete Task'}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="border-2">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-black text-gray-900">
-                        Delete this task?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-base">
-                        This will permanently delete &quot;{task.title}&quot; and all its
-                        activity history. This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="border-2 font-bold">Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleDelete}
-                        className="bg-red-600 hover:bg-red-700 font-bold"
-                      >
-                        Delete Task
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  variant="destructive"
+                  className="w-full font-bold gap-2 h-11"
+                  disabled={isDeleting}
+                  onClick={handleDeleteClick}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {isDeleting ? 'Deleting...' : 'Delete Task'}
+                </Button>
               </CardContent>
             </Card>
           )}
@@ -1154,20 +1165,88 @@ export function TaskDetail({
         onConfirm={handleBlockedConfirm}
       />
 
+      {/* Delete Confirmation Modal */}
+      <BaseModal
+        isOpen={showDeleteModal}
+        onClose={handleDeleteCancel}
+        icon={Trash2}
+        title="Delete this task?"
+        subtitle={`This will permanently delete "${task.title}" and all its activity history. This action cannot be undone.`}
+        theme="danger"
+        maxWidth="md"
+        rightActions={
+          <>
+            <Button
+              variant="outline"
+              onClick={handleDeleteCancel}
+              className="border-2 font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 font-bold"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Task'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-gray-700">
+            You are about to delete the task <strong>&quot;{task.title}&quot;</strong>.
+          </p>
+          <p className="text-gray-700">
+            All activity history, dependencies, and associated data will be permanently removed.
+          </p>
+        </div>
+      </BaseModal>
+
       {/* Approval Notes Modal */}
-      <AlertDialog open={showApprovalModal} onOpenChange={setShowApprovalModal}>
-        <AlertDialogContent className="border-2">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-black text-gray-900">
-              {approvalAction === 'rejected' ? 'Reject Task' : 'Request Revision'}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-base">
-              {approvalAction === 'rejected'
-                ? 'Please provide a reason for rejecting this approval request.'
-                : 'Please describe what changes are needed.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
+      <BaseModal
+        isOpen={showApprovalModal}
+        onClose={handleApprovalCancel}
+        icon={approvalAction === 'rejected' ? Ban : RotateCcw}
+        title={approvalAction === 'rejected' ? 'Reject Task' : 'Request Revision'}
+        subtitle={
+          approvalAction === 'rejected'
+            ? 'Please provide a reason for rejecting this approval request.'
+            : 'Please describe what changes are needed.'
+        }
+        theme={approvalAction === 'rejected' ? 'danger' : 'warning'}
+        maxWidth="md"
+        rightActions={
+          <>
+            <Button
+              variant="outline"
+              onClick={handleApprovalCancel}
+              className="border-2 font-bold"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleApprovalConfirm}
+              disabled={!approvalNotes.trim() || isUpdatingApproval}
+              className={cn(
+                'font-bold',
+                approvalAction === 'rejected'
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-orange-600 hover:bg-orange-700 text-white'
+              )}
+            >
+              {isUpdatingApproval
+                ? 'Processing...'
+                : approvalAction === 'rejected'
+                ? 'Reject'
+                : 'Request Revision'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
             <Label htmlFor="approval-notes" className="text-sm font-bold text-gray-700">
               {approvalAction === 'rejected' ? 'Rejection Reason' : 'Revision Notes'}
               <span className="text-red-500 ml-1">*</span>
@@ -1185,39 +1264,8 @@ export function TaskDetail({
               className="mt-2 border-2 border-gray-200 focus:border-construction-blue resize-none"
             />
           </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel
-              className="border-2 font-bold"
-              onClick={() => {
-                setApprovalNotes('');
-                setApprovalAction(null);
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (approvalAction && approvalNotes.trim()) {
-                  executeApproval(approvalAction, approvalNotes);
-                }
-              }}
-              disabled={!approvalNotes.trim() || isUpdatingApproval}
-              className={cn(
-                'font-bold',
-                approvalAction === 'rejected'
-                  ? 'bg-red-600 hover:bg-red-700'
-                  : 'bg-orange-600 hover:bg-orange-700'
-              )}
-            >
-              {isUpdatingApproval
-                ? 'Processing...'
-                : approvalAction === 'rejected'
-                ? 'Reject'
-                : 'Request Revision'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </div>
+      </BaseModal>
     </div>
   );
 }
