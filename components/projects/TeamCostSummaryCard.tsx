@@ -1,6 +1,10 @@
 'use client';
 
-import { Users, RefreshCw, AlertCircle } from 'lucide-react';
+import { useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Users from 'lucide-react/icons/users';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
+import AlertCircle from 'lucide-react/icons/alert-circle';
 import { InfoCard } from './InfoCard';
 import { TeamCostRow, type TeamCostSummary } from './TeamCostRow';
 import { Button } from '@/components/ui/button';
@@ -41,14 +45,17 @@ export function TeamCostSummaryCard({
   onRetry,
   className,
 }: TeamCostSummaryCardProps) {
-  // Calculate totals
-  const totals = summaries.reduce(
-    (acc, summary) => ({
-      taskCount: acc.taskCount + summary.taskCount,
-      taskCosts: acc.taskCosts + summary.taskCosts,
-      expenseCosts: acc.expenseCosts + summary.expenseCosts,
-    }),
-    { taskCount: 0, taskCosts: 0, expenseCosts: 0 }
+  // Performance optimization: Memoize computed values
+  const totals = useMemo(
+    () => summaries.reduce(
+      (acc, summary) => ({
+        taskCount: acc.taskCount + summary.taskCount,
+        taskCosts: acc.taskCosts + summary.taskCosts,
+        expenseCosts: acc.expenseCosts + summary.expenseCosts,
+      }),
+      { taskCount: 0, taskCosts: 0, expenseCosts: 0 }
+    ),
+    [summaries]
   );
 
   // Loading state

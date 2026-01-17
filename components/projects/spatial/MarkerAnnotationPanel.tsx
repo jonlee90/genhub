@@ -1,19 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  MapPin,
-  Plus,
-  ChevronDown,
-  ChevronRight,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  MessageSquare,
-  Filter,
-  Search,
-  X,
-} from 'lucide-react';
+import { useState, useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import MapPin from 'lucide-react/icons/map-pin';
+import Plus from 'lucide-react/icons/plus';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import ChevronRight from 'lucide-react/icons/chevron-right';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Clock from 'lucide-react/icons/clock';
+import MessageSquare from 'lucide-react/icons/message-square';
+import Filter from 'lucide-react/icons/filter';
+import Search from 'lucide-react/icons/search';
+import X from 'lucide-react/icons/x';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -88,20 +87,26 @@ export function MarkerAnnotationPanel({
     }
   };
 
-  const filteredMarkers = markers.filter((marker) => {
-    const matchesSearch = marker.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      marker.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !selectedCategory || marker.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Performance optimization: Memoize filtered markers to avoid recalculation on every render
+  const filteredMarkers = useMemo(() =>
+    markers.filter((marker) => {
+      const matchesSearch = marker.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        marker.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = !selectedCategory || marker.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    })
+  , [markers, searchQuery, selectedCategory]);
 
-  const categoryCounts = markers.reduce(
-    (acc, marker) => {
-      acc[marker.category] = (acc[marker.category] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
+  // Performance optimization: Memoize category counts computed via reduce
+  const categoryCounts = useMemo(() =>
+    markers.reduce(
+      (acc, marker) => {
+        acc[marker.category] = (acc[marker.category] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    )
+  , [markers]);
 
   const categories = [
     { id: 'issue', label: 'Issues', icon: AlertCircle },

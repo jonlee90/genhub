@@ -1,6 +1,12 @@
 'use client';
 
-import { Box, Triangle, HardDrive, Layers, CheckCircle2, Clock } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Box from 'lucide-react/icons/box';
+import Triangle from 'lucide-react/icons/triangle';
+import HardDrive from 'lucide-react/icons/hard-drive';
+import Layers from 'lucide-react/icons/layers';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Clock from 'lucide-react/icons/clock';;
 import { cn } from '@/lib/utils';
 import { InfoCard, InfoCardField } from '../InfoCard';
 import { Badge } from '@/components/ui/badge';

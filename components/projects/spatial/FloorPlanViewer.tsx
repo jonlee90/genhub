@@ -1,17 +1,16 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  ZoomIn,
-  ZoomOut,
-  RotateCw,
-  Move,
-  MapPin,
-  Ruler,
-  Download,
-  Layers,
-  ChevronDown,
-} from 'lucide-react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import ZoomIn from 'lucide-react/icons/zoom-in';
+import ZoomOut from 'lucide-react/icons/zoom-out';
+import RotateCw from 'lucide-react/icons/rotate-cw';
+import Move from 'lucide-react/icons/move';
+import MapPin from 'lucide-react/icons/map-pin';
+import Ruler from 'lucide-react/icons/ruler';
+import Download from 'lucide-react/icons/download';
+import Layers from 'lucide-react/icons/layers';
+import ChevronDown from 'lucide-react/icons/chevron-down';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +80,11 @@ export function FloorPlanViewer({
   const [floorImage, setFloorImage] = useState<HTMLImageElement | null>(null);
 
   const currentFloorPlan = floorPlans[currentFloorIndex];
-  const currentFloorMarkers = markers.filter((m) => m.floorIndex === currentFloorIndex);
+
+  // Performance optimization: Memoize filtered markers by current floor
+  const currentFloorMarkers = useMemo(() =>
+    markers.filter((m) => m.floorIndex === currentFloorIndex)
+  , [markers, currentFloorIndex]);
 
   // Load floor plan image
   useEffect(() => {

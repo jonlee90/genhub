@@ -9,15 +9,14 @@
 
 import { useState, useTransition } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Search,
-  MapPin,
-  Link2,
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  Plus,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Search from 'lucide-react/icons/search';
+import MapPin from 'lucide-react/icons/map-pin';
+import Link2 from 'lucide-react/icons/link-2';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import XCircle from 'lucide-react/icons/x-circle';
+import Loader2 from 'lucide-react/icons/loader-2';
+import Plus from 'lucide-react/icons/plus';;
 import { cn } from '@/lib/utils';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Badge } from '@/components/ui/badge';

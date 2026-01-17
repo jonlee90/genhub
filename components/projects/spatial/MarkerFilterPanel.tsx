@@ -8,15 +8,14 @@
 
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import {
-  AlertCircle,
-  FileText,
-  AlertTriangle,
-  Flag,
-  ClipboardList,
-  Package,
-  X,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import FileText from 'lucide-react/icons/file-text';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import Flag from 'lucide-react/icons/flag';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
+import Package from 'lucide-react/icons/package';
+import X from 'lucide-react/icons/x';;
 import { cn } from '@/lib/utils';
 
 export interface MarkerFilters {

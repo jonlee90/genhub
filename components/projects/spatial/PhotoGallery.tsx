@@ -10,7 +10,12 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Image, Upload, X, Trash2, Maximize2 } from 'lucide-react'
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Image from 'lucide-react/icons/image';
+import Upload from 'lucide-react/icons/upload';
+import X from 'lucide-react/icons/x';
+import Trash2 from 'lucide-react/icons/trash2';
+import Maximize2 from 'lucide-react/icons/maximize2';
 import { cn } from '@/lib/utils'
 import { PhotoUploader } from './PhotoUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'

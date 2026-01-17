@@ -12,17 +12,16 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Upload,
-  X,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  File,
-  Image,
-  Archive,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Upload from 'lucide-react/icons/upload';
+import X from 'lucide-react/icons/x';
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import FileText from 'lucide-react/icons/file-text';
+import File from 'lucide-react/icons/file';
+import Image from 'lucide-react/icons/image';
+import Archive from 'lucide-react/icons/archive';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

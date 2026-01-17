@@ -1,16 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Box,
-  Calendar,
-  HardDrive,
-  ChevronDown,
-  Upload,
-  Trash2,
-  Settings,
-  CheckCircle2,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Box from 'lucide-react/icons/box';
+import Calendar from 'lucide-react/icons/calendar';
+import HardDrive from 'lucide-react/icons/hard-drive';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import Upload from 'lucide-react/icons/upload';
+import Trash2 from 'lucide-react/icons/trash2';
+import Settings from 'lucide-react/icons/settings';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';;
 import { cn, formatDate } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

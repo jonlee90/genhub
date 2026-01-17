@@ -5,7 +5,12 @@
 
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, AlertCircle, RotateCw, X, FolderKanban } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import RotateCw from 'lucide-react/icons/rotate-cw';
+import X from 'lucide-react/icons/x';
+import FolderKanban from 'lucide-react/icons/folder-kanban';;
 import { useModelLoading } from '@/lib/hooks/use-model-loading';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

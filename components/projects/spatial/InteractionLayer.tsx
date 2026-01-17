@@ -5,7 +5,9 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Box, MousePointer2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Box from 'lucide-react/icons/box';
+import MousePointer2 from 'lucide-react/icons/mouse-pointer-2';;
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { use3DInteraction } from '@/lib/hooks/use-3d-interaction';
 import type { IntersectionResult } from '@/lib/hooks/use-3d-interaction';

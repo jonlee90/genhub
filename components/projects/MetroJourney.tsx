@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Map } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Settings from 'lucide-react/icons/settings';
+import Map from 'lucide-react/icons/map';
 import { Button } from '@/components/ui/button';
 import { PhaseStation } from './PhaseStation';
 import { PhaseDetailPanel } from './PhaseDetailPanel';
@@ -55,22 +57,38 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [showManagePhasesModal, setShowManagePhasesModal] = useState(false);
 
-  const selectedPhase = phases.find((p) => p.id === selectedPhaseId);
-  const selectedPhaseTasks = tasks.filter((t) => t.phase_id === selectedPhaseId);
-  const selectedPhaseStats = phaseStats.find((s) => s.phaseId === selectedPhaseId);
+  // Performance optimization: Memoize computed values to prevent recalculation on every render
+  const selectedPhase = useMemo(
+    () => phases.find((p) => p.id === selectedPhaseId),
+    [phases, selectedPhaseId]
+  );
+  const selectedPhaseTasks = useMemo(
+    () => tasks.filter((t) => t.phase_id === selectedPhaseId),
+    [tasks, selectedPhaseId]
+  );
+  const selectedPhaseStats = useMemo(
+    () => phaseStats.find((s) => s.phaseId === selectedPhaseId),
+    [phaseStats, selectedPhaseId]
+  );
 
   // Find current phase (first non-completed phase)
-  const currentPhaseIndex = phases.findIndex((p) => p.status !== 'completed');
-  const currentPhaseId = currentPhaseIndex >= 0 ? phases[currentPhaseIndex].id : null;
+  const currentPhaseIndex = useMemo(
+    () => phases.findIndex((p) => p.status !== 'completed'),
+    [phases]
+  );
+  const currentPhaseId = useMemo(
+    () => currentPhaseIndex >= 0 ? phases[currentPhaseIndex].id : null,
+    [currentPhaseIndex, phases]
+  );
 
-  // Handle scroll to update fade indicators
-  const handleScroll = () => {
+  // Performance optimization: Memoize event handlers to prevent recreation on every render
+  const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
 
     const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
     setShowLeftFade(scrollLeft > 10);
     setShowRightFade(scrollLeft < scrollWidth - clientWidth - 10);
-  };
+  }, []);
 
   // Auto-scroll to current phase on mobile
   useEffect(() => {

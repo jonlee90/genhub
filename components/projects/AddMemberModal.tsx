@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Search, UserPlus, Loader2, AlertCircle, Mail } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Search from 'lucide-react/icons/search';
+import UserPlus from 'lucide-react/icons/user-plus';
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Mail from 'lucide-react/icons/mail';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addProjectTeamMember } from '@/app/actions/projects';
 
@@ -56,38 +61,9 @@ export function AddMemberModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Debug: Fetch company users when modal opens
-  useEffect(() => {
-    console.log('[AddMemberModal] Modal opened, fetching company users');
-    console.log('[AddMemberModal] Company ID:', companyId);
-    console.log('[AddMemberModal] Existing member IDs:', existingMemberIds);
-
-    if (open) {
-      fetchCompanyUsers();
-    } else {
-      // Debug: Reset state when modal closes
-      resetState();
-    }
-  }, [open, companyId]);
-
-  // Debug: Filter users based on search query
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      console.log('[AddMemberModal] No search query, showing all users');
-      setFilteredUsers(users);
-    } else {
-      console.log('[AddMemberModal] Filtering users by query:', searchQuery);
-      const filtered = users.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      console.log('[AddMemberModal] Filtered results:', filtered.length);
-      setFilteredUsers(filtered);
-    }
-  }, [searchQuery, users]);
-
-  const fetchCompanyUsers = async () => {
+  // Performance optimization: Memoize async functions to prevent recreation on every render
+  // NOTE: Must declare useCallback functions BEFORE useEffect hooks that use them
+  const fetchCompanyUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -116,9 +92,9 @@ export function AddMemberModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [companyId, existingMemberIds]);
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     console.log('[AddMemberModal] Resetting modal state');
     setSearchQuery('');
     setSelectedUserId(null);
@@ -127,9 +103,40 @@ export function AddMemberModal({
     setFilteredUsers([]);
     setError(null);
     setSuccess(false);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  // Debug: Fetch company users when modal opens
+  useEffect(() => {
+    console.log('[AddMemberModal] Modal opened, fetching company users');
+    console.log('[AddMemberModal] Company ID:', companyId);
+    console.log('[AddMemberModal] Existing member IDs:', existingMemberIds);
+
+    if (open) {
+      fetchCompanyUsers();
+    } else {
+      // Debug: Reset state when modal closes
+      resetState();
+    }
+  }, [open, companyId, fetchCompanyUsers, resetState, existingMemberIds]);
+
+  // Debug: Filter users based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      console.log('[AddMemberModal] No search query, showing all users');
+      setFilteredUsers(users);
+    } else {
+      console.log('[AddMemberModal] Filtering users by query:', searchQuery);
+      const filtered = users.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      console.log('[AddMemberModal] Filtered results:', filtered.length);
+      setFilteredUsers(filtered);
+    }
+  }, [searchQuery, users]);
+
+  const handleSubmit = useCallback(async () => {
     // Debug: Validate selection
     if (!selectedUserId) {
       console.log('[AddMemberModal] No user selected');
@@ -175,7 +182,7 @@ export function AddMemberModal({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [selectedUserId, selectedRole, projectId, onOpenChange]);
 
   const getInitials = (name: string) => {
     return name

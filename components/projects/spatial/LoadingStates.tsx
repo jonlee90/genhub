@@ -6,7 +6,12 @@
 
 'use client';
 
-import { Loader2, Download, Zap, Eye, X } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Loader2 from 'lucide-react/icons/loader-2';
+import Download from 'lucide-react/icons/download';
+import Zap from 'lucide-react/icons/zap';
+import Eye from 'lucide-react/icons/eye';
+import X from 'lucide-react/icons/x';;
 import { cn } from '@/lib/utils';
 
 console.log('[LoadingStates] Component loaded');

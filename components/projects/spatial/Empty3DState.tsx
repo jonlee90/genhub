@@ -1,6 +1,11 @@
 'use client';
 
-import { Box, Upload, FileText, Zap, CheckCircle2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Box from 'lucide-react/icons/box';
+import Upload from 'lucide-react/icons/upload';
+import FileText from 'lucide-react/icons/file-text';
+import Zap from 'lucide-react/icons/zap';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 

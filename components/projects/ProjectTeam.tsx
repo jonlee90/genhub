@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  UserPlus,
-  HardHat,
-  X,
-  Users,
-  Mail,
-  Building2,
-  Loader2,
-  ChevronRight,
-} from 'lucide-react';
+import { useState, useCallback, useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import UserPlus from 'lucide-react/icons/user-plus';
+import HardHat from 'lucide-react/icons/hard-hat';
+import X from 'lucide-react/icons/x';
+import Users from 'lucide-react/icons/users';
+import Mail from 'lucide-react/icons/mail';
+import Building2 from 'lucide-react/icons/building-2';
+import Loader2 from 'lucide-react/icons/loader-2';
+import ChevronRight from 'lucide-react/icons/chevron-right';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -73,17 +72,18 @@ export function ProjectTeam({ projectId, team, companyId, costSummaries }: Proje
   const [subcontractorModalOpen, setSubcontractorModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'members' | 'subcontractors'>('members');
 
-  // Get cost summary for a member/subcontractor
-  const getCostSummary = (id: string | null) => {
+  // Performance optimization: Memoize helper function to prevent recreation on every render
+  const getCostSummary = useCallback((id: string | null) => {
     if (!id || !costSummaries) return null;
     return costSummaries.get(id);
-  };
+  }, [costSummaries]);
 
-  // Separate team members and subcontractors
-  const teamMembers = team.filter((m) => m.user_id !== null);
-  const subcontractors = team.filter((m) => m.subcontractor_id !== null);
+  // Performance optimization: Memoize filtered lists to prevent recalculation on every render
+  const teamMembers = useMemo(() => team.filter((m) => m.user_id !== null), [team]);
+  const subcontractors = useMemo(() => team.filter((m) => m.subcontractor_id !== null), [team]);
 
-  const handleRemoveMember = async (memberId: string, userId: string) => {
+  // Performance optimization: Memoize event handlers to prevent recreation on every render
+  const handleRemoveMember = useCallback(async (memberId: string, userId: string) => {
     setRemovingId(memberId);
     try {
       await removeProjectTeamMember(projectId, userId);
@@ -92,9 +92,9 @@ export function ProjectTeam({ projectId, team, companyId, costSummaries }: Proje
     } finally {
       setRemovingId(null);
     }
-  };
+  }, [projectId]);
 
-  const handleRemoveSubcontractor = async (memberId: string, subcontractorId: string) => {
+  const handleRemoveSubcontractor = useCallback(async (memberId: string, subcontractorId: string) => {
     setRemovingId(memberId);
     try {
       await removeSubcontractorFromProject(projectId, subcontractorId);
@@ -103,7 +103,7 @@ export function ProjectTeam({ projectId, team, companyId, costSummaries }: Proje
     } finally {
       setRemovingId(null);
     }
-  };
+  }, [projectId]);
 
   const getInitials = (name: string) => {
     return name

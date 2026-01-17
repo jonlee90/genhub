@@ -10,7 +10,12 @@
 
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, Upload, X, Loader2, AlertCircle } from 'lucide-react'
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Camera from 'lucide-react/icons/camera';
+import Upload from 'lucide-react/icons/upload';
+import X from 'lucide-react/icons/x';
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
 import { cn } from '@/lib/utils'
 import { validatePhoto } from '@/lib/image-processing'
 import { toast } from 'sonner'

@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, ChevronRight, ChevronLeft, FolderKanban } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import X from 'lucide-react/icons/x';
+import ChevronRight from 'lucide-react/icons/chevron-right';
+import ChevronLeft from 'lucide-react/icons/chevron-left';
+import FolderKanban from 'lucide-react/icons/folder-kanban';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import {

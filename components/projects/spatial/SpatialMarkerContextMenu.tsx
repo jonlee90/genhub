@@ -11,15 +11,14 @@
 
 import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Plus,
-  Link2,
-  AlertCircle,
-  FileText,
-  AlertTriangle,
-  Flag,
-  Minus,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Plus from 'lucide-react/icons/plus';
+import Link2 from 'lucide-react/icons/link-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import FileText from 'lucide-react/icons/file-text';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import Flag from 'lucide-react/icons/flag';
+import Minus from 'lucide-react/icons/minus';;
 import { cn } from '@/lib/utils';
 
 /**

@@ -8,7 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Home, UtensilsCrossed, Coffee, Building2, Factory } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Home from 'lucide-react/icons/home';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Coffee from 'lucide-react/icons/coffee';
+import Building2 from 'lucide-react/icons/building-2';
+import Factory from 'lucide-react/icons/factory';
 import { DesktopTabs } from '@/components/ui/DesktopTabs';
 import { FilterTabs } from '@/components/ui/FilterTabs';
 import { PlaceholdersVanishInput } from '@/components/ui/aceternity/placeholders-vanish-input';

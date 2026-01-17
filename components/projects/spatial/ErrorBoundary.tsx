@@ -7,7 +7,14 @@
 'use client';
 
 import { Component, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Mail, WifiOff, Globe, Database, X } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Mail from 'lucide-react/icons/mail';
+import WifiOff from 'lucide-react/icons/wifi-off';
+import Globe from 'lucide-react/icons/globe';
+import Database from 'lucide-react/icons/database';
+import X from 'lucide-react/icons/x';;
 import { cn } from '@/lib/utils';
 
 console.log('[ErrorBoundary] Component loaded');

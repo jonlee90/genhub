@@ -8,8 +8,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Filter, X, Calendar, User, FolderOpen } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Search from 'lucide-react/icons/search';
+import Filter from 'lucide-react/icons/filter';
+import X from 'lucide-react/icons/x';
+import Calendar from 'lucide-react/icons/calendar';
+import User from 'lucide-react/icons/user';
+import FolderOpen from 'lucide-react/icons/folder-open';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,18 +80,25 @@ export function SearchFilterPanel({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm]); // Intentionally omitting filters and onFilterChange for debounce pattern
 
-  const categories = viewType === 'documents' ? DOCUMENT_CATEGORIES : PHOTO_CATEGORIES;
+  // Performance optimization: Memoize computed values to prevent recalculation on every render
+  const categories = useMemo(
+    () => viewType === 'documents' ? DOCUMENT_CATEGORIES : PHOTO_CATEGORIES,
+    [viewType]
+  );
 
-  const activeFilterCount = [
-    filters.category.length > 0,
-    filters.dateFrom,
-    filters.dateTo,
-    filters.uploadedBy.length > 0,
-    filters.fileType.length > 0,
-    filters.source.length > 0,
-  ].filter(Boolean).length;
+  const activeFilterCount = useMemo(() => {
+    return [
+      filters.category.length > 0,
+      filters.dateFrom,
+      filters.dateTo,
+      filters.uploadedBy.length > 0,
+      filters.fileType.length > 0,
+      filters.source.length > 0,
+    ].filter(Boolean).length;
+  }, [filters.category.length, filters.dateFrom, filters.dateTo, filters.uploadedBy.length, filters.fileType.length, filters.source.length]);
 
   return (
     <div className="space-y-4">

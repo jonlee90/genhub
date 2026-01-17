@@ -9,7 +9,8 @@ import { useState } from 'react';
 import { SpatialViewer, type SpatialViewerProps } from './SpatialViewer';
 import { OnboardingTour } from './OnboardingTour';
 import { MarkerAnnotationPanel } from './MarkerAnnotationPanel';
-import { RotateCcw } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import RotateCcw from 'lucide-react/icons/rotate-ccw';;
 import { cn } from '@/lib/utils';
 import { resetTour } from '@/lib/onboarding/tour-steps';
 

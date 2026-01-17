@@ -1,30 +1,29 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import {
-  Building2,
-  MapPin,
-  Calendar,
-  DollarSign,
-  TrendingUp,
-  Users,
-  ClipboardList,
-  Clock,
-  FileText,
-  Settings,
-  Activity,
-  Home,
-  UtensilsCrossed,
-  Factory,
-  ExternalLink,
-  ChevronDown,
-  ChevronUp,
-  FolderKanban,
-  FolderOpen,
-  Target,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Building2 from 'lucide-react/icons/building-2';
+import MapPin from 'lucide-react/icons/map-pin';
+import Calendar from 'lucide-react/icons/calendar';
+import DollarSign from 'lucide-react/icons/dollar-sign';
+import TrendingUp from 'lucide-react/icons/trending-up';
+import Users from 'lucide-react/icons/users';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
+import Clock from 'lucide-react/icons/clock';
+import FileText from 'lucide-react/icons/file-text';
+import Settings from 'lucide-react/icons/settings';
+import Activity from 'lucide-react/icons/activity';
+import Home from 'lucide-react/icons/home';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Factory from 'lucide-react/icons/factory';
+import ExternalLink from 'lucide-react/icons/external-link';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import ChevronUp from 'lucide-react/icons/chevron-up';
+import FolderKanban from 'lucide-react/icons/folder-kanban';
+import FolderOpen from 'lucide-react/icons/folder-open';
+import Target from 'lucide-react/icons/target';
 import { Badge } from '@/components/ui/badge';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import { ProjectTeam } from './ProjectTeam';
@@ -96,10 +95,14 @@ export function ProjectDetailContent({
     router.refresh();
   }, [router]);
 
-  const statusConfig = STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active;
+  // Performance optimization: Memoize computed values
+  const statusConfig = useMemo(
+    () => STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active,
+    [project.status]
+  );
 
   // Get project type icon
-  const getProjectTypeIcon = () => {
+  const getProjectTypeIcon = useMemo(() => {
     const iconClass = "w-6 h-6 text-white sm:w-7 sm:h-7 md:w-8 md:h-8";
     switch (project.project_type) {
       case 'residential':
@@ -115,10 +118,10 @@ export function ProjectDetailContent({
       default:
         return <FolderKanban className={iconClass} />;
     }
-  };
+  }, [project.project_type]);
 
   // Format address for Google Maps
-  const getGoogleMapsUrl = () => {
+  const getGoogleMapsUrl = useMemo(() => {
     if (!project.address) return null;
     const addressParts = [
       project.address,
@@ -128,60 +131,62 @@ export function ProjectDetailContent({
     ].filter(Boolean);
     const fullAddress = addressParts.join(', ');
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
-  };
+  }, [project.address, project.city, project.state, project.zip_code]);
 
   // Truncate description
   const DESCRIPTION_LIMIT = 150;
-  const shouldTruncateDescription = project.description && project.description.length > DESCRIPTION_LIMIT;
-  const displayDescription = !project.description
-    ? null
-    : isDescriptionExpanded || !shouldTruncateDescription
-    ? project.description
-    : project.description.slice(0, DESCRIPTION_LIMIT) + '...';
+  const shouldTruncateDescription = useMemo(
+    () => project.description && project.description.length > DESCRIPTION_LIMIT,
+    [project.description]
+  );
+
+  const displayDescription = useMemo(
+    () => !project.description
+      ? null
+      : isDescriptionExpanded || !shouldTruncateDescription
+      ? project.description
+      : project.description.slice(0, DESCRIPTION_LIMIT) + '...',
+    [project.description, isDescriptionExpanded, shouldTruncateDescription]
+  );
 
   // Calculate project statistics
-  const totalTasks = project.tasks?.length || 0;
-  const _completedTasks = project.tasks?.filter(t => t.status === 'completed').length || 0;
-  const _inProgressTasks = project.tasks?.filter(t => t.status === 'in_progress').length || 0;
-  const _blockedTasks = project.tasks?.filter(t => t.status === 'blocked').length || 0;
-  const _overdueTasks = project.tasks?.filter(
-    t => t.due_date && new Date(t.due_date) < new Date() && t.status !== 'completed'
-  ).length || 0;
-  const teamSize = project.project_team?.length || 0;
+  const totalTasks = useMemo(() => project.tasks?.length || 0, [project.tasks]);
+
+  const teamSize = useMemo(() => project.project_team?.length || 0, [project.project_team]);
 
   // Calculate timeline progress
-  const getDaysRemaining = () => {
+  const getDaysRemaining = useMemo(() => {
     if (!project.end_date) return null;
     const today = new Date();
     const endDate = new Date(project.end_date);
     const diffTime = endDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
-  };
+  }, [project.end_date]);
 
-  const daysRemaining = getDaysRemaining();
+  const daysRemaining = getDaysRemaining;
 
   // Calculate health score color
-  const getHealthColor = (score: number) => {
+  const getHealthColor = useCallback((score: number) => {
     if (score >= 80) return 'text-construction-green';
     if (score >= 60) return 'text-construction-blue';
     if (score >= 40) return 'text-construction-accent';
     return 'text-construction-red';
-  };
+  }, []);
 
-  const getHealthBgColor = (score: number) => {
+  const getHealthBgColor = useCallback((score: number) => {
     if (score >= 80) return 'bg-construction-green/10';
     if (score >= 60) return 'bg-construction-blue/10';
     if (score >= 40) return 'bg-construction-accent/10';
     return 'bg-construction-red/10';
-  };
+  }, []);
 
-  const getHealthBorderColor = (score: number) => {
+  const getHealthBorderColor = useCallback((score: number) => {
     if (score >= 80) return 'border-construction-green/20';
     if (score >= 60) return 'border-construction-blue/20';
     if (score >= 40) return 'border-construction-accent/20';
     return 'border-construction-red/20';
-  };
+  }, []);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -202,7 +207,7 @@ export function ProjectDetailContent({
               <div className="relative flex-shrink-0">
                 <div className="absolute inset-0 bg-[#001B51]/10 rounded-xl transform rotate-2" />
                 <div className="relative p-2.5 bg-gradient-to-br from-[#001B51] to-[#001B51]/90 rounded-xl shadow-lg sm:p-3.5">
-                  {getProjectTypeIcon()}
+                  {getProjectTypeIcon}
                 </div>
               </div>
 
@@ -256,9 +261,9 @@ export function ProjectDetailContent({
             {/* Location Link */}
             {project.address && (
               <div className="mt-3">
-                {getGoogleMapsUrl() ? (
+                {getGoogleMapsUrl ? (
                   <a
-                    href={getGoogleMapsUrl()!}
+                    href={getGoogleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={cn(

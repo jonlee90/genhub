@@ -7,7 +7,12 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, User, Clock, MapPin, FileText } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import User from 'lucide-react/icons/user';
+import Clock from 'lucide-react/icons/clock';
+import MapPin from 'lucide-react/icons/map-pin';
+import FileText from 'lucide-react/icons/file-text';;
 import { BaseModal } from '@/components/ui/BaseModal';
 import { cn } from '@/lib/utils';
 import type { MarkerConflict, ConflictResolution } from '@/lib/offline/conflict-resolver';

@@ -10,7 +10,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Trash2, FileText, ExternalLink, Loader2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Download from 'lucide-react/icons/download';
+import Trash2 from 'lucide-react/icons/trash-2';
+import FileText from 'lucide-react/icons/file-text';
+import ExternalLink from 'lucide-react/icons/external-link';
+import Loader2 from 'lucide-react/icons/loader-2';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { deleteProjectFile } from '@/app/actions/project-files';

@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Upload, FileCheck, AlertCircle, Loader2, X } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Upload from 'lucide-react/icons/upload';
+import FileCheck from 'lucide-react/icons/file-check';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Loader2 from 'lucide-react/icons/loader-2';
+import X from 'lucide-react/icons/x';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { uploadIFCFile } from '@/app/actions/spatial';

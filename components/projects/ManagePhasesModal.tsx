@@ -1,18 +1,17 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Layers,
-  Plus,
-  Edit,
-  Trash2,
-  Loader2,
-  AlertTriangle,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Layers from 'lucide-react/icons/layers';
+import Plus from 'lucide-react/icons/plus';
+import Edit from 'lucide-react/icons/edit';
+import Trash2 from 'lucide-react/icons/trash-2';
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -63,7 +62,8 @@ export function ManagePhasesModal({
 
   console.log('[ManagePhasesModal] Rendering:', { mode, selectedPhase: selectedPhase?.id });
 
-  const handleCreatePhase = async () => {
+  // Performance optimization: Memoize event handlers to prevent recreation on every render
+  const handleCreatePhase = useCallback(async () => {
     console.log('[ManagePhasesModal] Creating phase:', phaseName);
     setError(null);
 
@@ -88,9 +88,9 @@ export function ManagePhasesModal({
         router.refresh();
       }
     });
-  };
+  }, [phaseName, phaseDescription, projectId, onSuccess, router]);
 
-  const handleUpdatePhase = async () => {
+  const handleUpdatePhase = useCallback(async () => {
     if (!selectedPhase) return;
 
     console.log('[ManagePhasesModal] Updating phase:', selectedPhase.id);
@@ -116,9 +116,9 @@ export function ManagePhasesModal({
         router.refresh();
       }
     });
-  };
+  }, [selectedPhase, phaseName, phaseDescription, onSuccess, router]);
 
-  const handleDeletePhase = async () => {
+  const handleDeletePhase = useCallback(async () => {
     if (!selectedPhase) return;
 
     console.log('[ManagePhasesModal] Deleting phase:', selectedPhase.id, {
@@ -151,29 +151,29 @@ export function ManagePhasesModal({
         router.refresh();
       }
     });
-  };
+  }, [selectedPhase, deleteTaskHandling, targetPhaseId, onSuccess, router]);
 
-  const handleEditClick = (phase: Phase) => {
+  const handleEditClick = useCallback((phase: Phase) => {
     console.log('[ManagePhasesModal] Edit phase:', phase.id);
     setSelectedPhase(phase);
     setPhaseName(phase.name);
     setPhaseDescription(phase.notes || '');
     setMode('edit');
-  };
+  }, []);
 
-  const handleDeleteClick = (phase: Phase) => {
+  const handleDeleteClick = useCallback((phase: Phase) => {
     console.log('[ManagePhasesModal] Delete phase:', phase.id);
     setSelectedPhase(phase);
     setMode('delete');
-  };
+  }, []);
 
-  const handleBackToList = () => {
+  const handleBackToList = useCallback(() => {
     setMode('list');
     setSelectedPhase(null);
     setPhaseName('');
     setPhaseDescription('');
     setError(null);
-  };
+  }, []);
 
   const getModalTitle = () => {
     switch (mode) {

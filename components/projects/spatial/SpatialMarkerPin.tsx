@@ -8,19 +8,18 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  AlertCircle,
-  FileText,
-  AlertTriangle,
-  Flag,
-  ClipboardList,
-  Package,
-  Paperclip,
-  Image,
-  CheckCircle,
-  HelpCircle,
-  Zap,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import FileText from 'lucide-react/icons/file-text';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import Flag from 'lucide-react/icons/flag';
+import ClipboardList from 'lucide-react/icons/clipboard-list';
+import Package from 'lucide-react/icons/package';
+import Paperclip from 'lucide-react/icons/paperclip';
+import Image from 'lucide-react/icons/image';
+import CheckCircle from 'lucide-react/icons/check-circle';
+import HelpCircle from 'lucide-react/icons/help-circle';
+import Zap from 'lucide-react/icons/zap';;
 import { cn } from '@/lib/utils';
 
 import type { SpatialMarker } from '@/types/db/spatial';

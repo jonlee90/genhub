@@ -159,7 +159,8 @@
       "WebFetch(domain:ui.aceternity.com)",
       "Bash(tee:*)",
       "Bash(npm run docs:sync:write:*)",
-      "Bash(npm run deps:fix:*)"
+      "Bash(npm run deps:fix:*)",
+      "Skill(vercel-react-best-practices)"
     ],
     "deny": [],
     "ask": []

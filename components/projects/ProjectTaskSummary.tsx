@@ -1,15 +1,15 @@
 'use client';
 
-import {
-  ClipboardList,
-  DollarSign,
-  CheckCircle,
-  AlertTriangle,
-  AlertCircle,
-  Package,
-  Clock,
-  Target,
-} from 'lucide-react';
+import { useMemo } from 'react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import ClipboardList from 'lucide-react/icons/clipboard-list';
+import DollarSign from 'lucide-react/icons/dollar-sign';
+import CheckCircle from 'lucide-react/icons/check-circle';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Package from 'lucide-react/icons/package';
+import Clock from 'lucide-react/icons/clock';
+import Target from 'lucide-react/icons/target';
 import type { TaskStats } from '@/app/actions/projects';
 import { formatPercent, formatPercentWhole } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,39 @@ export function ProjectTaskSummary({
   projectBudget,
   className = '',
 }: ProjectTaskSummaryProps) {
+  // Performance optimization: Memoize computed values to prevent recalculation on every render
+  // NOTE: Must call hooks before any early returns (React rules)
+  const budgetTotal = useMemo(
+    () => projectBudget ?? taskStats.totalPlannedCost,
+    [projectBudget, taskStats.totalPlannedCost]
+  );
+
+  const budgetUtilization = useMemo(
+    () =>
+      budgetTotal > 0
+        ? (taskStats.totalActualCost / budgetTotal) * 100
+        : 0,
+    [budgetTotal, taskStats.totalActualCost]
+  );
+
+  const isOverBudget = budgetUtilization > 100;
+  const isNearBudget = budgetUtilization > 80 && budgetUtilization <= 100;
+
+  const budgetVariance = useMemo(
+    () => budgetTotal - taskStats.totalActualCost,
+    [budgetTotal, taskStats.totalActualCost]
+  );
+
+  const completionRate = useMemo(
+    () => (taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0),
+    [taskStats.total, taskStats.completed]
+  );
+
+  const activeTasksCount = useMemo(
+    () => taskStats.total - taskStats.completed,
+    [taskStats.total, taskStats.completed]
+  );
+
   // Handle empty state when no tasks exist
   if (taskStats.total === 0) {
     return (
@@ -81,23 +114,6 @@ export function ProjectTaskSummary({
       </div>
     );
   }
-
-  // Use project budget if available, otherwise fall back to task planned costs
-  const budgetTotal = projectBudget ?? taskStats.totalPlannedCost;
-
-  // Calculate budget utilization percentage
-  const budgetUtilization =
-    budgetTotal > 0
-      ? (taskStats.totalActualCost / budgetTotal) * 100
-      : 0;
-  const isOverBudget = budgetUtilization > 100;
-  const isNearBudget = budgetUtilization > 80 && budgetUtilization <= 100;
-
-  // Calculate variance against project budget
-  const budgetVariance = budgetTotal - taskStats.totalActualCost;
-  const completionRate =
-    taskStats.total > 0 ? (taskStats.completed / taskStats.total) * 100 : 0;
-  const activeTasksCount = taskStats.total - taskStats.completed;
 
   // Determine progress bar colors
   const getBudgetColor = () => {

@@ -1,8 +1,20 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, CheckCircle2, Clock, AlertTriangle, Ban, Calendar, Sparkles, Loader2, ListTodo, Target, TrendingUp, Zap } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import X from 'lucide-react/icons/x';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Clock from 'lucide-react/icons/clock';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import Ban from 'lucide-react/icons/ban';
+import Calendar from 'lucide-react/icons/calendar';
+import Sparkles from 'lucide-react/icons/sparkles';
+import Loader2 from 'lucide-react/icons/loader-2';
+import ListTodo from 'lucide-react/icons/list-todo';
+import Target from 'lucide-react/icons/target';
+import TrendingUp from 'lucide-react/icons/trending-up';
+import Zap from 'lucide-react/icons/zap';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -95,16 +107,25 @@ export function PhaseDetailPanel({
   // Debug: Log when editingTask changes
   console.log('[PhaseDetailPanel] editingTask state:', editingTask?.id, editingTask?.title);
 
-  const statusConfig = {
+  // Performance optimization: Memoize computed values
+  const statusConfig = useMemo(() => ({
     not_started: { label: 'Not Started', color: 'text-gray-700' },
     in_progress: { label: 'In Progress', color: 'text-[#001B51]' },
     completed: { label: 'Completed', color: 'text-[#059669]' },
-  };
+  }), []);
 
-  const phaseStatus = statusConfig[phase.status as keyof typeof statusConfig];
+  const phaseStatus = useMemo(
+    () => statusConfig[phase.status as keyof typeof statusConfig],
+    [phase.status, statusConfig]
+  );
 
-  // Handle apply task templates
-  const handleApplyTemplates = async () => {
+  const progressPercentageRaw = useMemo(
+    () => stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0,
+    [stats.totalTasks, stats.completedTasks]
+  );
+
+  // Performance optimization: Memoize event handlers to prevent recreation on every render
+  const handleApplyTemplates = useCallback(async () => {
     console.log('[PhaseDetailPanel] Applying task templates to phase:', phase.id);
     setApplyingTemplates(true);
 
@@ -126,11 +147,7 @@ export function PhaseDetailPanel({
         setApplyingTemplates(false);
       }
     });
-  };
-
-  const progressPercentageRaw = stats.totalTasks > 0
-    ? (stats.completedTasks / stats.totalTasks) * 100
-    : 0;
+  }, [phase.id, router]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

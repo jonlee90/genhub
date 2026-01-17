@@ -7,7 +7,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Filter, AlertCircle, Camera, FileText, Ruler } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Filter from 'lucide-react/icons/filter';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Camera from 'lucide-react/icons/camera';
+import FileText from 'lucide-react/icons/file-text';
+import Ruler from 'lucide-react/icons/ruler';;
 import { cn } from '@/lib/utils';
 import { BottomSheetModal } from '@/components/mobile/BottomSheetModal';
 

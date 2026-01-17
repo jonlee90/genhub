@@ -7,6 +7,22 @@
 // P5.7 - Memory management integration
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+
+// Performance optimization: Hoist debounce function outside component to avoid recreation
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  return function executedFunction(...args: Parameters<T>) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { viewerManager } from '@/lib/xeokit/viewer-manager';
 import { cn } from '@/lib/utils';

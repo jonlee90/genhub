@@ -1,6 +1,10 @@
 'use client';
 
-import { AlertTriangle, RefreshCw, Monitor, Smartphone } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import RefreshCw from 'lucide-react/icons/refresh-cw';
+import Monitor from 'lucide-react/icons/monitor';
+import Smartphone from 'lucide-react/icons/smartphone';;
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 

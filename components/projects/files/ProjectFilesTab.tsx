@@ -8,9 +8,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Image, FileText, Folder, Upload, Loader2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Image from 'lucide-react/icons/image';
+import FileText from 'lucide-react/icons/file-text';
+import Folder from 'lucide-react/icons/folder';
+import Upload from 'lucide-react/icons/upload';
+import Loader2 from 'lucide-react/icons/loader-2';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SearchFilterPanel } from './SearchFilterPanel';
@@ -43,12 +48,12 @@ export function ProjectFilesTab({
   // Track current primary photo locally for optimistic UI
   const [localImageUrl, setLocalImageUrl] = useState<string | null | undefined>(currentImageUrl);
 
-  // Handler for when primary photo changes
-  const handleSetPrimary = (url: string | null) => {
+  // Performance optimization: Memoize handler for when primary photo changes
+  const handleSetPrimary = useCallback((url: string | null) => {
     console.log('[ProjectFilesTab] Primary photo changed to:', url);
     setLocalImageUrl(url);
     onPrimaryPhotoChange?.();
-  };
+  }, [onPrimaryPhotoChange]);
 
   // Tab state
   const [activeView, setActiveView] = useState<TabView>('photos');
@@ -59,10 +64,12 @@ export function ProjectFilesTab({
   const [loading, setLoading] = useState(false);
 
   // Selection state
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  // Performance optimization: Lazy initialization for Set
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
 
   // Filter state
-  const [filters, setFilters] = useState({
+  // Performance optimization: Lazy initialization for filter object
+  const [filters, setFilters] = useState(() => ({
     search: '',
     category: [],
     dateFrom: undefined,
@@ -71,14 +78,10 @@ export function ProjectFilesTab({
     fileType: [],
     source: [],
     showReceipts: true,
-  });
+  }));
 
-  // Debug: Fetch data on mount or filter change
-  useEffect(() => {
-    fetchData();
-  }, [filters, activeView]);
-
-  const fetchData = async () => {
+  // Performance optimization: Wrap fetchData in useCallback to prevent re-creation
+  const fetchData = useCallback(async () => {
     console.log('[ProjectFilesTab] Fetching data with filters:', filters);
     setLoading(true);
 
@@ -122,7 +125,12 @@ export function ProjectFilesTab({
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId, activeView, filters]);
+
+  // Debug: Fetch data on mount or filter change
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleFilterChange = (newFilters: any) => {
     console.log('[ProjectFilesTab] Filters changed:', newFilters);

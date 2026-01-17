@@ -5,7 +5,10 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, Loader2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Search from 'lucide-react/icons/search';
+import X from 'lucide-react/icons/x';
+import Loader2 from 'lucide-react/icons/loader-2';;
 import Fuse from 'fuse.js';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';

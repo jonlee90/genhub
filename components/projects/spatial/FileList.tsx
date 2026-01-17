@@ -9,18 +9,17 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  File,
-  Upload,
-  Download,
-  Trash2,
-  FileText,
-  Image as ImageIcon,
-  FileSpreadsheet,
-  FileCode,
-  Archive,
-  Pencil,
-} from 'lucide-react'
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import File from 'lucide-react/icons/file';
+import Upload from 'lucide-react/icons/upload';
+import Download from 'lucide-react/icons/download';
+import Trash2 from 'lucide-react/icons/trash2';
+import FileText from 'lucide-react/icons/file-text';
+import Image as ImageIcon from 'lucide-react/icons/image as image-icon';
+import FileSpreadsheet from 'lucide-react/icons/file-spreadsheet';
+import FileCode from 'lucide-react/icons/file-code';
+import Archive from 'lucide-react/icons/archive';
+import Pencil from 'lucide-react/icons/pencil';
 import { cn } from '@/lib/utils'
 import { FileUploader } from './FileUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'

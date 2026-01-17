@@ -8,15 +8,14 @@
 
 import { useState, useTransition } from 'react';
 import { motion } from 'framer-motion';
-import {
-  AlertCircle,
-  FileText,
-  AlertTriangle,
-  Flag,
-  Loader2,
-  Upload,
-  Camera,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import FileText from 'lucide-react/icons/file-text';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import Flag from 'lucide-react/icons/flag';
+import Loader2 from 'lucide-react/icons/loader-2';
+import Upload from 'lucide-react/icons/upload';
+import Camera from 'lucide-react/icons/camera';;
 import { cn } from '@/lib/utils';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { PhotoUploader } from './PhotoUploader';

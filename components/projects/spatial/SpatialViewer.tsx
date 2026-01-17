@@ -3,7 +3,7 @@
 // Debug: Phase 3 - Complete spatial 3D viewer with marker integration
 // Integrates Phase 2 components + context menu, marker pins, filters, and task linking
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { ThreeDViewerCanvas } from './3DViewerCanvas';
 import { ModelLoader } from './ModelLoader';
@@ -93,12 +93,13 @@ export function SpatialViewer({
 
   // Debug: Marker state
   const [markers, setMarkers] = useState<SpatialMarker[]>([]);
-  const [activeFilters, setActiveFilters] = useState<MarkerFilters>({
+  // Performance optimization: Lazy initialization to avoid creating object on every render
+  const [activeFilters, setActiveFilters] = useState<MarkerFilters>(() => ({
     markerTypes: [],
     statuses: [],
     hasTask: undefined,
     hasMaterials: undefined,
-  });
+  }));
 
   // Debug: Context menu state
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
@@ -506,27 +507,38 @@ export function SpatialViewer({
   }, [viewer]);
 
   // Debug: Phase 6 - Mobile performance: reduce marker count on mobile (show only active)
-  const visibleMarkers = isMobile
-    ? markers.filter((m) => m.status === 'open' || m.status === 'in_progress')
-    : markers;
+  // Performance optimization: useMemo to prevent recalculation on every render
+  const visibleMarkers = useMemo(() => {
+    return isMobile
+      ? markers.filter((m) => m.status === 'open' || m.status === 'in_progress')
+      : markers;
+  }, [markers, isMobile]);
 
   console.log('[SpatialViewer] Visible markers:', visibleMarkers.length, '/', markers.length, '(mobile:', isMobile, ')');
 
   // Debug: Calculate marker counts for filter panel
-  const markerCounts = {
-    issue: markers.filter((m) => m.type === 'issue').length,
-    note: markers.filter((m) => m.type === 'note').length,
-    safety: markers.filter((m) => m.type === 'safety').length,
-    milestone: markers.filter((m) => m.type === 'progress').length,
-  };
+  // Performance optimization: useMemo + single iteration instead of 4 separate filters
+  const markerCounts = useMemo(() => {
+    const counts = { issue: 0, note: 0, safety: 0, milestone: 0 };
+    for (const marker of markers) {
+      if (marker.type === 'issue') counts.issue++;
+      else if (marker.type === 'note') counts.note++;
+      else if (marker.type === 'safety') counts.safety++;
+      else if (marker.type === 'progress') counts.milestone++;
+    }
+    return counts;
+  }, [markers]);
 
   // Mobile redesign: Convert markers to MarkerListItem format for MarkerListSheet
-  const markerListItems = visibleMarkers.map((m) => ({
-    id: m.id,
-    title: m.title,
-    category: m.type,
-    position: { x: m.position_x, y: m.position_y, z: m.position_z },
-  }));
+  // Performance optimization: useMemo to prevent recreation on every render
+  const markerListItems = useMemo(() =>
+    visibleMarkers.map((m) => ({
+      id: m.id,
+      title: m.title,
+      category: m.type,
+      position: { x: m.position_x, y: m.position_y, z: m.position_z },
+    }))
+  , [visibleMarkers]);
 
   // Debug: Phase 6 - WebGL fallback message
   if (!webglSupported) {

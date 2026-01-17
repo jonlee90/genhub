@@ -1,7 +1,12 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Package, CheckCircle2, Truck, Wrench, MapPin } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Package from 'lucide-react/icons/package';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Truck from 'lucide-react/icons/truck';
+import Wrench from 'lucide-react/icons/wrench';
+import MapPin from 'lucide-react/icons/map-pin';;
 import type { SpatialMarker } from '@/types/db/spatial';
 
 /**

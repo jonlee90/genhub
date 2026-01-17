@@ -4,7 +4,7 @@
 // Reuses core 3D rendering from SpatialViewer but removes all edit capabilities
 // Clients can view models, markers, and task details but cannot create/edit/delete
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import type { Viewer } from '@xeokit/xeokit-sdk';
 import { ThreeDViewerCanvas } from './3DViewerCanvas';
 import { ModelLoader } from './ModelLoader';
@@ -180,13 +180,13 @@ export function ClientSpatialViewer({
     }
   }, []);
 
-  // Debug: Calculate marker counts for filter panel
-  const markerCounts = {
+  // Performance optimization: Memoize marker counts with multiple filter operations
+  const markerCounts = useMemo(() => ({
     issue: markers.filter(m => m.type === 'issue').length,
     note: markers.filter(m => m.type === 'note').length,
     safety: markers.filter(m => m.type === 'safety').length,
     milestone: markers.filter(m => (m.type as string) === 'milestone').length, // milestone may not be in DB enum yet
-  };
+  }), [markers]);
 
   return (
     <div className={cn('relative h-full w-full bg-gray-50', className)}>

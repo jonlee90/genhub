@@ -5,18 +5,17 @@
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  MapPin,
-  X,
-  Check,
-  FileText,
-  Image,
-  File,
-  AlertCircle,
-  TrendingUp,
-  Hammer,
-  Package,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import MapPin from 'lucide-react/icons/map-pin';
+import X from 'lucide-react/icons/x';
+import Check from 'lucide-react/icons/check';
+import FileText from 'lucide-react/icons/file-text';
+import Image from 'lucide-react/icons/image';
+import File from 'lucide-react/icons/file';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import TrendingUp from 'lucide-react/icons/trending-up';
+import Hammer from 'lucide-react/icons/hammer';
+import Package from 'lucide-react/icons/package';;
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

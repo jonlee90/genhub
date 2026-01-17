@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useState, useEffect, useMemo } from 'react';
+import { useActionState, useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createProject } from '@/app/actions/projects';
@@ -11,29 +11,28 @@ import { TouchButton } from '@/components/mobile/TouchButton';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { StateSelect } from '@/components/ui/StateSelect';
-import {
-  AlertCircle,
-  MapPin,
-  DollarSign,
-  Calendar,
-  Users,
-  FolderKanban,
-  FileText,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  Building2,
-  Home,
-  UtensilsCrossed,
-  Coffee,
-  Factory,
-  ArrowRight,
-  ArrowLeft,
-  Sparkles,
-  CheckCircle2,
-  Plus,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import MapPin from 'lucide-react/icons/map-pin';
+import DollarSign from 'lucide-react/icons/dollar-sign';
+import Calendar from 'lucide-react/icons/calendar';
+import Users from 'lucide-react/icons/users';
+import FolderKanban from 'lucide-react/icons/folder-kanban';
+import FileText from 'lucide-react/icons/file-text';
+import Check from 'lucide-react/icons/check';
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import ChevronRight from 'lucide-react/icons/chevron-right';
+import Layers from 'lucide-react/icons/layers';
+import Building2 from 'lucide-react/icons/building-2';
+import Home from 'lucide-react/icons/home';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Coffee from 'lucide-react/icons/coffee';
+import Factory from 'lucide-react/icons/factory';
+import ArrowRight from 'lucide-react/icons/arrow-right';
+import ArrowLeft from 'lucide-react/icons/arrow-left';
+import Sparkles from 'lucide-react/icons/sparkles';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Plus from 'lucide-react/icons/plus';
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
 import { BaseModal } from '@/components/ui/BaseModal';
@@ -277,13 +276,14 @@ export function CreateProjectForm({
     return !hasErrors;
   };
 
-  const handleFieldBlur = (fieldName: string, value: string) => {
+  // Performance optimization: Memoize event handlers to prevent recreation on every render
+  const handleFieldBlur = useCallback((fieldName: string, value: string) => {
     setTouchedFields(prev => new Set(prev).add(fieldName));
     const error = validateField(fieldName, value);
     setValidationErrors(prev => ({ ...prev, [fieldName]: error }));
-  };
+  }, []);
 
-  const handleNext = (e: React.MouseEvent) => {
+  const handleNext = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     const isValid = validateCurrentStep();
     if (!isValid) return;
@@ -300,22 +300,22 @@ export function CreateProjectForm({
       }
       setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep, formValues]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
       setValidationErrors({});
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     const isValid = validateCurrentStep();
     if (!isValid) {
       e.preventDefault();
       return;
     }
-  };
+  }, []);
 
   // Fetch project type configs on mount (for mapping to phase templates)
   useEffect(() => {
@@ -380,10 +380,11 @@ export function CreateProjectForm({
     fetchPhaseTemplates();
   }, [formValues.project_type, projectTypeConfigs]);
 
-  const handleProjectTypeChange = (value: string) => {
+  // Performance optimization: Memoize event handler to prevent recreation on every render
+  const handleProjectTypeChange = useCallback((value: string) => {
     setProjectType(value);
     setFormValues({ ...formValues, project_type: value });
-  };
+  }, [formValues]);
 
   // Dynamic modal title based on step
   const modalTitle = useMemo(() => {

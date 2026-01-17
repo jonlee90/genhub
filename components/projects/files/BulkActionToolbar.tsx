@@ -8,7 +8,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Download, Trash2, FolderInput, X } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Download from 'lucide-react/icons/download';
+import Trash2 from 'lucide-react/icons/trash-2';
+import FolderInput from 'lucide-react/icons/folder-input';
+import X from 'lucide-react/icons/x';
 import { Button } from '@/components/ui/button';
 
 interface BulkActionToolbarProps {

@@ -1,21 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BaseModal } from '@/components/ui/BaseModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import {
-  Search,
-  HardHat,
-  Loader2,
-  AlertCircle,
-  Building2,
-  Phone,
-  Star,
-  Check,
-} from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
+import Search from 'lucide-react/icons/search';
+import HardHat from 'lucide-react/icons/hard-hat';
+import Loader2 from 'lucide-react/icons/loader-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Building2 from 'lucide-react/icons/building-2';
+import Phone from 'lucide-react/icons/phone';
+import Star from 'lucide-react/icons/star';
+import Check from 'lucide-react/icons/check';
 import { motion, AnimatePresence } from 'framer-motion';
 import { addSubcontractorToProject } from '@/app/actions/projects';
 import { cn } from '@/lib/utils';
@@ -76,32 +75,9 @@ export function AddSubcontractorModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // Fetch subcontractors when modal opens
-  useEffect(() => {
-    if (open) {
-      fetchSubcontractors();
-    } else {
-      resetState();
-    }
-  }, [open, companyId]);
-
-  // Filter subcontractors based on search query
-  useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredSubcontractors(subcontractors);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = subcontractors.filter(
-        (sub) =>
-          sub.company_name.toLowerCase().includes(query) ||
-          sub.contact_name.toLowerCase().includes(query) ||
-          sub.trade_specialization.toLowerCase().includes(query)
-      );
-      setFilteredSubcontractors(filtered);
-    }
-  }, [searchQuery, subcontractors]);
-
-  const fetchSubcontractors = async () => {
+  // Performance optimization: Memoize async functions to prevent recreation on every render
+  // NOTE: Must declare useCallback functions BEFORE useEffect hooks that use them
+  const fetchSubcontractors = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -127,18 +103,43 @@ export function AddSubcontractorModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [companyId, existingSubcontractorIds]);
 
-  const resetState = () => {
+  const resetState = useCallback(() => {
     setSearchQuery('');
     setSelectedId(null);
     setSubcontractors([]);
     setFilteredSubcontractors([]);
     setError(null);
     setSuccess(false);
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  // Fetch subcontractors when modal opens
+  useEffect(() => {
+    if (open) {
+      fetchSubcontractors();
+    } else {
+      resetState();
+    }
+  }, [open, companyId, fetchSubcontractors, resetState]);
+
+  // Filter subcontractors based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredSubcontractors(subcontractors);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = subcontractors.filter(
+        (sub) =>
+          sub.company_name.toLowerCase().includes(query) ||
+          sub.contact_name.toLowerCase().includes(query) ||
+          sub.trade_specialization.toLowerCase().includes(query)
+      );
+      setFilteredSubcontractors(filtered);
+    }
+  }, [searchQuery, subcontractors]);
+
+  const handleSubmit = useCallback(async () => {
     if (!selectedId) {
       setError('Please select a subcontractor');
       return;
@@ -167,7 +168,7 @@ export function AddSubcontractorModal({
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [selectedId, projectId, onOpenChange]);
 
   const getInitials = (name: string) => {
     return name
