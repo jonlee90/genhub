@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils';
-import type { GanttHeaderProps } from './/gantt-types';
+import type { GanttHeaderProps } from './gantt-types';
 
 export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups, dateCells, sortedTasksLength }: GanttHeaderProps) {
   const { sidebarWidth, headerHeight } = config;

@@ -1,9 +1,9 @@
-import { Suspense } from 'react';
-import { redirect } from 'next/navigation';
-import { getDashboardData } from '@/app/actions/dashboard';
-import { DashboardContent } from '@/components/dashboard';
-import { auth } from '@/lib/auth';
-import DashboardLoading from './loading';
+import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { getDashboardData } from "@/app/actions/dashboard";
+import { DashboardContent } from "@/components/dashboard/DashboardContent";
+import { auth } from "@/lib/auth";
+import DashboardLoading from "./loading";
 
 /**
  * GenHub Dashboard Page - Server Component
@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   const session = await auth();
 
   if (!session?.user) {
-    redirect('/login');
+    redirect("/login");
   }
 
   // Fetch dashboard data server-side
@@ -25,8 +25,11 @@ export default async function DashboardPage() {
   // Handle error state
   if (error) {
     // If auth error, redirect to login
-    if (error === 'Not authenticated' || error === 'No active company found for user') {
-      redirect('/login');
+    if (
+      error === "Not authenticated" ||
+      error === "No active company found for user"
+    ) {
+      redirect("/login");
     }
 
     // Show error UI for other errors
@@ -65,11 +68,12 @@ export default async function DashboardPage() {
 
   // Handle case where data is null (shouldn't happen if no error, but TypeScript safety)
   if (!data) {
-    redirect('/login');
+    redirect("/login");
   }
 
   // Extract user name from session
-  const userName = session.user.name || session.user.email?.split('@')[0] || 'User';
+  const userName =
+    session.user.name || session.user.email?.split("@")[0] || "User";
 
   return (
     <Suspense fallback={<DashboardLoading />}>

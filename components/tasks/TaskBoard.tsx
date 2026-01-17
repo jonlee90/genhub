@@ -9,7 +9,7 @@ import { TaskFilters } from './TaskFilters';
 import { TaskModal } from './TaskModal';
 import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
 import { TopProjectsCard } from './TopProjectsCard';
-import { transformTasksForGantt } from './gantt-utils';
+import { transformTasksForGantt } from './gantt/gantt-utils';
 import { updateTaskDates } from '@/app/actions/tasks';
 import { SearchInput } from '@/components/mobile/SearchInput';
 import { FilterTabs } from '@/components/ui/FilterTabs';
@@ -30,7 +30,7 @@ import type {
 } from '@/types/db/task';
 
 // Dynamic import GanttChart to reduce initial bundle
-const GanttChart = dynamic(() => import('./GanttChart').then(mod => ({ default: mod.GanttChart })), {
+const GanttChart = dynamic(() => import('./gantt/GanttChart').then(mod => ({ default: mod.GanttChart })), {
   loading: () => (
     <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
       <div className="flex items-center justify-center gap-3 text-gray-500">

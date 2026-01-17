@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { getTodayPosition } from './/gantt-utils';
-import type { GanttConfig, DateCell } from './/gantt-types';
+import { getTodayPosition } from './gantt-utils';
+import type { GanttConfig, DateCell } from './gantt-types';
 
 interface GanttTimelineProps {
   config: GanttConfig;
@@ -101,18 +100,8 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
         />
       ))}
 
-      {/* Today marker - animated pulsing line */}
-      <motion.g
-        initial={{ opacity: 0.5 }}
-        animate={{
-          opacity: [0.5, 1, 0.5],
-        }}
-        transition={{
-          duration: 2,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      >
+      {/* Today marker - CSS animated pulsing line (replaced Framer Motion for bundle size) */}
+      <g className="animate-pulse-opacity">
         <line
           x1={todayX}
           y1={0}
@@ -132,7 +121,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           strokeWidth={isMobile ? '1.5' : '2'}
           markerStart="url(#today-arrow)"
         />
-      </motion.g>
+      </g>
     </svg>
   );
 });

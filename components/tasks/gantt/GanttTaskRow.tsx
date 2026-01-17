@@ -3,8 +3,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { GanttTaskBar } from './/GanttTaskBar';
-import type { GanttTask, TaskPosition, GanttConfig } from './/gantt-types';
+import { GanttTaskBar } from './GanttTaskBar';
+import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
 import { getTaskTypeInfo } from '@/components/tasks/TaskTypeSelector';
 import type { TaskType } from '@/types/db/enums';
 
@@ -52,7 +52,13 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
   return (
     <div
       className="flex border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
-      style={{ height: rowHeight }}
+      style={{
+        height: rowHeight,
+        // content-visibility: auto provides automatic virtualization (rendering-content-visibility)
+        // Browser skips rendering off-screen rows, improving performance for large task lists
+        contentVisibility: 'auto',
+        containIntrinsicSize: `auto ${rowHeight}px`,
+      }}
     >
       {/* Left sidebar: Task info - clickable to open edit modal */}
       <div

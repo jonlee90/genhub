@@ -13,11 +13,11 @@ import {
 } from '@dnd-kit/core';
 import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { GanttHeader } from './/GanttHeader';
-import { GanttTimeline } from './/GanttTimeline';
-import { GanttTaskRow } from './/GanttTaskRow';
-import { GanttDependencyLines } from './/GanttDependencyLines';
-import { GanttViewToggle } from './/GanttViewToggle';
+import { GanttHeader } from './GanttHeader';
+import { GanttTimeline } from './GanttTimeline';
+import { GanttTaskRow } from './GanttTaskRow';
+import { GanttDependencyLines } from './GanttDependencyLines';
+import { GanttViewToggle } from './GanttViewToggle';
 import {
   calculateDateRange,
   getTaskPosition,
@@ -27,20 +27,20 @@ import {
   generateDateGroups,
   generateDateCells,
   calculateTotalWidth,
-} from './/gantt-utils';
+} from './gantt-utils';
 import type {
   GanttChartProps,
   TimeScale,
   GanttConfig,
   TaskPosition,
-} from './/gantt-types';
+} from './gantt-types';
 import {
   DEFAULT_GANTT_CONFIG,
   MOBILE_GANTT_CONFIG,
   TABLET_GANTT_CONFIG,
   TIME_SCALE_CONFIGS,
   MOBILE_TIME_SCALE_CONFIGS,
-} from './/gantt-types';
+} from './gantt-types';
 import { cn } from '@/lib/utils';
 
 export function GanttChart({
@@ -57,7 +57,8 @@ export function GanttChart({
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [isDraggingScroll, setIsDraggingScroll] = useState(false);
-  const [scrollStart, setScrollStart] = useState({ x: 0, scrollLeft: 0 });
+  // Lazy state initialization - avoid object creation on every render (rerender-lazy-state-init)
+  const [scrollStart, setScrollStart] = useState(() => ({ x: 0, scrollLeft: 0 }));
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
 
   // Detect screen size for responsive config

@@ -102,6 +102,10 @@ export default {
         'bounce-slow': 'bounce 2s infinite',
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        // Gantt chart optimized animations (CSS-based, replaces Framer Motion)
+        'pulse-opacity': 'pulseOpacity 2s ease-in-out infinite',
+        'draw-line': 'drawLine 0.8s ease-in-out forwards',
+        'scale-in': 'scaleIn 0.2s ease-out forwards',
       },
       // Aceternity UI keyframes
       keyframes: {
@@ -149,6 +153,19 @@ export default {
         'accordion-up': {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
+        },
+        // Gantt chart optimized keyframes (CSS-based, replaces Framer Motion)
+        pulseOpacity: {
+          '0%, 100%': { opacity: '0.5' },
+          '50%': { opacity: '1' },
+        },
+        drawLine: {
+          '0%': { strokeDashoffset: '1000', opacity: '0' },
+          '100%': { strokeDashoffset: '0', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scaleX(0)', opacity: '0' },
+          '100%': { transform: 'scaleX(1)', opacity: '1' },
         },
       },
       // Backdrop blur utilities

@@ -1,6 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@/lib/utils';
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 interface DashboardHeaderProps {
   userName: string;
@@ -17,23 +18,22 @@ interface DashboardHeaderProps {
  * - Minimal animation for performance
  */
 export function DashboardHeader({ userName, className }: DashboardHeaderProps) {
-  // Get greeting based on time of day
-  const getGreeting = () => {
+  const greeting = useMemo(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  }, []);
 
   return (
-    <header className={cn('relative', className)}>
+    <header className={cn("relative", className)}>
       {/* Navy accent bar - construction theme */}
       <div className="absolute top-0 left-0 right-0 h-1 bg-[#001B51] rounded-full" />
 
       <div className="pt-4">
         {/* Greeting - smaller on mobile, larger on desktop */}
         <p className="text-sm md:text-base text-gray-500 font-medium mb-1">
-          {getGreeting()},
+          {greeting},
         </p>
 
         {/* User name - bold, high contrast */}

@@ -1,16 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { FolderKanban, ClipboardList, UserPlus, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { DashboardHeader } from './DashboardHeader';
-import { KPICardsGrid } from './KPICardsGrid';
-import { WidgetsGrid } from './WidgetsGrid';
-import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
-import { TaskModal } from '@/components/tasks/TaskModal';
-import { InviteTeamMemberModal } from '@/components/team/InviteTeamMemberModal';
-import type { DashboardData } from '@/types/dashboard';
+import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import {
+  FolderKanban,
+  ClipboardList,
+  UserPlus,
+  ChevronRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { DashboardHeader } from "./DashboardHeader";
+import { KPICardsGrid } from "./KPICardsGrid";
+import { WidgetsGrid } from "./WidgetsGrid";
+import type { DashboardData } from "@/types/dashboard";
 
 export interface DashboardContentProps {
   data: DashboardData;
@@ -23,53 +26,78 @@ export interface DashboardContentProps {
  */
 const quickActionConfig = [
   {
-    id: 'project',
+    id: "project",
     icon: FolderKanban,
-    title: 'New Project',
-    description: 'Start a construction project',
-    color: 'navy' as const,
+    title: "New Project",
+    description: "Start a construction project",
+    color: "navy" as const,
   },
   {
-    id: 'task',
+    id: "task",
     icon: ClipboardList,
-    title: 'New Task',
-    description: 'Create a task or checklist',
-    color: 'green' as const,
+    title: "New Task",
+    description: "Create a task or checklist",
+    color: "green" as const,
   },
   {
-    id: 'team',
+    id: "team",
     icon: UserPlus,
-    title: 'Invite Team',
-    description: 'Add team members',
-    color: 'gray' as const,
+    title: "Invite Team",
+    description: "Add team members",
+    color: "gray" as const,
   },
 ] as const;
 
-type QuickActionId = (typeof quickActionConfig)[number]['id'];
+type QuickActionId = (typeof quickActionConfig)[number]["id"];
 
 const colorStyles = {
   navy: {
-    bg: 'bg-[#001B51]/5',
-    activeBg: 'active:bg-[#001B51]/15',
-    iconBg: 'bg-[#001B51]/10',
-    iconColor: 'text-[#001B51]',
-    border: 'border-[#001B51]/10',
+    bg: "bg-[#001B51]/5",
+    activeBg: "active:bg-[#001B51]/15",
+    iconBg: "bg-[#001B51]/10",
+    iconColor: "text-[#001B51]",
+    border: "border-[#001B51]/10",
   },
   green: {
-    bg: 'bg-[#059669]/5',
-    activeBg: 'active:bg-[#059669]/15',
-    iconBg: 'bg-[#059669]/10',
-    iconColor: 'text-[#059669]',
-    border: 'border-[#059669]/10',
+    bg: "bg-[#059669]/5",
+    activeBg: "active:bg-[#059669]/15",
+    iconBg: "bg-[#059669]/10",
+    iconColor: "text-[#059669]",
+    border: "border-[#059669]/10",
   },
   gray: {
-    bg: 'bg-gray-50',
-    activeBg: 'active:bg-gray-100',
-    iconBg: 'bg-gray-100',
-    iconColor: 'text-gray-600',
-    border: 'border-gray-100',
+    bg: "bg-gray-50",
+    activeBg: "active:bg-gray-100",
+    iconBg: "bg-gray-100",
+    iconColor: "text-gray-600",
+    border: "border-gray-100",
   },
 };
+
+const BLUEPRINT_BACKGROUND_STYLE = {
+  backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
+} as const;
+
+const CreateProjectModal = dynamic(
+  () =>
+    import("@/components/projects/CreateProjectModal").then(
+      (mod) => mod.CreateProjectModal,
+    ),
+  { ssr: false },
+);
+
+const TaskModal = dynamic(
+  () => import("@/components/tasks/TaskModal").then((mod) => mod.TaskModal),
+  { ssr: false },
+);
+
+const InviteTeamMemberModal = dynamic(
+  () =>
+    import("@/components/team/InviteTeamMemberModal").then(
+      (mod) => mod.InviteTeamMemberModal,
+    ),
+  { ssr: false },
+);
 
 /**
  * QuickActionsSection - Touch-friendly quick actions with modal triggers
@@ -95,23 +123,23 @@ function QuickActionsSection({
               key={action.id}
               onClick={() => onActionClick(action.id)}
               className={cn(
-                'flex items-center gap-3 p-4 rounded-xl',
-                'border-2 transition-all duration-150',
-                'min-h-[64px]',
+                "flex items-center gap-3 p-4 rounded-xl",
+                "border-2 transition-all duration-150",
+                "min-h-[64px]",
                 styles.bg,
                 styles.border,
                 styles.activeBg,
-                'active:scale-[0.98]'
+                "active:scale-[0.98]",
               )}
             >
               {/* Icon */}
               <div
                 className={cn(
-                  'flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center',
-                  styles.iconBg
+                  "flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center",
+                  styles.iconBg,
                 )}
               >
-                <Icon className={cn('w-5 h-5', styles.iconColor)} />
+                <Icon className={cn("w-5 h-5", styles.iconColor)} />
               </div>
 
               {/* Text */}
@@ -158,43 +186,44 @@ export function DashboardContent({
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  // Handle quick action clicks
-  const handleQuickAction = (action: QuickActionId) => {
+  const quickActionHandler = useCallback((action: QuickActionId) => {
     switch (action) {
-      case 'project':
+      case "project":
         setIsProjectModalOpen(true);
         break;
-      case 'task':
+      case "task":
         setIsTaskModalOpen(true);
         break;
-      case 'team':
+      case "team":
         setIsInviteModalOpen(true);
         break;
     }
-  };
+  }, []);
 
-  // Handle modal success callbacks
-  const handleProjectSuccess = () => {
+  const handleProjectSuccess = useCallback(() => {
     router.refresh();
-  };
+  }, [router]);
 
-  const handleTaskSuccess = () => {
+  const handleTaskSuccess = useCallback(() => {
     router.refresh();
-  };
+  }, [router]);
 
-  const handleInviteClose = () => {
+  const handleInviteClose = useCallback(() => {
     setIsInviteModalOpen(false);
     router.refresh();
-  };
+  }, [router]);
+
+  const quickActionSection = useMemo(
+    () => <QuickActionsSection onActionClick={quickActionHandler} />,
+    [quickActionHandler],
+  );
 
   return (
     <div className="relative min-h-[100dvh] bg-gray-50">
       {/* Subtle Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.02] z-0"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
-        }}
+        style={BLUEPRINT_BACKGROUND_STYLE}
       />
 
       {/* Main Content */}
@@ -203,17 +232,21 @@ export function DashboardContent({
         <DashboardHeader userName={userName} />
 
         {/* Quick Actions */}
-        <QuickActionsSection onActionClick={handleQuickAction} />
+        {quickActionSection}
 
         {/* KPI Cards Grid */}
         <section aria-labelledby="kpis-heading">
-          <h2 id="kpis-heading" className="sr-only">Key Performance Indicators</h2>
+          <h2 id="kpis-heading" className="sr-only">
+            Key Performance Indicators
+          </h2>
           <KPICardsGrid kpis={data.kpis} isLoading={isLoading} />
         </section>
 
         {/* Widgets Grid */}
         <section aria-labelledby="widgets-heading">
-          <h2 id="widgets-heading" className="sr-only">Dashboard Widgets</h2>
+          <h2 id="widgets-heading" className="sr-only">
+            Dashboard Widgets
+          </h2>
           <WidgetsGrid data={data} isLoading={isLoading} />
         </section>
       </main>

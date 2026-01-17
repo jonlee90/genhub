@@ -1,131 +1,52 @@
-import { createUserClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import { TeamPageClient } from '@/components/team/TeamPageClient';
-import type { UserRole, MemberStatus } from '@/types/db/enums';
-import { Users, UserCog, HardHat, Hammer, UserPlus, Shield } from 'lucide-react';
+import { TeamPageClient } from "@/components/team/TeamPageClient";
+import {
+  Users,
+  UserCog,
+  HardHat,
+  Hammer,
+  UserPlus,
+  Shield,
+} from "lucide-react";
+import { getTeamPageData } from "@/lib/team";
 
-interface TeamMemberWithProfile {
-  id: string;
-  user_id: string;
-  role: UserRole;
-  status: MemberStatus;
-  activated_at: string | null;
-  invited_at: string | null;
-  user_profiles: {
-    id: string;
-    email: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-  project_count: number;
-}
+const BLUEPRINT_BACKGROUND_STYLE = {
+  backgroundImage: `
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px)
+  `,
+  backgroundSize: "40px 40px",
+  color: "#001B51",
+} as const;
 
 export default async function TeamPage() {
-  // Get authenticated user session
-  const session = await auth();
+  const data = await getTeamPageData();
 
-  if (!session?.user?.id) {
-    redirect('/sign-in');
-  }
-
-  // Create user-scoped Supabase client
-  const supabase = await createUserClient();
-
-  // Get user's company and role
-  const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
+  if (data.status !== "ok") {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Company Found</h1>
-          <p className="text-gray-600">You are not associated with any active company.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            {data.status === "no_company"
+              ? "No Company Found"
+              : "Error Loading Team"}
+          </h1>
+          <p className="text-gray-600">
+            {data.status === "no_company"
+              ? "You are not associated with any active company."
+              : "Failed to load team members. Please try again."}
+          </p>
         </div>
       </div>
     );
   }
 
-  // Fetch all team members for the company with joined user profiles
-  const { data: teamMembers, error: membersError } = await supabase
-    .from('company_users')
-    .select(`
-      id,
-      user_id,
-      role,
-      status,
-      activated_at,
-      invited_at,
-      user_profiles (
-        id,
-        email,
-        name,
-        avatar_url
-      )
-    `)
-    .eq('company_id', companyUser.company_id)
-    .order('created_at', { ascending: false });
-
-  if (membersError) {
-    console.error('Error fetching team members:', membersError);
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Team</h1>
-          <p className="text-gray-600">Failed to load team members. Please try again.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Fetch project counts for all team members in a single query (optimized)
-  // This eliminates the N+1 query problem by using a Postgres function
-  const { data: projectCounts, error: countsError } = await supabase
-    .rpc('get_team_member_project_counts', {
-      p_company_id: companyUser.company_id
-    });
-
-  if (countsError) {
-    console.error('Error fetching project counts:', countsError);
-  }
-
-  // Create a Map for O(n) lookup of project counts by user_id
-  const countsMap = new Map<string, number>(
-    (projectCounts || []).map(pc => [pc.user_id, Number(pc.project_count)])
-  );
-
-  // Map project counts to team members
-  const membersWithProjectCount: TeamMemberWithProfile[] = (teamMembers || []).map(member => ({
-    ...member,
-    user_profiles: member.user_profiles as TeamMemberWithProfile['user_profiles'],
-    project_count: countsMap.get(member.user_id) || 0,
-  }));
-
-  // Calculate team stats
-  const totalMembers = membersWithProjectCount.length;
-  const activeMembers = membersWithProjectCount.filter(m => m.status === 'active').length;
-  const invitedMembers = membersWithProjectCount.filter(m => m.status === 'invited').length;
-  const admins = membersWithProjectCount.filter(m => m.role === 'admin').length;
-  const projectManagers = membersWithProjectCount.filter(m => m.role === 'project_manager').length;
-  const fieldWorkers = membersWithProjectCount.filter(m => m.role === 'field_worker' || m.role === 'foreman').length;
+  const { members, stats, role, companyId } = data;
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(to right, currentColor 1px, transparent 1px),
-            linear-gradient(to bottom, currentColor 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          color: '#001B51'
-        }} />
+        <div className="absolute inset-0" style={BLUEPRINT_BACKGROUND_STYLE} />
       </div>
 
       {/* Industrial Header with Blueprint Aesthetic */}
@@ -144,7 +65,7 @@ export default async function TeamPage() {
       </div>
 
       {/* Industrial Stats Dashboard - Crew Roster */}
-      {totalMembers > 0 && (
+      {stats.total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           {/* Total Members */}
           <div className="relative group h-full">
@@ -154,11 +75,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
                   <Users className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Total</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                  Total
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{totalMembers}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Team Members</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
+                  {stats.total}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Team Members
+                </div>
               </div>
             </div>
           </div>
@@ -171,11 +98,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
                   <UserCog className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">Active</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">
+                  Active
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">{activeMembers}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">On Duty</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
+                  {stats.active}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  On Duty
+                </div>
               </div>
             </div>
           </div>
@@ -188,11 +121,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
                   <UserPlus className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">Pending</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">
+                  Pending
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">{invitedMembers}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Invited</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">
+                  {stats.invited}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Invited
+                </div>
               </div>
             </div>
           </div>
@@ -205,11 +144,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
                   <Shield className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">Admins</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+                  Admins
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">{admins}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">GC Admins</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
+                  {stats.admins}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  GC Admins
+                </div>
               </div>
             </div>
           </div>
@@ -222,11 +167,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
                   <HardHat className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">Managers</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">
+                  Managers
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">{projectManagers}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Project Mgrs</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">
+                  {stats.projectManagers}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Project Mgrs
+                </div>
               </div>
             </div>
           </div>
@@ -239,11 +190,17 @@ export default async function TeamPage() {
                 <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
                   <Hammer className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
                 </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">Crew</div>
+                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">
+                  Crew
+                </div>
               </div>
               <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">{fieldWorkers}</div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Field Crew</div>
+                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
+                  {stats.fieldWorkers}
+                </div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Field Crew
+                </div>
               </div>
             </div>
           </div>
@@ -253,17 +210,10 @@ export default async function TeamPage() {
       {/* Team Member List/Table - responsive client component */}
       <div className="relative">
         <TeamPageClient
-          members={membersWithProjectCount}
-          currentUserRole={companyUser.role}
-          companyId={companyUser.company_id}
-          stats={{
-            total: totalMembers,
-            active: activeMembers,
-            invited: invitedMembers,
-            admins,
-            projectManagers,
-            fieldWorkers,
-          }}
+          members={members}
+          currentUserRole={role}
+          companyId={companyId}
+          stats={stats}
         />
       </div>
 

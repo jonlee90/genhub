@@ -1,5 +1,6 @@
-'use client';
+"use client";
 
+import { useMemo } from "react";
 import {
   FolderKanban,
   ClipboardList,
@@ -7,10 +8,10 @@ import {
   Clock,
   AlertCircle,
   Users,
-} from 'lucide-react';
-import { KPICard, type KPICardProps } from './KPICard';
-import type { DashboardKPIs } from '@/types/dashboard';
-import { formatPercentWhole, formatBudget } from '@/lib/utils';
+} from "lucide-react";
+import { KPICard, type KPICardProps } from "./KPICard";
+import type { DashboardKPIs } from "@/types/dashboard";
+import { formatPercentWhole, formatBudget } from "@/lib/utils";
 
 interface KPICardsGridProps {
   kpis: DashboardKPIs;
@@ -21,37 +22,38 @@ interface KPICardsGridProps {
  * Determines the appropriate variant based on KPI context and value
  */
 function getVariant(
-  type: 'projects' | 'tasks' | 'budget' | 'schedule' | 'approvals' | 'team',
-  kpis: DashboardKPIs
-): KPICardProps['variant'] {
+  type: "projects" | "tasks" | "budget" | "schedule" | "approvals" | "team",
+  kpis: DashboardKPIs,
+): KPICardProps["variant"] {
   switch (type) {
-    case 'projects':
-      return kpis.activeProjects > 0 ? 'default' : 'warning';
+    case "projects":
+      return kpis.activeProjects > 0 ? "default" : "warning";
 
-    case 'tasks':
-      return kpis.tasksOverdue > 0 ? 'warning' : 'default';
+    case "tasks":
+      return kpis.tasksOverdue > 0 ? "warning" : "default";
 
-    case 'budget':
-      if (kpis.budgetUtilization < 80) return 'success';
-      if (kpis.budgetUtilization <= 100) return 'warning';
-      return 'danger';
+    case "budget":
+      if (kpis.budgetUtilization < 80) return "success";
+      if (kpis.budgetUtilization <= 100) return "warning";
+      return "danger";
 
-    case 'schedule':
-      const total = kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
-      if (total === 0) return 'default';
+    case "schedule":
+      const total =
+        kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
+      if (total === 0) return "default";
       const onTimePercent = (kpis.scheduleOnTime / total) * 100;
-      if (onTimePercent >= 80) return 'success';
-      if (onTimePercent >= 60) return 'warning';
-      return 'danger';
+      if (onTimePercent >= 80) return "success";
+      if (onTimePercent >= 60) return "warning";
+      return "danger";
 
-    case 'approvals':
-      return kpis.pendingExpenses > 0 ? 'warning' : 'default';
+    case "approvals":
+      return kpis.pendingExpenses > 0 ? "warning" : "default";
 
-    case 'team':
-      return 'default';
+    case "team":
+      return "default";
 
     default:
-      return 'default';
+      return "default";
   }
 }
 
@@ -65,6 +67,14 @@ function getVariant(
  * - Snap scrolling on mobile
  */
 export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
+  const scheduleOnTimePercentRaw = useMemo(() => {
+    const scheduleTotal =
+      kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
+    return scheduleTotal > 0
+      ? (kpis.scheduleOnTime / scheduleTotal) * 100
+      : 100;
+  }, [kpis.scheduleOnTime, kpis.scheduleAtRisk, kpis.scheduleDelayed]);
+
   // Loading state: render 6 skeleton cards
   if (isLoading) {
     return (
@@ -83,89 +93,94 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     );
   }
 
-  // Calculate schedule on-time percentage for display
-  const scheduleTotal = kpis.scheduleOnTime + kpis.scheduleAtRisk + kpis.scheduleDelayed;
-  const scheduleOnTimePercentRaw = scheduleTotal > 0
-    ? (kpis.scheduleOnTime / scheduleTotal) * 100
-    : 100;
-
   // Define the 6 KPI cards
-  const cards: Array<Omit<KPICardProps, 'isLoading'> & { key: string }> = [
+  const cards: Array<Omit<KPICardProps, "isLoading"> & { key: string }> = [
     {
-      key: 'active-projects',
-      title: 'Projects',
+      key: "active-projects",
+      title: "Projects",
       value: kpis.activeProjects,
       subtitle: `${kpis.totalProjects} total`,
       icon: FolderKanban,
-      variant: getVariant('projects', kpis),
-      trend: kpis.projectsTrend !== 0
-        ? {
-            value: Math.abs(kpis.projectsTrend),
-            direction: kpis.projectsTrend > 0 ? 'up' : kpis.projectsTrend < 0 ? 'down' : 'neutral',
-            label: 'vs last month',
-          }
-        : undefined,
-      href: '/app/projects',
+      variant: getVariant("projects", kpis),
+      trend:
+        kpis.projectsTrend !== 0
+          ? {
+              value: Math.abs(kpis.projectsTrend),
+              direction:
+                kpis.projectsTrend > 0
+                  ? "up"
+                  : kpis.projectsTrend < 0
+                    ? "down"
+                    : "neutral",
+              label: "vs last month",
+            }
+          : undefined,
+      href: "/app/projects",
     },
     {
-      key: 'tasks-week',
-      title: 'Tasks',
+      key: "tasks-week",
+      title: "Tasks",
       value: kpis.tasksThisWeek,
-      subtitle: kpis.tasksOverdue > 0
-        ? `${kpis.tasksOverdue} overdue`
-        : `${kpis.tasksDueToday} due today`,
+      subtitle:
+        kpis.tasksOverdue > 0
+          ? `${kpis.tasksOverdue} overdue`
+          : `${kpis.tasksDueToday} due today`,
       icon: ClipboardList,
-      variant: getVariant('tasks', kpis),
-      href: '/app/tasks',
+      variant: getVariant("tasks", kpis),
+      href: "/app/tasks",
     },
     {
-      key: 'budget-health',
-      title: 'Budget',
+      key: "budget-health",
+      title: "Budget",
       value: formatPercentWhole(kpis.budgetUtilization),
       subtitle: `${formatBudget(kpis.totalActualSpend)} spent`,
       icon: Wallet,
-      variant: getVariant('budget', kpis),
-      trend: kpis.budgetUtilization > 100
-        ? {
-            value: Math.round(kpis.budgetUtilization - 100),
-            direction: 'up',
-            label: 'over',
-          }
-        : undefined,
-      href: '/app/budget',
+      variant: getVariant("budget", kpis),
+      trend:
+        kpis.budgetUtilization > 100
+          ? {
+              value: Math.round(kpis.budgetUtilization - 100),
+              direction: "up",
+              label: "over",
+            }
+          : undefined,
+      href: "/app/budget",
     },
     {
-      key: 'schedule-status',
-      title: 'Schedule',
+      key: "schedule-status",
+      title: "Schedule",
       value: formatPercentWhole(scheduleOnTimePercentRaw),
-      subtitle: kpis.scheduleDelayed > 0
-        ? `${kpis.scheduleDelayed} delayed`
-        : `${kpis.scheduleOnTime} on time`,
+      subtitle:
+        kpis.scheduleDelayed > 0
+          ? `${kpis.scheduleDelayed} delayed`
+          : `${kpis.scheduleOnTime} on time`,
       icon: Clock,
-      variant: getVariant('schedule', kpis),
-      href: '/app/schedule',
+      variant: getVariant("schedule", kpis),
+      href: "/app/schedule",
     },
     {
-      key: 'pending-approvals',
-      title: 'Approvals',
+      key: "pending-approvals",
+      title: "Approvals",
       value: kpis.pendingExpenses + kpis.pendingApprovals,
-      subtitle: kpis.pendingExpenseAmount > 0
-        ? formatBudget(kpis.pendingExpenseAmount)
-        : 'All caught up',
+      subtitle:
+        kpis.pendingExpenseAmount > 0
+          ? formatBudget(kpis.pendingExpenseAmount)
+          : "All caught up",
       icon: AlertCircle,
-      variant: getVariant('approvals', kpis),
-      href: '/app/expenses?status=pending',
+      variant: getVariant("approvals", kpis),
+      href: "/app/expenses?status=pending",
     },
     {
-      key: 'team-size',
-      title: 'Team',
+      key: "team-size",
+      title: "Team",
       value: kpis.teamSize,
-      subtitle: kpis.unassignedTasks > 0
-        ? `${kpis.unassignedTasks} unassigned`
-        : 'All assigned',
+      subtitle:
+        kpis.unassignedTasks > 0
+          ? `${kpis.unassignedTasks} unassigned`
+          : "All assigned",
       icon: Users,
-      variant: getVariant('team', kpis),
-      href: '/app/team',
+      variant: getVariant("team", kpis),
+      href: "/app/team",
     },
   ];
 

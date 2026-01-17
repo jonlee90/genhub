@@ -27,7 +27,7 @@ import type {
   DateGroup,
   DateCell,
   TIME_SCALE_CONFIGS,
-} from './/gantt-types';
+} from './gantt-types';
 
 /**
  * Calculate the date range for the Gantt chart based on tasks

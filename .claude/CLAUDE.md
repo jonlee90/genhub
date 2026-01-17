@@ -36,7 +36,7 @@
    mcp__plugin_serena_serena__read_memory("genhub-{topic}")
    ```
    Available: `project-overview`, `database-schema`, `server-actions`, `component-patterns`, `common-gotchas`
-
+3. Use skill dispatching-parallel-agents if it will help you with the task
 ---
 
 ## AGENTS

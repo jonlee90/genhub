@@ -1,10 +1,18 @@
-import { ChatNotificationPreferences } from '@/components/settings/ChatNotificationPreferences';
-import { KakaoTalkSettings } from '@/components/settings/KakaoTalkSettings';
-import { SettingsSectionHeader } from '@/components/settings/SettingsSectionHeader';
-import { ProjectConfigurationSection } from '@/components/settings/ProjectConfigurationSection';
-import { Bell, MessageCircle, User, Building2, Wrench } from 'lucide-react';
-import { auth } from '@/lib/auth';
-import { createClient } from '@/utils/supabase/server';
+import { ChatNotificationPreferences } from "@/components/settings/ChatNotificationPreferences";
+import { KakaoTalkSettings } from "@/components/settings/KakaoTalkSettings";
+import { SettingsSectionHeader } from "@/components/settings/SettingsSectionHeader";
+import { ProjectConfigurationSection } from "@/components/settings/ProjectConfigurationSection";
+import { Bell, MessageCircle, User, Building2, Wrench } from "lucide-react";
+import { getSettingsPageData } from "@/lib/settings";
+
+const BLUEPRINT_BACKGROUND_STYLE = {
+  backgroundImage: `
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px)
+  `,
+  backgroundSize: "40px 40px",
+  color: "#001B51",
+} as const;
 
 /**
  * Settings Page - Mobile-first PWA design for construction workers
@@ -12,39 +20,13 @@ import { createClient } from '@/utils/supabase/server';
  * Server Component - child components handle client-side interactivity
  */
 export default async function SettingsPage() {
-  console.log('[SettingsPage] Rendering settings page');
-
-  // Check user role for Project Configuration section
-  const session = await auth();
-  let isAdmin = false;
-
-  if (session?.user?.id) {
-    const supabase = await createClient();
-    const { data: companyUser } = await supabase
-      .from('company_users')
-      .select('role')
-      .eq('user_id', session.user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-
-    isAdmin = companyUser?.role === 'admin';
-  }
+  const { isAdmin } = await getSettingsPageData();
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden pb-24 md:pb-8">
       {/* Blueprint Grid Background - Matching Projects/Tasks pages */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, currentColor 1px, transparent 1px),
-              linear-gradient(to bottom, currentColor 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
-          }}
-        />
+        <div className="absolute inset-0" style={BLUEPRINT_BACKGROUND_STYLE} />
       </div>
 
       {/* Industrial Header with Blueprint Aesthetic - Matching Projects/Tasks */}

@@ -1,118 +1,55 @@
-import { createUserClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import { SubcontractorList } from '@/components/team/SubcontractorList';
-import type { SubcontractorsRow } from '@/types/db/tables/companies';
-import type { UserRole } from '@/types/db/enums';
-import { HardHat, Briefcase, AlertTriangle, Shield } from 'lucide-react';
-
-type Subcontractor = SubcontractorsRow;
+import { SubcontractorList } from "@/components/team/SubcontractorList";
+import { HardHat, Briefcase, AlertTriangle, Shield } from "lucide-react";
+import { getSubcontractorsPageData } from "@/lib/team";
 
 export const metadata = {
-  title: 'Subcontractors | GenHub',
-  description: 'Manage your subcontractor directory',
+  title: "Subcontractors | GenHub",
+  description: "Manage your subcontractor directory",
 };
 
+const BLUEPRINT_BACKGROUND_STYLE = {
+  backgroundImage: `
+    linear-gradient(to right, currentColor 1px, transparent 1px),
+    linear-gradient(to bottom, currentColor 1px, transparent 1px)
+  `,
+  backgroundSize: "40px 40px",
+  color: "#001B51",
+} as const;
+
 export default async function SubcontractorsPage() {
-  // Get authenticated user session
-  const session = await auth();
+  const data = await getSubcontractorsPageData();
 
-  if (!session?.user?.id) {
-    redirect('/sign-in');
-  }
+  if (data.status !== "ok") {
+    const title =
+      data.status === "unauthorized"
+        ? "Access Denied"
+        : data.status === "no_company"
+          ? "No Company Found"
+          : "Error Loading Subcontractors";
+    const message =
+      data.status === "unauthorized"
+        ? "Only Admins and Project Managers can access the subcontractor directory."
+        : data.status === "no_company"
+          ? "You are not associated with any active company."
+          : "Failed to load subcontractors. Please try again.";
 
-  // Create user-scoped Supabase client
-  const supabase = await createUserClient();
-
-  // Get user's company and role
-  const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">No Company Found</h1>
-          <p className="text-gray-600">You are not associated with any active company.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
+          <p className="text-gray-600">{message}</p>
         </div>
       </div>
     );
   }
 
-  // Authorization check - only Admin and Project Manager
-  if (companyUser.role !== 'admin' && companyUser.role !== 'project_manager') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">
-            Only Admins and Project Managers can access the subcontractor directory.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Fetch all subcontractors for the company
-  const { data: subcontractors, error: subcontractorsError } = await supabase
-    .from('subcontractors')
-    .select('*')
-    .eq('company_id', companyUser.company_id)
-    .order('created_at', { ascending: false });
-
-  if (subcontractorsError) {
-    console.error('Error fetching subcontractors:', subcontractorsError);
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Subcontractors</h1>
-          <p className="text-gray-600">Failed to load subcontractors. Please try again.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Calculate stats
-  const allSubcontractors = subcontractors || [];
-  const totalSubcontractors = allSubcontractors.length;
-  const activeSubcontractors = allSubcontractors.filter((s) => s.is_active).length;
-
-  // Helper to check if a date is expiring (within 30 days)
-  const isExpiringSoon = (expiryDate: string | null): boolean => {
-    if (!expiryDate) return false;
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
-  };
-
-  const expiringLicenses = allSubcontractors.filter((s) =>
-    s.is_active && isExpiringSoon(s.license_expiry)
-  ).length;
-
-  const expiringInsurance = allSubcontractors.filter((s) =>
-    s.is_active && isExpiringSoon(s.insurance_expiry)
-  ).length;
+  const { subcontractors, stats, role, companyId } = data;
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       {/* Blueprint Grid Background */}
       <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, currentColor 1px, transparent 1px),
-              linear-gradient(to bottom, currentColor 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
-          }}
-        />
+        <div className="absolute inset-0" style={BLUEPRINT_BACKGROUND_STYLE} />
       </div>
 
       {/* Industrial Header with Blueprint Aesthetic */}
@@ -131,7 +68,7 @@ export default async function SubcontractorsPage() {
       </div>
 
       {/* Industrial Stats Dashboard */}
-      {totalSubcontractors > 0 && (
+      {stats.total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {/* Total Subcontractors */}
           <div className="relative group h-full">
@@ -147,9 +84,11 @@ export default async function SubcontractorsPage() {
               </div>
               <div>
                 <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
-                  {totalSubcontractors}
+                  {stats.total}
                 </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Subcontractors</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Subcontractors
+                </div>
               </div>
             </div>
           </div>
@@ -168,9 +107,11 @@ export default async function SubcontractorsPage() {
               </div>
               <div>
                 <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
-                  {activeSubcontractors}
+                  {stats.active}
                 </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Active Status</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Active Status
+                </div>
               </div>
             </div>
           </div>
@@ -189,9 +130,11 @@ export default async function SubcontractorsPage() {
               </div>
               <div>
                 <div className="text-2xl md:text-4xl font-black text-construction-yellow leading-none mb-1">
-                  {expiringLicenses}
+                  {stats.expiringLicenses}
                 </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Expiring Licenses</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Expiring Licenses
+                </div>
               </div>
             </div>
           </div>
@@ -210,9 +153,11 @@ export default async function SubcontractorsPage() {
               </div>
               <div>
                 <div className="text-2xl md:text-4xl font-black text-construction-red leading-none mb-1">
-                  {expiringInsurance}
+                  {stats.expiringInsurance}
                 </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">Expiring Insurance</div>
+                <div className="text-xs md:text-sm font-bold text-gray-600">
+                  Expiring Insurance
+                </div>
               </div>
             </div>
           </div>
@@ -222,9 +167,9 @@ export default async function SubcontractorsPage() {
       {/* Subcontractor List */}
       <div className="relative">
         <SubcontractorList
-          subcontractors={allSubcontractors}
-          currentUserRole={companyUser.role}
-          companyId={companyUser.company_id}
+          subcontractors={subcontractors}
+          currentUserRole={role}
+          companyId={companyId}
         />
       </div>
 

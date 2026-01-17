@@ -161,7 +161,8 @@
       "Bash(npm run docs:sync:write:*)",
       "Bash(npm run deps:fix:*)",
       "Skill(vercel-react-best-practices)",
-      "Bash(npx --yes lighthouse:*)"
+      "Bash(npx --yes lighthouse:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
