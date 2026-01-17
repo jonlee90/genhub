@@ -103,7 +103,8 @@ export function SpatialViewer({
 
   // Debug: Context menu state
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
+  // Performance optimization: Lazy state initialization to avoid object recreation on every render
+  const [contextMenuPosition, setContextMenuPosition] = useState(() => ({ x: 0, y: 0 }));
   const [clickedPosition, setClickedPosition] = useState<{
     x: number;
     y: number;

@@ -121,7 +121,8 @@ export function CreateProjectForm({
   const [showPhasePreview, setShowPhasePreview] = useState(false);
 
   // Track all form values across steps
-  const [formValues, setFormValues] = useState({
+  // Performance optimization: Lazy state initialization to avoid object recreation on every render
+  const [formValues, setFormValues] = useState(() => ({
     project_type: 'residential',
     name: '',
     description: '',
@@ -135,7 +136,7 @@ export function CreateProjectForm({
     start_date: '',
     end_date: '',
     budget: '',
-  });
+  }));
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (prevState, formData) => {

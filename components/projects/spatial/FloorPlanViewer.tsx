@@ -72,9 +72,10 @@ export function FloorPlanViewer({
   const [currentFloorIndex, setCurrentFloorIndex] = useState(0);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+  // Performance optimization: Lazy state initialization to avoid object recreation on every render
+  const [pan, setPan] = useState(() => ({ x: 0, y: 0 }));
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [panStart, setPanStart] = useState(() => ({ x: 0, y: 0 }));
   const [isRulerMode, setIsRulerMode] = useState(false);
   const [rulerPoints, setRulerPoints] = useState<Array<{ x: number; y: number }>>([]);
   const [floorImage, setFloorImage] = useState<HTMLImageElement | null>(null);
