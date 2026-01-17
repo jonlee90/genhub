@@ -1,13 +1,15 @@
-import { Suspense } from 'react';
-import { getChatRooms, getCompanyUsers, getCurrentUserContext } from '@/app/actions/chat-queries';
-import { ChatLayout } from '@/components/chat/ChatLayout';
-import { ChatErrorState } from '@/components/chat/ChatErrorState';
-import { Loader2 } from 'lucide-react';
+import { Suspense } from "react";
+import {
+  getChatRooms,
+  getCompanyUsers,
+  getCurrentUserContext,
+} from "@/app/actions/chat-queries";
+import { ChatLayout } from "@/components/chat/ChatLayout";
+import { ChatErrorState } from "@/components/chat/ChatErrorState";
+import { Loader2 } from "lucide-react";
 
-// Debug: Chat page - Server component that fetches initial room data and company users
+// Chat page - Server component that fetches initial room data and company users
 export default async function ChatPage() {
-  console.log('[ChatPage] Rendering chat page');
-
   // Fetch rooms, users, and user context in parallel
   const [roomsResult, usersResult, userContextResult] = await Promise.all([
     getChatRooms(),
@@ -15,35 +17,37 @@ export default async function ChatPage() {
     getCurrentUserContext(),
   ]);
 
-  console.log('[ChatPage] Fetched rooms:', roomsResult.rooms?.length || 0, 'Error:', roomsResult.error);
-  console.log('[ChatPage] Fetched users:', usersResult.users?.length || 0, 'Error:', usersResult.error);
-  console.log('[ChatPage] User context:', userContextResult.userId, 'Error:', userContextResult.error);
-
   if (roomsResult.error) {
     return <ChatErrorState error={roomsResult.error} />;
   }
 
   // Check user context
   if (userContextResult.error || !userContextResult.userId) {
-    return <ChatErrorState error={userContextResult.error || 'Failed to load user context'} />;
+    return (
+      <ChatErrorState
+        error={userContextResult.error || "Failed to load user context"}
+      />
+    );
   }
+
+  const userContext = {
+    userId: userContextResult.userId,
+    userName: userContextResult.userName || "User",
+    companyId: userContextResult.companyId || "",
+  };
 
   return (
     <Suspense fallback={<ChatLoadingSkeleton />}>
       <ChatLayout
         initialRooms={roomsResult.rooms || []}
         companyUsers={usersResult.users || []}
-        userContext={{
-          userId: userContextResult.userId,
-          userName: userContextResult.userName || 'User',
-          companyId: userContextResult.companyId || '',
-        }}
+        userContext={userContext}
       />
     </Suspense>
   );
 }
 
-// Debug: Loading skeleton with construction theme
+// Loading skeleton with construction theme
 function ChatLoadingSkeleton() {
   return (
     <div className="flex h-screen bg-gray-50">

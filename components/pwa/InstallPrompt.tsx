@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { X, Download } from "lucide-react";
@@ -31,9 +31,23 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function InstallPrompt() {
   // State management
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [installSource, setInstallSource] = useState<"browser" | "ios" | null>(
+    null,
+  );
+  const promptTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const showPromptWithDelay = useCallback(() => {
+    if (promptTimerRef.current) {
+      clearTimeout(promptTimerRef.current);
+    }
+    promptTimerRef.current = setTimeout(() => {
+      setShowPrompt(true);
+    }, 1500);
+  }, []);
 
   useEffect(() => {
     // Only run in browser
@@ -44,42 +58,52 @@ export function InstallPrompt() {
     // Check if user dismissed permanently
     const dismissed = localStorage.getItem("genhub-install-dismissed");
     if (dismissed === "true") {
-      console.log("[InstallPrompt] User previously dismissed - not showing");
       return;
     }
 
     // Check if already installed (standalone mode or installed PWA)
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    const isStandalone = window.matchMedia(
+      "(display-mode: standalone)",
+    ).matches;
     const isInstalledPWA = (window.navigator as any).standalone === true;
 
     if (isStandalone || isInstalledPWA) {
-      console.log("[InstallPrompt] App already installed - not showing");
       setIsInstalled(true);
       return;
     }
 
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/.test(userAgent);
+
+    if (isIOS) {
+      setInstallSource("ios");
+      showPromptWithDelay();
+      return () => {
+        if (promptTimerRef.current) {
+          clearTimeout(promptTimerRef.current);
+        }
+      };
+    }
+
     // Listen for beforeinstallprompt event (Chrome/Edge only)
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log("[InstallPrompt] beforeinstallprompt event fired");
-
       // Prevent default mini-infobar
       e.preventDefault();
 
       // Store event for later use
       setDeferredPrompt(e as BeforeInstallPromptEvent);
+      setInstallSource("browser");
 
       // Show custom install prompt after a brief delay (better UX)
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 2000);
+      showPromptWithDelay();
     };
 
     // Listen for successful installation
     const handleAppInstalled = () => {
-      console.log("[InstallPrompt] App successfully installed");
       setIsInstalled(true);
       setShowPrompt(false);
       setDeferredPrompt(null);
+      setInstallSource(null);
     };
 
     // Add event listeners
@@ -88,59 +112,66 @@ export function InstallPrompt() {
 
     // Cleanup
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
+      if (promptTimerRef.current) {
+        clearTimeout(promptTimerRef.current);
+      }
     };
-  }, []);
+  }, [showPromptWithDelay]);
+
+  const isIOSPrompt = installSource === "ios";
+
+  const installDescription = useMemo(() => {
+    if (isIOSPrompt) {
+      return "Install GenHub on your iPhone or iPad: tap Share, then Add to Home Screen.";
+    }
+    return "Access your construction projects offline. Install GenHub for faster performance and desktop access.";
+  }, [isIOSPrompt]);
 
   /**
    * Handle install button click
    * Triggers native browser install prompt
    */
-  const handleInstallClick = async () => {
+  const handleInstallClick = useCallback(async () => {
     if (!deferredPrompt) {
-      console.error("[InstallPrompt] No deferred prompt available");
       return;
     }
-
-    console.log("[InstallPrompt] User clicked install - showing native prompt");
 
     // Show native install prompt
     await deferredPrompt.prompt();
 
     // Wait for user choice
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`[InstallPrompt] User choice: ${outcome}`);
 
     if (outcome === "accepted") {
-      console.log("[InstallPrompt] User accepted installation");
-    } else {
-      console.log("[InstallPrompt] User dismissed installation");
+      setIsInstalled(true);
     }
 
     // Clear the deferred prompt
     setDeferredPrompt(null);
     setShowPrompt(false);
-  };
+  }, [deferredPrompt]);
 
   /**
    * Handle dismiss button click
    * Hides prompt for current session only
    */
-  const handleDismiss = () => {
-    console.log("[InstallPrompt] User dismissed prompt (session only)");
+  const handleDismiss = useCallback(() => {
     setShowPrompt(false);
-  };
+  }, []);
 
   /**
    * Handle "Don't show again" click
    * Permanently dismisses prompt using localStorage
    */
-  const handleDontShowAgain = () => {
-    console.log("[InstallPrompt] User chose 'Don't show again'");
+  const handleDontShowAgain = useCallback(() => {
     localStorage.setItem("genhub-install-dismissed", "true");
     setShowPrompt(false);
-  };
+  }, []);
 
   // Don't render if prompt shouldn't be shown
   if (!showPrompt || isInstalled) {
@@ -179,7 +210,7 @@ export function InstallPrompt() {
             <div className="p-6 pr-12">
               {/* Icon with pulsing indicator */}
               <div className="relative inline-flex items-center justify-center mb-4">
-                <div className="relative w-14 h-14 rounded-full bg-white flex items-center justify-centeroverflow-hidden">
+                <div className="relative w-14 h-14 rounded-full bg-white flex items-center justify-center overflow-hidden">
                   <Image
                     src="/icon-192.png"
                     alt="GenHub Logo"
@@ -197,7 +228,57 @@ export function InstallPrompt() {
 
               {/* Description */}
               <p className="text-sm text-gray-600 font-medium mb-5 leading-relaxed">
-                Access your construction projects offline. Install GenHub for faster performance and desktop access.
+                {installDescription}
+              </p>
+
+              {/* Action buttons */}
+              <div className="flex flex-col gap-2.5">
+                {!isIOSPrompt ? (
+                  <motion.button
+                    onClick={handleInstallClick}
+                    className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 bg-construction-blue hover:bg-construction-blue/90 text-white rounded-md font-bold text-sm uppercase tracking-wide transition-colors shadow-construction relative overflow-hidden group"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: "100%" }}
+                      transition={{ duration: 0.6 }}
+                    />
+                    <Download className="w-4 h-4 relative z-10" />
+                    <span className="relative z-10">Install Now</span>
+                  </motion.button>
+                ) : (
+                  <button
+                    onClick={handleDismiss}
+                    className="w-full px-5 py-3.5 bg-construction-blue hover:bg-construction-blue/90 text-white rounded-md font-bold text-sm uppercase tracking-wide transition-colors shadow-construction"
+                  >
+                    Got it
+                  </button>
+                )}
+
+                <div className="flex gap-2.5">
+                  <button
+                    onClick={handleDismiss}
+                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors"
+                  >
+                    Later
+                  </button>
+                  <button
+                    onClick={handleDontShowAgain}
+                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors"
+                  >
+                    Don't Show Again
+                  </button>
+                </div>
+              </div>
+
+              {/* Browser compatibility note */}
+              <p className="text-xs text-gray-400 mt-3 font-medium">
+                {isIOSPrompt
+                  ? "iOS: use Add to Home Screen"
+                  : "Chrome and Edge only"}
               </p>
 
               {/* Action buttons */}

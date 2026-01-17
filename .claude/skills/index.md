@@ -2,7 +2,7 @@
 
 > Task-specific instruction modules for agents. Load BEFORE executing work.
 
-Last updated: 2026-01-10
+Last updated: 2026-01-16
 
 ---
 
@@ -19,8 +19,8 @@ Last updated: 2026-01-10
 | Create Server Action | `backend/server-action.md` | backend-engineer |
 | Backend security/patterns | `backend/nextjs-patterns.md` | backend-engineer, code-reviewer |
 | Create API route | `backend/api-route.md` | backend-engineer |
-| **UI creation/redesign** | **`/frontend-design`** | **frontend-engineer** |
-| **Mobile PWA/native feel** | **`frontend/mobile-pwa-design/SKILL.md`** | **frontend-engineer** |
+| UI creation/redesign | `/frontend-design` | frontend-engineer |
+| Mobile PWA/native feel | `frontend/mobile-pwa-design/SKILL.md` | frontend-engineer |
 | New page | `frontend/page-creation.md` | frontend-engineer |
 | Form with validation | `frontend/form-patterns.md` | frontend-engineer |
 | Modal dialog | `frontend/modal-patterns.md` | frontend-engineer |
@@ -31,8 +31,10 @@ Last updated: 2026-01-10
 | Expense workflow | `domain/expense-workflow.md` | both |
 | Chat/realtime | `domain/chat-realtime.md` | both |
 | 3D spatial markers | `domain/spatial-markers.md` | both |
-| **Parallel task dispatch** | **`dispatching-parallel-agents/SKILL.md`** | **orchestrator** |
-| **Refactor/deduplicate UI** | **`refactor-code/SKILL.md`** | **frontend-engineer** |
+| Third-party API integration | `api-integration-specialist/SKILL.md` | backend-engineer |
+| Parallel task dispatch | `dispatching-parallel-agents/SKILL.md` | orchestrator |
+| Refactor/deduplicate UI | `refactor-code/SKILL.md` | frontend-engineer |
+| React/Next.js performance | `vercel-react-best-practices/SKILL.md` | frontend-engineer, code-reviewer |
 
 ### By Agent
 
@@ -49,11 +51,13 @@ Last updated: 2026-01-10
 - `backend/validation.md` - Zod patterns
 - `backend/error-handling.md` - Error responses
 - `backend/auth-check.md` - Auth verification
+- `api-integration-specialist/SKILL.md` - Third-party API integration patterns
 
 #### frontend-engineer
-- **`/frontend-design` - Production-grade UI (ALWAYS use for new UI/redesign)**
-- **`frontend/mobile-pwa-design/SKILL.md` - Native mobile feel, PWA optimization**
-- **`refactor-code/SKILL.md` - Deduplicate similar components, extract base patterns**
+- `/frontend-design` - Production-grade UI (ALWAYS use for new UI/redesign)
+- `frontend/mobile-pwa-design/SKILL.md` - Native mobile feel, PWA optimization
+- `refactor-code/SKILL.md` - Deduplicate similar components, extract base patterns
+- `vercel-react-best-practices/SKILL.md` - React/Next.js performance optimization (45 rules)
 - `frontend/page-creation.md` - New page setup
 - `frontend/component-patterns.md` - Component architecture
 - `frontend/form-patterns.md` - Forms with validation
@@ -77,6 +81,7 @@ Last updated: 2026-01-10
 
 #### code-reviewer
 - `backend/nextjs-patterns.md` - Security-first backend conventions (for backend reviews)
+- `vercel-react-best-practices/SKILL.md` - React/Next.js performance patterns (for frontend reviews)
 - `workflow/code-review.md` - Review checklist
 
 #### Workflow
@@ -95,11 +100,11 @@ Last updated: 2026-01-10
 
 Before starting ANY work:
 
-1. **Identify task type** from user request
-2. **Check this index** for relevant skills
-3. **Load skill file(s)** with Read tool
-4. **Follow skill instructions** exactly
-5. **Run doc sync** after completion (if skill specifies)
+1. Identify task type from user request
+2. Check this index for relevant skills
+3. Load skill file(s) with Read tool
+4. Follow skill instructions exactly
+5. Run doc sync after completion (if skill specifies)
 
 ### Mandatory Loading Matrix
 
@@ -107,7 +112,7 @@ Before starting ANY work:
 |-----------|-----------------|-----------------|
 | Database schema change | `database/create-migration.md` OR `database/modify-schema.md` | `database/rls-patterns.md` |
 | New Server Action | `backend/server-action.md` | `backend/nextjs-patterns.md` |
-| **UI creation/redesign** | **`/frontend-design`** | Related frontend skills |
+| UI creation/redesign | `/frontend-design` | Related frontend skills |
 | New page | `/frontend-design` + `frontend/page-creation.md` | `frontend/responsive.md` |
 | Form UI | `/frontend-design` + `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
 | Mobile native feel | `frontend/mobile-pwa-design/SKILL.md` | `frontend/responsive.md` |
@@ -165,14 +170,14 @@ All skills follow this structure:
 
 ## Stats
 
-- **Total skills**: 31 (complete)
-- **Database**: 6 skills ✓
-- **Backend**: 6 skills ✓
-- **Frontend**: 8 skills ✓ (includes mobile-pwa-design, refactor-code)
-- **Domain**: 6 skills ✓
-- **Integration**: 4 skills ✓
-- **Workflow**: 3 skills ✓
-- **Orchestration**: 1 skill ✓
+- Total skills: 31 (complete)
+- Database: 6 skills ✓
+- Backend: 6 skills ✓
+- Frontend: 8 skills ✓ (includes mobile-pwa-design, refactor-code)
+- Domain: 6 skills ✓
+- Integration: 4 skills ✓
+- Workflow: 3 skills ✓
+- Orchestration: 1 skill ✓
 
 ---
 
@@ -187,6 +192,6 @@ All skills follow this structure:
 
 ## See Also
 
-- **Index files**: `.claude/docs/indexes/` - Quick lookup tables
-- **Law docs**: `.claude/docs/law/` - Authoritative rules
-- **Agent prompts**: `.claude/agents/` - Agent configurations
+- Index files: `.claude/docs/indexes/` - Quick lookup tables
+- Law docs: `.claude/docs/law/` - Authoritative rules
+- Agent prompts: `.claude/agents/` - Agent configurations

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { registerServiceWorker, skipWaiting } from "@/lib/service-worker";
 import type { ServiceWorkerStatus } from "@/lib/service-worker";
 import { motion, AnimatePresence } from "framer-motion";
@@ -19,8 +19,8 @@ import { RefreshCw, X, Download } from "lucide-react";
  * - GenHub construction-themed UI
  */
 export function ServiceWorkerRegistration() {
-  const [status, setStatus] = useState<ServiceWorkerStatus>("registering");
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [registration, setRegistration] =
+    useState<ServiceWorkerRegistration | null>(null);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
 
   useEffect(() => {
@@ -31,8 +31,6 @@ export function ServiceWorkerRegistration() {
 
     // Register service worker
     registerServiceWorker((state) => {
-      setStatus(state.status);
-
       if (state.registration) {
         setRegistration(state.registration);
       }
@@ -45,17 +43,17 @@ export function ServiceWorkerRegistration() {
   }, []);
 
   // Handle update acceptance
-  const handleUpdate = () => {
+  const handleUpdate = useCallback(() => {
     if (registration) {
       skipWaiting(registration);
       setShowUpdatePrompt(false);
     }
-  };
+  }, [registration]);
 
   // Handle update dismissal
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setShowUpdatePrompt(false);
-  };
+  }, []);
 
   // Don't render anything if no update is available
   if (!showUpdatePrompt) {
@@ -106,7 +104,8 @@ export function ServiceWorkerRegistration() {
 
             {/* Description */}
             <p className="text-sm text-gray-600 font-medium mb-6">
-              A new version of GenHub is ready. Update now to get the latest features and improvements.
+              A new version of GenHub is ready. Update now to get the latest
+              features and improvements.
             </p>
 
             {/* Actions */}

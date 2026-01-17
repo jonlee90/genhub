@@ -49,6 +49,11 @@ interface ExpenseSummaryProps {
  *
  * @component
  */
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
 const formatCurrency = (amount: number): string => {
   if (amount >= 1000000) {
     return `$${(amount / 1000000).toFixed(1)}M`;
@@ -56,7 +61,7 @@ const formatCurrency = (amount: number): string => {
   if (amount >= 1000) {
     return `$${(amount / 1000).toFixed(1)}K`;
   }
-  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  return `$${currencyFormatter.format(amount)}`;
 };
 
 const formatCategory = (category: string): string => {
@@ -127,8 +132,7 @@ export function ExpenseSummary({
   const hasPendingExpenses = analytics.pendingCount > 0;
   const hasRejectedExpenses = analytics.rejectedCount > 0;
 
-  // Determine status
-  const getStatusBadge = () => {
+  const statusBadge = useMemo(() => {
     if (hasPendingExpenses) {
       return {
         label: "Pending Review",
@@ -139,9 +143,7 @@ export function ExpenseSummary({
       return { label: "Has Rejections", className: "bg-red-100 text-red-700" };
     }
     return { label: "All Clear", className: "bg-emerald-100 text-emerald-700" };
-  };
-
-  const statusBadge = getStatusBadge();
+  }, [hasPendingExpenses, hasRejectedExpenses]);
 
   return (
     <div

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { WifiOff, Wifi, Loader2 } from "lucide-react";
 
@@ -32,6 +32,8 @@ export function OfflineBanner() {
   const [status, setStatus] = useState<NetworkStatus>("online");
   const [showBanner, setShowBanner] = useState(false);
   const [offlineDuration, setOfflineDuration] = useState(0);
+  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resetTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Only run in browser
@@ -40,9 +42,6 @@ export function OfflineBanner() {
     }
 
     // Set initial status based on navigator.onLine
-    const initialStatus = navigator.onLine ? "online" : "offline";
-    console.log(`[OfflineBanner] Initial network status: ${initialStatus}`);
-
     if (!navigator.onLine) {
       setStatus("offline");
       setShowBanner(true);
@@ -53,7 +52,12 @@ export function OfflineBanner() {
      * Immediately show banner when connection is lost
      */
     const handleOffline = () => {
-      console.log("[OfflineBanner] Network connection lost");
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
       setStatus("offline");
       setShowBanner(true);
       setOfflineDuration(0);
@@ -64,17 +68,20 @@ export function OfflineBanner() {
      * Show reconnecting state, then auto-hide after delay
      */
     const handleOnline = () => {
-      console.log("[OfflineBanner] Network connection restored");
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
       setStatus("reconnecting");
+      setShowBanner(true);
 
-      // Auto-hide after 3 seconds
-      setTimeout(() => {
-        console.log("[OfflineBanner] Auto-hiding banner");
+      hideTimeoutRef.current = setTimeout(() => {
         setShowBanner(false);
         setOfflineDuration(0);
 
-        // Reset to online status after animation completes
-        setTimeout(() => {
+        resetTimeoutRef.current = setTimeout(() => {
           setStatus("online");
         }, 300);
       }, 3000);
@@ -88,6 +95,12 @@ export function OfflineBanner() {
     return () => {
       window.removeEventListener("offline", handleOffline);
       window.removeEventListener("online", handleOnline);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -100,15 +113,12 @@ export function OfflineBanner() {
       return;
     }
 
-    console.log("[OfflineBanner] Starting offline duration tracker");
-
     const interval = setInterval(() => {
       setOfflineDuration((prev) => {
         const newDuration = prev + 1;
 
         // Switch to critical state after 30 seconds
         if (newDuration === 30) {
-          console.log("[OfflineBanner] Extended offline - switching to critical state");
           setStatus("critical");
         }
 
@@ -124,7 +134,7 @@ export function OfflineBanner() {
   /**
    * Get banner styling based on current status
    */
-  const getBannerStyle = () => {
+  const bannerStyle = useMemo(() => {
     switch (status) {
       case "offline":
         return {
@@ -155,9 +165,7 @@ export function OfflineBanner() {
           message: "Online",
         };
     }
-  };
-
-  const bannerStyle = getBannerStyle();
+  }, [status]);
   const Icon = bannerStyle.icon;
 
   // Don't render if banner is hidden
@@ -176,7 +184,9 @@ export function OfflineBanner() {
           className="fixed top-0 left-0 right-0 z-50"
         >
           {/* Banner */}
-          <div className={`${bannerStyle.bg} ${bannerStyle.text} shadow-construction-lg relative overflow-hidden`}>
+          <div
+            className={`${bannerStyle.bg} ${bannerStyle.text} shadow-construction-lg relative overflow-hidden`}
+          >
             {/* Animated stripe pattern - construction warning tape */}
             <motion.div
               className="absolute inset-0 opacity-10"
@@ -249,7 +259,8 @@ export function OfflineBanner() {
                   <>
                     <span className="hidden sm:inline text-white/80">•</span>
                     <span className="text-xs font-medium opacity-80">
-                      {Math.floor(offlineDuration / 60)}m {offlineDuration % 60}s
+                      {Math.floor(offlineDuration / 60)}m {offlineDuration % 60}
+                      s
                     </span>
                   </>
                 )}

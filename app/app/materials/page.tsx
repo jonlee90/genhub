@@ -1,83 +1,10 @@
-import { cache } from "react";
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
 import { MaterialsPageClient } from "@/components/materials/MaterialsPageClient";
 import {
   getTaskLinkedMaterials,
   getTrackedMaterials,
   getMaterialSummaryStats,
 } from "@/app/actions/materials";
-
-const getMaterialsData = cache(async () => {
-  // In development without database, return empty data
-  if (process.env.NODE_ENV === "development") {
-    try {
-      const [supabase, session] = await Promise.all([createClient(), auth()]);
-
-      if (!session?.user?.id) {
-        return { projects: [] };
-      }
-
-      // Get user's company
-      const { data: companyUser } = await supabase
-        .from("company_users")
-        .select("company_id")
-        .eq("user_id", session.user.id)
-        .eq("status", "active")
-        .maybeSingle();
-
-      if (!companyUser) {
-        return { projects: [] };
-      }
-
-      // Get all projects for this company
-      const { data: projects } = await supabase
-        .from("projects")
-        .select("id, name")
-        .eq("company_id", companyUser.company_id)
-        .eq("status", "active")
-        .order("name");
-
-      return {
-        projects: projects || [],
-      };
-    } catch (error) {
-      console.error("Database not available:", error);
-      return { projects: [] };
-    }
-  }
-
-  const [supabase, session] = await Promise.all([createClient(), auth()]);
-
-  if (!session?.user?.id) {
-    redirect("/");
-  }
-
-  // Get user's company
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!companyUser) {
-    redirect("/app/onboarding");
-  }
-
-  // Get all projects for this company
-  const { data: projects } = await supabase
-    .from("projects")
-    .select("id, name")
-    .eq("company_id", companyUser.company_id)
-    .eq("status", "active")
-    .order("name");
-
-  return {
-    projects: projects || [],
-  };
-});
+import { getMaterialsData } from "@/lib/materials";
 
 export const metadata = {
   title: "Materials | GenHub",
@@ -99,26 +26,6 @@ export default async function MaterialsPage({
     getTrackedMaterials(),
     getMaterialSummaryStats(),
   ]);
-
-  // Handle errors from server actions
-  if (materialsResult.error) {
-    console.error(
-      "[MaterialsPage] Error fetching materials:",
-      materialsResult.error,
-    );
-  }
-  if (trackedResult.error) {
-    console.error(
-      "[MaterialsPage] Error fetching tracked materials:",
-      trackedResult.error,
-    );
-  }
-  if (statsResult.error) {
-    console.error(
-      "[MaterialsPage] Error fetching summary stats:",
-      statsResult.error,
-    );
-  }
 
   return (
     <MaterialsPageClient

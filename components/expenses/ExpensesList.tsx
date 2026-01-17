@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Receipt, X, ShieldAlert, Wrench, DollarSign } from "lucide-react";
 import { ExpenseCard } from "./ExpenseCard";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { ExpenseProjectFilter } from "./ExpenseProjectFilter";
-import { CreateExpenseModal } from "./CreateExpenseModal";
-import { ExpenseDetailModal } from "./ExpenseDetailModal";
 import type {
   ExpenseWithRelations,
   ExpensesListProps,
@@ -38,6 +37,16 @@ const EMPTY_STATE_STEPS = [
   { num: "03", label: "Approve", icon: Wrench },
 ];
 
+const CreateExpenseModal = dynamic(
+  () => import("./CreateExpenseModal").then((mod) => mod.CreateExpenseModal),
+  { ssr: false },
+);
+
+const ExpenseDetailModal = dynamic(
+  () => import("./ExpenseDetailModal").then((mod) => mod.ExpenseDetailModal),
+  { ssr: false },
+);
+
 export function ExpensesList({
   initialExpenses,
   projects,
@@ -52,6 +61,11 @@ export function ExpensesList({
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("created_at");
+
+  const normalizedQuery = useMemo(
+    () => searchQuery.trim().toLowerCase(),
+    [searchQuery],
+  );
 
   // Calculate expense counts and amounts per project
   const { projectExpenseCounts, projectExpenseAmounts } = useMemo(() => {
@@ -72,13 +86,12 @@ export function ExpensesList({
     let filtered = [...initialExpenses];
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (normalizedQuery) {
       filtered = filtered.filter(
         (expense) =>
-          expense.description.toLowerCase().includes(query) ||
-          expense.vendor_name?.toLowerCase().includes(query) ||
-          expense.category.toLowerCase().includes(query),
+          expense.description.toLowerCase().includes(normalizedQuery) ||
+          expense.vendor_name?.toLowerCase().includes(normalizedQuery) ||
+          expense.category.toLowerCase().includes(normalizedQuery),
       );
     }
 
@@ -119,7 +132,7 @@ export function ExpensesList({
     });
 
     return filtered;
-  }, [initialExpenses, searchQuery, statusFilter, projectFilter, sortBy]);
+  }, [initialExpenses, normalizedQuery, statusFilter, projectFilter, sortBy]);
 
   // Calculate current expense count for the selected project
   const currentExpenseCount = useMemo(() => {

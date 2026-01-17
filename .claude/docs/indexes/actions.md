@@ -2,330 +2,470 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-14
+Last updated: 2026-01-16
 
 ---
 
 ## Quick Lookup by File
 
 ### accept-admin-invite.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| validateAdminInvitationToken | validate admin invitation token | - |
-| acceptAdminInvitation | accept admin invitation | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| validateAdminInvitationToken | Validate admin invitation token | { valid: boolean, invitation?: object, error?: string } |
+| acceptAdminInvitation | Accept admin invitation and create company | { success: boolean, error?: string } |
 
 ### accept-invite.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| validateInvitationToken | validate invitation token | - |
-| acceptInvitation | accept invitation | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| validateInvitationToken | Validate team invitation token | { valid: boolean, invitation?: object, error?: string } |
+| acceptInvitation | Accept team invitation | { success: boolean, error?: string } |
 
 ### auth.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| handleSignIn | handle sign in | - |
-| handleSignOut | handle sign out | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| handleSignIn | Handle user sign in | void |
+| handleSignOut | Handle user sign out | void |
 
-### chat-queries.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| getCurrentUserContext | get current user context | - |
-| getChatRooms | get chat rooms | - |
-| getMessages | get messages | - |
-| getCompanyUsers | get company users | - |
-| getMessageById | get message by id | - |
+### chat-queries.ts (Query Actions)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| getCurrentUserContext | Get current user context (company, role) | { userId, companyId, role, supabase } or { error } |
+| getChatRooms | Get all chat rooms for user | { data: ChatRoom[], error?: string } |
+| getMessages | Get messages for a chat room | { data: Message[], error?: string } |
+| getCompanyUsers | Get all users in company | { data: User[], error?: string } |
+| getMessageById | Get single message by ID | { data: Message, error?: string } |
 
-### chat-search.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| searchProjects | search projects | - |
-| searchTasks | search tasks | - |
-| searchMaterials | search materials | - |
-| searchExpenses | search expenses | - |
-| searchUsers | search users | - |
-| searchMessages | search messages | - |
+### chat-search.ts (Search Actions)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| searchProjects | Search projects by name | { data: Project[], error?: string } |
+| searchTasks | Search tasks by title | { data: Task[], error?: string } |
+| searchMaterials | Search materials by name | { data: Material[], error?: string } |
+| searchExpenses | Search expenses | { data: Expense[], error?: string } |
+| searchUsers | Search users by name/email | { data: User[], error?: string } |
+| searchMessages | Search message content | { data: Message[], error?: string } |
 
-### chat.ts
+### chat.ts (Chat Mutations)
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| sendMessage | send message | - |
-| markMessagesAsRead | mark messages as read | - |
-| getThreadMessages | get thread messages | - |
-| getMessageReplyCount | get message reply count | - |
-| getMessageReplyCounts | get message reply counts | - |
-| toggleReaction | toggle reaction | - |
-| getMessageReactions | get message reactions | - |
-| getMessagesReactions | get messages reactions | - |
-| uploadAttachment | upload attachment | - |
-| getMessageAttachments | get message attachments | - |
-| deleteAttachment | delete attachment | - |
-| getMessagesAttachments | get messages attachments | - |
-| muteChatRoom | mute chat room | - |
-| createDMRoom | create d m room | - |
-| editMessage | edit message | - |
-| deleteMessage | delete message | - |
-| updateChatRoom | update chat room | - |
-| exportTranscript | export transcript | - |
-| getChatRoomParticipants | get chat room participants | - |
-| isUserGcAdmin | is user gc admin | - |
+| sendMessage | Send a message in a chat room | - |
+| markMessagesAsRead | Mark messages as read | - |
+| getThreadMessages | Get thread replies | - |
+| getMessageReplyCount | Get reply count for a message | - |
+| getMessageReplyCounts | Get reply counts for multiple messages | - |
+| toggleReaction | Add/remove reaction to message | - |
+| getMessageReactions | Get reactions for a message | - |
+| getMessagesReactions | Get reactions for multiple messages | - |
+| uploadAttachment | Upload file attachment to message | - |
+| getMessageAttachments | Get attachments for a message | - |
+| deleteAttachment | Delete attachment | - |
+| getMessagesAttachments | Get attachments for multiple messages | - |
+| muteChatRoom | Mute/unmute a chat room | - |
+| createDMRoom | Create direct message room | - |
+| editMessage | Edit message content | - |
+| deleteMessage | Delete message | - |
+| updateChatRoom | Update chat room details | - |
+| exportTranscript | Export chat transcript | - |
+| getChatRoomParticipants | Get participants in a room | - |
+| isUserGcAdmin | Check if user is GC admin | - |
 
 ### client.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| getClientPermissions | get client permissions | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| getClientPermissions | Get client user permissions | { canView: boolean[], error?: string } |
 
 ### dashboard.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| getDashboardData | get dashboard data | - |
-| invalidateDashboardCache | invalidate dashboard cache | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| getDashboardData | Get dashboard KPIs and stats | { data: DashboardData, error?: string } |
+| invalidateDashboardCache | Clear dashboard cache | { success: boolean } |
 
-### default-models.ts
+### default-models.ts (3D Model Management)
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getSystemDefaultModel | get system default model | - |
-| getCompanyDefaultModel | get company default model | - |
-| createMarkersFromDefaultConfigs | create markers from default configs | - |
-| assignDefaultModel | assign default model | - |
-| getDefaultModelsForCompany | get default models for company | - |
-| uploadCompanyDefaultModel | upload company default model | - |
-| resetToSystemDefault | reset to system default | - |
+| getSystemDefaultModel | Get system default 3D model | - |
+| getCompanyDefaultModel | Get company-specific default model | - |
+| createMarkersFromDefaultConfigs | Create markers from default configs | - |
+| assignDefaultModel | Assign default model to project | /app/projects/[id]/spatial |
+| getDefaultModelsForCompany | Get available default models | - |
+| uploadCompanyDefaultModel | Upload company default model | /app/settings |
+| resetToSystemDefault | Reset to system default model | /app/settings |
 
 ### expenses.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| createExpense | create expense | - |
-| updateExpense | update expense | - |
-| reviewExpense | review expense | - |
-| deleteExpense | delete expense | - |
-| getExpensesByProject | get expenses by project | - |
-| getExpensesByCompany | get expenses by company | - |
-| getExpenseById | get expense by id | - |
-| addExpenseLineItem | add expense line item | - |
-| deleteExpenseLineItem | delete expense line item | - |
-| processReceiptOCR | process receipt o c r | - |
-| matchLineItemToMaterial | match line item to material | - |
-| getTaskExpenses | get task expenses | - |
-| getBatchTaskExpenses | get batch task expenses | - |
-| createExpenseFromMaterial | create expense from material | - |
-| getMaterialExpenseLink | get material expense link | - |
-| getExpenseAnalytics | get expense analytics | - |
-| getVendorOptions | get vendor options | - |
-| createExpenseFromTask | create expense from task | - |
+| createExpense | Create new expense | /app/expenses, /app/projects/[id] |
+| updateExpense | Update expense | /app/expenses/[id] |
+| reviewExpense | Review and approve/reject expense | /app/expenses |
+| deleteExpense | Delete expense | /app/expenses |
+| getExpensesByProject | Get expenses for a project | - |
+| getExpensesByCompany | Get all company expenses | - |
+| getExpenseById | Get single expense | - |
+| addExpenseLineItem | Add line item to expense | /app/expenses/[id] |
+| deleteExpenseLineItem | Delete line item | /app/expenses/[id] |
+| processReceiptOCR | Process receipt with OCR | - |
+| matchLineItemToMaterial | Match line item to material | - |
+| getTaskExpenses | Get expenses for a task | - |
+| getBatchTaskExpenses | Get expenses for multiple tasks | - |
+| createExpenseFromMaterial | Create expense from material assignment | /app/expenses |
+| getMaterialExpenseLink | Get linked expense for material | - |
+| getExpenseAnalytics | Get expense analytics | - |
+| getVendorOptions | Get vendor dropdown options | - |
+| createExpenseFromTask | Create expense linked to task | /app/expenses |
 
-### kakao.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| getKakaoConnection | get kakao connection | - |
-| updateTwoWaySync | update two way sync | - |
-| disconnectKakao | disconnect kakao | - |
+### kakao.ts (KakaoTalk Integration)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| getKakaoConnection | Get KakaoTalk connection status | { data: Connection, error?: string } |
+| updateTwoWaySync | Enable/disable two-way sync | { success: boolean, error?: string } |
+| disconnectKakao | Disconnect KakaoTalk | { success: boolean, error?: string } |
 
 ### materials.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| searchProducts | search products | - |
-| getProductDetails | get product details | - |
-| createMaterial | create material | - |
-| createMaterialFromHomeDepot | create material from home depot | - |
-| getMaterialsByCompany | get materials by company | - |
-| assignMaterialToTask | assign material to task | - |
-| updateMaterialAssignment | update material assignment | - |
-| deleteMaterialAssignment | delete material assignment | - |
-| getMaterialAssignmentsByTask | get material assignments by task | - |
-| getMaterialAssignmentsByProject | get material assignments by project | - |
-| getProjectMaterialSummary | get project material summary | - |
-| getMaterialsByCategory | get materials by category | - |
-| getProjectPhases | get project phases | - |
-| getPhaseTasks | get phase tasks | - |
-| getTaskMaterials | get task materials | - |
-| removeMaterialFromTask | remove material from task | - |
-| updateMaterialQuantity | update material quantity | - |
-| addProductToTask | add product to task | - |
-| linkMaterialToMarker | link material to marker | - |
-| getMaterialsByMarker | get materials by marker | - |
-| getTaskLinkedMaterials | get task linked materials | - |
-| getTrackedMaterials | get tracked materials | - |
-| toggleTracking | toggle tracking | - |
-| getMaterialSummaryStats | get material summary stats | - |
-| updateMaterialLeadTime | update material lead time | - |
+| searchProducts | Search Home Depot products | - |
+| getProductDetails | Get product details from Home Depot | - |
+| createMaterial | Create custom material | /app/materials |
+| createMaterialFromHomeDepot | Create material from Home Depot product | /app/materials |
+| getMaterialsByCompany | Get all company materials | - |
+| assignMaterialToTask | Assign material to task | /app/tasks/[id], /app/projects/[id] |
+| updateMaterialAssignment | Update material assignment | /app/tasks/[id] |
+| deleteMaterialAssignment | Delete material assignment | /app/tasks/[id] |
+| getMaterialAssignmentsByTask | Get materials for a task | - |
+| getMaterialAssignmentsByProject | Get materials for a project | - |
+| getProjectMaterialSummary | Get material summary for project | - |
+| getMaterialsByCategory | Get materials by category | - |
+| getProjectPhases | Get project phases (for material filtering) | - |
+| getPhaseTasks | Get tasks in a phase | - |
+| getTaskMaterials | Get materials for a task | - |
+| removeMaterialFromTask | Remove material from task | /app/tasks/[id] |
+| updateMaterialQuantity | Update material quantities | /app/tasks/[id] |
+| addProductToTask | Add Home Depot product directly to task | /app/tasks/[id] |
+| linkMaterialToMarker | Link material to spatial marker | /app/projects/[id]/spatial |
+| getMaterialsByMarker | Get materials linked to marker | - |
+| getTaskLinkedMaterials | Get materials with marker links | - |
+| getTrackedMaterials | Get price-tracked materials | - |
+| toggleTracking | Toggle price tracking for material | /app/materials |
+| getMaterialSummaryStats | Get material summary statistics | - |
+| updateMaterialLeadTime | Update material lead time | /app/materials/[id] |
 
-### owner.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| isOwner | is owner | - |
-| getAllCompanies | get all companies | - |
-| getAllUsers | get all users | - |
-| inviteAdmin | invite admin | - |
-| getPendingAdminInvitations | get pending admin invitations | - |
-| revokeAdminInvitation | revoke admin invitation | - |
-| getOwnerDashboardStats | get owner dashboard stats | - |
+### owner.ts (Platform Owner Actions)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| isOwner | Check if user is platform owner | { isOwner: boolean } |
+| getAllCompanies | Get all companies (owner only) | { data: Company[], error?: string } |
+| getAllUsers | Get all users (owner only) | { data: User[], error?: string } |
+| inviteAdmin | Invite new admin/company | { success: boolean, error?: string } |
+| getPendingAdminInvitations | Get pending admin invitations | { data: Invitation[], error?: string } |
+| revokeAdminInvitation | Revoke admin invitation | { success: boolean, error?: string } |
+| getOwnerDashboardStats | Get platform-wide statistics | { data: Stats, error?: string } |
 
 ### phase-templates.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getPhaseTemplates | get phase templates | - |
-| createPhaseTemplate | create phase template | - |
-| updatePhaseTemplate | update phase template | - |
-| deletePhaseTemplate | delete phase template | - |
-| reorderPhaseTemplates | reorder phase templates | - |
+| getPhaseTemplates | Get phase templates for project type | - |
+| createPhaseTemplate | Create new phase template | /app/settings |
+| updatePhaseTemplate | Update phase template | /app/settings |
+| deletePhaseTemplate | Delete phase template | /app/settings |
+| reorderPhaseTemplates | Reorder phase templates | /app/settings |
 
 ### phases.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| updatePhaseStatus | update phase status | - |
-| updatePhase | update phase | - |
-| getProjectPhases | get project phases | - |
-| startNextPhase | start next phase | - |
-| completeCurrentPhase | complete current phase | - |
-| createPhase | create phase | - |
-| updatePhaseName | update phase name | - |
-| deletePhase | delete phase | - |
-| applyTaskTemplates | apply task templates | - |
+| updatePhaseStatus | Update phase status | /app/projects/[id] |
+| updatePhase | Update phase details | /app/projects/[id] |
+| getProjectPhases | Get phases for a project | - |
+| startNextPhase | Start next phase in sequence | /app/projects/[id] |
+| completeCurrentPhase | Complete current phase | /app/projects/[id] |
+| createPhase | Create custom phase | /app/projects/[id] |
+| updatePhaseName | Update phase name | /app/projects/[id] |
+| deletePhase | Delete phase | /app/projects/[id] |
+| applyTaskTemplates | Apply task templates to phase | /app/projects/[id] |
 
 ### project-files.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getProjectFiles | get project files | - |
-| deleteProjectFile | delete project file | - |
-| updateFileCategory | update file category | - |
-| getFileVersionHistory | get file version history | - |
-| bulkDeleteFiles | bulk delete files | - |
+| getProjectFiles | Get files for a project | - |
+| deleteProjectFile | Delete project file | /app/projects/[id]/files |
+| updateFileCategory | Update file category | /app/projects/[id]/files |
+| getFileVersionHistory | Get file version history | - |
+| bulkDeleteFiles | Delete multiple files | /app/projects/[id]/files |
 
 ### project-photos.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getProjectPhotosWithReceipts | get project photos with receipts | - |
-| setProjectPrimaryPhoto | set project primary photo | - |
-| deleteProjectPhoto | delete project photo | - |
+| getProjectPhotosWithReceipts | Get project photos with receipt flag | - |
+| setProjectPrimaryPhoto | Set primary project photo | /app/projects/[id] |
+| deleteProjectPhoto | Delete project photo | /app/projects/[id]/files |
 
 ### project-types.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getProjectTypes | get project types | - |
-| createProjectType | create project type | - |
-| updateProjectType | update project type | - |
-| deleteProjectType | delete project type | - |
+| getProjectTypes | Get all project types | - |
+| createProjectType | Create custom project type | /app/settings |
+| updateProjectType | Update project type | /app/settings |
+| deleteProjectType | Delete project type | /app/settings |
 
 ### projects.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| createProject | create project | - |
-| updateProject | update project | - |
-| updateProjectStatus | update project status | - |
-| assignProjectTeamMember | assign project team member | - |
-| addProjectTeamMember | add project team member | - |
-| addSubcontractorToProject | add subcontractor to project | - |
-| removeSubcontractorFromProject | remove subcontractor from project | - |
-| removeProjectTeamMember | remove project team member | - |
-| getProjectsWithStats | get projects with stats | - |
-| getProjectWithStats | get project with stats | - |
-| getProjectTeamCostSummary | get project team cost summary | - |
+| createProject | Create new project | /app/projects |
+| updateProject | Update project details | /app/projects/[id] |
+| updateProjectStatus | Update project status | /app/projects |
+| assignProjectTeamMember | Assign team member to project | /app/projects/[id] |
+| addProjectTeamMember | Add new team member to project | /app/projects/[id] |
+| addSubcontractorToProject | Add subcontractor to project | /app/projects/[id] |
+| removeSubcontractorFromProject | Remove subcontractor from project | /app/projects/[id] |
+| removeProjectTeamMember | Remove team member from project | /app/projects/[id] |
+| getProjectsWithStats | Get projects with statistics | - |
+| getProjectWithStats | Get single project with stats | - |
+| getProjectTeamCostSummary | Get team cost summary | - |
 
-### push.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| registerPushSubscription | register push subscription | - |
-| unregisterPushSubscription | unregister push subscription | - |
-| getUserPushSubscriptions | get user push subscriptions | - |
+### push.ts (Push Notifications)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| registerPushSubscription | Register push notification subscription | { success: boolean, error?: string } |
+| unregisterPushSubscription | Unregister push subscription | { success: boolean, error?: string } |
+| getUserPushSubscriptions | Get user's push subscriptions | { data: Subscription[], error?: string } |
 
 ### seed-demo-data.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| seedDemoData | seed demo data | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| seedDemoData | Seed demo data for testing | { success: boolean, error?: string } |
 
-### spatial.ts
+### spatial.ts (3D/Spatial Features)
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| uploadIFCFile | upload i f c file | - |
-| createModelRecord | create model record | - |
-| getProjectModels | get project models | - |
-| getActiveModel | get active model | - |
-| updateModelProcessingStatus | update model processing status | - |
-| setActiveModelVersion | set active model version | - |
-| deleteModelVersion | delete model version | - |
-| replaceActiveModel | replace active model | - |
-| createMarker | create marker | - |
-| getProjectMarkers | get project markers | - |
-| getMarkerById | get marker by id | - |
-| updateMarker | update marker | - |
-| deleteMarker | delete marker | - |
-| attachContentToMarker | attach content to marker | - |
-| getMarkerContent | get marker content | - |
-| deleteMarkerContent | delete marker content | - |
-| getMarkersByPhase | get markers by phase | - |
-| findNearestMarker | find nearest marker | - |
-| getMarkersByProject | get markers by project | - |
-| uploadMarkerAttachment | upload marker attachment | - |
-| createTaskAtLocation | create task at location | - |
+| uploadIFCFile | Upload IFC file | /app/projects/[id]/spatial |
+| createModelRecord | Create 3D model record | /app/projects/[id]/spatial |
+| getProjectModels | Get 3D models for project | - |
+| getActiveModel | Get active 3D model | - |
+| updateModelProcessingStatus | Update model processing status | /app/projects/[id]/spatial |
+| setActiveModelVersion | Set active model version | /app/projects/[id]/spatial |
+| deleteModelVersion | Delete model version | /app/projects/[id]/spatial |
+| replaceActiveModel | Replace active model | /app/projects/[id]/spatial |
+| createMarker | Create spatial marker | /app/projects/[id]/spatial |
+| getProjectMarkers | Get markers for project | - |
+| getMarkerById | Get single marker | - |
+| updateMarker | Update marker | /app/projects/[id]/spatial |
+| deleteMarker | Delete marker | /app/projects/[id]/spatial |
+| attachContentToMarker | Attach content to marker | /app/projects/[id]/spatial |
+| getMarkerContent | Get marker content | - |
+| deleteMarkerContent | Delete marker content | /app/projects/[id]/spatial |
+| getMarkersByPhase | Get markers filtered by phase | - |
+| findNearestMarker | Find nearest marker to coordinates | - |
+| getMarkersByProject | Get all markers for project | - |
+| uploadMarkerAttachment | Upload attachment to marker | /app/projects/[id]/spatial |
+| createTaskAtLocation | Create task at spatial location | /app/projects/[id]/spatial, /app/tasks |
 
-### stripe.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| getStripeCustomerId | get stripe customer id | - |
-| createPortalSession | create portal session | - |
-| refund | refund | - |
+### stripe.ts (Payment Processing)
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| getStripeCustomerId | Get Stripe customer ID | { customerId: string, error?: string } |
+| createPortalSession | Create Stripe portal session | { url: string, error?: string } |
+| refund | Process refund | { success: boolean, error?: string } |
 
 ### subcontractors.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| createSubcontractor | create subcontractor | - |
-| updateSubcontractor | update subcontractor | - |
-| deactivateSubcontractor | deactivate subcontractor | - |
-| uploadSubcontractorDocument | upload subcontractor document | - |
+| createSubcontractor | Create new subcontractor | /app/team |
+| updateSubcontractor | Update subcontractor | /app/team |
+| deactivateSubcontractor | Deactivate subcontractor | /app/team |
+| uploadSubcontractorDocument | Upload subcontractor document | /app/team |
 
 ### task-templates.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getTaskTemplates | get task templates | - |
-| createTaskTemplate | create task template | - |
-| updateTaskTemplate | update task template | - |
-| deleteTaskTemplate | delete task template | - |
-| reorderTaskTemplates | reorder task templates | - |
+| getTaskTemplates | Get task templates | - |
+| createTaskTemplate | Create task template | /app/settings |
+| updateTaskTemplate | Update task template | /app/settings |
+| deleteTaskTemplate | Delete task template | /app/settings |
+| reorderTaskTemplates | Reorder task templates | /app/settings |
 
 ### task-types.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getTaskTypes | get task types | - |
-| getAllTaskTypes | get all task types | - |
-| createTaskType | create task type | - |
-| updateTaskType | update task type | - |
-| deleteTaskType | delete task type | - |
+| getTaskTypes | Get task types for company | - |
+| getAllTaskTypes | Get all available task types | - |
+| createTaskType | Create custom task type | /app/settings |
+| updateTaskType | Update task type | /app/settings |
+| deleteTaskType | Delete task type | /app/settings |
 
 ### tasks.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| getProjectAssignees | get project assignees | - |
-| createTask | create task | - |
-| updateTask | update task | - |
-| updateTaskWithExpense | update task with expense | - |
-| setPrimaryAssignee | set primary assignee | - |
-| updateTaskStatus | update task status | - |
-| addTaskDependency | add task dependency | - |
-| removeTaskDependency | remove task dependency | - |
-| addTaskComment | add task comment | - |
-| deleteTask | delete task | - |
-| updateApprovalStatus | update approval status | - |
-| getProjectTasks | get project tasks | - |
-| updateTaskDueDate | update task due date | - |
-| updateTaskDates | update task dates | - |
-| getTaskDependencies | get task dependencies | - |
-| linkTaskToMarker | link task to marker | - |
-| getTasksByMarker | get tasks by marker | - |
-| logTaskCompletionToMarker | log task completion to marker | - |
-| getTaskDetails | get task details | - |
-| getTaskActivity | get task activity | - |
-| getTaskAttachments | get task attachments | - |
-| getTaskAnalytics | get task analytics | - |
+| getProjectAssignees | Get available assignees for project | - |
+| createTask | Create new task | /app/tasks, /app/projects/[id] |
+| updateTask | Update task | /app/tasks/[id] |
+| updateTaskWithExpense | Update task with expense creation | /app/tasks/[id], /app/expenses |
+| setPrimaryAssignee | Set primary assignee for task | /app/tasks/[id] |
+| updateTaskStatus | Update task status | /app/tasks |
+| addTaskDependency | Add task dependency | /app/tasks/[id] |
+| removeTaskDependency | Remove task dependency | /app/tasks/[id] |
+| addTaskComment | Add comment to task | /app/tasks/[id] |
+| deleteTask | Delete task | /app/tasks |
+| updateApprovalStatus | Update task approval status | /app/tasks/[id] |
+| getProjectTasks | Get tasks for a project | - |
+| updateTaskDueDate | Update task due date | /app/tasks/[id] |
+| updateTaskDates | Update task start and due dates | /app/tasks/[id] |
+| getTaskDependencies | Get task dependencies | - |
+| linkTaskToMarker | Link task to spatial marker | /app/tasks/[id], /app/projects/[id]/spatial |
+| getTasksByMarker | Get tasks linked to marker | - |
+| logTaskCompletionToMarker | Log task completion to marker | /app/projects/[id]/spatial |
+| getTaskDetails | Get detailed task information | - |
+| getTaskActivity | Get task activity log | - |
+| getTaskAttachments | Get task attachments | - |
+| getTaskAnalytics | Get task analytics | - |
 
 ### team-email-helper.ts
-| Action | Purpose | Revalidates |
-|--------|---------|-------------|
-| sendTeamInvitationEmail | send team invitation email | - |
+| Action | Purpose | Returns |
+|--------|---------|---------|
+| sendTeamInvitationEmail | Send team invitation email | { success: boolean, error?: string } |
 
 ### team.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|
-| inviteTeamMember | invite team member | - |
-| updateTeamMemberRole | update team member role | - |
-| deactivateTeamMember | deactivate team member | - |
+| inviteTeamMember | Invite new team member | /app/team |
+| updateTeamMemberRole | Update team member role | /app/team |
+| deactivateTeamMember | Deactivate team member | /app/team |
 
+---
+
+## By Feature Domain
+
+### Authentication & Authorization
+- **auth.ts**: handleSignIn, handleSignOut
+- **accept-invite.ts**: validateInvitationToken, acceptInvitation
+- **accept-admin-invite.ts**: validateAdminInvitationToken, acceptAdminInvitation
+- **client.ts**: getClientPermissions
+- **owner.ts**: isOwner, getAllCompanies, getAllUsers
+
+### Projects
+- **projects.ts**: CRUD operations, team management, statistics
+- **project-types.ts**: Custom project type management
+- **project-files.ts**: File management
+- **project-photos.ts**: Photo management
+
+### Tasks
+- **tasks.ts**: CRUD operations, assignments, dependencies, analytics
+- **task-types.ts**: Custom task type management
+- **task-templates.ts**: Task template management
+
+### Phases
+- **phases.ts**: Phase lifecycle management
+- **phase-templates.ts**: Phase template management
+
+### Materials
+- **materials.ts**: Material catalog, assignments, tracking, Home Depot integration
+
+### Expenses
+- **expenses.ts**: Expense management, OCR processing, analytics
+
+### Team
+- **team.ts**: Team member management
+- **subcontractors.ts**: Subcontractor management
+
+### Spatial/3D
+- **spatial.ts**: 3D models, markers, spatial features
+- **default-models.ts**: Default 3D model management
+
+### Chat
+- **chat.ts**: Messaging, reactions, attachments
+- **chat-queries.ts**: Chat queries
+- **chat-search.ts**: Entity search for mentions
+
+### Integrations
+- **kakao.ts**: KakaoTalk integration
+- **stripe.ts**: Payment processing
+- **push.ts**: Push notifications
+
+### Dashboard
+- **dashboard.ts**: Dashboard data and KPIs
+
+### Utilities
+- **seed-demo-data.ts**: Demo data seeding
+- **team-email-helper.ts**: Email utilities
+
+---
+
+## Common Patterns
+
+### Return Types
+All actions follow consistent return patterns:
+
+```typescript
+// Success with data
+{ data: T, error?: never }
+
+// Error
+{ data?: never, error: string }
+
+// Simple success
+{ success: boolean, error?: string }
+```
+
+### Error Handling
+```typescript
+export async function exampleAction() {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx  // Early return on auth error
+
+  const { data, error } = await ctx.supabase
+    .from('table')
+    .select('*')
+
+  if (error) return { error: error.message }
+  return { data }
+}
+```
+
+### Revalidation
+Actions that modify data revalidate affected paths:
+```typescript
+revalidatePath('/app/tasks')
+revalidatePath(`/app/projects/${projectId}`)
+```
+
+---
+
+## Usage in Client Components
+
+```typescript
+'use client'
+
+import { createTask } from '@/app/actions/tasks'
+
+function TaskForm() {
+  const handleSubmit = async (formData) => {
+    const result = await createTask(formData)
+
+    if ('error' in result) {
+      // Handle error
+      toast.error(result.error)
+      return
+    }
+
+    // Success
+    toast.success('Task created')
+  }
+}
+```
+
+---
+
+## Summary
+
+| Metric | Count |
+|--------|-------|
+| Total Action Files | 29 |
+| Total Actions | ~250 |
+| Query Actions (read-only) | ~80 |
+| Mutation Actions (write) | ~170 |
+
+---
+
+## See Also
+
+- `.claude/docs/indexes/tables.md` - Database schema reference
+- `.claude/docs/backend/` - Backend architecture documentation
+- `.claude/skills/backend/server-action.md` - Server Action creation guide

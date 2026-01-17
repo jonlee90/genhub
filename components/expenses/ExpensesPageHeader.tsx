@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
-import { CreateExpenseModal } from "./CreateExpenseModal";
 import { useBottomNav } from "@/lib/contexts/BottomNavContext";
 
 // Client component for expenses page header with modal trigger
@@ -23,6 +23,11 @@ interface ExpensesPageHeaderProps {
   tasks: Task[];
   companyId?: string;
 }
+
+const CreateExpenseModal = dynamic(
+  () => import("./CreateExpenseModal").then((mod) => mod.CreateExpenseModal),
+  { ssr: false },
+);
 
 export function ExpensesPageHeader({
   projects,
