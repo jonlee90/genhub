@@ -1,11 +1,18 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import { TaskModalProvider, useTaskModal } from './TaskModalContext';
 import { TaskBoard } from './/TaskBoard';
 import { TaskModalTrigger } from './TaskModalTrigger';
-import { TaskModal } from './TaskModal';
 import { ProjectFilterHeader } from './/ProjectFilterHeader';
+
+// Dynamic import TaskModal (only loads when modal opens)
+const TaskModal = dynamic(
+  () => import('./TaskModal').then(mod => ({ default: mod.TaskModal })),
+  { ssr: false }
+);
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
 import { BlueprintBackground } from '@/components/shared';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
@@ -39,6 +46,36 @@ const STATUS_TABS = [
   { value: 'completed', label: 'Completed' },
 ];
 
+// Modal renderer - consumes TaskModalContext
+function TaskModalRenderer({
+  projects,
+  teamMembers,
+  assignees,
+  onSuccess
+}: {
+  projects: TaskProject[],
+  teamMembers: TeamMember[],
+  assignees: AssigneeOption[],
+  onSuccess: () => void
+}) {
+  const { isOpen, mode, selectedTask, close } = useTaskModal();
+
+  if (!isOpen) return null;
+
+  return (
+    <TaskModal
+      isOpen={isOpen}
+      onClose={close}
+      mode={mode}
+      task={selectedTask}
+      projects={projects}
+      teamMembers={teamMembers}
+      onSuccess={onSuccess}
+      assignees={assignees}
+    />
+  );
+}
+
 export function TasksPageClient({
   tasks,
   projects,
@@ -51,7 +88,6 @@ export function TasksPageClient({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showFilterSheet, setShowFilterSheet] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
   const router = useRouter();
   const isMobileQuery = useIsMobile();
@@ -113,91 +149,69 @@ export function TasksPageClient({
     return count;
   }, [projectFilter]);
 
-  // Filter tasks based on search, status, and project
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          task.title.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query) ||
-          task.project?.name.toLowerCase().includes(query) ||
-          task.assignee?.name.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
-      // Status filter
-      if (statusFilter !== 'all' && task.status !== statusFilter) {
-        return false;
-      }
-
-      // Project filter
-      if (projectFilter !== 'all' && task.project_id !== projectFilter) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [tasks, searchQuery, statusFilter, projectFilter]);
-
-  // Calculate task count for the selected project (used in ProjectFilterHeader)
-  const projectTaskCount = useMemo(() => {
-    if (projectFilter === 'all') {
-      return tasks.length;
-    }
-    return tasks.filter((task) => task.project_id === projectFilter).length;
-  }, [tasks, projectFilter]);
-
-  // Calculate task counts for each project (for dropdown display)
-  const projectTaskCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    tasks.forEach((task) => {
-      if (task.project_id) {
-        counts[task.project_id] = (counts[task.project_id] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [tasks]);
-
-  // Calculate status counts for all tabs (filtered by project and search, but NOT by status)
-  const statusCounts = useMemo(() => {
-    // First, filter tasks by project and search (exclude status filter)
-    const tasksForCounting = tasks.filter((task) => {
-      // Search filter
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        const matchesSearch =
-          task.title.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query) ||
-          task.project?.name.toLowerCase().includes(query) ||
-          task.assignee?.name.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-
-      // Project filter
-      if (projectFilter !== 'all' && task.project_id !== projectFilter) {
-        return false;
-      }
-
-      return true;
-    });
-
-    const counts: Record<string, number> = {
-      all: tasksForCounting.length,
+  // Single-pass computation of all task-derived values (reduces 4 iterations to 1)
+  const taskMetrics = useMemo(() => {
+    // Initialize counters
+    const projectCounts: Record<string, number> = {};
+    const statusCounts: Record<string, number> = {
+      all: 0,
       todo: 0,
       in_progress: 0,
       review: 0,
       blocked: 0,
-      completed: 0,
+      completed: 0
     };
-    tasksForCounting.forEach((task) => {
-      if (task.status in counts) {
-        counts[task.status]++;
+    const filtered: TaskWithRelations[] = [];
+    let projectTaskCount = 0;
+
+    const query = searchQuery?.toLowerCase();
+
+    // Single iteration over all tasks
+    for (const task of tasks) {
+      // Always count by project (for dropdown)
+      if (task.project_id) {
+        projectCounts[task.project_id] = (projectCounts[task.project_id] || 0) + 1;
       }
-    });
-    return counts;
-  }, [tasks, projectFilter, searchQuery]);
+
+      // Check project filter match
+      const matchesProject = projectFilter === 'all' || task.project_id === projectFilter;
+      if (matchesProject && projectFilter !== 'all') {
+        projectTaskCount++;
+      }
+
+      // Check search match
+      const matchesSearch = !query ||
+        task.title.toLowerCase().includes(query) ||
+        task.description?.toLowerCase().includes(query) ||
+        task.project?.name.toLowerCase().includes(query) ||
+        task.assignee?.name.toLowerCase().includes(query);
+
+      // Count for status tabs (project + search filtered, not status filtered)
+      if (matchesProject && matchesSearch) {
+        statusCounts.all++;
+        if (task.status in statusCounts) {
+          statusCounts[task.status]++;
+        }
+      }
+
+      // Check status filter for final filtered list
+      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+
+      if (matchesProject && matchesSearch && matchesStatus) {
+        filtered.push(task);
+      }
+    }
+
+    return {
+      filteredTasks: filtered,
+      projectTaskCount: projectFilter === 'all' ? tasks.length : projectTaskCount,
+      projectTaskCounts: projectCounts,
+      statusCounts,
+    };
+  }, [tasks, searchQuery, statusFilter, projectFilter]);
+
+  // Destructure for use
+  const { filteredTasks, projectTaskCount, projectTaskCounts, statusCounts } = taskMetrics;
 
   // Add counts to status tabs
   const tabsWithCounts = STATUS_TABS.map((tab) => ({
@@ -205,18 +219,13 @@ export function TasksPageClient({
     count: statusCounts[tab.value] || 0,
   }));
 
-  // Handle create task success
-  const handleCreateSuccess = useCallback(() => {
-    setShowCreateModal(false);
-    router.refresh();
-  }, [router]);
-
   // Mobile layout
   if (isMobile) {
     return (
-      <div className="flex flex-col h-full">
-        {/* Task list with pull-to-refresh */}
-        <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
+      <TaskModalProvider>
+        <div className="flex flex-col h-full">
+          {/* Task list with pull-to-refresh */}
+          <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
           <div className="p-4 pb-32">
           <BlueprintBackground />
 
@@ -350,23 +359,22 @@ export function TasksPageClient({
           </div>
         </BottomSheet>
 
-        {/* Create task modal */}
-        <TaskModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          mode="create"
+        {/* Task modal - rendered via context */}
+        <TaskModalRenderer
           projects={projects}
           teamMembers={teamMembers}
-          onSuccess={handleCreateSuccess}
           assignees={assignees}
+          onSuccess={() => router.refresh()}
         />
-      </div>
+        </div>
+      </TaskModalProvider>
     );
   }
 
-  // Desktop layout (unchanged)
+  // Desktop layout
   const pageContent = (
-    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+    <TaskModalProvider>
+      <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       <BlueprintBackground />
 
       {/* Industrial Header with Blueprint Aesthetic */}
@@ -423,7 +431,16 @@ export function TasksPageClient({
 
       {/* Decorative bottom border */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
-    </div>
+
+      {/* Task modal - rendered via context */}
+      <TaskModalRenderer
+        projects={projects}
+        teamMembers={teamMembers}
+        assignees={assignees}
+        onSuccess={() => router.refresh()}
+      />
+      </div>
+    </TaskModalProvider>
   );
 
   return pageContent;

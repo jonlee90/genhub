@@ -1,26 +1,32 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
-import { z } from 'zod';
-import { createAdminClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import type { OwnersRow, AdminInvitationsRow } from '@/types/db/tables/admin';
-import type { CompaniesRow, CompanyUsersRow } from '@/types/db/tables/companies';
-import type { UserProfilesRow } from '@/types/db/tables/users';
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { createAdminClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
+import type { AdminInvitationsRow } from "@/types/db/tables/admin";
+import type { CompaniesRow } from "@/types/db/tables/companies";
+import type { UserProfilesRow } from "@/types/db/tables/users";
 
-type Owner = OwnersRow;
 type Company = CompaniesRow;
 type AdminInvitation = AdminInvitationsRow;
 type UserProfile = UserProfilesRow;
-type CompanyUser = CompanyUsersRow;
 
 // ============================================
 // Validation Schemas
 // ============================================
 
 const inviteAdminSchema = z.object({
-  email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()),
-  name: z.string().min(1, 'Name is required').max(200).transform((v) => v.trim()).optional(),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .transform((v) => v.toLowerCase().trim()),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(200)
+    .transform((v) => v.trim())
+    .optional(),
 });
 
 // ============================================
@@ -34,21 +40,21 @@ async function getOwnerContext() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
+    return { error: "Not authenticated" };
   }
 
   // Use admin client to check owners table (bypasses RLS)
   const supabase = await createAdminClient();
 
   const { data: owner, error: ownerError } = await supabase
-    .from('owners')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .eq('is_active', true)
+    .from("owners")
+    .select("*")
+    .eq("user_id", session.user.id)
+    .eq("is_active", true)
     .maybeSingle();
 
   if (ownerError || !owner) {
-    return { error: 'Not authorized as owner' };
+    return { error: "Not authorized as owner" };
   }
 
   return {
@@ -71,10 +77,10 @@ export async function isOwner(): Promise<boolean> {
 
   const supabase = await createAdminClient();
   const { data: owner } = await supabase
-    .from('owners')
-    .select('id')
-    .eq('user_id', session.user.id)
-    .eq('is_active', true)
+    .from("owners")
+    .select("id")
+    .eq("user_id", session.user.id)
+    .eq("is_active", true)
     .maybeSingle();
 
   return !!owner;
@@ -88,7 +94,7 @@ export async function getAllCompanies(): Promise<{
   error?: string;
 }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { error: ctx.error };
   }
 
@@ -96,27 +102,30 @@ export async function getAllCompanies(): Promise<{
 
   // Get all companies with user and project counts
   const { data: companies, error } = await supabase
-    .from('companies')
-    .select(`
+    .from("companies")
+    .select(
+      `
       *,
       company_users!company_users_company_id_fkey(count),
       projects!projects_company_id_fkey(count)
-    `)
-    .order('created_at', { ascending: false });
+    `,
+    )
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('[getAllCompanies] Error:', error);
-    return { error: 'Failed to fetch companies' };
+    console.error("[getAllCompanies] Error:", error);
+    return { error: "Failed to fetch companies" };
   }
 
   // Transform the count objects
-  const companiesWithCounts = companies?.map((company: any) => ({
-    ...company,
-    user_count: company.company_users?.[0]?.count || 0,
-    project_count: company.projects?.[0]?.count || 0,
-    company_users: undefined,
-    projects: undefined,
-  })) || [];
+  const companiesWithCounts =
+    companies?.map((company: any) => ({
+      ...company,
+      user_count: company.company_users?.[0]?.count || 0,
+      project_count: company.projects?.[0]?.count || 0,
+      company_users: undefined,
+      projects: undefined,
+    })) || [];
 
   return { data: companiesWithCounts };
 }
@@ -133,7 +142,7 @@ export async function getAllUsers(): Promise<{
   error?: string;
 }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { error: ctx.error };
   }
 
@@ -141,33 +150,36 @@ export async function getAllUsers(): Promise<{
 
   // Get all users with their company info
   const { data: users, error } = await supabase
-    .from('user_profiles')
-    .select(`
+    .from("user_profiles")
+    .select(
+      `
       *,
       company_users!company_users_user_profile_fkey(
         role,
         status,
         companies!company_users_company_id_fkey(name)
       )
-    `)
-    .order('created_at', { ascending: false });
+    `,
+    )
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error('[getAllUsers] Error:', error);
-    return { error: 'Failed to fetch users' };
+    console.error("[getAllUsers] Error:", error);
+    return { error: "Failed to fetch users" };
   }
 
   // Transform the data
-  const usersWithCompanies = users?.map((user: any) => {
-    const companyUser = user.company_users?.[0];
-    return {
-      ...user,
-      company_name: companyUser?.companies?.name || null,
-      role: companyUser?.role || null,
-      status: companyUser?.status || null,
-      company_users: undefined,
-    };
-  }) || [];
+  const usersWithCompanies =
+    users?.map((user: any) => {
+      const companyUser = user.company_users?.[0];
+      return {
+        ...user,
+        company_name: companyUser?.companies?.name || null,
+        role: companyUser?.role || null,
+        status: companyUser?.status || null,
+        company_users: undefined,
+      };
+    }) || [];
 
   return { data: usersWithCompanies };
 }
@@ -178,14 +190,14 @@ export async function getAllUsers(): Promise<{
  */
 export async function inviteAdmin(
   email: string,
-  name?: string
+  name?: string,
 ): Promise<{
   success: boolean;
   invitationLink?: string;
   error?: string;
 }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { success: false, error: ctx.error };
   }
 
@@ -196,45 +208,48 @@ export async function inviteAdmin(
   if (!validated.success) {
     return {
       success: false,
-      error: validated.error.issues[0]?.message || 'Invalid input'
+      error: validated.error.issues[0]?.message || "Invalid input",
     };
   }
 
   const { email: validatedEmail, name: validatedName } = validated.data;
 
-  // Check if email already has an active invitation
-  const { data: existingInvite } = await supabase
-    .from('admin_invitations')
-    .select('id, expires_at, used_at')
-    .eq('email', validatedEmail)
-    .is('used_at', null)
-    .gt('expires_at', new Date().toISOString())
-    .maybeSingle();
+  // Check for active invite and existing user in parallel
+  const [existingInviteResult, existingUserResult] = await Promise.all([
+    supabase
+      .from("admin_invitations")
+      .select("id, expires_at, used_at")
+      .eq("email", validatedEmail)
+      .is("used_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle(),
+    supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("email", validatedEmail)
+      .maybeSingle(),
+  ]);
+
+  const { data: existingInvite } = existingInviteResult;
+  const { data: existingUser } = existingUserResult;
 
   if (existingInvite) {
     return {
       success: false,
-      error: 'An active invitation already exists for this email',
+      error: "An active invitation already exists for this email",
     };
   }
-
-  // Check if email already has an account
-  const { data: existingUser } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('email', validatedEmail)
-    .maybeSingle();
 
   if (existingUser) {
     return {
       success: false,
-      error: 'A user with this email already exists',
+      error: "A user with this email already exists",
     };
   }
 
   // Create the invitation
   const { data: invitation, error: inviteError } = await supabase
-    .from('admin_invitations')
+    .from("admin_invitations")
     .insert({
       email: validatedEmail,
       name: validatedName,
@@ -244,21 +259,21 @@ export async function inviteAdmin(
     .single();
 
   if (inviteError || !invitation) {
-    console.error('[inviteAdmin] Error creating invitation:', inviteError);
-    return { success: false, error: 'Failed to create invitation' };
+    console.error("[inviteAdmin] Error creating invitation:", inviteError);
+    return { success: false, error: "Failed to create invitation" };
   }
 
   // Generate invitation link
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const invitationLink = `${baseUrl}/admin-invite?token=${invitation.invitation_token}`;
 
-  console.log('[inviteAdmin] Invitation created:', {
+  console.log("[inviteAdmin] Invitation created:", {
     email: validatedEmail,
     token: invitation.invitation_token,
     link: invitationLink,
   });
 
-  revalidatePath('/app/owner/invites');
+  revalidatePath("/app/owner/invites");
 
   return {
     success: true,
@@ -274,31 +289,34 @@ export async function getPendingAdminInvitations(): Promise<{
   error?: string;
 }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { error: ctx.error };
   }
 
   const { supabase } = ctx;
 
   const { data: invitations, error } = await supabase
-    .from('admin_invitations')
-    .select(`
+    .from("admin_invitations")
+    .select(
+      `
       *,
       owners!admin_invitations_invited_by_fkey(name)
-    `)
-    .is('used_at', null)
-    .order('invited_at', { ascending: false });
+    `,
+    )
+    .is("used_at", null)
+    .order("invited_at", { ascending: false });
 
   if (error) {
-    console.error('[getPendingAdminInvitations] Error:', error);
-    return { error: 'Failed to fetch invitations' };
+    console.error("[getPendingAdminInvitations] Error:", error);
+    return { error: "Failed to fetch invitations" };
   }
 
-  const invitationsWithInviterName = invitations?.map((inv: any) => ({
-    ...inv,
-    inviter_name: inv.owners?.name || 'Unknown',
-    owners: undefined,
-  })) || [];
+  const invitationsWithInviterName =
+    invitations?.map((inv: any) => ({
+      ...inv,
+      inviter_name: inv.owners?.name || "Unknown",
+      owners: undefined,
+    })) || [];
 
   return { data: invitationsWithInviterName };
 }
@@ -307,10 +325,10 @@ export async function getPendingAdminInvitations(): Promise<{
  * Revoke admin invitation (owner only)
  */
 export async function revokeAdminInvitation(
-  invitationId: string
+  invitationId: string,
 ): Promise<{ success: boolean; error?: string }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { success: false, error: ctx.error };
   }
 
@@ -318,31 +336,31 @@ export async function revokeAdminInvitation(
 
   // Verify invitation exists and is not used
   const { data: invitation, error: fetchError } = await supabase
-    .from('admin_invitations')
-    .select('id, used_at')
-    .eq('id', invitationId)
+    .from("admin_invitations")
+    .select("id, used_at")
+    .eq("id", invitationId)
     .single();
 
   if (fetchError || !invitation) {
-    return { success: false, error: 'Invitation not found' };
+    return { success: false, error: "Invitation not found" };
   }
 
   if (invitation.used_at) {
-    return { success: false, error: 'Cannot revoke a used invitation' };
+    return { success: false, error: "Cannot revoke a used invitation" };
   }
 
   // Delete the invitation
   const { error: deleteError } = await supabase
-    .from('admin_invitations')
+    .from("admin_invitations")
     .delete()
-    .eq('id', invitationId);
+    .eq("id", invitationId);
 
   if (deleteError) {
-    console.error('[revokeAdminInvitation] Error:', deleteError);
-    return { success: false, error: 'Failed to revoke invitation' };
+    console.error("[revokeAdminInvitation] Error:", deleteError);
+    return { success: false, error: "Failed to revoke invitation" };
   }
 
-  revalidatePath('/app/owner/invites');
+  revalidatePath("/app/owner/invites");
 
   return { success: true };
 }
@@ -360,23 +378,26 @@ export async function getOwnerDashboardStats(): Promise<{
   error?: string;
 }> {
   const ctx = await getOwnerContext();
-  if ('error' in ctx) {
+  if ("error" in ctx) {
     return { error: ctx.error };
   }
 
   const { supabase } = ctx;
 
   // Get counts in parallel
-  const [companiesResult, usersResult, projectsResult, invitesResult] = await Promise.all([
-    supabase.from('companies').select('id', { count: 'exact', head: true }),
-    supabase.from('user_profiles').select('id', { count: 'exact', head: true }),
-    supabase.from('projects').select('id', { count: 'exact', head: true }),
-    supabase
-      .from('admin_invitations')
-      .select('id', { count: 'exact', head: true })
-      .is('used_at', null)
-      .gt('expires_at', new Date().toISOString()),
-  ]);
+  const [companiesResult, usersResult, projectsResult, invitesResult] =
+    await Promise.all([
+      supabase.from("companies").select("id", { count: "exact", head: true }),
+      supabase
+        .from("user_profiles")
+        .select("id", { count: "exact", head: true }),
+      supabase.from("projects").select("id", { count: "exact", head: true }),
+      supabase
+        .from("admin_invitations")
+        .select("id", { count: "exact", head: true })
+        .is("used_at", null)
+        .gt("expires_at", new Date().toISOString()),
+    ]);
 
   return {
     data: {

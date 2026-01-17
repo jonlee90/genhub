@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
   experimental: {
     useCache: true,
+    optimizePackageImports: ['lucide-react'],
   },
   images: {
     remotePatterns: [

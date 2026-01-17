@@ -1,11 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Wrench } from 'lucide-react';
-import { TaskModal } from './TaskModal';
 import type { TaskProject, TeamMember } from '@/types/db/task';
+
+// Dynamic import TaskModal to reduce initial bundle
+const TaskModal = dynamic(
+  () => import('./TaskModal').then(mod => ({ default: mod.TaskModal })),
+  { ssr: false }
+);
 
 interface TaskModalTriggerProps {
   projects: TaskProject[];
@@ -53,16 +59,19 @@ export function TaskModalTrigger({
         <span className="font-black text-sm md:text-base">{label}</span>
       </Button>
 
-      <TaskModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        mode="create"
-        projects={projects}
-        teamMembers={teamMembers}
-        preselectedProjectId={preselectedProjectId}
-        preselectedPhaseId={preselectedPhaseId}
-        onSuccess={handleSuccess}
-      />
+      {/* Only render modal when open (lazy load on first open) */}
+      {isOpen && (
+        <TaskModal
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          mode="create"
+          projects={projects}
+          teamMembers={teamMembers}
+          preselectedProjectId={preselectedProjectId}
+          preselectedPhaseId={preselectedPhaseId}
+          onSuccess={handleSuccess}
+        />
+      )}
     </>
   );
 }

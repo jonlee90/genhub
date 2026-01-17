@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { createClient } from "@/utils/supabase/server";
@@ -56,7 +57,9 @@ export async function getProjectsPageData() {
   };
 }
 
-export async function getProjectDetailData(id: string) {
+export const getProjectDetailData = cache(async function getProjectDetailData(
+  id: string,
+) {
   const [supabase, session] = await Promise.all([createClient(), auth()]);
 
   if (!session?.user?.id) {
@@ -294,10 +297,15 @@ export async function getProjectDetailData(id: string) {
     phase2Queries.push(Promise.resolve({ data: [] }));
   }
 
-  // Files and photos (Server Actions - run in parallel with DB queries)
+  // Files, photos, team costs, and stats (run in parallel with DB queries)
   phase2Queries.push(getProjectFiles(id));
   phase2Queries.push(getProjectPhotosWithReceipts(id));
   phase2Queries.push(getProjectTeamCostSummary(id));
+  phase2Queries.push(
+    supabase.rpc("get_project_detail_with_stats", {
+      p_project_id: id,
+    }),
+  );
 
   // Execute all Phase 2 queries in parallel
   const phase2Results = await Promise.all(phase2Queries);
@@ -321,8 +329,27 @@ export async function getProjectDetailData(id: string) {
   const teamCostResult = phase2Results[10] as Awaited<
     ReturnType<typeof getProjectTeamCostSummary>
   >;
+  const statsResult = phase2Results[11] as { data: any };
 
   // PHASE 3: Data Assembly (Synchronous - Attach data to objects)
+  const teamProfileMap = new Map(
+    (Array.isArray(teamProfiles) ? teamProfiles : []).map((profile: any) => [
+      profile.id,
+      profile,
+    ]),
+  );
+  const teamSubMap = new Map(
+    (Array.isArray(teamSubs) ? teamSubs : []).map((sub: any) => [sub.id, sub]),
+  );
+  const assigneeMap = new Map(
+    (Array.isArray(assignees) ? assignees : []).map((assignee: any) => [
+      assignee.id,
+      assignee,
+    ]),
+  );
+  const phaseMap = new Map(
+    (project.project_phases || []).map((phase: any) => [phase.id, phase]),
+  );
 
   // Attach creator profile
   if (creator) {
@@ -332,16 +359,11 @@ export async function getProjectDetailData(id: string) {
   // Attach team profiles and subcontractors
   if (project.project_team && project.project_team.length > 0) {
     (project.project_team as any[]).forEach((member: any) => {
-      if (member.user_id && teamProfiles && Array.isArray(teamProfiles)) {
-        member.user_profiles =
-          (teamProfiles as any[]).find((p: any) => p.id === member.user_id) ||
-          null;
+      if (member.user_id) {
+        member.user_profiles = teamProfileMap.get(member.user_id) || null;
       }
-      if (member.subcontractor_id && teamSubs && Array.isArray(teamSubs)) {
-        member.subcontractors =
-          (teamSubs as any[]).find(
-            (s: any) => s.id === member.subcontractor_id,
-          ) || null;
+      if (member.subcontractor_id) {
+        member.subcontractors = teamSubMap.get(member.subcontractor_id) || null;
       }
     });
   }
@@ -350,20 +372,16 @@ export async function getProjectDetailData(id: string) {
   if (project.tasks && project.project_phases) {
     (project.tasks as any[]).forEach((task: any) => {
       if (task.phase_id) {
-        task.phase =
-          project.project_phases.find((p: any) => p.id === task.phase_id) ||
-          null;
+        task.phase = phaseMap.get(task.phase_id) || null;
       }
     });
   }
 
   // Attach assignees to tasks
-  if (project.tasks && assignees && Array.isArray(assignees)) {
+  if (project.tasks && assigneeMap.size > 0) {
     (project.tasks as any[]).forEach((task: any) => {
       if (task.assignee_id) {
-        task.assignee =
-          (assignees as any[]).find((a: any) => a.id === task.assignee_id) ||
-          null;
+        task.assignee = assigneeMap.get(task.assignee_id) || null;
       }
     });
   }
@@ -407,6 +425,13 @@ export async function getProjectDetailData(id: string) {
           : Promise.resolve({ data: [] }),
       ]);
 
+    const userProfileMap = new Map(
+      (userProfiles || []).map((profile: any) => [profile.id, profile]),
+    );
+    const subcontractorMap = new Map(
+      (subcontractors || []).map((sub: any) => [sub.id, sub]),
+    );
+
     // Attach assignees to tasks
     (project.tasks as any[]).forEach((task: any) => {
       const taskAssigns = (taskAssignees as any[]).filter(
@@ -416,12 +441,9 @@ export async function getProjectDetailData(id: string) {
         id: ta.id,
         user_id: ta.user_id,
         subcontractor_id: ta.subcontractor_id,
-        user: ta.user_id
-          ? userProfiles?.find((u: any) => u.id === ta.user_id) || null
-          : null,
+        user: ta.user_id ? userProfileMap.get(ta.user_id) || null : null,
         subcontractor: ta.subcontractor_id
-          ? subcontractors?.find((s: any) => s.id === ta.subcontractor_id) ||
-            null
+          ? subcontractorMap.get(ta.subcontractor_id) || null
           : null,
       }));
     });
@@ -484,12 +506,7 @@ export async function getProjectDetailData(id: string) {
   }
 
   // PHASE 3B: Compute stats using database function (replaces 300+ lines of JS aggregation)
-  const { data: statsData } = await supabase.rpc(
-    "get_project_detail_with_stats",
-    {
-      p_project_id: id,
-    },
-  );
+  const { data: statsData } = statsResult || { data: null };
 
   // Extract stats from RPC response
   let phaseTaskStats: any[] = [];
@@ -624,4 +641,4 @@ export async function getProjectDetailData(id: string) {
     projectPhotos,
     teamCostSummaries,
   };
-}
+});

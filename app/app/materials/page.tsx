@@ -16,9 +16,11 @@ export default async function MaterialsPage({
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
-  const params = await searchParams;
+  const [params, { projects }] = await Promise.all([
+    searchParams,
+    getMaterialsData(),
+  ]);
   const page = Number.parseInt(params.page || "1", 10);
-  const { projects } = await getMaterialsData();
 
   // Parallel data fetching for all components
   const [materialsResult, trackedResult, statsResult] = await Promise.all([

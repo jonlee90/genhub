@@ -1,7 +1,7 @@
 import "server-only";
 
 import { auth } from "@/lib/auth";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/server";
 
 export async function getSettingsPageData() {
   const session = await auth();
@@ -10,7 +10,7 @@ export async function getSettingsPageData() {
     return { isAdmin: false };
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: companyUser } = await supabase
     .from("company_users")
     .select("role")

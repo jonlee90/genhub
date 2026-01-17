@@ -245,3 +245,22 @@ textarea:focus {
 .animate-shimmer {
   animation: shimmer 2s linear infinite;
 }
+
+/* Badge pop animation for TaskCard - replaces Framer Motion */
+@keyframes badge-pop {
+  0% {
+    transform: scale(0) rotate(-10deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) rotate(2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+.animate-badge-pop {
+  animation: badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

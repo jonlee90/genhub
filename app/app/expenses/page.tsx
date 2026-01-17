@@ -25,8 +25,8 @@ export default async function ExpensesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const params = await searchParams;
-  const [expensesData, analyticsResult] = await Promise.all([
+  const [params, expensesData, analyticsResult] = await Promise.all([
+    searchParams,
     getExpensesData(),
     getExpenseAnalytics(),
   ]);

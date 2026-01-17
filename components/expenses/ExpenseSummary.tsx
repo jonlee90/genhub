@@ -74,12 +74,35 @@ export function ExpenseSummary({
   analytics,
   isLoading = false,
 }: ExpenseSummaryProps) {
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   // Get top 3 categories
   const topCategories = useMemo(
     () => analytics?.byCategory.slice(0, 3) || [],
     [analytics],
   );
 
+  // Calculate metrics - must happen before early returns
+  const approvalRate =
+    analytics && analytics.totalCount > 0
+      ? (analytics.approvedCount / analytics.totalCount) * 100
+      : 0;
+  const hasPendingExpenses = analytics ? analytics.pendingCount > 0 : false;
+  const hasRejectedExpenses = analytics ? analytics.rejectedCount > 0 : false;
+
+  const statusBadge = useMemo(() => {
+    if (hasPendingExpenses) {
+      return {
+        label: "Pending Review",
+        className: "bg-amber-100 text-amber-700",
+      };
+    }
+    if (hasRejectedExpenses) {
+      return { label: "Has Rejections", className: "bg-red-100 text-red-700" };
+    }
+    return { label: "All Clear", className: "bg-emerald-100 text-emerald-700" };
+  }, [hasPendingExpenses, hasRejectedExpenses]);
+
+  // NOW EARLY RETURNS CAN HAPPEN
   // Loading state
   if (isLoading) {
     return (
@@ -120,30 +143,11 @@ export function ExpenseSummary({
     );
   }
 
-  // Calculate metrics
-  const approvalRate =
-    analytics.totalCount > 0
-      ? (analytics.approvedCount / analytics.totalCount) * 100
-      : 0;
+  // Calculate remaining metrics (analytics is guaranteed non-null here)
   const pendingRate =
     analytics.totalCount > 0
       ? (analytics.pendingCount / analytics.totalCount) * 100
       : 0;
-  const hasPendingExpenses = analytics.pendingCount > 0;
-  const hasRejectedExpenses = analytics.rejectedCount > 0;
-
-  const statusBadge = useMemo(() => {
-    if (hasPendingExpenses) {
-      return {
-        label: "Pending Review",
-        className: "bg-amber-100 text-amber-700",
-      };
-    }
-    if (hasRejectedExpenses) {
-      return { label: "Has Rejections", className: "bg-red-100 text-red-700" };
-    }
-    return { label: "All Clear", className: "bg-emerald-100 text-emerald-700" };
-  }, [hasPendingExpenses, hasRejectedExpenses]);
 
   return (
     <div

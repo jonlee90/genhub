@@ -1,24 +1,42 @@
-import { getAllUsers } from '@/app/actions/owner';
-import { Users, Mail, Building2, Shield, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import Image from "next/image";
+import { getAllUsers } from "@/app/actions/owner";
+import {
+  Users,
+  Mail,
+  Building2,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 // Role display mapping
 const ROLE_DISPLAY: Record<string, { label: string; color: string }> = {
-  admin: { label: 'Admin', color: 'bg-construction-blue text-white' },
-  project_manager: { label: 'PM', color: 'bg-blue-600 text-white' },
-  foreman: { label: 'Foreman', color: 'bg-construction-gray text-white' },
-  field_worker: { label: 'Field', color: 'bg-gray-600 text-white' },
-  subcontractor: { label: 'Sub', color: 'bg-construction-gray-light text-white' },
-  client: { label: 'Client', color: 'bg-gray-500 text-white' },
+  admin: { label: "Admin", color: "bg-construction-blue text-white" },
+  project_manager: { label: "PM", color: "bg-blue-600 text-white" },
+  foreman: { label: "Foreman", color: "bg-construction-gray text-white" },
+  field_worker: { label: "Field", color: "bg-gray-600 text-white" },
+  subcontractor: {
+    label: "Sub",
+    color: "bg-construction-gray-light text-white",
+  },
+  client: { label: "Client", color: "bg-gray-500 text-white" },
 };
 
 // Status display mapping
-const STATUS_DISPLAY: Record<string, { label: string; icon: typeof CheckCircle; color: string }> = {
-  active: { label: 'Active', icon: CheckCircle, color: 'text-construction-green' },
-  invited: { label: 'Invited', icon: Mail, color: 'text-yellow-600' },
-  inactive: { label: 'Inactive', icon: AlertCircle, color: 'text-gray-400' },
+const STATUS_DISPLAY: Record<
+  string,
+  { label: string; icon: typeof CheckCircle; color: string }
+> = {
+  active: {
+    label: "Active",
+    icon: CheckCircle,
+    color: "text-construction-green",
+  },
+  invited: { label: "Invited", icon: Mail, color: "text-yellow-600" },
+  inactive: { label: "Inactive", icon: AlertCircle, color: "text-gray-400" },
 };
 
 /**
@@ -28,7 +46,7 @@ const STATUS_DISPLAY: Record<string, { label: string; icon: typeof CheckCircle; 
  * Accessible only by platform owners.
  */
 export default async function OwnerUsersPage() {
-  console.log('[OwnerUsersPage] Fetching users');
+  console.log("[OwnerUsersPage] Fetching users");
 
   const result = await getAllUsers();
 
@@ -36,7 +54,9 @@ export default async function OwnerUsersPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Users</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Error Loading Users
+          </h1>
           <p className="text-gray-600">{result.error}</p>
         </div>
       </div>
@@ -44,8 +64,14 @@ export default async function OwnerUsersPage() {
   }
 
   const users = result.data || [];
-  const activeUsers = users.filter((u) => u.status === 'active').length;
-  const invitedUsers = users.filter((u) => u.status === 'invited').length;
+  const { activeUsers, invitedUsers } = users.reduce(
+    (acc, user) => {
+      if (user.status === "active") acc.activeUsers += 1;
+      if (user.status === "invited") acc.invitedUsers += 1;
+      return acc;
+    },
+    { activeUsers: 0, invitedUsers: 0 },
+  );
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
@@ -58,8 +84,8 @@ export default async function OwnerUsersPage() {
               linear-gradient(to right, currentColor 1px, transparent 1px),
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
+            backgroundSize: "40px 40px",
+            color: "#001B51",
           }}
         />
       </div>
@@ -102,7 +128,9 @@ export default async function OwnerUsersPage() {
               <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
                 {users.length}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Users</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">
+                Users
+              </div>
             </div>
           </div>
         </div>
@@ -122,7 +150,9 @@ export default async function OwnerUsersPage() {
               <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
                 {activeUsers}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Active</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">
+                Active
+              </div>
             </div>
           </div>
         </div>
@@ -142,7 +172,9 @@ export default async function OwnerUsersPage() {
               <div className="text-2xl md:text-4xl font-black text-yellow-600 leading-none mb-1">
                 {invitedUsers}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Invited</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600">
+                Invited
+              </div>
             </div>
           </div>
         </div>
@@ -155,7 +187,9 @@ export default async function OwnerUsersPage() {
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
               <Users className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No Users Yet</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">
+              No Users Yet
+            </h3>
             <p className="text-sm text-gray-500 mb-4 max-w-sm">
               Users will appear here once they join the platform.
             </p>
@@ -188,33 +222,46 @@ export default async function OwnerUsersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {users.map((user) => {
-                    const roleInfo = ROLE_DISPLAY[user.role || ''] || {
-                      label: user.role || '-',
-                      color: 'bg-gray-400 text-white',
+                    const roleInfo = ROLE_DISPLAY[user.role || ""] || {
+                      label: user.role || "-",
+                      color: "bg-gray-400 text-white",
                     };
-                    const statusInfo = STATUS_DISPLAY[user.status || ''] || STATUS_DISPLAY.inactive;
+                    const statusInfo =
+                      STATUS_DISPLAY[user.status || ""] ||
+                      STATUS_DISPLAY.inactive;
                     const StatusIcon = statusInfo.icon;
 
                     return (
-                      <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
+                      <tr
+                        key={user.id}
+                        className="hover:bg-gray-50/50 transition-colors"
+                      >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             {user.avatar_url ? (
-                              <img
+                              <Image
                                 src={user.avatar_url}
-                                alt={user.name || 'User'}
+                                alt={user.name || "User"}
+                                width={32}
+                                height={32}
                                 className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
                               />
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-construction-blue/10 flex items-center justify-center border-2 border-construction-blue/20">
                                 <span className="text-sm font-bold text-construction-blue">
-                                  {(user.name || user.email || '?')[0].toUpperCase()}
+                                  {(user.name ||
+                                    user.email ||
+                                    "?")[0].toUpperCase()}
                                 </span>
                               </div>
                             )}
                             <div>
-                              <div className="font-medium text-gray-900">{user.name || 'Unnamed'}</div>
-                              <div className="text-xs text-gray-500 md:hidden">{user.email}</div>
+                              <div className="font-medium text-gray-900">
+                                {user.name || "Unnamed"}
+                              </div>
+                              <div className="text-xs text-gray-500 md:hidden">
+                                {user.email}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -234,20 +281,31 @@ export default async function OwnerUsersPage() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                          <Badge className={cn('font-bold text-xs', roleInfo.color)}>
+                          <Badge
+                            className={cn("font-bold text-xs", roleInfo.color)}
+                          >
                             {roleInfo.label}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
-                          <div className={cn('flex items-center gap-1.5', statusInfo.color)}>
+                          <div
+                            className={cn(
+                              "flex items-center gap-1.5",
+                              statusInfo.color,
+                            )}
+                          >
                             <StatusIcon className="w-4 h-4" />
-                            <span className="text-sm font-medium">{statusInfo.label}</span>
+                            <span className="text-sm font-medium">
+                              {statusInfo.label}
+                            </span>
                           </div>
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
                           <div className="flex items-center gap-1.5 text-sm text-gray-500">
                             <Clock className="w-4 h-4 text-gray-400" />
-                            {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(user.created_at), {
+                              addSuffix: true,
+                            })}
                           </div>
                         </td>
                       </tr>

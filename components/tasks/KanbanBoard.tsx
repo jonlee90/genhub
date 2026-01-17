@@ -68,17 +68,24 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
     })
   );
 
-  // Group tasks by status - memoized to prevent recalculation on every render
-  const tasksByStatus = useMemo(() =>
-    COLUMNS.reduce(
-      (acc, column) => {
-        acc[column.id] = optimisticTasks.filter((task) => task.status === column.id);
-        return acc;
-      },
-      {} as Record<TaskStatus, TaskWithRelations[]>
-    ),
-    [optimisticTasks]
-  );
+  // Group tasks by status - single-pass iteration for O(n) performance
+  const tasksByStatus = useMemo(() => {
+    const grouped: Record<TaskStatus, TaskWithRelations[]> = {
+      todo: [],
+      in_progress: [],
+      review: [],
+      blocked: [],
+      completed: [],
+    };
+
+    optimisticTasks.forEach((task) => {
+      if (task.status in grouped) {
+        grouped[task.status].push(task);
+      }
+    });
+
+    return grouped;
+  }, [optimisticTasks]);
 
   const handleDragStart = (event: DragStartEvent) => {
     const task = optimisticTasks.find((t) => t.id === event.active.id);
@@ -193,7 +200,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
         </div>
 
         {/* Desktop view - All columns side by side */}
-        <div className="hidden md:flex gap-4 overflow-x-auto pb-4 relative z-10">
+        <div className="hidden md:flex gap-4 overflow-x-auto pb-4 relative z-10" style={{ contentVisibility: 'auto' }}>
           {COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}

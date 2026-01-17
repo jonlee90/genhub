@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
@@ -30,8 +31,15 @@ import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
 import { TaskBoard } from '@/components/tasks/TaskBoard';
+import { TaskModalProvider, useTaskModal } from '@/components/tasks/TaskModalContext';
 import { ProjectFilesTab } from './files/ProjectFilesTab';
 import { DashboardStats } from '../tasks/DashboardStats';
+
+// Dynamic import TaskModal (only loads when modal opens)
+const TaskModal = dynamic(
+  () => import('@/components/tasks/TaskModal').then(mod => ({ default: mod.TaskModal })),
+  { ssr: false }
+);
 
 interface PhaseStats {
   phaseId: string;
@@ -47,6 +55,43 @@ import type { ProjectDetailProps } from '@/types/components/projects';
 import type { TaskWithRelations, TeamMember as TaskBoardTeamMember, Phase } from '@/types/db/task';
 
 type ProjectDetailContentProps = ProjectDetailProps;
+
+// Modal renderer - consumes TaskModalContext
+function TaskModalRenderer({
+  projects,
+  teamMembers,
+  projectId,
+  phases,
+  tasks,
+  onSuccess
+}: {
+  projects: ProjectDetailContentProps['projects'],
+  teamMembers: TaskBoardTeamMember[],
+  projectId: string,
+  phases: Phase[],
+  tasks: TaskWithRelations[],
+  onSuccess: () => void
+}) {
+  const { isOpen, mode, selectedTask, close } = useTaskModal();
+
+  if (!isOpen) return null;
+
+  return (
+    <TaskModal
+      isOpen={isOpen}
+      onClose={close}
+      mode={mode}
+      task={selectedTask}
+      projects={projects}
+      teamMembers={teamMembers}
+      preselectedProjectId={projectId}
+      onSuccess={onSuccess}
+      tasks={tasks}
+      assignees={[]} // No assignees filter needed in project context
+      userRole={null}
+    />
+  );
+}
 
 const STATUS_CONFIG = {
   active: {
@@ -189,7 +234,8 @@ export function ProjectDetailContent({
   }, []);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <TaskModalProvider>
+      <div className="space-y-4 sm:space-y-6">
       {/* Project Header - Streamlined Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -644,6 +690,17 @@ export function ProjectDetailContent({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+
+      {/* Task modal - rendered via context */}
+      <TaskModalRenderer
+        projects={projects}
+        teamMembers={teamMembers as TaskBoardTeamMember[]}
+        projectId={project.id}
+        phases={(project.project_phases || []) as Phase[]}
+        tasks={(project.tasks || []) as TaskWithRelations[]}
+        onSuccess={() => router.refresh()}
+      />
+      </div>
+    </TaskModalProvider>
   );
 }

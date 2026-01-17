@@ -7,106 +7,123 @@
  * - Creates marker_content record
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
-import { createClient } from '@/utils/supabase/server'
-import { generateThumbnail, extractExif, applyOrientation } from '@/lib/image-processing'
+import { NextRequest, NextResponse } from "next/server";
+import { put } from "@vercel/blob";
+import { createAdminClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
+import {
+  generateThumbnail,
+  extractExif,
+  applyOrientation,
+} from "@/lib/image-processing";
 
-export const runtime = 'nodejs'
-export const maxDuration = 60
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-  console.log('[upload-photo] POST request received')
+  console.log("[upload-photo] POST request received");
 
   try {
-    // Authenticate user
-    const supabase = await createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const [session, formData] = await Promise.all([auth(), request.formData()]);
 
-    if (!user) {
-      console.log('[upload-photo] Unauthorized')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session?.user?.id) {
+      console.log("[upload-photo] Unauthorized");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse form data
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
-    const markerId = formData.get('markerId') as string | null
+    const supabase = createAdminClient();
+
+    const file = formData.get("file") as File | null;
+    const markerId = formData.get("markerId") as string | null;
 
     if (!file || !markerId) {
-      console.log('[upload-photo] Missing file or markerId')
-      return NextResponse.json({ error: 'Missing file or markerId' }, { status: 400 })
+      console.log("[upload-photo] Missing file or markerId");
+      return NextResponse.json(
+        { error: "Missing file or markerId" },
+        { status: 400 },
+      );
     }
 
-    console.log('[upload-photo] File:', file.name, file.type, file.size)
-    console.log('[upload-photo] Marker ID:', markerId)
+    console.log("[upload-photo] File:", file.name, file.type, file.size);
+    console.log("[upload-photo] Marker ID:", markerId);
 
     // Convert file to buffer
-    const arrayBuffer = await file.arrayBuffer()
-    let buffer = Buffer.from(arrayBuffer)
+    const arrayBuffer = await file.arrayBuffer();
+    let buffer = Buffer.from(arrayBuffer);
 
     // Apply orientation correction
-    buffer = await applyOrientation(buffer)
+    buffer = await applyOrientation(buffer);
 
     // Generate thumbnail
-    const { thumbnail } = await generateThumbnail(buffer)
+    const { thumbnail } = await generateThumbnail(buffer);
 
     // Extract EXIF data
-    const exifData = await extractExif(buffer)
+    const exifData = await extractExif(buffer);
 
     // Generate unique filename
-    const photoId = crypto.randomUUID()
-    const extension = file.name.split('.').pop() || 'jpg'
-    const filename = `${photoId}.${extension}`
-    const thumbFilename = `${photoId}_thumb.${extension}`
+    const photoId = crypto.randomUUID();
+    const extension = file.name.split(".").pop() || "jpg";
+    const filename = `${photoId}.${extension}`;
+    const thumbFilename = `${photoId}_thumb.${extension}`;
 
     // Upload original to Vercel Blob
-    console.log('[upload-photo] Uploading original to Vercel Blob')
-    const originalBlob = await put(`markers/${markerId}/photos/${filename}`, buffer, {
-      access: 'public',
-      contentType: file.type,
-    })
+    console.log("[upload-photo] Uploading original to Vercel Blob");
+    const originalBlob = await put(
+      `markers/${markerId}/photos/${filename}`,
+      buffer,
+      {
+        access: "public",
+        contentType: file.type,
+      },
+    );
 
     // Upload thumbnail to Vercel Blob
-    console.log('[upload-photo] Uploading thumbnail to Vercel Blob')
-    const thumbnailBlob = await put(`markers/${markerId}/photos/${thumbFilename}`, thumbnail, {
-      access: 'public',
-      contentType: file.type,
-    })
+    console.log("[upload-photo] Uploading thumbnail to Vercel Blob");
+    const thumbnailBlob = await put(
+      `markers/${markerId}/photos/${thumbFilename}`,
+      thumbnail,
+      {
+        access: "public",
+        contentType: file.type,
+      },
+    );
 
     // Create marker_content record
-    console.log('[upload-photo] Creating marker_content record')
+    console.log("[upload-photo] Creating marker_content record");
     const { data: content, error: dbError } = await supabase
-      .from('marker_content')
+      .from("marker_content")
       .insert({
         marker_id: markerId,
-        type: 'photo',
+        type: "photo",
         photo_url: originalBlob.url,
         photo_thumbnail_url: thumbnailBlob.url,
         photo_exif: exifData ? JSON.parse(JSON.stringify(exifData)) : null,
-        created_by: user.id,
+        created_by: session.user.id,
       })
       .select()
-      .single()
+      .single();
 
     if (dbError) {
-      console.error('[upload-photo] Database error:', dbError)
-      return NextResponse.json({ error: 'Failed to save photo' }, { status: 500 })
+      console.error("[upload-photo] Database error:", dbError);
+      return NextResponse.json(
+        { error: "Failed to save photo" },
+        { status: 500 },
+      );
     }
 
-    console.log('[upload-photo] Success:', content.id)
+    console.log("[upload-photo] Success:", content.id);
 
     return NextResponse.json({
       success: true,
       content,
-    })
+    });
   } catch (error) {
-    console.error('[upload-photo] Error:', error)
+    console.error("[upload-photo] Error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Internal server error' },
-      { status: 500 }
-    )
+      {
+        error: error instanceof Error ? error.message : "Internal server error",
+      },
+      { status: 500 },
+    );
   }
 }

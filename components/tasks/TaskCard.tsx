@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertTriangle, Ban, Package, Pencil, Layers as LayersIcon, Box, Receipt } from 'lucide-react';
 import { cn, formatDate } from '@/lib/utils';
-import { motion } from 'framer-motion';
 import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import { getTaskTypeDisplayConfig } from '@/lib/config/task-type-display';
 import type { TaskWithRelations, Phase } from '@/types/db/task';
@@ -30,6 +29,23 @@ interface TaskCardProps {
 
 // All cards use construction-blue border for consistent branding
 const CARD_BORDER = 'border-l-4 border-construction-blue';
+
+// Utility functions extracted outside component to prevent recreation on every render
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function formatCurrency(amount: number) {
+  if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(1)}k`;
+  }
+  return `$${amount.toFixed(0)}`;
+}
 
 export const TaskCard = React.memo(function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator, expenseStats }: TaskCardProps) {
   const {
@@ -68,22 +84,6 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
   const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const formatCurrency = (amount: number) => {
-    if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(1)}k`;
-    }
-    return `$${amount.toFixed(0)}`;
-  };
-
   const hasMaterials = task.materialStats && task.materialStats.count > 0;
   const hasExpenses = expenseStats && expenseStats.count > 0;
 
@@ -95,22 +95,16 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
   const TaskTypeIcon = taskTypeConfig.icon;
 
   return (
-    <motion.div
+    <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
-      className="touch-manipulation"
-      // Disable animations when in DragOverlay to prevent positioning issues
-      animate={isDragging ? false : (isSortableDragging ? {
-        opacity: 0.5,
-        scale: 0.95
-      } : {
-        scale: 1,
-        rotate: 0,
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-      })}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className={cn(
+        'touch-manipulation transition-all duration-200 ease-out',
+        isSortableDragging && 'opacity-50 scale-95',
+        !isSortableDragging && !isDragging && 'shadow-md hover:shadow-lg'
+      )}
     >
       {/* Separate click handler from drag handler to prevent positioning conflicts */}
       <div
@@ -141,19 +135,16 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
           )}
 
           {/* Priority Badge - Top Right Corner - hidden when edit indicator is showing */}
-          <motion.div
+          <div
             className={cn(
-              "absolute top-2 right-2 z-10",
+              "absolute top-2 right-2 z-10 animate-badge-pop",
               shouldShowEditIndicator && "group-hover:hidden"
             )}
-            initial={{ scale: 0, rotate: -10 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 500, damping: 15 }}
           >
             <Badge variant="secondary" className={cn('font-bold text-[10px] px-2 py-0.5', priorityConfig.badgeColor)}>
               {priorityConfig.label}
             </Badge>
-          </motion.div>
+          </div>
 
           {/* Task Type Badge - Industrial Construction Theme */}
           <div className="mb-2">
@@ -178,11 +169,8 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
               <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
               {/* Material Badge - Industrial Stamped Metal Style */}
               {hasMaterials && (
-                <motion.div
-                  className="shrink-0"
-                  initial={{ scale: 0, rotate: -10 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 15 }}
+                <div
+                  className="shrink-0 animate-badge-pop"
                   title={`${task.materialStats!.count} materials - ${formatCurrency(task.materialStats!.totalCost)}`}
                 >
                   {/* Stamped Metal Badge Design */}
@@ -217,7 +205,7 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
 
@@ -335,6 +323,6 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 });

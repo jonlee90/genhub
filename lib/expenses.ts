@@ -60,24 +60,22 @@ export async function getExpensesData() {
         .eq("company_id", companyUser.company_id)
         .order("created_at", { ascending: false });
 
-      const { data: projects } = await projectsPromise;
+      const [projectsResult, expensesResult] = await Promise.all([
+        projectsPromise,
+        expensesPromise,
+      ]);
+
+      const { data: projects } = projectsResult;
+      const { data: expenses } = expensesResult;
       const projectIds = projects?.map((project) => project.id) || [];
 
-      const tasksPromise = projectIds.length
-        ? supabase
+      const { data: tasks } = projectIds.length
+        ? await supabase
             .from("tasks")
             .select("id, title, project_id, task_type")
             .in("project_id", projectIds)
             .order("created_at")
-        : Promise.resolve({ data: [], error: null });
-
-      const [tasksResult, expensesResult] = await Promise.all([
-        tasksPromise,
-        expensesPromise,
-      ]);
-
-      const { data: tasks } = tasksResult;
-      const { data: expenses } = expensesResult;
+        : { data: [] as any[] };
 
       return {
         expenses: expenses || [],
@@ -136,24 +134,22 @@ export async function getExpensesData() {
     .eq("company_id", companyUser.company_id)
     .order("created_at", { ascending: false });
 
-  const { data: projects } = await projectsPromise;
+  const [projectsResult, expensesResult] = await Promise.all([
+    projectsPromise,
+    expensesPromise,
+  ]);
+
+  const { data: projects } = projectsResult;
+  const { data: expenses } = expensesResult;
   const projectIds = projects?.map((project) => project.id) || [];
 
-  const tasksPromise = projectIds.length
-    ? supabase
+  const { data: tasks } = projectIds.length
+    ? await supabase
         .from("tasks")
         .select("id, title, project_id, task_type")
         .in("project_id", projectIds)
         .order("created_at")
-    : Promise.resolve({ data: [], error: null });
-
-  const [tasksResult, expensesResult] = await Promise.all([
-    tasksPromise,
-    expensesPromise,
-  ]);
-
-  const { data: tasks } = tasksResult;
-  const { data: expenses } = expensesResult;
+    : { data: [] as any[] };
 
   return {
     expenses: expenses || [],

@@ -1,39 +1,51 @@
-'use server';
+"use server";
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { z } from 'zod';
-import { createUserClient, createAdminClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { randomUUID } from 'crypto';
-import { sendTeamInvitationEmail } from './team-email-helper';
-import type {
-  CompanyUsersRow,
-  CompanyUsersInsert,
-  CompanyUsersUpdate
-} from '@/types/db/tables/companies';
-import type { UserRole, MemberStatus } from '@/types/db/enums';
-
-type CompanyUser = CompanyUsersRow;
-type CompanyUserInsert = CompanyUsersInsert;
-type CompanyUserUpdate = CompanyUsersUpdate;
+import { revalidatePath, revalidateTag } from "next/cache";
+import { z } from "zod";
+import { createUserClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
+import { randomUUID } from "crypto";
+import { sendTeamInvitationEmail } from "./team-email-helper";
+import type { UserRole } from "@/types/db/enums";
 
 // ============================================
 // Validation Schemas
 // ============================================
 
 const inviteTeamMemberSchema = z.object({
-  email: z.string().email('Invalid email address').transform((v) => v.toLowerCase().trim()),
-  name: z.string().min(1, 'Name is required').max(200).transform((v) => v.trim()),
-  role: z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .transform((v) => v.toLowerCase().trim()),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .max(200)
+    .transform((v) => v.trim()),
+  role: z.enum([
+    "admin",
+    "project_manager",
+    "foreman",
+    "field_worker",
+    "subcontractor",
+    "client",
+  ]),
 });
 
 const updateTeamMemberRoleSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
-  newRole: z.enum(['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client']),
+  userId: z.string().uuid("Invalid user ID"),
+  newRole: z.enum([
+    "admin",
+    "project_manager",
+    "foreman",
+    "field_worker",
+    "subcontractor",
+    "client",
+  ]),
 });
 
 const deactivateTeamMemberSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().uuid("Invalid user ID"),
 });
 
 // ============================================
@@ -45,7 +57,7 @@ async function getUserContext() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
+    return { error: "Not authenticated" };
   }
 
   // Create user-scoped Supabase client
@@ -53,14 +65,14 @@ async function getUserContext() {
 
   // Get user's company and role using NextAuth user ID
   const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
+    .from("company_users")
+    .select("company_id, role, status")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
     .maybeSingle();
 
   if (companyError || !companyUser) {
-    return { error: 'No active company found for user' };
+    return { error: "No active company found for user" };
   }
 
   return {
@@ -91,30 +103,32 @@ async function getUserContext() {
 export async function inviteTeamMember(formData: FormData) {
   // Get user context
   const userContext = await getUserContext();
-  if ('error' in userContext) {
-    console.error('User context error:', userContext.error);
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
     return { error: userContext.error };
   }
 
   const { userId, companyId, role, supabase } = userContext;
 
   // Check permissions - only Admin can invite
-  if (role !== 'admin') {
-    return { error: 'Insufficient permissions. Only Admins can invite team members.' };
+  if (role !== "admin") {
+    return {
+      error: "Insufficient permissions. Only Admins can invite team members.",
+    };
   }
 
   // Parse and validate form data
   const rawData = {
-    email: formData.get('email'),
-    name: formData.get('name'),
-    role: formData.get('role'),
+    email: formData.get("email"),
+    name: formData.get("name"),
+    role: formData.get("role"),
   };
 
   const validation = inviteTeamMemberSchema.safeParse(rawData);
 
   if (!validation.success) {
     const errors = validation.error.flatten().fieldErrors;
-    return { error: 'Validation failed', fieldErrors: errors };
+    return { error: "Validation failed", fieldErrors: errors };
   }
 
   const data = validation.data;
@@ -122,35 +136,42 @@ export async function inviteTeamMember(formData: FormData) {
   try {
     // Check if user already exists and is in this company
     const { data: existingUser, error: userCheckError } = await supabase
-      .from('user_profiles')
-      .select('id, email, name')
-      .eq('email', data.email)
+      .from("user_profiles")
+      .select("id, email, name")
+      .eq("email", data.email)
       .maybeSingle();
 
     if (userCheckError) {
-      console.error('Error checking existing user:', userCheckError);
-      return { error: 'Failed to check existing user. Please try again.' };
+      console.error("Error checking existing user:", userCheckError);
+      return { error: "Failed to check existing user. Please try again." };
     }
 
     if (existingUser) {
       // User exists - check if already in company
       const { data: existingMember, error: memberCheckError } = await supabase
-        .from('company_users')
-        .select('id, status, role')
-        .eq('company_id', companyId)
-        .eq('user_id', existingUser.id)
+        .from("company_users")
+        .select("id, status, role")
+        .eq("company_id", companyId)
+        .eq("user_id", existingUser.id)
         .maybeSingle();
 
       if (memberCheckError) {
-        console.error('Error checking existing member:', memberCheckError);
-        return { error: 'Failed to check company membership. Please try again.' };
+        console.error("Error checking existing member:", memberCheckError);
+        return {
+          error: "Failed to check company membership. Please try again.",
+        };
       }
 
       if (existingMember) {
-        if (existingMember.status === 'active') {
-          return { error: 'This user is already an active member of your company.' };
-        } else if (existingMember.status === 'invited') {
-          return { error: 'This user has already been invited. Please wait for them to accept the invitation.' };
+        if (existingMember.status === "active") {
+          return {
+            error: "This user is already an active member of your company.",
+          };
+        } else if (existingMember.status === "invited") {
+          return {
+            error:
+              "This user has already been invited. Please wait for them to accept the invitation.",
+          };
         }
         // If inactive, allow re-invitation below
       }
@@ -162,7 +183,7 @@ export async function inviteTeamMember(formData: FormData) {
     // Use INSERT ... ON CONFLICT for atomic operation
     // This prevents race conditions when multiple admins invite the same email
     const { data: invitation, error: insertError } = await supabase
-      .from('team_invitations')
+      .from("team_invitations")
       .upsert(
         {
           company_id: companyId,
@@ -172,59 +193,56 @@ export async function inviteTeamMember(formData: FormData) {
           invitation_token: invitationToken,
           invited_by: userId,
           invited_at: new Date().toISOString(),
-          expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(), // 7 days
           used_at: null, // Reset if re-inviting
           updated_at: new Date().toISOString(),
         },
         {
-          onConflict: 'company_id,email',
+          onConflict: "company_id,email",
           ignoreDuplicates: false, // Update with new token
-        }
+        },
       )
       .select()
       .single();
 
     if (insertError) {
-      console.error('Error creating invitation:', insertError);
-      return { error: 'Failed to create invitation. Please try again.' };
+      console.error("Error creating invitation:", insertError);
+      return { error: "Failed to create invitation. Please try again." };
     }
 
-    const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/accept-invite?token=${invitationToken}`;
+    const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/accept-invite?token=${invitationToken}`;
 
-    // Get company name for the email
-    const { data: company } = await supabase
-      .from('companies')
-      .select('name')
-      .eq('id', companyId)
-      .single();
+    // Get company name and inviter profile in parallel
+    const [companyResult, inviterResult] = await Promise.all([
+      supabase.from("companies").select("name").eq("id", companyId).single(),
+      supabase.from("user_profiles").select("name").eq("id", userId).single(),
+    ]);
 
-    // Get inviter's name for the email
-    const { data: inviterProfile } = await supabase
-      .from('user_profiles')
-      .select('name')
-      .eq('id', userId)
-      .single();
+    const { data: company } = companyResult;
+    const { data: inviterProfile } = inviterResult;
 
     // Send invitation email
-    console.log('[TEAM_INVITE] Sending invitation email to:', data.email);
+    console.log("[TEAM_INVITE] Sending invitation email to:", data.email);
     const emailResult = await sendTeamInvitationEmail(
       data.email,
       data.name,
       invitationLink,
-      inviterProfile?.name || 'A team member',
-      company?.name || 'your company'
+      inviterProfile?.name || "A team member",
+      company?.name || "your company",
     );
 
     if (!emailResult.success) {
-      console.error('[TEAM_INVITE] Email sending failed:', emailResult.error);
+      console.error("[TEAM_INVITE] Email sending failed:", emailResult.error);
       // Note: We still return success since the invitation was created
       // The user can still share the link manually
     } else {
-      console.log('[TEAM_INVITE] Email sent successfully to:', data.email);
+      console.log("[TEAM_INVITE] Email sent successfully to:", data.email);
     }
 
     // Revalidate paths
-    revalidatePath('/app/team');
+    revalidatePath("/app/team");
     revalidateTag(`team-members-${companyId}`);
 
     return {
@@ -236,10 +254,9 @@ export async function inviteTeamMember(formData: FormData) {
       invitationLink,
       invitation,
     };
-
   } catch (error) {
-    console.error('Unexpected error inviting team member:', error);
-    return { error: 'An unexpected error occurred. Please try again.' };
+    console.error("Unexpected error inviting team member:", error);
+    return { error: "An unexpected error occurred. Please try again." };
   }
 }
 
@@ -258,80 +275,89 @@ export async function inviteTeamMember(formData: FormData) {
 export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
   // Get user context
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { userId: currentUserId, companyId, role, supabase } = userContext;
 
   // Check permissions - only Admin can update roles
-  if (role !== 'admin') {
-    return { error: 'Insufficient permissions. Only Admins can update team member roles.' };
+  if (role !== "admin") {
+    return {
+      error:
+        "Insufficient permissions. Only Admins can update team member roles.",
+    };
   }
 
   // Validate input
   const validation = updateTeamMemberRoleSchema.safeParse({ userId, newRole });
 
   if (!validation.success) {
-    return { error: 'Invalid input', fieldErrors: validation.error.flatten().fieldErrors };
+    return {
+      error: "Invalid input",
+      fieldErrors: validation.error.flatten().fieldErrors,
+    };
   }
 
   try {
     // Check if team member exists in company AND verify they're in the SAME company
     const { data: existingMember, error: fetchError } = await supabase
-      .from('company_users')
-      .select('id, role, user_id, status, company_id')
-      .eq('company_id', companyId) // CRITICAL: Ensure same company
-      .eq('user_id', userId)
+      .from("company_users")
+      .select("id, role, user_id, status, company_id")
+      .eq("company_id", companyId) // CRITICAL: Ensure same company
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (fetchError || !existingMember) {
-      console.error('Error fetching team member:', fetchError);
-      return { error: 'Team member not found in your company.' };
+      console.error("Error fetching team member:", fetchError);
+      return { error: "Team member not found in your company." };
     }
 
     // Prevent updating own role
     if (existingMember.user_id === currentUserId) {
-      return { error: 'You cannot change your own role.' };
+      return { error: "You cannot change your own role." };
     }
 
-    if (existingMember.status === 'inactive') {
-      return { error: 'Cannot update role of inactive team member. Please reactivate them first.' };
+    if (existingMember.status === "inactive") {
+      return {
+        error:
+          "Cannot update role of inactive team member. Please reactivate them first.",
+      };
     }
 
     // Check if role is actually changing
     if (existingMember.role === newRole) {
-      return { error: 'Team member already has this role.' };
+      return { error: "Team member already has this role." };
     }
 
     // Update role in company_users table
     const { data: updatedMember, error: updateError } = await supabase
-      .from('company_users')
+      .from("company_users")
       .update({
         role: newRole,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', existingMember.id)
+      .eq("id", existingMember.id)
       .select()
       .single();
 
     if (updateError) {
-      console.error('Error updating team member role:', updateError);
-      return { error: 'Failed to update team member role. Please try again.' };
+      console.error("Error updating team member role:", updateError);
+      return { error: "Failed to update team member role. Please try again." };
     }
 
     // Create notification for the user whose role was changed
     // Using 'mention' type temporarily - TODO: Add 'role_changed' notification type
-    await supabase.from('notifications').insert({
+    await supabase.from("notifications").insert({
       user_id: userId,
-      type: 'mention',
-      title: 'Role Updated',
-      message: `Your role has been updated to ${newRole.replace('_', ' ')}`,
-      link: '/app/team',
+      type: "mention",
+      title: "Role Updated",
+      message: `Your role has been updated to ${newRole.replace("_", " ")}`,
+      link: "/app/team",
     });
 
     // Revalidate paths with granular cache key
-    revalidatePath('/app/team');
+    revalidatePath("/app/team");
     revalidateTag(`team-members-${companyId}`);
 
     return {
@@ -339,10 +365,9 @@ export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
       message: `Team member role updated to ${newRole}`,
       updatedMember,
     };
-
   } catch (error) {
-    console.error('Unexpected error updating team member role:', error);
-    return { error: 'An unexpected error occurred. Please try again.' };
+    console.error("Unexpected error updating team member role:", error);
+    return { error: "An unexpected error occurred. Please try again." };
   }
 }
 
@@ -361,104 +386,109 @@ export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
 export async function deactivateTeamMember(userId: string) {
   // Get user context
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { userId: currentUserId, companyId, role, supabase } = userContext;
 
   // Check permissions - only Admin can deactivate
-  if (role !== 'admin') {
-    return { error: 'Insufficient permissions. Only Admins can deactivate team members.' };
+  if (role !== "admin") {
+    return {
+      error:
+        "Insufficient permissions. Only Admins can deactivate team members.",
+    };
   }
 
   // Validate input
   const validation = deactivateTeamMemberSchema.safeParse({ userId });
 
   if (!validation.success) {
-    return { error: 'Invalid user ID' };
+    return { error: "Invalid user ID" };
   }
 
   try {
     // Check if team member exists in company AND verify they're in the SAME company
     const { data: existingMember, error: fetchError } = await supabase
-      .from('company_users')
-      .select('id, status, user_id, role, company_id')
-      .eq('company_id', companyId) // CRITICAL: Ensure same company
-      .eq('user_id', userId)
+      .from("company_users")
+      .select("id, status, user_id, role, company_id")
+      .eq("company_id", companyId) // CRITICAL: Ensure same company
+      .eq("user_id", userId)
       .maybeSingle();
 
     if (fetchError || !existingMember) {
-      console.error('Error fetching team member:', fetchError);
-      return { error: 'Team member not found in your company.' };
+      console.error("Error fetching team member:", fetchError);
+      return { error: "Team member not found in your company." };
     }
 
     // Prevent deactivating self
     if (existingMember.user_id === currentUserId) {
-      return { error: 'You cannot deactivate your own account.' };
+      return { error: "You cannot deactivate your own account." };
     }
 
-    if (existingMember.status === 'inactive') {
-      return { error: 'This team member is already inactive.' };
+    if (existingMember.status === "inactive") {
+      return { error: "This team member is already inactive." };
     }
 
     // Check if this is the last active Admin
-    if (existingMember.role === 'admin') {
+    if (existingMember.role === "admin") {
       const { data: activeAdmins, error: adminCheckError } = await supabase
-        .from('company_users')
-        .select('id')
-        .eq('company_id', companyId)
-        .eq('role', 'admin')
-        .eq('status', 'active');
+        .from("company_users")
+        .select("id")
+        .eq("company_id", companyId)
+        .eq("role", "admin")
+        .eq("status", "active");
 
       if (adminCheckError) {
-        console.error('Error checking active admins:', adminCheckError);
-        return { error: 'Failed to verify admin status. Please try again.' };
+        console.error("Error checking active admins:", adminCheckError);
+        return { error: "Failed to verify admin status. Please try again." };
       }
 
       if (activeAdmins && activeAdmins.length <= 1) {
-        return { error: 'Cannot deactivate the last Admin. Please assign another admin first.' };
+        return {
+          error:
+            "Cannot deactivate the last Admin. Please assign another admin first.",
+        };
       }
     }
 
     // Set status to 'inactive' (preserve historical data)
     const { data: deactivatedMember, error: updateError } = await supabase
-      .from('company_users')
+      .from("company_users")
       .update({
-        status: 'inactive',
+        status: "inactive",
         updated_at: new Date().toISOString(),
       })
-      .eq('id', existingMember.id)
+      .eq("id", existingMember.id)
       .select()
       .single();
 
     if (updateError) {
-      console.error('Error deactivating team member:', updateError);
-      return { error: 'Failed to deactivate team member. Please try again.' };
+      console.error("Error deactivating team member:", updateError);
+      return { error: "Failed to deactivate team member. Please try again." };
     }
 
     // Create notification for deactivated user
     // Using 'mention' type temporarily - TODO: Add 'account_deactivated' notification type
-    await supabase.from('notifications').insert({
+    await supabase.from("notifications").insert({
       user_id: userId,
-      type: 'mention',
-      title: 'Account Deactivated',
-      message: 'Your account has been deactivated by an administrator.',
-      link: '/app',
+      type: "mention",
+      title: "Account Deactivated",
+      message: "Your account has been deactivated by an administrator.",
+      link: "/app",
     });
 
     // Revalidate paths with granular cache key
-    revalidatePath('/app/team');
+    revalidatePath("/app/team");
     revalidateTag(`team-members-${companyId}`);
 
     return {
       success: true,
-      message: 'Team member deactivated successfully',
+      message: "Team member deactivated successfully",
       deactivatedMember,
     };
-
   } catch (error) {
-    console.error('Unexpected error deactivating team member:', error);
-    return { error: 'An unexpected error occurred. Please try again.' };
+    console.error("Unexpected error deactivating team member:", error);
+    return { error: "An unexpected error occurred. Please try again." };
   }
 }

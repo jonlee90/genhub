@@ -2,18 +2,20 @@ import "server-only";
 
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
 
 export const getMaterialsData = cache(async () => {
   // In development without database, return empty data
   if (process.env.NODE_ENV === "development") {
     try {
-      const [supabase, session] = await Promise.all([createClient(), auth()]);
+      const session = await auth();
 
       if (!session?.user?.id) {
         return { projects: [] };
       }
+
+      const supabase = createAdminClient();
 
       // Get user's company
       const { data: companyUser } = await supabase
@@ -43,11 +45,13 @@ export const getMaterialsData = cache(async () => {
     }
   }
 
-  const [supabase, session] = await Promise.all([createClient(), auth()]);
+  const session = await auth();
 
   if (!session?.user?.id) {
     redirect("/");
   }
+
+  const supabase = createAdminClient();
 
   // Get user's company
   const { data: companyUser } = await supabase

@@ -1,10 +1,11 @@
 import "server-only";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
 
-export async function getTasksPageData() {
+export const getTasksPageData = cache(async function getTasksPageData() {
   const [supabase, session] = await Promise.all([createClient(), auth()]);
 
   if (!session?.user?.id) {
@@ -220,7 +221,7 @@ export async function getTasksPageData() {
     taskDependencies: dependenciesResult.data || [],
     userRole,
   };
-}
+});
 
 interface TaskUserProfile {
   id: string;
@@ -253,7 +254,9 @@ interface TaskDependentRecord {
   blocking_task: { id: string; title: string; status: string } | null;
 }
 
-export async function getTaskDetailData(taskId: string) {
+export const getTaskDetailData = cache(async function getTaskDetailData(
+  taskId: string,
+) {
   const [supabase, session] = await Promise.all([createClient(), auth()]);
 
   if (!session?.user?.id) {
@@ -392,15 +395,18 @@ export async function getTaskDetailData(taskId: string) {
   ]);
 
   const userProfiles = (userProfilesResult.data as TaskUserProfile[]) || [];
-  if (userProfiles.length > 0) {
-    if (task.assignee_id) {
-      (task as Record<string, unknown>).assignee =
-        userProfiles.find((user) => user.id === task.assignee_id) || null;
-    }
-    if (task.created_by) {
-      (task as Record<string, unknown>).creator =
-        userProfiles.find((user) => user.id === task.created_by) || null;
-    }
+  const userProfileMap = new Map(
+    userProfiles.map((profile) => [profile.id, profile]),
+  );
+
+  if (task.assignee_id) {
+    (task as Record<string, unknown>).assignee =
+      userProfileMap.get(task.assignee_id) || null;
+  }
+
+  if (task.created_by) {
+    (task as Record<string, unknown>).creator =
+      userProfileMap.get(task.created_by) || null;
   }
 
   const activityRaw = activityResult.data as TaskActivityRecord[] | null;
@@ -480,4 +486,4 @@ export async function getTaskDetailData(taskId: string) {
         .filter(Boolean) || [],
     userRole: companyUser.role,
   };
-}
+});

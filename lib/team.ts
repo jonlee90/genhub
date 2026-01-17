@@ -105,34 +105,34 @@ export async function getTeamPageData(): Promise<TeamPageOk | TeamPageError> {
     project_count: countsMap.get(member.user_id) || 0,
   })) as TeamMemberWithProfile[];
 
-  const totalMembers = members.length;
-  const activeMembers = members.filter(
-    (member) => member.status === "active",
-  ).length;
-  const invitedMembers = members.filter(
-    (member) => member.status === "invited",
-  ).length;
-  const admins = members.filter((member) => member.role === "admin").length;
-  const projectManagers = members.filter(
-    (member) => member.role === "project_manager",
-  ).length;
-  const fieldWorkers = members.filter(
-    (member) => member.role === "field_worker" || member.role === "foreman",
-  ).length;
+  const stats = members.reduce(
+    (acc, member) => {
+      acc.total += 1;
+      if (member.status === "active") acc.active += 1;
+      if (member.status === "invited") acc.invited += 1;
+      if (member.role === "admin") acc.admins += 1;
+      if (member.role === "project_manager") acc.projectManagers += 1;
+      if (member.role === "field_worker" || member.role === "foreman") {
+        acc.fieldWorkers += 1;
+      }
+      return acc;
+    },
+    {
+      total: 0,
+      active: 0,
+      invited: 0,
+      admins: 0,
+      projectManagers: 0,
+      fieldWorkers: 0,
+    },
+  );
 
   return {
     status: "ok",
     companyId: companyUser.company_id,
     role: companyUser.role,
     members,
-    stats: {
-      total: totalMembers,
-      active: activeMembers,
-      invited: invitedMembers,
-      admins,
-      projectManagers,
-      fieldWorkers,
-    },
+    stats,
   };
 }
 
@@ -188,10 +188,6 @@ export async function getSubcontractorsPageData(): Promise<
   }
 
   const allSubcontractors = subcontractors || [];
-  const totalSubcontractors = allSubcontractors.length;
-  const activeSubcontractors = allSubcontractors.filter(
-    (sub) => sub.is_active,
-  ).length;
 
   const isExpiringSoon = (expiryDate: string | null): boolean => {
     if (!expiryDate) return false;
@@ -203,24 +199,29 @@ export async function getSubcontractorsPageData(): Promise<
     return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
   };
 
-  const expiringLicenses = allSubcontractors.filter(
-    (sub) => sub.is_active && isExpiringSoon(sub.license_expiry),
-  ).length;
-
-  const expiringInsurance = allSubcontractors.filter(
-    (sub) => sub.is_active && isExpiringSoon(sub.insurance_expiry),
-  ).length;
+  const stats = allSubcontractors.reduce(
+    (acc, sub) => {
+      acc.total += 1;
+      if (sub.is_active) {
+        acc.active += 1;
+        if (isExpiringSoon(sub.license_expiry)) acc.expiringLicenses += 1;
+        if (isExpiringSoon(sub.insurance_expiry)) acc.expiringInsurance += 1;
+      }
+      return acc;
+    },
+    {
+      total: 0,
+      active: 0,
+      expiringLicenses: 0,
+      expiringInsurance: 0,
+    },
+  );
 
   return {
     status: "ok",
     companyId: companyUser.company_id,
     role: companyUser.role,
     subcontractors: allSubcontractors,
-    stats: {
-      total: totalSubcontractors,
-      active: activeSubcontractors,
-      expiringLicenses,
-      expiringInsurance,
-    },
+    stats,
   };
 }

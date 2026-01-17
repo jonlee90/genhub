@@ -1,10 +1,10 @@
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { CreateTaskForm } from '@/components/tasks/CreateTaskForm';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { createAdminClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
+import { CreateTaskForm } from "@/components/tasks/CreateTaskForm";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
 interface NewTaskPageProps {
   searchParams: Promise<{ project?: string; phase?: string }>;
@@ -15,63 +15,71 @@ async function getData() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    redirect('/');
+    redirect("/");
   }
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Get user's company using NextAuth user ID
   const { data: companyUser } = await supabase
-    .from('company_users')
-    .select('company_id')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
+    .from("company_users")
+    .select("company_id")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
     .maybeSingle();
 
   if (!companyUser) {
-    redirect('/app/onboarding');
+    redirect("/app/onboarding");
   }
 
-  // Get all projects for this company
-  const { data: projects } = await supabase
-    .from('projects')
-    .select(`
-      id,
-      name,
-      project_phases (
+  const [projectsResult, teamMembersResult] = await Promise.all([
+    supabase
+      .from("projects")
+      .select(
+        `
         id,
         name,
-        order_index
+        project_phases (
+          id,
+          name,
+          order_index
+        )
+      `,
       )
-    `)
-    .eq('company_id', companyUser.company_id)
-    .eq('status', 'active')
-    .order('name');
+      .eq("company_id", companyUser.company_id)
+      .eq("status", "active")
+      .order("name"),
+    supabase
+      .from("company_users")
+      .select(
+        `
+        user_id,
+        user_profiles!inner (
+          id,
+          name,
+          email,
+          avatar_url
+        )
+      `,
+      )
+      .eq("company_id", companyUser.company_id)
+      .eq("status", "active"),
+  ]);
 
-  // Get team members for assignee selector
-  const { data: teamMembers } = await supabase
-    .from('company_users')
-    .select(`
-      user_id,
-      user_profiles!inner (
-        id,
-        name,
-        email,
-        avatar_url
-      )
-    `)
-    .eq('company_id', companyUser.company_id)
-    .eq('status', 'active');
+  const { data: projects } = projectsResult;
+  const { data: teamMembers } = teamMembersResult;
 
   return {
     projects: projects || [],
-    teamMembers: teamMembers?.map((tm) => tm.user_profiles) || [],
+    teamMembers: teamMembers?.map((tm: any) => tm.user_profiles) || [],
   };
 }
 
 export default async function NewTaskPage({ searchParams }: NewTaskPageProps) {
-  const { projects, teamMembers } = await getData();
-  const params = await searchParams;
+  const [params, { projects, teamMembers }] = await Promise.all([
+    searchParams,
+    getData(),
+  ]);
 
   // Pre-select project/phase from URL params
   const preselectedProjectId = params.project;

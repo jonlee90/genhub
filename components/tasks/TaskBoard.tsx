@@ -3,10 +3,9 @@
 import { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { KanbanBoard } from './KanbanBoard';
+import { useTaskModal } from './TaskModalContext';
 import { TaskList } from './TaskList';
 import { TaskFilters } from './TaskFilters';
-import { TaskModal } from './TaskModal';
 import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
 import { TopProjectsCard } from './TopProjectsCard';
 import { transformTasksForGantt } from './gantt/gantt-utils';
@@ -41,6 +40,27 @@ const GanttChart = dynamic(() => import('./gantt/GanttChart').then(mod => ({ def
   ),
   ssr: false,
 });
+
+// Dynamic import KanbanBoard (includes dnd-kit) - only loads when kanban view is selected
+const KanbanBoard = dynamic(
+  () => import('./KanbanBoard').then(mod => ({ default: mod.KanbanBoard })),
+  {
+    loading: () => (
+      <div className="flex gap-4 overflow-x-auto pb-4">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex-shrink-0 w-72 h-96 bg-gray-100 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    ),
+    ssr: false,
+  }
+);
+
+// Dynamic import TaskModal (1373 lines) - only loads when modal opens
+const TaskModal = dynamic(
+  () => import('./TaskModal').then(mod => ({ default: mod.TaskModal })),
+  { ssr: false }
+);
 
 /** Status tab configuration for mobile */
 interface StatusTab {
@@ -133,33 +153,25 @@ export function TaskBoard({
   const projectFilter = externalProjectFilter ?? internalProjectFilter;
   const setProjectFilter = onExternalProjectFilterChange ?? setInternalProjectFilter;
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('edit');
-  const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
+  // Modal state from context (prevents TaskBoard re-renders on modal open/close)
+  const { isOpen: isModalOpen, mode: modalMode, selectedTask, openEdit, openCreate, close } = useTaskModal();
 
   // Handle task click to open edit modal
   const handleTaskClick = (task: TaskWithRelations) => {
-    setSelectedTask(task);
-    setModalMode('edit');
-    setIsModalOpen(true);
+    openEdit(task);
   };
 
   const handleModalClose = () => {
-    setIsModalOpen(false);
-    setSelectedTask(null);
+    close();
   };
 
   const handleModalSuccess = () => {
-    setIsModalOpen(false);
-    setSelectedTask(null);
+    close();
     router.refresh();
   };
 
   const handleOpenCreateModal = () => {
-    setModalMode('create');
-    setSelectedTask(null);
-    setIsModalOpen(true);
+    openCreate();
   };
 
   // Apply filters
@@ -357,13 +369,6 @@ export function TaskBoard({
         </div>
       )}
 
-      {/* Task Summary - Only show on Tasks page (not in project context) */}
-      {!isProjectContext && computedTaskStats && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <ProjectTaskSummary taskStats={computedTaskStats} projectBudget={projectBudget} />
-        </div>
-      )}
-
       {/* Gantt Chart Timeline - Above Task Board */}
       {filteredTasks.length > 0 && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
@@ -532,6 +537,13 @@ export function TaskBoard({
         />
       )}
 
+      {/* Task Summary - Only show on Tasks page (not in project context) */}
+      {!isProjectContext && computedTaskStats && (
+        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+          <ProjectTaskSummary taskStats={computedTaskStats} projectBudget={projectBudget} />
+        </div>
+      )}
+
       {/* Top Projects - Only show on Tasks page (not in project context) */}
       {!isProjectContext && filteredTasks.length > 0 && (
         <div className="mt-4 md:mt-6">
@@ -545,20 +557,7 @@ export function TaskBoard({
         </div>
       )}
 
-      {/* Task Modal */}
-      <TaskModal
-        isOpen={isModalOpen}
-        onClose={handleModalClose}
-        mode={modalMode}
-        task={selectedTask}
-        projects={projects}
-        teamMembers={teamMembers}
-        preselectedProjectId={projectId}
-        onSuccess={handleModalSuccess}
-        tasks={initialTasks}
-        assignees={assignees}
-        userRole={userRole}
-      />
+      {/* Task Modal is now rendered by TaskModalProvider in parent component */}
     </div>
   );
 }
