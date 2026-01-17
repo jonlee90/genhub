@@ -2,8 +2,8 @@
 
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { getTodayPosition } from './gantt-utils';
-import type { GanttConfig, DateCell } from './gantt-types';
+import { getTodayPosition } from './/gantt-utils';
+import type { GanttConfig, DateCell } from './/gantt-types';
 
 interface GanttTimelineProps {
   config: GanttConfig;

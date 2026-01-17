@@ -15,7 +15,7 @@ import { SpatialMarkerPin } from './SpatialMarkerPin';
 import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
 import { TaskLinker } from './TaskLinker';
 import { MarkerCreationModal } from './MarkerCreationModal';
-import { TaskDetailPanel } from '@/components/tasks/detail/TaskDetailPanel';
+import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel';
 // Mobile components for spatial viewer redesign
 import { MarkerFilterSheet } from './MarkerFilterSheet';
 import { MarkerListSheet } from './MarkerListSheet';

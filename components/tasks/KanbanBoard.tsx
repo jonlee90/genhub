@@ -13,8 +13,8 @@ import {
   type DragEndEvent,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { KanbanColumn } from './KanbanColumn';
-import { TaskCard } from '../list/TaskCard';
+import { KanbanColumn } from './/KanbanColumn';
+import { TaskCard } from './TaskCard';
 import { updateTaskStatus } from '@/app/actions/tasks';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';

@@ -41,15 +41,15 @@ import {
 // Avatar component removed - was unused
 import { cn } from '@/lib/utils';
 import { createTask, updateTask, updateApprovalStatus, deleteTask } from '@/app/actions/tasks';
-import { TaskMaterialsManager, type TempMaterial } from '../materials/TaskMaterialsManager';
+import { TaskMaterialsManager, type TempMaterial } from './TaskMaterialsManager';
 import { CreatorBadge } from '@/components/ui/CreatorBadge';
-import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from '../forms/TaskTypeSelector';
+import { TaskTypeSelector, TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
-import { TaskExpensesSection, type TaskExpense } from '../expenses/TaskExpensesSection';
-import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
-import { AssigneeMultiSelect } from '../forms/AssigneeMultiSelect';
-import { AutoExpenseToggle } from '../forms/AutoExpenseToggle';
-import { PrimaryAssigneeSelector, type AssigneeOption } from '../forms/PrimaryAssigneeSelector';
+import { TaskExpensesSection, type TaskExpense } from './TaskExpensesSection';
+import { TaskReceiptUpload } from './TaskReceiptUpload';
+import { AssigneeMultiSelect } from './AssigneeMultiSelect';
+import { AutoExpenseToggle } from './AutoExpenseToggle';
+import { PrimaryAssigneeSelector, type AssigneeOption } from './PrimaryAssigneeSelector';
 import { getTaskExpenses, createExpenseFromTask } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
 import type { TaskAssignee, AssigneeOption as TaskAssigneeOption } from '@/app/actions/tasks';

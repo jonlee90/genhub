@@ -1,7 +1,5 @@
 // Debug: Loading skeleton for expenses list
 export function ExpensesListSkeleton() {
-  console.log('[ExpensesListSkeleton] Rendering loading state');
-
   return (
     <div className="space-y-4 md:space-y-6 animate-pulse">
       {/* Filters skeleton */}

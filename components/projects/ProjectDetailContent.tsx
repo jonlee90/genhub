@@ -29,9 +29,9 @@ import { cn, formatPercentWhole } from '@/lib/utils';
 import { ProjectTeam } from './ProjectTeam';
 import { ProjectSettings } from './ProjectSettings';
 import { ProjectOverview } from './ProjectOverview';
-import { TaskBoard } from '@/components/tasks/views/TaskBoard';
+import { TaskBoard } from '@/components/tasks/TaskBoard';
 import { ProjectFilesTab } from './files/ProjectFilesTab';
-import { DashboardStats } from '../tasks/mia/DashboardStats';
+import { DashboardStats } from '../tasks/DashboardStats';
 
 interface PhaseStats {
   phaseId: string;

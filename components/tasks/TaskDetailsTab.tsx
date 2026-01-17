@@ -6,7 +6,7 @@
 import { Calendar, User, MapPin, DollarSign, Flag, Clock } from 'lucide-react';
 import { cn, formatPercent, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { TaskDetails } from './TaskDetailPanel';
+import type { TaskDetails } from './/TaskDetailPanel';
 
 // Component props
 export interface TaskDetailsTabProps {

@@ -1,28 +1,57 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Receipt, X, ShieldAlert, Wrench, DollarSign } from 'lucide-react';
-import { ExpenseCard } from './ExpenseCard';
-import { FilterBar } from '@/components/ui/FilterBar';
-import { ExpenseProjectFilter } from './ExpenseProjectFilter';
-import { CreateExpenseModal } from './CreateExpenseModal';
-import { ExpenseDetailModal } from './ExpenseDetailModal';
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Receipt, X, ShieldAlert, Wrench, DollarSign } from "lucide-react";
+import { ExpenseCard } from "./ExpenseCard";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { ExpenseProjectFilter } from "./ExpenseProjectFilter";
+import { CreateExpenseModal } from "./CreateExpenseModal";
+import { ExpenseDetailModal } from "./ExpenseDetailModal";
 import type {
   ExpenseWithRelations,
-  ExpenseProject,
-  ExpenseTask,
   ExpensesListProps,
-} from '@/types/db/expense';
+} from "@/types/db/expense";
 
-export function ExpensesList({ initialExpenses, projects, tasks, searchParams, companyId }: ExpensesListProps) {
+const STATUS_FILTER_OPTIONS = [
+  { label: "All Statuses", value: "all" },
+  { label: "Submitted", value: "submitted" },
+  { label: "Under Review", value: "under_review" },
+  { label: "Approved", value: "approved" },
+  { label: "Rejected", value: "rejected" },
+  { label: "Paid", value: "paid" },
+];
+
+const SORT_FILTER_OPTIONS = [
+  { label: "Latest First", value: "created_at" },
+  { label: "Expense Date", value: "date" },
+  { label: "Amount (High to Low)", value: "amount_high" },
+  { label: "Amount (Low to High)", value: "amount_low" },
+  { label: "Description (A-Z)", value: "description" },
+  { label: "Status", value: "status" },
+];
+
+const EMPTY_STATE_STEPS = [
+  { num: "01", label: "Upload", icon: Receipt },
+  { num: "02", label: "Review", icon: DollarSign },
+  { num: "03", label: "Approve", icon: Wrench },
+];
+
+export function ExpensesList({
+  initialExpenses,
+  projects,
+  tasks,
+  searchParams,
+  companyId,
+}: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedExpense, setSelectedExpense] = useState<ExpenseWithRelations | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [projectFilter, setProjectFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('created_at');
+  const [selectedExpense, setSelectedExpense] =
+    useState<ExpenseWithRelations | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("created_at");
 
   // Calculate expense counts and amounts per project
   const { projectExpenseCounts, projectExpenseAmounts } = useMemo(() => {
@@ -31,7 +60,8 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
     initialExpenses.forEach((expense) => {
       if (expense.project?.id) {
         counts[expense.project.id] = (counts[expense.project.id] || 0) + 1;
-        amounts[expense.project.id] = (amounts[expense.project.id] || 0) + expense.amount;
+        amounts[expense.project.id] =
+          (amounts[expense.project.id] || 0) + expense.amount;
       }
     });
     return { projectExpenseCounts: counts, projectExpenseAmounts: amounts };
@@ -48,36 +78,43 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
         (expense) =>
           expense.description.toLowerCase().includes(query) ||
           expense.vendor_name?.toLowerCase().includes(query) ||
-          expense.category.toLowerCase().includes(query)
+          expense.category.toLowerCase().includes(query),
       );
     }
 
     // Status filter
-    if (statusFilter && statusFilter !== 'all') {
+    if (statusFilter && statusFilter !== "all") {
       filtered = filtered.filter((expense) => expense.status === statusFilter);
     }
 
     // Project filter
-    if (projectFilter && projectFilter !== 'all') {
-      filtered = filtered.filter((expense) => expense.project?.id === projectFilter);
+    if (projectFilter && projectFilter !== "all") {
+      filtered = filtered.filter(
+        (expense) => expense.project?.id === projectFilter,
+      );
     }
 
     // Sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'amount_high':
+        case "amount_high":
           return b.amount - a.amount;
-        case 'amount_low':
+        case "amount_low":
           return a.amount - b.amount;
-        case 'date':
-          return new Date(b.expense_date).getTime() - new Date(a.expense_date).getTime();
-        case 'description':
+        case "date":
+          return (
+            new Date(b.expense_date).getTime() -
+            new Date(a.expense_date).getTime()
+          );
+        case "description":
           return a.description.localeCompare(b.description);
-        case 'status':
+        case "status":
           return a.status.localeCompare(b.status);
-        case 'created_at':
+        case "created_at":
         default:
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
       }
     });
 
@@ -86,11 +123,42 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
 
   // Calculate current expense count for the selected project
   const currentExpenseCount = useMemo(() => {
-    if (projectFilter === 'all') {
+    if (projectFilter === "all") {
       return initialExpenses.length;
     }
     return projectExpenseCounts[projectFilter] || 0;
   }, [projectFilter, initialExpenses.length, projectExpenseCounts]);
+
+  const searchConfig = useMemo(
+    () => ({
+      placeholder: "Search expenses...",
+      value: searchQuery,
+      onChange: setSearchQuery,
+      colSpan: "half" as const,
+    }),
+    [searchQuery],
+  );
+
+  const filterConfigs = useMemo(
+    () => [
+      {
+        name: "status",
+        value: statusFilter,
+        onChange: setStatusFilter,
+        options: STATUS_FILTER_OPTIONS,
+        placeholder: "All Statuses",
+      },
+      {
+        name: "sort",
+        value: sortBy,
+        onChange: setSortBy,
+        options: SORT_FILTER_OPTIONS,
+        placeholder: "Sort By",
+        colSpan: "auto" as const,
+      },
+    ],
+    [statusFilter, sortBy],
+  );
 
   // Empty State - No Expenses Created Yet
   if (initialExpenses.length === 0) {
@@ -143,7 +211,9 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            SUBMIT YOUR<br />FIRST EXPENSE
+            SUBMIT YOUR
+            <br />
+            FIRST EXPENSE
           </motion.h2>
 
           <motion.p
@@ -152,7 +222,8 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            Track receipts, AI OCR processing, and automated expense management all in one place.
+            Track receipts, AI OCR processing, and automated expense management
+            all in one place.
           </motion.p>
 
           <motion.div
@@ -173,11 +244,7 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
 
           {/* Industrial Process Steps */}
           <div className="mt-8 md:mt-12 grid grid-cols-3 gap-2 md:gap-6 max-w-2xl w-full">
-            {[
-              { num: '01', label: 'Upload', icon: Receipt },
-              { num: '02', label: 'Review', icon: DollarSign },
-              { num: '03', label: 'Approve', icon: Wrench }
-            ].map((step, index) => (
+            {EMPTY_STATE_STEPS.map((step, index) => (
               <motion.div
                 key={step.num}
                 className="relative group"
@@ -189,8 +256,12 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
                   <div className="flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-lg bg-construction-blue/10 border-2 border-construction-blue/20 mb-2 md:mb-3 group-hover:scale-110 transition-transform">
                     <step.icon className="h-4 w-4 md:h-6 md:w-6 text-construction-blue" />
                   </div>
-                  <div className="text-lg md:text-2xl font-black text-construction-blue mb-0.5 md:mb-1">{step.num}</div>
-                  <p className="text-[10px] md:text-sm font-bold text-gray-600 text-center">{step.label}</p>
+                  <div className="text-lg md:text-2xl font-black text-construction-blue mb-0.5 md:mb-1">
+                    {step.num}
+                  </div>
+                  <p className="text-[10px] md:text-sm font-bold text-gray-600 text-center">
+                    {step.label}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -214,45 +285,7 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
     <div className="space-y-4 md:space-y-6">
       {/* Filters - Sticky on Mobile */}
       <div className="sticky top-0 md:relative z-40 md:z-auto pt-[env(safe-area-inset-top)] md:pt-0 bg-white md:bg-transparent">
-        <FilterBar
-          searchConfig={{
-            placeholder: 'Search expenses...',
-            value: searchQuery,
-            onChange: setSearchQuery,
-            colSpan: 'half'
-          }}
-          filters={[
-            {
-              name: 'status',
-              value: statusFilter,
-              onChange: setStatusFilter,
-              options: [
-                { label: 'All Statuses', value: 'all' },
-                { label: 'Submitted', value: 'submitted' },
-                { label: 'Under Review', value: 'under_review' },
-                { label: 'Approved', value: 'approved' },
-                { label: 'Rejected', value: 'rejected' },
-                { label: 'Paid', value: 'paid' }
-              ],
-              placeholder: 'All Statuses'
-            },
-            {
-              name: 'sort',
-              value: sortBy,
-              onChange: setSortBy,
-              options: [
-                { label: 'Latest First', value: 'created_at' },
-                { label: 'Expense Date', value: 'date' },
-                { label: 'Amount (High to Low)', value: 'amount_high' },
-                { label: 'Amount (Low to High)', value: 'amount_low' },
-                { label: 'Description (A-Z)', value: 'description' },
-                { label: 'Status', value: 'status' }
-              ],
-              placeholder: 'Sort By',
-              colSpan: 'auto'
-            }
-          ]}
-        >
+        <FilterBar searchConfig={searchConfig} filters={filterConfigs}>
           {/* Project Filter with expense counts and total amounts */}
           <ExpenseProjectFilter
             projects={projects}
@@ -286,16 +319,17 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
             </h3>
 
             <p className="text-gray-600 font-medium mb-8 max-w-md text-center text-lg">
-              No expenses match your current filters. Adjust search criteria or clear all filters.
+              No expenses match your current filters. Adjust search criteria or
+              clear all filters.
             </p>
 
             <Button
               size="lg"
               onClick={() => {
-                setSearchQuery('');
-                setStatusFilter('all');
-                setProjectFilter('all');
-                setSortBy('created_at');
+                setSearchQuery("");
+                setStatusFilter("all");
+                setProjectFilter("all");
+                setSortBy("created_at");
               }}
               className="h-12 px-8 bg-white border-2 border-construction-red hover:bg-construction-red hover:text-white transition-all shadow-construction font-black group"
             >
@@ -317,7 +351,7 @@ export function ExpensesList({ initialExpenses, projects, tasks, searchParams, c
                 duration: 0.5,
                 type: "spring",
                 stiffness: 200,
-                damping: 20
+                damping: 20,
               }}
               onClick={() => setSelectedExpense(expense)}
             >

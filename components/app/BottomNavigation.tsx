@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { MoreMenu } from './MoreMenu';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
 import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
-import { TaskModal } from '@/components/tasks/modals/TaskModal';
+import { TaskModal } from '@/components/tasks/TaskModal';
 import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
 import type { Session } from 'next-auth';
 

@@ -1,29 +1,35 @@
-'use client';
+"use client";
 
-import { Badge } from '@/components/ui/badge';
-import { Receipt, FileText, Image as ImageIcon, DollarSign, Calendar, Building2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { ExpenseCardProps, ExpenseStatus } from '@/types/db/expense';
-import { EXPENSE_STATUS_CONFIG } from '@/types/db/expense';
+import { Badge } from "@/components/ui/badge";
+import {
+  Receipt,
+  FileText,
+  Image as ImageIcon,
+  DollarSign,
+  Calendar,
+  Building2,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { ExpenseCardProps, ExpenseStatus } from "@/types/db/expense";
+import { EXPENSE_STATUS_CONFIG } from "@/types/db/expense";
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+});
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+const formatCurrency = (amount: number) => currencyFormatter.format(amount);
+const formatDate = (date: string) => dateFormatter.format(new Date(date));
 
 export function ExpenseCard({ expense }: ExpenseCardProps) {
   const statusConfig = EXPENSE_STATUS_CONFIG[expense.status as ExpenseStatus];
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   return (
     <div className="group relative h-full cursor-pointer">
@@ -32,12 +38,14 @@ export function ExpenseCard({ expense }: ExpenseCardProps) {
 
       <div className="relative h-full bg-white border-2 border-gray-200 rounded-xl shadow-construction hover:shadow-construction-lg transition-all overflow-hidden flex flex-col">
         {/* Receipt/Image header */}
-        <div className={cn(
-          "relative h-32 md:h-40 border-b-2 flex items-center justify-center",
-          expense.receipt_url
-            ? "bg-gradient-to-br from-construction-blue/10 to-construction-blue/5 border-construction-blue/20"
-            : "bg-gradient-to-br from-gray-100 to-gray-50 border-gray-200"
-        )}>
+        <div
+          className={cn(
+            "relative h-32 md:h-40 border-b-2 flex items-center justify-center",
+            expense.receipt_url
+              ? "bg-gradient-to-br from-construction-blue/10 to-construction-blue/5 border-construction-blue/20"
+              : "bg-gradient-to-br from-gray-100 to-gray-50 border-gray-200",
+          )}
+        >
           {expense.receipt_url ? (
             <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-construction-blue opacity-40" />
           ) : (
@@ -46,7 +54,9 @@ export function ExpenseCard({ expense }: ExpenseCardProps) {
 
           {/* Status badge - top right */}
           <div className="absolute top-2 right-2">
-            <Badge className={cn('font-bold border-2 text-xs', statusConfig.color)}>
+            <Badge
+              className={cn("font-bold border-2 text-xs", statusConfig.color)}
+            >
               {statusConfig.label}
             </Badge>
           </div>
@@ -98,7 +108,7 @@ export function ExpenseCard({ expense }: ExpenseCardProps) {
             <div className="flex items-center gap-2 text-xs md:text-sm">
               <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" />
               <span className="text-gray-600 truncate">
-                {expense.project?.name || 'No project'}
+                {expense.project?.name || "No project"}
               </span>
             </div>
 

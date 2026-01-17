@@ -17,9 +17,9 @@ import {
 import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
-import { TaskTypeSelector, TaskTypeBadge } from './TaskTypeSelector';
-import { TaskMaterialsManager } from '../materials/TaskMaterialsManager';
-import { TaskReceiptUpload } from '../expenses/TaskReceiptUpload';
+import { TaskTypeSelector, TaskTypeBadge } from './/TaskTypeSelector';
+import { TaskMaterialsManager } from './TaskMaterialsManager';
+import { TaskReceiptUpload } from './TaskReceiptUpload';
 import type { TaskType, TaskProject, TeamMember } from '@/types/db/task';
 
 interface CreateTaskFormProps {

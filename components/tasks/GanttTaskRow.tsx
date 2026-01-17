@@ -3,9 +3,9 @@
 import React, { useCallback, useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { GanttTaskBar } from './GanttTaskBar';
-import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
-import { getTaskTypeInfo } from '@/components/tasks/forms/TaskTypeSelector';
+import { GanttTaskBar } from './/GanttTaskBar';
+import type { GanttTask, TaskPosition, GanttConfig } from './/gantt-types';
+import { getTaskTypeInfo } from '@/components/tasks/TaskTypeSelector';
 import type { TaskType } from '@/types/db/enums';
 
 interface GanttTaskRowProps {

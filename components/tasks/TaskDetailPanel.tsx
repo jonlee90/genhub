@@ -7,11 +7,11 @@ import { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getTaskDetails } from '@/app/actions/tasks';
-import { TaskDetailsTab } from './TaskDetailsTab';
-import { MaterialTab } from './MaterialTab';
-import { ExpensesTab } from './ExpensesTab';
-import { AttachmentsTab } from './AttachmentsTab';
-import { ActivityTab } from './ActivityTab';
+import { TaskDetailsTab } from './/TaskDetailsTab';
+import { MaterialTab } from './/MaterialTab';
+import { ExpensesTab } from './/ExpensesTab';
+import { AttachmentsTab } from './/AttachmentsTab';
+import { ActivityTab } from './/ActivityTab';
 
 // Task details type (from server action)
 export type TaskDetails = {

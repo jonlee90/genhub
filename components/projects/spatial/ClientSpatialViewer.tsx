@@ -13,7 +13,7 @@ import { LODManager } from './LODManager';
 import { InteractionLayer } from './InteractionLayer';
 import { SpatialMarkerPin } from './SpatialMarkerPin';
 import { MarkerFilterPanel, MarkerFilters } from './MarkerFilterPanel';
-import { TaskDetailPanel } from '@/components/tasks/detail/TaskDetailPanel';
+import { TaskDetailPanel } from '@/components/tasks/TaskDetailPanel';
 import { cn } from '@/lib/utils';
 import { createDefaultModel } from '@/lib/xeokit/default-models';
 import { getMarkersByProject } from '@/app/actions/spatial';

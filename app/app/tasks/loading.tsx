@@ -1,5 +1,5 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { TaskListSkeleton } from '@/components/tasks/list/TaskListSkeleton';
+import { TaskListSkeleton } from '@/components/tasks/TaskListSkeleton';
 
 export default function TasksLoading() {
   return (

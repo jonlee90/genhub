@@ -14,8 +14,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Package, Search, Loader2, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { TaskMaterialSearch } from './TaskMaterialSearch';
-import { TaskMaterialsList } from './TaskMaterialsList';
+import { TaskMaterialSearch } from './/TaskMaterialSearch';
+import { TaskMaterialsList } from './/TaskMaterialsList';
 import { getTaskMaterials } from '@/app/actions/materials';
 
 // Interface definitions

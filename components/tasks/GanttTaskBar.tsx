@@ -4,8 +4,8 @@ import React, { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useDraggable } from '@dnd-kit/core';
 import { cn } from '@/lib/utils';
-import type { GanttTaskBarProps } from './gantt-types';
-import { STATUS_STYLES } from './gantt-types';
+import type { GanttTaskBarProps } from './/gantt-types';
+import { STATUS_STYLES } from './/gantt-types';
 
 export const GanttTaskBar = React.memo(function GanttTaskBar({
   task,

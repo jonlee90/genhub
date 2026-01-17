@@ -41,11 +41,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BaseModal } from '@/components/ui/BaseModal';
-import { TaskActivityLog } from '../shared/TaskActivityLog';
-import { TaskDependencies } from '../shared/TaskDependencies';
-import { TaskMaterials } from '../materials/TaskMaterials';
-import { BlockedReasonModal } from '../modals/BlockedReasonModal';
-import { TaskTypeBadge, getTaskTypeInfo } from '../forms/TaskTypeSelector';
+import { TaskActivityLog } from './TaskActivityLog';
+import { TaskDependencies } from './TaskDependencies';
+import { TaskMaterials } from './TaskMaterials';
+import { BlockedReasonModal } from './BlockedReasonModal';
+import { TaskTypeBadge, getTaskTypeInfo } from './TaskTypeSelector';
 import { updateTask, updateTaskStatus, deleteTask, updateApprovalStatus } from '@/app/actions/tasks';
 import { cn, formatDate } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';

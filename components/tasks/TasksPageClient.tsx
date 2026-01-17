@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { TaskBoard } from './TaskBoard';
-import { TaskModalTrigger } from '../modals/TaskModalTrigger';
-import { TaskModal } from '../modals/TaskModal';
-import { ProjectFilterHeader } from './ProjectFilterHeader';
+import { TaskBoard } from './/TaskBoard';
+import { TaskModalTrigger } from './TaskModalTrigger';
+import { TaskModal } from './TaskModal';
+import { ProjectFilterHeader } from './/ProjectFilterHeader';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
 import { BlueprintBackground } from '@/components/shared';
 import { BottomSheet } from '@/components/ui/bottom-sheet';

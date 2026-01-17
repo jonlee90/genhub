@@ -4,7 +4,7 @@ import React from 'react';
 import { Calendar, CalendarDays, CalendarRange } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { TimeScale } from './gantt-types';
+import type { TimeScale } from './/gantt-types';
 
 interface GanttViewToggleProps {
   timeScale: TimeScale;

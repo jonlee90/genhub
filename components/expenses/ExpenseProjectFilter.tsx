@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { FolderKanban, Receipt, DollarSign } from 'lucide-react';
-import { cn, formatCurrency } from '@/lib/utils';
+import { useMemo } from "react";
+import { FolderKanban, Receipt, DollarSign } from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { ExpenseProject } from '@/types/db/expense';
+} from "@/components/ui/select";
+import type { ExpenseProject } from "@/types/db/expense";
 
 type Project = ExpenseProject;
 
@@ -33,9 +34,15 @@ export function ExpenseProjectFilter({
   projectExpenseCounts,
   projectExpenseAmounts,
 }: ExpenseProjectFilterProps) {
-  const projectName = selectedProjectId === 'all'
-    ? 'All Projects'
-    : projects.find((p) => p.id === selectedProjectId)?.name || 'Select Project';
+  const projectName = useMemo(() => {
+    if (selectedProjectId === "all") {
+      return "All Projects";
+    }
+    return (
+      projects.find((project) => project.id === selectedProjectId)?.name ||
+      "Select Project"
+    );
+  }, [projects, selectedProjectId]);
 
   return (
     <div className="flex items-center gap-3">
@@ -47,11 +54,11 @@ export function ExpenseProjectFilter({
             "hover:border-construction-blue/40 transition-colors",
             "focus:ring-2 focus:ring-construction-blue/20 focus:border-construction-blue",
             "font-semibold text-construction-blue",
-            selectedProjectId !== 'all' && "bg-construction-blue/5"
+            selectedProjectId !== "all" && "bg-construction-blue/5",
           )}
         >
           <div className="flex items-center gap-2 truncate">
-            {selectedProjectId !== 'all' && (
+            {selectedProjectId !== "all" && (
               <div className="w-2 h-2 rounded-full bg-construction-blue animate-pulse" />
             )}
             <SelectValue placeholder="All Projects">
@@ -67,15 +74,15 @@ export function ExpenseProjectFilter({
             </SelectValue>
           </div>
         </SelectTrigger>
-        <SelectContent
-          className="max-h-[300px] overflow-y-auto"
-          align="start"
-        >
+        <SelectContent className="max-h-[300px] overflow-y-auto" align="start">
           <SelectItem
             value="all"
             className="font-medium [&>span]:flex-1 [&>span]:w-full"
           >
-            <div className="flex items-center gap-2 w-full" style={{ width: '100%' }}>
+            <div
+              className="flex items-center gap-2 w-full"
+              style={{ width: "100%" }}
+            >
               <FolderKanban className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <span className="flex-1">All Projects</span>
               <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
@@ -88,23 +95,27 @@ export function ExpenseProjectFilter({
 
           {projects.map((project) => {
             const projectExpenseCount = projectExpenseCounts?.[project.id] ?? 0;
-            const projectExpenseAmount = projectExpenseAmounts?.[project.id] ?? 0;
+            const projectExpenseAmount =
+              projectExpenseAmounts?.[project.id] ?? 0;
             return (
               <SelectItem
                 key={project.id}
                 value={project.id}
                 className="font-medium [&>span]:flex-1 [&>span]:w-full"
               >
-                <div className="flex items-center justify-between w-full min-w-0 gap-3" style={{ width: '100%' }}>
+                <div
+                  className="flex items-center justify-between w-full min-w-0 gap-3"
+                  style={{ width: "100%" }}
+                >
                   {/* Left side: Status indicator + Project name + Expense count */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full flex-shrink-0",
-                        project.status === 'active' && "bg-green-500",
-                        project.status === 'on_hold' && "bg-yellow-500",
-                        project.status === 'completed' && "bg-blue-500",
-                        !project.status && "bg-gray-400"
+                        project.status === "active" && "bg-green-500",
+                        project.status === "on_hold" && "bg-yellow-500",
+                        project.status === "completed" && "bg-blue-500",
+                        !project.status && "bg-gray-400",
                       )}
                     />
                     <span className="truncate">{project.name}</span>

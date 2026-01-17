@@ -8,7 +8,7 @@ import { DashboardHeader } from './DashboardHeader';
 import { KPICardsGrid } from './KPICardsGrid';
 import { WidgetsGrid } from './WidgetsGrid';
 import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
-import { TaskModal } from '@/components/tasks/modals/TaskModal';
+import { TaskModal } from '@/components/tasks/TaskModal';
 import { InviteTeamMemberModal } from '@/components/team/InviteTeamMemberModal';
 import type { DashboardData } from '@/types/dashboard';
 

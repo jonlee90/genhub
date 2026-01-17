@@ -1,13 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Check, ChevronsUpDown, X, Users, Building2, Plus, Search, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { BaseModal } from '@/components/ui/BaseModal';
-import type { VendorOption } from '@/app/actions/expenses';
+import { memo, useState, useMemo, useCallback, useEffect, useRef } from "react";
+import {
+  Check,
+  ChevronsUpDown,
+  X,
+  Users,
+  Building2,
+  Plus,
+  Search,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { BaseModal } from "@/components/ui/BaseModal";
+import type { VendorOption } from "@/app/actions/expenses";
 
 /**
  * Props for VendorCombobox component
@@ -29,6 +42,88 @@ export interface VendorComboboxProps {
   error?: string | null;
 }
 
+interface OptionRowProps {
+  option: VendorOption;
+  isSelected: boolean;
+  onSelect: (option: VendorOption) => void;
+}
+
+const OptionRow = memo(function OptionRow({
+  option,
+  isSelected,
+  onSelect,
+}: OptionRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(option)}
+      className={cn(
+        "w-full flex items-center gap-3 px-3",
+        "min-h-[48px] py-2",
+        "text-left transition-all duration-150",
+        isSelected ? "bg-[#001B51]/5" : "bg-white hover:bg-gray-50",
+        "active:bg-gray-100 active:scale-[0.99]",
+      )}
+    >
+      <div
+        className={cn(
+          "flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0",
+          option.type === "member" ? "bg-[#001B51]/10" : "bg-orange-100",
+        )}
+      >
+        {option.type === "member" ? (
+          <Users className="w-4 h-4 text-[#001B51]" />
+        ) : (
+          <Building2 className="w-4 h-4 text-orange-600" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm text-gray-900 truncate">
+          {option.name}
+        </div>
+        <div className="text-xs text-gray-500 truncate">
+          {option.type === "member" ? "Team Member" : "Subcontractor"}
+        </div>
+      </div>
+      {isSelected && <Check className="w-4 h-4 text-[#001B51] flex-shrink-0" />}
+    </button>
+  );
+});
+
+interface CustomEntryRowProps {
+  searchText: string;
+  onSelect: (value: string) => void;
+}
+
+const CustomEntryRow = memo(function CustomEntryRow({
+  searchText,
+  onSelect,
+}: CustomEntryRowProps) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(searchText)}
+      className={cn(
+        "w-full flex items-center gap-3 px-3",
+        "min-h-[48px] py-2",
+        "text-left transition-all duration-150",
+        "bg-white hover:bg-gray-50 active:bg-gray-100",
+        "border-t border-gray-100",
+      )}
+    >
+      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 flex-shrink-0">
+        <Plus className="w-4 h-4 text-gray-600" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm text-gray-900 truncate">
+          Use "{searchText}"
+        </div>
+        <div className="text-xs text-gray-500">Custom vendor</div>
+      </div>
+    </button>
+  );
+});
+
 /**
  * VendorCombobox - Hybrid combobox for vendor selection
  *
@@ -44,14 +139,14 @@ export function VendorCombobox({
   options,
   value,
   onChange,
-  placeholder = 'Select or enter vendor...',
+  placeholder = "Select or enter vendor...",
   disabled = false,
   loading = false,
   error = null,
 }: VendorComboboxProps) {
   const [open, setOpen] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if mobile (simple check - could use a hook for more robust detection)
@@ -62,8 +157,8 @@ export function VendorCombobox({
       setIsMobile(window.innerWidth < 768);
     };
     checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Debounce search input
@@ -89,14 +184,16 @@ export function VendorCombobox({
     return options.filter(
       (opt) =>
         opt.name.toLowerCase().includes(search) ||
-        opt.displayName.toLowerCase().includes(search)
+        opt.displayName.toLowerCase().includes(search),
     );
   }, [options, debouncedSearch]);
 
   // Group options by type
   const groupedOptions = useMemo(() => {
-    const members = filteredOptions.filter((opt) => opt.type === 'member');
-    const subcontractors = filteredOptions.filter((opt) => opt.type === 'subcontractor');
+    const members = filteredOptions.filter((opt) => opt.type === "member");
+    const subcontractors = filteredOptions.filter(
+      (opt) => opt.type === "subcontractor",
+    );
     return { members, subcontractors };
   }, [filteredOptions]);
 
@@ -107,7 +204,7 @@ export function VendorCombobox({
     return options.some(
       (opt) =>
         opt.name.toLowerCase() === search ||
-        opt.displayName.toLowerCase() === search
+        opt.displayName.toLowerCase() === search,
     );
   }, [options, debouncedSearch]);
 
@@ -116,100 +213,23 @@ export function VendorCombobox({
     (selectedValue: string) => {
       onChange(selectedValue);
       setOpen(false);
-      setSearchValue('');
+      setSearchValue("");
     },
-    [onChange]
+    [onChange],
   );
 
   // Handle clear
   const handleClear = useCallback(() => {
-    onChange('');
-    setSearchValue('');
+    onChange("");
+    setSearchValue("");
   }, [onChange]);
 
   // Get display text for selected value
   const displayText = useMemo(() => {
-    if (!value) return '';
+    if (!value) return "";
     const option = options.find((opt) => opt.name === value);
     return option ? option.name : value;
   }, [value, options]);
-
-  // Render option row
-  const OptionRow = ({
-    option,
-    isSelected,
-    onClick,
-  }: {
-    option: VendorOption;
-    isSelected: boolean;
-    onClick: () => void;
-  }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'w-full flex items-center gap-3 px-3',
-        'min-h-[48px] py-2',
-        'text-left transition-all duration-150',
-        isSelected ? 'bg-[#001B51]/5' : 'bg-white hover:bg-gray-50',
-        'active:bg-gray-100 active:scale-[0.99]'
-      )}
-    >
-      {/* Type Icon */}
-      <div
-        className={cn(
-          'flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0',
-          option.type === 'member' ? 'bg-[#001B51]/10' : 'bg-orange-100'
-        )}
-      >
-        {option.type === 'member' ? (
-          <Users className="w-4 h-4 text-[#001B51]" />
-        ) : (
-          <Building2 className="w-4 h-4 text-orange-600" />
-        )}
-      </div>
-
-      {/* Name */}
-      <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm text-gray-900 truncate">
-          {option.name}
-        </div>
-        <div className="text-xs text-gray-500 truncate">
-          {option.type === 'member' ? 'Team Member' : 'Subcontractor'}
-        </div>
-      </div>
-
-      {/* Check indicator */}
-      {isSelected && (
-        <Check className="w-4 h-4 text-[#001B51] flex-shrink-0" />
-      )}
-    </button>
-  );
-
-  // Render custom entry option
-  const CustomEntryRow = ({ searchText }: { searchText: string }) => (
-    <button
-      type="button"
-      onClick={() => handleSelect(searchText)}
-      className={cn(
-        'w-full flex items-center gap-3 px-3',
-        'min-h-[48px] py-2',
-        'text-left transition-all duration-150',
-        'bg-white hover:bg-gray-50 active:bg-gray-100',
-        'border-t border-gray-100'
-      )}
-    >
-      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 flex-shrink-0">
-        <Plus className="w-4 h-4 text-gray-600" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-medium text-sm text-gray-900 truncate">
-          Use "{searchText}"
-        </div>
-        <div className="text-xs text-gray-500">Custom vendor</div>
-      </div>
-    </button>
-  );
 
   // Mobile: Use BaseModal as bottom sheet
   if (isMobile) {
@@ -224,18 +244,20 @@ export function VendorCombobox({
           disabled={disabled}
           onClick={() => setOpen(true)}
           className={cn(
-            'w-full h-11 justify-between border-2',
-            'active:scale-[0.99] transition-transform',
-            disabled && 'opacity-50 cursor-not-allowed'
+            "w-full h-11 justify-between border-2",
+            "active:scale-[0.99] transition-transform",
+            disabled && "opacity-50 cursor-not-allowed",
           )}
         >
-          <span className={cn('truncate', !value && 'text-gray-500')}>
+          <span className={cn("truncate", !value && "text-gray-500")}>
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading...
               </span>
-            ) : displayText || placeholder}
+            ) : (
+              displayText || placeholder
+            )}
           </span>
           <div className="flex items-center gap-1 flex-shrink-0">
             {value && !disabled && (
@@ -247,7 +269,7 @@ export function VendorCombobox({
                   handleClear();
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === "Enter" || e.key === " ") {
                     e.stopPropagation();
                     handleClear();
                   }
@@ -267,7 +289,7 @@ export function VendorCombobox({
             isOpen={open}
             onClose={() => {
               setOpen(false);
-              setSearchValue('');
+              setSearchValue("");
             }}
             icon={Users}
             title="Select Vendor"
@@ -311,7 +333,9 @@ export function VendorCombobox({
                         key={`member-${option.id}`}
                         option={option}
                         isSelected={value === option.name}
-                        onClick={() => handleSelect(option.name)}
+                        onSelect={(selectedOption) =>
+                          handleSelect(selectedOption.name)
+                        }
                       />
                     ))}
                   </div>
@@ -331,7 +355,9 @@ export function VendorCombobox({
                         key={`sub-${option.id}`}
                         option={option}
                         isSelected={value === option.name}
-                        onClick={() => handleSelect(option.name)}
+                        onSelect={(selectedOption) =>
+                          handleSelect(selectedOption.name)
+                        }
                       />
                     ))}
                   </div>
@@ -339,7 +365,10 @@ export function VendorCombobox({
 
                 {/* Custom Entry Option */}
                 {debouncedSearch && !searchMatchesOption && (
-                  <CustomEntryRow searchText={debouncedSearch} />
+                  <CustomEntryRow
+                    searchText={debouncedSearch}
+                    onSelect={handleSelect}
+                  />
                 )}
 
                 {/* Empty State */}
@@ -368,18 +397,20 @@ export function VendorCombobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            'w-full h-11 justify-between border-2',
-            'hover:bg-gray-50 transition-colors',
-            disabled && 'opacity-50 cursor-not-allowed'
+            "w-full h-11 justify-between border-2",
+            "hover:bg-gray-50 transition-colors",
+            disabled && "opacity-50 cursor-not-allowed",
           )}
         >
-          <span className={cn('truncate', !value && 'text-gray-500')}>
+          <span className={cn("truncate", !value && "text-gray-500")}>
             {loading ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Loading...
               </span>
-            ) : displayText || placeholder}
+            ) : (
+              displayText || placeholder
+            )}
           </span>
           <div className="flex items-center gap-1 flex-shrink-0">
             {value && !disabled && (
@@ -391,7 +422,7 @@ export function VendorCombobox({
                   handleClear();
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (e.key === "Enter" || e.key === " ") {
                     e.stopPropagation();
                     handleClear();
                   }
@@ -405,7 +436,10 @@ export function VendorCombobox({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0"
+        align="start"
+      >
         <div className="space-y-0">
           {/* Search Input */}
           <div className="p-2 border-b border-gray-100">
@@ -445,7 +479,9 @@ export function VendorCombobox({
                     key={`member-${option.id}`}
                     option={option}
                     isSelected={value === option.name}
-                    onClick={() => handleSelect(option.name)}
+                    onSelect={(selectedOption) =>
+                      handleSelect(selectedOption.name)
+                    }
                   />
                 ))}
               </div>
@@ -465,7 +501,9 @@ export function VendorCombobox({
                     key={`sub-${option.id}`}
                     option={option}
                     isSelected={value === option.name}
-                    onClick={() => handleSelect(option.name)}
+                    onSelect={(selectedOption) =>
+                      handleSelect(selectedOption.name)
+                    }
                   />
                 ))}
               </div>
@@ -473,7 +511,10 @@ export function VendorCombobox({
 
             {/* Custom Entry Option */}
             {debouncedSearch && !searchMatchesOption && (
-              <CustomEntryRow searchText={debouncedSearch} />
+              <CustomEntryRow
+                searchText={debouncedSearch}
+                onSelect={handleSelect}
+              />
             )}
 
             {/* Empty State */}

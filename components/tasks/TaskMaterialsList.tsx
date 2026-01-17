@@ -46,8 +46,8 @@ import { cn } from '@/lib/utils';
 import { removeMaterialFromTask, updateMaterialQuantity, updateMaterialAssignment } from '@/app/actions/materials';
 import { getMaterialExpenseLink } from '@/app/actions/expenses';
 import { useToast } from '@/hooks/use-toast';
-import { MaterialDeliveryPrompt } from './MaterialDeliveryPrompt';
-import type { TempMaterial } from './TaskMaterialsManager';
+import { MaterialDeliveryPrompt } from './/MaterialDeliveryPrompt';
+import type { TempMaterial } from './/TaskMaterialsManager';
 
 // Interface definitions
 interface Material {

@@ -29,7 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
 
 // Interface definitions
-import type { TempMaterial } from './TaskMaterialsManager';
+import type { TempMaterial } from './/TaskMaterialsManager';
 
 interface TaskMaterialSearchProps {
   taskId?: string;              // Optional for create mode

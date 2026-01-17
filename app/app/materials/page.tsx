@@ -87,9 +87,10 @@ export const metadata = {
 export default async function MaterialsPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const page = Number.parseInt(searchParams.page || "1", 10);
+  const params = await searchParams;
+  const page = Number.parseInt(params.page || "1", 10);
   const { projects } = await getMaterialsData();
 
   // Parallel data fetching for all components

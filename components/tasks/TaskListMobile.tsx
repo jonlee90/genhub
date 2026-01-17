@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
-import { TaskCard } from './TaskCard';
+import { TaskCard } from './/TaskCard';
 import { FolderKanban, Check, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
