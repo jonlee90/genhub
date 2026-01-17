@@ -160,7 +160,8 @@
       "Bash(tee:*)",
       "Bash(npm run docs:sync:write:*)",
       "Bash(npm run deps:fix:*)",
-      "Skill(vercel-react-best-practices)"
+      "Skill(vercel-react-best-practices)",
+      "Bash(npx --yes lighthouse:*)"
     ],
     "deny": [],
     "ask": []

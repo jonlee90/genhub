@@ -14,7 +14,7 @@ import Mail from 'lucide-react/icons/mail';
 import WifiOff from 'lucide-react/icons/wifi-off';
 import Globe from 'lucide-react/icons/globe';
 import Database from 'lucide-react/icons/database';
-import X from 'lucide-react/icons/x';;
+import X from 'lucide-react/icons/x';
 import { cn } from '@/lib/utils';
 
 console.log('[ErrorBoundary] Component loaded');
