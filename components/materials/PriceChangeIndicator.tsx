@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { formatPercent } from '@/lib/utils';
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { formatPercent } from "@/lib/utils";
 
 interface PriceChangeIndicatorProps {
   percent: number | null | undefined;
@@ -18,9 +18,10 @@ interface PriceChangeIndicatorProps {
  *
  * @component
  */
-export function PriceChangeIndicator({ percent, className = '' }: PriceChangeIndicatorProps) {
-  console.log('[PriceChangeIndicator] Rendering with percent:', percent);
-
+export function PriceChangeIndicator({
+  percent,
+  className = "",
+}: PriceChangeIndicatorProps) {
   // Handle no change or null/undefined
   if (percent === null || percent === undefined || percent === 0) {
     return (
@@ -32,14 +33,15 @@ export function PriceChangeIndicator({ percent, className = '' }: PriceChangeInd
   }
 
   const isPositive = percent > 0;
-  const color = isPositive ? 'text-red-600' : 'text-green-600';
+  const color = isPositive ? "text-red-600" : "text-green-600";
   const Icon = isPositive ? TrendingUp : TrendingDown;
 
   return (
     <div className={`flex items-center gap-1 ${color} ${className}`}>
       <Icon className="w-4 h-4" />
       <span className="text-sm font-semibold">
-        {isPositive ? '+' : ''}{formatPercent(Math.abs(percent))}
+        {isPositive ? "+" : ""}
+        {formatPercent(Math.abs(percent))}
       </span>
     </div>
   );

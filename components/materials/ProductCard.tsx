@@ -1,15 +1,28 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Package, CheckCircle2, AlertCircle, XCircle, Plus, ArrowRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { AssignMaterialModal } from './AssignMaterialModal';
-import Image from 'next/image';
-import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
+import { useState } from "react";
+import { Card } from "@/components/ui/card";
+
+const priceFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+});
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Package,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Plus,
+  ArrowRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { AssignMaterialModal } from "./AssignMaterialModal";
+import Image from "next/image";
+import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 interface Project {
   id: string;
@@ -19,31 +32,35 @@ interface Project {
 interface ProductCardProps {
   product: HomeDepotProduct;
   projects: Project[];
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
   isSelectedForComparison: boolean;
   onToggleComparison: (product: HomeDepotProduct) => void;
 }
 
 const STOCK_STATUS_CONFIG = {
   in_stock: {
-    label: 'In Stock',
+    label: "In Stock",
     icon: CheckCircle2,
-    color: 'bg-construction-green/10 text-construction-green border-construction-green',
+    color:
+      "bg-construction-green/10 text-construction-green border-construction-green",
   },
   low_stock: {
-    label: 'Low Stock',
+    label: "Low Stock",
     icon: AlertCircle,
-    color: 'bg-construction-accent/10 text-construction-accent border-construction-accent',
+    color:
+      "bg-construction-accent/10 text-construction-accent border-construction-accent",
   },
   out_of_stock: {
-    label: 'Out of Stock',
+    label: "Out of Stock",
     icon: XCircle,
-    color: 'bg-construction-red/10 text-construction-red border-construction-red',
+    color:
+      "bg-construction-red/10 text-construction-red border-construction-red",
   },
   special_order: {
-    label: 'Special Order',
+    label: "Special Order",
     icon: AlertCircle,
-    color: 'bg-construction-accent/10 text-construction-accent border-construction-accent',
+    color:
+      "bg-construction-accent/10 text-construction-accent border-construction-accent",
   },
 };
 
@@ -58,21 +75,18 @@ export function ProductCard({
   const stockConfig = STOCK_STATUS_CONFIG[product.stockStatus];
   const StockIcon = stockConfig.icon;
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(price);
-  };
+  const formatPrice = (price: number) => priceFormatter.format(price);
 
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
       <>
-        <Card className={cn(
-          'p-4 bg-white hover:shadow-md transition-all cursor-pointer border-2',
-          isSelectedForComparison && 'border-construction-blue bg-construction-blue/5'
-        )}>
+        <Card
+          className={cn(
+            "p-4 bg-white hover:shadow-md transition-all cursor-pointer border-2",
+            isSelectedForComparison &&
+              "border-construction-blue bg-construction-blue/5",
+          )}
+        >
           <div className="flex items-center gap-4">
             {/* Product Image */}
             <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0 border-2 border-gray-200">
@@ -94,13 +108,26 @@ export function ProductCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-construction-blue line-clamp-1">{product.name}</h3>
-                  <p className="text-sm text-gray-600 mt-1">SKU: {product.sku}</p>
+                  <h3 className="font-bold text-lg text-construction-blue line-clamp-1">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    SKU: {product.sku}
+                  </p>
                   <div className="flex items-center gap-3 mt-2">
-                    <Badge variant="outline" className="font-semibold capitalize">
+                    <Badge
+                      variant="outline"
+                      className="font-semibold capitalize"
+                    >
                       {product.category}
                     </Badge>
-                    <Badge variant="outline" className={cn('font-semibold border-2', stockConfig.color)}>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "font-semibold border-2",
+                        stockConfig.color,
+                      )}
+                    >
                       <StockIcon className="h-3 w-3 mr-1" />
                       {stockConfig.label}
                     </Badge>
@@ -108,7 +135,9 @@ export function ProductCard({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="text-3xl font-black text-construction-blue">{formatPrice(product.price)}</div>
+                  <div className="text-3xl font-black text-construction-blue">
+                    {formatPrice(product.price)}
+                  </div>
                   <div className="text-sm text-gray-600 mt-1">per unit</div>
                 </div>
               </div>
@@ -117,12 +146,14 @@ export function ProductCard({
             {/* Actions */}
             <div className="flex gap-2 shrink-0">
               <Button
-                variant={isSelectedForComparison ? 'default' : 'outline'}
+                variant={isSelectedForComparison ? "default" : "outline"}
                 size="sm"
                 onClick={() => onToggleComparison(product)}
-                className={isSelectedForComparison ? 'bg-construction-blue' : ''}
+                className={
+                  isSelectedForComparison ? "bg-construction-blue" : ""
+                }
               >
-                {isSelectedForComparison ? 'Selected' : 'Compare'}
+                {isSelectedForComparison ? "Selected" : "Compare"}
               </Button>
               <Button
                 onClick={() => setShowAssignModal(true)}
@@ -150,14 +181,14 @@ export function ProductCard({
   // Grid view
   return (
     <>
-      <motion.div
-        whileHover={{ y: -4 }}
-        transition={{ duration: 0.2 }}
-      >
-        <Card className={cn(
-          'overflow-hidden bg-white hover:shadow-lg transition-all cursor-pointer border-2 group',
-          isSelectedForComparison && 'border-construction-blue bg-construction-blue/5'
-        )}>
+      <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
+        <Card
+          className={cn(
+            "overflow-hidden bg-white hover:shadow-lg transition-all cursor-pointer border-2 group",
+            isSelectedForComparison &&
+              "border-construction-blue bg-construction-blue/5",
+          )}
+        >
           {/* Product Image */}
           <div className="relative w-full aspect-square bg-gray-100 border-b-2 border-gray-200">
             {product.imageUrl ? (
@@ -175,7 +206,10 @@ export function ProductCard({
 
             {/* Stock Badge */}
             <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className={cn('font-semibold border-2', stockConfig.color)}>
+              <Badge
+                variant="secondary"
+                className={cn("font-semibold border-2", stockConfig.color)}
+              >
                 <StockIcon className="h-3 w-3 mr-1" />
                 {stockConfig.label}
               </Badge>
@@ -196,7 +230,10 @@ export function ProductCard({
           {/* Product Details */}
           <div className="p-4 space-y-3">
             {/* Category */}
-            <Badge variant="outline" className="font-semibold capitalize text-xs">
+            <Badge
+              variant="outline"
+              className="font-semibold capitalize text-xs"
+            >
               {product.category}
             </Badge>
 
@@ -210,7 +247,9 @@ export function ProductCard({
 
             {/* Price */}
             <div className="pt-2 border-t-2 border-gray-100">
-              <div className="text-2xl font-black text-construction-blue">{formatPrice(product.price)}</div>
+              <div className="text-2xl font-black text-construction-blue">
+                {formatPrice(product.price)}
+              </div>
               <div className="text-xs text-gray-600">per unit</div>
             </div>
 
@@ -221,8 +260,9 @@ export function ProductCard({
                 size="sm"
                 onClick={() => onToggleComparison(product)}
                 className={cn(
-                  'flex-1 font-semibold',
-                  isSelectedForComparison && 'bg-construction-blue text-white border-construction-blue hover:bg-construction-blue/90'
+                  "flex-1 font-semibold",
+                  isSelectedForComparison &&
+                    "bg-construction-blue text-white border-construction-blue hover:bg-construction-blue/90",
                 )}
               >
                 {isSelectedForComparison ? (
@@ -231,7 +271,7 @@ export function ProductCard({
                     Selected
                   </>
                 ) : (
-                  'Compare'
+                  "Compare"
                 )}
               </Button>
               <Button

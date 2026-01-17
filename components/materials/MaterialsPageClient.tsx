@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Package } from 'lucide-react';
-import { MaterialSummary } from './MaterialSummary';
-import { MaterialsSearch } from './MaterialsSearch';
-import { FilterBar } from '@/components/ui/FilterBar';
-import { TrackedMaterialsCarousel } from './TrackedMaterialsCarousel';
-import { MaterialsList } from './MaterialsList';
-import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { SearchInput } from '@/components/mobile/SearchInput';
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
-import type { MaterialSummaryStats, MaterialWithStats, TrackedMaterial } from '@/app/actions/materials';
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { Package } from "lucide-react";
+import { MaterialSummary } from "./MaterialSummary";
+import { MaterialsSearch } from "./MaterialsSearch";
+import { FilterBar } from "@/components/ui/FilterBar";
+import { TrackedMaterialsCarousel } from "./TrackedMaterialsCarousel";
+import { MaterialsList } from "./MaterialsList";
+import {
+  PullToRefresh,
+  type PullToRefreshHandle,
+} from "@/components/mobile/PullToRefresh";
+import { SearchInput } from "@/components/mobile/SearchInput";
+import { useIsMobile } from "@/lib/hooks/useMediaQuery";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import type {
+  MaterialSummaryStats,
+  MaterialWithStats,
+  TrackedMaterial,
+} from "@/app/actions/materials";
 
 interface Project {
   id: string;
@@ -48,8 +55,8 @@ export function MaterialsPageClient({
   initialPage,
   initialTotalPages,
 }: MaterialsPageClientProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [projectFilter, setProjectFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [projectFilter, setProjectFilter] = useState("all");
   const router = useRouter();
   const isMobile = useIsMobile();
 
@@ -58,31 +65,55 @@ export function MaterialsPageClient({
   const searchSectionRef = useRef<HTMLDivElement>(null);
   const [showHeader, setShowHeader] = useState(false);
 
+  const projectOptions = useMemo(
+    () => [
+      { label: "All Projects", value: "all" },
+      ...projects.map((project) => ({
+        label: project.name,
+        value: project.id,
+      })),
+    ],
+    [projects],
+  );
+
   // Track search section position to show/hide header
   // Header shows when search section is 100px or less from viewport top
   useEffect(() => {
     if (!isMobile) return;
 
-    const setupListener = () => {
+    let cleanup: (() => void) | undefined;
+    const timeoutId = setTimeout(() => {
       const scrollContainer = pullToRefreshRef.current?.getScrollContainer();
       if (!scrollContainer) return;
 
+      let rafId: number | null = null;
       const checkPosition = () => {
-        if (!searchSectionRef.current) return;
-        const rect = searchSectionRef.current.getBoundingClientRect();
-        setShowHeader(rect.top <= 100);
+        if (rafId !== null) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = null;
+          if (!searchSectionRef.current) return;
+          const rect = searchSectionRef.current.getBoundingClientRect();
+          setShowHeader(rect.top <= 100);
+        });
       };
 
       checkPosition();
-      scrollContainer.addEventListener('scroll', checkPosition, { passive: true });
+      scrollContainer.addEventListener("scroll", checkPosition, {
+        passive: true,
+      });
 
-      return () => {
-        scrollContainer.removeEventListener('scroll', checkPosition);
+      cleanup = () => {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+        }
+        scrollContainer.removeEventListener("scroll", checkPosition);
       };
-    };
+    }, 50);
 
-    const timeoutId = setTimeout(setupListener, 50);
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      cleanup?.();
+    };
   }, [isMobile]);
 
   // Pull-to-refresh handler
@@ -103,9 +134,11 @@ export function MaterialsPageClient({
             px-4 py-3 space-y-3
             transition-all duration-200 ease-out
             will-change-transform
-            ${showHeader
-              ? 'translate-y-0 opacity-100 pointer-events-auto'
-              : '-translate-y-full opacity-0 pointer-events-none'}
+            ${
+              showHeader
+                ? "translate-y-0 opacity-100 pointer-events-auto"
+                : "-translate-y-full opacity-0 pointer-events-none"
+            }
           `}
         >
           <SearchInput
@@ -118,7 +151,11 @@ export function MaterialsPageClient({
         </header>
 
         {/* Materials content with pull-to-refresh */}
-        <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
+        <PullToRefresh
+          ref={pullToRefreshRef}
+          onRefresh={handleRefresh}
+          className="flex-1"
+        >
           <div className="p-4 pb-32">
             {/* Blueprint Grid Background */}
             <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-10">
@@ -129,8 +166,8 @@ export function MaterialsPageClient({
                     linear-gradient(to right, currentColor 1px, transparent 1px),
                     linear-gradient(to bottom, currentColor 1px, transparent 1px)
                   `,
-                  backgroundSize: '40px 40px',
-                  color: '#001B51',
+                  backgroundSize: "40px 40px",
+                  color: "#001B51",
                 }}
               />
             </div>
@@ -175,25 +212,19 @@ export function MaterialsPageClient({
             <div className="mb-5">
               <FilterBar
                 searchConfig={{
-                  placeholder: 'Search materials...',
+                  placeholder: "Search materials...",
                   value: searchQuery,
                   onChange: setSearchQuery,
-                  colSpan: 'half'
+                  colSpan: "half",
                 }}
                 filters={[
                   {
-                    name: 'project',
+                    name: "project",
                     value: projectFilter,
                     onChange: setProjectFilter,
-                    options: [
-                      { label: 'All Projects', value: 'all' },
-                      ...projects.map((project) => ({
-                        label: project.name,
-                        value: project.id
-                      }))
-                    ],
-                    placeholder: 'All Projects'
-                  }
+                    options: projectOptions,
+                    placeholder: "All Projects",
+                  },
                 ]}
               />
             </div>
@@ -251,8 +282,8 @@ export function MaterialsPageClient({
               linear-gradient(to right, currentColor 1px, transparent 1px),
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
-            backgroundSize: '40px 40px',
-            color: '#001B51',
+            backgroundSize: "40px 40px",
+            color: "#001B51",
           }}
         />
       </div>
@@ -280,7 +311,10 @@ export function MaterialsPageClient({
         {/* MaterialSummary - 5-card grid with stats */}
         <ErrorBoundary>
           {stats ? (
-            <MaterialSummary stats={stats} trackedCount={trackedMaterials.length} />
+            <MaterialSummary
+              stats={stats}
+              trackedCount={trackedMaterials.length}
+            />
           ) : (
             <div className="text-sm text-gray-500 text-center py-4">
               Unable to load summary stats
@@ -291,25 +325,19 @@ export function MaterialsPageClient({
         {/* Project Filters */}
         <FilterBar
           searchConfig={{
-            placeholder: 'Search materials...',
+            placeholder: "Search materials...",
             value: searchQuery,
             onChange: setSearchQuery,
-            colSpan: 'half'
+            colSpan: "half",
           }}
           filters={[
             {
-              name: 'project',
+              name: "project",
               value: projectFilter,
               onChange: setProjectFilter,
-              options: [
-                { label: 'All Projects', value: 'all' },
-                ...projects.map((project) => ({
-                  label: project.name,
-                  value: project.id
-                }))
-              ],
-              placeholder: 'All Projects'
-            }
+              options: projectOptions,
+              placeholder: "All Projects",
+            },
           ]}
         />
 

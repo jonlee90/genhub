@@ -32,6 +32,7 @@ Last updated: 2026-01-10
 | Chat/realtime | `domain/chat-realtime.md` | both |
 | 3D spatial markers | `domain/spatial-markers.md` | both |
 | **Parallel task dispatch** | **`dispatching-parallel-agents/SKILL.md`** | **orchestrator** |
+| **Refactor/deduplicate UI** | **`refactor-code/SKILL.md`** | **frontend-engineer** |
 
 ### By Agent
 
@@ -52,6 +53,7 @@ Last updated: 2026-01-10
 #### frontend-engineer
 - **`/frontend-design` - Production-grade UI (ALWAYS use for new UI/redesign)**
 - **`frontend/mobile-pwa-design/SKILL.md` - Native mobile feel, PWA optimization**
+- **`refactor-code/SKILL.md` - Deduplicate similar components, extract base patterns**
 - `frontend/page-creation.md` - New page setup
 - `frontend/component-patterns.md` - Component architecture
 - `frontend/form-patterns.md` - Forms with validation
@@ -109,6 +111,7 @@ Before starting ANY work:
 | New page | `/frontend-design` + `frontend/page-creation.md` | `frontend/responsive.md` |
 | Form UI | `/frontend-design` + `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
 | Mobile native feel | `frontend/mobile-pwa-design/SKILL.md` | `frontend/responsive.md` |
+| Refactor/deduplicate UI | `refactor-code/SKILL.md` | `frontend/component-patterns.md` |
 | GenHub domain feature | `domain/{feature}.md` | Related backend/frontend skills |
 | Multiple independent tasks | `dispatching-parallel-agents/SKILL.md` | - |
 
@@ -162,10 +165,10 @@ All skills follow this structure:
 
 ## Stats
 
-- **Total skills**: 30 (complete)
+- **Total skills**: 31 (complete)
 - **Database**: 6 skills ✓
 - **Backend**: 6 skills ✓
-- **Frontend**: 7 skills ✓ (includes mobile-pwa-design)
+- **Frontend**: 8 skills ✓ (includes mobile-pwa-design, refactor-code)
 - **Domain**: 6 skills ✓
 - **Integration**: 4 skills ✓
 - **Workflow**: 3 skills ✓

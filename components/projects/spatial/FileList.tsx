@@ -15,7 +15,7 @@ import Upload from 'lucide-react/icons/upload';
 import Download from 'lucide-react/icons/download';
 import Trash2 from 'lucide-react/icons/trash2';
 import FileText from 'lucide-react/icons/file-text';
-import Image as ImageIcon from 'lucide-react/icons/image as image-icon';
+import ImageIcon from 'lucide-react/icons/image';
 import FileSpreadsheet from 'lucide-react/icons/file-spreadsheet';
 import FileCode from 'lucide-react/icons/file-code';
 import Archive from 'lucide-react/icons/archive';

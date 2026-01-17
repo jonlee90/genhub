@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { Search, Filter, Grid3x3, List, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ProductCard } from './ProductCard';
-import { ProductComparisonModal } from './ProductComparisonModal';
-import { searchProducts } from '@/app/actions/materials';
-import { motion, AnimatePresence } from 'framer-motion';
-import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
+import { useMemo, useState, useTransition } from "react";
+import { Search, Filter, Grid3x3, List, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ProductCard } from "./ProductCard";
+import { ProductComparisonModal } from "./ProductComparisonModal";
+import { searchProducts } from "@/app/actions/materials";
+import { motion, AnimatePresence } from "framer-motion";
+import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 interface Project {
   id: string;
@@ -21,25 +27,29 @@ interface MaterialsSearchProps {
 }
 
 export function MaterialsSearch({ projects }: MaterialsSearchProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState<string>('all');
-  const [stockFilter, setStockFilter] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState<string>("all");
+  const [stockFilter, setStockFilter] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [products, setProducts] = useState<HomeDepotProduct[]>([]);
-  const [selectedForComparison, setSelectedForComparison] = useState<HomeDepotProduct[]>([]);
+  const [selectedForComparison, setSelectedForComparison] = useState<
+    HomeDepotProduct[]
+  >([]);
   const [showComparison, setShowComparison] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [hasSearched, setHasSearched] = useState(false);
+  const selectedIds = useMemo(
+    () => new Set(selectedForComparison.map((product) => product.id)),
+    [selectedForComparison],
+  );
 
   const handleSearch = () => {
     startTransition(async () => {
       const result = await searchProducts({
         query: searchQuery,
-        category: category === 'all' ? undefined : category,
-        inStockOnly: stockFilter === 'in_stock' ? true : undefined,
+        category: category === "all" ? undefined : category,
+        inStockOnly: stockFilter === "in_stock" ? true : undefined,
       });
 
-      setHasSearched(true);
       if (result.success && result.data) {
         setProducts(result.data.products);
       } else {
@@ -49,16 +59,16 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
 
   const toggleComparison = (product: HomeDepotProduct) => {
-    setSelectedForComparison(prev => {
-      const isSelected = prev.some(p => p.id === product.id);
+    setSelectedForComparison((prev) => {
+      const isSelected = prev.some((p) => p.id === product.id);
       if (isSelected) {
-        return prev.filter(p => p.id !== product.id);
+        return prev.filter((p) => p.id !== product.id);
       } else if (prev.length < 4) {
         return [...prev, product];
       }
@@ -114,7 +124,9 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
             <div className="flex flex-col sm:flex-row gap-2 md:gap-4 flex-1">
               <div className="hidden md:flex items-center gap-2 flex-shrink-0">
                 <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-600">Filters:</span>
+                <span className="text-sm font-semibold text-gray-600">
+                  Filters:
+                </span>
               </div>
 
               <Select value={category} onValueChange={setCategory}>
@@ -154,16 +166,16 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setViewMode('grid')}
-                className={`h-8 px-3 ${viewMode === 'grid' ? 'bg-construction-blue text-white hover:bg-construction-blue/90' : 'hover:bg-gray-200'}`}
+                onClick={() => setViewMode("grid")}
+                className={`h-8 px-3 ${viewMode === "grid" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200"}`}
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setViewMode('list')}
-                className={`h-8 px-3 ${viewMode === 'list' ? 'bg-construction-blue text-white hover:bg-construction-blue/90' : 'hover:bg-gray-200'}`}
+                onClick={() => setViewMode("list")}
+                className={`h-8 px-3 ${viewMode === "list" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200"}`}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -184,7 +196,8 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
                 <span className="font-bold text-sm md:text-base">
-                  {selectedForComparison.length} product{selectedForComparison.length !== 1 ? 's' : ''} selected
+                  {selectedForComparison.length} product
+                  {selectedForComparison.length !== 1 ? "s" : ""} selected
                 </span>
                 <span className="text-xs md:text-sm opacity-80">
                   (Max 4 products)
@@ -216,10 +229,13 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
 
       {/* Products Grid/List - only show when there are results */}
       {products.length > 0 && (
-        <div className={viewMode === 'grid'
-          ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4'
-          : 'space-y-3 md:space-y-4'
-        }>
+        <div
+          className={
+            viewMode === "grid"
+              ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4"
+              : "space-y-3 md:space-y-4"
+          }
+        >
           <AnimatePresence mode="popLayout">
             {products.map((product, index) => (
               <motion.div
@@ -233,7 +249,7 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
                   product={product}
                   projects={projects}
                   viewMode={viewMode}
-                  isSelectedForComparison={selectedForComparison.some(p => p.id === product.id)}
+                  isSelectedForComparison={selectedIds.has(product.id)}
                   onToggleComparison={toggleComparison}
                 />
               </motion.div>
@@ -247,7 +263,9 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
         <div className="flex items-center justify-center py-12 md:py-16">
           <div className="text-center space-y-3 md:space-y-4">
             <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-construction-blue mx-auto" />
-            <p className="text-sm md:text-lg font-semibold text-gray-600">Searching Home Depot catalog...</p>
+            <p className="text-sm md:text-lg font-semibold text-gray-600">
+              Searching Home Depot catalog...
+            </p>
           </div>
         </div>
       )}
