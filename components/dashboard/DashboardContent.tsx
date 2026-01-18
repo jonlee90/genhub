@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
@@ -102,7 +102,7 @@ const InviteTeamMemberModal = dynamic(
 /**
  * QuickActionsSection - Touch-friendly quick actions with modal triggers
  */
-function QuickActionsSection({
+const QuickActionsSection = memo(function QuickActionsSection({
   onActionClick,
 }: {
   onActionClick: (action: QuickActionId) => void;
@@ -160,7 +160,7 @@ function QuickActionsSection({
       </div>
     </section>
   );
-}
+});
 
 /**
  * DashboardContent - Mobile-first dashboard layout

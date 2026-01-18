@@ -1,14 +1,24 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Send, MessageSquare, RefreshCw, AlertTriangle, Wrench, HardHat, Calendar, User, Settings } from 'lucide-react';
-import { addTaskComment } from '@/app/actions/tasks';
-import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
-import type { TaskActivity } from '@/types/db/task';
+import { useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Send,
+  MessageSquare,
+  RefreshCw,
+  AlertTriangle,
+  Wrench,
+  HardHat,
+  Calendar,
+  User,
+  Settings,
+} from "lucide-react";
+import { addTaskComment } from "@/app/actions/tasks";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import type { TaskActivity } from "@/types/db/task";
 
 interface TaskActivityLogProps {
   taskId: string;
@@ -16,65 +26,88 @@ interface TaskActivityLogProps {
 }
 
 const ACTION_CONFIG = {
-  created: { icon: HardHat, color: 'bg-[#001B51]', textColor: 'text-[#001B51]', label: 'created task' },
-  updated: { icon: Wrench, color: 'bg-[#001B51]', textColor: 'text-[#001B51]', label: 'updated' },
-  status_changed: { icon: Settings, color: 'bg-[#DC2626]', textColor: 'text-[#DC2626]', label: 'changed status' },
-  commented: { icon: MessageSquare, color: 'bg-[#3C3C3C]', textColor: 'text-[#3C3C3C]', label: 'commented' },
-  assigned: { icon: User, color: 'bg-[#059669]', textColor: 'text-[#059669]', label: 'assigned' },
-  due_date_changed: { icon: Calendar, color: 'bg-[#FFB627]', textColor: 'text-[#FFB627]', label: 'changed due date' },
+  created: {
+    icon: HardHat,
+    color: "bg-[#001B51]",
+    textColor: "text-[#001B51]",
+    label: "created task",
+  },
+  updated: {
+    icon: Wrench,
+    color: "bg-[#001B51]",
+    textColor: "text-[#001B51]",
+    label: "updated",
+  },
+  status_changed: {
+    icon: Settings,
+    color: "bg-[#DC2626]",
+    textColor: "text-[#DC2626]",
+    label: "changed status",
+  },
+  commented: {
+    icon: MessageSquare,
+    color: "bg-[#3C3C3C]",
+    textColor: "text-[#3C3C3C]",
+    label: "commented",
+  },
+  assigned: {
+    icon: User,
+    color: "bg-[#059669]",
+    textColor: "text-[#059669]",
+    label: "assigned",
+  },
+  due_date_changed: {
+    icon: Calendar,
+    color: "bg-[#FFB627]",
+    textColor: "text-[#FFB627]",
+    label: "changed due date",
+  },
+};
+
+const formatDate = (date: string) => {
+  const d = new Date(date);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+  });
 };
 
 export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!comment.trim()) return;
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!comment.trim()) return;
 
-    setIsSubmitting(true);
-    await addTaskComment(taskId, comment);
-    setComment('');
-    setIsSubmitting(false);
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const formatDate = (date: string) => {
-    const d = new Date(date);
-    const now = new Date();
-    const diff = now.getTime() - d.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return d.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    });
-  };
+      setIsSubmitting(true);
+      await addTaskComment(taskId, comment);
+      setComment("");
+      setIsSubmitting(false);
+    },
+    [comment, taskId],
+  );
 
   const renderActivityContent = (item: TaskActivity) => {
     const config = ACTION_CONFIG[item.action as keyof typeof ACTION_CONFIG] || {
       icon: RefreshCw,
-      color: 'text-gray-600',
+      color: "text-gray-600",
       label: item.action,
     };
-    const Icon = config.icon;
 
-    if (item.action === 'commented') {
+    if (item.action === "commented") {
       return (
         <div className="bg-muted p-3 rounded-lg mt-2">
           <p className="text-sm whitespace-pre-wrap">{item.comment}</p>
@@ -82,10 +115,11 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
       );
     }
 
-    if (item.action === 'status_changed') {
+    if (item.action === "status_changed") {
       return (
         <span className="text-sm text-muted-foreground">
-          {config.label} from <span className="font-medium">{item.old_value}</span> to{' '}
+          {config.label} from{" "}
+          <span className="font-medium">{item.old_value}</span> to{" "}
           <span className="font-medium">{item.new_value}</span>
           {item.comment && (
             <span className="block mt-1 text-orange-600">
@@ -100,7 +134,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
     if (item.old_value || item.new_value) {
       return (
         <span className="text-sm text-muted-foreground">
-          {config.label}{' '}
+          {config.label}{" "}
           {item.old_value && (
             <>
               from <span className="font-medium">{item.old_value}</span>
@@ -108,14 +142,17 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
           )}
           {item.new_value && (
             <>
-              {item.old_value && ' '}to <span className="font-medium">{item.new_value}</span>
+              {item.old_value && " "}to{" "}
+              <span className="font-medium">{item.new_value}</span>
             </>
           )}
         </span>
       );
     }
 
-    return <span className="text-sm text-muted-foreground">{config.label}</span>;
+    return (
+      <span className="text-sm text-muted-foreground">{config.label}</span>
+    );
   };
 
   return (
@@ -136,9 +173,13 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
             rows={3}
           />
           <div className="flex justify-end">
-            <Button type="submit" size="sm" disabled={!comment.trim() || isSubmitting}>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!comment.trim() || isSubmitting}
+            >
               <Send className="mr-2 h-4 w-4" />
-              {isSubmitting ? 'Sending...' : 'Comment'}
+              {isSubmitting ? "Sending..." : "Comment"}
             </Button>
           </div>
         </form>
@@ -149,7 +190,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
           {activity.length > 0 && (
             <div
               className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#001B51] via-[#001B51] to-transparent"
-              style={{ height: 'calc(100% - 40px)' }}
+              style={{ height: "calc(100% - 40px)" }}
             />
           )}
 
@@ -165,10 +206,12 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
             ) : (
               <AnimatePresence>
                 {activity.map((item, index) => {
-                  const config = ACTION_CONFIG[item.action as keyof typeof ACTION_CONFIG] || {
+                  const config = ACTION_CONFIG[
+                    item.action as keyof typeof ACTION_CONFIG
+                  ] || {
                     icon: Wrench,
-                    color: 'bg-[#001B51]',
-                    textColor: 'text-[#001B51]',
+                    color: "bg-[#001B51]",
+                    textColor: "text-[#001B51]",
                   };
                   const Icon = config.icon;
 
@@ -181,15 +224,15 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
                       transition={{
                         delay: index * 0.05,
                         duration: 0.3,
-                        ease: 'easeOut',
+                        ease: "easeOut",
                       }}
                       className="flex gap-4 pb-6 relative"
                     >
                       {/* Activity Dot */}
                       <div
                         className={cn(
-                          'w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-construction z-10 flex-shrink-0',
-                          config.color
+                          "w-10 h-10 rounded-full flex items-center justify-center border-2 border-white shadow-construction z-10 flex-shrink-0",
+                          config.color,
                         )}
                       >
                         <Icon className="w-5 h-5 text-white" />
@@ -199,7 +242,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-bold text-sm text-gray-900">
-                            {item.user?.name || 'Unknown'}
+                            {item.user?.name || "Unknown"}
                           </span>
                           <span className="text-xs text-construction-blue font-mono">
                             {formatDate(item.created_at)}

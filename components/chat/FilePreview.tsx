@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * FilePreview - Display message attachments
@@ -12,22 +12,20 @@
  * - Construction-themed design
  */
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
-  FileText,
-  File,
   Download,
   Trash2,
   X,
   ZoomIn,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { deleteAttachment } from '@/app/actions/chat';
-import { toast } from 'sonner';
-import Image from 'next/image';
+} from "lucide-react";
+import { deleteAttachment } from "@/app/actions/chat";
+import { toast } from "sonner";
+import Image from "next/image";
 
 export interface MessageAttachment {
   id: string;
@@ -46,40 +44,46 @@ interface FilePreviewProps {
 }
 
 // Debug: File preview component
-export function FilePreview({ attachments, canDelete = false, onDelete }: FilePreviewProps) {
+export function FilePreview({
+  attachments,
+  canDelete = false,
+  onDelete,
+}: FilePreviewProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  console.log('[FilePreview] Rendering', attachments.length, 'attachments');
+  console.log("[FilePreview] Rendering", attachments.length, "attachments");
 
   if (attachments.length === 0) {
     return null;
   }
 
   // Debug: Separate images from documents
-  const images = attachments.filter((a) => a.file_type.startsWith('image/'));
-  const documents = attachments.filter((a) => !a.file_type.startsWith('image/'));
+  const images = attachments.filter((a) => a.file_type.startsWith("image/"));
+  const documents = attachments.filter(
+    (a) => !a.file_type.startsWith("image/"),
+  );
 
   // Debug: Handle attachment download
   const handleDownload = (attachment: MessageAttachment) => {
-    console.log('[FilePreview] Downloading attachment:', attachment.file_name);
-    window.open(attachment.file_url, '_blank');
+    console.log("[FilePreview] Downloading attachment:", attachment.file_name);
+    window.open(attachment.file_url, "_blank");
   };
 
   // Debug: Handle attachment deletion
   const handleDelete = async (attachmentId: string) => {
-    console.log('[FilePreview] Deleting attachment:', attachmentId);
+    console.log("[FilePreview] Deleting attachment:", attachmentId);
     setDeletingId(attachmentId);
 
     const result = await deleteAttachment(attachmentId);
 
     if (result.success) {
-      console.log('[FilePreview] Attachment deleted successfully');
-      toast.success('File deleted');
+      console.log("[FilePreview] Attachment deleted successfully");
+      toast.success("File deleted");
       onDelete?.();
     } else {
-      console.error('[FilePreview] Failed to delete attachment:', result.error);
-      toast.error(result.error || 'Failed to delete file');
+      console.error("[FilePreview] Failed to delete attachment:", result.error);
+      toast.error(result.error || "Failed to delete file");
     }
 
     setDeletingId(null);
@@ -94,11 +98,12 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
 
   // Debug: Get file icon based on type
   const getFileIcon = (fileType: string) => {
-    if (fileType.includes('pdf')) return '📄';
-    if (fileType.includes('word') || fileType.includes('document')) return '📝';
-    if (fileType.includes('excel') || fileType.includes('spreadsheet')) return '📊';
-    if (fileType.includes('zip')) return '📦';
-    return '📎';
+    if (fileType.includes("pdf")) return "📄";
+    if (fileType.includes("word") || fileType.includes("document")) return "📝";
+    if (fileType.includes("excel") || fileType.includes("spreadsheet"))
+      return "📊";
+    if (fileType.includes("zip")) return "📦";
+    return "📎";
   };
 
   // Debug: Lightbox navigation
@@ -120,11 +125,11 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
       {images.length > 0 && (
         <div
           className={cn(
-            'grid gap-2',
-            images.length === 1 && 'grid-cols-1',
-            images.length === 2 && 'grid-cols-2',
-            images.length === 3 && 'grid-cols-3',
-            images.length >= 4 && 'grid-cols-2'
+            "grid gap-2",
+            images.length === 1 && "grid-cols-1",
+            images.length === 2 && "grid-cols-2",
+            images.length === 3 && "grid-cols-3",
+            images.length >= 4 && "grid-cols-2",
           )}
         >
           {images.slice(0, 4).map((image, index) => (
@@ -147,7 +152,9 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
               {/* Debug: Hover overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                 <div className="absolute bottom-0 left-0 right-0 p-2">
-                  <p className="text-xs font-mono text-white truncate">{image.file_name}</p>
+                  <p className="text-xs font-mono text-white truncate">
+                    {image.file_name}
+                  </p>
                 </div>
 
                 {/* Debug: Action buttons */}
@@ -186,7 +193,9 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
               {/* Debug: "+N more" badge for 5th+ image */}
               {index === 3 && images.length > 4 && (
                 <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                  <span className="text-2xl font-black text-white">+{images.length - 4}</span>
+                  <span className="text-2xl font-black text-white">
+                    +{images.length - 4}
+                  </span>
                 </div>
               )}
             </motion.div>
@@ -203,20 +212,26 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className={cn(
-                'flex items-center gap-3 p-3',
-                'bg-gray-50 hover:bg-gray-100',
-                'border-2 border-gray-200 rounded-lg',
-                'transition-all duration-200',
-                'group'
+                "flex items-center gap-3 p-3",
+                "bg-gray-50 hover:bg-gray-100",
+                "border-2 border-gray-200 rounded-lg",
+                "transition-all duration-200",
+                "group",
               )}
             >
               {/* Debug: File icon */}
-              <div className="shrink-0 text-2xl">{getFileIcon(doc.file_type)}</div>
+              <div className="shrink-0 text-2xl">
+                {getFileIcon(doc.file_type)}
+              </div>
 
               {/* Debug: File info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-800 truncate">{doc.file_name}</p>
-                <p className="text-xs font-mono text-gray-500">{formatFileSize(doc.file_size)}</p>
+                <p className="text-sm font-bold text-gray-800 truncate">
+                  {doc.file_name}
+                </p>
+                <p className="text-xs font-mono text-gray-500">
+                  {formatFileSize(doc.file_size)}
+                </p>
               </div>
 
               {/* Debug: Actions */}
@@ -313,10 +328,12 @@ export function FilePreview({ attachments, canDelete = false, onDelete }: FilePr
 
               {/* Debug: Image info */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 rounded-b-lg">
-                <p className="text-sm font-mono text-white">{images[lightboxIndex].file_name}</p>
+                <p className="text-sm font-mono text-white">
+                  {images[lightboxIndex].file_name}
+                </p>
                 <p className="text-xs font-mono text-gray-300">
-                  {formatFileSize(images[lightboxIndex].file_size)} • Image {lightboxIndex + 1} of{' '}
-                  {images.length}
+                  {formatFileSize(images[lightboxIndex].file_size)} • Image{" "}
+                  {lightboxIndex + 1} of {images.length}
                 </p>
               </div>
             </motion.div>

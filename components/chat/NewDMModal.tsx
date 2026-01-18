@@ -4,17 +4,17 @@
  * Blueprint-inspired conversation starters with architectural precision
  */
 
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, MessageCircle, Loader2, Briefcase } from 'lucide-react';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { createDMRoom } from '@/app/actions/chat';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, MessageCircle, Loader2, Briefcase } from "lucide-react";
+import { BaseModal } from "@/components/ui/BaseModal";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createDMRoom } from "@/app/actions/chat";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -31,10 +31,13 @@ interface NewDMModalProps {
 }
 
 export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
-  console.log('[NewDMModal] Rendering modal:', { open, userCount: companyUsers.length });
+  console.log("[NewDMModal] Rendering modal:", {
+    open,
+    userCount: companyUsers.length,
+  });
 
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   // Filter users based on search query
@@ -47,27 +50,27 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
     );
   });
 
-  console.log('[NewDMModal] Filtered users:', filteredUsers.length);
+  console.log("[NewDMModal] Filtered users:", filteredUsers.length);
 
   const handleSelectUser = async (userId: string) => {
-    console.log('[NewDMModal] Starting DM with user:', userId);
+    console.log("[NewDMModal] Starting DM with user:", userId);
     setIsCreating(true);
 
     try {
       const result = await createDMRoom(userId);
 
       if (result.success && result.room) {
-        console.log('[NewDMModal] DM room created/found:', result.room.id);
-        toast.success('Opening conversation...');
+        console.log("[NewDMModal] DM room created/found:", result.room.id);
+        toast.success("Opening conversation...");
         onClose();
         router.push(`/app/chat?room=${result.room.id}`);
       } else {
-        console.error('[NewDMModal] Failed to create DM:', result.error);
-        toast.error(result.error || 'Failed to start conversation');
+        console.error("[NewDMModal] Failed to create DM:", result.error);
+        toast.error(result.error || "Failed to start conversation");
       }
     } catch (error) {
-      console.error('[NewDMModal] Error:', error);
-      toast.error('Unexpected error');
+      console.error("[NewDMModal] Error:", error);
+      toast.error("Unexpected error");
     } finally {
       setIsCreating(false);
     }
@@ -75,8 +78,8 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
 
   // Reset search when modal closes
   const handleClose = () => {
-    console.log('[NewDMModal] Closing modal, resetting search');
-    setSearchQuery('');
+    console.log("[NewDMModal] Closing modal, resetting search");
+    setSearchQuery("");
     setIsCreating(false);
     onClose();
   };
@@ -103,7 +106,7 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
             placeholder="Search by name, email, or role..."
             value={searchQuery}
             onChange={(e) => {
-              console.log('[NewDMModal] Search query updated:', e.target.value);
+              console.log("[NewDMModal] Search query updated:", e.target.value);
               setSearchQuery(e.target.value);
             }}
             className="pl-11 h-12 border-2 border-construction-accent/20 focus:border-construction-blue text-base font-mono"
@@ -126,7 +129,9 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center">
                   <Search className="w-8 h-8 text-gray-400" />
                 </div>
-                <h3 className="text-sm font-bold text-gray-900 mb-1">No users found</h3>
+                <h3 className="text-sm font-bold text-gray-900 mb-1">
+                  No users found
+                </h3>
                 <p className="text-xs text-gray-500 font-mono">
                   Try adjusting your search query
                 </p>
@@ -152,7 +157,7 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
                           linear-gradient(to right, rgba(0, 27, 81, 0.03) 1px, transparent 1px),
                           linear-gradient(to bottom, rgba(0, 27, 81, 0.03) 1px, transparent 1px)
                         `,
-                        backgroundSize: '20px 20px',
+                        backgroundSize: "20px 20px",
                       }}
                     />
                   </div>
@@ -165,9 +170,9 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
                         <AvatarImage src={user.avatar_url} alt={user.name} />
                         <AvatarFallback className="bg-construction-blue text-white font-bold text-lg">
                           {user.name
-                            .split(' ')
+                            .split(" ")
                             .map((n) => n[0])
-                            .join('')
+                            .join("")
                             .toUpperCase()
                             .slice(0, 2)}
                         </AvatarFallback>
@@ -237,7 +242,8 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
           >
             <div className="w-2 h-2 rounded-full bg-construction-blue animate-pulse" />
             <span className="uppercase tracking-wider">
-              {filteredUsers.length} {filteredUsers.length === 1 ? 'result' : 'results'}
+              {filteredUsers.length}{" "}
+              {filteredUsers.length === 1 ? "result" : "results"}
             </span>
           </motion.div>
         )}

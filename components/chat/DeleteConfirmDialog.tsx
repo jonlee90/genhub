@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * DeleteConfirmDialog - Message deletion confirmation with industrial design
@@ -13,17 +13,17 @@
  * Refactored to use BaseModal (2026-01-16)
  */
 
-import { useState } from 'react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 // Performance optimization: Direct imports instead of barrel file
-import Trash2 from 'lucide-react/icons/trash-2';
-import X from 'lucide-react/icons/x';
-import AlertTriangle from 'lucide-react/icons/alert-triangle';
-import Loader2 from 'lucide-react/icons/loader-2';
-import { deleteMessage } from '@/app/actions/chat';
-import { toast } from 'sonner';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
+import Trash2 from "lucide-react/icons/trash-2";
+import X from "lucide-react/icons/x";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
+import Loader2 from "lucide-react/icons/loader-2";
+import { deleteMessage } from "@/app/actions/chat";
+import { toast } from "sonner";
+import { BaseModal } from "@/components/ui/BaseModal";
+import { Button } from "@/components/ui/button";
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
@@ -51,13 +51,13 @@ export function DeleteConfirmDialog({
       const result = await deleteMessage(messageId);
 
       if (result.success) {
-        toast.success('Message deleted');
+        toast.success("Message deleted");
         onConfirm();
       } else {
-        toast.error(result.error || 'Failed to delete message');
+        toast.error(result.error || "Failed to delete message");
       }
-    } catch (error) {
-      toast.error('An error occurred while deleting the message');
+    } catch (_error) {
+      toast.error("An error occurred while deleting the message");
     } finally {
       setIsDeleting(false);
     }
@@ -109,16 +109,16 @@ export function DeleteConfirmDialog({
     >
       <div className="space-y-4">
         <p className="text-sm text-gray-700 leading-relaxed">
-          Are you sure you want to delete this message? This will permanently remove the
-          message from the chat room for all participants.
+          Are you sure you want to delete this message? This will permanently
+          remove the message from the chat room for all participants.
         </p>
 
         {/* Warning callout */}
         <div
           className={cn(
-            'p-4 rounded-lg',
-            'bg-red-50',
-            'border-l-4 border-red-500'
+            "p-4 rounded-lg",
+            "bg-red-50",
+            "border-l-4 border-red-500",
           )}
         >
           <div className="flex gap-3">
@@ -128,8 +128,8 @@ export function DeleteConfirmDialog({
                 Warning
               </p>
               <p className="text-xs text-gray-600 mt-1 leading-relaxed">
-                The message will be replaced with a placeholder indicating it was deleted.
-                Replies and reactions will be preserved.
+                The message will be replaced with a placeholder indicating it
+                was deleted. Replies and reactions will be preserved.
               </p>
             </div>
           </div>

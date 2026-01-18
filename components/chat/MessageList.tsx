@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * MessageList - Virtualized message list with real-time updates
@@ -11,16 +11,16 @@
  * - Connection status indicator
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getMessages } from '@/app/actions/chat-queries';
-import { markMessagesAsRead } from '@/app/actions/chat';
-import { useMessages, type OptimisticMessage } from '@/lib/hooks/useMessages';
-import { MessageItem } from './MessageItem';
-import { ConnectionStatus } from './ConnectionStatus';
-import { MessageWithSender } from '@/types/db/chat';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { motion, AnimatePresence } from "framer-motion";
+import { getMessages } from "@/app/actions/chat-queries";
+import { markMessagesAsRead } from "@/app/actions/chat";
+import { useMessages, type OptimisticMessage } from "@/lib/hooks/useMessages";
+import { MessageItem } from "./MessageItem";
+import { ConnectionStatus } from "./ConnectionStatus";
+import { MessageWithSender } from "@/types/db/chat";
+import { Loader2 } from "lucide-react";
 
 interface MessageListProps {
   chatRoomId: string;
@@ -35,8 +35,15 @@ interface MessageListProps {
 }
 
 // Debug: Virtualized message list with real-time updates
-export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFunctionsReady }: MessageListProps) {
-  const [initialMessages, setInitialMessages] = useState<MessageWithSender[]>([]);
+export function MessageList({
+  chatRoomId,
+  onReply,
+  onNewMessage,
+  onOptimisticFunctionsReady,
+}: MessageListProps) {
+  const [initialMessages, setInitialMessages] = useState<MessageWithSender[]>(
+    [],
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -45,12 +52,12 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
   const prevChatRoomId = useRef<string>(chatRoomId);
   const isAtBottomRef = useRef(true);
 
-  console.log('[MessageList] Rendering for room:', chatRoomId);
+  console.log("[MessageList] Rendering for room:", chatRoomId);
 
   // Debug: Stable callback for new messages to prevent infinite re-subscriptions
   const handleNewMessage = useCallback(
     (message: MessageWithSender) => {
-      console.log('[MessageList] New message received:', message.id);
+      console.log("[MessageList] New message received:", message.id);
       onNewMessage?.(message);
 
       // Auto-scroll to bottom if user was at bottom
@@ -58,7 +65,7 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
         setTimeout(() => {
           scrollContainerRef.current?.scrollTo({
             top: scrollContainerRef.current.scrollHeight,
-            behavior: 'smooth',
+            behavior: "smooth",
           });
         }, 100);
       }
@@ -66,12 +73,12 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
       // Mark as read
       markMessagesAsRead(chatRoomId);
     },
-    [chatRoomId, onNewMessage]
+    [chatRoomId, onNewMessage],
   );
 
   // Debug: Stable callback for message updates
   const handleMessageUpdate = useCallback((message: MessageWithSender) => {
-    console.log('[MessageList] Message updated:', message.id);
+    console.log("[MessageList] Message updated:", message.id);
   }, []);
 
   // Debug: Load initial messages
@@ -79,28 +86,28 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
     async function loadMessages() {
       // Reset if room changed
       if (prevChatRoomId.current !== chatRoomId) {
-        console.log('[MessageList] Room changed, resetting');
+        console.log("[MessageList] Room changed, resetting");
         setInitialMessages([]);
         setNextCursor(null);
         prevChatRoomId.current = chatRoomId;
       }
 
       setIsLoading(true);
-      console.log('[MessageList] Loading messages for room:', chatRoomId);
+      console.log("[MessageList] Loading messages for room:", chatRoomId);
 
       const result = await getMessages(chatRoomId);
 
       if (result.messages) {
         // Messages come in DESC order (newest first), reverse for display (oldest first)
         const reversed = result.messages.reverse();
-        console.log('[MessageList] Loaded', reversed.length, 'messages');
+        console.log("[MessageList] Loaded", reversed.length, "messages");
         setInitialMessages(reversed);
         setNextCursor(result.nextCursor || null);
 
         // Mark messages as read
         await markMessagesAsRead(chatRoomId);
       } else if (result.error) {
-        console.error('[MessageList] Error loading messages:', result.error);
+        console.error("[MessageList] Error loading messages:", result.error);
       }
 
       setIsLoading(false);
@@ -128,20 +135,26 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
   // Debug: Expose optimistic UI functions to parent
   useEffect(() => {
     if (onOptimisticFunctionsReady) {
-      console.log('[MessageList] Providing optimistic functions to parent');
+      console.log("[MessageList] Providing optimistic functions to parent");
       onOptimisticFunctionsReady({
         addOptimisticMessage,
         confirmMessage,
         failMessage,
       });
     }
-  }, [addOptimisticMessage, confirmMessage, failMessage, onOptimisticFunctionsReady]);
+  }, [
+    addOptimisticMessage,
+    confirmMessage,
+    failMessage,
+    onOptimisticFunctionsReady,
+  ]);
 
   // Debug: Auto-scroll to bottom on initial load
   useEffect(() => {
     if (!isLoading && messages.length > 0 && scrollContainerRef.current) {
-      console.log('[MessageList] Auto-scrolling to bottom');
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      console.log("[MessageList] Auto-scrolling to bottom");
+      scrollContainerRef.current.scrollTop =
+        scrollContainerRef.current.scrollHeight;
     }
   }, [isLoading, messages.length]);
 
@@ -161,7 +174,8 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
   // Debug: Track if user is at bottom of scroll
   const checkIfAtBottom = useCallback(() => {
     if (!scrollContainerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
     const threshold = 100; // pixels from bottom
     isAtBottomRef.current = scrollHeight - scrollTop - clientHeight < threshold;
   }, []);
@@ -174,7 +188,10 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
 
       // Detect scroll to top (load older messages)
       if (target.scrollTop < 100 && !isLoadingMore && nextCursor) {
-        console.log('[MessageList] Loading older messages, cursor:', nextCursor);
+        console.log(
+          "[MessageList] Loading older messages, cursor:",
+          nextCursor,
+        );
         setIsLoadingMore(true);
 
         const prevScrollHeight = target.scrollHeight;
@@ -184,7 +201,11 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
 
         if (result.messages) {
           const reversed = result.messages.reverse();
-          console.log('[MessageList] Loaded', reversed.length, 'older messages');
+          console.log(
+            "[MessageList] Loaded",
+            reversed.length,
+            "older messages",
+          );
           setMessages((prev) => [...reversed, ...prev]);
           setNextCursor(result.nextCursor || null);
 
@@ -201,15 +222,8 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
         setIsLoadingMore(false);
       }
     },
-    [chatRoomId, nextCursor, isLoadingMore, checkIfAtBottom, setMessages]
+    [chatRoomId, nextCursor, isLoadingMore, checkIfAtBottom, setMessages],
   );
-
-  // Debug: Determine connection state for UI
-  const connectionState = isConnected
-    ? 'connected'
-    : connectionError
-      ? 'disconnected'
-      : 'connecting';
 
   if (isLoading) {
     return (
@@ -269,8 +283,8 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
         className="h-full overflow-y-auto px-4 py-4 relative"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,27,81,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,27,81,0.015) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
+            "linear-gradient(rgba(0,27,81,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(0,27,81,0.015) 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
         }}
       >
         {messages.length === 0 ? (
@@ -282,7 +296,9 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
             <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center mb-4">
               <span className="text-2xl">💬</span>
             </div>
-            <h3 className="text-sm font-bold text-gray-900 mb-1">No Messages Yet</h3>
+            <h3 className="text-sm font-bold text-gray-900 mb-1">
+              No Messages Yet
+            </h3>
             <p className="text-xs text-gray-500 max-w-[250px]">
               Start the conversation by sending the first message.
             </p>
@@ -291,7 +307,7 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
           <div
             style={{
               height: `${rowVirtualizer.getTotalSize()}px`,
-              position: 'relative',
+              position: "relative",
             }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualItem) => {
@@ -303,10 +319,10 @@ export function MessageList({ chatRoomId, onReply, onNewMessage, onOptimisticFun
                   data-index={virtualItem.index}
                   ref={rowVirtualizer.measureElement}
                   style={{
-                    position: 'absolute',
+                    position: "absolute",
                     top: 0,
                     left: 0,
-                    width: '100%',
+                    width: "100%",
                     transform: `translateY(${virtualItem.start}px)`,
                   }}
                 >

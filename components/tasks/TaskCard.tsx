@@ -1,16 +1,25 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Card } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, AlertTriangle, Ban, Package, Pencil, Layers as LayersIcon, Box, Receipt } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
-import { TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import { getTaskTypeDisplayConfig } from '@/lib/config/task-type-display';
-import type { TaskWithRelations, Phase } from '@/types/db/task';
+import React, { useMemo } from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  AlertTriangle,
+  Ban,
+  Package,
+  Pencil,
+  Layers as LayersIcon,
+  Box,
+  Receipt,
+} from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
+import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
+import { getTaskTypeDisplayConfig } from "@/lib/config/task-type-display";
+import type { TaskWithRelations, Phase } from "@/types/db/task";
 
 interface TaskCardProps {
   task: TaskWithRelations;
@@ -28,14 +37,14 @@ interface TaskCardProps {
 }
 
 // All cards use construction-blue border for consistent branding
-const CARD_BORDER = 'border-l-4 border-construction-blue';
+const CARD_BORDER = "border-l-4 border-construction-blue";
 
 // Utility functions extracted outside component to prevent recreation on every render
 function getInitials(name: string) {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -47,7 +56,14 @@ function formatCurrency(amount: number) {
   return `$${amount.toFixed(0)}`;
 }
 
-export const TaskCard = React.memo(function TaskCard({ task, isDragging = false, onTaskClick, phases, showEditIndicator, expenseStats }: TaskCardProps) {
+export const TaskCard = React.memo(function TaskCard({
+  task,
+  isDragging = false,
+  onTaskClick,
+  phases,
+  showEditIndicator,
+  expenseStats,
+}: TaskCardProps) {
   const {
     attributes,
     listeners,
@@ -59,25 +75,33 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
   // When in DragOverlay (isDragging=true), don't apply transform
   // The DragOverlay handles positioning via its own internal transform
-  const style = isDragging ? {} : {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+  const style = isDragging
+    ? {}
+    : {
+        transform: CSS.Transform.toString(transform),
+        transition,
+      };
 
   // Parse due date properly to avoid UTC timezone issues
-  const isOverdue = (() => {
-    if (!task.due_date || task.status === 'completed') return false;
-    const [year, month, day] = task.due_date.split('T')[0].split('-').map(Number);
+  const isOverdue = useMemo(() => {
+    if (!task.due_date || task.status === "completed") return false;
+    const [year, month, day] = task.due_date
+      .split("T")[0]
+      .split("-")
+      .map(Number);
     const dueDate = new Date(year, month - 1, day);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return dueDate < today;
-  })();
+  }, [task.due_date, task.status]);
 
-  const isBlocked = task.status === 'blocked';
+  const isBlocked = task.status === "blocked";
 
   // In project context (phases provided), look up phase from phases array
-  const phase = phases ? phases.find((p) => p.id === task.phase_id) : task.phase;
+  const phase = useMemo(
+    () => (phases ? phases.find((p) => p.id === task.phase_id) : task.phase),
+    [phases, task.phase_id, task.phase],
+  );
 
   // Show edit indicator when explicitly set, or when in project context (phases provided)
   const shouldShowEditIndicator = showEditIndicator ?? !!phases;
@@ -101,14 +125,14 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
       {...attributes}
       {...listeners}
       className={cn(
-        'touch-manipulation transition-all duration-200 ease-out',
-        isSortableDragging && 'opacity-50 scale-95',
-        !isSortableDragging && !isDragging && 'shadow-md hover:shadow-lg'
+        "touch-manipulation transition-all duration-200 ease-out",
+        isSortableDragging && "opacity-50 scale-95",
+        !isSortableDragging && !isDragging && "shadow-md hover:shadow-lg",
       )}
     >
       {/* Separate click handler from drag handler to prevent positioning conflicts */}
       <div
-        onClick={(e) => {
+        onClick={() => {
           // Only trigger modal if not dragging AND not in drag preview
           if (!isSortableDragging && !isDragging) {
             onTaskClick?.(task);
@@ -118,11 +142,11 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
       >
         <Card
           className={cn(
-            'p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group',
+            "p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group",
             // Apply construction blue border by default
             CARD_BORDER,
             // Blocked state - keep red background
-            isBlocked && 'bg-red-50'
+            isBlocked && "bg-red-50",
           )}
         >
           {/* Edit indicator on hover */}
@@ -138,10 +162,16 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
           <div
             className={cn(
               "absolute top-2 right-2 z-10 animate-badge-pop",
-              shouldShowEditIndicator && "group-hover:hidden"
+              shouldShowEditIndicator && "group-hover:hidden",
             )}
           >
-            <Badge variant="secondary" className={cn('font-bold text-[10px] px-2 py-0.5', priorityConfig.badgeColor)}>
+            <Badge
+              variant="secondary"
+              className={cn(
+                "font-bold text-[10px] px-2 py-0.5",
+                priorityConfig.badgeColor,
+              )}
+            >
               {priorityConfig.label}
             </Badge>
           </div>
@@ -150,13 +180,16 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
           <div className="mb-2">
             <div
               className={cn(
-                'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2',
+                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2",
                 taskTypeConfig.color,
-                'border-black/10'
+                "border-black/10",
               )}
               title={taskTypeConfig.description}
             >
-              <TaskTypeIcon className="h-3 w-3 drop-shadow-sm" strokeWidth={2.5} />
+              <TaskTypeIcon
+                className="h-3 w-3 drop-shadow-sm"
+                strokeWidth={2.5}
+              />
               <span className="text-[10px] font-black tracking-wide uppercase leading-none">
                 {taskTypeConfig.label}
               </span>
@@ -166,7 +199,9 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
           {/* Title and Material Badge */}
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
-              <h4 className="font-bold text-sm line-clamp-2 text-gray-900">{task.title}</h4>
+              <h4 className="font-bold text-sm line-clamp-2 text-gray-900">
+                {task.title}
+              </h4>
               {/* Material Badge - Industrial Stamped Metal Style */}
               {hasMaterials && (
                 <div
@@ -232,8 +267,8 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
                 {task.due_date && (
                   <div
                     className={cn(
-                      'flex items-center gap-1 text-xs',
-                      isOverdue ? 'text-red-600' : 'text-muted-foreground'
+                      "flex items-center gap-1 text-xs",
+                      isOverdue ? "text-red-600" : "text-muted-foreground",
                     )}
                   >
                     <Calendar className="h-3 w-3" />
@@ -243,7 +278,10 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
                 {/* Blocked Indicator */}
                 {isBlocked && (
-                  <div className="flex items-center gap-1 text-xs text-red-600" title={task.blocked_reason || 'Blocked'}>
+                  <div
+                    className="flex items-center gap-1 text-xs text-red-600"
+                    title={task.blocked_reason || "Blocked"}
+                  >
                     <Ban className="h-3 w-3" />
                     <span className="sr-only">Blocked</span>
                   </div>
@@ -251,7 +289,10 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
                 {/* Overdue Indicator */}
                 {isOverdue && !isBlocked && (
-                  <div className="flex items-center gap-1 text-xs text-orange-600" title="Overdue">
+                  <div
+                    className="flex items-center gap-1 text-xs text-orange-600"
+                    title="Overdue"
+                  >
                     <AlertTriangle className="h-3 w-3" />
                     <span className="sr-only">Overdue</span>
                   </div>
@@ -259,7 +300,10 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
                 {/* Material Cost Display - Industrial Style */}
                 {hasMaterials && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-construction-accent/10 to-construction-accent/5 border border-construction-accent/20 rounded-md" title={`Total materials cost: $${task.materialStats!.totalCost.toFixed(2)}`}>
+                  <div
+                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-construction-accent/10 to-construction-accent/5 border border-construction-accent/20 rounded-md"
+                    title={`Total materials cost: $${task.materialStats!.totalCost.toFixed(2)}`}
+                  >
                     <Package className="h-3 w-3 text-construction-accent" />
                     <span className="text-[11px] font-black text-construction-accent tracking-tight">
                       {formatCurrency(task.materialStats!.totalCost)}
@@ -269,7 +313,10 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
 
                 {/* Expense Display */}
                 {hasExpenses && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 border border-amber-300/60 rounded-md" title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? 's' : ''} - ${formatCurrency(expenseStats!.totalAmount)}`}>
+                  <div
+                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 border border-amber-300/60 rounded-md"
+                    title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? "s" : ""} - ${formatCurrency(expenseStats!.totalAmount)}`}
+                  >
                     <Receipt className="h-3 w-3 text-amber-600" />
                     <span className="text-[11px] font-black text-amber-700 tracking-tight">
                       {formatCurrency(expenseStats!.totalAmount)}
@@ -285,13 +332,13 @@ export const TaskCard = React.memo(function TaskCard({ task, isDragging = false,
                       e.stopPropagation(); // Prevent task card click
                     }}
                     className={cn(
-                      'flex items-center gap-1.5 px-2 py-1',
-                      'bg-gradient-to-r from-construction-blue/10 to-construction-blue/5',
-                      'border border-construction-blue/30',
-                      'rounded-md',
-                      'hover:bg-construction-blue/20 hover:border-construction-blue/50',
-                      'transition-all duration-200',
-                      'group/location'
+                      "flex items-center gap-1.5 px-2 py-1",
+                      "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5",
+                      "border border-construction-blue/30",
+                      "rounded-md",
+                      "hover:bg-construction-blue/20 hover:border-construction-blue/50",
+                      "transition-all duration-200",
+                      "group/location",
                     )}
                     title="View in 3D"
                   >

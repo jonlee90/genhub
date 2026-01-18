@@ -1,65 +1,66 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useTaskModal } from './TaskModalContext';
-import { TaskList } from './TaskList';
-import { TaskFilters } from './TaskFilters';
-import { ProjectTaskSummary } from '@/components/projects/ProjectTaskSummary';
-import { TopProjectsCard } from './TopProjectsCard';
-import { transformTasksForGantt } from './gantt/gantt-utils';
-import { updateTaskDates } from '@/app/actions/tasks';
-import { SearchInput } from '@/components/mobile/SearchInput';
-import { FilterTabs } from '@/components/ui/FilterTabs';
-import { FilterButton } from '@/components/mobile/FilterButton';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { LayoutGrid, List, Plus, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import type { TaskStats } from '@/app/actions/projects';
-import type { AssigneeOption } from '@/app/actions/tasks';
+import { useState, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTaskModal } from "./TaskModalContext";
+import { TaskList } from "./TaskList";
+import { TaskFilters } from "./TaskFilters";
+import { ProjectTaskSummary } from "@/components/projects/ProjectTaskSummary";
+import { TopProjectsCard } from "./TopProjectsCard";
+import { transformTasksForGantt } from "./gantt/gantt-utils";
+import { updateTaskDates } from "@/app/actions/tasks";
+import { SearchInput } from "@/components/mobile/SearchInput";
+import { FilterTabs } from "@/components/ui/FilterTabs";
+import { FilterButton } from "@/components/mobile/FilterButton";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { LayoutGrid, List, Plus, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import type { TaskStats } from "@/app/actions/projects";
+import type { AssigneeOption } from "@/app/actions/tasks";
 import type {
   TaskWithRelations,
   Phase,
   TaskProject,
   TeamMember,
   TaskDependencyRow,
-} from '@/types/db/task';
+} from "@/types/db/task";
 
 // Dynamic import GanttChart to reduce initial bundle
-const GanttChart = dynamic(() => import('./gantt/GanttChart').then(mod => ({ default: mod.GanttChart })), {
-  loading: () => (
-    <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
-      <div className="flex items-center justify-center gap-3 text-gray-500">
-        <Loader2 className="h-5 w-5 animate-spin" />
-        <span className="text-sm font-medium">Loading timeline...</span>
+const GanttChart = dynamic(
+  () =>
+    import("./gantt/GanttChart").then((mod) => ({ default: mod.GanttChart })),
+  {
+    loading: () => (
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
+        <div className="flex items-center justify-center gap-3 text-gray-500">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm font-medium">Loading timeline...</span>
+        </div>
       </div>
-    </div>
-  ),
-  ssr: false,
-});
+    ),
+    ssr: false,
+  },
+);
 
 // Dynamic import KanbanBoard (includes dnd-kit) - only loads when kanban view is selected
 const KanbanBoard = dynamic(
-  () => import('./KanbanBoard').then(mod => ({ default: mod.KanbanBoard })),
+  () => import("./KanbanBoard").then((mod) => ({ default: mod.KanbanBoard })),
   {
     loading: () => (
       <div className="flex gap-4 overflow-x-auto pb-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="flex-shrink-0 w-72 h-96 bg-gray-100 rounded-xl animate-pulse" />
+          <div
+            key={i}
+            className="flex-shrink-0 w-72 h-96 bg-gray-100 rounded-xl animate-pulse"
+          />
         ))}
       </div>
     ),
     ssr: false,
-  }
-);
-
-// Dynamic import TaskModal (1373 lines) - only loads when modal opens
-const TaskModal = dynamic(
-  () => import('./TaskModal').then(mod => ({ default: mod.TaskModal })),
-  { ssr: false }
+  },
 );
 
 /** Status tab configuration for mobile */
@@ -74,7 +75,7 @@ interface TaskBoardProps {
   taskDependencies?: TaskDependencyRow[];
   projects: TaskProject[];
   teamMembers: TeamMember[];
-  initialView: 'kanban' | 'list';
+  initialView: "kanban" | "list";
   /** When provided, we're in project context - shows phase filter and New Task button */
   projectId?: string;
   /** Phases for project context */
@@ -123,7 +124,7 @@ export function TaskBoard({
   externalProjectFilter,
   onExternalProjectFilterChange,
   hideFilters = false,
-  assignees,
+  assignees: _assignees,
   resultsCountRef,
   // Mobile search/filter props
   mobileSearchQuery,
@@ -133,7 +134,7 @@ export function TaskBoard({
   mobileStatusTabs,
   mobileActiveFilterCount,
   onMobileFilterClick,
-  userRole,
+  userRole: _userRole,
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -142,37 +143,33 @@ export function TaskBoard({
   // Determine if we're in project context
   const isProjectContext = !!projectId;
 
-  const [view, setView] = useState<'kanban' | 'list'>(initialView);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [internalProjectFilter, setInternalProjectFilter] = useState<string>('all');
-  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [phaseFilter, setPhaseFilter] = useState<string>('all');
+  const [view, setView] = useState<"kanban" | "list">(initialView);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [internalProjectFilter, setInternalProjectFilter] =
+    useState<string>("all");
+  const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [phaseFilter, setPhaseFilter] = useState<string>("all");
 
   // Use external filter if provided, otherwise use internal state
   const projectFilter = externalProjectFilter ?? internalProjectFilter;
-  const setProjectFilter = onExternalProjectFilterChange ?? setInternalProjectFilter;
+  const setProjectFilter =
+    onExternalProjectFilterChange ?? setInternalProjectFilter;
 
   // Modal state from context (prevents TaskBoard re-renders on modal open/close)
-  const { isOpen: isModalOpen, mode: modalMode, selectedTask, openEdit, openCreate, close } = useTaskModal();
+  const { openEdit, openCreate } = useTaskModal();
 
   // Handle task click to open edit modal
-  const handleTaskClick = (task: TaskWithRelations) => {
-    openEdit(task);
-  };
+  const handleTaskClick = useCallback(
+    (task: TaskWithRelations) => {
+      openEdit(task);
+    },
+    [openEdit],
+  );
 
-  const handleModalClose = () => {
-    close();
-  };
-
-  const handleModalSuccess = () => {
-    close();
-    router.refresh();
-  };
-
-  const handleOpenCreateModal = () => {
+  const handleOpenCreateModal = useCallback(() => {
     openCreate();
-  };
+  }, [openCreate]);
 
   // Apply filters
   const filteredTasks = useMemo(() => {
@@ -184,45 +181,56 @@ export function TaskBoard({
       filtered = filtered.filter(
         (task) =>
           task.title.toLowerCase().includes(query) ||
-          task.description?.toLowerCase().includes(query)
+          task.description?.toLowerCase().includes(query),
       );
     }
 
     // Project filter (Tasks page context only)
-    if (!isProjectContext && projectFilter && projectFilter !== 'all') {
+    if (!isProjectContext && projectFilter && projectFilter !== "all") {
       filtered = filtered.filter((task) => task.project_id === projectFilter);
     }
 
     // Phase filter (Project context only)
-    if (isProjectContext && phaseFilter && phaseFilter !== 'all') {
+    if (isProjectContext && phaseFilter && phaseFilter !== "all") {
       filtered = filtered.filter((task) => task.phase_id === phaseFilter);
     }
 
     // Assignee filter
-    if (assigneeFilter && assigneeFilter !== 'all') {
-      if (assigneeFilter === 'unassigned') {
+    if (assigneeFilter && assigneeFilter !== "all") {
+      if (assigneeFilter === "unassigned") {
         filtered = filtered.filter((task) => !task.assignee_id);
       } else {
-        filtered = filtered.filter((task) => task.assignee_id === assigneeFilter);
+        filtered = filtered.filter(
+          (task) => task.assignee_id === assigneeFilter,
+        );
       }
     }
 
     // Priority filter
-    if (priorityFilter && priorityFilter !== 'all') {
+    if (priorityFilter && priorityFilter !== "all") {
       filtered = filtered.filter((task) => task.priority === priorityFilter);
     }
 
     return filtered;
-  }, [initialTasks, searchQuery, projectFilter, assigneeFilter, priorityFilter, phaseFilter, isProjectContext]);
+  }, [
+    initialTasks,
+    searchQuery,
+    projectFilter,
+    assigneeFilter,
+    priorityFilter,
+    phaseFilter,
+    isProjectContext,
+  ]);
 
   // Compute TaskStats from project-filtered tasks (updates when project dropdown changes)
   const computedTaskStats = useMemo((): TaskStats | null => {
     if (isProjectContext) return null; // Only for Tasks page
 
     // Filter tasks by project only (not other filters) for summary stats
-    const tasksForStats = projectFilter === 'all'
-      ? initialTasks
-      : initialTasks.filter((task) => task.project_id === projectFilter);
+    const tasksForStats =
+      projectFilter === "all"
+        ? initialTasks
+        : initialTasks.filter((task) => task.project_id === projectFilter);
 
     if (tasksForStats.length === 0) {
       return {
@@ -243,23 +251,37 @@ export function TaskBoard({
     }
 
     const now = new Date();
-    const completed = tasksForStats.filter((t) => t.status === 'completed').length;
-    const blocked = tasksForStats.filter((t) => t.status === 'blocked').length;
-    const inProgress = tasksForStats.filter((t) => t.status === 'in_progress').length;
+    const completed = tasksForStats.filter(
+      (t) => t.status === "completed",
+    ).length;
+    const blocked = tasksForStats.filter((t) => t.status === "blocked").length;
+    const inProgress = tasksForStats.filter(
+      (t) => t.status === "in_progress",
+    ).length;
     const overdue = tasksForStats.filter((t) => {
-      if (!t.due_date || t.status === 'completed') return false;
+      if (!t.due_date || t.status === "completed") return false;
       return new Date(t.due_date) < now;
     }).length;
 
-    const totalPlannedCost = tasksForStats.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
-    const totalActualCost = tasksForStats.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
+    const totalPlannedCost = tasksForStats.reduce(
+      (sum, t) => sum + (Number(t.planned_cost) || 0),
+      0,
+    );
+    const totalActualCost = tasksForStats.reduce(
+      (sum, t) => sum + (Number(t.actual_cost) || 0),
+      0,
+    );
     const budgetVariance = totalPlannedCost - totalActualCost;
-    const budgetUtilization = totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
+    const budgetUtilization =
+      totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
 
     const unassignedCount = tasksForStats.filter((t) => !t.assignee_id).length;
 
     // Compute top assignees
-    const assigneeCounts: Record<string, { id: string; name: string; avatar_url: string | null; count: number }> = {};
+    const assigneeCounts: Record<
+      string,
+      { id: string; name: string; avatar_url: string | null; count: number }
+    > = {};
     tasksForStats.forEach((task) => {
       if (task.assignee) {
         const key = task.assignee.id;
@@ -277,11 +299,21 @@ export function TaskBoard({
     const topAssignees = Object.values(assigneeCounts)
       .sort((a, b) => b.count - a.count)
       .slice(0, 3)
-      .map((a) => ({ id: a.id, name: a.name, avatar_url: a.avatar_url, taskCount: a.count }));
+      .map((a) => ({
+        id: a.id,
+        name: a.name,
+        avatar_url: a.avatar_url,
+        taskCount: a.count,
+      }));
 
     // Calculate materials from task materialStats
-    const tasksWithMaterials = tasksForStats.filter((t) => t.materialStats && t.materialStats.count > 0).length;
-    const totalMaterialCost = tasksForStats.reduce((sum, t) => sum + (t.materialStats?.totalCost || 0), 0);
+    const tasksWithMaterials = tasksForStats.filter(
+      (t) => t.materialStats && t.materialStats.count > 0,
+    ).length;
+    const totalMaterialCost = tasksForStats.reduce(
+      (sum, t) => sum + (t.materialStats?.totalCost || 0),
+      0,
+    );
 
     return {
       total: tasksForStats.length,
@@ -302,49 +334,53 @@ export function TaskBoard({
 
   // Compute project budget based on filter
   const projectBudget = useMemo(() => {
-    if (isProjectContext || !projects || projects.length === 0) return undefined;
-    
-    if (projectFilter === 'all') {
+    if (isProjectContext || !projects || projects.length === 0)
+      return undefined;
+
+    if (projectFilter === "all") {
       // Sum all project budgets
       return projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
     } else {
       // Get selected project's budget
-      const selectedProject = projects.find(p => p.id === projectFilter);
+      const selectedProject = projects.find((p) => p.id === projectFilter);
       return selectedProject ? Number(selectedProject.budget) || 0 : 0;
     }
   }, [projects, projectFilter, isProjectContext]);
 
   // Handle view change
-  const handleViewChange = (newView: 'kanban' | 'list') => {
+  const handleViewChange = (newView: "kanban" | "list") => {
     setView(newView);
     if (!isProjectContext) {
       const params = new URLSearchParams(searchParams.toString());
-      params.set('view', newView);
+      params.set("view", newView);
       router.push(`/app/tasks?${params.toString()}`, { scroll: false });
     }
   };
 
   // Transform tasks for Gantt chart
-  const ganttTasks = useMemo(() => transformTasksForGantt(filteredTasks), [filteredTasks]);
+  const ganttTasks = useMemo(
+    () => transformTasksForGantt(filteredTasks),
+    [filteredTasks],
+  );
 
   // Handle task date change from Gantt drag-drop
   const handleTaskDateChange = async (
     taskId: string,
     newStartDate: string,
-    newDueDate: string
+    newDueDate: string,
   ) => {
     const result = await updateTaskDates(taskId, newStartDate, newDueDate);
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: "Error",
         description: result.error,
-        variant: 'destructive',
+        variant: "destructive",
       });
     } else {
       toast({
-        title: 'Task Updated',
-        description: 'Task dates have been updated successfully',
+        title: "Task Updated",
+        description: "Task dates have been updated successfully",
       });
       router.refresh();
     }
@@ -381,39 +417,41 @@ export function TaskBoard({
         </div>
       )}
 
-
-
       {/* Mobile Search, Filter, and Status Tabs (Tasks page only) */}
-      {!isProjectContext && mobileStatusTabs && onMobileSearchChange && onMobileStatusChange && onMobileFilterClick && (
-        <div ref={resultsCountRef}>
-          {/* Search and Filter Row */}
-          <div className="flex flex-row items-center gap-2">
-            <SearchInput
-              value={mobileSearchQuery || ''}
-              onChange={onMobileSearchChange}
-              placeholder="Search tasks..."
-              debounce={300}
-              className="w-full"
-            />
-            <FilterButton
-              onClick={onMobileFilterClick}
-              count={mobileActiveFilterCount || 0}
-              className="flex-shrink-0"
+      {!isProjectContext &&
+        mobileStatusTabs &&
+        onMobileSearchChange &&
+        onMobileStatusChange &&
+        onMobileFilterClick && (
+          <div ref={resultsCountRef}>
+            {/* Search and Filter Row */}
+            <div className="flex flex-row items-center gap-2">
+              <SearchInput
+                value={mobileSearchQuery || ""}
+                onChange={onMobileSearchChange}
+                placeholder="Search tasks..."
+                debounce={300}
+                className="w-full"
+              />
+              <FilterButton
+                onClick={onMobileFilterClick}
+                count={mobileActiveFilterCount || 0}
+                className="flex-shrink-0"
+              />
+            </div>
+
+            {/* Status filter tabs */}
+            <FilterTabs
+              tabs={mobileStatusTabs}
+              value={mobileStatusFilter || "all"}
+              onChange={onMobileStatusChange}
+              showCounts={true}
+              useStatusGradients={true}
+              layoutId="taskStatusTabs"
             />
           </div>
+        )}
 
-          {/* Status filter tabs */}
-          <FilterTabs
-            tabs={mobileStatusTabs}
-            value={mobileStatusFilter || 'all'}
-            onChange={onMobileStatusChange}
-            showCounts={true}
-            useStatusGradients={true}
-            layoutId="taskStatusTabs"
-          />
-        </div>
-      )}
-      
       {/* Toolbar - hidden when hideFilters is true */}
       {!hideFilters && isProjectContext ? (
         // Project context toolbar - Phase filter + View toggle
@@ -424,12 +462,12 @@ export function TaskBoard({
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm font-bold text-gray-700">Phase:</span>
                 <button
-                  onClick={() => setPhaseFilter('all')}
+                  onClick={() => setPhaseFilter("all")}
                   className={cn(
-                    'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
-                    phaseFilter === 'all'
-                      ? 'bg-construction-blue text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
+                    phaseFilter === "all"
+                      ? "bg-construction-blue text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200",
                   )}
                 >
                   All Phases
@@ -439,10 +477,10 @@ export function TaskBoard({
                     key={phase.id}
                     onClick={() => setPhaseFilter(phase.id)}
                     className={cn(
-                      'px-3 py-1.5 rounded-lg text-xs font-bold transition-all',
+                      "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                       phaseFilter === phase.id
-                        ? 'bg-construction-blue text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? "bg-construction-blue text-white"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
                     )}
                   >
                     {phase.name}
@@ -453,24 +491,26 @@ export function TaskBoard({
               {/* View Toggle */}
               <div className="flex items-center gap-1 rounded-lg border-2 border-gray-200 p-1 bg-white">
                 <Button
-                  variant={view === 'kanban' ? 'secondary' : 'ghost'}
+                  variant={view === "kanban" ? "secondary" : "ghost"}
                   size="sm"
-                  onClick={() => handleViewChange('kanban')}
+                  onClick={() => handleViewChange("kanban")}
                   className={cn(
-                    'gap-2',
-                    view === 'kanban' && 'bg-construction-blue text-white hover:bg-construction-blue/90'
+                    "gap-2",
+                    view === "kanban" &&
+                      "bg-construction-blue text-white hover:bg-construction-blue/90",
                   )}
                 >
                   <LayoutGrid className="h-4 w-4" />
                   <span className="hidden sm:inline">Kanban</span>
                 </Button>
                 <Button
-                  variant={view === 'list' ? 'secondary' : 'ghost'}
+                  variant={view === "list" ? "secondary" : "ghost"}
                   size="sm"
-                  onClick={() => handleViewChange('list')}
+                  onClick={() => handleViewChange("list")}
                   className={cn(
-                    'gap-2',
-                    view === 'list' && 'bg-construction-blue text-white hover:bg-construction-blue/90'
+                    "gap-2",
+                    view === "list" &&
+                      "bg-construction-blue text-white hover:bg-construction-blue/90",
                   )}
                 >
                   <List className="h-4 w-4" />
@@ -501,18 +541,18 @@ export function TaskBoard({
           {/* View Toggle */}
           <div className="flex items-center gap-1 rounded-lg border p-1">
             <Button
-              variant={view === 'kanban' ? 'secondary' : 'ghost'}
+              variant={view === "kanban" ? "secondary" : "ghost"}
               size="sm"
-              onClick={() => handleViewChange('kanban')}
+              onClick={() => handleViewChange("kanban")}
               className="gap-2"
             >
               <LayoutGrid className="h-4 w-4" />
               <span className="hidden sm:inline">Kanban</span>
             </Button>
             <Button
-              variant={view === 'list' ? 'secondary' : 'ghost'}
+              variant={view === "list" ? "secondary" : "ghost"}
               size="sm"
-              onClick={() => handleViewChange('list')}
+              onClick={() => handleViewChange("list")}
               className="gap-2"
             >
               <List className="h-4 w-4" />
@@ -523,7 +563,7 @@ export function TaskBoard({
       ) : null}
 
       {/* View Content */}
-      {view === 'kanban' ? (
+      {view === "kanban" ? (
         <KanbanBoard
           tasks={filteredTasks}
           onTaskClick={handleTaskClick}
@@ -540,7 +580,10 @@ export function TaskBoard({
       {/* Task Summary - Only show on Tasks page (not in project context) */}
       {!isProjectContext && computedTaskStats && (
         <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <ProjectTaskSummary taskStats={computedTaskStats} projectBudget={projectBudget} />
+          <ProjectTaskSummary
+            taskStats={computedTaskStats}
+            projectBudget={projectBudget}
+          />
         </div>
       )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -51,7 +51,7 @@ export function ExpensesList({
   initialExpenses,
   projects,
   tasks,
-  searchParams,
+  searchParams: _searchParams,
   companyId,
 }: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -141,6 +141,17 @@ export function ExpensesList({
     }
     return projectExpenseCounts[projectFilter] || 0;
   }, [projectFilter, initialExpenses.length, projectExpenseCounts]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setProjectFilter("all");
+    setSortBy("created_at");
+  }, []);
+
+  const handleExpenseSelect = useCallback((expense: ExpenseWithRelations) => {
+    setSelectedExpense(expense);
+  }, []);
 
   const searchConfig = useMemo(
     () => ({
@@ -338,12 +349,7 @@ export function ExpensesList({
 
             <Button
               size="lg"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter("all");
-                setProjectFilter("all");
-                setSortBy("created_at");
-              }}
+              onClick={handleClearFilters}
               className="h-12 px-8 bg-white border-2 border-construction-red hover:bg-construction-red hover:text-white transition-all shadow-construction font-black group"
             >
               <X className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform" />
@@ -366,7 +372,7 @@ export function ExpensesList({
                 stiffness: 200,
                 damping: 20,
               }}
-              onClick={() => setSelectedExpense(expense)}
+              onClick={() => handleExpenseSelect(expense)}
             >
               <ExpenseCard expense={expense} />
             </motion.div>

@@ -1,14 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Skeleton } from '@/components/ui/skeleton';
-import type { EntityType } from '@/types/db/chat';
-import { ProjectPreview } from './previews/ProjectPreview';
-import { TaskPreview } from './previews/TaskPreview';
-import { MaterialPreview } from './previews/MaterialPreview';
-import { ExpensePreview } from './previews/ExpensePreview';
-import { UserPreview } from './previews/UserPreview';
+import { motion } from "framer-motion";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { EntityType } from "@/types/db/chat";
+import { ProjectPreview } from "./previews/ProjectPreview";
+import { TaskPreview } from "./previews/TaskPreview";
+import { MaterialPreview } from "./previews/MaterialPreview";
+import { ExpensePreview } from "./previews/ExpensePreview";
+import { UserPreview } from "./previews/UserPreview";
 
 interface EntityPreviewProps {
   type: EntityType;
@@ -17,7 +16,7 @@ interface EntityPreviewProps {
 
 // Debug: Main entity preview component - routes to type-specific preview
 export function EntityPreview({ type, id }: EntityPreviewProps) {
-  console.log('[EntityPreview] Rendering preview for:', { type, id });
+  console.log("[EntityPreview] Rendering preview for:", { type, id });
 
   return (
     <motion.div
@@ -26,11 +25,11 @@ export function EntityPreview({ type, id }: EntityPreviewProps) {
       transition={{ duration: 0.2 }}
       className="mt-3"
     >
-      {type === 'project' && <ProjectPreview id={id} />}
-      {type === 'task' && <TaskPreview id={id} />}
-      {type === 'material' && <MaterialPreview id={id} />}
-      {type === 'expense' && <ExpensePreview id={id} />}
-      {type === 'user' && <UserPreview id={id} />}
+      {type === "project" && <ProjectPreview id={id} />}
+      {type === "task" && <TaskPreview id={id} />}
+      {type === "material" && <MaterialPreview id={id} />}
+      {type === "expense" && <ExpensePreview id={id} />}
+      {type === "user" && <UserPreview id={id} />}
     </motion.div>
   );
 }

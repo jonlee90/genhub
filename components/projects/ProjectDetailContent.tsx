@@ -1,58 +1,58 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo } from 'react';
-import dynamic from 'next/dynamic';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useState, useCallback, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Building2 from 'lucide-react/icons/building-2';
-import MapPin from 'lucide-react/icons/map-pin';
-import Calendar from 'lucide-react/icons/calendar';
-import DollarSign from 'lucide-react/icons/dollar-sign';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Users from 'lucide-react/icons/users';
-import ClipboardList from 'lucide-react/icons/clipboard-list';
-import Clock from 'lucide-react/icons/clock';
-import FileText from 'lucide-react/icons/file-text';
-import Settings from 'lucide-react/icons/settings';
-import Activity from 'lucide-react/icons/activity';
-import Home from 'lucide-react/icons/home';
-import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
-import Factory from 'lucide-react/icons/factory';
-import ExternalLink from 'lucide-react/icons/external-link';
-import ChevronDown from 'lucide-react/icons/chevron-down';
-import ChevronUp from 'lucide-react/icons/chevron-up';
-import FolderKanban from 'lucide-react/icons/folder-kanban';
-import FolderOpen from 'lucide-react/icons/folder-open';
-import Target from 'lucide-react/icons/target';
-import { Badge } from '@/components/ui/badge';
-import { cn, formatPercentWhole } from '@/lib/utils';
-import { ProjectTeam } from './ProjectTeam';
-import { ProjectSettings } from './ProjectSettings';
-import { ProjectOverview } from './ProjectOverview';
-import { TaskBoard } from '@/components/tasks/TaskBoard';
-import { TaskModalProvider, useTaskModal } from '@/components/tasks/TaskModalContext';
-import { ProjectFilesTab } from './files/ProjectFilesTab';
-import { DashboardStats } from '../tasks/DashboardStats';
+import Building2 from "lucide-react/icons/building-2";
+import MapPin from "lucide-react/icons/map-pin";
+import Calendar from "lucide-react/icons/calendar";
+import DollarSign from "lucide-react/icons/dollar-sign";
+import TrendingUp from "lucide-react/icons/trending-up";
+import Users from "lucide-react/icons/users";
+import ClipboardList from "lucide-react/icons/clipboard-list";
+import Clock from "lucide-react/icons/clock";
+import FileText from "lucide-react/icons/file-text";
+import Settings from "lucide-react/icons/settings";
+import Activity from "lucide-react/icons/activity";
+import Home from "lucide-react/icons/home";
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed";
+import Factory from "lucide-react/icons/factory";
+import ExternalLink from "lucide-react/icons/external-link";
+import ChevronDown from "lucide-react/icons/chevron-down";
+import ChevronUp from "lucide-react/icons/chevron-up";
+import FolderKanban from "lucide-react/icons/folder-kanban";
+import FolderOpen from "lucide-react/icons/folder-open";
+import Target from "lucide-react/icons/target";
+import { Badge } from "@/components/ui/badge";
+import { cn, formatPercentWhole } from "@/lib/utils";
+import { ProjectTeam } from "./ProjectTeam";
+import { ProjectSettings } from "./ProjectSettings";
+import { ProjectOverview } from "./ProjectOverview";
+import { TaskBoard } from "@/components/tasks/TaskBoard";
+import {
+  TaskModalProvider,
+  useTaskModal,
+} from "@/components/tasks/TaskModalContext";
+import { ProjectFilesTab } from "./files/ProjectFilesTab";
+import { DashboardStats } from "../tasks/DashboardStats";
 
 // Dynamic import TaskModal (only loads when modal opens)
 const TaskModal = dynamic(
-  () => import('@/components/tasks/TaskModal').then(mod => ({ default: mod.TaskModal })),
-  { ssr: false }
+  () =>
+    import("@/components/tasks/TaskModal").then((mod) => ({
+      default: mod.TaskModal,
+    })),
+  { ssr: false },
 );
 
-interface PhaseStats {
-  phaseId: string;
-  totalTasks: number;
-  completedTasks: number;
-  blockedTasks: number;
-  overdueTasks: number;
-}
-
-// Fix C1: Import ExpenseStats instead of duplicating
-import type { ExpenseStats, TaskStats, TeamCostSummary } from '@/app/actions/projects';
-import type { ProjectDetailProps } from '@/types/components/projects';
-import type { TaskWithRelations, TeamMember as TaskBoardTeamMember, Phase } from '@/types/db/task';
+import type { ProjectDetailProps } from "@/types/components/projects";
+import type {
+  TaskWithRelations,
+  TeamMember as TaskBoardTeamMember,
+  Phase,
+} from "@/types/db/task";
 
 type ProjectDetailContentProps = ProjectDetailProps;
 
@@ -61,16 +61,14 @@ function TaskModalRenderer({
   projects,
   teamMembers,
   projectId,
-  phases,
   tasks,
-  onSuccess
+  onSuccess,
 }: {
-  projects: ProjectDetailContentProps['projects'],
-  teamMembers: TaskBoardTeamMember[],
-  projectId: string,
-  phases: Phase[],
-  tasks: TaskWithRelations[],
-  onSuccess: () => void
+  projects: ProjectDetailContentProps["projects"];
+  teamMembers: TaskBoardTeamMember[];
+  projectId: string;
+  tasks: TaskWithRelations[];
+  onSuccess: () => void;
 }) {
   const { isOpen, mode, selectedTask, close } = useTaskModal();
 
@@ -95,25 +93,35 @@ function TaskModalRenderer({
 
 const STATUS_CONFIG = {
   active: {
-    label: 'Active',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green',
-    dotColor: 'bg-construction-green',
+    label: "Active",
+    color:
+      "bg-construction-green/10 text-construction-green border-construction-green",
+    dotColor: "bg-construction-green",
   },
   on_hold: {
-    label: 'On Hold',
-    color: 'bg-construction-accent/10 text-construction-accent border-construction-accent',
-    dotColor: 'bg-construction-accent',
+    label: "On Hold",
+    color:
+      "bg-construction-accent/10 text-construction-accent border-construction-accent",
+    dotColor: "bg-construction-accent",
   },
   completed: {
-    label: 'Completed',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
-    dotColor: 'bg-construction-blue',
+    label: "Completed",
+    color:
+      "bg-construction-blue/10 text-construction-blue border-construction-blue",
+    dotColor: "bg-construction-blue",
   },
   cancelled: {
-    label: 'Cancelled',
-    color: 'bg-red-50 text-red-700 border-red-300',
-    dotColor: 'bg-red-500',
+    label: "Cancelled",
+    color: "bg-red-50 text-red-700 border-red-300",
+    dotColor: "bg-red-500",
   },
+};
+
+const getHealthColor = (score: number) => {
+  if (score >= 80) return "text-construction-green";
+  if (score >= 60) return "text-construction-blue";
+  if (score >= 40) return "text-construction-accent";
+  return "text-construction-red";
 };
 
 export function ProjectDetailContent({
@@ -128,37 +136,52 @@ export function ProjectDetailContent({
   projectPhotos = [],
   teamCostSummaries = [],
 }: ProjectDetailContentProps) {
-  console.log('[ProjectDetailContent] Rendering with expense stats:', expenseStats, 'task stats:', taskStats, 'files:', projectFiles?.length, 'photos:', projectPhotos?.length, 'teamCostSummaries:', teamCostSummaries?.length);
+  console.log(
+    "[ProjectDetailContent] Rendering with expense stats:",
+    expenseStats,
+    "task stats:",
+    taskStats,
+    "files:",
+    projectFiles?.length,
+    "photos:",
+    projectPhotos?.length,
+    "teamCostSummaries:",
+    teamCostSummaries?.length,
+  );
 
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'overview' | 'team' | 'tasks' | 'files' | 'settings'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "team" | "tasks" | "files" | "settings"
+  >("overview");
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Handler for when primary photo changes - refresh to get updated project data
   const handlePrimaryPhotoChange = useCallback(() => {
-    console.log('[ProjectDetailContent] Primary photo changed, refreshing...');
+    console.log("[ProjectDetailContent] Primary photo changed, refreshing...");
     router.refresh();
   }, [router]);
 
   // Performance optimization: Memoize computed values
   const statusConfig = useMemo(
-    () => STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] || STATUS_CONFIG.active,
-    [project.status]
+    () =>
+      STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] ||
+      STATUS_CONFIG.active,
+    [project.status],
   );
 
   // Get project type icon
   const getProjectTypeIcon = useMemo(() => {
     const iconClass = "w-6 h-6 text-white sm:w-7 sm:h-7 md:w-8 md:h-8";
     switch (project.project_type) {
-      case 'residential':
+      case "residential":
         return <Home className={iconClass} />;
-      case 'restaurant_cafe':
-      case 'restaurant':
-      case 'cafe':
+      case "restaurant_cafe":
+      case "restaurant":
+      case "cafe":
         return <UtensilsCrossed className={iconClass} />;
-      case 'commercial_office':
+      case "commercial_office":
         return <Building2 className={iconClass} />;
-      case 'industrial':
+      case "industrial":
         return <Factory className={iconClass} />;
       default:
         return <FolderKanban className={iconClass} />;
@@ -174,7 +197,7 @@ export function ProjectDetailContent({
       project.state,
       project.zip_code,
     ].filter(Boolean);
-    const fullAddress = addressParts.join(', ');
+    const fullAddress = addressParts.join(", ");
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`;
   }, [project.address, project.city, project.state, project.zip_code]);
 
@@ -182,22 +205,26 @@ export function ProjectDetailContent({
   const DESCRIPTION_LIMIT = 150;
   const shouldTruncateDescription = useMemo(
     () => project.description && project.description.length > DESCRIPTION_LIMIT,
-    [project.description]
+    [project.description],
   );
 
   const displayDescription = useMemo(
-    () => !project.description
-      ? null
-      : isDescriptionExpanded || !shouldTruncateDescription
-      ? project.description
-      : project.description.slice(0, DESCRIPTION_LIMIT) + '...',
-    [project.description, isDescriptionExpanded, shouldTruncateDescription]
+    () =>
+      !project.description
+        ? null
+        : isDescriptionExpanded || !shouldTruncateDescription
+          ? project.description
+          : project.description.slice(0, DESCRIPTION_LIMIT) + "...",
+    [project.description, isDescriptionExpanded, shouldTruncateDescription],
   );
 
   // Calculate project statistics
   const totalTasks = useMemo(() => project.tasks?.length || 0, [project.tasks]);
 
-  const teamSize = useMemo(() => project.project_team?.length || 0, [project.project_team]);
+  const teamSize = useMemo(
+    () => project.project_team?.length || 0,
+    [project.project_team],
+  );
 
   // Calculate timeline progress
   const getDaysRemaining = useMemo(() => {
@@ -211,495 +238,545 @@ export function ProjectDetailContent({
 
   const daysRemaining = getDaysRemaining;
 
-  // Calculate health score color
-  const getHealthColor = useCallback((score: number) => {
-    if (score >= 80) return 'text-construction-green';
-    if (score >= 60) return 'text-construction-blue';
-    if (score >= 40) return 'text-construction-accent';
-    return 'text-construction-red';
-  }, []);
-
-  const getHealthBgColor = useCallback((score: number) => {
-    if (score >= 80) return 'bg-construction-green/10';
-    if (score >= 60) return 'bg-construction-blue/10';
-    if (score >= 40) return 'bg-construction-accent/10';
-    return 'bg-construction-red/10';
-  }, []);
-
-  const getHealthBorderColor = useCallback((score: number) => {
-    if (score >= 80) return 'border-construction-green/20';
-    if (score >= 60) return 'border-construction-blue/20';
-    if (score >= 40) return 'border-construction-accent/20';
-    return 'border-construction-red/20';
-  }, []);
-
   return (
     <TaskModalProvider>
       <div className="space-y-4 sm:space-y-6">
-      {/* Project Header - Streamlined Hero Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="space-y-4"
-      >
-        {/* Hero Card with Project Identity */}
-        <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-construction-lg overflow-hidden">
-          {/* Top Section: Project Identity */}
-          <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
-            {/* Row 1: Icon + Name + Status */}
-            <div className="flex items-start gap-3 sm:gap-4">
-              {/* Project Type Icon */}
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-[#001B51]/10 rounded-xl transform rotate-2" />
-                <div className="relative p-2.5 bg-gradient-to-br from-[#001B51] to-[#001B51]/90 rounded-xl shadow-lg sm:p-3.5">
-                  {getProjectTypeIcon}
+        {/* Project Header - Streamlined Hero Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="space-y-4"
+        >
+          {/* Hero Card with Project Identity */}
+          <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-construction-lg overflow-hidden">
+            {/* Top Section: Project Identity */}
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
+              {/* Row 1: Icon + Name + Status */}
+              <div className="flex items-start gap-3 sm:gap-4">
+                {/* Project Type Icon */}
+                <div className="relative flex-shrink-0">
+                  <div className="absolute inset-0 bg-[#001B51]/10 rounded-xl transform rotate-2" />
+                  <div className="relative p-2.5 bg-gradient-to-br from-[#001B51] to-[#001B51]/90 rounded-xl shadow-lg sm:p-3.5">
+                    {getProjectTypeIcon}
+                  </div>
                 </div>
+
+                {/* Project Name */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg font-black text-[#001B51] tracking-tight leading-tight break-words uppercase sm:text-xl md:text-2xl lg:text-3xl">
+                    {project.name}
+                  </h1>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="h-0.5 w-6 bg-[#3C3C3C] rounded-full" />
+                    <span className="text-[10px] font-bold text-[#3C3C3C] uppercase tracking-widest sm:text-xs">
+                      {project.project_type?.replace(/_/g, " ") ||
+                        "General Construction"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Status Badge */}
+                <Badge
+                  className={cn(
+                    "px-2.5 py-1.5 text-[10px] font-black border-2 flex items-center gap-1.5 shadow-md whitespace-nowrap flex-shrink-0 uppercase tracking-wider rounded-lg",
+                    "sm:px-3 sm:py-2 sm:text-xs",
+                    statusConfig.color,
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "h-2 w-2 rounded-full animate-pulse",
+                      statusConfig.dotColor,
+                    )}
+                  />
+                  {statusConfig.label}
+                </Badge>
               </div>
 
-              {/* Project Name */}
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-black text-[#001B51] tracking-tight leading-tight break-words uppercase sm:text-xl md:text-2xl lg:text-3xl">
-                  {project.name}
-                </h1>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <div className="h-0.5 w-6 bg-[#3C3C3C] rounded-full" />
-                  <span className="text-[10px] font-bold text-[#3C3C3C] uppercase tracking-widest sm:text-xs">
-                    {project.project_type?.replace(/_/g, ' ') || 'General Construction'}
+              {/* Description (if exists) */}
+              {displayDescription && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                    {displayDescription}
+                  </p>
+                  {shouldTruncateDescription && (
+                    <button
+                      onClick={() =>
+                        setIsDescriptionExpanded(!isDescriptionExpanded)
+                      }
+                      className="mt-2 text-xs font-bold text-[#001B51] flex items-center gap-1 min-h-[44px] active:opacity-70"
+                    >
+                      {isDescriptionExpanded ? (
+                        <>
+                          Show less <ChevronUp className="h-3.5 w-3.5" />
+                        </>
+                      ) : (
+                        <>
+                          Read more <ChevronDown className="h-3.5 w-3.5" />
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Location Link */}
+              {project.address && (
+                <div className="mt-3">
+                  {getGoogleMapsUrl ? (
+                    <a
+                      href={getGoogleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "inline-flex items-center gap-2 px-3 py-2 -mx-1 rounded-lg",
+                        "text-xs font-semibold text-[#001B51]",
+                        "bg-[#001B51]/5 hover:bg-[#001B51]/10",
+                        "active:scale-[0.98] transition-all duration-150",
+                        "min-h-[44px] sm:text-sm",
+                      )}
+                    >
+                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">
+                        {[project.address, project.city, project.state]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-2 text-xs text-gray-600 sm:text-sm">
+                      <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                      <span>
+                        {[project.address, project.city, project.state]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Section: Quick Stats Grid */}
+            <div className="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-3 lg:grid-cols-6">
+              {/* Progress */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <TrendingUp className="h-3.5 w-3.5 text-[#001B51]" />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Progress
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#001B51] rounded-full transition-all duration-500"
+                      style={{
+                        width: `${project.completion_percentage || 0}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-sm font-black text-[#001B51] tabular-nums min-w-[3ch]">
+                    {formatPercentWhole(project.completion_percentage || 0)}
                   </span>
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <Badge
-                className={cn(
-                  'px-2.5 py-1.5 text-[10px] font-black border-2 flex items-center gap-1.5 shadow-md whitespace-nowrap flex-shrink-0 uppercase tracking-wider rounded-lg',
-                  'sm:px-3 sm:py-2 sm:text-xs',
-                  statusConfig.color
-                )}
-              >
-                <div className={cn('h-2 w-2 rounded-full animate-pulse', statusConfig.dotColor)} />
-                {statusConfig.label}
-              </Badge>
-            </div>
-
-            {/* Description (if exists) */}
-            {displayDescription && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 sm:line-clamp-none">
-                  {displayDescription}
-                </p>
-                {shouldTruncateDescription && (
-                  <button
-                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                    className="mt-2 text-xs font-bold text-[#001B51] flex items-center gap-1 min-h-[44px] active:opacity-70"
-                  >
-                    {isDescriptionExpanded ? (
-                      <>Show less <ChevronUp className="h-3.5 w-3.5" /></>
-                    ) : (
-                      <>Read more <ChevronDown className="h-3.5 w-3.5" /></>
-                    )}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Location Link */}
-            {project.address && (
-              <div className="mt-3">
-                {getGoogleMapsUrl ? (
-                  <a
-                    href={getGoogleMapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+              {/* Health Score */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Activity
                     className={cn(
-                      'inline-flex items-center gap-2 px-3 py-2 -mx-1 rounded-lg',
-                      'text-xs font-semibold text-[#001B51]',
-                      'bg-[#001B51]/5 hover:bg-[#001B51]/10',
-                      'active:scale-[0.98] transition-all duration-150',
-                      'min-h-[44px] sm:text-sm'
+                      "h-3.5 w-3.5",
+                      getHealthColor(project.health_score || 0),
                     )}
-                  >
-                    <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">
-                      {[project.address, project.city, project.state].filter(Boolean).join(', ')}
-                    </span>
-                    <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
-                  </a>
-                ) : (
-                  <div className="flex items-center gap-2 text-xs text-gray-600 sm:text-sm">
-                    <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
-                    <span>{[project.address, project.city, project.state].filter(Boolean).join(', ')}</span>
+                  />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Health
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        (project.health_score || 0) >= 80
+                          ? "bg-construction-green"
+                          : (project.health_score || 0) >= 60
+                            ? "bg-construction-blue"
+                            : (project.health_score || 0) >= 40
+                              ? "bg-construction-yellow"
+                              : "bg-construction-red",
+                      )}
+                      style={{ width: `${project.health_score || 0}%` }}
+                    />
                   </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Section: Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-3 lg:grid-cols-6">
-            {/* Progress */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <TrendingUp className="h-3.5 w-3.5 text-[#001B51]" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Progress</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[#001B51] rounded-full transition-all duration-500"
-                    style={{ width: `${project.completion_percentage || 0}%` }}
-                  />
-                </div>
-                <span className="text-sm font-black text-[#001B51] tabular-nums min-w-[3ch]">
-                  {formatPercentWhole(project.completion_percentage || 0)}
-                </span>
-              </div>
-            </div>
-
-            {/* Health Score */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Activity className={cn('h-3.5 w-3.5', getHealthColor(project.health_score || 0))} />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Health</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div
+                  <span
                     className={cn(
-                      'h-full rounded-full transition-all duration-500',
-                      (project.health_score || 0) >= 80 ? 'bg-construction-green' :
-                      (project.health_score || 0) >= 60 ? 'bg-construction-blue' :
-                      (project.health_score || 0) >= 40 ? 'bg-construction-yellow' :
-                      'bg-construction-red'
+                      "text-sm font-black tabular-nums min-w-[3ch]",
+                      getHealthColor(project.health_score || 0),
                     )}
-                    style={{ width: `${project.health_score || 0}%` }}
-                  />
+                  >
+                    {project.health_score || 0}
+                  </span>
                 </div>
-                <span className={cn('text-sm font-black tabular-nums min-w-[3ch]', getHealthColor(project.health_score || 0))}>
-                  {project.health_score || 0}
+              </div>
+
+              {/* Start Date */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Start
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-gray-900">
+                  {project.start_date
+                    ? new Date(project.start_date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "Not set"}
                 </span>
               </div>
-            </div>
 
-            {/* Start Date */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Start</span>
-              </div>
-              <span className="text-sm font-bold text-gray-900">
-                {project.start_date
-                  ? new Date(project.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                  : 'Not set'}
-              </span>
-            </div>
-
-            {/* End Date */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Target className="h-3.5 w-3.5 text-gray-400" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Target</span>
-              </div>
-              <span className="text-sm font-bold text-gray-900">
-                {project.end_date
-                  ? new Date(project.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                  : 'Not set'}
-              </span>
-            </div>
-
-            {/* Days Remaining */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <Clock className={cn('h-3.5 w-3.5', daysRemaining !== null && daysRemaining < 0 ? 'text-construction-red' : 'text-gray-400')} />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                  {daysRemaining !== null && daysRemaining < 0 ? 'Overdue' : 'Days Left'}
+              {/* End Date */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Target className="h-3.5 w-3.5 text-gray-400" />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Target
+                  </span>
+                </div>
+                <span className="text-sm font-bold text-gray-900">
+                  {project.end_date
+                    ? new Date(project.end_date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "Not set"}
                 </span>
               </div>
-              <span className={cn(
-                'text-sm font-black tabular-nums',
-                daysRemaining !== null && daysRemaining < 0 ? 'text-construction-red' : 'text-gray-900'
-              )}>
-                {daysRemaining !== null ? Math.abs(daysRemaining) : 'N/A'}
-              </span>
-            </div>
 
-            {/* Budget */}
-            <div className="bg-white p-3 sm:p-4">
-              <div className="flex items-center gap-2 mb-1.5">
-                <DollarSign className="h-3.5 w-3.5 text-construction-green" />
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Budget</span>
+              {/* Days Remaining */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Clock
+                    className={cn(
+                      "h-3.5 w-3.5",
+                      daysRemaining !== null && daysRemaining < 0
+                        ? "text-construction-red"
+                        : "text-gray-400",
+                    )}
+                  />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    {daysRemaining !== null && daysRemaining < 0
+                      ? "Overdue"
+                      : "Days Left"}
+                  </span>
+                </div>
+                <span
+                  className={cn(
+                    "text-sm font-black tabular-nums",
+                    daysRemaining !== null && daysRemaining < 0
+                      ? "text-construction-red"
+                      : "text-gray-900",
+                  )}
+                >
+                  {daysRemaining !== null ? Math.abs(daysRemaining) : "N/A"}
+                </span>
               </div>
-              <span className="text-sm font-black text-gray-900 tabular-nums">
-                {project.budget ? `$${(project.budget / 1000).toFixed(0)}k` : 'Not set'}
-              </span>
+
+              {/* Budget */}
+              <div className="bg-white p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <DollarSign className="h-3.5 w-3.5 text-construction-green" />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                    Budget
+                  </span>
+                </div>
+                <span className="text-sm font-black text-gray-900 tabular-nums">
+                  {project.budget
+                    ? `$${(project.budget / 1000).toFixed(0)}k`
+                    : "Not set"}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Task Stats - Only show on Tasks tab */}
-        {activeTab === 'tasks' && (
-          <DashboardStats
+          {/* Task Stats - Only show on Tasks tab */}
+          {activeTab === "tasks" && (
+            <DashboardStats
               tasks={(project.tasks || []) as any}
               projectFilter={project.id}
               projects={projects}
               budget={project.budget}
             />
-                )}
+          )}
+        </motion.div>
 
-
-      </motion.div>
-
-      {/* Tab Navigation - Mobile-First Pill Design */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-        className="relative -mx-4 px-4 md:mx-0 md:px-0"
-      >
-        {/* Industrial accent line */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200" />
-
-        {/* Scrollable tab container with snap points */}
-        <div
-          className="flex items-center gap-1.5 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide sm:gap-2 md:gap-3"
-          style={{
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-            WebkitOverflowScrolling: 'touch'
-          }}
+        {/* Tab Navigation - Mobile-First Pill Design */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          className="relative -mx-4 px-4 md:mx-0 md:px-0"
         >
-          {/* Overview Tab */}
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={cn(
-              'relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start',
-              'min-h-[44px] min-w-[44px] flex-shrink-0',
-              'transition-all duration-200 ease-out',
-              'active:scale-[0.97]',
-              'sm:px-5 sm:py-3 sm:text-sm',
-              activeTab === 'overview'
-                ? 'bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
-            )}
-          >
-            <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span>Overview</span>
-          </button>
+          {/* Industrial accent line */}
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200" />
 
-          {/* Team Tab */}
-          <button
-            onClick={() => setActiveTab('team')}
-            className={cn(
-              'relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start',
-              'min-h-[44px] min-w-[44px] flex-shrink-0',
-              'transition-all duration-200 ease-out',
-              'active:scale-[0.97]',
-              'sm:px-5 sm:py-3 sm:text-sm',
-              activeTab === 'team'
-                ? 'bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
-            )}
+          {/* Scrollable tab container with snap points */}
+          <div
+            className="flex items-center gap-1.5 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide sm:gap-2 md:gap-3"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
-            <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span>Team</span>
-            {teamSize > 0 && (
-              <span className={cn(
-                'ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums',
-                activeTab === 'team'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-[#001B51]/10 text-[#001B51]'
-              )}>
-                {teamSize}
-              </span>
-            )}
-          </button>
+            {/* Overview Tab */}
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "overview"
+                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+              )}
+            >
+              <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Overview</span>
+            </button>
 
-          {/* Tasks Tab */}
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className={cn(
-              'relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start',
-              'min-h-[44px] min-w-[44px] flex-shrink-0',
-              'transition-all duration-200 ease-out',
-              'active:scale-[0.97]',
-              'sm:px-5 sm:py-3 sm:text-sm',
-              activeTab === 'tasks'
-                ? 'bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
-            )}
-          >
-            <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span>Tasks</span>
-            {totalTasks > 0 && (
-              <span className={cn(
-                'ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums',
-                activeTab === 'tasks'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-[#001B51]/10 text-[#001B51]'
-              )}>
-                {totalTasks}
-              </span>
-            )}
-          </button>
+            {/* Team Tab */}
+            <button
+              onClick={() => setActiveTab("team")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "team"
+                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+              )}
+            >
+              <Users className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Team</span>
+              {teamSize > 0 && (
+                <span
+                  className={cn(
+                    "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
+                    activeTab === "team"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#001B51]/10 text-[#001B51]",
+                  )}
+                >
+                  {teamSize}
+                </span>
+              )}
+            </button>
 
-          {/* Files Tab */}
-          <button
-            onClick={() => setActiveTab('files')}
-            className={cn(
-              'relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start',
-              'min-h-[44px] min-w-[44px] flex-shrink-0',
-              'transition-all duration-200 ease-out',
-              'active:scale-[0.97]',
-              'sm:px-5 sm:py-3 sm:text-sm',
-              activeTab === 'files'
-                ? 'bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
-            )}
-          >
-            <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Files & Photos</span>
-            <span className="sm:hidden">Files</span>
-            {((projectFiles?.length || 0) + (projectPhotos?.length || 0)) > 0 && (
-              <span className={cn(
-                'ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums',
-                activeTab === 'files'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-[#001B51]/10 text-[#001B51]'
-              )}>
-                {(projectFiles?.length || 0) + (projectPhotos?.length || 0)}
-              </span>
-            )}
-          </button>
+            {/* Tasks Tab */}
+            <button
+              onClick={() => setActiveTab("tasks")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "tasks"
+                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+              )}
+            >
+              <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Tasks</span>
+              {totalTasks > 0 && (
+                <span
+                  className={cn(
+                    "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
+                    activeTab === "tasks"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#001B51]/10 text-[#001B51]",
+                  )}
+                >
+                  {totalTasks}
+                </span>
+              )}
+            </button>
 
-          {/* Settings Tab */}
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={cn(
-              'relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start',
-              'min-h-[44px] min-w-[44px] flex-shrink-0',
-              'transition-all duration-200 ease-out',
-              'active:scale-[0.97]',
-              'sm:px-5 sm:py-3 sm:text-sm',
-              activeTab === 'settings'
-                ? 'bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300'
-            )}
-          >
-            <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Settings</span>
-          </button>
-        </div>
-      </motion.div>
+            {/* Files Tab */}
+            <button
+              onClick={() => setActiveTab("files")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "files"
+                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+              )}
+            >
+              <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">Files & Photos</span>
+              <span className="sm:hidden">Files</span>
+              {(projectFiles?.length || 0) + (projectPhotos?.length || 0) >
+                0 && (
+                <span
+                  className={cn(
+                    "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
+                    activeTab === "files"
+                      ? "bg-white/20 text-white"
+                      : "bg-[#001B51]/10 text-[#001B51]",
+                  )}
+                >
+                  {(projectFiles?.length || 0) + (projectPhotos?.length || 0)}
+                </span>
+              )}
+            </button>
 
-      {/* Tab Content */}
-      <AnimatePresence mode="wait">
-        {activeTab === 'overview' && (
-          <motion.div
-            key="overview"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ProjectOverview
-              project={project}
-              projects={projects}
-              teamMembers={teamMembers}
-              phaseTaskStats={phaseTaskStats}
-              expenseStats={expenseStats}
-              taskStats={taskStats}
-              teamCostSummaries={teamCostSummaries}
-            />
-          </motion.div>
-        )}
+            {/* Settings Tab */}
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "settings"
+                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+              )}
+            >
+              <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="hidden sm:inline">Settings</span>
+            </button>
+          </div>
+        </motion.div>
 
-        {activeTab === 'team' && (
-          <motion.div
-            key="team"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ProjectTeam
-              projectId={project.id}
-              companyId={project.company_id || ''}
-              team={project.project_team || []}
-              costSummaries={
-                teamCostSummaries && teamCostSummaries.length > 0
-                  ? new Map(
-                      teamCostSummaries.map((s) => [
-                        s.id,
-                        { taskCount: s.taskCount, taskCosts: s.taskCosts, expenseCosts: s.expenseCosts }
-                      ])
-                    )
-                  : undefined
-              }
-            />
-          </motion.div>
-        )}
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProjectOverview
+                project={project}
+                projects={projects}
+                teamMembers={teamMembers}
+                phaseTaskStats={phaseTaskStats}
+                expenseStats={expenseStats}
+                taskStats={taskStats}
+                teamCostSummaries={teamCostSummaries}
+              />
+            </motion.div>
+          )}
 
-        {activeTab === 'tasks' && (
-          <motion.div
-            key="tasks"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <TaskBoard
-              initialTasks={(project.tasks || []) as TaskWithRelations[]}
-              taskDependencies={taskDependencies}
-              projects={projects}
-              teamMembers={teamMembers as TaskBoardTeamMember[]}
-              initialView="kanban"
-              projectId={project.id}
-              phases={(project.project_phases || []) as Phase[]}
-            />
-          </motion.div>
-        )}
+          {activeTab === "team" && (
+            <motion.div
+              key="team"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProjectTeam
+                projectId={project.id}
+                companyId={project.company_id || ""}
+                team={project.project_team || []}
+                costSummaries={
+                  teamCostSummaries && teamCostSummaries.length > 0
+                    ? new Map(
+                        teamCostSummaries.map((s) => [
+                          s.id,
+                          {
+                            taskCount: s.taskCount,
+                            taskCosts: s.taskCosts,
+                            expenseCosts: s.expenseCosts,
+                          },
+                        ]),
+                      )
+                    : undefined
+                }
+              />
+            </motion.div>
+          )}
 
-        {activeTab === 'files' && (
-          <motion.div
-            key="files"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ProjectFilesTab
-              projectId={project.id}
-              initialFiles={projectFiles || []}
-              initialPhotos={projectPhotos || []}
-              currentImageUrl={project.image_url}
-              onPrimaryPhotoChange={handlePrimaryPhotoChange}
-            />
-          </motion.div>
-        )}
+          {activeTab === "tasks" && (
+            <motion.div
+              key="tasks"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <TaskBoard
+                initialTasks={(project.tasks || []) as TaskWithRelations[]}
+                taskDependencies={taskDependencies}
+                projects={projects}
+                teamMembers={teamMembers as TaskBoardTeamMember[]}
+                initialView="kanban"
+                projectId={project.id}
+                phases={(project.project_phases || []) as Phase[]}
+              />
+            </motion.div>
+          )}
 
-        {activeTab === 'settings' && (
-          <motion.div
-            key="settings"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ProjectSettings project={project as any} />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {activeTab === "files" && (
+            <motion.div
+              key="files"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProjectFilesTab
+                projectId={project.id}
+                initialFiles={projectFiles || []}
+                initialPhotos={projectPhotos || []}
+                currentImageUrl={project.image_url}
+                onPrimaryPhotoChange={handlePrimaryPhotoChange}
+              />
+            </motion.div>
+          )}
 
-      {/* Task modal - rendered via context */}
-      <TaskModalRenderer
-        projects={projects}
-        teamMembers={teamMembers as TaskBoardTeamMember[]}
-        projectId={project.id}
-        phases={(project.project_phases || []) as Phase[]}
-        tasks={(project.tasks || []) as TaskWithRelations[]}
-        onSuccess={() => router.refresh()}
-      />
+          {activeTab === "settings" && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ProjectSettings project={project as any} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Task modal - rendered via context */}
+        <TaskModalRenderer
+          projects={projects}
+          teamMembers={teamMembers as TaskBoardTeamMember[]}
+          projectId={project.id}
+          tasks={(project.tasks || []) as TaskWithRelations[]}
+          onSuccess={() => router.refresh()}
+        />
       </div>
     </TaskModalProvider>
   );

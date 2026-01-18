@@ -1,13 +1,12 @@
-import { Suspense } from 'react';
-import { redirect } from 'next/navigation';
-import { AcceptInviteContent } from './AcceptInviteContent';
-import { validateInvitationToken } from '@/app/actions/accept-invite';
+import { Suspense } from "react";
+import { AcceptInviteContent } from "./AcceptInviteContent";
+import { validateInvitationToken } from "@/app/actions/accept-invite";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: 'Accept Invitation | GenHub',
-  description: 'Accept your team invitation and join GenHub',
+  title: "Accept Invitation | GenHub",
+  description: "Accept your team invitation and join GenHub",
 };
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
@@ -24,19 +23,28 @@ export default async function AcceptInvitePage({
   );
 }
 
-async function AcceptInviteWrapper({ searchParams }: { searchParams: SearchParams }) {
+async function AcceptInviteWrapper({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const params = await searchParams;
   const token = params.token as string | undefined;
 
   // If no token provided, show error
   if (!token) {
-    return <AcceptInviteContent error="Missing invitation token. Please check your invitation link." />;
+    return (
+      <AcceptInviteContent error="Missing invitation token. Please check your invitation link." />
+    );
   }
 
   // Validate token format (UUID)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const uuidRegex =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(token)) {
-    return <AcceptInviteContent error="Invalid invitation token format. Please check your invitation link." />;
+    return (
+      <AcceptInviteContent error="Invalid invitation token format. Please check your invitation link." />
+    );
   }
 
   // Validate the invitation token on the server

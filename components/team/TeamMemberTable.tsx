@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useEffect, useMemo } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { UserRole, MemberStatus } from '@/types/db/enums';
-import { updateTeamMemberRole, deactivateTeamMember } from '@/app/actions/team';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import {
+  useState,
+  useTransition,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import type { UserRole, MemberStatus } from "@/types/db/enums";
+import { updateTeamMemberRole, deactivateTeamMember } from "@/app/actions/team";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +19,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
   Table,
   TableBody,
@@ -21,7 +27,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,8 +37,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   MoreVertical,
   ArrowUpDown,
@@ -45,9 +51,9 @@ import {
   UserPlus,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import { InviteTeamMemberModal } from './InviteTeamMemberModal';
+} from "lucide-react";
+import { toast } from "sonner";
+import { InviteTeamMemberModal } from "./InviteTeamMemberModal";
 
 interface TeamMember {
   id: string;
@@ -71,69 +77,81 @@ interface TeamMemberTableProps {
   companyId: string;
 }
 
-type SortField = 'name' | 'email' | 'role' | 'status';
-type SortDirection = 'asc' | 'desc';
+type SortField = "name" | "email" | "role" | "status";
+type SortDirection = "asc" | "desc";
 
 const ITEMS_PER_PAGE = 25;
 
 const ROLE_CONFIG = {
   admin: {
-    label: 'Admin',
-    color: 'bg-[#001B51] text-white border-[#001B51]',
+    label: "Admin",
+    color: "bg-[#001B51] text-white border-[#001B51]",
     icon: Briefcase,
   },
   project_manager: {
-    label: 'Project Manager',
-    color: 'bg-[#3C3C3C] text-white border-[#3C3C3C]',
+    label: "Project Manager",
+    color: "bg-[#3C3C3C] text-white border-[#3C3C3C]",
     icon: Building2,
   },
   foreman: {
-    label: 'Foreman',
-    color: 'bg-[#7A7A7A] text-white border-[#7A7A7A]',
+    label: "Foreman",
+    color: "bg-[#7A7A7A] text-white border-[#7A7A7A]",
     icon: HardHat,
   },
   field_worker: {
-    label: 'Field Worker',
-    color: 'bg-green-700 text-white border-green-700',
+    label: "Field Worker",
+    color: "bg-green-700 text-white border-green-700",
     icon: Hammer,
   },
   subcontractor: {
-    label: 'Subcontractor',
-    color: 'bg-yellow-600 text-white border-yellow-600',
+    label: "Subcontractor",
+    color: "bg-yellow-600 text-white border-yellow-600",
     icon: Users,
   },
   client: {
-    label: 'Client',
-    color: 'bg-blue-600 text-white border-blue-600',
+    label: "Client",
+    color: "bg-blue-600 text-white border-blue-600",
     icon: UserCheck,
   },
 } as const;
 
 const STATUS_CONFIG = {
   active: {
-    label: 'Active',
-    color: 'bg-green-100 text-green-800 border-green-300',
+    label: "Active",
+    color: "bg-green-100 text-green-800 border-green-300",
   },
   invited: {
-    label: 'Invited',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+    label: "Invited",
+    color: "bg-yellow-100 text-yellow-800 border-yellow-300",
   },
   inactive: {
-    label: 'Inactive',
-    color: 'bg-gray-100 text-gray-800 border-gray-300',
+    label: "Inactive",
+    color: "bg-gray-100 text-gray-800 border-gray-300",
   },
 } as const;
 
-export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMemberTableProps) {
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+export function TeamMemberTable({
+  members,
+  currentUserRole,
+  companyId,
+}: TeamMemberTableProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   const [sortField, setSortField] = useState<SortField>(
-    (searchParams.get('sort') as SortField) || 'name'
+    (searchParams.get("sort") as SortField) || "name",
   );
   const [sortDirection, setSortDirection] = useState<SortDirection>(
-    (searchParams.get('order') as SortDirection) || 'asc'
+    (searchParams.get("order") as SortDirection) || "asc",
   );
   const [isPending, startTransition] = useTransition();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -141,30 +159,34 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
   const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
   const [optimisticMembers, setOptimisticMembers] = useState(members);
 
-  const isGCAdmin = currentUserRole === 'admin';
+  const isGCAdmin = currentUserRole === "admin";
 
   // Sync optimistic state with server state
   useEffect(() => {
     setOptimisticMembers(members);
   }, [members]);
 
-  const handleSort = (field: SortField) => {
-    const newDirection = sortField === field && sortDirection === 'asc' ? 'desc' : 'asc';
+  const handleSort = useCallback(
+    (field: SortField) => {
+      const newDirection =
+        sortField === field && sortDirection === "asc" ? "desc" : "asc";
 
-    // Update URL params
-    const params = new URLSearchParams(searchParams);
-    params.set('sort', field);
-    params.set('order', newDirection);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      // Update URL params
+      const params = new URLSearchParams(searchParams);
+      params.set("sort", field);
+      params.set("order", newDirection);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
 
-    // Update state
-    if (sortField === field) {
-      setSortDirection(newDirection);
-    } else {
-      setSortField(field);
-      setSortDirection('asc');
-    }
-  };
+      // Update state
+      if (sortField === field) {
+        setSortDirection(newDirection);
+      } else {
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    },
+    [pathname, router, searchParams, sortField, sortDirection],
+  );
 
   // Memoized sorted and paginated members
   const sortedMembers = useMemo(() => {
@@ -175,19 +197,19 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
       let bValue: string;
 
       switch (sortField) {
-        case 'name':
-          aValue = a.user_profiles?.name || '';
-          bValue = b.user_profiles?.name || '';
+        case "name":
+          aValue = a.user_profiles?.name || "";
+          bValue = b.user_profiles?.name || "";
           break;
-        case 'email':
-          aValue = a.user_profiles?.email || '';
-          bValue = b.user_profiles?.email || '';
+        case "email":
+          aValue = a.user_profiles?.email || "";
+          bValue = b.user_profiles?.email || "";
           break;
-        case 'role':
+        case "role":
           aValue = a.role;
           bValue = b.role;
           break;
-        case 'status':
+        case "status":
           aValue = a.status;
           bValue = b.status;
           break;
@@ -196,7 +218,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
       }
 
       const comparison = aValue.localeCompare(bValue);
-      return sortDirection === 'asc' ? comparison : -comparison;
+      return sortDirection === "asc" ? comparison : -comparison;
     });
 
     return membersToSort;
@@ -209,26 +231,29 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
 
   const totalPages = Math.ceil(sortedMembers.length / ITEMS_PER_PAGE);
 
-  const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    // Optimistic update
-    const previousMembers = [...optimisticMembers];
-    setOptimisticMembers((prev) =>
-      prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m))
-    );
+  const handleRoleChange = useCallback(
+    async (userId: string, newRole: UserRole) => {
+      // Optimistic update
+      const previousMembers = [...optimisticMembers];
+      setOptimisticMembers((prev) =>
+        prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m)),
+      );
 
-    startTransition(async () => {
-      const result = await updateTeamMemberRole(userId, newRole);
-      if (result.error) {
-        // Revert on error
-        setOptimisticMembers(previousMembers);
-        toast.error(result.error);
-      } else {
-        toast.success('Role updated successfully');
-      }
-    });
-  };
+      startTransition(async () => {
+        const result = await updateTeamMemberRole(userId, newRole);
+        if (result.error) {
+          // Revert on error
+          setOptimisticMembers(previousMembers);
+          toast.error(result.error);
+        } else {
+          toast.success("Role updated successfully");
+        }
+      });
+    },
+    [optimisticMembers],
+  );
 
-  const handleDeactivate = async (userId: string) => {
+  const handleDeactivate = useCallback((userId: string) => {
     setDeactivateUserId(null);
 
     startTransition(async () => {
@@ -236,19 +261,10 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success('Team member deactivated successfully');
+        toast.success("Team member deactivated successfully");
       }
     });
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -258,7 +274,9 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
           <div className="h-10 w-1 bg-[#001B51] rounded-full" />
           <div>
             <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
-            <p className="text-sm text-gray-600">{members.length} total members</p>
+            <p className="text-sm text-gray-600">
+              {members.length} total members
+            </p>
           </div>
         </div>
 
@@ -281,7 +299,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
               <TableRow className="bg-gray-50 border-b-2 border-[#001B51]/10">
                 <TableHead className="font-bold text-gray-900">
                   <button
-                    onClick={() => handleSort('name')}
+                    onClick={() => handleSort("name")}
                     className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
                   >
                     Member
@@ -290,7 +308,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                 </TableHead>
                 <TableHead className="font-bold text-gray-900">
                   <button
-                    onClick={() => handleSort('email')}
+                    onClick={() => handleSort("email")}
                     className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
                   >
                     Email
@@ -299,7 +317,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                 </TableHead>
                 <TableHead className="font-bold text-gray-900">
                   <button
-                    onClick={() => handleSort('role')}
+                    onClick={() => handleSort("role")}
                     className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
                   >
                     Role
@@ -308,26 +326,39 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                 </TableHead>
                 <TableHead className="font-bold text-gray-900">
                   <button
-                    onClick={() => handleSort('status')}
+                    onClick={() => handleSort("status")}
                     className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
                   >
                     Status
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="font-bold text-gray-900">Projects</TableHead>
-                {isGCAdmin && <TableHead className="font-bold text-gray-900">Actions</TableHead>}
+                <TableHead className="font-bold text-gray-900">
+                  Projects
+                </TableHead>
+                {isGCAdmin && (
+                  <TableHead className="font-bold text-gray-900">
+                    Actions
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedMembers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={isGCAdmin ? 6 : 5} className="text-center py-12">
+                  <TableCell
+                    colSpan={isGCAdmin ? 6 : 5}
+                    className="text-center py-12"
+                  >
                     <div className="flex flex-col items-center gap-2">
                       <Users className="h-12 w-12 text-gray-300" />
-                      <p className="text-gray-500 font-medium">No team members found</p>
+                      <p className="text-gray-500 font-medium">
+                        No team members found
+                      </p>
                       <p className="text-sm text-gray-400">
-                        {isGCAdmin ? 'Click "Invite Team Member" to get started' : 'Contact your Admin to invite members'}
+                        {isGCAdmin
+                          ? 'Click "Invite Team Member" to get started'
+                          : "Contact your Admin to invite members"}
                       </p>
                     </div>
                   </TableCell>
@@ -346,25 +377,32 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-10 w-10 border-2 border-gray-200">
-                            <AvatarImage src={member.user_profiles?.avatar_url || undefined} />
+                            <AvatarImage
+                              src={
+                                member.user_profiles?.avatar_url || undefined
+                              }
+                            />
                             <AvatarFallback className="bg-[#001B51] text-white font-semibold">
-                              {getInitials(member.user_profiles?.name || 'U')}
+                              {getInitials(member.user_profiles?.name || "U")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-semibold text-gray-900">
-                              {member.user_profiles?.name || 'Unknown'}
+                              {member.user_profiles?.name || "Unknown"}
                             </p>
                             {member.activated_at && (
                               <p className="text-xs text-gray-500">
-                                Joined {new Date(member.activated_at).toLocaleDateString()}
+                                Joined{" "}
+                                {new Date(
+                                  member.activated_at,
+                                ).toLocaleDateString()}
                               </p>
                             )}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-gray-700">
-                        {member.user_profiles?.email || 'No email'}
+                        {member.user_profiles?.email || "No email"}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -384,7 +422,9 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-gray-700 font-medium">{member.project_count}</span>
+                        <span className="text-gray-700 font-medium">
+                          {member.project_count}
+                        </span>
                       </TableCell>
                       {isGCAdmin && (
                         <TableCell>
@@ -395,7 +435,7 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                                 size="sm"
                                 className="h-8 w-8 p-0 hover:bg-gray-100"
                                 disabled={isPending}
-                                aria-label={`Actions for ${member.user_profiles?.name || 'team member'}`}
+                                aria-label={`Actions for ${member.user_profiles?.name || "team member"}`}
                               >
                                 <MoreVertical className="h-4 w-4" />
                                 <span className="sr-only">Open menu</span>
@@ -409,24 +449,37 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
                               <DropdownMenuLabel className="text-xs font-semibold text-gray-500 uppercase">
                                 Change Role
                               </DropdownMenuLabel>
-                              {Object.entries(ROLE_CONFIG).map(([role, config]) => {
-                                const Icon = config.icon;
-                                return (
-                                  <DropdownMenuItem
-                                    key={role}
-                                    onClick={() => handleRoleChange(member.user_id, role as UserRole)}
-                                    disabled={member.role === role || isPending}
-                                    className="cursor-pointer"
-                                  >
-                                    <Icon className="h-4 w-4 mr-2" />
-                                    {config.label}
-                                  </DropdownMenuItem>
-                                );
-                              })}
+                              {Object.entries(ROLE_CONFIG).map(
+                                ([role, config]) => {
+                                  const Icon = config.icon;
+                                  return (
+                                    <DropdownMenuItem
+                                      key={role}
+                                      onClick={() =>
+                                        handleRoleChange(
+                                          member.user_id,
+                                          role as UserRole,
+                                        )
+                                      }
+                                      disabled={
+                                        member.role === role || isPending
+                                      }
+                                      className="cursor-pointer"
+                                    >
+                                      <Icon className="h-4 w-4 mr-2" />
+                                      {config.label}
+                                    </DropdownMenuItem>
+                                  );
+                                },
+                              )}
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onClick={() => setDeactivateUserId(member.user_id)}
-                                disabled={member.status === 'inactive' || isPending}
+                                onClick={() =>
+                                  setDeactivateUserId(member.user_id)
+                                }
+                                disabled={
+                                  member.status === "inactive" || isPending
+                                }
                                 className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
                               >
                                 Deactivate Member
@@ -447,8 +500,8 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
         {sortedMembers.length > ITEMS_PER_PAGE && (
           <div className="flex items-center justify-between px-4 py-4 border-t">
             <div className="text-sm text-gray-600">
-              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to{' '}
-              {Math.min(currentPage * ITEMS_PER_PAGE, sortedMembers.length)} of{' '}
+              Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
+              {Math.min(currentPage * ITEMS_PER_PAGE, sortedMembers.length)} of{" "}
               {sortedMembers.length} members
             </div>
             <div className="flex items-center gap-2">
@@ -468,7 +521,9 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
               >
@@ -489,8 +544,8 @@ export function TeamMemberTable({ members, currentUserRole, companyId }: TeamMem
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate Team Member?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will deactivate the team member's access immediately. They can be
-              reactivated later by a Admin.
+              This will deactivate the team member's access immediately. They
+              can be reactivated later by a Admin.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

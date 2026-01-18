@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Home,
   FolderKanban,
@@ -13,14 +13,14 @@ import {
   Receipt,
   Plus,
   LucideIcon,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { MoreMenu } from './MoreMenu';
-import { useBottomNav } from '@/lib/contexts/BottomNavContext';
-import { CreateProjectModal } from '@/components/projects/CreateProjectModal';
-import { TaskModal } from '@/components/tasks/TaskModal';
-import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
-import type { Session } from 'next-auth';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { MoreMenu } from "./MoreMenu";
+import { useBottomNav } from "@/lib/contexts/BottomNavContext";
+import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
+import { TaskModal } from "@/components/tasks/TaskModal";
+import { CreateExpenseModal } from "@/components/expenses/CreateExpenseModal";
+import type { Session } from "next-auth";
 
 // Navigation item configuration with create modal mapping
 interface NavItem {
@@ -28,18 +28,33 @@ interface NavItem {
   href: string;
   icon?: LucideIcon;
   isMore?: boolean;
-  createModalType?: 'project' | 'task' | 'expense' | 'material';
+  createModalType?: "project" | "task" | "expense" | "material";
   logoImage?: boolean;
 }
 
 // Bottom navigation items for mobile - 6 core items
 const navigationItems: NavItem[] = [
-  { name: 'Home', href: '/app', icon: Home },
-  { name: 'Projects', href: '/app/projects', icon: FolderKanban, createModalType: 'project' },
-  { name: 'Tasks', href: '/app/tasks', icon: ClipboardList, createModalType: 'task' },
-  { name: 'Materials', href: '/app/materials', icon: Package },
-  { name: 'Expenses', href: '/app/expenses', icon: Receipt, createModalType: 'expense' },
-  { name: 'Menu', href: '#more', logoImage: true, isMore: true },
+  { name: "Home", href: "/app", icon: Home },
+  {
+    name: "Projects",
+    href: "/app/projects",
+    icon: FolderKanban,
+    createModalType: "project",
+  },
+  {
+    name: "Tasks",
+    href: "/app/tasks",
+    icon: ClipboardList,
+    createModalType: "task",
+  },
+  { name: "Materials", href: "/app/materials", icon: Package },
+  {
+    name: "Expenses",
+    href: "/app/expenses",
+    icon: Receipt,
+    createModalType: "expense",
+  },
+  { name: "Menu", href: "#more", logoImage: true, isMore: true },
 ];
 
 interface BottomNavigationProps {
@@ -63,20 +78,29 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
 
   // Check if current path matches nav item
   const isActive = (href: string) => {
-    if (href === '/app') {
-      return pathname === '/app';
+    if (href === "/app") {
+      return pathname === "/app";
     }
     return pathname.startsWith(href);
   };
 
   // Check if "More" menu items are active
   const isMoreActive = () => {
-    const moreRoutes = ['/app/chat', '/app/team', '/app/settings', '/app/notifications'];
-    return moreRoutes.some(route => pathname.startsWith(route));
+    const moreRoutes = [
+      "/app/chat",
+      "/app/team",
+      "/app/settings",
+      "/app/notifications",
+    ];
+    return moreRoutes.some((route) => pathname.startsWith(route));
   };
 
   // Handle navigation item click
-  const handleNavClick = (item: NavItem, active: boolean, e: React.MouseEvent) => {
+  const handleNavClick = (
+    item: NavItem,
+    active: boolean,
+    e: React.MouseEvent,
+  ) => {
     // If item is active and has a create modal type, open the modal instead of navigating
     if (active && item.createModalType && hasCreateModal(item.href)) {
       e.preventDefault();
@@ -91,9 +115,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
   };
 
   // Get modal data for each type
-  const projectData = getCreateModalData('/app/projects');
-  const taskData = getCreateModalData('/app/tasks');
-  const expenseData = getCreateModalData('/app/expenses');
+  const taskData = getCreateModalData("/app/tasks");
+  const expenseData = getCreateModalData("/app/expenses");
 
   // Handle modal success
   const handleModalSuccess = () => {
@@ -106,11 +129,11 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       {/* Bottom Navigation Bar - Fixed at bottom, hidden on desktop */}
       <nav
         className={cn(
-          'fixed bottom-0 left-0 right-0 z-40 md:hidden',
-          'bg-white border-t border-gray-200 shadow-construction-lg'
+          "fixed bottom-0 left-0 right-0 z-40 md:hidden",
+          "bg-white border-t border-gray-200 shadow-construction-lg",
         )}
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
         {/* Top accent line - construction blue */}
@@ -132,8 +155,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   key={item.name}
                   onClick={handleMoreClick}
                   className={cn(
-                    'flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors',
-                    'active:bg-gray-100'
+                    "flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors",
+                    "active:bg-gray-100",
                   )}
                   aria-label="Open more menu"
                 >
@@ -143,10 +166,10 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   >
                     <div
                       className={cn(
-                        'flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200',
+                        "flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200",
                         active
-                          ? 'bg-construction-blue text-white'
-                          : 'text-gray-500'
+                          ? "bg-construction-blue text-white"
+                          : "text-gray-500",
                       )}
                     >
                       {isLogoItem ? (
@@ -163,10 +186,10 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                     </div>
                     <span
                       className={cn(
-                        'text-[10px] font-bold transition-colors',
+                        "text-[10px] font-bold transition-colors",
                         active
-                          ? 'mt-0.5 text-construction-blue'
-                          : '-mt-1.5 text-gray-500'
+                          ? "mt-0.5 text-construction-blue"
+                          : "-mt-1.5 text-gray-500",
                       )}
                     >
                       {item.name}
@@ -176,7 +199,11 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                       <motion.div
                         layoutId="bottomNavIndicator"
                         className="absolute -bottom-1 w-1 h-1 rounded-full bg-construction-blue"
-                        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                        }}
                       />
                     )}
                   </motion.div>
@@ -191,8 +218,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                 href={item.href}
                 onClick={(e) => handleNavClick(item, active, e)}
                 className={cn(
-                  'flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors',
-                  'active:bg-gray-100'
+                  "flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors",
+                  "active:bg-gray-100",
                 )}
               >
                 <motion.div
@@ -203,29 +230,32 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                     /* 3D Plus Button - Elevated with depth effect */
                     <div
                       className={cn(
-                        'flex items-center justify-center w-11 h-11 rounded-xl',
-                        'bg-gradient-to-b from-[#0a2d6e] to-[#001B51]',
-                        'text-white',
+                        "flex items-center justify-center w-11 h-11 rounded-xl",
+                        "bg-gradient-to-b from-[#0a2d6e] to-[#001B51]",
+                        "text-white",
                         /* 3D depth effect - layered shadows */
-                        'shadow-[0_4px_0_0_#000d2a,0_6px_8px_-2px_rgba(0,27,81,0.4),0_2px_4px_-1px_rgba(0,0,0,0.2)]',
+                        "shadow-[0_4px_0_0_#000d2a,0_6px_8px_-2px_rgba(0,27,81,0.4),0_2px_4px_-1px_rgba(0,0,0,0.2)]",
                         /* Inner highlight for 3D illusion */
-                        'border-t border-t-[#1a4080]/50',
+                        "border-t border-t-[#1a4080]/50",
                         /* Pressed state - moves down, shadow shrinks */
-                        'active:translate-y-[2px]',
-                        'active:shadow-[0_2px_0_0_#000d2a,0_3px_4px_-2px_rgba(0,27,81,0.3)]',
-                        'active:from-[#001B51] active:to-[#00132e]',
-                        'transition-all duration-100'
+                        "active:translate-y-[2px]",
+                        "active:shadow-[0_2px_0_0_#000d2a,0_3px_4px_-2px_rgba(0,27,81,0.3)]",
+                        "active:from-[#001B51] active:to-[#00132e]",
+                        "transition-all duration-100",
                       )}
                     >
-                      <Plus className="w-5 h-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]" strokeWidth={2.5} />
+                      <Plus
+                        className="w-5 h-5 drop-shadow-[0_1px_1px_rgba(0,0,0,0.3)]"
+                        strokeWidth={2.5}
+                      />
                     </div>
                   ) : (
                     <div
                       className={cn(
-                        'flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200',
+                        "flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200",
                         active
-                          ? 'bg-construction-blue text-white'
-                          : 'text-gray-500'
+                          ? "bg-construction-blue text-white"
+                          : "text-gray-500",
                       )}
                     >
                       {isLogoItem ? (
@@ -243,20 +273,24 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   )}
                   <span
                     className={cn(
-                      'text-[10px] font-bold transition-colors',
+                      "text-[10px] font-bold transition-colors",
                       active
-                        ? 'mt-0.5 text-construction-blue'
-                        : '-mt-1.5 text-gray-500'
+                        ? "mt-0.5 text-construction-blue"
+                        : "-mt-1.5 text-gray-500",
                     )}
                   >
-                    {active && showPlusIcon ? 'Add ' + item.name : item.name}
+                    {active && showPlusIcon ? "Add " + item.name : item.name}
                   </span>
                   {/* Active indicator dot */}
                   {active && (
                     <motion.div
                       layoutId="bottomNavIndicator"
                       className="absolute -bottom-1 w-1 h-1 rounded-full bg-construction-blue"
-                      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
+                      }}
                     />
                   )}
                 </motion.div>
@@ -267,10 +301,14 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       </nav>
 
       {/* More Menu Modal */}
-      <MoreMenu isOpen={isMoreMenuOpen} onClose={() => setIsMoreMenuOpen(false)} session={session} />
+      <MoreMenu
+        isOpen={isMoreMenuOpen}
+        onClose={() => setIsMoreMenuOpen(false)}
+        session={session}
+      />
 
       {/* Create Project Modal */}
-      {openModal === 'project' && (
+      {openModal === "project" && (
         <CreateProjectModal
           isOpen={true}
           onClose={closeCreateModal}
@@ -279,7 +317,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       )}
 
       {/* Create Task Modal */}
-      {openModal === 'task' && taskData && (
+      {openModal === "task" && taskData && (
         <TaskModal
           isOpen={true}
           onClose={closeCreateModal}
@@ -291,7 +329,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       )}
 
       {/* Create Expense Modal */}
-      {openModal === 'expense' && expenseData && (
+      {openModal === "expense" && expenseData && (
         <CreateExpenseModal
           projects={(expenseData.projects || []) as any}
           tasks={expenseData.tasks || []}

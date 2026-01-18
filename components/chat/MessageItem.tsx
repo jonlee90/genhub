@@ -1,21 +1,38 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MessageWithSender, EntityReference } from '@/types/db/chat';
-import { Reply, Copy, Pencil, Trash2, Ban, Check, Loader2, AlertCircle, RefreshCw, Smile, MessageSquare } from 'lucide-react';
-import { toast } from 'sonner';
-import { useSession } from 'next-auth/react';
-import type { MessageStatus } from '@/lib/hooks/useMessages';
-import { MessageReactions, MessageReactionGroup } from './MessageReactions';
-import { ReactionPicker } from './ReactionPicker';
-import { FilePreview, MessageAttachment } from './FilePreview';
-import { EntityPreview } from './EntityPreview';
-import { EditMessageForm } from './EditMessageForm';
-import { DeleteConfirmDialog } from './DeleteConfirmDialog';
-import { getMessageReplyCounts, getMessagesReactions, getMessagesAttachments, toggleReaction } from '@/app/actions/chat';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MessageWithSender, EntityReference } from "@/types/db/chat";
+import {
+  Reply,
+  Copy,
+  Pencil,
+  Trash2,
+  Ban,
+  Check,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  Smile,
+  MessageSquare,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useSession } from "next-auth/react";
+import type { MessageStatus } from "@/lib/hooks/useMessages";
+import { MessageReactions, MessageReactionGroup } from "./MessageReactions";
+import { ReactionPicker } from "./ReactionPicker";
+import { FilePreview, MessageAttachment } from "./FilePreview";
+import { EntityPreview } from "./EntityPreview";
+import { EditMessageForm } from "./EditMessageForm";
+import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import {
+  getMessageReplyCounts,
+  getMessagesReactions,
+  getMessagesAttachments,
+  toggleReaction,
+} from "@/app/actions/chat";
 
 interface MessageItemProps {
   message: MessageWithSender;
@@ -34,8 +51,8 @@ interface MessageItemProps {
 export function MessageItem({
   message,
   onReply,
-  onEdit,
-  onDelete,
+  onEdit: _onEdit,
+  onDelete: _onDelete,
   onRetry,
   onOpenThread,
   isOptimistic,
@@ -53,36 +70,40 @@ export function MessageItem({
   const { data: session } = useSession();
 
   console.log(
-    '[MessageItem] Rendering message:',
+    "[MessageItem] Rendering message:",
     message.id,
-    'Deleted:',
+    "Deleted:",
     !!message.deleted_at,
-    'Optimistic:',
+    "Optimistic:",
     isOptimistic,
-    'Status:',
-    status
+    "Status:",
+    status,
   );
 
   // Debug: Check if message is from current user
   const isOwnMessage = session?.user?.id === message.sender_id;
 
   // Debug: Determine if message is in a pending state
-  const isSending = isOptimistic && status === 'sending';
-  const hasFailed = isOptimistic && status === 'error';
+  const isSending = isOptimistic && status === "sending";
+  const hasFailed = isOptimistic && status === "error";
 
   // Debug: Fetch reactions, reply counts, and attachments
   useEffect(() => {
     if (!message.id || isOptimistic) return;
 
     async function fetchMessageData() {
-      console.log('[MessageItem] Fetching reactions, replies, and attachments for message:', message.id);
+      console.log(
+        "[MessageItem] Fetching reactions, replies, and attachments for message:",
+        message.id,
+      );
 
       // Fetch all data in parallel
-      const [reactionsResult, replyCountResult, attachmentsResult] = await Promise.all([
-        getMessagesReactions([message.id]),
-        getMessageReplyCounts([message.id]),
-        getMessagesAttachments([message.id]),
-      ]);
+      const [reactionsResult, replyCountResult, attachmentsResult] =
+        await Promise.all([
+          getMessagesReactions([message.id]),
+          getMessageReplyCounts([message.id]),
+          getMessagesAttachments([message.id]),
+        ]);
 
       if (reactionsResult.success) {
         setReactions(reactionsResult.reactionsMap?.[message.id] || []);
@@ -102,7 +123,7 @@ export function MessageItem({
 
   // Debug: Handle reaction change
   const handleReactionChange = async () => {
-    console.log('[MessageItem] Reaction changed, refreshing reactions...');
+    console.log("[MessageItem] Reaction changed, refreshing reactions...");
     const result = await getMessagesReactions([message.id]);
     if (result.success) {
       setReactions(result.reactionsMap?.[message.id] || []);
@@ -111,7 +132,7 @@ export function MessageItem({
 
   // Debug: Handle attachment deletion
   const handleAttachmentDelete = async () => {
-    console.log('[MessageItem] Attachment deleted, refreshing attachments...');
+    console.log("[MessageItem] Attachment deleted, refreshing attachments...");
     const result = await getMessagesAttachments([message.id]);
     if (result.success) {
       setAttachments(result.attachmentsMap?.[message.id] || []);
@@ -123,12 +144,12 @@ export function MessageItem({
     try {
       await navigator.clipboard.writeText(message.content);
       setCopied(true);
-      toast.success('Message copied to clipboard');
+      toast.success("Message copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
-      console.log('[MessageItem] Copied message to clipboard');
+      console.log("[MessageItem] Copied message to clipboard");
     } catch (error) {
-      console.error('[MessageItem] Failed to copy:', error);
-      toast.error('Failed to copy message');
+      console.error("[MessageItem] Failed to copy:", error);
+      toast.error("Failed to copy message");
     }
   };
 
@@ -138,9 +159,9 @@ export function MessageItem({
       animate={{ opacity: isSending ? 0.7 : 1, y: 0 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'group relative py-2',
-        isSending && 'opacity-70',
-        hasFailed && 'bg-red-50/50 -mx-2 px-2 rounded-lg'
+        "group relative py-2",
+        isSending && "opacity-70",
+        hasFailed && "bg-red-50/50 -mx-2 px-2 rounded-lg",
       )}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -174,7 +195,9 @@ export function MessageItem({
                 {formatMessageTime(message.created_at)}
               </span>
               {message.edited_at && (
-                <span className="text-[10px] font-mono text-gray-400 italic">(EDITED)</span>
+                <span className="text-[10px] font-mono text-gray-400 italic">
+                  (EDITED)
+                </span>
               )}
             </div>
 
@@ -212,10 +235,10 @@ export function MessageItem({
               ) : (
                 <div
                   className={cn(
-                    'text-sm whitespace-pre-wrap break-words leading-relaxed',
-                    isSending && 'text-gray-500',
-                    hasFailed && 'text-gray-800',
-                    !isOptimistic && 'text-gray-800'
+                    "text-sm whitespace-pre-wrap break-words leading-relaxed",
+                    isSending && "text-gray-500",
+                    hasFailed && "text-gray-800",
+                    !isOptimistic && "text-gray-800",
                   )}
                 >
                   {message.content}
@@ -235,9 +258,13 @@ export function MessageItem({
                 <div className="flex items-center gap-2 mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
                   <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-mono font-bold text-red-700">FAILED</span>
+                    <span className="text-xs font-mono font-bold text-red-700">
+                      FAILED
+                    </span>
                     {error && (
-                      <p className="text-[10px] text-red-600 truncate">{error}</p>
+                      <p className="text-[10px] text-red-600 truncate">
+                        {error}
+                      </p>
                     )}
                   </div>
                   {onRetry && (
@@ -264,17 +291,21 @@ export function MessageItem({
           )}
 
           {/* Debug: Entity previews */}
-          {message.entity_references && Array.isArray(message.entity_references) && message.entity_references.length > 0 && (
-            <div className="space-y-3 mt-3">
-              {(message.entity_references as unknown as EntityReference[]).map((ref, index) => (
-                <EntityPreview
-                  key={`${ref.type}-${ref.id}-${index}`}
-                  type={ref.type}
-                  id={ref.id}
-                />
-              ))}
-            </div>
-          )}
+          {message.entity_references &&
+            Array.isArray(message.entity_references) &&
+            message.entity_references.length > 0 && (
+              <div className="space-y-3 mt-3">
+                {(
+                  message.entity_references as unknown as EntityReference[]
+                ).map((ref, index) => (
+                  <EntityPreview
+                    key={`${ref.type}-${ref.id}-${index}`}
+                    type={ref.type}
+                    id={ref.id}
+                  />
+                ))}
+              </div>
+            )}
 
           {/* Debug: Reactions */}
           {reactions.length > 0 && (
@@ -290,16 +321,16 @@ export function MessageItem({
             <button
               onClick={() => onOpenThread?.(message.id)}
               className={cn(
-                'flex items-center gap-1.5 mt-2',
-                'px-2.5 py-1.5 bg-construction-blue/5 hover:bg-construction-blue/10',
-                'border-2 border-construction-blue/20 hover:border-construction-blue/40',
-                'rounded-lg transition-all duration-200',
-                'group'
+                "flex items-center gap-1.5 mt-2",
+                "px-2.5 py-1.5 bg-construction-blue/5 hover:bg-construction-blue/10",
+                "border-2 border-construction-blue/20 hover:border-construction-blue/40",
+                "rounded-lg transition-all duration-200",
+                "group",
               )}
             >
               <MessageSquare className="h-3.5 w-3.5 text-construction-blue" />
               <span className="text-xs font-mono font-bold text-construction-blue">
-                {replyCount} {replyCount === 1 ? 'reply' : 'replies'}
+                {replyCount} {replyCount === 1 ? "reply" : "replies"}
               </span>
             </button>
           )}
@@ -315,10 +346,10 @@ export function MessageItem({
               }}
               transition={{ duration: 0.15 }}
               className={cn(
-                'absolute top-0 right-2 flex items-center gap-0.5',
-                'bg-white border-2 border-gray-200 rounded-lg shadow-lg p-1',
-                'transition-opacity',
-                showActions ? 'pointer-events-auto' : 'pointer-events-none'
+                "absolute top-0 right-2 flex items-center gap-0.5",
+                "bg-white border-2 border-gray-200 rounded-lg shadow-lg p-1",
+                "transition-opacity",
+                showActions ? "pointer-events-auto" : "pointer-events-none",
               )}
             >
               {/* React button */}
@@ -359,7 +390,7 @@ export function MessageItem({
               {isOwnMessage && !isEditing && (
                 <button
                   onClick={() => {
-                    console.log('[MessageItem] Edit button clicked');
+                    console.log("[MessageItem] Edit button clicked");
                     setIsEditing(true);
                     setShowActions(false);
                   }}
@@ -375,7 +406,7 @@ export function MessageItem({
               {isOwnMessage && !isEditing && (
                 <button
                   onClick={() => {
-                    console.log('[MessageItem] Delete button clicked');
+                    console.log("[MessageItem] Delete button clicked");
                     setShowDeleteDialog(true);
                     setShowActions(false);
                   }}
@@ -420,9 +451,9 @@ export function MessageItem({
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -437,9 +468,9 @@ function formatMessageTime(timestamp: string): string {
   yesterday.setDate(yesterday.getDate() - 1);
   const isYesterday = date.toDateString() === yesterday.toDateString();
 
-  const timeStr = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
+  const timeStr = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   });
 
@@ -447,9 +478,9 @@ function formatMessageTime(timestamp: string): string {
   if (isYesterday) return `YDA ${timeStr}`;
 
   return (
-    date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     }) + ` ${timeStr}`
   );
 }

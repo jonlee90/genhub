@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -13,19 +13,18 @@ import {
   Users,
   Settings,
   Bell,
-  Menu,
   X,
   ChevronDown,
   HardHat,
   MessageSquare,
   Building2,
   UserPlus,
-  Crown
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/user/UserMenu";
-import type { Session } from 'next-auth';
+import type { Session } from "next-auth";
 
 // Debug: Aceternity UI enhanced sidebar with construction theme
 interface NavigationItem {
@@ -63,10 +62,15 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
   const pathname = usePathname();
   const notificationCount = 3; // Mock notification count
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {},
+  );
 
   // Combine navigation with owner navigation if applicable
-  const allNavigation = isOwner ? [...navigation, ...ownerNavigation] : navigation;
+  const allNavigation = useMemo(
+    () => (isOwner ? [...navigation, ...ownerNavigation] : navigation),
+    [isOwner],
+  );
 
   // Auto-expand parent items when child routes are active
   useEffect(() => {
@@ -74,7 +78,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
     allNavigation.forEach((item) => {
       if (item.children) {
         const isChildActive = item.children.some(
-          (child) => pathname === child.href || pathname.startsWith(child.href + "/")
+          (child) =>
+            pathname === child.href || pathname.startsWith(child.href + "/"),
         );
         if (isChildActive) {
           newExpanded[item.name] = true;
@@ -82,7 +87,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
       }
     });
     setExpandedItems((prev) => ({ ...prev, ...newExpanded }));
-  }, [pathname, isOwner]);
+  }, [pathname, allNavigation]);
 
   const toggleExpanded = (itemName: string) => {
     setExpandedItems((prev) => ({
@@ -120,7 +125,6 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
 
   return (
     <>
-
       {/* Debug: Mobile Drawer with AnimatePresence for smooth transitions */}
       <AnimatePresence mode="wait">
         {isMobileMenuOpen && (
@@ -168,7 +172,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                     <motion.div
                       className="relative flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden"
                       whileHover={{ scale: 1.1, rotate: 5 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 10,
+                      }}
                     >
                       <Image
                         src="/icon-192.png"
@@ -183,7 +191,9 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                         GenHub
                       </h1>
-                      <p className="text-xs text-gray-500 font-medium">Construction Management</p>
+                      <p className="text-xs text-gray-500 font-medium">
+                        Construction Management
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -193,15 +203,24 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                   {/* Main Navigation */}
                   {navigation.map((item, index) => {
                     // Only active if exact match OR starts with href/ AND no other nav item exactly matches
-                    const isActive = pathname === item.href ||
+                    const isActive =
+                      pathname === item.href ||
                       (item.href !== "/app" &&
-                       pathname.startsWith(item.href + "/") &&
-                       !navigation.some(other => other.href !== item.href && pathname === other.href));
-                    const hasChildren = item.children && item.children.length > 0;
+                        pathname.startsWith(item.href + "/") &&
+                        !navigation.some(
+                          (other) =>
+                            other.href !== item.href && pathname === other.href,
+                        ));
+                    const hasChildren =
+                      item.children && item.children.length > 0;
                     const isExpanded = expandedItems[item.name];
-                    const isChildActive = hasChildren && item.children!.some(
-                      (child) => pathname === child.href || pathname.startsWith(child.href + "/")
-                    );
+                    const isChildActive =
+                      hasChildren &&
+                      item.children!.some(
+                        (child) =>
+                          pathname === child.href ||
+                          pathname.startsWith(child.href + "/"),
+                      );
 
                     return (
                       <motion.div
@@ -218,7 +237,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300 w-full",
                               isActive || isChildActive
                                 ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction"
+                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
                             )}
                           >
                             {/* Debug: Active indicator with glow */}
@@ -226,7 +245,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               <motion.div
                                 layoutId="activeNavMobile"
                                 className="absolute left-0 w-1 h-8 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 300,
+                                  damping: 30,
+                                }}
                               />
                             )}
 
@@ -236,10 +259,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 "relative",
                                 isActive || isChildActive
                                   ? "text-construction-blue"
-                                  : "text-gray-700 group-hover:text-construction-blue"
+                                  : "text-gray-700 group-hover:text-construction-blue",
                               )}
-                              whileHover={{ scale: 1.1, rotate: isActive || isChildActive ? 0 : 5 }}
-                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                              whileHover={{
+                                scale: 1.1,
+                                rotate: isActive || isChildActive ? 0 : 5,
+                              }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 400,
+                                damping: 10,
+                              }}
                             >
                               <item.icon className="w-6 h-6 flex-shrink-0" />
                               {(isActive || isChildActive) && (
@@ -247,7 +277,9 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               )}
                             </motion.div>
 
-                            <span className="relative z-10 flex-1 text-left">{item.name}</span>
+                            <span className="relative z-10 flex-1 text-left">
+                              {item.name}
+                            </span>
 
                             {/* Chevron Icon */}
                             <motion.div
@@ -258,10 +290,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             </motion.div>
 
                             {/* Debug: Hover indicator */}
-                            <div className={cn(
-                              "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                              "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                            )} />
+                            <div
+                              className={cn(
+                                "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                              )}
+                            />
                           </button>
                         ) : (
                           <Link
@@ -270,7 +304,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300",
                               isActive
                                 ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction"
+                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
                             )}
                           >
                             {/* Debug: Active indicator with glow */}
@@ -278,7 +312,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               <motion.div
                                 layoutId="activeNavMobile"
                                 className="absolute left-0 w-1 h-8 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 300,
+                                  damping: 30,
+                                }}
                               />
                             )}
 
@@ -288,10 +326,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 "relative",
                                 isActive
                                   ? "text-construction-blue"
-                                  : "text-gray-700 group-hover:text-construction-blue"
+                                  : "text-gray-700 group-hover:text-construction-blue",
                               )}
-                              whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                              transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                              whileHover={{
+                                scale: 1.1,
+                                rotate: isActive ? 0 : 5,
+                              }}
+                              transition={{
+                                type: "spring",
+                                stiffness: 400,
+                                damping: 10,
+                              }}
                             >
                               <item.icon className="w-6 h-6 flex-shrink-0" />
                               {isActive && (
@@ -302,10 +347,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             <span className="relative z-10">{item.name}</span>
 
                             {/* Debug: Hover indicator */}
-                            <div className={cn(
-                              "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                              "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                            )} />
+                            <div
+                              className={cn(
+                                "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                              )}
+                            />
                           </Link>
                         )}
 
@@ -317,12 +364,16 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: "auto", opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                transition={{
+                                  duration: 0.3,
+                                  ease: "easeInOut",
+                                }}
                                 className="overflow-hidden"
                               >
                                 <div className="mt-1 space-y-1 pl-4">
                                   {item.children!.map((child, childIndex) => {
-                                    const isChildItemActive = pathname === child.href ||
+                                    const isChildItemActive =
+                                      pathname === child.href ||
                                       pathname.startsWith(child.href + "/");
 
                                     return (
@@ -330,7 +381,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                         key={child.name}
                                         initial={{ opacity: 0, x: -10 }}
                                         animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: childIndex * 0.05, duration: 0.2 }}
+                                        transition={{
+                                          delay: childIndex * 0.05,
+                                          duration: 0.2,
+                                        }}
                                       >
                                         <Link
                                           href={child.href}
@@ -338,14 +392,18 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                             "group relative flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-all duration-300",
                                             isChildItemActive
                                               ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                              : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction"
+                                              : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
                                           )}
                                         >
                                           {/* Child active indicator - smaller */}
                                           {isChildItemActive && (
                                             <motion.div
                                               className="absolute left-0 w-0.5 h-6 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                              transition={{
+                                                type: "spring",
+                                                stiffness: 300,
+                                                damping: 30,
+                                              }}
                                             />
                                           )}
 
@@ -355,10 +413,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                               "relative",
                                               isChildItemActive
                                                 ? "text-construction-blue"
-                                                : "text-gray-600 group-hover:text-construction-blue"
+                                                : "text-gray-600 group-hover:text-construction-blue",
                                             )}
-                                            whileHover={{ scale: 1.1, rotate: isChildItemActive ? 0 : 5 }}
-                                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                            whileHover={{
+                                              scale: 1.1,
+                                              rotate: isChildItemActive ? 0 : 5,
+                                            }}
+                                            transition={{
+                                              type: "spring",
+                                              stiffness: 400,
+                                              damping: 10,
+                                            }}
                                           >
                                             <child.icon className="w-5 h-5 flex-shrink-0" />
                                             {isChildItemActive && (
@@ -366,13 +431,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                             )}
                                           </motion.div>
 
-                                          <span className="relative z-10">{child.name}</span>
+                                          <span className="relative z-10">
+                                            {child.name}
+                                          </span>
 
                                           {/* Hover indicator */}
-                                          <div className={cn(
-                                            "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                                            "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                                          )} />
+                                          <div
+                                            className={cn(
+                                              "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                              "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                                            )}
+                                          />
                                         </Link>
                                       </motion.div>
                                     );
@@ -398,7 +467,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         </div>
                       </div>
                       {ownerNavigation.map((item, index) => {
-                        const isActive = pathname === item.href ||
+                        const isActive =
+                          pathname === item.href ||
                           pathname.startsWith(item.href + "/");
 
                         return (
@@ -406,7 +476,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             key={item.name}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: (navigation.length + index) * 0.05, duration: 0.3 }}
+                            transition={{
+                              delay: (navigation.length + index) * 0.05,
+                              duration: 0.3,
+                            }}
                           >
                             <Link
                               href={item.href}
@@ -414,14 +487,18 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300",
                                 isActive
                                   ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
-                                  : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction"
+                                  : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
                               )}
                             >
                               {isActive && (
                                 <motion.div
                                   layoutId="activeNavMobileOwner"
                                   className="absolute left-0 w-1 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-r-full"
-                                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 300,
+                                    damping: 30,
+                                  }}
                                 />
                               )}
                               <motion.div
@@ -429,10 +506,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                   "relative",
                                   isActive
                                     ? "text-yellow-600"
-                                    : "text-gray-700 group-hover:text-yellow-600"
+                                    : "text-gray-700 group-hover:text-yellow-600",
                                 )}
-                                whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                whileHover={{
+                                  scale: 1.1,
+                                  rotate: isActive ? 0 : 5,
+                                }}
+                                transition={{
+                                  type: "spring",
+                                  stiffness: 400,
+                                  damping: 10,
+                                }}
                               >
                                 <item.icon className="w-6 h-6 flex-shrink-0" />
                                 {isActive && (
@@ -440,10 +524,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 )}
                               </motion.div>
                               <span className="relative z-10">{item.name}</span>
-                              <div className={cn(
-                                "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                                "bg-gradient-to-r from-yellow-500/5 to-transparent"
-                              )} />
+                              <div
+                                className={cn(
+                                  "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                  "bg-gradient-to-r from-yellow-500/5 to-transparent",
+                                )}
+                              />
                             </Link>
                           </motion.div>
                         );
@@ -458,7 +544,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                     className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 backdrop-blur-xl border border-gray-200/50 shadow-lg overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+                    transition={{
+                      delay: 0.3,
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
                   >
                     {/* Ambient glow effect */}
                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-construction-blue/10 rounded-full blur-3xl" />
@@ -483,14 +574,14 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             <motion.div
                               className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/0 via-white/30 to-white/0"
                               animate={{
-                                backgroundPosition: ['0% 0%', '100% 100%'],
+                                backgroundPosition: ["0% 0%", "100% 100%"],
                               }}
                               transition={{
                                 duration: 3,
                                 repeat: Infinity,
-                                ease: "linear"
+                                ease: "linear",
                               }}
-                              style={{ backgroundSize: '200% 200%' }}
+                              style={{ backgroundSize: "200% 200%" }}
                             />
 
                             {/* Glow effect on hover */}
@@ -498,7 +589,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               <div className="absolute inset-0 bg-construction-blue/50 blur-md rounded-xl" />
                             </div>
 
-                            <Bell size={20} className="relative z-10 drop-shadow-sm" />
+                            <Bell
+                              size={20}
+                              className="relative z-10 drop-shadow-sm"
+                            />
                           </Link>
 
                           {/* Notification Badge - Outside button to prevent clipping */}
@@ -511,7 +605,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                 type: "spring",
                                 stiffness: 500,
                                 damping: 15,
-                                delay: 0.2
+                                delay: 0.2,
                               }}
                             >
                               {notificationCount}
@@ -523,7 +617,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         <motion.div
                           className="flex-1 min-w-0 relative group"
                           whileHover={{ scale: 1.02 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 25,
+                          }}
                         >
                           <div className="relative rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300 px-2.5 py-1.5">
                             {/* Subtle glow on hover */}
@@ -539,7 +637,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         className="h-0.5 rounded-full bg-gradient-to-r from-transparent via-construction-blue/30 to-transparent"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
-                        transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
+                        transition={{
+                          delay: 0.5,
+                          duration: 0.8,
+                          ease: "easeOut",
+                        }}
                       />
                     </div>
                   </motion.div>
@@ -579,7 +681,9 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                 <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                   GenHub
                 </h1>
-                <p className="text-xs text-gray-500 font-medium">Construction Management</p>
+                <p className="text-xs text-gray-500 font-medium">
+                  Construction Management
+                </p>
               </div>
             </div>
           </div>
@@ -589,15 +693,23 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
             {/* Main Navigation */}
             {navigation.map((item, index) => {
               // Only active if exact match OR starts with href/ AND no other nav item exactly matches
-              const isActive = pathname === item.href ||
+              const isActive =
+                pathname === item.href ||
                 (item.href !== "/app" &&
-                 pathname.startsWith(item.href + "/") &&
-                 !navigation.some(other => other.href !== item.href && pathname === other.href));
+                  pathname.startsWith(item.href + "/") &&
+                  !navigation.some(
+                    (other) =>
+                      other.href !== item.href && pathname === other.href,
+                  ));
               const hasChildren = item.children && item.children.length > 0;
               const isExpanded = expandedItems[item.name];
-              const isChildActive = hasChildren && item.children!.some(
-                (child) => pathname === child.href || pathname.startsWith(child.href + "/")
-              );
+              const isChildActive =
+                hasChildren &&
+                item.children!.some(
+                  (child) =>
+                    pathname === child.href ||
+                    pathname.startsWith(child.href + "/"),
+                );
 
               return (
                 <motion.div
@@ -614,7 +726,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 w-full",
                         isActive || isChildActive
                           ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction"
+                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
                       )}
                     >
                       {/* Debug: Active indicator with glow */}
@@ -622,7 +734,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         <motion.div
                           layoutId="activeNav"
                           className="absolute left-0 w-1 h-8 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30,
+                          }}
                         />
                       )}
 
@@ -632,10 +748,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           "relative",
                           isActive || isChildActive
                             ? "text-construction-blue"
-                            : "text-gray-700 group-hover:text-construction-blue"
+                            : "text-gray-700 group-hover:text-construction-blue",
                         )}
-                        whileHover={{ scale: 1.1, rotate: isActive || isChildActive ? 0 : 5 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        whileHover={{
+                          scale: 1.1,
+                          rotate: isActive || isChildActive ? 0 : 5,
+                        }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 10,
+                        }}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         {(isActive || isChildActive) && (
@@ -643,7 +766,9 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         )}
                       </motion.div>
 
-                      <span className="relative z-10 flex-1 text-left">{item.name}</span>
+                      <span className="relative z-10 flex-1 text-left">
+                        {item.name}
+                      </span>
 
                       {/* Chevron Icon */}
                       <motion.div
@@ -654,10 +779,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       </motion.div>
 
                       {/* Debug: Hover indicator */}
-                      <div className={cn(
-                        "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                        "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                      )} />
+                      <div
+                        className={cn(
+                          "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                          "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                        )}
+                      />
                     </button>
                   ) : (
                     <Link
@@ -666,7 +793,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
                         isActive
                           ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction"
+                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
                       )}
                     >
                       {/* Debug: Active indicator with glow */}
@@ -674,7 +801,11 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         <motion.div
                           layoutId="activeNav"
                           className="absolute left-0 w-1 h-8 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30,
+                          }}
                         />
                       )}
 
@@ -684,10 +815,14 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           "relative",
                           isActive
                             ? "text-construction-blue"
-                            : "text-gray-700 group-hover:text-construction-blue"
+                            : "text-gray-700 group-hover:text-construction-blue",
                         )}
                         whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 10,
+                        }}
                       >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         {isActive && (
@@ -698,10 +833,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       <span className="relative z-10">{item.name}</span>
 
                       {/* Debug: Hover indicator */}
-                      <div className={cn(
-                        "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                        "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                      )} />
+                      <div
+                        className={cn(
+                          "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                          "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                        )}
+                      />
                     </Link>
                   )}
 
@@ -718,7 +855,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         >
                           <div className="mt-1 space-y-1 pl-4">
                             {item.children!.map((child, childIndex) => {
-                              const isChildItemActive = pathname === child.href ||
+                              const isChildItemActive =
+                                pathname === child.href ||
                                 pathname.startsWith(child.href + "/");
 
                               return (
@@ -726,7 +864,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                   key={child.name}
                                   initial={{ opacity: 0, x: -10 }}
                                   animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: childIndex * 0.05, duration: 0.2 }}
+                                  transition={{
+                                    delay: childIndex * 0.05,
+                                    duration: 0.2,
+                                  }}
                                 >
                                   <Link
                                     href={child.href}
@@ -734,14 +875,18 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                       "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
                                       isChildItemActive
                                         ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                        : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction"
+                                        : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
                                     )}
                                   >
                                     {/* Child active indicator - smaller */}
                                     {isChildItemActive && (
                                       <motion.div
                                         className="absolute left-0 w-0.5 h-6 bg-gradient-to-b from-construction-blue to-construction-blue rounded-r-full"
-                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                        transition={{
+                                          type: "spring",
+                                          stiffness: 300,
+                                          damping: 30,
+                                        }}
                                       />
                                     )}
 
@@ -751,10 +896,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                         "relative",
                                         isChildItemActive
                                           ? "text-construction-blue"
-                                          : "text-gray-600 group-hover:text-construction-blue"
+                                          : "text-gray-600 group-hover:text-construction-blue",
                                       )}
-                                      whileHover={{ scale: 1.1, rotate: isChildItemActive ? 0 : 5 }}
-                                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                                      whileHover={{
+                                        scale: 1.1,
+                                        rotate: isChildItemActive ? 0 : 5,
+                                      }}
+                                      transition={{
+                                        type: "spring",
+                                        stiffness: 400,
+                                        damping: 10,
+                                      }}
                                     >
                                       <child.icon className="w-4 h-4 flex-shrink-0" />
                                       {isChildItemActive && (
@@ -762,13 +914,17 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                       )}
                                     </motion.div>
 
-                                    <span className="relative z-10">{child.name}</span>
+                                    <span className="relative z-10">
+                                      {child.name}
+                                    </span>
 
                                     {/* Hover indicator */}
-                                    <div className={cn(
-                                      "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                                      "bg-gradient-to-r from-construction-blue/5 to-transparent"
-                                    )} />
+                                    <div
+                                      className={cn(
+                                        "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                                        "bg-gradient-to-r from-construction-blue/5 to-transparent",
+                                      )}
+                                    />
                                   </Link>
                                 </motion.div>
                               );
@@ -794,7 +950,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                   </div>
                 </div>
                 {ownerNavigation.map((item, index) => {
-                  const isActive = pathname === item.href ||
+                  const isActive =
+                    pathname === item.href ||
                     pathname.startsWith(item.href + "/");
 
                   return (
@@ -802,7 +959,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       key={item.name}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: (navigation.length + index) * 0.05, duration: 0.3 }}
+                      transition={{
+                        delay: (navigation.length + index) * 0.05,
+                        duration: 0.3,
+                      }}
                     >
                       <Link
                         href={item.href}
@@ -810,14 +970,18 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
                           isActive
                             ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
-                            : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction"
+                            : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
                         )}
                       >
                         {isActive && (
                           <motion.div
                             layoutId="activeNavOwner"
                             className="absolute left-0 w-1 h-8 bg-gradient-to-b from-yellow-500 to-yellow-600 rounded-r-full"
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            transition={{
+                              type: "spring",
+                              stiffness: 300,
+                              damping: 30,
+                            }}
                           />
                         )}
                         <motion.div
@@ -825,10 +989,14 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             "relative",
                             isActive
                               ? "text-yellow-600"
-                              : "text-gray-700 group-hover:text-yellow-600"
+                              : "text-gray-700 group-hover:text-yellow-600",
                           )}
                           whileHover={{ scale: 1.1, rotate: isActive ? 0 : 5 }}
-                          transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 10,
+                          }}
                         >
                           <item.icon className="w-5 h-5 flex-shrink-0" />
                           {isActive && (
@@ -836,10 +1004,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           )}
                         </motion.div>
                         <span className="relative z-10">{item.name}</span>
-                        <div className={cn(
-                          "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                          "bg-gradient-to-r from-yellow-500/5 to-transparent"
-                        )} />
+                        <div
+                          className={cn(
+                            "absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                            "bg-gradient-to-r from-yellow-500/5 to-transparent",
+                          )}
+                        />
                       </Link>
                     </motion.div>
                   );
@@ -854,7 +1024,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
               className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 backdrop-blur-xl border border-gray-200/50 shadow-lg overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, type: "spring", stiffness: 300, damping: 30 }}
+              transition={{
+                delay: 0.3,
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
             >
               {/* Ambient glow effect */}
               <div className="absolute -top-20 -right-20 w-40 h-40 bg-construction-blue/10 rounded-full blur-3xl" />
@@ -879,14 +1054,14 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       <motion.div
                         className="absolute inset-0 rounded-xl bg-gradient-to-tr from-white/0 via-white/30 to-white/0"
                         animate={{
-                          backgroundPosition: ['0% 0%', '100% 100%'],
+                          backgroundPosition: ["0% 0%", "100% 100%"],
                         }}
                         transition={{
                           duration: 3,
                           repeat: Infinity,
-                          ease: "linear"
+                          ease: "linear",
                         }}
-                        style={{ backgroundSize: '200% 200%' }}
+                        style={{ backgroundSize: "200% 200%" }}
                       />
 
                       {/* Glow effect on hover */}
@@ -894,7 +1069,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         <div className="absolute inset-0 bg-construction-blue/50 blur-md rounded-xl" />
                       </div>
 
-                      <Bell size={18} className="relative z-10 drop-shadow-sm" />
+                      <Bell
+                        size={18}
+                        className="relative z-10 drop-shadow-sm"
+                      />
                     </Link>
 
                     {/* Notification Badge - Outside button to prevent clipping */}
@@ -907,7 +1085,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           type: "spring",
                           stiffness: 500,
                           damping: 15,
-                          delay: 0.2
+                          delay: 0.2,
                         }}
                       >
                         {notificationCount}

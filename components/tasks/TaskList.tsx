@@ -46,6 +46,39 @@ interface TaskListProps {
   phases?: Phase[];
 }
 
+const PRIORITY_ORDER: Record<string, number> = {
+  critical: 0,
+  high: 1,
+  medium: 2,
+  low: 3,
+};
+
+const STATUS_ORDER: Record<string, number> = {
+  blocked: 0,
+  in_progress: 1,
+  review: 2,
+  todo: 3,
+  completed: 4,
+};
+
+const getInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
+const isOverdue = (task: TaskWithRelations) => {
+  if (!task.due_date || task.status === "completed") return false;
+  // Parse due date properly to avoid UTC timezone issues
+  const [year, month, day] = task.due_date.split("T")[0].split("-").map(Number);
+  const dueDate = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return dueDate < today;
+};
+
 // Status icon mapping (icons are component-specific)
 const STATUS_ICONS: Record<
   string,
@@ -77,58 +110,55 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
   // Detect mobile for swipeable card view
   const isMobile = useIsMobile();
 
-  // Determine if we're in project context
-  const isProjectContext = !!phases;
+  const phaseMap = useMemo(
+    () => (phases ? new Map(phases.map((phase) => [phase.id, phase])) : null),
+    [phases],
+  );
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  };
+  const handleSort = useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      } else {
+        setSortField(field);
+        setSortOrder("asc");
+      }
+    },
+    [sortField, sortOrder],
+  );
 
-  const sortedTasks = [...tasks].sort((a, b) => {
-    let comparison = 0;
+  const sortedTasks = useMemo(() => {
+    const tasksToSort = [...tasks];
+    tasksToSort.sort((a, b) => {
+      let comparison = 0;
 
-    switch (sortField) {
-      case "title":
-        comparison = a.title.localeCompare(b.title);
-        break;
-      case "project":
-        comparison = (a.project?.name || "").localeCompare(
-          b.project?.name || "",
-        );
-        break;
-      case "due_date":
-        const dateA = a.due_date ? new Date(a.due_date).getTime() : Infinity;
-        const dateB = b.due_date ? new Date(b.due_date).getTime() : Infinity;
-        comparison = dateA - dateB;
-        break;
-      case "priority":
-        const priorityOrder: Record<string, number> = {
-          critical: 0,
-          high: 1,
-          medium: 2,
-          low: 3,
-        };
-        comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
-        break;
-      case "status":
-        const statusOrder = {
-          blocked: 0,
-          in_progress: 1,
-          review: 2,
-          todo: 3,
-          completed: 4,
-        };
-        comparison = statusOrder[a.status] - statusOrder[b.status];
-        break;
-    }
+      switch (sortField) {
+        case "title":
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case "project":
+          comparison = (a.project?.name || "").localeCompare(
+            b.project?.name || "",
+          );
+          break;
+        case "due_date": {
+          const dateA = a.due_date ? new Date(a.due_date).getTime() : Infinity;
+          const dateB = b.due_date ? new Date(b.due_date).getTime() : Infinity;
+          comparison = dateA - dateB;
+          break;
+        }
+        case "priority":
+          comparison = PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
+          break;
+        case "status":
+          comparison = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+          break;
+      }
 
-    return sortOrder === "asc" ? comparison : -comparison;
-  });
+      return sortOrder === "asc" ? comparison : -comparison;
+    });
+    return tasksToSort;
+  }, [tasks, sortField, sortOrder]);
 
   const handleStatusChange = async (
     taskId: string,
@@ -148,36 +178,15 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const isOverdue = (task: TaskWithRelations) => {
-    if (!task.due_date || task.status === "completed") return false;
-    // Parse due date properly to avoid UTC timezone issues
-    const [year, month, day] = task.due_date
-      .split("T")[0]
-      .split("-")
-      .map(Number);
-    const dueDate = new Date(year, month - 1, day);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return dueDate < today;
-  };
-
-  // Get phase name - from phases array in project context, or from task.phase otherwise
-  const getPhaseName = (task: TaskWithRelations) => {
-    if (phases) {
-      const phase = phases.find((p) => p.id === task.phase_id);
-      return phase?.name || "-";
-    }
-    return task.phase?.name || "-";
-  };
+  const getPhaseName = useCallback(
+    (task: TaskWithRelations) => {
+      if (phaseMap) {
+        return phaseMap.get(task.phase_id || "")?.name || "-";
+      }
+      return task.phase?.name || "-";
+    },
+    [phaseMap],
+  );
 
   if (tasks.length === 0) {
     return (

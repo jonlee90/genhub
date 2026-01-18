@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Bell, BellOff, Mail, ShieldAlert, CheckCircle2, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Bell, Mail, ShieldAlert, CheckCircle2, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 /**
  * ChatNotificationPreferences - Mobile-first notification settings
@@ -17,39 +17,50 @@ export function ChatNotificationPreferences() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
 
-  console.log('[ChatNotificationPreferences] Rendering with permission:', permission);
+  console.log(
+    "[ChatNotificationPreferences] Rendering with permission:",
+    permission,
+  );
 
   // Update state based on permission
   useEffect(() => {
-    const granted = permission === 'granted';
-    console.log('[ChatNotificationPreferences] Permission changed:', permission, '-> pushEnabled:', granted);
+    const granted = permission === "granted";
+    console.log(
+      "[ChatNotificationPreferences] Permission changed:",
+      permission,
+      "-> pushEnabled:",
+      granted,
+    );
     setPushEnabled(granted);
   }, [permission]);
 
   const handlePushToggle = async (enabled: boolean) => {
-    console.log('[ChatNotificationPreferences] Push toggle clicked:', enabled);
+    console.log("[ChatNotificationPreferences] Push toggle clicked:", enabled);
 
-    if (enabled && permission !== 'granted') {
-      console.log('[ChatNotificationPreferences] Requesting permission...');
+    if (enabled && permission !== "granted") {
+      console.log("[ChatNotificationPreferences] Requesting permission...");
       const granted = await requestPermission();
-      console.log('[ChatNotificationPreferences] Permission result:', granted);
+      console.log("[ChatNotificationPreferences] Permission result:", granted);
       setPushEnabled(granted);
     } else {
-      console.log('[ChatNotificationPreferences] Setting push enabled:', enabled);
+      console.log(
+        "[ChatNotificationPreferences] Setting push enabled:",
+        enabled,
+      );
       setPushEnabled(enabled);
       // TODO: Unregister push subscription if disabled
     }
   };
 
   const handleEmailToggle = (enabled: boolean) => {
-    console.log('[ChatNotificationPreferences] Email toggle clicked:', enabled);
+    console.log("[ChatNotificationPreferences] Email toggle clicked:", enabled);
     setEmailEnabled(enabled);
     // TODO: Update user email notification preferences in database
   };
 
   // Helper to get status badge
   const getStatusBadge = () => {
-    if (permission === 'granted') {
+    if (permission === "granted") {
       return (
         <Badge className="bg-[#059669]/10 text-[#059669] border border-[#059669]/30 text-xs font-bold px-2 py-0.5">
           <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -57,7 +68,7 @@ export function ChatNotificationPreferences() {
         </Badge>
       );
     }
-    if (permission === 'denied') {
+    if (permission === "denied") {
       return (
         <Badge className="bg-[#DC2626]/10 text-[#DC2626] border border-[#DC2626]/30 text-xs font-bold px-2 py-0.5">
           <ShieldAlert className="h-3 w-3 mr-1" />
@@ -98,10 +109,11 @@ export function ChatNotificationPreferences() {
                 </p>
 
                 {/* Blocked Warning */}
-                {permission === 'denied' && (
+                {permission === "denied" && (
                   <div className="mt-3 p-3 bg-[#DC2626]/5 border-l-4 border-[#DC2626] rounded-r-lg">
                     <p className="text-xs text-[#DC2626] font-medium">
-                      Notifications blocked in browser settings. Enable to receive push alerts.
+                      Notifications blocked in browser settings. Enable to
+                      receive push alerts.
                     </p>
                   </div>
                 )}
@@ -111,23 +123,23 @@ export function ChatNotificationPreferences() {
             {/* Right: Switch with touch-friendly area */}
             <div
               className={cn(
-                'flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg',
-                'min-w-[60px] min-h-[60px] justify-center',
-                (isLoading || permission === 'denied') && 'opacity-50'
+                "flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg",
+                "min-w-[60px] min-h-[60px] justify-center",
+                (isLoading || permission === "denied") && "opacity-50",
               )}
             >
               <Switch
                 checked={pushEnabled}
                 onCheckedChange={handlePushToggle}
-                disabled={isLoading || permission === 'denied'}
+                disabled={isLoading || permission === "denied"}
                 className={cn(
-                  'data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300',
-                  'scale-110',
-                  isLoading && 'cursor-wait'
+                  "data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300",
+                  "scale-110",
+                  isLoading && "cursor-wait",
                 )}
               />
               <span className="text-xs font-bold text-gray-500 uppercase">
-                {pushEnabled ? 'ON' : 'OFF'}
+                {pushEnabled ? "ON" : "OFF"}
               </span>
             </div>
           </div>
@@ -159,8 +171,8 @@ export function ChatNotificationPreferences() {
             {/* Right: Switch with touch-friendly area */}
             <div
               className={cn(
-                'flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg',
-                'min-w-[60px] min-h-[60px] justify-center'
+                "flex flex-col items-center gap-1.5 p-2 -m-2 rounded-lg",
+                "min-w-[60px] min-h-[60px] justify-center",
               )}
             >
               <Switch
@@ -169,7 +181,7 @@ export function ChatNotificationPreferences() {
                 className="data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300 scale-110"
               />
               <span className="text-xs font-bold text-gray-500 uppercase">
-                {emailEnabled ? 'ON' : 'OFF'}
+                {emailEnabled ? "ON" : "OFF"}
               </span>
             </div>
           </div>
@@ -182,8 +194,9 @@ export function ChatNotificationPreferences() {
           <Info className="h-4 w-4 text-white" />
         </div>
         <p className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-construction-blue">Note:</span>{' '}
-          In-app notifications are always enabled for critical job site communications.
+          <span className="font-semibold text-construction-blue">Note:</span>{" "}
+          In-app notifications are always enabled for critical job site
+          communications.
         </p>
       </div>
     </div>

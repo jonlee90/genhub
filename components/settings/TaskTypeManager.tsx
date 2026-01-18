@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   Plus,
   Edit,
@@ -17,9 +17,9 @@ import {
   AlertCircle,
   Sparkles,
   XCircle,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { BaseModal } from '@/components/ui/BaseModal';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BaseModal } from "@/components/ui/BaseModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,28 +29,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { toast } from "sonner";
 import {
   getAllTaskTypes,
   createTaskType,
   updateTaskType,
   deleteTaskType,
-} from '@/app/actions/task-types';
+} from "@/app/actions/task-types";
 
 // Debug: Type definitions - Use database types directly to avoid type mismatches
-import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 type TaskTypeConfig = TaskTypeConfigsRow;
 
@@ -74,7 +73,7 @@ const AVAILABLE_ICONS = {
  * Debug: Construction-themed card layout with industrial aesthetics
  */
 export function TaskTypeManager() {
-  console.log('[TaskTypeManager] Rendering task type manager');
+  console.log("[TaskTypeManager] Rendering task type manager");
 
   const [taskTypes, setTaskTypes] = useState<TaskTypeConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,14 +87,18 @@ export function TaskTypeManager() {
   }, []);
 
   async function loadTaskTypes() {
-    console.log('[TaskTypeManager] Loading task types...');
+    console.log("[TaskTypeManager] Loading task types...");
     setIsLoading(true);
     const result = await getAllTaskTypes();
     if (result.taskTypes) {
       setTaskTypes(result.taskTypes);
-      console.log('[TaskTypeManager] Loaded', result.taskTypes.length, 'task types');
+      console.log(
+        "[TaskTypeManager] Loaded",
+        result.taskTypes.length,
+        "task types",
+      );
     } else if (result.error) {
-      console.error('[TaskTypeManager] Error loading:', result.error);
+      console.error("[TaskTypeManager] Error loading:", result.error);
       toast.error(result.error);
     }
     setIsLoading(false);
@@ -104,17 +107,17 @@ export function TaskTypeManager() {
   // Debug: Handle create submission
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log('[TaskTypeManager] Creating task type...');
+    console.log("[TaskTypeManager] Creating task type...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createTaskType(formData);
 
     if (result.success) {
-      toast.success('Task type created successfully');
+      toast.success("Task type created successfully");
       setShowCreateModal(false);
       loadTaskTypes();
     } else {
-      toast.error(result.error || 'Failed to create task type');
+      toast.error(result.error || "Failed to create task type");
     }
   }
 
@@ -123,17 +126,17 @@ export function TaskTypeManager() {
     e.preventDefault();
     if (!editingType) return;
 
-    console.log('[TaskTypeManager] Updating task type:', editingType.id);
+    console.log("[TaskTypeManager] Updating task type:", editingType.id);
 
     const formData = new FormData(e.currentTarget);
     const result = await updateTaskType(editingType.id, formData);
 
     if (result.success) {
-      toast.success('Task type updated successfully');
+      toast.success("Task type updated successfully");
       setEditingType(null);
       loadTaskTypes();
     } else {
-      toast.error(result.error || 'Failed to update task type');
+      toast.error(result.error || "Failed to update task type");
     }
   }
 
@@ -141,16 +144,16 @@ export function TaskTypeManager() {
   async function handleDelete() {
     if (!deletingType) return;
 
-    console.log('[TaskTypeManager] Deleting task type:', deletingType.id);
+    console.log("[TaskTypeManager] Deleting task type:", deletingType.id);
 
     const result = await deleteTaskType(deletingType.id);
 
     if (result.success) {
-      toast.success('Task type deleted successfully');
+      toast.success("Task type deleted successfully");
       setDeletingType(null);
       loadTaskTypes();
     } else {
-      toast.error(result.error || 'Failed to delete task type');
+      toast.error(result.error || "Failed to delete task type");
     }
   }
 
@@ -220,7 +223,8 @@ export function TaskTypeManager() {
               No Task Types Defined
             </h3>
             <p className="text-gray-500 max-w-md mb-6">
-              Create your first task type to start organizing work across your projects
+              Create your first task type to start organizing work across your
+              projects
             </p>
             <Button
               onClick={() => setShowCreateModal(true)}
@@ -233,8 +237,10 @@ export function TaskTypeManager() {
         ) : (
           // Debug: Task type cards with staggered animation
           taskTypes.map((type, index) => {
-            const IconComponent = AVAILABLE_ICONS[type.icon_name as keyof typeof AVAILABLE_ICONS] || Hammer;
-            const cardColor = type.color || '#3b82f6';
+            const IconComponent =
+              AVAILABLE_ICONS[type.icon_name as keyof typeof AVAILABLE_ICONS] ||
+              Hammer;
+            const cardColor = type.color || "#3b82f6";
 
             return (
               <motion.div
@@ -290,7 +296,7 @@ export function TaskTypeManager() {
                         )}
                       </div>
                       <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
-                        {type.description || 'No description provided'}
+                        {type.description || "No description provided"}
                       </p>
                     </div>
                   </div>
@@ -351,10 +357,17 @@ export function TaskTypeManager() {
           </Button>
         }
       >
-        <form id="create-task-type-form" onSubmit={handleCreate} className="space-y-5">
+        <form
+          id="create-task-type-form"
+          onSubmit={handleCreate}
+          className="space-y-5"
+        >
           {/* Name field */}
           <div className="space-y-2">
-            <Label htmlFor="create-name" className="text-sm font-bold text-gray-900">
+            <Label
+              htmlFor="create-name"
+              className="text-sm font-bold text-gray-900"
+            >
               Task Type Name *
             </Label>
             <Input
@@ -372,7 +385,10 @@ export function TaskTypeManager() {
 
           {/* Description field */}
           <div className="space-y-2">
-            <Label htmlFor="create-description" className="text-sm font-bold text-gray-900">
+            <Label
+              htmlFor="create-description"
+              className="text-sm font-bold text-gray-900"
+            >
               Description
             </Label>
             <Textarea
@@ -391,7 +407,10 @@ export function TaskTypeManager() {
           {/* Icon and Color selection */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="create-icon" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="create-icon"
+                className="text-sm font-bold text-gray-900"
+              >
                 Icon
               </Label>
               <Select name="icon_name" defaultValue="Hammer">
@@ -400,7 +419,8 @@ export function TaskTypeManager() {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.keys(AVAILABLE_ICONS).map((iconName) => {
-                    const Icon = AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
+                    const Icon =
+                      AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
                     return (
                       <SelectItem key={iconName} value={iconName}>
                         <div className="flex items-center gap-2">
@@ -415,7 +435,10 @@ export function TaskTypeManager() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="create-color" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="create-color"
+                className="text-sm font-bold text-gray-900"
+              >
                 Color
               </Label>
               <div className="relative">
@@ -444,7 +467,11 @@ export function TaskTypeManager() {
           onClose={() => setEditingType(null)}
           icon={Pencil}
           title="Edit Task Type"
-          subtitle={(editingType.is_default ?? false) ? 'Customize default task type' : 'Update task type settings'}
+          subtitle={
+            (editingType.is_default ?? false)
+              ? "Customize default task type"
+              : "Update task type settings"
+          }
           maxWidth="md"
           leftActions={
             <Button
@@ -467,105 +494,133 @@ export function TaskTypeManager() {
           }
         >
           {/* Editable form for all task types */}
-          <form id="edit-task-type-form" onSubmit={handleUpdate} className="space-y-5">
-              {/* Name field */}
+          <form
+            id="edit-task-type-form"
+            onSubmit={handleUpdate}
+            className="space-y-5"
+          >
+            {/* Name field */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-name"
+                className="text-sm font-bold text-gray-900"
+              >
+                Task Type Name *
+              </Label>
+              <Input
+                id="edit-name"
+                name="name"
+                defaultValue={editingType.name}
+                required
+                maxLength={50}
+                className="border-2 border-gray-200 focus:border-construction-blue"
+              />
+            </div>
+
+            {/* Description field */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-description"
+                className="text-sm font-bold text-gray-900"
+              >
+                Description
+              </Label>
+              <Textarea
+                id="edit-description"
+                name="description"
+                defaultValue={editingType.description || ""}
+                rows={3}
+                maxLength={200}
+                className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+              />
+            </div>
+
+            {/* Icon and Color selection */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-name" className="text-sm font-bold text-gray-900">
-                  Task Type Name *
+                <Label
+                  htmlFor="edit-icon"
+                  className="text-sm font-bold text-gray-900"
+                >
+                  Icon
                 </Label>
-                <Input
-                  id="edit-name"
-                  name="name"
-                  defaultValue={editingType.name}
-                  required
-                  maxLength={50}
-                  className="border-2 border-gray-200 focus:border-construction-blue"
-                />
+                <Select
+                  name="icon_name"
+                  defaultValue={editingType.icon_name || "Hammer"}
+                >
+                  <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(AVAILABLE_ICONS).map((iconName) => {
+                      const Icon =
+                        AVAILABLE_ICONS[
+                          iconName as keyof typeof AVAILABLE_ICONS
+                        ];
+                      return (
+                        <SelectItem key={iconName} value={iconName}>
+                          <div className="flex items-center gap-2">
+                            <Icon className="h-4 w-4 text-construction-blue" />
+                            <span className="font-medium">{iconName}</span>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Description field */}
               <div className="space-y-2">
-                <Label htmlFor="edit-description" className="text-sm font-bold text-gray-900">
-                  Description
+                <Label
+                  htmlFor="edit-color"
+                  className="text-sm font-bold text-gray-900"
+                >
+                  Color
                 </Label>
-                <Textarea
-                  id="edit-description"
-                  name="description"
-                  defaultValue={editingType.description || ''}
-                  rows={3}
-                  maxLength={200}
-                  className="border-2 border-gray-200 focus:border-construction-blue resize-none"
-                />
-              </div>
-
-              {/* Icon and Color selection */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-icon" className="text-sm font-bold text-gray-900">
-                    Icon
-                  </Label>
-                  <Select name="icon_name" defaultValue={editingType.icon_name || 'Hammer'}>
-                    <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.keys(AVAILABLE_ICONS).map((iconName) => {
-                        const Icon = AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
-                        return (
-                          <SelectItem key={iconName} value={iconName}>
-                            <div className="flex items-center gap-2">
-                              <Icon className="h-4 w-4 text-construction-blue" />
-                              <span className="font-medium">{iconName}</span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="edit-color" className="text-sm font-bold text-gray-900">
-                    Color
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="edit-color"
-                      name="color"
-                      type="color"
-                      defaultValue={editingType.color || '#3b82f6'}
-                      className="h-11 border-2 border-gray-200 focus:border-construction-blue cursor-pointer"
-                    />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                      <div className="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded">
-                        HEX
-                      </div>
+                <div className="relative">
+                  <Input
+                    id="edit-color"
+                    name="color"
+                    type="color"
+                    defaultValue={editingType.color || "#3b82f6"}
+                    className="h-11 border-2 border-gray-200 focus:border-construction-blue cursor-pointer"
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <div className="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded">
+                      HEX
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Active toggle */}
-              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
-                <input
-                  type="checkbox"
-                  id="edit-is-active"
-                  name="is_active"
-                  value="true"
-                  defaultChecked={editingType.is_active ?? true}
-                  className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
-                />
-                <Label htmlFor="edit-is-active" className="cursor-pointer font-bold text-gray-900 flex-1">
-                  Active (visible when creating tasks)
-                </Label>
-              </div>
-            </form>
+            {/* Active toggle */}
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+              <input
+                type="checkbox"
+                id="edit-is-active"
+                name="is_active"
+                value="true"
+                defaultChecked={editingType.is_active ?? true}
+                className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
+              />
+              <Label
+                htmlFor="edit-is-active"
+                className="cursor-pointer font-bold text-gray-900 flex-1"
+              >
+                Active (visible when creating tasks)
+              </Label>
+            </div>
+          </form>
         </BaseModal>
       )}
 
       {/* Debug: Delete Confirmation */}
       {deletingType && (
-        <AlertDialog open={!!deletingType} onOpenChange={() => setDeletingType(null)}>
+        <AlertDialog
+          open={!!deletingType}
+          onOpenChange={() => setDeletingType(null)}
+        >
           <AlertDialogContent className="border-2 border-red-200">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl font-black text-red-600 uppercase tracking-tight flex items-center gap-2">
@@ -574,13 +629,17 @@ export function TaskTypeManager() {
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-3 text-base">
                 <p className="text-gray-700">
-                  Are you sure you want to delete{' '}
-                  <span className="font-bold text-gray-900">"{deletingType.name}"</span>?
+                  Are you sure you want to delete{" "}
+                  <span className="font-bold text-gray-900">
+                    "{deletingType.name}"
+                  </span>
+                  ?
                 </p>
                 <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
                   <p className="text-sm text-amber-800">
-                    <strong>Note:</strong> This is a soft delete. Existing tasks will keep
-                    this type, but it won't be available for new tasks.
+                    <strong>Note:</strong> This is a soft delete. Existing tasks
+                    will keep this type, but it won't be available for new
+                    tasks.
                   </p>
                 </div>
               </AlertDialogDescription>

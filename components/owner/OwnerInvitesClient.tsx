@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { inviteAdmin, revokeAdminInvitation } from '@/app/actions/owner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { inviteAdmin, revokeAdminInvitation } from "@/app/actions/owner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   UserPlus,
   Mail,
@@ -18,10 +18,10 @@ import {
   Copy,
   ExternalLink,
   User,
-} from 'lucide-react';
-import { formatDistanceToNow, format, isAfter } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { formatDistanceToNow, format, isAfter } from "date-fns";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface AdminInvitation {
   id: string;
@@ -43,11 +43,14 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [revokingId, setRevokingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ message: string; link?: string } | null>(null);
+  const [success, setSuccess] = useState<{
+    message: string;
+    link?: string;
+  } | null>(null);
 
   // Form state
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +58,7 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
     setError(null);
     setSuccess(null);
 
-    console.log('[OwnerInvitesClient] Submitting invitation:', { email, name });
+    console.log("[OwnerInvitesClient] Submitting invitation:", { email, name });
 
     const result = await inviteAdmin(email, name || undefined);
 
@@ -71,8 +74,8 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
         message: `Invitation sent to ${email}`,
         link: result.invitationLink,
       });
-      setEmail('');
-      setName('');
+      setEmail("");
+      setName("");
       router.refresh();
     }
   };
@@ -81,7 +84,7 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
     setRevokingId(invitationId);
     setError(null);
 
-    console.log('[OwnerInvitesClient] Revoking invitation:', invitationId);
+    console.log("[OwnerInvitesClient] Revoking invitation:", invitationId);
 
     const result = await revokeAdminInvitation(invitationId);
 
@@ -99,9 +102,9 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Link copied to clipboard');
-    } catch (err) {
-      toast.error('Failed to copy link');
+      toast.success("Link copied to clipboard");
+    } catch (_err) {
+      toast.error("Failed to copy link");
     }
   };
 
@@ -158,7 +161,7 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(success.link, '_blank')}
+                        onClick={() => window.open(success.link, "_blank")}
                         className="h-7 px-2"
                       >
                         <ExternalLink className="w-4 h-4" />
@@ -172,7 +175,10 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-bold text-gray-700">
+              <Label
+                htmlFor="email"
+                className="text-sm font-bold text-gray-700"
+              >
                 Email Address *
               </Label>
               <div className="relative">
@@ -235,8 +241,8 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
           <h2 className="font-bold text-gray-900">Pending Invitations</h2>
           <p className="text-sm text-gray-500">
             {invitations.length === 0
-              ? 'No pending invitations'
-              : `${invitations.length} invitation${invitations.length === 1 ? '' : 's'} awaiting response`}
+              ? "No pending invitations"
+              : `${invitations.length} invitation${invitations.length === 1 ? "" : "s"} awaiting response`}
           </p>
         </div>
 
@@ -245,7 +251,9 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
             <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
               <Mail className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No Pending Invitations</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-1">
+              No Pending Invitations
+            </h3>
             <p className="text-sm text-gray-500 max-w-sm">
               Use the form above to invite new company admins.
             </p>
@@ -253,21 +261,26 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
         ) : (
           <div className="divide-y divide-gray-100">
             {invitations.map((invitation) => {
-              const isExpired = !isAfter(new Date(invitation.expires_at), new Date());
-              const inviteLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/admin-invite?token=${invitation.invitation_token}`;
+              const isExpired = !isAfter(
+                new Date(invitation.expires_at),
+                new Date(),
+              );
+              const inviteLink = `${typeof window !== "undefined" ? window.location.origin : ""}/admin-invite?token=${invitation.invitation_token}`;
 
               return (
                 <div
                   key={invitation.id}
                   className={cn(
-                    'px-5 py-4 hover:bg-gray-50/50 transition-colors',
-                    isExpired && 'opacity-60'
+                    "px-5 py-4 hover:bg-gray-50/50 transition-colors",
+                    isExpired && "opacity-60",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">{invitation.email}</span>
+                        <span className="font-medium text-gray-900">
+                          {invitation.email}
+                        </span>
                         {isExpired && (
                           <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">
                             EXPIRED
@@ -275,15 +288,25 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
                         )}
                       </div>
                       {invitation.name && (
-                        <p className="text-sm text-gray-600">{invitation.name}</p>
+                        <p className="text-sm text-gray-600">
+                          {invitation.name}
+                        </p>
                       )}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          Sent {formatDistanceToNow(new Date(invitation.invited_at), { addSuffix: true })}
+                          Sent{" "}
+                          {formatDistanceToNow(
+                            new Date(invitation.invited_at),
+                            { addSuffix: true },
+                          )}
                         </span>
                         <span>
-                          Expires {format(new Date(invitation.expires_at), 'MMM d, yyyy')}
+                          Expires{" "}
+                          {format(
+                            new Date(invitation.expires_at),
+                            "MMM d, yyyy",
+                          )}
                         </span>
                       </div>
                     </div>
@@ -303,7 +326,9 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleRevoke(invitation.id, invitation.email)}
+                        onClick={() =>
+                          handleRevoke(invitation.id, invitation.email)
+                        }
                         disabled={revokingId === invitation.id}
                         className="h-9 px-3 text-red-600 hover:text-red-700 hover:bg-red-50"
                         title="Revoke invitation"

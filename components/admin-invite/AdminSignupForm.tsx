@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { acceptAdminInvitation } from '@/app/actions/accept-admin-invite';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { acceptAdminInvitation } from "@/app/actions/accept-admin-invite";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   HardHat,
   AlertCircle,
@@ -20,8 +20,8 @@ import {
   Loader2,
   CheckCircle,
   ArrowRight,
-} from 'lucide-react';
-import type { AdminInvitationData } from '@/app/actions/accept-admin-invite';
+} from "lucide-react";
+import type { AdminInvitationData } from "@/app/actions/accept-admin-invite";
 
 interface AdminSignupFormProps {
   token: string;
@@ -32,7 +32,7 @@ interface AdminSignupFormProps {
 
 export function AdminSignupForm({
   token,
-  invitation,
+  invitation: _invitation,
   userEmail,
   userName,
 }: AdminSignupFormProps) {
@@ -43,9 +43,9 @@ export function AdminSignupForm({
 
   // Form state
   const [name, setName] = useState(userName);
-  const [companyName, setCompanyName] = useState('');
-  const [companyAddress, setCompanyAddress] = useState('');
-  const [companyPhone, setCompanyPhone] = useState('');
+  const [companyName, setCompanyName] = useState("");
+  const [companyAddress, setCompanyAddress] = useState("");
+  const [companyPhone, setCompanyPhone] = useState("");
   const [companyEmail, setCompanyEmail] = useState(userEmail);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -53,7 +53,7 @@ export function AdminSignupForm({
     setIsSubmitting(true);
     setError(null);
 
-    console.log('[AdminSignupForm] Submitting form', {
+    console.log("[AdminSignupForm] Submitting form", {
       name,
       companyName,
       companyAddress,
@@ -69,10 +69,10 @@ export function AdminSignupForm({
         address: companyAddress || undefined,
         phone: companyPhone || undefined,
         email: companyEmail || undefined,
-      }
+      },
     );
 
-    console.log('[AdminSignupForm] Result:', result);
+    console.log("[AdminSignupForm] Result:", result);
 
     if (result.error) {
       setError(result.error);
@@ -84,7 +84,7 @@ export function AdminSignupForm({
       setSuccess(true);
       // Redirect to app after short delay
       setTimeout(() => {
-        router.push('/app');
+        router.push("/app");
       }, 2000);
     }
   };
@@ -102,15 +102,18 @@ export function AdminSignupForm({
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="mx-auto w-16 h-16 bg-construction-green rounded-xl flex items-center justify-center"
             >
               <CheckCircle className="w-8 h-8 text-white" />
             </motion.div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Welcome to GenHub!</h1>
+              <h1 className="text-2xl font-black text-gray-900">
+                Welcome to GenHub!
+              </h1>
               <p className="text-gray-600 mt-2">
-                Your company has been created successfully. Redirecting you to your dashboard...
+                Your company has been created successfully. Redirecting you to
+                your dashboard...
               </p>
             </div>
             <div className="flex justify-center">
@@ -134,14 +137,18 @@ export function AdminSignupForm({
           <motion.div
             initial={{ rotate: -10 }}
             animate={{ rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200 }}
+            transition={{ type: "spring", stiffness: 200 }}
             className="mx-auto w-16 h-16 bg-construction-blue rounded-xl flex items-center justify-center"
           >
             <HardHat className="w-8 h-8 text-white" />
           </motion.div>
           <div>
-            <h1 className="text-3xl font-black text-gray-900">Complete Your Setup</h1>
-            <p className="text-gray-600 mt-1">Create your company profile to get started</p>
+            <h1 className="text-3xl font-black text-gray-900">
+              Complete Your Setup
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Create your company profile to get started
+            </p>
           </div>
         </div>
 
@@ -180,7 +187,10 @@ export function AdminSignupForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-bold text-gray-700">
+              <Label
+                htmlFor="email"
+                className="text-sm font-bold text-gray-700"
+              >
                 Email Address
               </Label>
               <div className="relative">
@@ -194,7 +204,8 @@ export function AdminSignupForm({
                 />
               </div>
               <p className="text-xs text-gray-500">
-                This email is linked to your Google account and cannot be changed.
+                This email is linked to your Google account and cannot be
+                changed.
               </p>
             </div>
           </div>
@@ -207,7 +218,10 @@ export function AdminSignupForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyName" className="text-sm font-bold text-gray-700">
+              <Label
+                htmlFor="companyName"
+                className="text-sm font-bold text-gray-700"
+              >
                 Company Name *
               </Label>
               <div className="relative">
@@ -225,7 +239,10 @@ export function AdminSignupForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="companyAddress" className="text-sm font-bold text-gray-700">
+              <Label
+                htmlFor="companyAddress"
+                className="text-sm font-bold text-gray-700"
+              >
                 Address (Optional)
               </Label>
               <div className="relative">
@@ -242,7 +259,10 @@ export function AdminSignupForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="companyPhone" className="text-sm font-bold text-gray-700">
+                <Label
+                  htmlFor="companyPhone"
+                  className="text-sm font-bold text-gray-700"
+                >
                   Phone (Optional)
                 </Label>
                 <div className="relative">
@@ -259,7 +279,10 @@ export function AdminSignupForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="companyEmail" className="text-sm font-bold text-gray-700">
+                <Label
+                  htmlFor="companyEmail"
+                  className="text-sm font-bold text-gray-700"
+                >
                   Company Email
                 </Label>
                 <div className="relative">
@@ -298,7 +321,8 @@ export function AdminSignupForm({
 
           {/* Footer */}
           <p className="text-xs text-center text-gray-500 pt-4 border-t">
-            By completing setup, you'll become the admin of your company on GenHub
+            By completing setup, you'll become the admin of your company on
+            GenHub
           </p>
         </form>
       </motion.div>

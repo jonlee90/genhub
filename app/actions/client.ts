@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 /**
  * Client Portal Server Actions
@@ -9,8 +9,8 @@
  * @module app/actions/client
  */
 
-import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
+import { createClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
 
 // ============================================
 // Types
@@ -41,51 +41,57 @@ export interface ClientPermissions {
  *   // Show budget information to client
  * }
  */
-export async function getClientPermissions(projectId: string) {
+export async function getClientPermissions(_projectId: string) {
   // Verify authentication
   const session = await auth();
   if (!session?.user) {
-    console.error('[getClientPermissions] Unauthorized: No session');
-    return { error: 'Unauthorized' };
+    console.error("[getClientPermissions] Unauthorized: No session");
+    return { error: "Unauthorized" };
   }
 
   const supabase = await createClient();
 
   // Get user's company_id via company_users
   const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id')
-    .eq('user_id', session.user.id!)
-    .eq('status', 'active')
+    .from("company_users")
+    .select("company_id")
+    .eq("user_id", session.user.id!)
+    .eq("status", "active")
     .maybeSingle();
 
   if (companyError || !companyUser) {
-    console.error('[getClientPermissions] Error fetching company user:', companyError);
+    console.error(
+      "[getClientPermissions] Error fetching company user:",
+      companyError,
+    );
     return {
       data: {
         can_view_budget: false,
         can_approve_change_orders: false,
         can_view_invoices: false,
-      }
+      },
     };
   }
 
   // Fetch client permissions from companies table
   const { data: company, error } = await supabase
-    .from('companies')
-    .select('client_can_view_budget')
-    .eq('id', companyUser.company_id)
+    .from("companies")
+    .select("client_can_view_budget")
+    .eq("id", companyUser.company_id)
     .single();
 
   if (error) {
-    console.error('[getClientPermissions] Error fetching company settings:', error);
+    console.error(
+      "[getClientPermissions] Error fetching company settings:",
+      error,
+    );
     // Default to no budget visibility on error
     return {
       data: {
         can_view_budget: false,
         can_approve_change_orders: false,
         can_view_invoices: false,
-      }
+      },
     };
   }
 
@@ -97,6 +103,6 @@ export async function getClientPermissions(projectId: string) {
       can_view_budget: (company as any).client_can_view_budget || false,
       can_approve_change_orders: false, // Future feature - placeholder
       can_view_invoices: false, // Future feature - placeholder
-    } as ClientPermissions
+    } as ClientPermissions,
   };
 }

@@ -1,4 +1,3 @@
-import { Header } from "../../components/app/Header";
 import { Sidebar } from "../../components/app/Sidebar";
 import { BottomNavigation } from "../../components/app/BottomNavigation";
 import { Toaster } from "sonner";
@@ -10,46 +9,45 @@ import { BottomNavProvider } from "@/lib/contexts/BottomNavContext";
 import { auth } from "@/lib/auth";
 
 export default async function AppLayout({
-	children
+  children,
 }: {
-	children: React.ReactNode
+  children: React.ReactNode;
 }) {
-	// Fetch session once at layout level to avoid multiple API calls
-	const session = await auth();
+  // Fetch session once at layout level to avoid multiple API calls
+  const session = await auth();
 
-	// Check if current user is a platform owner
-	const ownerStatus = await isOwner();
+  // Check if current user is a platform owner
+  const ownerStatus = await isOwner();
 
-	return (
-		<BottomNavProvider>
-			<div className="flex h-screen bg-gray-50">
-				{/* PWA: Offline Status Banner - z-50 (highest priority) */}
-				<OfflineBanner />
+  return (
+    <BottomNavProvider>
+      <div className="flex h-screen bg-gray-50">
+        {/* PWA: Offline Status Banner - z-50 (highest priority) */}
+        <OfflineBanner />
 
-				{/* Sidebar - Desktop Only */}
-				<Sidebar isOwner={ownerStatus} session={session} />
+        {/* Sidebar - Desktop Only */}
+        <Sidebar isOwner={ownerStatus} session={session} />
 
-				{/* Main Content Area */}
-				<div className="flex flex-col flex-1 overflow-hidden">
+        {/* Main Content Area */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          {/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pb-20 md:pb-0 md:p-0">
+            {children}
+          </main>
+        </div>
 
-					{/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
-					<main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pb-20 md:pb-0 md:p-0">
-						{children}
-					</main>
-				</div>
+        {/* Bottom Navigation - Mobile Only */}
+        <BottomNavigation session={session} />
 
-				{/* Bottom Navigation - Mobile Only */}
-				<BottomNavigation session={session} />
+        {/* Toast Notifications */}
+        <Toaster position="top-right" richColors />
 
-				{/* Toast Notifications */}
-				<Toaster position="top-right" richColors />
+        {/* PWA: Service Worker Update Notification - z-50 (bottom-right toast) */}
+        <ServiceWorkerRegistration />
 
-				{/* PWA: Service Worker Update Notification - z-50 (bottom-right toast) */}
-				<ServiceWorkerRegistration />
-
-				{/* PWA: Install Prompt - z-40 (medium priority, bottom banner) */}
-				<InstallPrompt />
-			</div>
-		</BottomNavProvider>
-	);
+        {/* PWA: Install Prompt - z-40 (medium priority, bottom banner) */}
+        <InstallPrompt />
+      </div>
+    </BottomNavProvider>
+  );
 }

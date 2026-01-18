@@ -1,17 +1,15 @@
-'use server';
+"use server";
 
-import { cache } from 'react';
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { z } from 'zod';
-import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { getProjectTemplate, type ProjectType } from '@/lib/default-project-templates';
+import { revalidatePath, revalidateTag } from "next/cache";
+import { z } from "zod";
+import { createClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
 import type {
   ProjectsRow,
   ProjectsInsert,
-  ProjectsUpdate
-} from '@/types/db/tables/projects';
-import type { UserRole } from '@/types/db/enums';
+  ProjectsUpdate,
+} from "@/types/db/tables/projects";
+import type { UserRole } from "@/types/db/enums";
 
 type Project = ProjectsRow;
 type ProjectInsert = ProjectsInsert;
@@ -32,7 +30,7 @@ export interface TaskCounts {
 
 export interface ScheduleStatus {
   daysRemaining: number;
-  status: 'on-time' | 'at-risk' | 'delayed';
+  status: "on-time" | "at-risk" | "delayed";
   daysBehind: number;
 }
 
@@ -64,8 +62,8 @@ export interface TaskStats {
   // Budget (Primary Focus)
   totalPlannedCost: number;
   totalActualCost: number;
-  budgetVariance: number;        // planned - actual (positive = under budget)
-  budgetUtilization: number;     // actual / planned * 100
+  budgetVariance: number; // planned - actual (positive = under budget)
+  budgetUtilization: number; // actual / planned * 100
 
   // Workload Distribution
   unassignedCount: number;
@@ -114,41 +112,63 @@ export interface ProjectWithStats extends Project {
 // ============================================
 
 const createProjectSchema = z.object({
-  name: z.string().min(1, 'Project name is required').max(200),
-  client_name: z.string().min(1, 'Client name is required').max(200),
-  client_email: z.string().email('Invalid email').optional().or(z.literal('')),
+  name: z.string().min(1, "Project name is required").max(200),
+  client_name: z.string().min(1, "Client name is required").max(200),
+  client_email: z.string().email("Invalid email").optional().or(z.literal("")),
   client_phone: z.string().optional(),
-  address: z.string().min(1, 'Address is required'),
+  address: z.string().min(1, "Address is required"),
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z.enum(['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial']),
+  project_type: z.enum([
+    "residential",
+    "restaurant",
+    "cafe",
+    "commercial_office",
+    "industrial",
+  ]),
   description: z.string().optional(),
-  start_date: z.string().min(1, 'Start date is required'), // ISO date string
-  end_date: z.string().optional().or(z.literal('')),
-  budget: z.number().positive('Budget must be positive').optional().or(z.literal(0)),
+  start_date: z.string().min(1, "Start date is required"), // ISO date string
+  end_date: z.string().optional().or(z.literal("")),
+  budget: z
+    .number()
+    .positive("Budget must be positive")
+    .optional()
+    .or(z.literal(0)),
 });
 
 const updateProjectSchema = z.object({
-  id: z.string().uuid('Invalid project ID'),
-  name: z.string().min(1, 'Project name is required').max(200).optional(),
-  client_name: z.string().min(1, 'Client name is required').max(200).optional(),
-  client_email: z.string().email('Invalid email').optional().or(z.literal('')),
+  id: z.string().uuid("Invalid project ID"),
+  name: z.string().min(1, "Project name is required").max(200).optional(),
+  client_name: z.string().min(1, "Client name is required").max(200).optional(),
+  client_email: z.string().email("Invalid email").optional().or(z.literal("")),
   client_phone: z.string().optional(),
   address: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z.enum(['residential', 'restaurant', 'cafe', 'commercial_office', 'industrial']).optional(),
+  project_type: z
+    .enum([
+      "residential",
+      "restaurant",
+      "cafe",
+      "commercial_office",
+      "industrial",
+    ])
+    .optional(),
   description: z.string().optional(),
   start_date: z.string().optional(),
-  end_date: z.string().optional().or(z.literal('')),
-  budget: z.number().positive('Budget must be positive').optional().or(z.literal(0)),
+  end_date: z.string().optional().or(z.literal("")),
+  budget: z
+    .number()
+    .positive("Budget must be positive")
+    .optional()
+    .or(z.literal(0)),
 });
 
 const updateProjectStatusSchema = z.object({
-  id: z.string().uuid('Invalid project ID'),
-  status: z.enum(['active', 'on_hold', 'completed', 'archived']),
+  id: z.string().uuid("Invalid project ID"),
+  status: z.enum(["active", "on_hold", "completed", "archived"]),
 });
 
 // ============================================
@@ -160,7 +180,7 @@ async function getUserContext() {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
+    return { error: "Not authenticated" };
   }
 
   // Create Supabase client
@@ -168,14 +188,14 @@ async function getUserContext() {
 
   // Get user's company and role using NextAuth user ID
   const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
+    .from("company_users")
+    .select("company_id, role, status")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
     .maybeSingle();
 
   if (companyError || !companyUser) {
-    return { error: 'No active company found for user' };
+    return { error: "No active company found for user" };
   }
 
   return {
@@ -193,41 +213,43 @@ async function getUserContext() {
 export async function createProject(formData: FormData) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
-    console.error('User context error:', userContext.error);
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
     return { error: userContext.error };
   }
 
   const { userId, companyId, role, supabase } = userContext;
-  console.log('Creating project with context:', { userId, companyId, role });
+  console.log("Creating project with context:", { userId, companyId, role });
 
   // Check permissions - only Admin and Project Manager can create projects
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to create projects' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to create projects" };
   }
 
   // Parse and validate form data
   const rawData = {
-    name: formData.get('name'),
-    client_name: formData.get('client_name'),
-    client_email: formData.get('client_email') || '',
-    client_phone: formData.get('client_phone') || '',
-    address: formData.get('address'),
-    city: formData.get('city') || '',
-    state: formData.get('state') || '',
-    zip_code: formData.get('zip_code') || '',
-    project_type: formData.get('project_type'),
-    description: formData.get('description') || '',
-    start_date: formData.get('start_date'),
-    end_date: formData.get('end_date') || '',
-    budget: formData.get('budget') ? parseFloat(formData.get('budget') as string) : 0,
+    name: formData.get("name"),
+    client_name: formData.get("client_name"),
+    client_email: formData.get("client_email") || "",
+    client_phone: formData.get("client_phone") || "",
+    address: formData.get("address"),
+    city: formData.get("city") || "",
+    state: formData.get("state") || "",
+    zip_code: formData.get("zip_code") || "",
+    project_type: formData.get("project_type"),
+    description: formData.get("description") || "",
+    start_date: formData.get("start_date"),
+    end_date: formData.get("end_date") || "",
+    budget: formData.get("budget")
+      ? parseFloat(formData.get("budget") as string)
+      : 0,
   };
 
   const validation = createProjectSchema.safeParse(rawData);
 
   if (!validation.success) {
     const errors = validation.error.flatten().fieldErrors;
-    return { error: 'Validation failed', fieldErrors: errors };
+    return { error: "Validation failed", fieldErrors: errors };
   }
 
   const data = validation.data;
@@ -236,24 +258,26 @@ export async function createProject(formData: FormData) {
   // This allows the database trigger to automatically create phases and tasks
   const mapProjectTypeToConfigName = (projectType: string): string => {
     const mapping: Record<string, string> = {
-      'residential': 'Residential',
-      'restaurant': 'Restaurant',
-      'cafe': 'Cafe',
-      'commercial_office': 'Commercial Office',
-      'industrial': 'Industrial',
+      residential: "Residential",
+      restaurant: "Restaurant",
+      cafe: "Cafe",
+      commercial_office: "Commercial Office",
+      industrial: "Industrial",
     };
     return mapping[projectType] || projectType;
   };
 
   const projectTypeConfigName = mapProjectTypeToConfigName(data.project_type);
-  console.log(`[createProject] Looking for project_type_config: ${projectTypeConfigName}`);
+  console.log(
+    `[createProject] Looking for project_type_config: ${projectTypeConfigName}`,
+  );
 
   const { data: projectTypeConfig } = await supabase
-    .from('project_type_configs')
-    .select('id')
-    .eq('company_id', companyId)
-    .eq('name', projectTypeConfigName)
-    .eq('is_active', true)
+    .from("project_type_configs")
+    .select("id")
+    .eq("company_id", companyId)
+    .eq("name", projectTypeConfigName)
+    .eq("is_active", true)
     .maybeSingle();
 
   // Prepare project data for insertion
@@ -273,22 +297,24 @@ export async function createProject(formData: FormData) {
     start_date: data.start_date,
     end_date: data.end_date || null,
     budget: data.budget || null,
-    status: 'active',
+    status: "active",
     created_by: userId,
   };
 
-  console.log(`[createProject] Inserting project with project_type_config_id: ${projectData.project_type_config_id}`);
+  console.log(
+    `[createProject] Inserting project with project_type_config_id: ${projectData.project_type_config_id}`,
+  );
 
   // Insert project - trigger will auto-create phases/tasks if project_type_config_id is set
   const { data: project, error: insertError } = await supabase
-    .from('projects')
+    .from("projects")
     .insert(projectData)
     .select()
     .single();
 
   if (insertError) {
-    console.error('Error creating project:', insertError);
-    console.error('Error details:', {
+    console.error("Error creating project:", insertError);
+    console.error("Error details:", {
       code: insertError.code,
       message: insertError.message,
       details: insertError.details,
@@ -296,7 +322,7 @@ export async function createProject(formData: FormData) {
     });
     return {
       error: `Failed to create project: ${insertError.message}`,
-      details: process.env.NODE_ENV === 'development' ? insertError : undefined
+      details: process.env.NODE_ENV === "development" ? insertError : undefined,
     };
   }
 
@@ -310,76 +336,101 @@ export async function createProject(formData: FormData) {
   // 1. project_type_config_id is set (uses database templates)
   // 2. project_type_config_id is null (creates 5 universal phases as fallback)
   // ============================================================================
-  console.log(`[createProject] ✅ Project created - trigger will handle phase/task creation`);
+  console.log(
+    `[createProject] ✅ Project created - trigger will handle phase/task creation`,
+  );
 
   // ============================================================================
   // NEW: Assign default 3D model and create pre-configured markers
   // ============================================================================
   try {
-    console.log('[createProject] Attempting to assign default 3D model');
+    console.log("[createProject] Attempting to assign default 3D model");
 
     // Import default model functions
-    const { assignDefaultModel, createMarkersFromDefaultConfigs } = await import('./default-models');
+    const { assignDefaultModel, createMarkersFromDefaultConfigs } =
+      await import("./default-models");
 
     // Step 1: Assign default model to project
-    const defaultModel = await assignDefaultModel(project.id, data.project_type);
+    const defaultModel = await assignDefaultModel(
+      project.id,
+      data.project_type,
+    );
 
     if (defaultModel) {
-      console.log('[createProject] ✅ Assigned default model:', defaultModel.id);
+      console.log(
+        "[createProject] ✅ Assigned default model:",
+        defaultModel.id,
+      );
 
       // Step 2: Fetch all created tasks for marker auto-linking
       const { data: createdTasks, error: tasksError } = await supabase
-        .from('tasks')
-        .select('id, title, phase_id')
-        .eq('project_id', project.id);
+        .from("tasks")
+        .select("id, title, phase_id")
+        .eq("project_id", project.id);
 
       if (tasksError) {
-        console.error('[createProject] Error fetching tasks for marker creation:', tasksError);
+        console.error(
+          "[createProject] Error fetching tasks for marker creation:",
+          tasksError,
+        );
       } else if (createdTasks && createdTasks.length > 0) {
-        console.log('[createProject] Fetched tasks for marker linking:', createdTasks.length);
+        console.log(
+          "[createProject] Fetched tasks for marker linking:",
+          createdTasks.length,
+        );
 
         // Step 3: Create markers from default configs with auto-linking
         // Type: createdTasks has { id, title, phase_id } which matches Task in default-models.ts
         const createdMarkers = await createMarkersFromDefaultConfigs(
           project.id,
           defaultModel.id,
-          createdTasks
+          createdTasks,
         );
 
         if (createdMarkers && createdMarkers.length > 0) {
           const matchStats = {
             total: createdMarkers.length,
-            matched: createdMarkers.filter(m => m.task_id).length,
-            unmatched: createdMarkers.filter(m => !m.task_id).length,
+            matched: createdMarkers.filter((m) => m.task_id).length,
+            unmatched: createdMarkers.filter((m) => !m.task_id).length,
           };
 
-          console.log(`[createProject] ✅ Created markers from default configs: ${matchStats.total} (${matchStats.matched} auto-linked to tasks, ${matchStats.unmatched} unlinked)`);
+          console.log(
+            `[createProject] ✅ Created markers from default configs: ${matchStats.total} (${matchStats.matched} auto-linked to tasks, ${matchStats.unmatched} unlinked)`,
+          );
 
           if (matchStats.unmatched > 0) {
             console.warn(
               `[createProject] ⚠️ Marker auto-linking incomplete. Matched: ${matchStats.matched}/${matchStats.total}. ` +
-              `Review task template titles in default marker configs.`
+                `Review task template titles in default marker configs.`,
             );
           }
         } else {
-          console.log('[createProject] No markers created from default configs');
+          console.log(
+            "[createProject] No markers created from default configs",
+          );
         }
       } else {
-        console.log('[createProject] No tasks found for marker linking');
+        console.log("[createProject] No tasks found for marker linking");
       }
     } else {
-      console.log('[createProject] No default model available for project type:', data.project_type);
+      console.log(
+        "[createProject] No default model available for project type:",
+        data.project_type,
+      );
     }
   } catch (defaultModelError) {
-    console.error('[createProject] Error in default model assignment:', defaultModelError);
+    console.error(
+      "[createProject] Error in default model assignment:",
+      defaultModelError,
+    );
     // Don't fail project creation if default model fails
   }
 
   // Revalidate projects list and related caches
-  revalidatePath('/app/projects');
-  revalidatePath('/app');
-  revalidateTag('projects');
-  revalidateTag('dashboard');
+  revalidatePath("/app/projects");
+  revalidatePath("/app");
+  revalidateTag("projects");
+  revalidateTag("dashboard");
 
   return { success: true, project };
 }
@@ -387,57 +438,59 @@ export async function createProject(formData: FormData) {
 export async function updateProject(formData: FormData) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to update projects' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to update projects" };
   }
 
   // Parse and validate form data
   const rawData = {
-    id: formData.get('id'),
-    name: formData.get('name'),
-    client_name: formData.get('client_name'),
-    client_email: formData.get('client_email') || '',
-    client_phone: formData.get('client_phone') || '',
-    address: formData.get('address'),
-    city: formData.get('city') || '',
-    state: formData.get('state') || '',
-    zip_code: formData.get('zip_code') || '',
-    project_type: formData.get('project_type'),
-    description: formData.get('description') || '',
-    start_date: formData.get('start_date'),
-    end_date: formData.get('end_date') || '',
-    budget: formData.get('budget') ? parseFloat(formData.get('budget') as string) : 0,
+    id: formData.get("id"),
+    name: formData.get("name"),
+    client_name: formData.get("client_name"),
+    client_email: formData.get("client_email") || "",
+    client_phone: formData.get("client_phone") || "",
+    address: formData.get("address"),
+    city: formData.get("city") || "",
+    state: formData.get("state") || "",
+    zip_code: formData.get("zip_code") || "",
+    project_type: formData.get("project_type"),
+    description: formData.get("description") || "",
+    start_date: formData.get("start_date"),
+    end_date: formData.get("end_date") || "",
+    budget: formData.get("budget")
+      ? parseFloat(formData.get("budget") as string)
+      : 0,
   };
 
   const validation = updateProjectSchema.safeParse(rawData);
 
   if (!validation.success) {
     const errors = validation.error.flatten().fieldErrors;
-    return { error: 'Validation failed', fieldErrors: errors };
+    return { error: "Validation failed", fieldErrors: errors };
   }
 
   const { id, ...updateData } = validation.data;
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', id)
+    .from("projects")
+    .select("company_id")
+    .eq("id", id)
     .single();
 
   if (fetchError || !existingProject) {
-    return { error: 'Project not found' };
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    return { error: 'Insufficient permissions to update this project' };
+    return { error: "Insufficient permissions to update this project" };
   }
 
   // Prepare update data
@@ -455,128 +508,138 @@ export async function updateProject(formData: FormData) {
 
   // Update project
   const { data: project, error: updateError } = await supabase
-    .from('projects')
+    .from("projects")
     .update(projectUpdate)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single();
 
   if (updateError) {
-    console.error('Error updating project:', updateError);
-    return { error: 'Failed to update project. Please try again.' };
+    console.error("Error updating project:", updateError);
+    return { error: "Failed to update project. Please try again." };
   }
 
   // Revalidate paths and related caches
-  revalidatePath('/app/projects');
+  revalidatePath("/app/projects");
   revalidatePath(`/app/projects/${id}`);
-  revalidateTag('projects');
+  revalidateTag("projects");
   revalidateTag(`project-${id}`);
 
   return { success: true, project };
 }
 
-export async function updateProjectStatus(projectId: string, status: 'active' | 'on_hold' | 'completed' | 'archived') {
+export async function updateProjectStatus(
+  projectId: string,
+  status: "active" | "on_hold" | "completed" | "archived",
+) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to update project status' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to update project status" };
   }
 
   // Validate input
-  const validation = updateProjectStatusSchema.safeParse({ id: projectId, status });
+  const validation = updateProjectStatusSchema.safeParse({
+    id: projectId,
+    status,
+  });
 
   if (!validation.success) {
-    return { error: 'Invalid input' };
+    return { error: "Invalid input" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    return { error: 'Project not found' };
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    return { error: 'Insufficient permissions to update this project' };
+    return { error: "Insufficient permissions to update this project" };
   }
 
   // Update project status
   const { data: project, error: updateError } = await supabase
-    .from('projects')
+    .from("projects")
     .update({ status })
-    .eq('id', projectId)
+    .eq("id", projectId)
     .select()
     .single();
 
   if (updateError) {
-    console.error('Error updating project status:', updateError);
-    return { error: 'Failed to update project status. Please try again.' };
+    console.error("Error updating project status:", updateError);
+    return { error: "Failed to update project status. Please try again." };
   }
 
   // Revalidate paths and related caches
-  revalidatePath('/app/projects');
+  revalidatePath("/app/projects");
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag('projects');
+  revalidateTag("projects");
   revalidateTag(`project-${projectId}`);
-  revalidateTag('dashboard');
+  revalidateTag("dashboard");
 
   return { success: true, project };
 }
 
-export async function assignProjectTeamMember(projectId: string, userId: string, userRole: string) {
+export async function assignProjectTeamMember(
+  projectId: string,
+  userId: string,
+  userRole: string,
+) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to assign team members' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to assign team members" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    return { error: 'Project not found' };
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    return { error: 'Insufficient permissions to assign team to this project' };
+    return { error: "Insufficient permissions to assign team to this project" };
   }
 
   // Verify user exists and belongs to same company
   const { data: userProfile, error: userError } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .eq('id', userId)
+    .from("user_profiles")
+    .select("id")
+    .eq("id", userId)
     .single();
 
   if (userError || !userProfile) {
-    return { error: 'User not found' };
+    return { error: "User not found" };
   }
 
   // Assign team member
   const { data: teamMember, error: insertError } = await supabase
-    .from('project_team')
+    .from("project_team")
     .insert({
       project_id: projectId,
       user_id: userId,
@@ -587,8 +650,10 @@ export async function assignProjectTeamMember(projectId: string, userId: string,
     .single();
 
   if (insertError) {
-    console.error('Error assigning team member:', insertError);
-    return { error: 'Failed to assign team member. They may already be assigned.' };
+    console.error("Error assigning team member:", insertError);
+    return {
+      error: "Failed to assign team member. They may already be assigned.",
+    };
   }
 
   // TODO: Create notification for assigned user
@@ -600,73 +665,102 @@ export async function assignProjectTeamMember(projectId: string, userId: string,
   return { success: true, teamMember };
 }
 
-export async function addProjectTeamMember(projectId: string, userId: string, userRole: string) {
-  console.log('[addProjectTeamMember] Starting - Project:', projectId, 'User:', userId, 'Role:', userRole);
+export async function addProjectTeamMember(
+  projectId: string,
+  userId: string,
+  userRole: string,
+) {
+  console.log(
+    "[addProjectTeamMember] Starting - Project:",
+    projectId,
+    "User:",
+    userId,
+    "Role:",
+    userRole,
+  );
 
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
-    console.error('[addProjectTeamMember] User context error:', userContext.error);
+  if ("error" in userContext) {
+    console.error(
+      "[addProjectTeamMember] User context error:",
+      userContext.error,
+    );
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
-  console.log('[addProjectTeamMember] User context:', { companyId, role });
+  console.log("[addProjectTeamMember] User context:", { companyId, role });
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    console.error('[addProjectTeamMember] Insufficient permissions - User role:', role);
-    return { error: 'Insufficient permissions to add team members' };
+  if (role !== "admin" && role !== "project_manager") {
+    console.error(
+      "[addProjectTeamMember] Insufficient permissions - User role:",
+      role,
+    );
+    return { error: "Insufficient permissions to add team members" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    console.error('[addProjectTeamMember] Project not found:', fetchError);
-    return { error: 'Project not found' };
+    console.error("[addProjectTeamMember] Project not found:", fetchError);
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    console.error('[addProjectTeamMember] Project company mismatch');
-    return { error: 'Insufficient permissions to manage this project team' };
+    console.error("[addProjectTeamMember] Project company mismatch");
+    return { error: "Insufficient permissions to manage this project team" };
   }
 
-  console.log('[addProjectTeamMember] Project verified');
+  console.log("[addProjectTeamMember] Project verified");
 
   // Check if user is already on the team
   const { data: existingMember, error: checkError } = await supabase
-    .from('project_team')
-    .select('id')
-    .eq('project_id', projectId)
-    .eq('user_id', userId)
+    .from("project_team")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (checkError) {
-    console.error('[addProjectTeamMember] Error checking existing member:', checkError);
+    console.error(
+      "[addProjectTeamMember] Error checking existing member:",
+      checkError,
+    );
   }
 
   if (existingMember) {
-    console.error('[addProjectTeamMember] User already on team');
-    return { error: 'This user is already a member of the project team' };
+    console.error("[addProjectTeamMember] User already on team");
+    return { error: "This user is already a member of the project team" };
   }
 
-  console.log('[addProjectTeamMember] User not already on team, proceeding with insert');
+  console.log(
+    "[addProjectTeamMember] User not already on team, proceeding with insert",
+  );
 
   // Validate role is one of the allowed roles
-  const validRoles = ['admin', 'project_manager', 'foreman', 'field_worker', 'subcontractor', 'client'];
+  const validRoles = [
+    "admin",
+    "project_manager",
+    "foreman",
+    "field_worker",
+    "subcontractor",
+    "client",
+  ];
   if (!validRoles.includes(userRole)) {
-    console.error('[addProjectTeamMember] Invalid role:', userRole);
-    return { error: 'Invalid role selected' };
+    console.error("[addProjectTeamMember] Invalid role:", userRole);
+    return { error: "Invalid role selected" };
   }
 
   // Add team member
   const { data: teamMember, error: insertError } = await supabase
-    .from('project_team')
+    .from("project_team")
     .insert({
       project_id: projectId,
       user_id: userId,
@@ -677,16 +771,22 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
     .single();
 
   if (insertError) {
-    console.error('[addProjectTeamMember] Error adding team member:', insertError);
-    console.error('[addProjectTeamMember] Error details:', {
+    console.error(
+      "[addProjectTeamMember] Error adding team member:",
+      insertError,
+    );
+    console.error("[addProjectTeamMember] Error details:", {
       code: insertError.code,
       message: insertError.message,
       details: insertError.details,
     });
-    return { error: 'Failed to add team member. Please try again.' };
+    return { error: "Failed to add team member. Please try again." };
   }
 
-  console.log('[addProjectTeamMember] Team member added successfully:', teamMember);
+  console.log(
+    "[addProjectTeamMember] Team member added successfully:",
+    teamMember,
+  );
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
@@ -701,107 +801,132 @@ export async function addProjectTeamMember(projectId: string, userId: string, us
  */
 export async function addSubcontractorToProject(
   projectId: string,
-  subcontractorId: string
+  subcontractorId: string,
 ) {
-  console.log('[addSubcontractorToProject] Starting - Project:', projectId, 'Subcontractor:', subcontractorId);
+  console.log(
+    "[addSubcontractorToProject] Starting - Project:",
+    projectId,
+    "Subcontractor:",
+    subcontractorId,
+  );
 
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
-    console.error('[addSubcontractorToProject] User context error:', userContext.error);
+  if ("error" in userContext) {
+    console.error(
+      "[addSubcontractorToProject] User context error:",
+      userContext.error,
+    );
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
-  console.log('[addSubcontractorToProject] User context:', { companyId, role });
+  console.log("[addSubcontractorToProject] User context:", { companyId, role });
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    console.error('[addSubcontractorToProject] Insufficient permissions - User role:', role);
-    return { error: 'Insufficient permissions to add subcontractors' };
+  if (role !== "admin" && role !== "project_manager") {
+    console.error(
+      "[addSubcontractorToProject] Insufficient permissions - User role:",
+      role,
+    );
+    return { error: "Insufficient permissions to add subcontractors" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    console.error('[addSubcontractorToProject] Project not found:', fetchError);
-    return { error: 'Project not found' };
+    console.error("[addSubcontractorToProject] Project not found:", fetchError);
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    console.error('[addSubcontractorToProject] Project company mismatch');
-    return { error: 'Insufficient permissions to manage this project team' };
+    console.error("[addSubcontractorToProject] Project company mismatch");
+    return { error: "Insufficient permissions to manage this project team" };
   }
 
   // Verify subcontractor belongs to user's company and is active
   const { data: subcontractor, error: subError } = await supabase
-    .from('subcontractors')
-    .select('id, company_id, company_name, is_active')
-    .eq('id', subcontractorId)
+    .from("subcontractors")
+    .select("id, company_id, company_name, is_active")
+    .eq("id", subcontractorId)
     .single();
 
   if (subError || !subcontractor) {
-    console.error('[addSubcontractorToProject] Subcontractor not found:', subError);
-    return { error: 'Subcontractor not found' };
+    console.error(
+      "[addSubcontractorToProject] Subcontractor not found:",
+      subError,
+    );
+    return { error: "Subcontractor not found" };
   }
 
   if (subcontractor.company_id !== companyId) {
-    console.error('[addSubcontractorToProject] Subcontractor company mismatch');
-    return { error: 'Subcontractor not in your company' };
+    console.error("[addSubcontractorToProject] Subcontractor company mismatch");
+    return { error: "Subcontractor not in your company" };
   }
 
   if (!subcontractor.is_active) {
-    console.error('[addSubcontractorToProject] Subcontractor is inactive');
-    return { error: 'Cannot add inactive subcontractor to project' };
+    console.error("[addSubcontractorToProject] Subcontractor is inactive");
+    return { error: "Cannot add inactive subcontractor to project" };
   }
 
   // Check if subcontractor is already on the team
   const { data: existingMember, error: checkError } = await supabase
-    .from('project_team')
-    .select('id')
-    .eq('project_id', projectId)
-    .eq('subcontractor_id', subcontractorId)
+    .from("project_team")
+    .select("id")
+    .eq("project_id", projectId)
+    .eq("subcontractor_id", subcontractorId)
     .maybeSingle();
 
   if (checkError) {
-    console.error('[addSubcontractorToProject] Error checking existing member:', checkError);
+    console.error(
+      "[addSubcontractorToProject] Error checking existing member:",
+      checkError,
+    );
   }
 
   if (existingMember) {
-    console.error('[addSubcontractorToProject] Subcontractor already on team');
-    return { error: 'This subcontractor is already assigned to the project' };
+    console.error("[addSubcontractorToProject] Subcontractor already on team");
+    return { error: "This subcontractor is already assigned to the project" };
   }
 
-  console.log('[addSubcontractorToProject] Subcontractor not already on team, proceeding with insert');
+  console.log(
+    "[addSubcontractorToProject] Subcontractor not already on team, proceeding with insert",
+  );
 
   // Add subcontractor to team with 'subcontractor' role
   const { data: teamMember, error: insertError } = await supabase
-    .from('project_team')
+    .from("project_team")
     .insert({
       project_id: projectId,
       subcontractor_id: subcontractorId,
-      role: 'subcontractor' as UserRole,
+      role: "subcontractor" as UserRole,
       assigned_by: userContext.userId,
     })
     .select()
     .single();
 
   if (insertError) {
-    console.error('[addSubcontractorToProject] Error adding subcontractor:', insertError);
-    console.error('[addSubcontractorToProject] Error details:', {
+    console.error(
+      "[addSubcontractorToProject] Error adding subcontractor:",
+      insertError,
+    );
+    console.error("[addSubcontractorToProject] Error details:", {
       code: insertError.code,
       message: insertError.message,
       details: insertError.details,
     });
-    return { error: 'Failed to add subcontractor. Please try again.' };
+    return { error: "Failed to add subcontractor. Please try again." };
   }
 
-  console.log('[addSubcontractorToProject] Subcontractor added successfully:', teamMember);
+  console.log(
+    "[addSubcontractorToProject] Subcontractor added successfully:",
+    teamMember,
+  );
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
@@ -816,46 +941,46 @@ export async function addSubcontractorToProject(
  */
 export async function removeSubcontractorFromProject(
   projectId: string,
-  subcontractorId: string
+  subcontractorId: string,
 ) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to remove subcontractors' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to remove subcontractors" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    return { error: 'Project not found' };
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    return { error: 'Insufficient permissions to manage this project team' };
+    return { error: "Insufficient permissions to manage this project team" };
   }
 
   // Remove subcontractor from team
   const { error: deleteError } = await supabase
-    .from('project_team')
+    .from("project_team")
     .delete()
-    .eq('project_id', projectId)
-    .eq('subcontractor_id', subcontractorId);
+    .eq("project_id", projectId)
+    .eq("subcontractor_id", subcontractorId);
 
   if (deleteError) {
-    console.error('Error removing subcontractor:', deleteError);
-    return { error: 'Failed to remove subcontractor. Please try again.' };
+    console.error("Error removing subcontractor:", deleteError);
+    return { error: "Failed to remove subcontractor. Please try again." };
   }
 
   // Revalidate paths and related caches
@@ -865,45 +990,48 @@ export async function removeSubcontractorFromProject(
   return { success: true };
 }
 
-export async function removeProjectTeamMember(projectId: string, userId: string) {
+export async function removeProjectTeamMember(
+  projectId: string,
+  userId: string,
+) {
   // Get user's company and role
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Check permissions
-  if (role !== 'admin' && role !== 'project_manager') {
-    return { error: 'Insufficient permissions to remove team members' };
+  if (role !== "admin" && role !== "project_manager") {
+    return { error: "Insufficient permissions to remove team members" };
   }
 
   // Verify project belongs to user's company
   const { data: existingProject, error: fetchError } = await supabase
-    .from('projects')
-    .select('company_id')
-    .eq('id', projectId)
+    .from("projects")
+    .select("company_id")
+    .eq("id", projectId)
     .single();
 
   if (fetchError || !existingProject) {
-    return { error: 'Project not found' };
+    return { error: "Project not found" };
   }
 
   if (existingProject.company_id !== companyId) {
-    return { error: 'Insufficient permissions to manage this project team' };
+    return { error: "Insufficient permissions to manage this project team" };
   }
 
   // Remove team member
   const { error: deleteError } = await supabase
-    .from('project_team')
+    .from("project_team")
     .delete()
-    .eq('project_id', projectId)
-    .eq('user_id', userId);
+    .eq("project_id", projectId)
+    .eq("user_id", userId);
 
   if (deleteError) {
-    console.error('Error removing team member:', deleteError);
-    return { error: 'Failed to remove team member. Please try again.' };
+    console.error("Error removing team member:", deleteError);
+    return { error: "Failed to remove team member. Please try again." };
   }
 
   // Revalidate paths and related caches
@@ -926,45 +1054,57 @@ export async function removeProjectTeamMember(projectId: string, userId: string)
 function calculateScheduleStatus(
   endDate: string | null,
   completionPercentage: number,
-  startDate: string | null
+  startDate: string | null,
 ): ScheduleStatus {
   // Default values if no end date
   if (!endDate) {
     return {
       daysRemaining: 0,
-      status: 'on-time',
+      status: "on-time",
       daysBehind: 0,
     };
   }
 
   const now = new Date();
   const end = new Date(endDate);
-  const daysRemaining = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.ceil(
+    (end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
   // Calculate expected progress based on timeline
   let expectedProgress = 100;
   if (startDate) {
     const start = new Date(startDate);
-    const totalDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const elapsedDays = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    expectedProgress = Math.min(100, Math.max(0, (elapsedDays / totalDays) * 100));
+    const totalDays = Math.ceil(
+      (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    const elapsedDays = Math.ceil(
+      (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24),
+    );
+    expectedProgress = Math.min(
+      100,
+      Math.max(0, (elapsedDays / totalDays) * 100),
+    );
   }
 
   // Calculate days behind based on progress difference
   const progressDifference = expectedProgress - completionPercentage;
-  const daysBehind = Math.max(0, Math.round((progressDifference / 100) * daysRemaining));
+  const daysBehind = Math.max(
+    0,
+    Math.round((progressDifference / 100) * daysRemaining),
+  );
 
   // Determine status
-  let status: 'on-time' | 'at-risk' | 'delayed' = 'on-time';
+  let status: "on-time" | "at-risk" | "delayed" = "on-time";
   if (daysRemaining < 0) {
-    status = 'delayed'; // Past due date
+    status = "delayed"; // Past due date
   } else if (daysBehind > 5) {
-    status = 'delayed';
+    status = "delayed";
   } else if (daysBehind >= 1) {
-    status = 'at-risk';
+    status = "at-risk";
   }
 
-  console.log('[getProjectsWithStats] Schedule calculation:', {
+  console.log("[getProjectsWithStats] Schedule calculation:", {
     endDate,
     daysRemaining,
     expectedProgress: expectedProgress.toFixed(1),
@@ -996,16 +1136,18 @@ export async function getProjectsWithStats(
   options?: {
     limit?: number;
     offset?: number;
-  }
+  },
 ): Promise<{
   projects?: ProjectWithStats[];
   totalCount?: number;
-  error?: string
+  error?: string;
 }> {
   const limit = options?.limit ?? 20;
   const offset = options?.offset ?? 0;
 
-  console.log(`[getProjectsWithStats] Starting optimized project fetch (limit: ${limit}, offset: ${offset})...`);
+  console.log(
+    `[getProjectsWithStats] Starting optimized project fetch (limit: ${limit}, offset: ${offset})...`,
+  );
 
   // Note: unstable_cache was removed because createClient() internally calls auth(),
   // which accesses headers() - a dynamic data source that can't be cached.
@@ -1018,44 +1160,45 @@ export async function getProjectsWithStats(
 async function fetchProjectsWithStats(
   companyId: string,
   limit: number,
-  offset: number
+  offset: number,
 ): Promise<{
   projects?: ProjectWithStats[];
   totalCount?: number;
-  error?: string
+  error?: string;
 }> {
-  console.log('[fetchProjectsWithStats] Fetching for company:', companyId);
+  console.log("[fetchProjectsWithStats] Fetching for company:", companyId);
 
   // Create Supabase client inside cached function
   const supabase = await createClient();
 
   try {
     // Call optimized database function - returns JSONB array with pre-aggregated stats
-    const { data: result, error: rpcError } = await supabase
-      .rpc('get_projects_with_stats', {
+    const { data: result, error: rpcError } = await supabase.rpc(
+      "get_projects_with_stats",
+      {
         p_company_id: companyId,
         p_limit: limit,
-        p_offset: offset
-      });
+        p_offset: offset,
+      },
+    );
 
     if (rpcError) {
-      console.error('[getProjectsWithStats] RPC error:', rpcError);
-      return { error: 'Failed to fetch projects' };
+      console.error("[getProjectsWithStats] RPC error:", rpcError);
+      return { error: "Failed to fetch projects" };
     }
 
     // Get total count for pagination (separate lightweight query)
     const { count, error: countError } = await supabase
-      .from('projects')
-      .select('id', { count: 'exact', head: true })
-      .eq('company_id', companyId);
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", companyId);
 
     if (countError) {
-      console.error('[getProjectsWithStats] Count error:', countError);
+      console.error("[getProjectsWithStats] Count error:", countError);
       // Continue without count - pagination will be disabled
     }
 
     console.log(`[getProjectsWithStats] Total project count: ${count || 0}`);
-
 
     // Result is JSONB - need to parse it as array
     // Type: RPC returns JSON with project data + nested stats object
@@ -1090,11 +1233,13 @@ async function fetchProjectsWithStats(
     const projects = (result || []) as RpcProjectResult[];
 
     if (!projects || projects.length === 0) {
-      console.log('[getProjectsWithStats] No projects found');
+      console.log("[getProjectsWithStats] No projects found");
       return { projects: [], totalCount: count || 0 };
     }
 
-    console.log(`[getProjectsWithStats] Found ${projects.length} projects with pre-aggregated stats`);
+    console.log(
+      `[getProjectsWithStats] Found ${projects.length} projects with pre-aggregated stats`,
+    );
 
     // Transform database result to ProjectWithStats format
     const today = new Date();
@@ -1117,9 +1262,6 @@ async function fetchProjectsWithStats(
       const plannedCost = Number(dbStats.planned_cost) || 0;
       const budget = Number(project.budget) || 0;
 
-      // Calculate materials costs from DB aggregated amounts
-      const materialCosts = 0; // Already included in actual_cost on tasks
-
       // Expense stats from DB
       const expenseStats: ExpenseStats = {
         total: dbStats.expenses_total || 0,
@@ -1139,7 +1281,7 @@ async function fetchProjectsWithStats(
       const schedule = calculateScheduleStatus(
         project.end_date,
         project.completion_percentage || 0,
-        project.start_date
+        project.start_date,
       );
 
       // Materials status from DB
@@ -1153,7 +1295,7 @@ async function fetchProjectsWithStats(
         actualSpent: totalActualSpent,
         plannedCost,
         budgetVariance: budget - totalActualSpent,
-        isUnderBudget: (budget - totalActualSpent) >= 0,
+        isUnderBudget: budget - totalActualSpent >= 0,
         taskCounts,
         schedule,
         materials: materialsStatus,
@@ -1204,12 +1346,13 @@ async function fetchProjectsWithStats(
       } as ProjectWithStats;
     });
 
-    console.log(`[getProjectsWithStats] Successfully processed ${projectsWithStats.length} projects with stats`);
+    console.log(
+      `[getProjectsWithStats] Successfully processed ${projectsWithStats.length} projects with stats`,
+    );
     return { projects: projectsWithStats, totalCount: count || 0 };
-
   } catch (error) {
-    console.error('[getProjectsWithStats] Unexpected error:', error);
-    return { error: 'An unexpected error occurred' };
+    console.error("[getProjectsWithStats] Unexpected error:", error);
+    return { error: "An unexpected error occurred" };
   }
 }
 
@@ -1220,11 +1363,11 @@ export async function getProjectWithStats(projectId: string): Promise<{
   project?: ProjectWithStats;
   error?: string;
 }> {
-  console.log('[getProjectWithStats] Fetching project:', projectId);
+  console.log("[getProjectWithStats] Fetching project:", projectId);
 
   // Get user context (not cached - auth must be per-request)
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
@@ -1237,7 +1380,10 @@ export async function getProjectWithStats(projectId: string): Promise<{
 }
 
 // Internal helper function for fetching project detail
-async function fetchProjectWithStats(projectId: string, companyId: string): Promise<{
+async function fetchProjectWithStats(
+  projectId: string,
+  companyId: string,
+): Promise<{
   project?: ProjectWithStats;
   error?: string;
 }> {
@@ -1247,8 +1393,9 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
   try {
     // 1. Fetch project with phases and team
     const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .select(`
+      .from("projects")
+      .select(
+        `
         *,
         project_phases (
           id,
@@ -1262,35 +1409,41 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
           user_id,
           role
         )
-      `)
-      .eq('id', projectId)
-      .eq('company_id', companyId)
+      `,
+      )
+      .eq("id", projectId)
+      .eq("company_id", companyId)
       .single();
 
     if (projectError || !project) {
-      console.error('[getProjectWithStats] Error fetching project:', projectError);
-      return { error: 'Project not found' };
+      console.error(
+        "[getProjectWithStats] Error fetching project:",
+        projectError,
+      );
+      return { error: "Project not found" };
     }
 
     // 2. Fetch tasks for this project
     const { data: tasks } = await supabase
-      .from('tasks')
-      .select('id, status, due_date, actual_cost, planned_cost')
-      .eq('project_id', projectId);
+      .from("tasks")
+      .select("id, status, due_date, actual_cost, planned_cost")
+      .eq("project_id", projectId);
 
     // 3. Fetch materials for this project
     const { data: materials } = await supabase
-      .from('material_assignments')
-      .select('id, procurement_status, total_cost')
-      .eq('project_id', projectId);
+      .from("material_assignments")
+      .select("id, procurement_status, total_cost")
+      .eq("project_id", projectId);
 
     // 4. Fetch expenses for this project
     const { data: expenses } = await supabase
-      .from('expenses')
-      .select('id, amount, status')
-      .eq('project_id', projectId);
+      .from("expenses")
+      .select("id, amount, status")
+      .eq("project_id", projectId);
 
-    console.log(`[getProjectWithStats] Fetched ${expenses?.length || 0} expenses for project`);
+    console.log(
+      `[getProjectWithStats] Fetched ${expenses?.length || 0} expenses for project`,
+    );
 
     // 5. Calculate stats
     const today = new Date();
@@ -1300,33 +1453,45 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
 
     const taskCounts: TaskCounts = {
       total: projectTasks.length,
-      completed: projectTasks.filter(t => t.status === 'completed').length,
-      in_progress: projectTasks.filter(t => t.status === 'in_progress').length,
-      blocked: projectTasks.filter(t => t.status === 'blocked').length,
-      todo: projectTasks.filter(t => t.status === 'todo').length,
-      overdue: projectTasks.filter(t => {
-        if (!t.due_date || t.status === 'completed') return false;
+      completed: projectTasks.filter((t) => t.status === "completed").length,
+      in_progress: projectTasks.filter((t) => t.status === "in_progress")
+        .length,
+      blocked: projectTasks.filter((t) => t.status === "blocked").length,
+      todo: projectTasks.filter((t) => t.status === "todo").length,
+      overdue: projectTasks.filter((t) => {
+        if (!t.due_date || t.status === "completed") return false;
         const dueDate = new Date(t.due_date);
         dueDate.setHours(0, 0, 0, 0);
         return dueDate < today;
       }).length,
     };
 
-    const actualSpent = projectTasks.reduce((sum, t) => sum + (Number(t.actual_cost) || 0), 0);
-    const plannedCost = projectTasks.reduce((sum, t) => sum + (Number(t.planned_cost) || 0), 0);
+    const actualSpent = projectTasks.reduce(
+      (sum, t) => sum + (Number(t.actual_cost) || 0),
+      0,
+    );
+    const plannedCost = projectTasks.reduce(
+      (sum, t) => sum + (Number(t.planned_cost) || 0),
+      0,
+    );
     const budget = Number(project.budget) || 0;
 
     const schedule = calculateScheduleStatus(
       project.end_date,
       project.completion_percentage || 0,
-      project.start_date
+      project.start_date,
     );
 
     const projectMaterials = materials || [];
     const materialsStatus: MaterialsStatus = {
-      needed: projectMaterials.filter(m => m.procurement_status === 'needed').length,
-      ordered: projectMaterials.filter(m => m.procurement_status === 'ordered').length,
-      delivered: projectMaterials.filter(m => m.procurement_status === 'delivered').length,
+      needed: projectMaterials.filter((m) => m.procurement_status === "needed")
+        .length,
+      ordered: projectMaterials.filter(
+        (m) => m.procurement_status === "ordered",
+      ).length,
+      delivered: projectMaterials.filter(
+        (m) => m.procurement_status === "delivered",
+      ).length,
     };
 
     const projectExpenses = expenses || [];
@@ -1334,29 +1499,36 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
     // Calculate expense stats
     const expenseStats: ExpenseStats = {
       total: projectExpenses.length,
-      approved: projectExpenses.filter(e => e.status === 'approved').length,
-      pending: projectExpenses.filter(e => e.status === 'submitted').length,
-      rejected: projectExpenses.filter(e => e.status === 'rejected').length,
-      totalAmount: projectExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
+      approved: projectExpenses.filter((e) => e.status === "approved").length,
+      pending: projectExpenses.filter((e) => e.status === "submitted").length,
+      rejected: projectExpenses.filter((e) => e.status === "rejected").length,
+      totalAmount: projectExpenses.reduce(
+        (sum, e) => sum + (Number(e.amount) || 0),
+        0,
+      ),
       approvedAmount: projectExpenses
-        .filter(e => e.status === 'approved')
+        .filter((e) => e.status === "approved")
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
       pendingAmount: projectExpenses
-        .filter(e => e.status === 'submitted')
+        .filter((e) => e.status === "submitted")
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
       rejectedAmount: projectExpenses
-        .filter(e => e.status === 'rejected')
+        .filter((e) => e.status === "rejected")
         .reduce((sum, e) => sum + (Number(e.amount) || 0), 0),
     };
 
-    const materialCosts = projectMaterials.reduce((sum, m) => sum + (Number(m.total_cost) || 0), 0);
-    const totalActualSpent = actualSpent + materialCosts + expenseStats.approvedAmount;
+    const materialCosts = projectMaterials.reduce(
+      (sum, m) => sum + (Number(m.total_cost) || 0),
+      0,
+    );
+    const totalActualSpent =
+      actualSpent + materialCosts + expenseStats.approvedAmount;
 
     const stats: ProjectStats = {
       actualSpent: totalActualSpent,
       plannedCost,
       budgetVariance: budget - totalActualSpent,
-      isUnderBudget: (budget - totalActualSpent) >= 0,
+      isUnderBudget: budget - totalActualSpent >= 0,
       taskCounts,
       schedule,
       materials: materialsStatus,
@@ -1370,10 +1542,9 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
         stats,
       } as ProjectWithStats,
     };
-
   } catch (error) {
-    console.error('[getProjectWithStats] Unexpected error:', error);
-    return { error: 'An unexpected error occurred' };
+    console.error("[getProjectWithStats] Unexpected error:", error);
+    return { error: "An unexpected error occurred" };
   }
 }
 
@@ -1387,7 +1558,7 @@ async function fetchProjectWithStats(projectId: string, companyId: string): Prom
 export interface TeamCostSummary {
   id: string;
   name: string;
-  type: 'member' | 'subcontractor';
+  type: "member" | "subcontractor";
   avatarUrl: string | null;
   role: string;
   taskCosts: number;
@@ -1409,13 +1580,13 @@ export interface TeamCostSummary {
  * @returns Array of TeamCostSummary sorted by totalCosts descending
  */
 export async function getProjectTeamCostSummary(
-  projectId: string
+  projectId: string,
 ): Promise<{ data?: TeamCostSummary[]; error?: string }> {
-  console.log('[getProjectTeamCostSummary] Fetching for project:', projectId);
+  console.log("[getProjectTeamCostSummary] Fetching for project:", projectId);
 
   // Get user context (not cached - auth must be per-request)
   const userContext = await getUserContext();
-  if ('error' in userContext) {
+  if ("error" in userContext) {
     return { error: userContext.error };
   }
 
@@ -1430,34 +1601,37 @@ export async function getProjectTeamCostSummary(
 // Internal helper function for fetching team cost summary
 async function fetchProjectTeamCostSummary(
   projectId: string,
-  companyId: string
+  companyId: string,
 ): Promise<{ data?: TeamCostSummary[]; error?: string }> {
-  console.log('[fetchProjectTeamCostSummary] Fetching for project:', projectId);
+  console.log("[fetchProjectTeamCostSummary] Fetching for project:", projectId);
 
   // Create Supabase client inside cached function
   const supabase = await createClient();
 
   try {
-
     // Verify project belongs to user's company
     const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .select('id, company_id')
-      .eq('id', projectId)
-      .eq('company_id', companyId)
+      .from("projects")
+      .select("id, company_id")
+      .eq("id", projectId)
+      .eq("company_id", companyId)
       .single();
 
     if (projectError || !project) {
-      console.error('[getProjectTeamCostSummary] Project not found:', projectError);
-      return { error: 'Project not found or access denied' };
+      console.error(
+        "[getProjectTeamCostSummary] Project not found:",
+        projectError,
+      );
+      return { error: "Project not found or access denied" };
     }
 
     // 1. Fetch project team members and subcontractors
     // Note: project_team.user_id references next_auth.users, so we can't directly join user_profiles
     // We need to fetch the team first, then fetch user_profiles separately
     const { data: projectTeam, error: teamError } = await supabase
-      .from('project_team')
-      .select(`
+      .from("project_team")
+      .select(
+        `
         id,
         user_id,
         subcontractor_id,
@@ -1466,16 +1640,20 @@ async function fetchProjectTeamCostSummary(
           id,
           company_name
         )
-      `)
-      .eq('project_id', projectId);
+      `,
+      )
+      .eq("project_id", projectId);
 
     if (teamError) {
-      console.error('[getProjectTeamCostSummary] Error fetching team:', teamError);
-      return { error: 'Failed to fetch project team' };
+      console.error(
+        "[getProjectTeamCostSummary] Error fetching team:",
+        teamError,
+      );
+      return { error: "Failed to fetch project team" };
     }
 
     if (!projectTeam || projectTeam.length === 0) {
-      console.log('[getProjectTeamCostSummary] No team members found');
+      console.log("[getProjectTeamCostSummary] No team members found");
       return { data: [] };
     }
 
@@ -1484,16 +1662,22 @@ async function fetchProjectTeamCostSummary(
       .filter((m) => m.user_id)
       .map((m) => m.user_id as string);
 
-    const userProfilesMap = new Map<string, { id: string; name: string; avatar_url: string | null }>();
+    const userProfilesMap = new Map<
+      string,
+      { id: string; name: string; avatar_url: string | null }
+    >();
 
     if (userIds.length > 0) {
       const { data: userProfiles, error: profilesError } = await supabase
-        .from('user_profiles')
-        .select('id, name, avatar_url')
-        .in('id', userIds);
+        .from("user_profiles")
+        .select("id, name, avatar_url")
+        .in("id", userIds);
 
       if (profilesError) {
-        console.error('[getProjectTeamCostSummary] Error fetching user profiles:', profilesError);
+        console.error(
+          "[getProjectTeamCostSummary] Error fetching user profiles:",
+          profilesError,
+        );
         // Continue without profiles - will use empty names
       } else if (userProfiles) {
         for (const profile of userProfiles) {
@@ -1504,8 +1688,9 @@ async function fetchProjectTeamCostSummary(
 
     // 2. Fetch task costs by primary assignee (is_primary=true)
     const { data: taskAssignments, error: taskError } = await supabase
-      .from('task_assignees')
-      .select(`
+      .from("task_assignees")
+      .select(
+        `
         user_id,
         subcontractor_id,
         tasks!inner (
@@ -1513,44 +1698,67 @@ async function fetchProjectTeamCostSummary(
           project_id,
           actual_cost
         )
-      `)
-      .eq('is_primary', true)
-      .eq('tasks.project_id', projectId);
+      `,
+      )
+      .eq("is_primary", true)
+      .eq("tasks.project_id", projectId);
 
     if (taskError) {
-      console.error('[getProjectTeamCostSummary] Error fetching task costs:', taskError);
+      console.error(
+        "[getProjectTeamCostSummary] Error fetching task costs:",
+        taskError,
+      );
       // Continue with zero task costs
     }
 
     // 3. Fetch expenses for the project
     const { data: expenses, error: expenseError } = await supabase
-      .from('expenses')
-      .select('id, vendor_name, amount')
-      .eq('project_id', projectId);
+      .from("expenses")
+      .select("id, vendor_name, amount")
+      .eq("project_id", projectId);
 
     if (expenseError) {
-      console.error('[getProjectTeamCostSummary] Error fetching expenses:', expenseError);
+      console.error(
+        "[getProjectTeamCostSummary] Error fetching expenses:",
+        expenseError,
+      );
       // Continue with zero expense costs
     }
 
     // Build maps for aggregation
     // Task costs by user_id
-    const taskCostsByUserId = new Map<string, { total: number; count: number }>();
+    const taskCostsByUserId = new Map<
+      string,
+      { total: number; count: number }
+    >();
     // Task costs by subcontractor_id
-    const taskCostsBySubId = new Map<string, { total: number; count: number }>();
+    const taskCostsBySubId = new Map<
+      string,
+      { total: number; count: number }
+    >();
 
     // Process task assignments
     for (const assignment of taskAssignments || []) {
-      const task = assignment.tasks as unknown as { id: string; project_id: string; actual_cost: number | null };
+      const task = assignment.tasks as unknown as {
+        id: string;
+        project_id: string;
+        actual_cost: number | null;
+      };
       const cost = Number(task.actual_cost) || 0;
 
       if (assignment.user_id) {
-        const existing = taskCostsByUserId.get(assignment.user_id) || { total: 0, count: 0 };
+        const existing = taskCostsByUserId.get(assignment.user_id) || {
+          total: 0,
+          count: 0,
+        };
         existing.total += cost;
         existing.count += 1;
         taskCostsByUserId.set(assignment.user_id, existing);
       } else if (assignment.subcontractor_id) {
-        const existing = taskCostsBySubId.get(assignment.subcontractor_id) || { total: 0, count: 0 };
+        const existing = taskCostsBySubId.get(assignment.subcontractor_id) || {
+          total: 0,
+          count: 0,
+        };
         existing.total += cost;
         existing.count += 1;
         taskCostsBySubId.set(assignment.subcontractor_id, existing);
@@ -1570,15 +1778,24 @@ async function fetchProjectTeamCostSummary(
         }
       }
       if (member.subcontractor_id && member.subcontractors) {
-        const sub = member.subcontractors as unknown as { id: string; company_name: string };
+        const sub = member.subcontractors as unknown as {
+          id: string;
+          company_name: string;
+        };
         subNameMap.set(sub.company_name.toLowerCase(), sub.id);
       }
     }
 
     // Expense costs by user_id
-    const expenseCostsByUserId = new Map<string, { total: number; count: number }>();
+    const expenseCostsByUserId = new Map<
+      string,
+      { total: number; count: number }
+    >();
     // Expense costs by subcontractor_id
-    const expenseCostsBySubId = new Map<string, { total: number; count: number }>();
+    const expenseCostsBySubId = new Map<
+      string,
+      { total: number; count: number }
+    >();
 
     // Process expenses - match vendor_name case-insensitively
     for (const expense of expenses || []) {
@@ -1590,7 +1807,10 @@ async function fetchProjectTeamCostSummary(
       // Try to match to member first
       const userId = memberNameMap.get(vendorNameLower);
       if (userId) {
-        const existing = expenseCostsByUserId.get(userId) || { total: 0, count: 0 };
+        const existing = expenseCostsByUserId.get(userId) || {
+          total: 0,
+          count: 0,
+        };
         existing.total += amount;
         existing.count += 1;
         expenseCostsByUserId.set(userId, existing);
@@ -1600,7 +1820,10 @@ async function fetchProjectTeamCostSummary(
       // Try to match to subcontractor
       const subId = subNameMap.get(vendorNameLower);
       if (subId) {
-        const existing = expenseCostsBySubId.get(subId) || { total: 0, count: 0 };
+        const existing = expenseCostsBySubId.get(subId) || {
+          total: 0,
+          count: 0,
+        };
         existing.total += amount;
         existing.count += 1;
         expenseCostsBySubId.set(subId, existing);
@@ -1614,13 +1837,19 @@ async function fetchProjectTeamCostSummary(
       if (member.user_id) {
         const profile = userProfilesMap.get(member.user_id);
         if (profile) {
-          const taskData = taskCostsByUserId.get(member.user_id) || { total: 0, count: 0 };
-          const expenseData = expenseCostsByUserId.get(member.user_id) || { total: 0, count: 0 };
+          const taskData = taskCostsByUserId.get(member.user_id) || {
+            total: 0,
+            count: 0,
+          };
+          const expenseData = expenseCostsByUserId.get(member.user_id) || {
+            total: 0,
+            count: 0,
+          };
 
           summaries.push({
             id: profile.id,
             name: profile.name,
-            type: 'member',
+            type: "member",
             avatarUrl: profile.avatar_url,
             role: member.role,
             taskCosts: taskData.total,
@@ -1631,14 +1860,22 @@ async function fetchProjectTeamCostSummary(
           });
         }
       } else if (member.subcontractor_id && member.subcontractors) {
-        const sub = member.subcontractors as unknown as { id: string; company_name: string };
-        const taskData = taskCostsBySubId.get(member.subcontractor_id) || { total: 0, count: 0 };
-        const expenseData = expenseCostsBySubId.get(member.subcontractor_id) || { total: 0, count: 0 };
+        const sub = member.subcontractors as unknown as {
+          id: string;
+          company_name: string;
+        };
+        const taskData = taskCostsBySubId.get(member.subcontractor_id) || {
+          total: 0,
+          count: 0,
+        };
+        const expenseData = expenseCostsBySubId.get(
+          member.subcontractor_id,
+        ) || { total: 0, count: 0 };
 
         summaries.push({
           id: sub.id,
           name: sub.company_name,
-          type: 'subcontractor',
+          type: "subcontractor",
           avatarUrl: null,
           role: member.role,
           taskCosts: taskData.total,
@@ -1653,11 +1890,12 @@ async function fetchProjectTeamCostSummary(
     // Sort by totalCosts descending
     summaries.sort((a, b) => b.totalCosts - a.totalCosts);
 
-    console.log(`[getProjectTeamCostSummary] Returning ${summaries.length} team members with costs`);
+    console.log(
+      `[getProjectTeamCostSummary] Returning ${summaries.length} team members with costs`,
+    );
     return { data: summaries };
-
   } catch (error) {
-    console.error('[getProjectTeamCostSummary] Unexpected error:', error);
-    return { error: 'Failed to fetch team cost summary' };
+    console.error("[getProjectTeamCostSummary] Unexpected error:", error);
+    return { error: "Failed to fetch team cost summary" };
   }
 }

@@ -1,15 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { acceptInvitation, type InvitationData } from '@/app/actions/accept-invite';
-import { signIn } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, HardHat, AlertCircle, Mail, User, Building2, UserCog, CheckCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { type InvitationData } from "@/app/actions/accept-invite";
+import { signIn } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Loader2,
+  HardHat,
+  AlertCircle,
+  Mail,
+  User,
+  Building2,
+  UserCog,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type AcceptInviteContentProps = {
   invitation?: InvitationData;
@@ -19,20 +27,30 @@ type AcceptInviteContentProps = {
 
 // Role display mapping
 const ROLE_DISPLAY: Record<string, { label: string; color: string }> = {
-  admin: { label: 'Admin', color: 'bg-construction-blue text-white' },
-  project_manager: { label: 'Project Manager', color: 'bg-blue-600 text-white' },
-  foreman: { label: 'Foreman', color: 'bg-construction-gray text-white' },
-  field_worker: { label: 'Field Worker', color: 'bg-gray-600 text-white' },
-  subcontractor: { label: 'Subcontractor', color: 'bg-construction-gray-light text-white' },
-  client: { label: 'Client', color: 'bg-gray-500 text-white' },
+  admin: { label: "Admin", color: "bg-construction-blue text-white" },
+  project_manager: {
+    label: "Project Manager",
+    color: "bg-blue-600 text-white",
+  },
+  foreman: { label: "Foreman", color: "bg-construction-gray text-white" },
+  field_worker: { label: "Field Worker", color: "bg-gray-600 text-white" },
+  subcontractor: {
+    label: "Subcontractor",
+    color: "bg-construction-gray-light text-white",
+  },
+  client: { label: "Client", color: "bg-gray-500 text-white" },
 };
 
-export function AcceptInviteContent({ invitation, token, error: initialError }: AcceptInviteContentProps) {
+export function AcceptInviteContent({
+  invitation,
+  token,
+  error: initialError,
+}: AcceptInviteContentProps) {
   const router = useRouter();
   const [isAccepting, setIsAccepting] = useState(false);
   const [error, setError] = useState<string | undefined>(initialError);
   const [success, setSuccess] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'google' | 'email' | null>(null);
+  const [authMethod, setAuthMethod] = useState<"google" | "email" | null>(null);
 
   // If there's an initial error (invalid token, etc.), show error state
   if (initialError) {
@@ -48,11 +66,13 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Invalid Invitation</h1>
+              <h1 className="text-2xl font-black text-gray-900">
+                Invalid Invitation
+              </h1>
               <p className="text-gray-600 mt-2">{initialError}</p>
             </div>
             <Button
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               className="w-full bg-construction-blue hover:bg-construction-blue/90"
             >
               Return to Home
@@ -68,30 +88,33 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
     return null;
   }
 
-  const roleInfo = ROLE_DISPLAY[invitation.role] || { label: invitation.role, color: 'bg-gray-500 text-white' };
+  const roleInfo = ROLE_DISPLAY[invitation.role] || {
+    label: invitation.role,
+    color: "bg-gray-500 text-white",
+  };
 
   const handleGoogleSignIn = async () => {
     setIsAccepting(true);
     setError(undefined);
     try {
       // Sign in with Google, passing the invitation token as a callback URL parameter
-      await signIn('google', {
+      await signIn("google", {
         callbackUrl: `/accept-invite/complete?token=${token}`,
       });
     } catch (err) {
-      console.error('Google sign-in error:', err);
-      setError('Failed to sign in with Google. Please try again.');
+      console.error("Google sign-in error:", err);
+      setError("Failed to sign in with Google. Please try again.");
       setIsAccepting(false);
     }
   };
 
   const handleEmailSignIn = async () => {
-    setAuthMethod('email');
+    setAuthMethod("email");
     setIsAccepting(true);
     setError(undefined);
     try {
       // Sign in with email magic link
-      await signIn('resend', {
+      await signIn("resend", {
         email: invitation.email,
         callbackUrl: `/accept-invite/complete?token=${token}`,
       });
@@ -99,8 +122,8 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
       setSuccess(true);
       // Note: User will receive an email and click the link to complete sign-in
     } catch (err) {
-      console.error('Email sign-in error:', err);
-      setError('Failed to send email. Please try again.');
+      console.error("Email sign-in error:", err);
+      setError("Failed to send email. Please try again.");
       setIsAccepting(false);
     }
   };
@@ -113,25 +136,30 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
         className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
       >
         {/* Success State - Email Sent */}
-        {success && authMethod === 'email' && (
+        {success && authMethod === "email" && (
           <div className="text-center space-y-4">
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 200 }}
               className="mx-auto w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center"
             >
               <Mail className="w-8 h-8 text-construction-blue" />
             </motion.div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">Check Your Email</h1>
+              <h1 className="text-2xl font-black text-gray-900">
+                Check Your Email
+              </h1>
               <p className="text-gray-600 mt-2">
-                We've sent a magic link to <strong>{invitation.email}</strong>. Click the link in the email to complete your invitation.
+                We've sent a magic link to <strong>{invitation.email}</strong>.
+                Click the link in the email to complete your invitation.
               </p>
             </div>
             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-sm text-gray-600">
               <p className="font-medium">Didn't receive the email?</p>
-              <p className="mt-1">Check your spam folder or try signing in again.</p>
+              <p className="mt-1">
+                Check your spam folder or try signing in again.
+              </p>
             </div>
           </div>
         )}
@@ -144,14 +172,18 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
               <motion.div
                 initial={{ rotate: -10 }}
                 animate={{ rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 200 }}
+                transition={{ type: "spring", stiffness: 200 }}
                 className="mx-auto w-16 h-16 bg-construction-blue rounded-xl flex items-center justify-center"
               >
                 <HardHat className="w-8 h-8 text-white" />
               </motion.div>
               <div>
-                <h1 className="text-3xl font-black text-gray-900">Join GenHub</h1>
-                <p className="text-gray-600 mt-1">Accept your team invitation</p>
+                <h1 className="text-3xl font-black text-gray-900">
+                  Join GenHub
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  Accept your team invitation
+                </p>
               </div>
             </div>
 
@@ -173,25 +205,31 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
                 <div className="flex items-center gap-2 text-sm">
                   <Mail className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-600 font-medium">Email:</span>
-                  <span className="text-gray-900 font-bold">{invitation.email}</span>
+                  <span className="text-gray-900 font-bold">
+                    {invitation.email}
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
                   <User className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-600 font-medium">Name:</span>
-                  <span className="text-gray-900 font-bold">{invitation.name}</span>
+                  <span className="text-gray-900 font-bold">
+                    {invitation.name}
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
                   <Building2 className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-600 font-medium">Company:</span>
-                  <span className="text-gray-900 font-bold">{invitation.companyName}</span>
+                  <span className="text-gray-900 font-bold">
+                    {invitation.companyName}
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
                   <UserCog className="w-4 h-4 text-gray-500" />
                   <span className="text-gray-600 font-medium">Role:</span>
-                  <Badge className={cn('font-bold', roleInfo.color)}>
+                  <Badge className={cn("font-bold", roleInfo.color)}>
                     {roleInfo.label}
                   </Badge>
                 </div>
@@ -211,7 +249,9 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
                 disabled={isAccepting}
                 className="w-full h-12 text-base font-bold bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 shadow-construction hover:shadow-construction-lg transition-all"
               >
-                {isAccepting && authMethod !== 'email' && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                {isAccepting && authMethod !== "email" && (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                )}
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"
@@ -240,14 +280,17 @@ export function AcceptInviteContent({ invitation, token, error: initialError }: 
                 disabled={isAccepting}
                 className="w-full h-12 text-base font-bold bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-600 shadow-construction hover:shadow-construction-lg transition-all"
               >
-                {isAccepting && authMethod === 'email' && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                {isAccepting && authMethod === "email" && (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                )}
                 <Mail className="w-5 h-5 mr-2" />
                 Continue with Email
               </Button>
 
               {/* Footer */}
               <p className="text-xs text-center text-gray-500 pt-4 border-t">
-                By signing in, you agree to join {invitation.companyName} on GenHub
+                By signing in, you agree to join {invitation.companyName} on
+                GenHub
               </p>
             </div>
           </>

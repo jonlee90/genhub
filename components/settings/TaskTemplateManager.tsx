@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   DndContext,
   closestCenter,
@@ -10,31 +10,29 @@ import {
   useSensor,
   useSensors,
   DragEndEvent,
-} from '@dnd-kit/core';
+} from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Plus,
   Edit,
   Trash2,
   GripVertical,
-  ChevronDown,
-  ChevronRight,
   Package,
   Hammer,
   CheckCircle2,
   Clipboard,
   AlertCircle,
   ListChecks,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { BaseModal } from '@/components/ui/BaseModal';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BaseModal } from "@/components/ui/BaseModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,31 +42,40 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   getTaskTemplates,
   createTaskTemplate,
   updateTaskTemplate,
   deleteTaskTemplate,
   reorderTaskTemplates,
-} from '@/app/actions/task-templates';
-import { getProjectTypes, type ProjectTypeWithCount } from '@/app/actions/project-types';
-import { getPhaseTemplates, type PhaseTemplateWithTasks } from '@/app/actions/phase-templates';
-import { getTaskTypes } from '@/app/actions/task-types';
-import type { TaskTemplatesRow, TaskTypeConfigsRow } from '@/types/db/tables/tasks';
+} from "@/app/actions/task-templates";
+import {
+  getProjectTypes,
+  type ProjectTypeWithCount,
+} from "@/app/actions/project-types";
+import {
+  getPhaseTemplates,
+  type PhaseTemplateWithTasks,
+} from "@/app/actions/phase-templates";
+import { getTaskTypes } from "@/app/actions/task-types";
+import type {
+  TaskTemplatesRow,
+  TaskTypeConfigsRow,
+} from "@/types/db/tables/tasks";
 
 // Debug: Type definitions
 type TaskTemplate = TaskTemplatesRow;
@@ -79,10 +86,26 @@ type TaskTypeConfig = TaskTypeConfigsRow;
  * Debug: Matches task type configs from DB with construction theme
  */
 const DEFAULT_TASK_TYPE_CONFIG = {
-  work: { label: 'Work', icon: Hammer, color: 'bg-construction-blue text-white' },
-  purchase: { label: 'Purchase', icon: Package, color: 'bg-[#059669] text-white' },
-  approval: { label: 'Approval', icon: CheckCircle2, color: 'bg-[#FFB627] text-white' },
-  admin: { label: 'Admin', icon: Clipboard, color: 'bg-construction-accent text-white' },
+  work: {
+    label: "Work",
+    icon: Hammer,
+    color: "bg-construction-blue text-white",
+  },
+  purchase: {
+    label: "Purchase",
+    icon: Package,
+    color: "bg-[#059669] text-white",
+  },
+  approval: {
+    label: "Approval",
+    icon: CheckCircle2,
+    color: "bg-[#FFB627] text-white",
+  },
+  admin: {
+    label: "Admin",
+    icon: Clipboard,
+    color: "bg-construction-accent text-white",
+  },
 };
 
 /**
@@ -90,9 +113,12 @@ const DEFAULT_TASK_TYPE_CONFIG = {
  * Debug: Color-coded priority levels
  */
 const PRIORITY_CONFIG = {
-  high: { label: 'High', color: 'border-red-300 text-red-700 bg-red-50' },
-  medium: { label: 'Medium', color: 'border-amber-300 text-amber-700 bg-amber-50' },
-  low: { label: 'Low', color: 'border-gray-300 text-gray-700 bg-gray-50' },
+  high: { label: "High", color: "border-red-300 text-red-700 bg-red-50" },
+  medium: {
+    label: "Medium",
+    color: "border-amber-300 text-amber-700 bg-amber-50",
+  },
+  low: { label: "Low", color: "border-gray-300 text-gray-700 bg-gray-50" },
 };
 
 /**
@@ -127,26 +153,32 @@ function SortableTaskItem({
   };
 
   // Get task type config from database or fallback to defaults
-  const dbTaskType = task.default_task_type ? taskTypeConfigs[task.default_task_type] : undefined;
-  const defaultTaskType = DEFAULT_TASK_TYPE_CONFIG[task.default_task_type as keyof typeof DEFAULT_TASK_TYPE_CONFIG] || DEFAULT_TASK_TYPE_CONFIG.work;
+  const dbTaskType = task.default_task_type
+    ? taskTypeConfigs[task.default_task_type]
+    : undefined;
+  const defaultTaskType =
+    DEFAULT_TASK_TYPE_CONFIG[
+      task.default_task_type as keyof typeof DEFAULT_TASK_TYPE_CONFIG
+    ] || DEFAULT_TASK_TYPE_CONFIG.work;
 
-  const TaskTypeIcon = dbTaskType ?
-    (DEFAULT_TASK_TYPE_CONFIG[dbTaskType.name.toLowerCase() as keyof typeof DEFAULT_TASK_TYPE_CONFIG]?.icon || Hammer) :
-    defaultTaskType.icon;
+  const TaskTypeIcon = dbTaskType
+    ? DEFAULT_TASK_TYPE_CONFIG[
+        dbTaskType.name.toLowerCase() as keyof typeof DEFAULT_TASK_TYPE_CONFIG
+      ]?.icon || Hammer
+    : defaultTaskType.icon;
 
   const taskTypeColor = dbTaskType?.color || defaultTaskType.color;
   const taskTypeLabel = dbTaskType?.name || defaultTaskType.label;
 
-  const priorityConfig = PRIORITY_CONFIG[task.default_priority as keyof typeof PRIORITY_CONFIG] || PRIORITY_CONFIG.medium;
+  const priorityConfig =
+    PRIORITY_CONFIG[task.default_priority as keyof typeof PRIORITY_CONFIG] ||
+    PRIORITY_CONFIG.medium;
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={cn(
-        'relative group',
-        isDragging && 'opacity-50 z-50'
-      )}
+      className={cn("relative group", isDragging && "opacity-50 z-50")}
     >
       {/* Debug: Gradient background glow on hover */}
       <div className="absolute inset-0 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -177,7 +209,9 @@ function SortableTaskItem({
 
             {/* Order index badge - hidden on mobile, shown on desktop */}
             <div className="hidden sm:flex shrink-0 items-center justify-center w-8 h-8 bg-construction-blue/10 text-construction-blue font-black text-sm rounded-md border-2 border-construction-blue/20">
-              {task.order_index !== null && task.order_index !== undefined ? task.order_index + 1 : '?'}
+              {task.order_index !== null && task.order_index !== undefined
+                ? task.order_index + 1
+                : "?"}
             </div>
 
             {/* Task info - flex-1 to take available space */}
@@ -197,14 +231,16 @@ function SortableTaskItem({
           <div className="flex items-center gap-2 pl-11 sm:pl-0 flex-wrap sm:flex-nowrap">
             {/* Order index badge - shown on mobile, hidden on desktop */}
             <div className="flex sm:hidden shrink-0 items-center justify-center w-7 h-7 bg-construction-blue/10 text-construction-blue font-black text-xs rounded-md border-2 border-construction-blue/20">
-              {task.order_index !== null && task.order_index !== undefined ? task.order_index + 1 : '?'}
+              {task.order_index !== null && task.order_index !== undefined
+                ? task.order_index + 1
+                : "?"}
             </div>
 
             {/* Task type badge with icon */}
             <div
               className={cn(
-                'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold shrink-0',
-                taskTypeColor
+                "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold shrink-0",
+                taskTypeColor,
               )}
             >
               <TaskTypeIcon className="h-3.5 w-3.5" />
@@ -215,8 +251,8 @@ function SortableTaskItem({
             <Badge
               variant="outline"
               className={cn(
-                'text-xs font-bold shrink-0 border-2',
-                priorityConfig.color
+                "text-xs font-bold shrink-0 border-2",
+                priorityConfig.color,
               )}
             >
               {priorityConfig.label}
@@ -255,14 +291,20 @@ function SortableTaskItem({
  * Debug: Construction-themed CRUD interface with drag-and-drop, filters, and modals
  */
 export function TaskTemplateManager() {
-  console.log('[TaskTemplateManager] Rendering task template manager');
+  console.log("[TaskTemplateManager] Rendering task template manager");
 
   const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
-  const [selectedProjectTypeId, setSelectedProjectTypeId] = useState<string>('');
-  const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplateWithTasks[]>([]);
-  const [selectedPhaseTemplateId, setSelectedPhaseTemplateId] = useState<string>('');
+  const [selectedProjectTypeId, setSelectedProjectTypeId] =
+    useState<string>("");
+  const [phaseTemplates, setPhaseTemplates] = useState<
+    PhaseTemplateWithTasks[]
+  >([]);
+  const [selectedPhaseTemplateId, setSelectedPhaseTemplateId] =
+    useState<string>("");
   const [taskTemplates, setTaskTemplates] = useState<TaskTemplate[]>([]);
-  const [taskTypeConfigs, setTaskTypeConfigs] = useState<Record<string, TaskTypeConfig>>({});
+  const [taskTypeConfigs, setTaskTypeConfigs] = useState<
+    Record<string, TaskTypeConfig>
+  >({});
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskTemplate | null>(null);
@@ -273,7 +315,7 @@ export function TaskTemplateManager() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Debug: Load initial data on mount
@@ -288,7 +330,7 @@ export function TaskTemplateManager() {
       loadPhaseTemplates(selectedProjectTypeId);
     } else {
       setPhaseTemplates([]);
-      setSelectedPhaseTemplateId('');
+      setSelectedPhaseTemplateId("");
     }
   }, [selectedProjectTypeId]);
 
@@ -302,23 +344,29 @@ export function TaskTemplateManager() {
   }, [selectedPhaseTemplateId]);
 
   async function loadProjectTypes() {
-    console.log('[TaskTemplateManager] Loading project types...');
+    console.log("[TaskTemplateManager] Loading project types...");
     const result = await getProjectTypes();
     if (result.projectTypes) {
-      const activeTypes = result.projectTypes.filter(pt => pt.is_active);
+      const activeTypes = result.projectTypes.filter((pt) => pt.is_active);
       setProjectTypes(activeTypes);
       // Auto-select first active project type
       if (activeTypes.length > 0) {
         setSelectedProjectTypeId(activeTypes[0].id);
       }
     } else if (result.error) {
-      console.error('[TaskTemplateManager] Error loading project types:', result.error);
+      console.error(
+        "[TaskTemplateManager] Error loading project types:",
+        result.error,
+      );
       toast.error(result.error);
     }
   }
 
   async function loadPhaseTemplates(projectTypeId: string) {
-    console.log('[TaskTemplateManager] Loading phase templates for:', projectTypeId);
+    console.log(
+      "[TaskTemplateManager] Loading phase templates for:",
+      projectTypeId,
+    );
     const result = await getPhaseTemplates(projectTypeId);
     if (result.phaseTemplates) {
       setPhaseTemplates(result.phaseTemplates);
@@ -327,36 +375,52 @@ export function TaskTemplateManager() {
         setSelectedPhaseTemplateId(result.phaseTemplates[0].id);
       }
     } else if (result.error) {
-      console.error('[TaskTemplateManager] Error loading phases:', result.error);
+      console.error(
+        "[TaskTemplateManager] Error loading phases:",
+        result.error,
+      );
       toast.error(result.error);
     }
   }
 
   async function loadTaskTemplates(phaseTemplateId: string) {
-    console.log('[TaskTemplateManager] Loading task templates for phase:', phaseTemplateId);
+    console.log(
+      "[TaskTemplateManager] Loading task templates for phase:",
+      phaseTemplateId,
+    );
     setIsLoading(true);
     const result = await getTaskTemplates(phaseTemplateId);
     if (result.taskTemplates) {
       setTaskTemplates(result.taskTemplates);
-      console.log('[TaskTemplateManager] Loaded', result.taskTemplates.length, 'task templates');
+      console.log(
+        "[TaskTemplateManager] Loaded",
+        result.taskTemplates.length,
+        "task templates",
+      );
     } else if (result.error) {
-      console.error('[TaskTemplateManager] Error loading tasks:', result.error);
+      console.error("[TaskTemplateManager] Error loading tasks:", result.error);
       toast.error(result.error);
     }
     setIsLoading(false);
   }
 
   async function loadTaskTypeConfigs() {
-    console.log('[TaskTemplateManager] Loading task type configs...');
+    console.log("[TaskTemplateManager] Loading task type configs...");
     const result = await getTaskTypes();
     if (result.taskTypes) {
-      const configMap = result.taskTypes.reduce((acc, type) => {
-        acc[type.name.toLowerCase()] = type;
-        return acc;
-      }, {} as Record<string, TaskTypeConfig>);
+      const configMap = result.taskTypes.reduce(
+        (acc, type) => {
+          acc[type.name.toLowerCase()] = type;
+          return acc;
+        },
+        {} as Record<string, TaskTypeConfig>,
+      );
       setTaskTypeConfigs(configMap);
     } else if (result.error) {
-      console.error('[TaskTemplateManager] Error loading task types:', result.error);
+      console.error(
+        "[TaskTemplateManager] Error loading task types:",
+        result.error,
+      );
     }
   }
 
@@ -366,8 +430,8 @@ export function TaskTemplateManager() {
 
     if (!over || active.id === over.id || !selectedPhaseTemplateId) return;
 
-    const oldIndex = taskTemplates.findIndex(t => t.id === active.id);
-    const newIndex = taskTemplates.findIndex(t => t.id === over.id);
+    const oldIndex = taskTemplates.findIndex((t) => t.id === active.id);
+    const newIndex = taskTemplates.findIndex((t) => t.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
 
@@ -376,34 +440,37 @@ export function TaskTemplateManager() {
     setTaskTemplates(newOrder);
 
     // Persist to backend
-    const orderedIds = newOrder.map(t => t.id);
-    const result = await reorderTaskTemplates(selectedPhaseTemplateId, orderedIds);
+    const orderedIds = newOrder.map((t) => t.id);
+    const result = await reorderTaskTemplates(
+      selectedPhaseTemplateId,
+      orderedIds,
+    );
 
     if (result.error) {
-      toast.error('Failed to reorder tasks');
+      toast.error("Failed to reorder tasks");
       // Revert on error
       loadTaskTemplates(selectedPhaseTemplateId);
     } else {
-      toast.success('Task order updated');
+      toast.success("Task order updated");
     }
   }
 
   // Debug: Handle create submission
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log('[TaskTemplateManager] Creating task template...');
+    console.log("[TaskTemplateManager] Creating task template...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createTaskTemplate(formData);
 
     if (result.success) {
-      toast.success('Task template created successfully');
+      toast.success("Task template created successfully");
       setShowCreateModal(false);
       if (selectedPhaseTemplateId) {
         loadTaskTemplates(selectedPhaseTemplateId);
       }
     } else {
-      toast.error(result.error || 'Failed to create task template');
+      toast.error(result.error || "Failed to create task template");
     }
   }
 
@@ -412,19 +479,22 @@ export function TaskTemplateManager() {
     e.preventDefault();
     if (!editingTask) return;
 
-    console.log('[TaskTemplateManager] Updating task template:', editingTask.id);
+    console.log(
+      "[TaskTemplateManager] Updating task template:",
+      editingTask.id,
+    );
 
     const formData = new FormData(e.currentTarget);
     const result = await updateTaskTemplate(editingTask.id, formData);
 
     if (result.success) {
-      toast.success('Task template updated successfully');
+      toast.success("Task template updated successfully");
       setEditingTask(null);
       if (selectedPhaseTemplateId) {
         loadTaskTemplates(selectedPhaseTemplateId);
       }
     } else {
-      toast.error(result.error || 'Failed to update task template');
+      toast.error(result.error || "Failed to update task template");
     }
   }
 
@@ -432,28 +502,35 @@ export function TaskTemplateManager() {
   async function handleDelete() {
     if (!deletingTask) return;
 
-    console.log('[TaskTemplateManager] Deleting task template:', deletingTask.id);
+    console.log(
+      "[TaskTemplateManager] Deleting task template:",
+      deletingTask.id,
+    );
 
     const result = await deleteTaskTemplate(deletingTask.id);
 
     if (result.success) {
-      toast.success('Task template deleted successfully');
+      toast.success("Task template deleted successfully");
       setDeletingTask(null);
       if (selectedPhaseTemplateId) {
         loadTaskTemplates(selectedPhaseTemplateId);
       }
     } else {
-      toast.error(result.error || 'Failed to delete task template');
+      toast.error(result.error || "Failed to delete task template");
     }
   }
 
   // Get available task type options from DB configs
-  const taskTypeOptions = Object.entries(taskTypeConfigs).map(([key, config]) => ({
-    value: key,
-    label: config.name,
-    icon: DEFAULT_TASK_TYPE_CONFIG[key as keyof typeof DEFAULT_TASK_TYPE_CONFIG]?.icon || Hammer,
-    color: config.color,
-  }));
+  const taskTypeOptions = Object.entries(taskTypeConfigs).map(
+    ([key, config]) => ({
+      value: key,
+      label: config.name,
+      icon:
+        DEFAULT_TASK_TYPE_CONFIG[key as keyof typeof DEFAULT_TASK_TYPE_CONFIG]
+          ?.icon || Hammer,
+      color: config.color,
+    }),
+  );
 
   return (
     <div className="space-y-6">
@@ -482,7 +559,10 @@ export function TaskTemplateManager() {
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Project type filter */}
           <div className="flex-1">
-            <Label htmlFor="project-type-filter" className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider">
+            <Label
+              htmlFor="project-type-filter"
+              className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider"
+            >
               Project Type
             </Label>
             <Select
@@ -496,7 +576,7 @@ export function TaskTemplateManager() {
                 <SelectValue placeholder="Select project type" />
               </SelectTrigger>
               <SelectContent>
-                {projectTypes.map(type => (
+                {projectTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.name}
                   </SelectItem>
@@ -507,7 +587,10 @@ export function TaskTemplateManager() {
 
           {/* Phase filter */}
           <div className="flex-1">
-            <Label htmlFor="phase-filter" className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider">
+            <Label
+              htmlFor="phase-filter"
+              className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider"
+            >
               Phase Template
             </Label>
             <Select
@@ -522,7 +605,7 @@ export function TaskTemplateManager() {
                 <SelectValue placeholder="Select phase" />
               </SelectTrigger>
               <SelectContent>
-                {phaseTemplates.map(phase => (
+                {phaseTemplates.map((phase) => (
                   <SelectItem key={phase.id} value={phase.id}>
                     {phase.name}
                   </SelectItem>
@@ -544,7 +627,8 @@ export function TaskTemplateManager() {
             Select a Project Type
           </h3>
           <p className="text-gray-500 max-w-md">
-            Choose a project type and phase from the filters above to view and manage task templates
+            Choose a project type and phase from the filters above to view and
+            manage task templates
           </p>
         </div>
       ) : !selectedPhaseTemplateId ? (
@@ -558,16 +642,18 @@ export function TaskTemplateManager() {
           </h3>
           <p className="text-gray-500 max-w-md">
             {phaseTemplates.length === 0
-              ? 'No phase templates found for this project type. Create phase templates first.'
-              : 'Choose a phase template to view its task templates'
-            }
+              ? "No phase templates found for this project type. Create phase templates first."
+              : "Choose a phase template to view its task templates"}
           </p>
         </div>
       ) : isLoading ? (
         // Debug: Loading skeleton
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white border-2 border-gray-200 rounded-lg p-3 animate-pulse">
+            <div
+              key={i}
+              className="bg-white border-2 border-gray-200 rounded-lg p-3 animate-pulse"
+            >
               <div className="flex items-center gap-3">
                 <div className="h-5 w-5 bg-gray-200 rounded" />
                 <div className="h-8 w-8 bg-gray-200 rounded" />
@@ -615,7 +701,7 @@ export function TaskTemplateManager() {
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={taskTemplates.map(t => t.id)}
+            items={taskTemplates.map((t) => t.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-2">
@@ -667,7 +753,11 @@ export function TaskTemplateManager() {
           </Button>
         }
       >
-        <form id="create-task-template-form" onSubmit={handleCreate} className="space-y-5">
+        <form
+          id="create-task-template-form"
+          onSubmit={handleCreate}
+          className="space-y-5"
+        >
           {/* Hidden phase template field */}
           <input
             type="hidden"
@@ -677,7 +767,10 @@ export function TaskTemplateManager() {
 
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="create-title" className="text-sm font-bold text-gray-900">
+            <Label
+              htmlFor="create-title"
+              className="text-sm font-bold text-gray-900"
+            >
               Task Title *
             </Label>
             <Input
@@ -695,7 +788,10 @@ export function TaskTemplateManager() {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="create-description" className="text-sm font-bold text-gray-900">
+            <Label
+              htmlFor="create-description"
+              className="text-sm font-bold text-gray-900"
+            >
               Description
             </Label>
             <Textarea
@@ -715,7 +811,10 @@ export function TaskTemplateManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Task Type */}
             <div className="space-y-2">
-              <Label htmlFor="create-task-type" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="create-task-type"
+                className="text-sm font-bold text-gray-900"
+              >
                 Task Type *
               </Label>
               <Select name="default_task_type" defaultValue="work">
@@ -726,7 +825,7 @@ export function TaskTemplateManager() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {taskTypeOptions.map(option => {
+                  {taskTypeOptions.map((option) => {
                     const Icon = option.icon;
                     return (
                       <SelectItem key={option.value} value={option.value}>
@@ -743,7 +842,10 @@ export function TaskTemplateManager() {
 
             {/* Priority */}
             <div className="space-y-2">
-              <Label htmlFor="create-priority" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="create-priority"
+                className="text-sm font-bold text-gray-900"
+              >
                 Default Priority *
               </Label>
               <Select name="default_priority" defaultValue="medium">
@@ -779,7 +881,10 @@ export function TaskTemplateManager() {
 
           {/* Days Offset */}
           <div className="space-y-2">
-            <Label htmlFor="create-days-offset" className="text-sm font-bold text-gray-900">
+            <Label
+              htmlFor="create-days-offset"
+              className="text-sm font-bold text-gray-900"
+            >
               Days After Project Start (Optional)
             </Label>
             <Input
@@ -793,7 +898,8 @@ export function TaskTemplateManager() {
               className="border-2 border-gray-200 focus:border-construction-blue"
             />
             <p className="text-xs text-gray-500">
-              Auto-schedule this task X days after project start. Leave empty for manual scheduling.
+              Auto-schedule this task X days after project start. Leave empty
+              for manual scheduling.
             </p>
           </div>
         </form>
@@ -828,10 +934,17 @@ export function TaskTemplateManager() {
             </Button>
           }
         >
-          <form id="edit-task-template-form" onSubmit={handleUpdate} className="space-y-5">
+          <form
+            id="edit-task-template-form"
+            onSubmit={handleUpdate}
+            className="space-y-5"
+          >
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="edit-title" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="edit-title"
+                className="text-sm font-bold text-gray-900"
+              >
                 Task Title *
               </Label>
               <Input
@@ -846,13 +959,16 @@ export function TaskTemplateManager() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="edit-description" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="edit-description"
+                className="text-sm font-bold text-gray-900"
+              >
                 Description
               </Label>
               <Textarea
                 id="edit-description"
                 name="description"
-                defaultValue={editingTask.description || ''}
+                defaultValue={editingTask.description || ""}
                 rows={3}
                 maxLength={2000}
                 className="border-2 border-gray-200 focus:border-construction-blue resize-none"
@@ -863,10 +979,16 @@ export function TaskTemplateManager() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Task Type */}
               <div className="space-y-2">
-                <Label htmlFor="edit-task-type" className="text-sm font-bold text-gray-900">
+                <Label
+                  htmlFor="edit-task-type"
+                  className="text-sm font-bold text-gray-900"
+                >
                   Task Type *
                 </Label>
-                <Select name="default_task_type" defaultValue={editingTask.default_task_type ?? undefined}>
+                <Select
+                  name="default_task_type"
+                  defaultValue={editingTask.default_task_type ?? undefined}
+                >
                   <SelectTrigger
                     id="edit-task-type"
                     className="border-2 border-gray-200 focus:border-construction-blue"
@@ -874,7 +996,7 @@ export function TaskTemplateManager() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {taskTypeOptions.map(option => {
+                    {taskTypeOptions.map((option) => {
                       const Icon = option.icon;
                       return (
                         <SelectItem key={option.value} value={option.value}>
@@ -891,10 +1013,16 @@ export function TaskTemplateManager() {
 
               {/* Priority */}
               <div className="space-y-2">
-                <Label htmlFor="edit-priority" className="text-sm font-bold text-gray-900">
+                <Label
+                  htmlFor="edit-priority"
+                  className="text-sm font-bold text-gray-900"
+                >
                   Default Priority *
                 </Label>
-                <Select name="default_priority" defaultValue={editingTask.default_priority ?? undefined}>
+                <Select
+                  name="default_priority"
+                  defaultValue={editingTask.default_priority ?? undefined}
+                >
                   <SelectTrigger
                     id="edit-priority"
                     className="border-2 border-gray-200 focus:border-construction-blue"
@@ -927,7 +1055,10 @@ export function TaskTemplateManager() {
 
             {/* Days Offset */}
             <div className="space-y-2">
-              <Label htmlFor="edit-days-offset" className="text-sm font-bold text-gray-900">
+              <Label
+                htmlFor="edit-days-offset"
+                className="text-sm font-bold text-gray-900"
+              >
                 Days After Project Start (Optional)
               </Label>
               <Input
@@ -936,12 +1067,13 @@ export function TaskTemplateManager() {
                 type="number"
                 min="0"
                 max="365"
-                defaultValue={editingTask.days_offset ?? ''}
+                defaultValue={editingTask.days_offset ?? ""}
                 placeholder="e.g., 0, 7, 30"
                 className="border-2 border-gray-200 focus:border-construction-blue"
               />
               <p className="text-xs text-gray-500">
-                Auto-schedule this task X days after project start. Leave empty for manual scheduling.
+                Auto-schedule this task X days after project start. Leave empty
+                for manual scheduling.
               </p>
             </div>
 
@@ -955,7 +1087,10 @@ export function TaskTemplateManager() {
                 defaultChecked={editingTask.is_active ?? true}
                 className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
               />
-              <Label htmlFor="edit-is-active" className="cursor-pointer font-bold text-gray-900 flex-1">
+              <Label
+                htmlFor="edit-is-active"
+                className="cursor-pointer font-bold text-gray-900 flex-1"
+              >
                 Active (visible when creating tasks)
               </Label>
             </div>
@@ -965,7 +1100,10 @@ export function TaskTemplateManager() {
 
       {/* Debug: Delete Confirmation */}
       {deletingTask && (
-        <AlertDialog open={!!deletingTask} onOpenChange={() => setDeletingTask(null)}>
+        <AlertDialog
+          open={!!deletingTask}
+          onOpenChange={() => setDeletingTask(null)}
+        >
           <AlertDialogContent className="border-2 border-red-200">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-xl font-black text-red-600 uppercase tracking-tight flex items-center gap-2">
@@ -974,8 +1112,11 @@ export function TaskTemplateManager() {
               </AlertDialogTitle>
               <AlertDialogDescription className="space-y-3 text-base">
                 <p className="text-gray-700">
-                  Are you sure you want to delete{' '}
-                  <span className="font-bold text-gray-900">"{deletingTask.title}"</span>?
+                  Are you sure you want to delete{" "}
+                  <span className="font-bold text-gray-900">
+                    "{deletingTask.title}"
+                  </span>
+                  ?
                 </p>
                 <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
                   <div className="flex items-start gap-3">
@@ -985,7 +1126,8 @@ export function TaskTemplateManager() {
                         Template Only
                       </h4>
                       <p className="text-sm text-blue-800">
-                        This will delete the task template. Existing tasks in projects will not be affected.
+                        This will delete the task template. Existing tasks in
+                        projects will not be affected.
                       </p>
                     </div>
                   </div>
