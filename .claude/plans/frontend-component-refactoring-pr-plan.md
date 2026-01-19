@@ -294,6 +294,7 @@ AlertDialog is used for destructive confirmations and should remain unless we ex
 **`getInitials` helper** - duplicated in 21 files:
 
 - Add to `lib/utils.ts`
+- Define canonical behavior (trim whitespace, single-word names, emoji handling).
 - Update callers:
   - `components/chat/MessageItem.tsx`
   - `components/chat/SearchMessages.tsx`
@@ -370,6 +371,11 @@ export function useHapticFeedback() {
 - `components/projects/files/ProjectPhotoUploader.tsx`
 - `components/projects/spatial/ClientSpatialViewer.tsx` (dynamic import)
 
+**Guardrails**
+
+- Ensure `next/image` usage provides `width`, `height`, and `sizes`.
+- Verify dynamic import boundaries stay in client components.
+
 **Vercel best practices**
 
 - `bundle-dynamic-imports` for heavy uploader dependencies.
@@ -380,6 +386,8 @@ export function useHapticFeedback() {
 ## PR 7 — Cleanup & Deletions (Verify Usage First)
 
 **Scope**: Remove unused modals, examples, duplicates, and dead code.
+
+**Dependency**: Complete PR 2 migration first, then verify no direct `BaseModal`/`BottomSheetModal` imports remain in feature components.
 
 ### Unused Modals/Components (DELETE)
 
@@ -451,6 +459,26 @@ After migrating all modals to `ResponsiveModal`, these internal components becom
 
 **Scope**: Split monolithic components for maintainability.
 
+**Sub-PR Breakdown**
+
+- **PR 8.1 — Task Modal Decomposition**
+  - `components/tasks/TaskModal.tsx`
+  - New folder `components/tasks/task-modal/*`
+
+- **PR 8.2 — Task Detail Decomposition**
+  - `components/tasks/TaskDetail.tsx`
+  - Share structure with TaskModal where safe
+
+- **PR 8.3 — Project Forms + Spatial Viewer**
+  - `components/projects/CreateProjectForm.tsx`
+  - `components/projects/spatial/SpatialViewer.tsx`
+
+**Acceptance Criteria**
+
+- No behavior changes; refactor only.
+- All extracted components remain colocated in the same domain folder.
+- Snapshots or UI checks for each extracted section.
+
 **Targets**
 
 | Component               | Lines | Decomposition Strategy                              |
@@ -480,6 +508,11 @@ components/tasks/
 
 **Scope**: Consolidate skeleton components into shared primitives.
 
+**Acceptance Criteria**
+
+- Visual parity with current skeleton sizes and spacing.
+- Shared skeleton primitives avoid over-configuration.
+
 **Current State** (6 separate implementations):
 
 - `components/tasks/TaskListSkeleton.tsx`
@@ -500,6 +533,11 @@ components/tasks/
 ## PR 10 — Memoization Audit (NEW)
 
 **Scope**: Review excessive memoization patterns.
+
+**Guardrails**
+
+- Remove memoization only with profiler evidence or documented reasoning.
+- Prefer composition over memoization for small components.
 
 **High-Priority Files** (excessive useCallback/useMemo):
 | File | Count | Action |
@@ -537,43 +575,59 @@ rg "from ['\"']@/components/mobile['\"]" --type ts --type tsx
 ```
 
 - Targeted Playwright snapshots if UI touched.
+- Performance PRs (PR 4, PR 10): capture request counts or profiler notes.
 
 ---
 
 ## Suggested PR Titles
 
 1. `refactor(ui): add shared card/modal primitives`
-2. `refactor(modal): migrate all modals to ResponsiveModal`
-3. `refactor(dashboard): standardize widget shells`
-4. `refactor(chat): batch message metadata fetches`
-5. `refactor(utils): centralize getInitials + stockStatusConfig + useHapticFeedback`
-6. `refactor(projects): unify upload previews + dynamic imports`
-7. `chore: remove unused examples and dead code`
-8. `refactor(tasks): decompose large modal components`
-9. `refactor(ui): unify skeleton/loading components`
-10. `perf: audit and optimize memoization patterns`
+2. `refactor(modal): migrate settings modals to ResponsiveModal`
+3. `refactor(modal): migrate chat modals to ResponsiveModal`
+4. `refactor(modal): migrate expense modals to ResponsiveModal`
+5. `refactor(modal): migrate task modals to ResponsiveModal`
+6. `refactor(modal): migrate team modals to ResponsiveModal`
+7. `refactor(modal): migrate project modals to ResponsiveModal`
+8. `refactor(modal): migrate spatial sheets to ResponsiveModal`
+9. `refactor(modal): migrate project file modals to ResponsiveModal`
+10. `refactor(dashboard): standardize widget shells`
+11. `refactor(chat): batch message metadata fetches`
+12. `refactor(utils): centralize getInitials + stockStatusConfig + useHapticFeedback`
+13. `refactor(projects): unify upload previews + dynamic imports`
+14. `chore: remove unused examples and dead code`
+15. `refactor(tasks): decompose TaskModal`
+16. `refactor(tasks): decompose TaskDetail`
+17. `refactor(projects): decompose project forms + spatial viewer`
+18. `refactor(ui): unify skeleton/loading components`
+19. `perf: audit and optimize memoization patterns`
 
 ---
 
 ## Implementation Order (Recommended)
 
 ```
-Phase 1 - Foundation (PRs 1, 2)
+Phase 1 - Foundation (PRs 1, 2.x)
 ├── PR 1: Shared UI Primitives
-└── PR 2: Modal Migration to ResponsiveModal ← HIGHEST PRIORITY
+└── PR 2.x: Modal Migration to ResponsiveModal ← HIGHEST PRIORITY
 
 Phase 2 - Domain Consolidation (PRs 3, 4, 5)
 ├── PR 3: Dashboard Widget Consolidation
 ├── PR 4: Chat Metadata Batching
 └── PR 5: Utility Migration & Hook Extraction
 
-Phase 3 - Optimization (PRs 6, 7, 8, 9, 10)
+Phase 3 - Optimization (PRs 6, 7, 8.x, 9, 10)
 ├── PR 6: Upload/Preview Unification + Dynamic Imports
-├── PR 7: Cleanup & Deletions
-├── PR 8: Large Component Decomposition
+├── PR 7: Cleanup & Deletions (depends on PR 2.x)
+├── PR 8.x: Large Component Decomposition (after PR 2.x)
 ├── PR 9: Skeleton/Loading Unification
-└── PR 10: Memoization Audit
+└── PR 10: Memoization Audit (after PR 8.x)
 ```
+
+## Dependency Map
+
+- PR 2.x → PR 7 (cleanup requires modal migration complete)
+- PR 2.x → PR 8.x (decompose after modal migration)
+- PR 8.x → PR 10 (memoization audit after decomposition)
 
 ---
 
@@ -592,3 +646,5 @@ Phase 3 - Optimization (PRs 6, 7, 8, 9, 10)
 | Type errors                              | 0                                          | 0                        |
 | Build status                             | Pass                                       | Pass                     |
 | Visual regressions                       | 0                                          | 0                        |
+| Request count (chat metadata)            | Baseline                                   | Reduced                  |
+| Memoization count (audit files)          | Baseline                                   | Reduced or justified     |
