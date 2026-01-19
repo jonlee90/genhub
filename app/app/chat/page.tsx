@@ -6,6 +6,7 @@ import {
 } from "@/app/actions/chat-queries";
 import { ChatLayout } from "@/components/chat/ChatLayout";
 import { ChatErrorState } from "@/components/chat/ChatErrorState";
+import { SessionProviderWrapper } from "@/components/providers/SessionProviderWrapper";
 import { Loader2 } from "lucide-react";
 
 // Chat page - Server component that fetches initial room data and company users
@@ -38,11 +39,13 @@ export default async function ChatPage() {
 
   return (
     <Suspense fallback={<ChatLoadingSkeleton />}>
-      <ChatLayout
-        initialRooms={roomsResult.rooms || []}
-        companyUsers={usersResult.users || []}
-        userContext={userContext}
-      />
+      <SessionProviderWrapper>
+        <ChatLayout
+          initialRooms={roomsResult.rooms || []}
+          companyUsers={usersResult.users || []}
+          userContext={userContext}
+        />
+      </SessionProviderWrapper>
     </Suspense>
   );
 }

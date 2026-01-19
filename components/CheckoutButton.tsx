@@ -2,7 +2,7 @@
 
 import { loadStripe } from '@stripe/stripe-js';
 import toast from 'react-hot-toast';
-import { useSession } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
@@ -14,7 +14,7 @@ interface CheckoutButtonProps {
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-export default function CheckoutButton({ priceId, productId, className }: CheckoutButtonProps) {
+function CheckoutButtonContent({ priceId, productId, className }: CheckoutButtonProps) {
 	const { data: session } = useSession();
 	const user = session?.user;
 	const email = user?.email;
@@ -76,5 +76,13 @@ export default function CheckoutButton({ priceId, productId, className }: Checko
 				{isLoading ? 'Processing...' : !priceId ? 'Get Started' : 'Buy Now'}
 			</button>
 		</div>
+	);
+}
+
+export default function CheckoutButton(props: CheckoutButtonProps) {
+	return (
+		<SessionProvider>
+			<CheckoutButtonContent {...props} />
+		</SessionProvider>
 	);
 }

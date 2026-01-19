@@ -6,7 +6,7 @@
 
 'use client';
 
-import { Children, cloneElement, isValidElement, ReactElement } from 'react';
+import { memo, Children, cloneElement, isValidElement, ReactElement } from 'react';
 import { cn } from '@/lib/utils';
 import { BaseModalFooterProps } from './types';
 
@@ -47,7 +47,7 @@ function applyButtonStyling(children: React.ReactNode): React.ReactNode {
   });
 }
 
-export function BaseModalFooter({
+export const BaseModalFooter = memo(function BaseModalFooter({
   leftActions,
   rightActions,
   className,
@@ -90,4 +90,4 @@ export function BaseModalFooter({
       </div>
     </div>
   );
-}
+});

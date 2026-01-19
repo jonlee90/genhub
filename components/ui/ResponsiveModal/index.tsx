@@ -23,6 +23,7 @@
 
 "use client";
 
+import { memo } from "react";
 import { useIsMobile } from "@/lib/hooks/useMediaQuery";
 import { BaseModal } from "@/components/ui/BaseModal";
 import { BottomSheetModal } from "@/components/mobile/BottomSheetModal";
@@ -80,7 +81,7 @@ export interface ResponsiveModalProps {
   ariaDescribedBy?: string;
 }
 
-export function ResponsiveModal({
+export const ResponsiveModal = memo(function ResponsiveModal({
   isOpen,
   onClose,
   children,
@@ -171,4 +172,4 @@ export function ResponsiveModal({
       {children}
     </BaseModal>
   );
-}
+});

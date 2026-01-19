@@ -170,7 +170,10 @@
       "Bash(for component in \"ConflictDialog\" \"TaskLinkerEnhanced\" \"TaskLinker\" \"BottomSheetModal/example\")",
       "Bash(do)",
       "Bash(echo:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "mcp__playwright__browser_network_requests",
+      "mcp__playwright__browser_wait_for",
+      "Bash(killall:*)"
     ],
     "deny": [],
     "ask": []

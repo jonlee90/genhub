@@ -5,25 +5,25 @@
  * Link mode: Links existing task to 3D location
  */
 
-'use client';
+"use client";
 
-import { useState, useTransition } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useTransition } from "react";
+import { motion } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Search from 'lucide-react/icons/search';
-import MapPin from 'lucide-react/icons/map-pin';
-import Link2 from 'lucide-react/icons/link-2';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import XCircle from 'lucide-react/icons/x-circle';
-import Loader2 from 'lucide-react/icons/loader-2';
-import Plus from 'lucide-react/icons/plus';;
-import { cn } from '@/lib/utils';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
-import { updateTask } from '@/app/actions/tasks';
-import { createTaskAtLocation } from '@/app/actions/spatial';
+import Search from "lucide-react/icons/search";
+import MapPin from "lucide-react/icons/map-pin";
+import Link2 from "lucide-react/icons/link-2";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import XCircle from "lucide-react/icons/x-circle";
+import Loader2 from "lucide-react/icons/loader-2";
+import Plus from "lucide-react/icons/plus";
+import { cn } from "@/lib/utils";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { updateTask } from "@/app/actions/tasks";
+import { createTaskAtLocation } from "@/app/actions/spatial";
 
 interface Task {
   id: string;
@@ -40,7 +40,7 @@ interface Task {
 interface TaskLinkerProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'link';
+  mode: "create" | "link";
   // For link mode
   markerId?: string;
   markerTitle?: string;
@@ -58,25 +58,25 @@ interface TaskLinkerProps {
 }
 
 const PRIORITY_COLORS = {
-  low: 'bg-green-100 text-green-700',
-  medium: 'bg-amber-100 text-amber-700',
-  high: 'bg-red-100 text-red-700',
+  low: "bg-green-100 text-green-700",
+  medium: "bg-amber-100 text-amber-700",
+  high: "bg-red-100 text-red-700",
 };
 
 const STATUS_COLORS = {
-  todo: 'bg-gray-100 text-gray-700',
-  in_progress: 'bg-blue-100 text-blue-700',
-  review: 'bg-purple-100 text-purple-700',
-  blocked: 'bg-red-100 text-red-700',
-  completed: 'bg-green-100 text-green-700',
+  todo: "bg-gray-100 text-gray-700",
+  in_progress: "bg-blue-100 text-blue-700",
+  review: "bg-purple-100 text-purple-700",
+  blocked: "bg-red-100 text-red-700",
+  completed: "bg-green-100 text-green-700",
 };
 
 export function TaskLinker(props: TaskLinkerProps) {
-  const { isOpen, onClose, mode } = props;
+  const { mode } = props;
 
-  console.log('[TaskLinker] Rendering mode:', mode);
+  console.log("[TaskLinker] Rendering mode:", mode);
 
-  if (mode === 'create') {
+  if (mode === "create") {
     return <CreateTaskMode {...props} />;
   }
 
@@ -88,7 +88,7 @@ function CreateTaskMode({
   isOpen,
   onClose,
   position,
-  normal,
+  normal: _normal,
   elementId,
   projectId,
   phaseId: defaultPhaseId,
@@ -97,18 +97,18 @@ function CreateTaskMode({
   onTaskCreated,
 }: TaskLinkerProps) {
   const [isPending, startTransition] = useTransition();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [phaseId, setPhaseId] = useState(defaultPhaseId || '');
-  const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
-  const [assigneeId, setAssigneeId] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [phaseId, setPhaseId] = useState(defaultPhaseId || "");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [assigneeId, setAssigneeId] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
-  console.log('[CreateTaskMode] Rendering', { position, projectId });
+  console.log("[CreateTaskMode] Rendering", { position, projectId });
 
   const handleSubmit = async () => {
     if (!title.trim() || !projectId || !position) {
-      toast.error('Title and location are required');
+      toast.error("Title and location are required");
       return;
     }
 
@@ -125,35 +125,42 @@ function CreateTaskMode({
         };
 
         // Pass projectId as separate argument per function signature
-        const result = await createTaskAtLocation(taskData, position, projectId, elementId);
+        const result = await createTaskAtLocation(
+          taskData,
+          position,
+          projectId,
+          elementId,
+        );
 
         if (!result.success || !result.data) {
-          throw new Error(result.error || 'Failed to create task');
+          throw new Error(result.error || "Failed to create task");
         }
 
-        console.log('[CreateTaskMode] Task created:', result.data);
-        toast.success('Task created at 3D location');
+        console.log("[CreateTaskMode] Task created:", result.data);
+        toast.success("Task created at 3D location");
         onTaskCreated?.(result.data.task, result.data.marker);
         handleClose();
       } catch (error) {
-        console.error('[CreateTaskMode] Error:', error);
-        toast.error(error instanceof Error ? error.message : 'Failed to create task');
+        console.error("[CreateTaskMode] Error:", error);
+        toast.error(
+          error instanceof Error ? error.message : "Failed to create task",
+        );
       }
     });
   };
 
   const handleClose = () => {
-    setTitle('');
-    setDescription('');
-    setPhaseId(defaultPhaseId || '');
-    setPriority('medium');
-    setAssigneeId('');
-    setDueDate('');
+    setTitle("");
+    setDescription("");
+    setPhaseId(defaultPhaseId || "");
+    setPriority("medium");
+    setAssigneeId("");
+    setDueDate("");
     onClose();
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={handleClose}
       title="Create Task at Location"
@@ -161,24 +168,17 @@ function CreateTaskMode({
       maxWidth="lg"
       rightActions={
         <>
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isPending}
-          >
+          <Button variant="outline" onClick={handleClose} disabled={isPending}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isPending || !title.trim()}
-          >
+          <Button onClick={handleSubmit} disabled={isPending || !title.trim()}>
             {isPending ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Creating...
               </>
             ) : (
-              'Create Task'
+              "Create Task"
             )}
           </Button>
         </>
@@ -192,7 +192,7 @@ function CreateTaskMode({
               3D Position
             </div>
             <div className="font-mono text-sm text-gray-900">
-              X: {position.x.toFixed(2)} / Y: {position.y.toFixed(2)} / Z:{' '}
+              X: {position.x.toFixed(2)} / Y: {position.y.toFixed(2)} / Z:{" "}
               {position.z.toFixed(2)}
             </div>
           </div>
@@ -209,10 +209,10 @@ function CreateTaskMode({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter task title..."
             className={cn(
-              'w-full px-4 py-3 rounded-lg',
-              'border-2 border-gray-200',
-              'focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-              'placeholder:text-gray-400 text-sm font-medium'
+              "w-full px-4 py-3 rounded-lg",
+              "border-2 border-gray-200",
+              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "placeholder:text-gray-400 text-sm font-medium",
             )}
           />
         </div>
@@ -228,10 +228,10 @@ function CreateTaskMode({
             placeholder="Add details..."
             rows={3}
             className={cn(
-              'w-full px-4 py-3 rounded-lg',
-              'border-2 border-gray-200',
-              'focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-              'placeholder:text-gray-400 text-sm resize-none'
+              "w-full px-4 py-3 rounded-lg",
+              "border-2 border-gray-200",
+              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "placeholder:text-gray-400 text-sm resize-none",
             )}
           />
         </div>
@@ -239,15 +239,17 @@ function CreateTaskMode({
         {/* Phase */}
         {phases.length > 0 && (
           <div>
-            <label className="block text-sm font-bold text-gray-900 mb-2">Phase</label>
+            <label className="block text-sm font-bold text-gray-900 mb-2">
+              Phase
+            </label>
             <select
               value={phaseId}
               onChange={(e) => setPhaseId(e.target.value)}
               className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border-2 border-gray-200',
-                'focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-                'text-sm font-medium'
+                "w-full px-4 py-3 rounded-lg",
+                "border-2 border-gray-200",
+                "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+                "text-sm font-medium",
               )}
             >
               <option value="">No Phase</option>
@@ -262,18 +264,20 @@ function CreateTaskMode({
 
         {/* Priority */}
         <div>
-          <label className="block text-sm font-bold text-gray-900 mb-2">Priority</label>
+          <label className="block text-sm font-bold text-gray-900 mb-2">
+            Priority
+          </label>
           <div className="flex gap-2">
-            {(['low', 'medium', 'high'] as const).map((level) => (
+            {(["low", "medium", "high"] as const).map((level) => (
               <button
                 key={level}
                 onClick={() => setPriority(level)}
                 className={cn(
-                  'flex-1 px-4 py-2.5 rounded-lg font-bold text-sm uppercase',
-                  'border-2 transition-all duration-200',
+                  "flex-1 px-4 py-2.5 rounded-lg font-bold text-sm uppercase",
+                  "border-2 transition-all duration-200",
                   priority === level
-                    ? 'border-[#001B51] bg-[#001B51] text-white'
-                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                    ? "border-[#001B51] bg-[#001B51] text-white"
+                    : "border-gray-200 text-gray-700 hover:border-gray-300",
                 )}
               >
                 {level}
@@ -292,10 +296,10 @@ function CreateTaskMode({
               value={assigneeId}
               onChange={(e) => setAssigneeId(e.target.value)}
               className={cn(
-                'w-full px-4 py-3 rounded-lg',
-                'border-2 border-gray-200',
-                'focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-                'text-sm font-medium'
+                "w-full px-4 py-3 rounded-lg",
+                "border-2 border-gray-200",
+                "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+                "text-sm font-medium",
               )}
             >
               <option value="">Unassigned</option>
@@ -318,15 +322,15 @@ function CreateTaskMode({
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
             className={cn(
-              'w-full px-4 py-3 rounded-lg',
-              'border-2 border-gray-200',
-              'focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-              'text-sm font-medium'
+              "w-full px-4 py-3 rounded-lg",
+              "border-2 border-gray-200",
+              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "text-sm font-medium",
             )}
           />
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }
 
@@ -339,47 +343,52 @@ function LinkTaskMode({
   projectTasks = [],
   onTaskLinked,
 }: TaskLinkerProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  console.log('[LinkTaskMode] Rendering with marker:', markerId, 'Tasks:', projectTasks.length);
+  console.log(
+    "[LinkTaskMode] Rendering with marker:",
+    markerId,
+    "Tasks:",
+    projectTasks.length,
+  );
 
   const filteredTasks = projectTasks.filter(
     (task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.phase?.name.toLowerCase().includes(searchQuery.toLowerCase())
+      task.phase?.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleLinkTask = async (taskId: string) => {
     if (!markerId) {
-      toast.error('No marker selected');
+      toast.error("No marker selected");
       return;
     }
 
-    console.log('[LinkTaskMode] Linking task:', taskId, 'to marker:', markerId);
+    console.log("[LinkTaskMode] Linking task:", taskId, "to marker:", markerId);
     setIsLinking(true);
     setSelectedTaskId(taskId);
 
     try {
       const formData = new FormData();
-      formData.append('id', taskId);
-      formData.append('spatial_marker_id', markerId);
+      formData.append("id", taskId);
+      formData.append("spatial_marker_id", markerId);
 
       const result = await updateTask(formData);
 
       if (result.success) {
-        console.log('[LinkTaskMode] Task linked successfully');
-        toast.success('Task linked to 3D marker');
+        console.log("[LinkTaskMode] Task linked successfully");
+        toast.success("Task linked to 3D marker");
         onTaskLinked?.(taskId);
         onClose();
       } else {
-        console.error('[LinkTaskMode] Failed to link task:', result.error);
-        toast.error(result.error || 'Failed to link task');
+        console.error("[LinkTaskMode] Failed to link task:", result.error);
+        toast.error(result.error || "Failed to link task");
       }
     } catch (error) {
-      console.error('[LinkTaskMode] Error linking task:', error);
-      toast.error('Failed to link task');
+      console.error("[LinkTaskMode] Error linking task:", error);
+      toast.error("Failed to link task");
     } finally {
       setIsLinking(false);
       setSelectedTaskId(null);
@@ -387,28 +396,28 @@ function LinkTaskMode({
   };
 
   const handleUnlinkTask = async (taskId: string) => {
-    console.log('[LinkTaskMode] Unlinking task:', taskId);
+    console.log("[LinkTaskMode] Unlinking task:", taskId);
     setIsLinking(true);
     setSelectedTaskId(taskId);
 
     try {
       const formData = new FormData();
-      formData.append('id', taskId);
-      formData.append('spatial_marker_id', '');
+      formData.append("id", taskId);
+      formData.append("spatial_marker_id", "");
 
       const result = await updateTask(formData);
 
       if (result.success) {
-        console.log('[LinkTaskMode] Task unlinked successfully');
-        toast.success('Task unlinked from marker');
+        console.log("[LinkTaskMode] Task unlinked successfully");
+        toast.success("Task unlinked from marker");
         onTaskLinked?.(taskId);
       } else {
-        console.error('[LinkTaskMode] Failed to unlink task:', result.error);
-        toast.error(result.error || 'Failed to unlink task');
+        console.error("[LinkTaskMode] Failed to unlink task:", result.error);
+        toast.error(result.error || "Failed to unlink task");
       }
     } catch (error) {
-      console.error('[LinkTaskMode] Error unlinking task:', error);
-      toast.error('Failed to unlink task');
+      console.error("[LinkTaskMode] Error unlinking task:", error);
+      toast.error("Failed to unlink task");
     } finally {
       setIsLinking(false);
       setSelectedTaskId(null);
@@ -416,7 +425,7 @@ function LinkTaskMode({
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       title="Link Task to Marker"
@@ -433,7 +442,9 @@ function LinkTaskMode({
               <div className="text-xs font-mono uppercase tracking-wider text-construction-blue/70">
                 Target Marker
               </div>
-              <div className="text-sm font-bold text-gray-900">{markerTitle}</div>
+              <div className="text-sm font-bold text-gray-900">
+                {markerTitle}
+              </div>
             </div>
           </div>
         )}
@@ -447,10 +458,10 @@ function LinkTaskMode({
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search tasks..."
             className={cn(
-              'w-full pl-10 pr-4 py-2.5 rounded-lg',
-              'border-2 border-gray-200',
-              'focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-construction-blue/20',
-              'placeholder:text-gray-400 text-sm'
+              "w-full pl-10 pr-4 py-2.5 rounded-lg",
+              "border-2 border-gray-200",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-construction-blue/20",
+              "placeholder:text-gray-400 text-sm",
             )}
           />
         </div>
@@ -462,8 +473,12 @@ function LinkTaskMode({
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                 <Search className="h-8 w-8 text-gray-400" />
               </div>
-              <div className="text-sm font-bold text-gray-900 mb-1">No tasks found</div>
-              <div className="text-xs text-gray-500">Try adjusting your search query</div>
+              <div className="text-sm font-bold text-gray-900 mb-1">
+                No tasks found
+              </div>
+              <div className="text-xs text-gray-500">
+                Try adjusting your search query
+              </div>
             </div>
           ) : (
             filteredTasks.map((task) => {
@@ -476,10 +491,10 @@ function LinkTaskMode({
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    'p-4 rounded-lg border-2 transition-all',
+                    "p-4 rounded-lg border-2 transition-all",
                     isLinked
-                      ? 'bg-construction-blue/5 border-construction-blue'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
+                      ? "bg-construction-blue/5 border-construction-blue"
+                      : "bg-white border-gray-200 hover:border-gray-300",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -497,13 +512,17 @@ function LinkTaskMode({
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         {task.phase && (
-                          <div className="text-xs text-gray-600">{task.phase.name}</div>
+                          <div className="text-xs text-gray-600">
+                            {task.phase.name}
+                          </div>
                         )}
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[10px] px-2 py-0.5',
-                            STATUS_COLORS[task.status as keyof typeof STATUS_COLORS]
+                            "text-[10px] px-2 py-0.5",
+                            STATUS_COLORS[
+                              task.status as keyof typeof STATUS_COLORS
+                            ],
                           )}
                         >
                           {task.status}
@@ -511,8 +530,10 @@ function LinkTaskMode({
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[10px] px-2 py-0.5',
-                            PRIORITY_COLORS[task.priority as keyof typeof PRIORITY_COLORS]
+                            "text-[10px] px-2 py-0.5",
+                            PRIORITY_COLORS[
+                              task.priority as keyof typeof PRIORITY_COLORS
+                            ],
                           )}
                         >
                           {task.priority}
@@ -521,17 +542,19 @@ function LinkTaskMode({
                     </div>
                     <button
                       onClick={() =>
-                        isLinked ? handleUnlinkTask(task.id) : handleLinkTask(task.id)
+                        isLinked
+                          ? handleUnlinkTask(task.id)
+                          : handleLinkTask(task.id)
                       }
                       disabled={isProcessing}
                       className={cn(
-                        'px-4 py-2 rounded-lg font-bold text-sm',
-                        'flex items-center gap-2',
-                        'transition-all duration-200',
-                        'disabled:opacity-50 disabled:cursor-not-allowed',
+                        "px-4 py-2 rounded-lg font-bold text-sm",
+                        "flex items-center gap-2",
+                        "transition-all duration-200",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
                         isLinked
-                          ? 'bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100'
-                          : 'bg-construction-blue text-white border-2 border-construction-blue hover:bg-blue-700'
+                          ? "bg-red-50 text-red-700 border-2 border-red-200 hover:bg-red-100"
+                          : "bg-construction-blue text-white border-2 border-construction-blue hover:bg-blue-700",
                       )}
                     >
                       {isProcessing ? (
@@ -555,6 +578,6 @@ function LinkTaskMode({
           )}
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

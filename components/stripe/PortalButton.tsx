@@ -1,11 +1,11 @@
 'use client';
 
 import { createPortalSession, getStripeCustomerId } from '@/app/actions/stripe';
-import { useSession } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-export default function PortalButton() {
+function PortalButtonContent() {
 	const { data: session } = useSession();
 	const [isLoading, setIsLoading] = useState(false);
 	const user = session?.user;
@@ -55,5 +55,13 @@ export default function PortalButton() {
 				</button>
 			</div>
 		</div>
+	);
+}
+
+export default function PortalButton() {
+	return (
+		<SessionProvider>
+			<PortalButtonContent />
+		</SessionProvider>
 	);
 }

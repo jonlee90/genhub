@@ -1,27 +1,51 @@
 /**
  * MarkerFilterSheet - Spatial Viewer Redesign Task 2.1
  * Bottom sheet for filtering markers by category on mobile
- * Uses BottomSheetModal for native PWA feel
+ * Uses ResponsiveModal for native PWA feel
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Filter from 'lucide-react/icons/filter';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import Camera from 'lucide-react/icons/camera';
-import FileText from 'lucide-react/icons/file-text';
-import Ruler from 'lucide-react/icons/ruler';;
-import { cn } from '@/lib/utils';
-import { BottomSheetModal } from '@/components/mobile/BottomSheetModal';
+import Filter from "lucide-react/icons/filter";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import Camera from "lucide-react/icons/camera";
+import FileText from "lucide-react/icons/file-text";
+import Ruler from "lucide-react/icons/ruler";
+import { cn } from "@/lib/utils";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 
 // Marker category configuration
 const MARKER_CATEGORIES = [
-  { id: 'issue', label: 'Issues', icon: AlertCircle, color: 'text-red-600', bgColor: 'bg-red-50' },
-  { id: 'photo', label: 'Photos', icon: Camera, color: 'text-blue-600', bgColor: 'bg-blue-50' },
-  { id: 'note', label: 'Notes', icon: FileText, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
-  { id: 'measurement', label: 'Measurements', icon: Ruler, color: 'text-purple-600', bgColor: 'bg-purple-50' },
+  {
+    id: "issue",
+    label: "Issues",
+    icon: AlertCircle,
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+  },
+  {
+    id: "photo",
+    label: "Photos",
+    icon: Camera,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+  },
+  {
+    id: "note",
+    label: "Notes",
+    icon: FileText,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-50",
+  },
+  {
+    id: "measurement",
+    label: "Measurements",
+    icon: Ruler,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+  },
 ] as const;
 
 export interface MarkerFilterSheetProps {
@@ -42,7 +66,9 @@ export function MarkerFilterSheet({
   onApplyFilters,
 }: MarkerFilterSheetProps) {
   // Local state for pending changes (not applied until user taps Apply)
-  const [localSelection, setLocalSelection] = useState<Set<string>>(new Set(selectedCategories));
+  const [localSelection, setLocalSelection] = useState<Set<string>>(
+    new Set(selectedCategories),
+  );
 
   // Sync local state when sheet opens with current selection
   useEffect(() => {
@@ -85,13 +111,13 @@ export function MarkerFilterSheet({
       onClick={handleClearAll}
       disabled={noneSelected}
       className={cn(
-        'min-h-[44px] px-4 rounded-xl',
-        'text-sm font-semibold',
-        'transition-all duration-150',
-        'active:scale-[0.98]',
+        "min-h-[44px] px-4 rounded-xl",
+        "text-sm font-semibold",
+        "transition-all duration-150",
+        "active:scale-[0.98]",
         noneSelected
-          ? 'text-gray-400 cursor-not-allowed'
-          : 'text-gray-700 hover:bg-gray-100 active:bg-gray-200'
+          ? "text-gray-400 cursor-not-allowed"
+          : "text-gray-700 hover:bg-gray-100 active:bg-gray-200",
       )}
       aria-label="Clear all filter selections"
     >
@@ -103,12 +129,12 @@ export function MarkerFilterSheet({
     <button
       onClick={handleApply}
       className={cn(
-        'min-h-[44px] px-6 rounded-xl',
-        'bg-[#001B51] text-white',
-        'text-sm font-semibold',
-        'transition-all duration-150',
-        'active:scale-[0.98] active:bg-[#001B51]/90',
-        'disabled:opacity-50 disabled:cursor-not-allowed'
+        "min-h-[44px] px-6 rounded-xl",
+        "bg-[#001B51] text-white",
+        "text-sm font-semibold",
+        "transition-all duration-150",
+        "active:scale-[0.98] active:bg-[#001B51]/90",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
       )}
       aria-label="Apply selected filters"
     >
@@ -117,7 +143,7 @@ export function MarkerFilterSheet({
   );
 
   return (
-    <BottomSheetModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={Filter}
@@ -125,8 +151,8 @@ export function MarkerFilterSheet({
       subtitle="Select marker types to display"
       leftActions={leftActions}
       rightActions={rightActions}
-      showFooter={true}
-      snapPoints={['half']}
+      showFooter
+      snapPoints={["half"]}
       initialSnapPoint="half"
       ariaLabel="Filter markers by category"
       contentClassName="px-4"
@@ -142,27 +168,27 @@ export function MarkerFilterSheet({
               key={category.id}
               onClick={() => toggleCategory(category.id)}
               className={cn(
-                'w-full flex items-center gap-4 p-4 rounded-xl',
-                'min-h-[56px]', // 44px min + padding for comfortable touch
-                'border-2 transition-all duration-150',
-                'active:scale-[0.99]',
+                "w-full flex items-center gap-4 p-4 rounded-xl",
+                "min-h-[56px]", // 44px min + padding for comfortable touch
+                "border-2 transition-all duration-150",
+                "active:scale-[0.99]",
                 isSelected
-                  ? 'border-[#001B51] bg-[#001B51]/5'
-                  : 'border-gray-200 hover:border-gray-300 active:bg-gray-50'
+                  ? "border-[#001B51] bg-[#001B51]/5"
+                  : "border-gray-200 hover:border-gray-300 active:bg-gray-50",
               )}
               role="checkbox"
               aria-checked={isSelected}
-              aria-label={`${category.label} filter ${isSelected ? 'selected' : 'not selected'}`}
+              aria-label={`${category.label} filter ${isSelected ? "selected" : "not selected"}`}
             >
               {/* Checkbox indicator */}
               <div
                 className={cn(
-                  'flex-shrink-0 w-6 h-6 rounded-md border-2',
-                  'flex items-center justify-center',
-                  'transition-all duration-150',
+                  "flex-shrink-0 w-6 h-6 rounded-md border-2",
+                  "flex items-center justify-center",
+                  "transition-all duration-150",
                   isSelected
-                    ? 'border-[#001B51] bg-[#001B51]'
-                    : 'border-gray-300 bg-white'
+                    ? "border-[#001B51] bg-[#001B51]"
+                    : "border-gray-300 bg-white",
                 )}
               >
                 {isSelected && (
@@ -185,12 +211,12 @@ export function MarkerFilterSheet({
               {/* Icon with category color */}
               <div
                 className={cn(
-                  'flex-shrink-0 w-10 h-10 rounded-lg',
-                  'flex items-center justify-center',
-                  category.bgColor
+                  "flex-shrink-0 w-10 h-10 rounded-lg",
+                  "flex items-center justify-center",
+                  category.bgColor,
                 )}
               >
-                <Icon className={cn('w-5 h-5', category.color)} />
+                <Icon className={cn("w-5 h-5", category.color)} />
               </div>
 
               {/* Label */}
@@ -209,18 +235,18 @@ export function MarkerFilterSheet({
               setLocalSelection(all);
             }}
             className={cn(
-              'w-full min-h-[44px] py-3',
-              'text-sm font-medium text-[#001B51]',
-              'rounded-xl border-2 border-dashed border-gray-200',
-              'hover:border-[#001B51]/30 hover:bg-[#001B51]/5',
-              'transition-all duration-150',
-              'active:scale-[0.99]'
+              "w-full min-h-[44px] py-3",
+              "text-sm font-medium text-[#001B51]",
+              "rounded-xl border-2 border-dashed border-gray-200",
+              "hover:border-[#001B51]/30 hover:bg-[#001B51]/5",
+              "transition-all duration-150",
+              "active:scale-[0.99]",
             )}
           >
             Select All Categories
           </button>
         )}
       </div>
-    </BottomSheetModal>
+    </ResponsiveModal>
   );
 }

@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import { CheckCircle, AlertTriangle, XCircle, Calendar } from 'lucide-react';
-import { cn, formatPercentWhole } from '@/lib/utils';
-import type { ScheduleHealthData } from '@/types/dashboard';
+import { CheckCircle, AlertTriangle, XCircle, Calendar } from "lucide-react";
+import { cn, formatPercentWhole } from "@/lib/utils";
+import {
+  WidgetCard,
+  WidgetHeader,
+  WidgetSkeleton,
+} from "@/components/ui/WidgetCard";
+import type { ScheduleHealthData } from "@/types/dashboard";
 
 export interface ScheduleHealthWidgetProps {
   health: ScheduleHealthData;
@@ -11,31 +16,31 @@ export interface ScheduleHealthWidgetProps {
 
 const statusConfig = {
   onTime: {
-    label: 'On Time',
+    label: "On Time",
     icon: CheckCircle,
-    bgColor: 'bg-[#059669]/10',
-    iconColor: 'text-[#059669]',
-    textColor: 'text-[#059669]',
+    bgColor: "bg-[#059669]/10",
+    iconColor: "text-[#059669]",
+    textColor: "text-[#059669]",
   },
   atRisk: {
-    label: 'At Risk',
+    label: "At Risk",
     icon: AlertTriangle,
-    bgColor: 'bg-[#F59E0B]/10',
-    iconColor: 'text-[#F59E0B]',
-    textColor: 'text-[#F59E0B]',
+    bgColor: "bg-[#F59E0B]/10",
+    iconColor: "text-[#F59E0B]",
+    textColor: "text-[#F59E0B]",
   },
   overdue: {
-    label: 'Overdue',
+    label: "Overdue",
     icon: XCircle,
-    bgColor: 'bg-[#DC2626]/10',
-    iconColor: 'text-[#DC2626]',
-    textColor: 'text-[#DC2626]',
+    bgColor: "bg-[#DC2626]/10",
+    iconColor: "text-[#DC2626]",
+    textColor: "text-[#DC2626]",
   },
 } as const;
 
 function ScheduleHealthSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+    <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gray-200 rounded-lg" />
         <div className="h-5 w-32 bg-gray-200 rounded" />
@@ -49,7 +54,7 @@ function ScheduleHealthSkeleton() {
           <div key={i} className="h-14 bg-gray-100 rounded-lg" />
         ))}
       </div>
-    </div>
+    </WidgetSkeleton>
   );
 }
 
@@ -66,19 +71,19 @@ function StatusRow({ status, count, percentage }: StatusRowProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-between p-3 rounded-lg',
-        'min-h-[52px]',
-        config.bgColor
+        "flex items-center justify-between p-3 rounded-lg",
+        "min-h-[52px]",
+        config.bgColor,
       )}
     >
       <div className="flex items-center gap-3">
-        <Icon className={cn('w-5 h-5', config.iconColor)} />
+        <Icon className={cn("w-5 h-5", config.iconColor)} />
         <span className="text-sm font-semibold text-gray-700">
           {config.label}
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <span className={cn('text-lg font-bold', config.textColor)}>
+        <span className={cn("text-lg font-bold", config.textColor)}>
           {count}
         </span>
         <span className="text-xs text-gray-500 w-12 text-right">
@@ -108,63 +113,67 @@ export function ScheduleHealthWidget({
 
   // Determine overall health status for header styling
   const getHealthStatus = () => {
-    if (displayOnTimePercent >= 80) return 'good';
-    if (displayOnTimePercent >= 50) return 'warning';
-    return 'danger';
+    if (displayOnTimePercent >= 80) return "good";
+    if (displayOnTimePercent >= 50) return "warning";
+    return "danger";
   };
 
   const healthStatus = getHealthStatus();
   const healthColors = {
     good: {
-      bg: 'bg-[#059669]/10',
-      border: 'border-[#059669]/30',
-      text: 'text-[#059669]',
+      bg: "bg-[#059669]/10",
+      border: "border-[#059669]/30",
+      text: "text-[#059669]",
     },
     warning: {
-      bg: 'bg-[#F59E0B]/10',
-      border: 'border-[#F59E0B]/30',
-      text: 'text-[#F59E0B]',
+      bg: "bg-[#F59E0B]/10",
+      border: "border-[#F59E0B]/30",
+      text: "text-[#F59E0B]",
     },
     danger: {
-      bg: 'bg-[#DC2626]/10',
-      border: 'border-[#DC2626]/30',
-      text: 'text-[#DC2626]',
+      bg: "bg-[#DC2626]/10",
+      border: "border-[#DC2626]/30",
+      text: "text-[#DC2626]",
     },
   };
 
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-[#001B51]/10 rounded-lg">
-          <Calendar className="w-5 h-5 text-[#001B51]" />
-        </div>
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-          Schedule
-        </h3>
-      </div>
+    <WidgetCard>
+      <WidgetHeader icon={Calendar} title="Schedule" className="mb-4" />
 
       {/* On-time percentage highlight */}
       <div
         className={cn(
-          'mb-4 p-4 rounded-lg border-2 text-center',
+          "mb-4 p-4 rounded-lg border-2 text-center",
           healthColors[healthStatus].bg,
-          healthColors[healthStatus].border
+          healthColors[healthStatus].border,
         )}
       >
-        <div className={cn('text-3xl font-black', healthColors[healthStatus].text)}>
+        <div
+          className={cn("text-3xl font-black", healthColors[healthStatus].text)}
+        >
           {formatPercentWhole(displayOnTimePercent)}
         </div>
-        <div className="text-sm text-gray-600 font-medium">
-          On-Time Rate
-        </div>
+        <div className="text-sm text-gray-600 font-medium">On-Time Rate</div>
       </div>
 
       {/* Status rows */}
       <div className="space-y-2">
-        <StatusRow status="onTime" count={health.onTime} percentage={onTimePercentRaw} />
-        <StatusRow status="atRisk" count={health.atRisk} percentage={atRiskPercentRaw} />
-        <StatusRow status="overdue" count={health.overdue} percentage={overduePercentRaw} />
+        <StatusRow
+          status="onTime"
+          count={health.onTime}
+          percentage={onTimePercentRaw}
+        />
+        <StatusRow
+          status="atRisk"
+          count={health.atRisk}
+          percentage={atRiskPercentRaw}
+        />
+        <StatusRow
+          status="overdue"
+          count={health.overdue}
+          percentage={overduePercentRaw}
+        />
       </div>
 
       {/* Total count footer */}
@@ -174,6 +183,6 @@ export function ScheduleHealthWidget({
           <span className="font-bold text-gray-900">{total}</span>
         </div>
       </div>
-    </div>
+    </WidgetCard>
   );
 }

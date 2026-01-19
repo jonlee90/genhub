@@ -6,22 +6,22 @@
  * - Uses getFileVersionHistory from server action
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Download from 'lucide-react/icons/download';
-import RotateCcw from 'lucide-react/icons/rotate-ccw';
-import Loader2 from 'lucide-react/icons/loader-2';
-import Clock from 'lucide-react/icons/clock';
-import FileText from 'lucide-react/icons/file-text';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { getFileVersionHistory } from '@/app/actions/project-files';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import Download from "lucide-react/icons/download";
+import RotateCcw from "lucide-react/icons/rotate-ccw";
+import Loader2 from "lucide-react/icons/loader-2";
+import Clock from "lucide-react/icons/clock";
+import FileText from "lucide-react/icons/file-text";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { getFileVersionHistory } from "@/app/actions/project-files";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface FileVersionHistoryProps {
   fileId: string;
@@ -46,7 +46,7 @@ interface FileVersion {
  * Format file size for display
  */
 function formatFileSize(bytes: number): string {
-  if (!bytes || bytes === 0) return '0 B';
+  if (!bytes || bytes === 0) return "0 B";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
@@ -59,21 +59,25 @@ function formatFileSize(bytes: number): string {
 function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
-    return date.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
+    return date.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
       hour12: true,
     });
   } catch {
-    return 'Unknown date';
+    return "Unknown date";
   }
 }
 
-export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHistoryProps) {
-  console.log('[FileVersionHistory] Rendering for file:', fileId);
+export function FileVersionHistory({
+  fileId,
+  filename,
+  onClose,
+}: FileVersionHistoryProps) {
+  console.log("[FileVersionHistory] Rendering for file:", fileId);
 
   const [loading, setLoading] = useState(true);
   const [versions, setVersions] = useState<FileVersion[]>([]);
@@ -81,7 +85,7 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
 
   // Performance optimization: Memoize fetch function to prevent recreation on every render
   const fetchVersionHistory = useCallback(async () => {
-    console.log('[FileVersionHistory] Fetching version history');
+    console.log("[FileVersionHistory] Fetching version history");
     setLoading(true);
     setError(null);
 
@@ -89,18 +93,21 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
       const result = await getFileVersionHistory(fileId);
 
       if (result.error) {
-        console.error('[FileVersionHistory] Error:', result.error);
+        console.error("[FileVersionHistory] Error:", result.error);
         setError(result.error);
         toast.error(`Failed to load version history: ${result.error}`);
       } else {
-        console.log('[FileVersionHistory] Loaded versions:', result.data?.length);
+        console.log(
+          "[FileVersionHistory] Loaded versions:",
+          result.data?.length,
+        );
         // Cast to FileVersion[] since the server returns a compatible shape
         setVersions((result.data || []) as FileVersion[]);
       }
     } catch (err) {
-      console.error('[FileVersionHistory] Fetch error:', err);
-      setError('Failed to load version history');
-      toast.error('Failed to load version history');
+      console.error("[FileVersionHistory] Fetch error:", err);
+      setError("Failed to load version history");
+      toast.error("Failed to load version history");
     } finally {
       setLoading(false);
     }
@@ -112,23 +119,29 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleDownload = useCallback((version: FileVersion) => {
-    console.log('[FileVersionHistory] Downloading version:', version.version_number);
-    window.open(version.file_url, '_blank');
+    console.log(
+      "[FileVersionHistory] Downloading version:",
+      version.version_number,
+    );
+    window.open(version.file_url, "_blank");
   }, []);
 
   const handleRestore = useCallback((version: FileVersion) => {
-    console.log('[FileVersionHistory] Restore requested for version:', version.version_number);
-    toast.info('Version restore coming soon', {
+    console.log(
+      "[FileVersionHistory] Restore requested for version:",
+      version.version_number,
+    );
+    toast.info("Version restore coming soon", {
       description: `Restoring to v${version.version_number} will be available in a future update.`,
     });
   }, []);
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       title="Version History"
-      subtitle={filename || 'Document versions'}
+      subtitle={filename || "Document versions"}
       icon={Clock}
       maxWidth="lg"
     >
@@ -138,7 +151,9 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 text-[#001B51] animate-spin" />
-              <p className="text-sm text-gray-500">Loading version history...</p>
+              <p className="text-sm text-gray-500">
+                Loading version history...
+              </p>
             </div>
           </div>
         )}
@@ -162,8 +177,12 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
             <div className="p-3 bg-gray-100 rounded-full mb-3">
               <Clock className="h-6 w-6 text-gray-400" />
             </div>
-            <p className="text-sm text-gray-600 font-medium">No version history</p>
-            <p className="text-xs text-gray-500 mt-1">This is the only version of this file</p>
+            <p className="text-sm text-gray-600 font-medium">
+              No version history
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              This is the only version of this file
+            </p>
           </div>
         )}
 
@@ -180,10 +199,10 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={cn(
-                    'border-2 rounded-lg p-4 transition-all duration-200',
+                    "border-2 rounded-lg p-4 transition-all duration-200",
                     isCurrent
-                      ? 'border-[#001B51]/30 bg-[#001B51]/5'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
+                      ? "border-[#001B51]/30 bg-[#001B51]/5"
+                      : "border-gray-200 bg-white hover:border-gray-300",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -193,10 +212,10 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span
                           className={cn(
-                            'inline-flex items-center px-2 py-1 rounded text-xs font-bold',
+                            "inline-flex items-center px-2 py-1 rounded text-xs font-bold",
                             isCurrent
-                              ? 'bg-[#001B51] text-white'
-                              : 'bg-gray-200 text-gray-700'
+                              ? "bg-[#001B51] text-white"
+                              : "bg-gray-200 text-gray-700",
                           )}
                         >
                           v{version.version_number}
@@ -269,12 +288,13 @@ export function FileVersionHistory({ fileId, filename, onClose }: FileVersionHis
         {!loading && !error && versions.length > 1 && (
           <div className="pt-3 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              {versions.length} version{versions.length !== 1 ? 's' : ''} available.
-              Restoring a version will create a new version with that content.
+              {versions.length} version{versions.length !== 1 ? "s" : ""}{" "}
+              available. Restoring a version will create a new version with that
+              content.
             </p>
           </div>
         )}
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

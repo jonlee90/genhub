@@ -94,13 +94,13 @@ export function MessageItem({
   // Debug: Handle reaction change
   const handleReactionChange = async () => {
     console.log("[MessageItem] Reaction changed, refreshing reactions...");
-    onRefreshMetadata?.(message.id);
+    await onRefreshMetadata?.(message.id);
   };
 
   // Debug: Handle attachment deletion
   const handleAttachmentDelete = async () => {
     console.log("[MessageItem] Attachment deleted, refreshing attachments...");
-    onRefreshMetadata?.(message.id);
+    await onRefreshMetadata?.(message.id);
   };
 
   // Debug: Handle copy to clipboard

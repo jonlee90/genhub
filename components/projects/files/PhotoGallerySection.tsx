@@ -8,25 +8,25 @@
  * - Cover photo badge and star button for setting primary photo
  */
 
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Image from 'lucide-react/icons/image';
-import Upload from 'lucide-react/icons/upload';
-import Eye from 'lucide-react/icons/eye';
-import Trash2 from 'lucide-react/icons/trash-2';
-import Star from 'lucide-react/icons/star';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { ProjectPhotoUploader } from './ProjectPhotoUploader';
-import { PhotoLightbox } from './PhotoLightbox';
-import { ReceiptPhotoBadge } from './ReceiptPhotoBadge';
-import { setProjectPrimaryPhoto } from '@/app/actions/project-photos';
-import { toast } from 'sonner';
+import ImageIcon from "lucide-react/icons/image";
+import Upload from "lucide-react/icons/upload";
+import Eye from "lucide-react/icons/eye";
+import Trash2 from "lucide-react/icons/trash-2";
+import Star from "lucide-react/icons/star";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { ProjectPhotoUploader } from "./ProjectPhotoUploader";
+import { PhotoLightbox } from "./PhotoLightbox";
+import { ReceiptPhotoBadge } from "./ReceiptPhotoBadge";
+import { setProjectPrimaryPhoto } from "@/app/actions/project-photos";
+import { toast } from "sonner";
 
 interface UnifiedPhoto {
   id: string;
@@ -34,7 +34,7 @@ interface UnifiedPhoto {
   thumbnail_url?: string;
   filename: string;
   category: string;
-  source: 'upload' | 'task_receipt' | 'expense_receipt';
+  source: "upload" | "task_receipt" | "expense_receipt";
   source_id?: string;
   source_title?: string;
   uploaded_by: { id: string; name: string; avatar_url?: string };
@@ -66,43 +66,54 @@ export function PhotoGallerySection({
   currentImageUrl,
   onSetPrimary,
 }: PhotoGallerySectionProps) {
-  console.log('[PhotoGallerySection] Rendering with photos:', photos.length, 'currentImageUrl:', currentImageUrl);
+  console.log(
+    "[PhotoGallerySection] Rendering with photos:",
+    photos.length,
+    "currentImageUrl:",
+    currentImageUrl,
+  );
 
   const [showUploader, setShowUploader] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState<UnifiedPhoto | null>(null);
   const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
 
   // Performance optimization: Memoize helper function to prevent recreation on every render
-  const isPrimaryPhoto = useCallback((photo: UnifiedPhoto) => {
-    return currentImageUrl === photo.url;
-  }, [currentImageUrl]);
+  const isPrimaryPhoto = useCallback(
+    (photo: UnifiedPhoto) => {
+      return currentImageUrl === photo.url;
+    },
+    [currentImageUrl],
+  );
 
   // Performance optimization: Memoize async handler to prevent recreation on every render
-  const handleSetPrimary = useCallback(async (photoUrl: string) => {
-    if (!onSetPrimary) return;
+  const handleSetPrimary = useCallback(
+    async (photoUrl: string) => {
+      if (!onSetPrimary) return;
 
-    // Find the photo to get its ID for loading state
-    const photo = photos.find(p => p.url === photoUrl);
-    if (photo) setSettingPrimaryId(photo.id);
+      // Find the photo to get its ID for loading state
+      const photo = photos.find((p) => p.url === photoUrl);
+      if (photo) setSettingPrimaryId(photo.id);
 
-    const result = await setProjectPrimaryPhoto(projectId, photoUrl);
+      const result = await setProjectPrimaryPhoto(projectId, photoUrl);
 
-    setSettingPrimaryId(null);
+      setSettingPrimaryId(null);
 
-    if (!result.success) {
-      toast.error(`Failed to set cover photo: ${result.error}`);
-    } else {
-      toast.success('Cover photo updated');
-      onSetPrimary(photoUrl);
-      onRefresh();
-    }
-  }, [onSetPrimary, photos, projectId, onRefresh]);
+      if (!result.success) {
+        toast.error(`Failed to set cover photo: ${result.error}`);
+      } else {
+        toast.success("Cover photo updated");
+        onSetPrimary(photoUrl);
+        onRefresh();
+      }
+    },
+    [onSetPrimary, photos, projectId, onRefresh],
+  );
 
   // Performance optimization: Memoize async handler to prevent recreation on every render
   const handleRemovePrimary = useCallback(async () => {
     if (!onSetPrimary) return;
 
-    setSettingPrimaryId('removing');
+    setSettingPrimaryId("removing");
 
     const result = await setProjectPrimaryPhoto(projectId, null);
 
@@ -111,25 +122,31 @@ export function PhotoGallerySection({
     if (!result.success) {
       toast.error(`Failed to remove cover photo: ${result.error}`);
     } else {
-      toast.success('Cover photo removed');
+      toast.success("Cover photo removed");
       onSetPrimary(null);
       onRefresh();
     }
   }, [onSetPrimary, projectId, onRefresh]);
 
   // Performance optimization: Memoize event handler to prevent recreation on every render
-  const handlePhotoDelete = useCallback((photoId: string) => {
-    console.log('[PhotoGallerySection] Photo deleted:', photoId);
-    setLightboxPhoto(null);
-    onRefresh();
-  }, [onRefresh]);
+  const handlePhotoDelete = useCallback(
+    (photoId: string) => {
+      console.log("[PhotoGallerySection] Photo deleted:", photoId);
+      setLightboxPhoto(null);
+      onRefresh();
+    },
+    [onRefresh],
+  );
 
   // Performance optimization: Memoize event handler to prevent recreation on every render
-  const handleUploadComplete = useCallback((photoUrl: string) => {
-    console.log('[PhotoGallerySection] Upload complete:', photoUrl);
-    setShowUploader(false);
-    onRefresh();
-  }, [onRefresh]);
+  const handleUploadComplete = useCallback(
+    (photoUrl: string) => {
+      console.log("[PhotoGallerySection] Upload complete:", photoUrl);
+      setShowUploader(false);
+      onRefresh();
+    },
+    [onRefresh],
+  );
 
   // Check if all photos are selected
   const allSelected = photos.length > 0 && selectedIds.size === photos.length;
@@ -141,32 +158,38 @@ export function PhotoGallerySection({
       <>
         <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
           <div className="p-4 bg-[#001B51]/10 rounded-full mb-4">
-            <Image className="h-12 w-12 text-[#001B51]" />
+            <ImageIcon className="h-12 w-12 text-[#001B51]" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">No Photos Yet</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">
+            No Photos Yet
+          </h3>
           <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
-            Start documenting site progress, safety conditions, and inspections by uploading your
-            first photo.
+            Start documenting site progress, safety conditions, and inspections
+            by uploading your first photo.
           </p>
-          <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] text-white hover:bg-[#001B51]/90">
+          <Button
+            onClick={() => setShowUploader(true)}
+            className="bg-[#001B51] text-white hover:bg-[#001B51]/90"
+          >
             <Upload className="h-4 w-4 mr-2" />
             Upload Photo
           </Button>
         </div>
 
         {/* Uploader modal */}
-        <BaseModal
+        <ResponsiveModal
           isOpen={showUploader}
           onClose={() => setShowUploader(false)}
           title="Upload Photo"
           icon={Upload}
+          showFooter={false}
         >
           <ProjectPhotoUploader
             projectId={projectId}
             onComplete={handleUploadComplete}
             onCancel={() => setShowUploader(false)}
           />
-        </BaseModal>
+        </ResponsiveModal>
       </>
     );
   }
@@ -177,18 +200,26 @@ export function PhotoGallerySection({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Checkbox
-            checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+            checked={
+              allSelected ? true : someSelected ? "indeterminate" : false
+            }
             onCheckedChange={() => onSelectAll()}
             id="select-all-photos"
           />
-          <label htmlFor="select-all-photos" className="text-sm text-gray-600 cursor-pointer">
+          <label
+            htmlFor="select-all-photos"
+            className="text-sm text-gray-600 cursor-pointer"
+          >
             {selectedIds.size > 0
               ? `${selectedIds.size} of ${photos.length} selected`
-              : `${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}`}
+              : `${photos.length} ${photos.length === 1 ? "photo" : "photos"}`}
           </label>
         </div>
 
-        <Button onClick={() => setShowUploader(true)} className="bg-[#001B51] text-white hover:bg-[#001B51]/90">
+        <Button
+          onClick={() => setShowUploader(true)}
+          className="bg-[#001B51] text-white hover:bg-[#001B51]/90"
+        >
           <Upload className="h-4 w-4 mr-2" />
           Upload Photo
         </Button>
@@ -206,13 +237,14 @@ export function PhotoGallerySection({
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className={cn(
-                'relative group rounded-lg overflow-hidden border-2 aspect-square bg-gray-100',
+                "relative group rounded-lg overflow-hidden border-2 aspect-square bg-gray-100",
                 selectedIds.has(photo.id)
-                  ? 'border-[#001B51] ring-2 ring-[#001B51]/30'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? "border-[#001B51] ring-2 ring-[#001B51]/30"
+                  : "border-gray-200 hover:border-gray-300",
               )}
             >
               {/* Thumbnail image with lazy loading */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={photo.thumbnail_url || photo.url}
                 alt={photo.filename}
@@ -234,7 +266,8 @@ export function PhotoGallerySection({
               </div>
 
               {/* Receipt badge overlay (top-right) */}
-              {(photo.source === 'task_receipt' || photo.source === 'expense_receipt') && (
+              {(photo.source === "task_receipt" ||
+                photo.source === "expense_receipt") && (
                 <div className="absolute top-2 right-2 z-10">
                   <ReceiptPhotoBadge
                     source={photo.source}
@@ -245,7 +278,7 @@ export function PhotoGallerySection({
               )}
 
               {/* Cover photo badge (top-right, for uploads only - below receipt badge position) */}
-              {photo.source === 'upload' && isPrimaryPhoto(photo) && (
+              {photo.source === "upload" && isPrimaryPhoto(photo) && (
                 <div className="absolute top-2 right-2 z-10">
                   <div className="px-2 py-1 bg-[#001B51] text-white rounded text-xs font-bold flex items-center gap-1 shadow-lg">
                     <Star className="h-3 w-3 fill-current" />
@@ -257,13 +290,15 @@ export function PhotoGallerySection({
               {/* Hover overlay with actions */}
               <div
                 className={cn(
-                  'absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent',
-                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200',
-                  'flex flex-col justify-end p-3'
+                  "absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent",
+                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                  "flex flex-col justify-end p-3",
                 )}
               >
                 {/* Photo info */}
-                <p className="text-white text-xs font-medium truncate mb-2">{photo.filename}</p>
+                <p className="text-white text-xs font-medium truncate mb-2">
+                  {photo.filename}
+                </p>
 
                 {/* Action buttons */}
                 <div className="flex items-center gap-2">
@@ -276,7 +311,7 @@ export function PhotoGallerySection({
                   </button>
 
                   {/* Star button for setting as cover (only for direct uploads) */}
-                  {photo.source === 'upload' && onSetPrimary && (
+                  {photo.source === "upload" && onSetPrimary && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -286,16 +321,28 @@ export function PhotoGallerySection({
                           handleSetPrimary(photo.url);
                         }
                       }}
-                      disabled={settingPrimaryId === photo.id || settingPrimaryId === 'removing'}
+                      disabled={
+                        settingPrimaryId === photo.id ||
+                        settingPrimaryId === "removing"
+                      }
                       className={cn(
-                        'flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full transition-colors',
+                        "flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full transition-colors",
                         isPrimaryPhoto(photo)
-                          ? 'bg-[#001B51] text-white'
-                          : 'bg-white/20 hover:bg-white/30 text-white'
+                          ? "bg-[#001B51] text-white"
+                          : "bg-white/20 hover:bg-white/30 text-white",
                       )}
-                      aria-label={isPrimaryPhoto(photo) ? 'Remove as cover photo' : 'Set as cover photo'}
+                      aria-label={
+                        isPrimaryPhoto(photo)
+                          ? "Remove as cover photo"
+                          : "Set as cover photo"
+                      }
                     >
-                      <Star className={cn('w-4 h-4', isPrimaryPhoto(photo) ? 'fill-current' : '')} />
+                      <Star
+                        className={cn(
+                          "w-4 h-4",
+                          isPrimaryPhoto(photo) ? "fill-current" : "",
+                        )}
+                      />
                     </button>
                   )}
 
@@ -330,18 +377,19 @@ export function PhotoGallerySection({
       </div>
 
       {/* Uploader modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showUploader}
         onClose={() => setShowUploader(false)}
         title="Upload Photo"
         icon={Upload}
+        showFooter={false}
       >
         <ProjectPhotoUploader
           projectId={projectId}
           onComplete={handleUploadComplete}
           onCancel={() => setShowUploader(false)}
         />
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Lightbox */}
       {lightboxPhoto && (

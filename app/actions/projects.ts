@@ -1186,6 +1186,10 @@ async function fetchProjectsWithStats(
         materials_delivered?: number;
         // Team stats
         team_size?: number;
+        // Schedule stats (pre-calculated in SQL - optimization)
+        schedule_days_remaining?: number;
+        schedule_days_behind?: number;
+        schedule_status?: "on-time" | "at-risk" | "delayed";
       };
     };
 
@@ -1240,12 +1244,15 @@ async function fetchProjectsWithStats(
       // Calculate total actual spent (tasks + expenses)
       const totalActualSpent = actualSpent + expenseStats.approvedAmount;
 
-      // Calculate schedule status (client-side since it's date-dependent)
-      const schedule = calculateScheduleStatus(
-        project.end_date,
-        project.completion_percentage || 0,
-        project.start_date,
-      );
+      // OPTIMIZATION: Use pre-calculated schedule status from SQL
+      // This eliminates the O(n) JavaScript loop that ran on every page load
+      // Before: 19 projects = 19 calculateScheduleStatus() calls + 38 console.logs
+      // After: 0 JavaScript calculations (all done in single SQL query)
+      const schedule: ScheduleStatus = {
+        daysRemaining: dbStats.schedule_days_remaining || 0,
+        daysBehind: dbStats.schedule_days_behind || 0,
+        status: dbStats.schedule_status || "on-time",
+      };
 
       // Materials status from DB
       const materialsStatus: MaterialsStatus = {
@@ -1265,19 +1272,6 @@ async function fetchProjectsWithStats(
         teamSize: dbStats.team_size || 0,
         expenses: expenseStats,
       };
-
-      if (process.env.NODE_ENV === "development") {
-        console.log(`[getProjectsWithStats] Stats for "${project.name}":`, {
-          taskCounts,
-          budget,
-          actualSpent: totalActualSpent,
-          scheduleStatus: schedule.status,
-          materialsNeeded: materialsStatus.needed,
-          expensesTotal: expenseStats.total,
-          expensesApproved: expenseStats.approved,
-          expensesApprovedAmount: expenseStats.approvedAmount,
-        });
-      }
 
       // Return project with stats (flatten the stats object from DB response)
       return {

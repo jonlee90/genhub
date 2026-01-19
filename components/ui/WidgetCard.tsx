@@ -36,6 +36,7 @@ interface WidgetHeaderProps {
   className?: string;
   iconClassName?: string;
   iconWrapperClassName?: string;
+  titleClassName?: string;
 }
 
 export function WidgetHeader({
@@ -45,6 +46,7 @@ export function WidgetHeader({
   className,
   iconClassName,
   iconWrapperClassName,
+  titleClassName,
 }: WidgetHeaderProps) {
   return (
     <div className={cn("flex items-center justify-between", className)}>
@@ -54,7 +56,12 @@ export function WidgetHeader({
         >
           <Icon className={cn("w-5 h-5 text-[#001B51]", iconClassName)} />
         </div>
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
+        <h3
+          className={cn(
+            "text-sm font-bold text-gray-900 uppercase tracking-wide",
+            titleClassName,
+          )}
+        >
           {title}
         </h3>
       </div>

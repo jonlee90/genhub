@@ -1,9 +1,20 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { ClipboardList, TrendingUp, TrendingDown, Minus, ChevronRight } from 'lucide-react';
-import { cn, formatPercentWhole } from '@/lib/utils';
-import type { TaskProgressData } from '@/types/dashboard';
+import Link from "next/link";
+import {
+  ClipboardList,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  ChevronRight,
+} from "lucide-react";
+import { cn, formatPercentWhole } from "@/lib/utils";
+import {
+  WidgetCard,
+  WidgetHeader,
+  WidgetSkeleton,
+} from "@/components/ui/WidgetCard";
+import type { TaskProgressData } from "@/types/dashboard";
 
 export interface TaskProgressWidgetProps {
   progress: TaskProgressData;
@@ -11,15 +22,35 @@ export interface TaskProgressWidgetProps {
 }
 
 const STATUS_CONFIG = [
-  { key: 'completed', label: 'Completed', color: 'bg-[#059669]', textColor: 'text-[#059669]' },
-  { key: 'inProgress', label: 'In Progress', color: 'bg-[#3B82F6]', textColor: 'text-[#3B82F6]' },
-  { key: 'blocked', label: 'Blocked', color: 'bg-[#F59E0B]', textColor: 'text-[#F59E0B]' },
-  { key: 'overdue', label: 'Overdue', color: 'bg-[#DC2626]', textColor: 'text-[#DC2626]' },
+  {
+    key: "completed",
+    label: "Completed",
+    color: "bg-[#059669]",
+    textColor: "text-[#059669]",
+  },
+  {
+    key: "inProgress",
+    label: "In Progress",
+    color: "bg-[#3B82F6]",
+    textColor: "text-[#3B82F6]",
+  },
+  {
+    key: "blocked",
+    label: "Blocked",
+    color: "bg-[#F59E0B]",
+    textColor: "text-[#F59E0B]",
+  },
+  {
+    key: "overdue",
+    label: "Overdue",
+    color: "bg-[#DC2626]",
+    textColor: "text-[#DC2626]",
+  },
 ] as const;
 
 function TaskProgressWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+    <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gray-200 rounded-lg" />
         <div className="h-5 w-28 bg-gray-200 rounded" />
@@ -32,7 +63,7 @@ function TaskProgressWidgetSkeleton() {
           <div key={i} className="h-10 bg-gray-100 rounded-lg" />
         ))}
       </div>
-    </div>
+    </WidgetSkeleton>
   );
 }
 
@@ -42,7 +73,11 @@ interface ProgressRingProps {
   strokeWidth?: number;
 }
 
-function ProgressRing({ percentage, size = 112, strokeWidth = 10 }: ProgressRingProps) {
+function ProgressRing({
+  percentage,
+  size = 112,
+  strokeWidth = 10,
+}: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -90,57 +125,60 @@ function ProgressRing({ percentage, size = 112, strokeWidth = 10 }: ProgressRing
 }
 
 function VelocityTrend({ trend }: { trend: number }) {
-  const direction = trend > 0 ? 'up' : trend < 0 ? 'down' : 'neutral';
-  const TrendIcon = direction === 'up' ? TrendingUp : direction === 'down' ? TrendingDown : Minus;
+  const direction = trend > 0 ? "up" : trend < 0 ? "down" : "neutral";
+  const TrendIcon =
+    direction === "up"
+      ? TrendingUp
+      : direction === "down"
+        ? TrendingDown
+        : Minus;
   const trendColor =
-    direction === 'up'
-      ? 'text-[#059669]'
-      : direction === 'down'
-        ? 'text-[#DC2626]'
-        : 'text-gray-500';
+    direction === "up"
+      ? "text-[#059669]"
+      : direction === "down"
+        ? "text-[#DC2626]"
+        : "text-gray-500";
 
   return (
-    <div className={cn('flex items-center gap-1 text-xs font-semibold', trendColor)}>
+    <div
+      className={cn(
+        "flex items-center gap-1 text-xs font-semibold",
+        trendColor,
+      )}
+    >
       <TrendIcon className="w-3.5 h-3.5" />
       <span>
-        {direction !== 'neutral' && (direction === 'up' ? '+' : '')}
+        {direction !== "neutral" && (direction === "up" ? "+" : "")}
         {trend}%
       </span>
     </div>
   );
 }
 
-export function TaskProgressWidget({ progress, isLoading = false }: TaskProgressWidgetProps) {
+export function TaskProgressWidget({
+  progress,
+  isLoading = false,
+}: TaskProgressWidgetProps) {
   if (isLoading) {
     return <TaskProgressWidgetSkeleton />;
   }
 
   return (
     <Link href="/app/tasks" className="block h-full">
-      <div
-        className={cn(
-          'bg-white border-2 border-gray-200 rounded-xl p-4 h-full',
-          'transition-all duration-150',
-          'active:scale-[0.99] active:bg-gray-50/50'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#001B51]/10 rounded-lg">
-              <ClipboardList className="w-5 h-5 text-[#001B51]" />
+      <WidgetCard interactive>
+        <WidgetHeader
+          icon={ClipboardList}
+          title="Tasks"
+          right={
+            <div className="flex items-center gap-2">
+              {progress.velocityTrend !== 0 && (
+                <VelocityTrend trend={progress.velocityTrend} />
+              )}
+              <ChevronRight className="w-4 h-4 text-gray-400" />
             </div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-              Tasks
-            </h3>
-          </div>
-          <div className="flex items-center gap-2">
-            {progress.velocityTrend !== 0 && (
-              <VelocityTrend trend={progress.velocityTrend} />
-            )}
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </div>
-        </div>
+          }
+          className="mb-4"
+        />
 
         {/* Progress Ring */}
         <div className="flex flex-col items-center mb-4">
@@ -160,15 +198,19 @@ export function TaskProgressWidget({ progress, isLoading = false }: TaskProgress
                 className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg"
               >
                 <div className="flex items-center gap-2">
-                  <span className={cn('w-2.5 h-2.5 rounded-full', color)} />
-                  <span className="text-sm text-gray-600 font-medium">{label}</span>
+                  <span className={cn("w-2.5 h-2.5 rounded-full", color)} />
+                  <span className="text-sm text-gray-600 font-medium">
+                    {label}
+                  </span>
                 </div>
-                <span className={cn('text-sm font-bold', textColor)}>{count}</span>
+                <span className={cn("text-sm font-bold", textColor)}>
+                  {count}
+                </span>
               </div>
             );
           })}
         </div>
-      </div>
+      </WidgetCard>
     </Link>
   );
 }

@@ -4,13 +4,13 @@
  * DeleteConfirmDialog - Message deletion confirmation with industrial design
  *
  * Features:
- * - Uses BaseModal for consistent modal behavior
+ * - Uses ResponsiveModal for consistent modal behavior
  * - Danger theme with warning styling
  * - Delete and Cancel actions
  * - Loading state during deletion
  * - Construction-themed destructive action design
  *
- * Refactored to use BaseModal (2026-01-16)
+ * Refactored to use ResponsiveModal (2026-01-16)
  */
 
 import { useState } from "react";
@@ -33,7 +33,7 @@ interface DeleteConfirmDialogProps {
 }
 
 /**
- * Delete confirmation dialog using BaseModal
+ * Delete confirmation dialog using ResponsiveModal
  * Refactored from custom AnimatePresence implementation
  */
 export function DeleteConfirmDialog({
@@ -56,7 +56,7 @@ export function DeleteConfirmDialog({
       } else {
         toast.error(result.error || "Failed to delete message");
       }
-    } catch (_error) {
+    } catch {
       toast.error("An error occurred while deleting the message");
     } finally {
       setIsDeleting(false);

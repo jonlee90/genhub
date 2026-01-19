@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import { Package, Truck, CheckCircle, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import type { MaterialsStatusData } from '@/types/dashboard';
+import { Package, Truck, CheckCircle, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import {
+  WidgetCard,
+  WidgetHeader,
+  WidgetSkeleton,
+} from "@/components/ui/WidgetCard";
+import type { MaterialsStatusData } from "@/types/dashboard";
 
 export interface MaterialsStatusWidgetProps {
   materials: MaterialsStatusData;
@@ -12,7 +17,7 @@ export interface MaterialsStatusWidgetProps {
 
 function MaterialsStatusWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+    <WidgetSkeleton>
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -29,7 +34,7 @@ function MaterialsStatusWidgetSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </WidgetSkeleton>
   );
 }
 
@@ -37,46 +42,51 @@ interface PipelineStageProps {
   icon: typeof Package;
   label: string;
   count: number;
-  variant: 'needed' | 'ordered' | 'delivered';
+  variant: "needed" | "ordered" | "delivered";
 }
 
 const stageStyles = {
   needed: {
-    bg: 'bg-[#F59E0B]/10',
-    border: 'border-[#F59E0B]/30',
-    iconColor: 'text-[#F59E0B]',
-    countColor: 'text-[#F59E0B]',
+    bg: "bg-[#F59E0B]/10",
+    border: "border-[#F59E0B]/30",
+    iconColor: "text-[#F59E0B]",
+    countColor: "text-[#F59E0B]",
   },
   ordered: {
-    bg: 'bg-[#001B51]/10',
-    border: 'border-[#001B51]/30',
-    iconColor: 'text-[#001B51]',
-    countColor: 'text-[#001B51]',
+    bg: "bg-[#001B51]/10",
+    border: "border-[#001B51]/30",
+    iconColor: "text-[#001B51]",
+    countColor: "text-[#001B51]",
   },
   delivered: {
-    bg: 'bg-[#059669]/10',
-    border: 'border-[#059669]/30',
-    iconColor: 'text-[#059669]',
-    countColor: 'text-[#059669]',
+    bg: "bg-[#059669]/10",
+    border: "border-[#059669]/30",
+    iconColor: "text-[#059669]",
+    countColor: "text-[#059669]",
   },
 } as const;
 
-function PipelineStage({ icon: Icon, label, count, variant }: PipelineStageProps) {
+function PipelineStage({
+  icon: Icon,
+  label,
+  count,
+  variant,
+}: PipelineStageProps) {
   const styles = stageStyles[variant];
 
   return (
     <div className="flex flex-col items-center">
       <div
         className={cn(
-          'w-12 h-12 rounded-full flex items-center justify-center',
-          'border-2',
+          "w-12 h-12 rounded-full flex items-center justify-center",
+          "border-2",
           styles.bg,
-          styles.border
+          styles.border,
         )}
       >
-        <Icon className={cn('w-6 h-6', styles.iconColor)} />
+        <Icon className={cn("w-6 h-6", styles.iconColor)} />
       </div>
-      <div className={cn('text-xl font-black mt-2', styles.countColor)}>
+      <div className={cn("text-xl font-black mt-2", styles.countColor)}>
         {count}
       </div>
       <div className="text-xs text-gray-500 font-semibold uppercase tracking-wide">
@@ -104,27 +114,17 @@ export function MaterialsStatusWidget({
 
   return (
     <Link href="/app/materials" className="block h-full">
-      <div
-        className={cn(
-          'bg-white border-2 border-gray-200 rounded-xl p-4 h-full',
-          'transition-all duration-150',
-          'active:scale-[0.99] active:bg-gray-50/50'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#001B51]/10 rounded-lg">
-              <Package className="w-5 h-5 text-[#001B51]" />
-            </div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-              Materials
-            </h3>
-          </div>
-          <span className="text-sm font-semibold text-gray-500">
-            {materials.total} total
-          </span>
-        </div>
+      <WidgetCard interactive>
+        <WidgetHeader
+          icon={Package}
+          title="Materials"
+          right={
+            <span className="text-sm font-semibold text-gray-500">
+              {materials.total} total
+            </span>
+          }
+          className="mb-6"
+        />
 
         {/* Pipeline Visualization */}
         <div className="flex items-center justify-center">
@@ -155,7 +155,7 @@ export function MaterialsStatusWidget({
           <span>View all materials</span>
           <ChevronRight className="w-4 h-4 ml-1" />
         </div>
-      </div>
+      </WidgetCard>
     </Link>
   );
 }

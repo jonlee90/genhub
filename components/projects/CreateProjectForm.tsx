@@ -373,7 +373,10 @@ export function CreateProjectForm({
   }, []);
 
   // Fetch project type configs on mount (for mapping to phase templates)
+  // Only fetch when modal is open to avoid duplicate API calls
   useEffect(() => {
+    if (!isOpen) return;
+
     const fetchProjectTypeConfigs = async () => {
       try {
         const result = await getProjectTypes();
@@ -394,10 +397,13 @@ export function CreateProjectForm({
       }
     };
     fetchProjectTypeConfigs();
-  }, []);
+  }, [isOpen]);
 
   // Fetch phase templates when project type changes
+  // Only fetch when modal is open to avoid duplicate API calls
   useEffect(() => {
+    if (!isOpen) return;
+
     const fetchPhaseTemplates = async () => {
       if (!formValues.project_type) return;
 
@@ -435,7 +441,7 @@ export function CreateProjectForm({
       }
     };
     fetchPhaseTemplates();
-  }, [formValues.project_type, projectTypeConfigs]);
+  }, [isOpen, formValues.project_type, projectTypeConfigs]);
 
   // Performance optimization: Memoize event handler to prevent recreation on every render
   const handleProjectTypeChange = useCallback(

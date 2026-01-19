@@ -366,7 +366,7 @@ export function ExpensesList({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                delay: index * 0.05,
+                delay: index < 20 ? index * 0.05 : 0,
                 duration: 0.5,
                 type: "spring",
                 stiffness: 200,

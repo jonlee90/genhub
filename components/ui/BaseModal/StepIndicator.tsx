@@ -5,11 +5,12 @@
 
 'use client';
 
+import { memo } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StepIndicatorProps } from './types';
 
-export function StepIndicator({
+export const StepIndicator = memo(function StepIndicator({
   steps,
   currentStep,
   theme,
@@ -142,4 +143,4 @@ export function StepIndicator({
       </div>
     </div>
   );
-}
+});

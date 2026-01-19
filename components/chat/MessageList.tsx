@@ -15,17 +15,11 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMessages } from "@/app/actions/chat-queries";
-import {
-  getMessageReplyCounts,
-  getMessagesAttachments,
-  getMessagesReactions,
-  markMessagesAsRead,
-} from "@/app/actions/chat";
+import { markMessagesAsRead } from "@/app/actions/chat";
 import { useMessages, type OptimisticMessage } from "@/lib/hooks/useMessages";
+import { useMessageMetadata } from "@/lib/hooks/useMessageMetadata";
 import { MessageItem } from "./MessageItem";
 import { ConnectionStatus } from "./ConnectionStatus";
-import type { MessageReactionGroup } from "./MessageReactions";
-import type { MessageAttachment } from "./FilePreview";
 import { MessageWithSender } from "@/types/db/chat";
 import { Loader2 } from "lucide-react";
 
@@ -54,15 +48,6 @@ export function MessageList({
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [reactionsMap, setReactionsMap] = useState<
-    Record<string, MessageReactionGroup[]>
-  >({});
-  const [replyCountsMap, setReplyCountsMap] = useState<Record<string, number>>(
-    {},
-  );
-  const [attachmentsMap, setAttachmentsMap] = useState<
-    Record<string, MessageAttachment[]>
-  >({});
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevChatRoomId = useRef<string>(chatRoomId);
@@ -135,7 +120,7 @@ export function MessageList({
   // Debug: Use real-time messages hook with stable callbacks
   const {
     messages,
-    isConnected,
+    isConnected: _isConnected,
     connectionError,
     setMessages,
     addOptimisticMessage,
@@ -148,52 +133,40 @@ export function MessageList({
     onMessageUpdate: handleMessageUpdate,
   });
 
-  const messageIds = useMemo(
-    () =>
-      messages
-        .filter((message) => !message.deleted_at)
-        .filter((message) => !(message as OptimisticMessage)._optimistic)
-        .filter((message) => !message.id.startsWith("temp-"))
-        .map((message) => message.id),
-    [messages],
-  );
+  const rowVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: (index) => {
+      const message = messages[index];
+      if (message?.deleted_at) return 60; // Deleted messages are shorter
+      if (message?.reply_to) return 120; // Messages with replies are taller
+      return 80; // Default message height
+    },
+    overscan: 10,
+  });
 
-  const fetchMetadata = useCallback(async (ids: string[]) => {
-    if (ids.length === 0) return;
+  const visibleMessageIds = useMemo(() => {
+    const ids = rowVirtualizer
+      .getVirtualItems()
+      .map((virtualItem) => messages[virtualItem.index])
+      .filter((message): message is OptimisticMessage => Boolean(message))
+      .filter((message) => !message.deleted_at)
+      .filter((message) => !message._optimistic)
+      .filter((message) => !message.id.startsWith("temp-"))
+      .map((message) => message.id);
 
-    const [reactionsResult, replyCountResult, attachmentsResult] =
-      await Promise.all([
-        getMessagesReactions(ids),
-        getMessageReplyCounts(ids),
-        getMessagesAttachments(ids),
-      ]);
+    return Array.from(new Set(ids));
+  }, [messages, rowVirtualizer]);
 
-    if (reactionsResult.success && reactionsResult.reactionsMap) {
-      setReactionsMap((prev) => ({ ...prev, ...reactionsResult.reactionsMap }));
-    }
-
-    if (replyCountResult.success && replyCountResult.counts) {
-      setReplyCountsMap((prev) => ({ ...prev, ...replyCountResult.counts }));
-    }
-
-    if (attachmentsResult.success && attachmentsResult.attachmentsMap) {
-      setAttachmentsMap((prev) => ({
-        ...prev,
-        ...attachmentsResult.attachmentsMap,
-      }));
-    }
-  }, []);
+  const { reactionsMap, replyCountsMap, attachmentsMap, refreshMetadata } =
+    useMessageMetadata({ roomId: chatRoomId, messageIds: visibleMessageIds });
 
   const refreshMetadataFor = useCallback(
     async (messageId: string) => {
-      await fetchMetadata([messageId]);
+      await refreshMetadata([messageId]);
     },
-    [fetchMetadata],
+    [refreshMetadata],
   );
-
-  useEffect(() => {
-    fetchMetadata(messageIds);
-  }, [messageIds, fetchMetadata]);
 
   // Debug: Expose optimistic UI functions to parent
   useEffect(() => {
@@ -220,19 +193,6 @@ export function MessageList({
         scrollContainerRef.current.scrollHeight;
     }
   }, [isLoading, messages.length]);
-
-  // Debug: Virtualization setup with dynamic size estimation
-  const rowVirtualizer = useVirtualizer({
-    count: messages.length,
-    getScrollElement: () => scrollContainerRef.current,
-    estimateSize: (index) => {
-      const message = messages[index];
-      if (message?.deleted_at) return 60; // Deleted messages are shorter
-      if (message?.reply_to) return 120; // Messages with replies are taller
-      return 80; // Default message height
-    },
-    overscan: 10,
-  });
 
   // Debug: Track if user is at bottom of scroll
   const checkIfAtBottom = useCallback(() => {

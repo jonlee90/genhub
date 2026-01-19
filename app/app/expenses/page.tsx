@@ -31,7 +31,9 @@ export default async function ExpensesPage({
     getExpenseAnalytics(),
   ]);
   const { expenses, projects, tasks, companyId } = expensesData;
-  const analytics = analyticsResult.data || null;
+
+  // Handle analytics error - fallback to null if error occurs
+  const analytics = analyticsResult.error ? null : (analyticsResult.data || null);
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">

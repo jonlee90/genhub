@@ -279,7 +279,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                         : "-mt-1.5 text-gray-500",
                     )}
                   >
-                    {active && showPlusIcon ? "Add " + item.name : item.name}
+                    {active && showPlusIcon ? item.name : item.name}
                   </span>
                   {/* Active indicator dot */}
                   {active && (

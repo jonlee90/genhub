@@ -231,7 +231,7 @@ export function VendorCombobox({
     return option ? option.name : value;
   }, [value, options]);
 
-  // Mobile: Use BaseModal as bottom sheet
+  // Mobile: Use ResponsiveModal as bottom sheet
   if (isMobile) {
     return (
       <div className="relative">

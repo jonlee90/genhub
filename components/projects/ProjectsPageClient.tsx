@@ -580,179 +580,173 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
     );
   }
 
-  // Mobile layout
-  if (isMobile) {
-    return (
-      <div className="flex flex-col h-full">
-        <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
-          <div className="p-4 pb-32">
-            <BlueprintBackground />
-
-            <div className="relative mb-4">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-                <div className="flex items-start pt-2 justify-between gap-3">
-                  <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
-                    PROJECTS
-                  </h1>
-                  {canCreate && (
-                    <Button
-                      size="lg"
-                      onClick={() => setShowCreateModal(true)}
-                      className="relative h-11 px-4 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg transition-all group overflow-hidden text-white"
-                    >
-                      <Plus className="mr-1.5 h-4 w-4 group-hover:rotate-90 transition-transform" />
-                      <span className="font-black text-sm">NEW PROJECT</span>
-                    </Button>
-                  )}
-                </div>
-            </div>
-
-            {/* Portfolio Summary */}
-            {portfolioStats && (
-              <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <PortfolioSummary stats={portfolioStats} />
-              </div>
-            )}
-
-            {/* Filters */}
-            <ProjectFilters
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              typeFilter={typeFilter}
-              onTypeChange={setTypeFilter}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              projects={projects}
-            />
-
-            {/* Results count */}
-            <div className="my-4">
-              <ResultsCount filtered={filteredProjects.length} total={projects.length} />
-            </div>
-
-            {/* Project cards */}
-            {filteredProjects.length === 0 ? (
-              <MobileNoResultsState onClearFilters={clearFilters} />
-            ) : (
-              <>
-                <ProjectGrid projects={filteredProjects} isMobile={true} />
-
-                {/* Pagination */}
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                  isPending={isPending}
-                  isMobile={true}
-                />
-
-                {/* Loading indicator */}
-                {isPending && (
-                  <div className="text-center text-sm text-gray-500 mt-4 font-medium">
-                    Loading projects...
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </PullToRefresh>
-
-        <CreateProjectModal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          onSuccess={handleCreateSuccess}
-        />
-      </div>
-    );
-  }
-
-  // Desktop layout
+  // Render layout based on device type
   return (
-    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
-      <BlueprintBackground />
+    <>
+      {isMobile ? (
+        <div className="flex flex-col h-full">
+          <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
+            <div className="p-4 pb-32">
+              <BlueprintBackground />
 
-      {/* Header */}
-      <div className="relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-        <div className="flex flex-col gap-4 pt-2 md:pt-4">
-          <div className="flex items-start justify-between gap-3">
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
-              PROJECTS
-            </h1>
-            {canCreate && (
-              <Button
-                size="lg"
-                onClick={() => setShowCreateModal(true)}
-                className="relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
-              >
-                <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
-                <span className="font-black text-sm md:text-base">NEW</span>
-                <span className="hidden sm:inline font-black text-sm md:text-base ml-1">
-                  PROJECT
-                </span>
-              </Button>
-            )}
-          </div>
+              <div className="relative mb-4">
+                <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+                  <div className="flex items-start pt-2 justify-between gap-3">
+                    <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
+                      PROJECTS
+                    </h1>
+                    {canCreate && (
+                      <Button
+                        size="lg"
+                        onClick={() => setShowCreateModal(true)}
+                        className="relative h-11 px-4 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg transition-all group overflow-hidden text-white"
+                      >
+                        <Plus className="mr-1.5 h-4 w-4 group-hover:rotate-90 transition-transform" />
+                        <span className="font-black text-sm">NEW PROJECT</span>
+                      </Button>
+                    )}
+                  </div>
+              </div>
+
+              {/* Portfolio Summary */}
+              {portfolioStats && (
+                <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <PortfolioSummary stats={portfolioStats} />
+                </div>
+              )}
+
+              {/* Filters */}
+              <ProjectFilters
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                statusFilter={statusFilter}
+                onStatusChange={setStatusFilter}
+                typeFilter={typeFilter}
+                onTypeChange={setTypeFilter}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                projects={projects}
+              />
+
+              {/* Results count */}
+              <div className="my-4">
+                <ResultsCount filtered={filteredProjects.length} total={projects.length} />
+              </div>
+
+              {/* Project cards */}
+              {filteredProjects.length === 0 ? (
+                <MobileNoResultsState onClearFilters={clearFilters} />
+              ) : (
+                <>
+                  <ProjectGrid projects={filteredProjects} isMobile={true} />
+
+                  {/* Pagination */}
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    isPending={isPending}
+                    isMobile={true}
+                  />
+
+                  {/* Loading indicator */}
+                  {isPending && (
+                    <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+                      Loading projects...
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </PullToRefresh>
         </div>
-      </div>
-
-      {/* Portfolio Summary */}
-      {portfolioStats && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <PortfolioSummary stats={portfolioStats} />
-        </div>
-      )}
-
-      {/* Filters */}
-      <ProjectFilters
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        typeFilter={typeFilter}
-        onTypeChange={setTypeFilter}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        projects={projects}
-      />
-
-      {/* Results count */}
-      <ResultsCount filtered={filteredProjects.length} total={projects.length} />
-
-      {/* Project grid or empty state */}
-      {filteredProjects.length === 0 ? (
-        <NoResultsState onClearFilters={clearFilters} />
       ) : (
-        <>
-          <ProjectGrid projects={filteredProjects} isMobile={false} />
+        <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+          <BlueprintBackground />
 
-          {/* Pagination */}
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            isPending={isPending}
-            isMobile={false}
-          />
+          {/* Header */}
+          <div className="relative">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+            <div className="flex flex-col gap-4 pt-2 md:pt-4">
+              <div className="flex items-start justify-between gap-3">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
+                  PROJECTS
+                </h1>
+                {canCreate && (
+                  <Button
+                    size="lg"
+                    onClick={() => setShowCreateModal(true)}
+                    className="relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white"
+                  >
+                    <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
+                    <span className="font-black text-sm md:text-base">NEW</span>
+                    <span className="hidden sm:inline font-black text-sm md:text-base ml-1">
+                      PROJECT
+                    </span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
 
-          {/* Loading indicator */}
-          {isPending && (
-            <div className="text-center text-sm text-gray-500 mt-4 font-medium">
-              Loading projects...
+          {/* Portfolio Summary */}
+          {portfolioStats && (
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+              <PortfolioSummary stats={portfolioStats} />
             </div>
           )}
-        </>
+
+          {/* Filters */}
+          <ProjectFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            typeFilter={typeFilter}
+            onTypeChange={setTypeFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            projects={projects}
+          />
+
+          {/* Results count */}
+          <ResultsCount filtered={filteredProjects.length} total={projects.length} />
+
+          {/* Project grid or empty state */}
+          {filteredProjects.length === 0 ? (
+            <NoResultsState onClearFilters={clearFilters} />
+          ) : (
+            <>
+              <ProjectGrid projects={filteredProjects} isMobile={false} />
+
+              {/* Pagination */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                isPending={isPending}
+                isMobile={false}
+              />
+
+              {/* Loading indicator */}
+              {isPending && (
+                <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+                  Loading projects...
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+        </div>
       )}
 
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
-
+      {/* Single modal instance for both mobile and desktop */}
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleCreateSuccess}
       />
-    </div>
+    </>
   );
 }

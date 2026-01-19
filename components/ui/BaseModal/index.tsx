@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
@@ -68,8 +68,11 @@ export function BaseModal({
     enableDragToDismiss,
   });
 
-  // Get theme configuration
-  const theme = customTheme || getModalTheme(themeName);
+  // Memoize theme configuration to prevent recreation on every render
+  const theme = useMemo(
+    () => customTheme || getModalTheme(themeName),
+    [customTheme, themeName]
+  );
 
   // Detect mobile for bottom sheet behavior
   const isMobile = useMediaQuery('(max-width: 767px)');
@@ -80,32 +83,38 @@ export function BaseModal({
 
   console.log('[BaseModal] Device detection:', { isMobile });
 
-  // Handle dialog state changes
-  const handleOpenChange = (newOpen: boolean) => {
-    console.log('[BaseModal] Dialog state change:', { newOpen });
+  // Memoize dialog state change handler to prevent recreating on every render
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      console.log('[BaseModal] Dialog state change:', { newOpen });
 
-    if (!newOpen) {
-      onClose();
-    }
-  };
+      if (!newOpen) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
-  // Handle drag end for dismiss gesture
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    setIsDragging(false);
-    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-    const draggedPastThreshold = info.offset.y > screenHeight * DRAG_DISMISS_THRESHOLD;
-    const fastSwipe = info.velocity.y > DRAG_DISMISS_VELOCITY;
+  // Memoize drag end handler to prevent recreating on every render
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      setIsDragging(false);
+      const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+      const draggedPastThreshold = info.offset.y > screenHeight * DRAG_DISMISS_THRESHOLD;
+      const fastSwipe = info.velocity.y > DRAG_DISMISS_VELOCITY;
 
-    if (draggedPastThreshold || fastSwipe) {
-      // Dismiss modal
-      onClose();
-    }
-  };
+      if (draggedPastThreshold || fastSwipe) {
+        // Dismiss modal
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
-  // Check if content is scrollable and at top
-  const handleDragStart = () => {
+  // Memoize drag start handler to prevent recreating on every render
+  const handleDragStart = useCallback(() => {
     setIsDragging(true);
-  };
+  }, []);
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>

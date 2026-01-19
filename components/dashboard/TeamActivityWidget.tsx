@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Users, AlertTriangle, ChevronRight } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import type { TeamActivityData } from '@/types/dashboard';
+import Link from "next/link";
+import { Users, AlertTriangle, ChevronRight } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import {
+  WidgetCard,
+  WidgetHeader,
+  WidgetSkeleton,
+} from "@/components/ui/WidgetCard";
+import type { TeamActivityData } from "@/types/dashboard";
 
 export interface TeamActivityWidgetProps {
   activity: TeamActivityData;
@@ -16,9 +21,9 @@ export interface TeamActivityWidgetProps {
  */
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    .split(" ")
     .map((n) => n[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 }
@@ -28,20 +33,22 @@ function getInitials(name: string): string {
  */
 function getAvatarColor(name: string): string {
   const colors = [
-    'bg-[#001B51]',
-    'bg-[#059669]',
-    'bg-[#3C3C3C]',
-    'bg-[#7C3AED]',
-    'bg-[#0891B2]',
-    'bg-[#EA580C]',
+    "bg-[#001B51]",
+    "bg-[#059669]",
+    "bg-[#3C3C3C]",
+    "bg-[#7C3AED]",
+    "bg-[#0891B2]",
+    "bg-[#EA580C]",
   ];
-  const index = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const index = name
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return colors[index % colors.length];
 }
 
 function TeamActivityWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+    <WidgetSkeleton>
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -61,38 +68,36 @@ function TeamActivityWidgetSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </WidgetSkeleton>
   );
 }
 
-export function TeamActivityWidget({ activity, isLoading = false }: TeamActivityWidgetProps) {
+export function TeamActivityWidget({
+  activity,
+  isLoading = false,
+}: TeamActivityWidgetProps) {
   if (isLoading) {
     return <TeamActivityWidgetSkeleton />;
   }
 
   const { totalMembers, topAssignees, unassignedTasks } = activity;
-  const maxTasks = topAssignees.length > 0 ? Math.max(...topAssignees.map((a) => a.taskCount)) : 1;
+  const maxTasks =
+    topAssignees.length > 0
+      ? Math.max(...topAssignees.map((a) => a.taskCount))
+      : 1;
 
   return (
     <Link href="/app/team" className="block h-full group">
-      <div
-        className={cn(
-          'bg-white border-2 border-gray-200 rounded-xl p-4 h-full',
-          'transition-all duration-150',
-          'active:scale-[0.99] active:bg-gray-50/50'
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#001B51]/10 rounded-lg">
-              <Users className="w-5 h-5 text-[#001B51]" />
-            </div>
-            <h3 className="text-sm font-bold text-[#001B51]">
-              {totalMembers} Team Member{totalMembers !== 1 ? 's' : ''}
-            </h3>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 group-active:translate-x-0.5 transition-transform" />
+      <WidgetCard interactive>
+        <div className="mb-4 pb-3 border-b border-gray-100">
+          <WidgetHeader
+            icon={Users}
+            title={`${totalMembers} Team Member${totalMembers !== 1 ? "s" : ""}`}
+            right={
+              <ChevronRight className="w-4 h-4 text-gray-400 group-active:translate-x-0.5 transition-transform" />
+            }
+            titleClassName="text-[#001B51] normal-case tracking-normal"
+          />
         </div>
 
         {/* Top Assignees */}
@@ -106,20 +111,21 @@ export function TeamActivityWidget({ activity, isLoading = false }: TeamActivity
             </div>
           ) : (
             topAssignees.slice(0, 5).map((assignee) => {
-              const barWidth = maxTasks > 0 ? (assignee.taskCount / maxTasks) * 100 : 0;
+              const barWidth =
+                maxTasks > 0 ? (assignee.taskCount / maxTasks) * 100 : 0;
 
               return (
-                <div
-                  key={assignee.id}
-                  className="flex items-center gap-3"
-                >
+                <div key={assignee.id} className="flex items-center gap-3">
                   {/* Avatar */}
                   <Avatar className="h-9 w-9 border border-gray-200">
-                    <AvatarImage src={assignee.avatarUrl ?? undefined} alt={assignee.name} />
+                    <AvatarImage
+                      src={assignee.avatarUrl ?? undefined}
+                      alt={assignee.name}
+                    />
                     <AvatarFallback
                       className={cn(
-                        'text-white text-xs font-semibold',
-                        getAvatarColor(assignee.name)
+                        "text-white text-xs font-semibold",
+                        getAvatarColor(assignee.name),
                       )}
                     >
                       {getInitials(assignee.name)}
@@ -156,12 +162,13 @@ export function TeamActivityWidget({ activity, isLoading = false }: TeamActivity
             <div className="flex items-center gap-2 px-3 py-2.5 bg-[#F59E0B]/10 border border-[#F59E0B]/20 rounded-lg">
               <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0" />
               <span className="text-sm font-semibold text-[#F59E0B]">
-                {unassignedTasks} unassigned task{unassignedTasks !== 1 ? 's' : ''}
+                {unassignedTasks} unassigned task
+                {unassignedTasks !== 1 ? "s" : ""}
               </span>
             </div>
           </div>
         )}
-      </div>
+      </WidgetCard>
     </Link>
   );
 }

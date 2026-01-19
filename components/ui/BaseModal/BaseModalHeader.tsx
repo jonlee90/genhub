@@ -5,11 +5,12 @@
 
 'use client';
 
+import { memo } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BaseModalHeaderProps } from './types';
 
-export function BaseModalHeader({
+export const BaseModalHeader = memo(function BaseModalHeader({
   icon: Icon,
   title,
   subtitle,
@@ -117,4 +118,4 @@ export function BaseModalHeader({
       </button>
     </div>
   );
-}
+});

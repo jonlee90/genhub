@@ -6,19 +6,18 @@
  * - Clean industrial construction aesthetic
  */
 
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import FileText from 'lucide-react/icons/file-text';
-import Upload from 'lucide-react/icons/upload';
-import FolderOpen from 'lucide-react/icons/folder-open';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { DocumentCategoryList } from './DocumentCategoryList';
-import { ProjectFileUploader } from './ProjectFileUploader';
+import Upload from "lucide-react/icons/upload";
+import FolderOpen from "lucide-react/icons/folder-open";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { DocumentCategoryList } from "./DocumentCategoryList";
+import { ProjectFileUploader } from "./ProjectFileUploader";
 
 interface DocumentsSectionProps {
   files: any[];
@@ -30,15 +29,15 @@ interface DocumentsSectionProps {
 }
 
 const CATEGORIES = [
-  { key: 'contracts', label: 'Contracts & Agreements', icon: '📄' },
-  { key: 'permits', label: 'Permits & Approvals', icon: '📋' },
-  { key: 'drawings', label: 'Drawings & Blueprints', icon: '📐' },
-  { key: 'reports', label: 'Reports', icon: '📊' },
-  { key: 'financial', label: 'Financial', icon: '💰' },
-  { key: 'safety', label: 'Safety & Compliance', icon: '⚠️' },
-  { key: 'meeting_notes', label: 'Meeting Notes', icon: '📝' },
-  { key: 'specifications', label: 'Specifications', icon: '📏' },
-  { key: 'general', label: 'General', icon: '📁' },
+  { key: "contracts", label: "Contracts & Agreements", icon: "📄" },
+  { key: "permits", label: "Permits & Approvals", icon: "📋" },
+  { key: "drawings", label: "Drawings & Blueprints", icon: "📐" },
+  { key: "reports", label: "Reports", icon: "📊" },
+  { key: "financial", label: "Financial", icon: "💰" },
+  { key: "safety", label: "Safety & Compliance", icon: "⚠️" },
+  { key: "meeting_notes", label: "Meeting Notes", icon: "📝" },
+  { key: "specifications", label: "Specifications", icon: "📏" },
+  { key: "general", label: "General", icon: "📁" },
 ];
 
 export function DocumentsSection({
@@ -49,51 +48,60 @@ export function DocumentsSection({
   onRefresh,
   projectId,
 }: DocumentsSectionProps) {
-  console.log('[DocumentsSection] Rendering with', files.length, 'files');
+  console.log("[DocumentsSection] Rendering with", files.length, "files");
 
   const [showUploader, setShowUploader] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(['contracts', 'permits', 'drawings']) // Default expanded
+    new Set(["contracts", "permits", "drawings"]), // Default expanded
   );
 
   // Performance optimization: Memoize grouped files to prevent recalculation on every render
   const filesByCategory = useMemo(() => {
-    return files.reduce((acc, file) => {
-      const category = file.category || 'general';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(file);
-      return acc;
-    }, {} as Record<string, any[]>);
+    return files.reduce(
+      (acc, file) => {
+        const category = file.category || "general";
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(file);
+        return acc;
+      },
+      {} as Record<string, any[]>,
+    );
   }, [files]);
 
-  console.log('[DocumentsSection] Files grouped by category:', Object.keys(filesByCategory));
+  console.log(
+    "[DocumentsSection] Files grouped by category:",
+    Object.keys(filesByCategory),
+  );
 
   // Performance optimization: Memoize selection state calculations
   const allSelected = useMemo(
     () => files.length > 0 && selectedIds.size === files.length,
-    [files.length, selectedIds.size]
+    [files.length, selectedIds.size],
   );
   const someSelected = useMemo(
     () => selectedIds.size > 0 && selectedIds.size < files.length,
-    [selectedIds.size, files.length]
+    [selectedIds.size, files.length],
   );
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
-  const toggleCategory = useCallback((categoryKey: string) => {
-    console.log('[DocumentsSection] Toggling category:', categoryKey);
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryKey)) {
-      newExpanded.delete(categoryKey);
-    } else {
-      newExpanded.add(categoryKey);
-    }
-    setExpandedCategories(newExpanded);
-  }, [expandedCategories]);
+  const toggleCategory = useCallback(
+    (categoryKey: string) => {
+      console.log("[DocumentsSection] Toggling category:", categoryKey);
+      const newExpanded = new Set(expandedCategories);
+      if (newExpanded.has(categoryKey)) {
+        newExpanded.delete(categoryKey);
+      } else {
+        newExpanded.add(categoryKey);
+      }
+      setExpandedCategories(newExpanded);
+    },
+    [expandedCategories],
+  );
 
   const handleUploadComplete = useCallback(() => {
-    console.log('[DocumentsSection] Upload complete, refreshing');
+    console.log("[DocumentsSection] Upload complete, refreshing");
     setShowUploader(false);
     onRefresh();
   }, [onRefresh]);
@@ -114,8 +122,8 @@ export function DocumentsSection({
           No Documents Yet
         </h3>
         <p className="text-sm text-gray-500 mb-6 text-center max-w-sm leading-relaxed">
-          Upload contracts, permits, drawings, and other project documents to keep everything
-          organized in one place.
+          Upload contracts, permits, drawings, and other project documents to
+          keep everything organized in one place.
         </p>
 
         <Button
@@ -127,19 +135,20 @@ export function DocumentsSection({
         </Button>
 
         {/* Uploader modal */}
-        <BaseModal
+        <ResponsiveModal
           isOpen={showUploader}
           onClose={() => setShowUploader(false)}
           title="Upload Documents"
           icon={Upload}
           maxWidth="lg"
+          showFooter={false}
         >
           <ProjectFileUploader
             projectId={projectId}
             onComplete={handleUploadComplete}
             onCancel={() => setShowUploader(false)}
           />
-        </BaseModal>
+        </ResponsiveModal>
       </div>
     );
   }
@@ -150,7 +159,9 @@ export function DocumentsSection({
       <div className="flex items-center justify-between pb-3 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <Checkbox
-            checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+            checked={
+              allSelected ? true : someSelected ? "indeterminate" : false
+            }
             onCheckedChange={() => onSelectAll()}
             id="select-all-files"
             aria-label="Select all files"
@@ -159,8 +170,8 @@ export function DocumentsSection({
             htmlFor="select-all-files"
             className="text-sm text-gray-600 cursor-pointer select-none"
           >
-            <span className="font-medium text-gray-900">{files.length}</span>{' '}
-            {files.length === 1 ? 'document' : 'documents'}
+            <span className="font-medium text-gray-900">{files.length}</span>{" "}
+            {files.length === 1 ? "document" : "documents"}
             {selectedIds.size > 0 && (
               <span className="ml-2 text-[#001B51]">
                 ({selectedIds.size} selected)
@@ -209,19 +220,20 @@ export function DocumentsSection({
       </div>
 
       {/* Uploader modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showUploader}
         onClose={() => setShowUploader(false)}
         title="Upload Documents"
         icon={Upload}
         maxWidth="lg"
+        showFooter={false}
       >
         <ProjectFileUploader
           projectId={projectId}
           onComplete={handleUploadComplete}
           onCancel={() => setShowUploader(false)}
         />
-      </BaseModal>
+      </ResponsiveModal>
     </div>
   );
 }

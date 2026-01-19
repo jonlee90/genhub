@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
@@ -10,6 +11,37 @@ import type { Database } from "@/types/db/helpers";
 
 type Expense = ExpensesRow;
 type ExpenseInsert = ExpensesInsert;
+
+// ============================================
+// Cached User Context
+// ============================================
+
+/**
+ * Get user context with caching to avoid repeated auth + DB lookups
+ * Uses React.cache() to deduplicate auth calls within a single request
+ */
+export const getUserContext = cache(async () => {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const supabase = await createClient();
+  const { data: companyUser } = await supabase
+    .from("company_users")
+    .select("company_id, role")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
+    .single();
+
+  if (!companyUser) return null;
+
+  return {
+    userId: session.user.id,
+    userName: session.user.name,
+    companyId: companyUser.company_id,
+    role: companyUser.role,
+    supabase,
+  };
+});
 
 // ============================================
 // Validation Schemas
@@ -81,33 +113,20 @@ const addLineItemSchema = z.object({
 
 export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
     const validated = createExpenseSchema.parse(data);
-    const supabase = await createClient();
-
-    // Get user's company
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .single();
-
-    if (companyError || !companyUser) {
-      return { success: false, error: "User not associated with a company" };
-    }
 
     // Create expense
-    const { data: expense, error } = await supabase
+    const { data: expense, error } = await userContext.supabase
       .from("expenses")
       .insert({
         ...validated,
-        company_id: companyUser.company_id,
-        submitted_by: session.user.id,
+        company_id: userContext.companyId,
+        submitted_by: userContext.userId,
         status: "submitted",
       })
       .select()
@@ -120,7 +139,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
 
     // Notify project managers about new expense
     if (validated.project_id) {
-      const { data: projectManagers } = await supabase
+      const { data: projectManagers } = await userContext.supabase
         .from("project_team")
         .select("user_id")
         .eq("project_id", validated.project_id)
@@ -133,12 +152,12 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
             user_id: pm.user_id as string,
             type: "expense_submitted" as const,
             title: "New Expense Submitted",
-            message: `${session.user.name || "A user"} submitted an expense for review: ${validated.description}`,
+            message: `${userContext.userName || "A user"} submitted an expense for review: ${validated.description}`,
             link: `/app/expenses/${expense.id}`,
           }));
 
         if (notifications.length > 0) {
-          await supabase.from("notifications").insert(notifications);
+          await userContext.supabase.from("notifications").insert(notifications);
         }
       }
     }
@@ -160,15 +179,14 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
 
 export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
     const validated = updateExpenseSchema.parse(data);
-    const supabase = await createClient();
 
-    const { data: expense, error } = await supabase
+    const { data: expense, error } = await userContext.supabase
       .from("expenses")
       .update(validated)
       .eq("id", validated.id)
@@ -198,28 +216,27 @@ export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
 
 export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
     const validated = reviewExpenseSchema.parse(data);
-    const supabase = await createClient();
 
     // Get current expense
-    const { data: currentExpense } = await supabase
+    const { data: currentExpense } = await userContext.supabase
       .from("expenses")
       .select("submitted_by, project_id, description")
       .eq("id", validated.id)
       .single();
 
     // Update expense with review
-    const { data: expense, error } = await supabase
+    const { data: expense, error } = await userContext.supabase
       .from("expenses")
       .update({
         status: validated.status,
         approval_notes: validated.approval_notes,
-        reviewed_by: session.user.id,
+        reviewed_by: userContext.userId,
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", validated.id)
@@ -233,7 +250,7 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
 
     // Notify submitter
     if (currentExpense) {
-      await supabase.from("notifications").insert({
+      await userContext.supabase.from("notifications").insert({
         user_id: currentExpense.submitted_by,
         type:
           validated.status === "approved"
@@ -279,21 +296,19 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
 
 export async function deleteExpense(expenseId: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
     // Get expense details before deleting
-    const { data: expense } = await supabase
+    const { data: expense } = await userContext.supabase
       .from("expenses")
       .select("project_id")
       .eq("id", expenseId)
       .single();
 
-    const { error } = await supabase
+    const { error } = await userContext.supabase
       .from("expenses")
       .delete()
       .eq("id", expenseId);
@@ -317,14 +332,12 @@ export async function deleteExpense(expenseId: string) {
 
 export async function getExpensesByProject(projectId: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    const { data: expenses, error } = await supabase
+    const { data: expenses, error } = await userContext.supabase
       .from("expenses")
       .select(
         `
@@ -352,26 +365,12 @@ export async function getExpensesByProject(projectId: string) {
 
 export async function getExpensesByCompany() {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    // Get user's company_id for proper data isolation
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .maybeSingle();
-
-    if (companyError || !companyUser) {
-      return { success: true, data: [] };
-    }
-
-    const { data: expenses, error } = await supabase
+    const { data: expenses, error } = await userContext.supabase
       .from("expenses")
       .select(
         `
@@ -382,7 +381,7 @@ export async function getExpensesByCompany() {
         task:tasks(id, title)
       `,
       )
-      .eq("company_id", companyUser.company_id)
+      .eq("company_id", userContext.companyId)
       .order("expense_date", { ascending: false });
 
     if (error) {
@@ -399,14 +398,12 @@ export async function getExpensesByCompany() {
 
 export async function getExpenseById(expenseId: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    const { data: expense, error } = await supabase
+    const { data: expense, error } = await userContext.supabase
       .from("expenses")
       .select(
         `
@@ -445,15 +442,14 @@ export async function addExpenseLineItem(
   data: z.infer<typeof addLineItemSchema>,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
     const validated = addLineItemSchema.parse(data);
-    const supabase = await createClient();
 
-    const { data: lineItem, error } = await supabase
+    const { data: lineItem, error } = await userContext.supabase
       .from("expense_line_items")
       .insert(validated)
       .select(
@@ -483,21 +479,19 @@ export async function addExpenseLineItem(
 
 export async function deleteExpenseLineItem(lineItemId: string) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
     // Get expense_id before deleting
-    const { data: lineItem } = await supabase
+    const { data: lineItem } = await userContext.supabase
       .from("expense_line_items")
       .select("expense_id")
       .eq("id", lineItemId)
       .single();
 
-    const { error } = await supabase
+    const { error } = await userContext.supabase
       .from("expense_line_items")
       .delete()
       .eq("id", lineItemId);
@@ -542,12 +536,10 @@ export async function processReceiptOCR(
   _receiptImageUrl: string,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
-
-    const supabase = await createClient();
 
     // NOTE: This is a placeholder for the actual OCR implementation
     // In a real implementation, you would:
@@ -568,7 +560,7 @@ export async function processReceiptOCR(
     };
 
     // Update expense with OCR data
-    const { error: updateError } = await supabase
+    const { error: updateError } = await userContext.supabase
       .from("expenses")
       .update({
         receipt_ocr_data:
@@ -599,7 +591,7 @@ export async function processReceiptOCR(
         match_confidence_score: item.confidence_score,
       }));
 
-      await supabase.from("expense_line_items").insert(lineItemsToInsert);
+      await userContext.supabase.from("expense_line_items").insert(lineItemsToInsert);
     }
 
     revalidatePath(`/app/expenses/${expenseId}`);
@@ -621,14 +613,12 @@ export async function matchLineItemToMaterial(
   materialAssignmentId?: string,
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    const { data: lineItem, error } = await supabase
+    const { data: lineItem, error } = await userContext.supabase
       .from("expense_line_items")
       .update({
         material_id: materialId,
@@ -645,7 +635,7 @@ export async function matchLineItemToMaterial(
     }
 
     // Get the expense to find project_id for revalidation
-    const { data: expense } = await supabase
+    const { data: expense } = await userContext.supabase
       .from("expenses")
       .select("id, project_id")
       .eq("id", lineItem.expense_id)
@@ -677,14 +667,12 @@ export async function getTaskExpenses(taskId: string) {
       return { success: false, error: "Task ID is required" };
     }
 
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    const { data: expenses, error } = await supabase
+    const { data: expenses, error } = await userContext.supabase
       .from("expenses")
       .select(
         "id, description, amount, status, expense_date, vendor_name, category",
@@ -721,15 +709,13 @@ export async function getBatchTaskExpenses(taskIds: string[]) {
       return { success: true, data: {} };
     }
 
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
     // Fetch all expenses for the given task IDs in one query
-    const { data: expenses, error } = await supabase
+    const { data: expenses, error } = await userContext.supabase
       .from("expenses")
       .select("task_id, amount")
       .in("task_id", taskIds);
@@ -777,27 +763,13 @@ export async function createExpenseFromMaterial(data: {
   category: "materials";
 }) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .single();
-
-    if (companyError || !companyUser) {
-      console.error("[createExpenseFromMaterial] Company error:", companyError);
-      return { success: false, error: "User not associated with a company" };
-    }
-
     // Check if material assignment already has linked expense
-    const { data: existingLink } = await supabase
+    const { data: existingLink } = await userContext.supabase
       .from("expense_line_items")
       .select("expense_id")
       .eq("material_assignment_id", data.material_assignment_id)
@@ -808,17 +780,17 @@ export async function createExpenseFromMaterial(data: {
     }
 
     // Create expense
-    const { data: expense, error: expenseError } = await supabase
+    const { data: expense, error: expenseError } = await userContext.supabase
       .from("expenses")
       .insert({
-        company_id: companyUser.company_id,
+        company_id: userContext.companyId,
         project_id: data.project_id,
         task_id: data.task_id,
         description: data.description,
         amount: data.amount,
         category: data.category,
         expense_date: new Date().toISOString().split("T")[0],
-        submitted_by: session.user.id,
+        submitted_by: userContext.userId,
         status: "submitted",
       })
       .select()
@@ -833,7 +805,7 @@ export async function createExpenseFromMaterial(data: {
     }
 
     // Create expense line item linking to material assignment
-    const { error: lineItemError } = await supabase
+    const { error: lineItemError } = await userContext.supabase
       .from("expense_line_items")
       .insert({
         expense_id: expense.id,
@@ -925,42 +897,16 @@ export async function getExpenseAnalytics(filters?: {
   endDate?: string;
 }): Promise<{ data?: ExpenseAnalytics; error?: string }> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    // Get user's company_id for proper data isolation
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .maybeSingle();
-
-    if (companyError || !companyUser) {
-      return {
-        data: {
-          totalCount: 0,
-          totalAmount: 0,
-          pendingCount: 0,
-          pendingAmount: 0,
-          approvedCount: 0,
-          approvedAmount: 0,
-          rejectedCount: 0,
-          rejectedAmount: 0,
-          byCategory: [],
-        },
-      };
-    }
-
     // Build query with company filter and optional filters
-    let query = supabase
+    let query = userContext.supabase
       .from("expenses")
       .select("id, amount, status, category")
-      .eq("company_id", companyUser.company_id);
+      .eq("company_id", userContext.companyId);
 
     if (filters?.projectId) {
       query = query.eq("project_id", filters.projectId);
@@ -1069,29 +1015,18 @@ export async function getVendorOptions(
   companyId: string,
 ): Promise<{ data?: VendorOption[]; error?: string }> {
   try {
-    // Auth check
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
     // Verify user belongs to this company
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("company_id", companyId)
-      .eq("status", "active")
-      .maybeSingle();
-
-    if (companyError || !companyUser) {
+    if (userContext.companyId !== companyId) {
       return { error: "User not authorized for this company" };
     }
 
     // Fetch active company members with their profiles
-    const { data: members, error: membersError } = await supabase
+    const { data: members, error: membersError } = await userContext.supabase
       .from("company_users")
       .select(
         `
@@ -1111,7 +1046,7 @@ export async function getVendorOptions(
     }
 
     // Fetch active subcontractors
-    const { data: subcontractors, error: subError } = await supabase
+    const { data: subcontractors, error: subError } = await userContext.supabase
       .from("subcontractors")
       .select("id, company_name")
       .eq("company_id", companyId)
@@ -1210,28 +1145,13 @@ export async function createExpenseFromTask(
       return { success: false, error: validation.error.issues[0].message };
     }
 
-    // Auth check
-    const session = await auth();
-    if (!session?.user?.id) {
+    const userContext = await getUserContext();
+    if (!userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const supabase = await createClient();
-
-    // Get user's company
-    const { data: companyUser, error: companyError } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .single();
-
-    if (companyError || !companyUser) {
-      return { success: false, error: "User not associated with a company" };
-    }
-
     // Fetch task with project info
-    const { data: task, error: taskError } = await supabase
+    const { data: task, error: taskError } = await userContext.supabase
       .from("tasks")
       .select(
         `
@@ -1260,7 +1180,7 @@ export async function createExpenseFromTask(
       id: string;
       company_id: string;
     };
-    if (project.company_id !== companyUser.company_id) {
+    if (project.company_id !== userContext.companyId) {
       return {
         success: false,
         error: "Insufficient permissions to access this task",
@@ -1273,7 +1193,7 @@ export async function createExpenseFromTask(
     }
 
     // Check if expense already exists for this task
-    const { data: existingExpense } = await supabase
+    const { data: existingExpense } = await userContext.supabase
       .from("expenses")
       .select("id")
       .eq("task_id", taskId)
@@ -1289,7 +1209,7 @@ export async function createExpenseFromTask(
     // Fetch primary assignee for vendor_name
     let vendorName: string | null = null;
 
-    const { data: primaryAssignee } = await supabase
+    const { data: primaryAssignee } = await userContext.supabase
       .from("task_assignees")
       .select(
         `
@@ -1334,7 +1254,7 @@ export async function createExpenseFromTask(
 
     // If no primary assignee, try to get creator name
     if (!vendorName && task.created_by) {
-      const { data: creator } = await supabase
+      const { data: creator } = await userContext.supabase
         .from("user_profiles")
         .select("name")
         .eq("id", task.created_by)
@@ -1350,7 +1270,7 @@ export async function createExpenseFromTask(
 
     // Create the expense
     const expenseData: ExpenseInsert = {
-      company_id: companyUser.company_id,
+      company_id: userContext.companyId,
       project_id: task.project_id,
       task_id: task.id,
       description: `Task expense: ${task.title}`,
@@ -1358,11 +1278,11 @@ export async function createExpenseFromTask(
       category: category,
       expense_date: new Date().toISOString().split("T")[0], // Today's date
       vendor_name: vendorName,
-      submitted_by: session.user.id,
+      submitted_by: userContext.userId,
       status: "submitted",
     };
 
-    const { data: expense, error: insertError } = await supabase
+    const { data: expense, error: insertError } = await userContext.supabase
       .from("expenses")
       .insert(expenseData)
       .select()

@@ -1,10 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-// Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import FolderKanban from 'lucide-react/icons/folder-kanban';
-import { CreateProjectForm } from './CreateProjectForm';
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { CreateProjectForm } from "./CreateProjectForm";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -16,7 +14,7 @@ interface CreateProjectModalProps {
  * CreateProjectModal Component
  *
  * Industrial-strength modal for project creation.
- * Form now handles its own BaseModal wrapper (like TaskModal).
+ * Form now handles its own ResponsiveModal wrapper (like TaskModal).
  * This component manages open/close state and success callbacks.
  */
 export function CreateProjectModal({
@@ -43,16 +41,19 @@ export function CreateProjectModal({
     }, 300); // Wait for modal close animation
   }, [onClose]);
 
-  const handleSuccess = useCallback((projectId: string) => {
-    // Close modal
-    handleClose();
-    // Refresh page to show new project
-    router.refresh();
-    // Call optional success callback
-    onSuccess?.();
-  }, [handleClose, router, onSuccess]);
+  const handleSuccess = useCallback(
+    (_projectId: string) => {
+      // Close modal
+      handleClose();
+      // Refresh page to show new project
+      router.refresh();
+      // Call optional success callback
+      onSuccess?.();
+    },
+    [handleClose, router, onSuccess],
+  );
 
-  // Always render the form, let BaseModal handle visibility
+  // Always render the form, let ResponsiveModal handle visibility
   return (
     <CreateProjectForm
       key={formKey}

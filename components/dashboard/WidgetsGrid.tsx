@@ -1,13 +1,14 @@
-'use client';
+"use client";
 
-import { FolderKanban } from 'lucide-react';
-import { ProjectStatusWidget } from './ProjectStatusWidget';
-import { TaskProgressWidget } from './TaskProgressWidget';
-import { BudgetSummaryWidget } from './BudgetSummaryWidget';
-import { ScheduleHealthWidget } from './ScheduleHealthWidget';
-import { TeamActivityWidget } from './TeamActivityWidget';
-import { MaterialsStatusWidget } from './MaterialsStatusWidget';
-import type { DashboardData } from '@/types/dashboard';
+import { FolderKanban } from "lucide-react";
+import { ProjectStatusWidget } from "./ProjectStatusWidget";
+import { TaskProgressWidget } from "./TaskProgressWidget";
+import { BudgetSummaryWidget } from "./BudgetSummaryWidget";
+import { ScheduleHealthWidget } from "./ScheduleHealthWidget";
+import { TeamActivityWidget } from "./TeamActivityWidget";
+import { MaterialsStatusWidget } from "./MaterialsStatusWidget";
+import { WidgetSkeleton } from "@/components/ui/WidgetCard";
+import type { DashboardData } from "@/types/dashboard";
 
 export interface WidgetsGridProps {
   data: DashboardData;
@@ -18,20 +19,20 @@ export interface WidgetsGridProps {
  * Widget configuration for consistent rendering
  */
 const WIDGET_CONFIG = [
-  { key: 'project-status', title: 'Project Status', icon: FolderKanban },
-  { key: 'task-progress', title: 'Task Progress', icon: FolderKanban },
-  { key: 'budget-summary', title: 'Budget Summary', icon: FolderKanban },
-  { key: 'schedule-health', title: 'Schedule Health', icon: FolderKanban },
-  { key: 'team-activity', title: 'Team Activity', icon: FolderKanban },
-  { key: 'materials-status', title: 'Materials Status', icon: FolderKanban },
+  { key: "project-status", title: "Project Status", icon: FolderKanban },
+  { key: "task-progress", title: "Task Progress", icon: FolderKanban },
+  { key: "budget-summary", title: "Budget Summary", icon: FolderKanban },
+  { key: "schedule-health", title: "Schedule Health", icon: FolderKanban },
+  { key: "team-activity", title: "Team Activity", icon: FolderKanban },
+  { key: "materials-status", title: "Materials Status", icon: FolderKanban },
 ] as const;
 
 /**
  * Loading skeleton for individual widget
  */
-function WidgetSkeleton() {
+function DashboardWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-[280px]">
+    <WidgetSkeleton className="h-[280px]">
       {/* Header skeleton */}
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gray-200 rounded-lg" />
@@ -43,7 +44,7 @@ function WidgetSkeleton() {
         <div className="h-4 w-3/4 bg-gray-200 rounded" />
         <div className="h-20 w-full bg-gray-100 rounded mt-4" />
       </div>
-    </div>
+    </WidgetSkeleton>
   );
 }
 
@@ -62,7 +63,7 @@ export function WidgetsGrid({ data, isLoading = false }: WidgetsGridProps) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {WIDGET_CONFIG.map((widget) => (
-          <WidgetSkeleton key={widget.key} />
+          <DashboardWidgetSkeleton key={widget.key} />
         ))}
       </div>
     );
@@ -71,22 +72,13 @@ export function WidgetsGrid({ data, isLoading = false }: WidgetsGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Project Status Widget */}
-      <ProjectStatusWidget
-        status={data.projectStatus}
-        isLoading={isLoading}
-      />
+      <ProjectStatusWidget status={data.projectStatus} isLoading={isLoading} />
 
       {/* Task Progress Widget */}
-      <TaskProgressWidget
-        progress={data.taskProgress}
-        isLoading={isLoading}
-      />
+      <TaskProgressWidget progress={data.taskProgress} isLoading={isLoading} />
 
       {/* Budget Summary Widget */}
-      <BudgetSummaryWidget
-        budget={data.budgetSummary}
-        isLoading={isLoading}
-      />
+      <BudgetSummaryWidget budget={data.budgetSummary} isLoading={isLoading} />
 
       {/* Schedule Health Widget */}
       <ScheduleHealthWidget
@@ -95,10 +87,7 @@ export function WidgetsGrid({ data, isLoading = false }: WidgetsGridProps) {
       />
 
       {/* Team Activity Widget */}
-      <TeamActivityWidget
-        activity={data.teamActivity}
-        isLoading={isLoading}
-      />
+      <TeamActivityWidget activity={data.teamActivity} isLoading={isLoading} />
 
       {/* Materials Status Widget */}
       <MaterialsStatusWidget

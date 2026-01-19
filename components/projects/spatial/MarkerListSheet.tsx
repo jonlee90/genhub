@@ -3,7 +3,7 @@
  * Bottom sheet displaying filterable list of markers for mobile spatial viewer
  *
  * Features:
- * - Uses existing BottomSheetModal for native feel
+ * - Uses ResponsiveModal for adaptive sheet behavior
  * - Scrollable list with 44px minimum touch targets
  * - Category icons and badges per marker
  * - Tap to focus marker in 3D view
@@ -11,23 +11,23 @@
  * - Mobile PWA optimized
  */
 
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import MapPin from 'lucide-react/icons/map-pin';
-import FileText from 'lucide-react/icons/file-text';
-import Image from 'lucide-react/icons/image';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Package from 'lucide-react/icons/package';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import ClipboardList from 'lucide-react/icons/clipboard-list';
-import ChevronRight from 'lucide-react/icons/chevron-right';;
-import { cn } from '@/lib/utils';
-import { BottomSheetModal } from '@/components/mobile/BottomSheetModal';
-import { Badge } from '@/components/ui/badge';
+import MapPin from "lucide-react/icons/map-pin";
+import FileText from "lucide-react/icons/file-text";
+import Image from "lucide-react/icons/image";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import TrendingUp from "lucide-react/icons/trending-up";
+import Package from "lucide-react/icons/package";
+import ShieldAlert from "lucide-react/icons/shield-alert";
+import ClipboardList from "lucide-react/icons/clipboard-list";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import { cn } from "@/lib/utils";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Badge } from "@/components/ui/badge";
 
 // Marker interface matching the task requirements
 export interface MarkerListItem {
@@ -57,19 +57,46 @@ const CATEGORY_ICONS: Record<string, typeof MapPin> = {
 };
 
 // Category to color mapping (construction theme)
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  note: { bg: 'bg-blue-500', text: 'text-blue-700', border: 'border-blue-200' },
-  photo: { bg: 'bg-green-500', text: 'text-green-700', border: 'border-green-200' },
-  issue: { bg: 'bg-red-500', text: 'text-red-700', border: 'border-red-200' },
-  safety: { bg: 'bg-orange-500', text: 'text-orange-700', border: 'border-orange-200' },
-  progress: { bg: 'bg-yellow-500', text: 'text-yellow-700', border: 'border-yellow-200' },
-  material: { bg: 'bg-cyan-500', text: 'text-cyan-700', border: 'border-cyan-200' },
-  inspection: { bg: 'bg-indigo-500', text: 'text-indigo-700', border: 'border-indigo-200' },
-  rfi: { bg: 'bg-pink-500', text: 'text-pink-700', border: 'border-pink-200' },
+const CATEGORY_COLORS: Record<
+  string,
+  { bg: string; text: string; border: string }
+> = {
+  note: { bg: "bg-blue-500", text: "text-blue-700", border: "border-blue-200" },
+  photo: {
+    bg: "bg-green-500",
+    text: "text-green-700",
+    border: "border-green-200",
+  },
+  issue: { bg: "bg-red-500", text: "text-red-700", border: "border-red-200" },
+  safety: {
+    bg: "bg-orange-500",
+    text: "text-orange-700",
+    border: "border-orange-200",
+  },
+  progress: {
+    bg: "bg-yellow-500",
+    text: "text-yellow-700",
+    border: "border-yellow-200",
+  },
+  material: {
+    bg: "bg-cyan-500",
+    text: "text-cyan-700",
+    border: "border-cyan-200",
+  },
+  inspection: {
+    bg: "bg-indigo-500",
+    text: "text-indigo-700",
+    border: "border-indigo-200",
+  },
+  rfi: { bg: "bg-pink-500", text: "text-pink-700", border: "border-pink-200" },
 };
 
 // Default colors for unknown categories
-const DEFAULT_COLORS = { bg: 'bg-gray-500', text: 'text-gray-700', border: 'border-gray-200' };
+const DEFAULT_COLORS = {
+  bg: "bg-gray-500",
+  text: "text-gray-700",
+  border: "border-gray-200",
+};
 
 /**
  * Individual marker list item component
@@ -98,28 +125,28 @@ function MarkerItem({
       whileTap={{ scale: 0.98 }}
       className={cn(
         // Touch-friendly sizing (44px min height)
-        'w-full min-h-[56px] px-4 py-3',
+        "w-full min-h-[56px] px-4 py-3",
         // Flexbox layout
-        'flex items-center gap-3',
+        "flex items-center gap-3",
         // Styling
-        'bg-white rounded-xl',
-        'border-2 border-gray-100',
+        "bg-white rounded-xl",
+        "border-2 border-gray-100",
         // Touch feedback
-        'active:bg-gray-50 active:border-gray-200',
-        'transition-all duration-150',
+        "active:bg-gray-50 active:border-gray-200",
+        "transition-all duration-150",
         // Text alignment
-        'text-left'
+        "text-left",
       )}
       aria-label={`View ${marker.title} marker`}
     >
       {/* Category icon with colored background */}
       <div
         className={cn(
-          'flex-shrink-0',
-          'w-10 h-10 rounded-lg',
-          'flex items-center justify-center',
-          'text-white',
-          colors.bg
+          "flex-shrink-0",
+          "w-10 h-10 rounded-lg",
+          "flex items-center justify-center",
+          "text-white",
+          colors.bg,
         )}
       >
         <Icon className="w-5 h-5" strokeWidth={2} />
@@ -134,10 +161,10 @@ function MarkerItem({
           <Badge
             variant="outline"
             className={cn(
-              'text-[10px] uppercase font-bold px-1.5 py-0.5',
+              "text-[10px] uppercase font-bold px-1.5 py-0.5",
               colors.text,
               colors.border,
-              'bg-white/80'
+              "bg-white/80",
             )}
           >
             {marker.category}
@@ -170,7 +197,8 @@ function EmptyState() {
         No Markers Found
       </h3>
       <p className="text-sm text-gray-600 max-w-[240px]">
-        There are no markers to display. Create a marker in the 3D viewer to get started.
+        There are no markers to display. Create a marker in the 3D viewer to get
+        started.
       </p>
     </div>
   );
@@ -191,20 +219,25 @@ export function MarkerListSheet({
       onMarkerSelect(markerId);
       onClose();
     },
-    [onMarkerSelect, onClose]
+    [onMarkerSelect, onClose],
   );
 
   // Count total markers for subtitle
   const markerCount = markers.length;
 
   return (
-    <BottomSheetModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={MapPin}
       title="Markers"
-      subtitle={markerCount > 0 ? `${markerCount} marker${markerCount !== 1 ? 's' : ''} in view` : undefined}
+      subtitle={
+        markerCount > 0
+          ? `${markerCount} marker${markerCount !== 1 ? "s" : ""} in view`
+          : undefined
+      }
       theme="default"
+      showFooter={false}
       enableDragToDismiss
       closeOnBackdropClick
       closeOnEscape
@@ -228,7 +261,7 @@ export function MarkerListSheet({
           </AnimatePresence>
         </div>
       )}
-    </BottomSheetModal>
+    </ResponsiveModal>
   );
 }
 

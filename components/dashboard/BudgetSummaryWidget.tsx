@@ -1,9 +1,20 @@
-'use client';
+"use client";
 
-import { DollarSign, TrendingUp, TrendingDown, Clock, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { cn, formatPercent, formatBudget } from '@/lib/utils';
-import type { BudgetSummaryData } from '@/types/dashboard';
+import {
+  DollarSign,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  ChevronRight,
+} from "lucide-react";
+import Link from "next/link";
+import { cn, formatPercent, formatBudget } from "@/lib/utils";
+import {
+  WidgetCard,
+  WidgetHeader,
+  WidgetSkeleton,
+} from "@/components/ui/WidgetCard";
+import type { BudgetSummaryData } from "@/types/dashboard";
 
 export interface BudgetSummaryWidgetProps {
   budget: BudgetSummaryData;
@@ -20,28 +31,28 @@ function getUtilizationColor(percent: number): {
 } {
   if (percent <= 80) {
     return {
-      bar: 'bg-[#059669]',
-      text: 'text-[#059669]',
-      bg: 'bg-[#059669]/10',
+      bar: "bg-[#059669]",
+      text: "text-[#059669]",
+      bg: "bg-[#059669]/10",
     };
   }
   if (percent <= 100) {
     return {
-      bar: 'bg-[#F59E0B]',
-      text: 'text-[#F59E0B]',
-      bg: 'bg-[#F59E0B]/10',
+      bar: "bg-[#F59E0B]",
+      text: "text-[#F59E0B]",
+      bg: "bg-[#F59E0B]/10",
     };
   }
   return {
-    bar: 'bg-[#DC2626]',
-    text: 'text-[#DC2626]',
-    bg: 'bg-[#DC2626]/10',
+    bar: "bg-[#DC2626]",
+    text: "text-[#DC2626]",
+    bg: "bg-[#DC2626]/10",
   };
 }
 
 function BudgetSummaryWidgetSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full">
+    <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 bg-gray-200 rounded-lg" />
         <div className="h-5 w-32 bg-gray-200 rounded" />
@@ -64,7 +75,7 @@ function BudgetSummaryWidgetSkeleton() {
         </div>
       </div>
       <div className="h-12 w-full bg-gray-100 rounded-lg" />
-    </div>
+    </WidgetSkeleton>
   );
 }
 
@@ -81,28 +92,31 @@ export function BudgetSummaryWidget({
   const cappedUtilization = Math.min(budget.utilizationPercent, 100);
 
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 h-full">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="p-2 bg-[#001B51] rounded-lg">
-          <DollarSign className="w-5 h-5 text-white" />
-        </div>
-        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">
-          Budget
-        </h3>
-      </div>
+    <WidgetCard>
+      <WidgetHeader
+        icon={DollarSign}
+        title="Budget"
+        className="mb-4"
+        iconWrapperClassName="bg-[#001B51]"
+        iconClassName="text-white"
+      />
 
       {/* Utilization Progress Bar */}
       <div className="mb-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-semibold text-gray-500 uppercase">Utilization</span>
-          <span className={cn('text-sm font-bold', utilizationColors.text)}>
+          <span className="text-xs font-semibold text-gray-500 uppercase">
+            Utilization
+          </span>
+          <span className={cn("text-sm font-bold", utilizationColors.text)}>
             {formatPercent(budget.utilizationPercent)}
           </span>
         </div>
         <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className={cn('h-full rounded-full transition-all duration-500', utilizationColors.bar)}
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              utilizationColors.bar,
+            )}
             style={{ width: `${cappedUtilization}%` }}
           />
         </div>
@@ -130,20 +144,24 @@ export function BudgetSummaryWidget({
       </div>
 
       {/* Variance */}
-      <div className={cn(
-        'flex items-center gap-2 mb-4 p-3 rounded-lg',
-        isUnderBudget ? 'bg-[#059669]/10' : 'bg-[#DC2626]/10'
-      )}>
+      <div
+        className={cn(
+          "flex items-center gap-2 mb-4 p-3 rounded-lg",
+          isUnderBudget ? "bg-[#059669]/10" : "bg-[#DC2626]/10",
+        )}
+      >
         {isUnderBudget ? (
           <TrendingDown className="w-4 h-4 text-[#059669]" />
         ) : (
           <TrendingUp className="w-4 h-4 text-[#DC2626]" />
         )}
-        <span className={cn(
-          'text-sm font-semibold',
-          isUnderBudget ? 'text-[#059669]' : 'text-[#DC2626]'
-        )}>
-          {isUnderBudget ? 'Under budget: ' : 'Over budget: '}
+        <span
+          className={cn(
+            "text-sm font-semibold",
+            isUnderBudget ? "text-[#059669]" : "text-[#DC2626]",
+          )}
+        >
+          {isUnderBudget ? "Under budget: " : "Over budget: "}
           {formatBudget(Math.abs(budget.variance), true)}
         </span>
       </div>
@@ -153,10 +171,10 @@ export function BudgetSummaryWidget({
         <Link href="/app/expenses?status=pending">
           <div
             className={cn(
-              'flex items-center justify-between p-3 rounded-lg',
-              'bg-[#F59E0B]/10 border border-[#F59E0B]/30',
-              'transition-all duration-150',
-              'active:scale-[0.98] active:bg-[#F59E0B]/20'
+              "flex items-center justify-between p-3 rounded-lg",
+              "bg-[#F59E0B]/10 border border-[#F59E0B]/30",
+              "transition-all duration-150",
+              "active:scale-[0.98] active:bg-[#F59E0B]/20",
             )}
           >
             <div className="flex items-center gap-2">
@@ -181,6 +199,6 @@ export function BudgetSummaryWidget({
           </span>
         </div>
       )}
-    </div>
+    </WidgetCard>
   );
 }

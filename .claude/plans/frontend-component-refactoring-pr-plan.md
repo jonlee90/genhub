@@ -261,6 +261,11 @@ AlertDialog is used for destructive confirmations and should remain unless we ex
 - `components/chat/MessageList.tsx`
 - `components/chat/MessageItem.tsx`
 
+**Baseline Measurement**
+
+- Capture current request count for a large room (DevTools → Network → count metadata requests).
+- Record example counts in the PR description before changes.
+
 **Guardrails**
 
 - Define cache key (room ID + message IDs).
@@ -533,6 +538,11 @@ components/tasks/
 ## PR 10 — Memoization Audit (NEW)
 
 **Scope**: Review excessive memoization patterns.
+
+**Baseline Measurement**
+
+- Record current render counts or profiler notes for each target file.
+- Capture at least one profiler screenshot or log note per file in the PR description.
 
 **Guardrails**
 

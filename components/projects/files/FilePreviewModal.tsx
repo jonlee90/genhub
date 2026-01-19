@@ -7,20 +7,19 @@
  * - Download and Delete actions
  */
 
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Download from 'lucide-react/icons/download';
-import Trash2 from 'lucide-react/icons/trash-2';
-import FileText from 'lucide-react/icons/file-text';
-import ExternalLink from 'lucide-react/icons/external-link';
-import Loader2 from 'lucide-react/icons/loader-2';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { deleteProjectFile } from '@/app/actions/project-files';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import Download from "lucide-react/icons/download";
+import Trash2 from "lucide-react/icons/trash-2";
+import FileText from "lucide-react/icons/file-text";
+import ExternalLink from "lucide-react/icons/external-link";
+import Loader2 from "lucide-react/icons/loader-2";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { deleteProjectFile } from "@/app/actions/project-files";
+import { toast } from "sonner";
 
 interface FilePreviewModalProps {
   file: {
@@ -43,7 +42,7 @@ interface FilePreviewModalProps {
  * Format file size for display
  */
 function formatFileSize(bytes: number): string {
-  if (!bytes || bytes === 0) return '0 B';
+  if (!bytes || bytes === 0) return "0 B";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
@@ -54,32 +53,38 @@ function formatFileSize(bytes: number): string {
  */
 function formatCategory(category: string): string {
   return category
-    .split('_')
+    .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .join(" ");
 }
 
-export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalProps) {
-  console.log('[FilePreviewModal] Rendering for file:', file.id, file.filename);
+export function FilePreviewModal({
+  file,
+  onClose,
+  onDelete,
+}: FilePreviewModalProps) {
+  console.log("[FilePreviewModal] Rendering for file:", file.id, file.filename);
 
   const [isDeleting, setIsDeleting] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(true);
 
-  const isPDF = file.file_type === 'application/pdf';
-  const isImage = file.file_type?.startsWith('image/');
+  const isPDF = file.file_type === "application/pdf";
+  const isImage = file.file_type?.startsWith("image/");
   const canPreview = isPDF || isImage;
 
   const handleDownload = () => {
-    console.log('[FilePreviewModal] Downloading file:', file.id);
-    window.open(file.file_url, '_blank');
+    console.log("[FilePreviewModal] Downloading file:", file.id);
+    window.open(file.file_url, "_blank");
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Delete "${file.filename}"?\n\nThis action cannot be undone.`)) {
+    if (
+      !confirm(`Delete "${file.filename}"?\n\nThis action cannot be undone.`)
+    ) {
       return;
     }
 
-    console.log('[FilePreviewModal] Deleting file:', file.id);
+    console.log("[FilePreviewModal] Deleting file:", file.id);
     setIsDeleting(true);
 
     try {
@@ -89,18 +94,18 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
         toast.error(`Delete failed: ${result.error}`);
         setIsDeleting(false);
       } else {
-        toast.success('File deleted');
+        toast.success("File deleted");
         onDelete(file.id);
       }
     } catch (err) {
-      console.error('[FilePreviewModal] Delete error:', err);
-      toast.error('Failed to delete file');
+      console.error("[FilePreviewModal] Delete error:", err);
+      toast.error("Failed to delete file");
       setIsDeleting(false);
     }
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       title={file.filename}
@@ -161,6 +166,7 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
                   <Loader2 className="h-8 w-8 text-[#001B51] animate-spin" />
                 </div>
               )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={file.file_url}
                 alt={file.filename}
@@ -177,7 +183,9 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
               <div className="p-4 bg-gray-200 rounded-2xl mb-4">
                 <FileText className="h-12 w-12 text-gray-400" />
               </div>
-              <p className="text-sm text-gray-600 mb-1 font-medium">Preview not available</p>
+              <p className="text-sm text-gray-600 mb-1 font-medium">
+                Preview not available
+              </p>
               <p className="text-xs text-gray-500 mb-4">
                 This file type cannot be previewed in the browser
               </p>
@@ -216,7 +224,7 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
               Uploaded By
             </p>
             <p className="text-sm text-gray-900 font-medium">
-              {file.uploader?.name || 'Unknown'}
+              {file.uploader?.name || "Unknown"}
             </p>
           </div>
           <div>
@@ -224,10 +232,10 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
               Date
             </p>
             <p className="text-sm text-gray-900 font-medium">
-              {new Date(file.created_at).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
+              {new Date(file.created_at).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
               })}
             </p>
           </div>
@@ -246,10 +254,10 @@ export function FilePreviewModal({ file, onClose, onDelete }: FilePreviewModalPr
             </span>
           )}
           <span className="text-xs text-gray-400 ml-auto">
-            Type: {file.file_type || 'Unknown'}
+            Type: {file.file_type || "Unknown"}
           </span>
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

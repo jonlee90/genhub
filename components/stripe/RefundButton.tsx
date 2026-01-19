@@ -1,7 +1,7 @@
 'use client';
 
 import { refund } from '@/app/actions/stripe';
-import { useSession } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
@@ -11,7 +11,7 @@ interface RefundButtonProps {
 	onSuccess?: () => void;
 }
 
-export default function RefundButton({ subscriptionId, onSuccess }: RefundButtonProps) {
+function RefundButtonContent({ subscriptionId, onSuccess }: RefundButtonProps) {
 	const { data: session } = useSession();
 	const [isLoading, setIsLoading] = useState(false);
 	const router = useRouter();
@@ -62,4 +62,12 @@ export default function RefundButton({ subscriptionId, onSuccess }: RefundButton
 			</div>
 		</div>
 	);
-} 
+}
+
+export default function RefundButton(props: RefundButtonProps) {
+	return (
+		<SessionProvider>
+			<RefundButtonContent {...props} />
+		</SessionProvider>
+	);
+}
