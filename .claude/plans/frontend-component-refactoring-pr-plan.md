@@ -41,6 +41,11 @@ This plan converts the audit findings into a sequence of small, reviewable PRs. 
 
 **Scope**: Migrate ALL modals to use `ResponsiveModal` for unified desktop/mobile experience. This is the **canonical modal component** going forward.
 
+### PR Size Rule (for PR 2)
+
+- Split by domain so each PR stays within ~4–6 files or ~400 lines diff.
+- Merge domains only if files are low-risk and share the same modal layout.
+
 ### ResponsiveModal API Reference
 
 ```tsx
@@ -75,60 +80,66 @@ import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 </ResponsiveModal>;
 ```
 
-### Migration Targets (29 files, verified via modal imports)
+### Sub-PR Breakdown (by domain)
 
-**Settings Domain (4 files)**
+- **PR 2.1 — Settings Modals**
+  - `components/settings/TaskTypeManager.tsx`
+  - `components/settings/TaskTemplateManager.tsx`
+  - `components/settings/PhaseTemplateManager.tsx`
+  - `components/settings/ModelUploadModal.tsx`
 
-- [ ] `components/settings/TaskTypeManager.tsx`
-- [ ] `components/settings/TaskTemplateManager.tsx`
-- [ ] `components/settings/PhaseTemplateManager.tsx`
-- [ ] `components/settings/ModelUploadModal.tsx`
+- **PR 2.2 — Chat Modals**
+  - `components/chat/NewDMModal.tsx`
+  - `components/chat/DeleteConfirmDialog.tsx`
 
-**Chat Domain (2 files)**
+- **PR 2.3 — Expense Modals**
+  - `components/expenses/VendorCombobox.tsx`
+  - `components/expenses/ExpenseDetailModal.tsx`
+  - `components/expenses/CreateExpenseModal.tsx`
 
-- [ ] `components/chat/NewDMModal.tsx`
-- [ ] `components/chat/DeleteConfirmDialog.tsx`
+- **PR 2.4 — Task Modals**
+  - `components/tasks/MaterialDeliveryPrompt.tsx`
+  - `components/tasks/BlockedReasonModal.tsx`
+  - `components/tasks/TaskDetail.tsx`
 
-**Expenses Domain (3 files)**
+- **PR 2.5 — Team Modals**
+  - `components/team/EditSubcontractorModal.tsx`
+  - `components/team/AddSubcontractorModal.tsx`
+  - `components/team/InviteTeamMemberModal.tsx`
 
-- [ ] `components/expenses/VendorCombobox.tsx`
-- [ ] `components/expenses/ExpenseDetailModal.tsx`
-- [ ] `components/expenses/CreateExpenseModal.tsx`
+- **PR 2.6 — Projects Modals**
+  - `components/projects/AddSubcontractorModal.tsx`
+  - `components/projects/AddMemberModal.tsx`
+  - `components/projects/CreateProjectForm.tsx`
+  - `components/projects/ManagePhasesModal.tsx`
 
-**Tasks Domain (3 files)**
+- **PR 2.7 — Projects Spatial Sheets**
+  - `components/projects/spatial/MarkerListSheet.tsx`
+  - `components/projects/spatial/MarkerFilterSheet.tsx`
+  - `components/projects/spatial/TaskLinkerEnhanced.tsx`
+  - `components/projects/spatial/ConflictDialog.tsx`
+  - `components/projects/spatial/MarkerCreationModal.tsx`
+  - `components/projects/spatial/TaskLinker.tsx`
 
-- [ ] `components/tasks/MaterialDeliveryPrompt.tsx`
-- [ ] `components/tasks/BlockedReasonModal.tsx`
-- [ ] `components/tasks/TaskDetail.tsx`
+- **PR 2.8 — Projects Files Modals**
+  - `components/projects/files/FileVersionHistory.tsx`
+  - `components/projects/files/PhotoGallerySection.tsx`
+  - `components/projects/files/DocumentsSection.tsx`
+  - `components/projects/files/FilePreviewModal.tsx`
 
-**Team Domain (3 files)**
+### Migration Checklist (per file)
 
-- [ ] `components/team/EditSubcontractorModal.tsx`
-- [ ] `components/team/AddSubcontractorModal.tsx`
-- [ ] `components/team/InviteTeamMemberModal.tsx`
+1. Replace import: `BaseModal` or `BottomSheetModal` → `ResponsiveModal`
+2. Map props to `ResponsiveModalProps` (header, footer, actions, `formKey`)
+3. Remove manual mobile detection logic (ResponsiveModal handles this)
+4. Set `ariaLabel`/`ariaDescribedBy` when titles are dynamic
+5. Verify theme consistency across desktop/mobile
 
-**Projects Domain (4 files)**
+### Acceptance Criteria (per sub-PR)
 
-- [ ] `components/projects/AddSubcontractorModal.tsx`
-- [ ] `components/projects/AddMemberModal.tsx`
-- [ ] `components/projects/CreateProjectForm.tsx`
-- [ ] `components/projects/ManagePhasesModal.tsx`
-
-**Projects Spatial (6 files)**
-
-- [ ] `components/projects/spatial/MarkerListSheet.tsx`
-- [ ] `components/projects/spatial/MarkerFilterSheet.tsx`
-- [ ] `components/projects/spatial/TaskLinkerEnhanced.tsx`
-- [ ] `components/projects/spatial/ConflictDialog.tsx`
-- [ ] `components/projects/spatial/MarkerCreationModal.tsx`
-- [ ] `components/projects/spatial/TaskLinker.tsx`
-
-**Projects Files (4 files)**
-
-- [ ] `components/projects/files/FileVersionHistory.tsx`
-- [ ] `components/projects/files/PhotoGallerySection.tsx`
-- [ ] `components/projects/files/DocumentsSection.tsx`
-- [ ] `components/projects/files/FilePreviewModal.tsx`
+- No direct `BaseModal`/`BottomSheetModal` imports in touched files.
+- Modal structure and content remain identical (wrapper-only refactor).
+- UI check on desktop + mobile viewports.
 
 ### Already Using ResponsiveModal ✓
 
@@ -192,14 +203,6 @@ import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 
 - `components/settings/ModelUploadModal.tsx` uses `BaseModal` and is imported by `components/settings/DefaultModelCard.tsx`.
 
-### Migration Steps Per File
-
-1. Replace import: `BaseModal` or `BottomSheetModal` → `ResponsiveModal`
-2. Update props to match `ResponsiveModalProps` interface
-3. Remove any manual mobile detection logic (ResponsiveModal handles this)
-4. Test on both desktop and mobile viewports
-5. Verify theme consistency
-
 ### AlertDialog Usage (Out of Scope)
 
 AlertDialog is used for destructive confirmations and should remain unless we explicitly decide to replace it with `ResponsiveModal`.
@@ -237,6 +240,11 @@ AlertDialog is used for destructive confirmations and should remain unless we ex
 - `components/dashboard/TeamActivityWidget.tsx`
 - `components/dashboard/MaterialsStatusWidget.tsx`
 
+**Acceptance Criteria**
+
+- No changes to widget data or rendering logic (wrapper-only refactor).
+- Visual snapshot or quick UI check for each widget.
+
 ---
 
 ## PR 4 — Chat Metadata Batching
@@ -252,6 +260,16 @@ AlertDialog is used for destructive confirmations and should remain unless we ex
 
 - `components/chat/MessageList.tsx`
 - `components/chat/MessageItem.tsx`
+
+**Guardrails**
+
+- Define cache key (room ID + message IDs).
+- Ensure fallback behavior for missing metadata (no UI regressions).
+
+**Acceptance Criteria**
+
+- Request count reduced for large message lists.
+- No ordering or missing metadata regressions.
 
 **Vercel best practices**
 
