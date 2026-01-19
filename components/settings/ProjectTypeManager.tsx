@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Plus,
   Edit,
@@ -73,7 +73,7 @@ const AVAILABLE_ICONS = {
  * Debug: Main component for CRUD operations on project types with full accessibility
  */
 export function ProjectTypeManager() {
-  console.log("[ProjectTypeManager] Rendering project type manager");
+  // Removed console.log("[ProjectTypeManager] Rendering project type manager");
 
   const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,33 +86,28 @@ export function ProjectTypeManager() {
     null,
   );
 
-  // Debug: Fetch project types on mount
+  // Fetch project types on mount
   useEffect(() => {
     loadProjectTypes();
   }, []);
 
-  async function loadProjectTypes() {
-    console.log("[ProjectTypeManager] Loading project types...");
+  const loadProjectTypes = useCallback(async () => {
+    // Removed console.log("[ProjectTypeManager] Loading project types...");
     setIsLoading(true);
     const result = await getProjectTypes();
     if (result.projectTypes) {
       setProjectTypes(result.projectTypes);
-      console.log(
-        "[ProjectTypeManager] Loaded",
-        result.projectTypes.length,
-        "project types",
-      );
     } else if (result.error) {
       console.error("[ProjectTypeManager] Error loading:", result.error);
       toast.error(result.error);
     }
     setIsLoading(false);
-  }
+  }, []);
 
-  // Debug: Handle create submission
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  // Handle create submission
+  const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("[ProjectTypeManager] Creating project type...");
+    // Removed console.log("[ProjectTypeManager] Creating project type...");
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -127,14 +122,14 @@ export function ProjectTypeManager() {
     } else {
       toast.error(result.error || "Failed to create project type");
     }
-  }
+  }, [loadProjectTypes]);
 
-  // Debug: Handle update submission
-  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+  // Handle update submission
+  const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingType) return;
 
-    console.log("[ProjectTypeManager] Updating project type:", editingType.id);
+    // Removed console.log("[ProjectTypeManager] Updating project type:", editingType.id);
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -149,13 +144,13 @@ export function ProjectTypeManager() {
     } else {
       toast.error(result.error || "Failed to update project type");
     }
-  }
+  }, [editingType, loadProjectTypes]);
 
-  // Debug: Handle delete confirmation
-  async function handleDelete() {
+  // Handle delete confirmation
+  const handleDelete = useCallback(async () => {
     if (!deletingType) return;
 
-    console.log("[ProjectTypeManager] Deleting project type:", deletingType.id);
+    // Removed console.log("[ProjectTypeManager] Deleting project type:", deletingType.id);
     setIsSubmitting(true);
 
     const result = await deleteProjectType(deletingType.id);
@@ -169,7 +164,7 @@ export function ProjectTypeManager() {
     } else {
       toast.error(result.error || "Failed to delete project type");
     }
-  }
+  }, [deletingType, loadProjectTypes]);
 
   return (
     <div

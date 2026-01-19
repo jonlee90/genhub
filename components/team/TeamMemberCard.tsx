@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * TeamMemberCard Component
@@ -14,8 +14,8 @@
  * - Touch-friendly tap target
  */
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   HardHat,
   Briefcase,
@@ -23,9 +23,9 @@ import {
   Hammer,
   UserCheck,
   Building2,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import type { UserRole, MemberStatus } from '@/types/db/enums';
+} from "lucide-react";
+import { cn, getInitials } from "@/lib/utils";
+import type { UserRole, MemberStatus } from "@/types/db/enums";
 
 interface TeamMember {
   id: string;
@@ -52,33 +52,33 @@ interface TeamMemberCardProps {
 // Role configuration with icons and colors
 const ROLE_CONFIG = {
   admin: {
-    label: 'Admin',
-    color: 'bg-[#001B51] text-white',
+    label: "Admin",
+    color: "bg-[#001B51] text-white",
     icon: Briefcase,
   },
   project_manager: {
-    label: 'Project Manager',
-    color: 'bg-[#3C3C3C] text-white',
+    label: "Project Manager",
+    color: "bg-[#3C3C3C] text-white",
     icon: Building2,
   },
   foreman: {
-    label: 'Foreman',
-    color: 'bg-[#7A7A7A] text-white',
+    label: "Foreman",
+    color: "bg-[#7A7A7A] text-white",
     icon: HardHat,
   },
   field_worker: {
-    label: 'Field Worker',
-    color: 'bg-green-700 text-white',
+    label: "Field Worker",
+    color: "bg-green-700 text-white",
     icon: Hammer,
   },
   subcontractor: {
-    label: 'Subcontractor',
-    color: 'bg-yellow-600 text-white',
+    label: "Subcontractor",
+    color: "bg-yellow-600 text-white",
     icon: Users,
   },
   client: {
-    label: 'Client',
-    color: 'bg-blue-600 text-white',
+    label: "Client",
+    color: "bg-blue-600 text-white",
     icon: UserCheck,
   },
 } as const;
@@ -86,39 +86,33 @@ const ROLE_CONFIG = {
 // Status configuration
 const STATUS_CONFIG = {
   active: {
-    label: 'Active',
-    color: 'bg-green-100 text-green-800',
-    dotColor: 'bg-green-500',
+    label: "Active",
+    color: "bg-green-100 text-green-800",
+    dotColor: "bg-green-500",
   },
   invited: {
-    label: 'Invited',
-    color: 'bg-yellow-100 text-yellow-800',
-    dotColor: 'bg-yellow-500',
+    label: "Invited",
+    color: "bg-yellow-100 text-yellow-800",
+    dotColor: "bg-yellow-500",
   },
   inactive: {
-    label: 'Inactive',
-    color: 'bg-gray-100 text-gray-800',
-    dotColor: 'bg-gray-400',
+    label: "Inactive",
+    color: "bg-gray-100 text-gray-800",
+    dotColor: "bg-gray-400",
   },
 } as const;
 
-// Get initials from name
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-export function TeamMemberCard({ member, onClick, className }: TeamMemberCardProps) {
+export function TeamMemberCard({
+  member,
+  onClick,
+  className,
+}: TeamMemberCardProps) {
   const roleConfig = ROLE_CONFIG[member.role] || ROLE_CONFIG.field_worker;
   const statusConfig = STATUS_CONFIG[member.status] || STATUS_CONFIG.inactive;
   const RoleIcon = roleConfig.icon;
 
-  const name = member.user_profiles?.name || 'Unknown';
-  const email = member.user_profiles?.email || 'No email';
+  const name = member.user_profiles?.name || "Unknown";
+  const email = member.user_profiles?.email || "No email";
   const avatarUrl = member.user_profiles?.avatar_url;
 
   return (
@@ -127,18 +121,18 @@ export function TeamMemberCard({ member, onClick, className }: TeamMemberCardPro
       onClick={onClick}
       className={cn(
         // Base styles
-        'w-full text-left',
-        'p-4 bg-white',
-        'flex items-center gap-4',
+        "w-full text-left",
+        "p-4 bg-white",
+        "flex items-center gap-4",
 
         // Touch feedback
-        'active:bg-gray-50',
-        'transition-colors duration-100',
+        "active:bg-gray-50",
+        "transition-colors duration-100",
 
         // Touch optimization
-        'touch-manipulation',
+        "touch-manipulation",
 
-        className
+        className,
       )}
     >
       {/* Avatar */}
@@ -159,8 +153,8 @@ export function TeamMemberCard({ member, onClick, className }: TeamMemberCardPro
           {/* Status dot */}
           <div
             className={cn(
-              'w-2 h-2 rounded-full flex-shrink-0',
-              statusConfig.dotColor
+              "w-2 h-2 rounded-full flex-shrink-0",
+              statusConfig.dotColor,
             )}
             title={statusConfig.label}
           />
@@ -174,8 +168,8 @@ export function TeamMemberCard({ member, onClick, className }: TeamMemberCardPro
           <Badge
             variant="secondary"
             className={cn(
-              'text-xs font-medium px-2 py-0.5 flex items-center gap-1',
-              roleConfig.color
+              "text-xs font-medium px-2 py-0.5 flex items-center gap-1",
+              roleConfig.color,
             )}
           >
             <RoleIcon className="h-3 w-3" />
@@ -184,7 +178,8 @@ export function TeamMemberCard({ member, onClick, className }: TeamMemberCardPro
 
           {member.project_count > 0 && (
             <span className="text-xs text-gray-500">
-              {member.project_count} project{member.project_count !== 1 ? 's' : ''}
+              {member.project_count} project
+              {member.project_count !== 1 ? "s" : ""}
             </span>
           )}
         </div>

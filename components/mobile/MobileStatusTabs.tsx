@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * MobileStatusTabs Component
@@ -35,14 +35,18 @@
  * - High contrast for outdoor visibility
  */
 
-import { useCallback, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { TASK_STATUS_CONFIG } from '@/lib/config/task-colors';
-import { Circle, Play, Eye, Ban, CheckCircle } from 'lucide-react';
+import { useCallback, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useHapticFeedback } from "@/lib/hooks/useHapticFeedback";
+import { TASK_STATUS_CONFIG as _TASK_STATUS_CONFIG } from "@/lib/config/task-colors";
+import { Circle, Play, Eye, Ban, CheckCircle } from "lucide-react";
 
 // Status icons for visual indication
-const STATUS_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+const STATUS_ICONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
   all: Circle,
   todo: Circle,
   in_progress: Play,
@@ -79,6 +83,7 @@ export function MobileStatusTabs({
 }: MobileStatusTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
+  const { trigger } = useHapticFeedback();
 
   // Scroll active tab into view on mount and value change
   useEffect(() => {
@@ -90,11 +95,11 @@ export function MobileStatusTabs({
       const containerWidth = container.offsetWidth;
       const activeLeft = activeEl.offsetLeft;
       const activeWidth = activeEl.offsetWidth;
-      const scrollLeft = activeLeft - (containerWidth / 2) + (activeWidth / 2);
+      const scrollLeft = activeLeft - containerWidth / 2 + activeWidth / 2;
 
       container.scrollTo({
         left: Math.max(0, scrollLeft),
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [value]);
@@ -105,30 +110,28 @@ export function MobileStatusTabs({
       if (tabValue === value) return;
 
       // Haptic feedback
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(10);
-      }
+      trigger("light");
 
       onChange(tabValue);
     },
-    [value, onChange]
+    [value, onChange, trigger],
   );
 
   // Get status-specific gradient for animated background
   const getStatusGradient = (status: string) => {
-    if (status === 'all') {
-      return 'from-[#001B51] to-[#002868]'; // Navy gradient
+    if (status === "all") {
+      return "from-[#001B51] to-[#002868]"; // Navy gradient
     }
 
     const gradients: Record<string, string> = {
-      todo: 'from-gray-500 to-gray-600',
-      in_progress: 'from-blue-600 to-blue-700',
-      review: 'from-yellow-500 to-yellow-600',
-      blocked: 'from-red-600 to-red-700',
-      completed: 'from-green-600 to-green-700',
+      todo: "from-gray-500 to-gray-600",
+      in_progress: "from-blue-600 to-blue-700",
+      review: "from-yellow-500 to-yellow-600",
+      blocked: "from-red-600 to-red-700",
+      completed: "from-green-600 to-green-700",
     };
 
-    return gradients[status] || 'from-[#001B51] to-[#002868]';
+    return gradients[status] || "from-[#001B51] to-[#002868]";
   };
 
   return (
@@ -136,19 +139,19 @@ export function MobileStatusTabs({
       ref={scrollRef}
       className={cn(
         // Container with Aceternity-inspired styling
-        'relative flex items-center gap-2',
-        'p-1.5 bg-gray-100 rounded-xl',
-        'border-2 border-gray-200',
+        "relative flex items-center gap-2",
+        "p-1.5 bg-gray-100 rounded-xl",
+        "border-2 border-gray-200",
         // Scrollable with hidden scrollbar
-        'overflow-x-auto scrollbar-hide',
+        "overflow-x-auto scrollbar-hide",
         // Snap scrolling
-        'snap-x snap-mandatory',
+        "snap-x snap-mandatory",
         // Smooth scroll behavior
-        'scroll-smooth',
-        className
+        "scroll-smooth",
+        className,
       )}
       style={{
-        WebkitOverflowScrolling: 'touch',
+        WebkitOverflowScrolling: "touch",
       }}
     >
       {tabs.map((tab) => {
@@ -163,22 +166,20 @@ export function MobileStatusTabs({
             onClick={() => handleClick(tab.value)}
             className={cn(
               // Base styles - position relative for motion background
-              'relative z-10',
-              'flex-shrink-0 snap-start',
-              'inline-flex items-center gap-2',
+              "relative z-10",
+              "flex-shrink-0 snap-start",
+              "inline-flex items-center gap-2",
               // Touch-friendly sizing (44px min height)
-              'h-11 px-4',
-              'rounded-lg',
+              "h-11 px-4",
+              "rounded-lg",
               // Typography
-              'font-bold text-sm',
+              "font-bold text-sm",
               // Transitions for non-background properties
-              'transition-colors duration-200',
+              "transition-colors duration-200",
               // Touch feedback
-              'active:scale-[0.97]',
+              "active:scale-[0.97]",
               // Text color based on active state
-              isActive
-                ? 'text-white'
-                : 'text-gray-600 hover:text-gray-900'
+              isActive ? "text-white" : "text-gray-600 hover:text-gray-900",
             )}
           >
             {/* Content layer */}
@@ -189,12 +190,12 @@ export function MobileStatusTabs({
             {showCounts && tab.count !== undefined && tab.count >= 0 && (
               <span
                 className={cn(
-                  'inline-flex items-center justify-center',
-                  'min-w-[22px] h-[22px] px-1.5',
-                  'rounded-full text-xs font-black',
+                  "inline-flex items-center justify-center",
+                  "min-w-[22px] h-[22px] px-1.5",
+                  "rounded-full text-xs font-black",
                   isActive
-                    ? 'bg-white/20 text-white'
-                    : 'bg-gray-200 text-gray-700'
+                    ? "bg-white/20 text-white"
+                    : "bg-gray-200 text-gray-700",
                 )}
               >
                 {tab.count}
@@ -206,12 +207,12 @@ export function MobileStatusTabs({
               <motion.div
                 layoutId="mobileStatusTabBackground"
                 className={cn(
-                  'absolute inset-0 rounded-lg',
-                  'bg-gradient-to-r shadow-md',
-                  getStatusGradient(tab.value)
+                  "absolute inset-0 rounded-lg",
+                  "bg-gradient-to-r shadow-md",
+                  getStatusGradient(tab.value),
                 )}
                 transition={{
-                  type: 'spring',
+                  type: "spring",
                   stiffness: 380,
                   damping: 30,
                 }}

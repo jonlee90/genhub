@@ -6,6 +6,7 @@ import {
   useEffect,
   useMemo,
   useCallback,
+  useRef,
 } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,14 +27,6 @@ import Users from "lucide-react/icons/users";
 import FolderKanban from "lucide-react/icons/folder-kanban";
 import FileText from "lucide-react/icons/file-text";
 import Check from "lucide-react/icons/check";
-import ChevronDown from "lucide-react/icons/chevron-down";
-import ChevronRight from "lucide-react/icons/chevron-right";
-import Layers from "lucide-react/icons/layers";
-import Building2 from "lucide-react/icons/building-2";
-import Home from "lucide-react/icons/home";
-import UtensilsCrossed from "lucide-react/icons/utensils-crossed";
-import Coffee from "lucide-react/icons/coffee";
-import Factory from "lucide-react/icons/factory";
 import ArrowRight from "lucide-react/icons/arrow-right";
 import ArrowLeft from "lucide-react/icons/arrow-left";
 import Sparkles from "lucide-react/icons/sparkles";
@@ -45,43 +38,11 @@ import {
   extractPhoneDigits,
 } from "@/lib/hooks/usePhoneMask";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { ProjectTypeSelector, FormSubmissionOverlay } from "@/components/projects/form";
 import type { PhaseTemplatesRow } from "@/types/db/tables/projects";
 import type { CreateProjectFormState } from "@/types/components/projects";
 
 type PhaseTemplate = PhaseTemplatesRow;
-
-const PROJECT_TYPES = [
-  {
-    value: "residential",
-    label: "Residential",
-    icon: Home,
-    description: "Homes & apartments",
-  },
-  {
-    value: "restaurant",
-    label: "Restaurant",
-    icon: UtensilsCrossed,
-    description: "Full-service dining",
-  },
-  {
-    value: "cafe",
-    label: "Cafe",
-    icon: Coffee,
-    description: "Coffee & eateries",
-  },
-  {
-    value: "commercial_office",
-    label: "Commercial",
-    icon: Building2,
-    description: "Office & retail",
-  },
-  {
-    value: "industrial",
-    label: "Industrial",
-    icon: Factory,
-    description: "Warehouse & factory",
-  },
-];
 
 // Form steps configuration
 const FORM_STEPS = ["Type", "Details", "Location", "Timeline"];
@@ -124,14 +85,12 @@ export function CreateProjectForm({
   const [success, setSuccess] = useState(false);
 
   // Project type configs (for mapping to phase templates)
-  const [projectTypeConfigs, setProjectTypeConfigs] = useState<
-    Record<string, string>
-  >({});
+  // Use useRef to avoid triggering dependent effects when reference changes
+  const projectTypeConfigsRef = useRef<Record<string, string>>({});
 
   // Phase template preview state
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
   const [phaseTemplatesLoading, setPhaseTemplatesLoading] = useState(false);
-  const [showPhasePreview, setShowPhasePreview] = useState(false);
 
   // Track all form values across steps
   // Performance optimization: Lazy state initialization to avoid object recreation on every render
@@ -390,7 +349,8 @@ export function CreateProjectForm({
             // Also map exact name match
             mapping[pt.name] = pt.id;
           });
-          setProjectTypeConfigs(mapping);
+          // Store in ref to avoid triggering dependent effects
+          projectTypeConfigsRef.current = mapping;
         }
       } catch {
         // Silently fail - phase preview is optional
@@ -417,8 +377,8 @@ export function CreateProjectForm({
       };
       const configName = typeNameMapping[formValues.project_type];
       const configId =
-        projectTypeConfigs[configName] ||
-        projectTypeConfigs[formValues.project_type];
+        projectTypeConfigsRef.current[configName] ||
+        projectTypeConfigsRef.current[formValues.project_type];
 
       if (!configId) {
         // Config not found yet, skip fetching
@@ -441,7 +401,7 @@ export function CreateProjectForm({
       }
     };
     fetchPhaseTemplates();
-  }, [isOpen, formValues.project_type, projectTypeConfigs]);
+  }, [isOpen, formValues.project_type]);
 
   // Performance optimization: Memoize event handler to prevent recreation on every render
   const handleProjectTypeChange = useCallback(
@@ -600,154 +560,18 @@ export function CreateProjectForm({
           </>
         )}
 
-        {/* Step 0: Project Type Selection - Compact Grid */}
+        {/* Step 0: Project Type Selection */}
         {currentStep === 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: 16 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -16 }}
-            transition={{ duration: 0.2 }}
-          >
+          <>
             <input type="hidden" name="project_type" value={projectType} />
-
-            {/* 5-card grid: 3 on top, 2 centered below on desktop; stacked on mobile */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {PROJECT_TYPES.map((type) => {
-                const TypeIcon = type.icon;
-                const isSelected = projectType === type.value;
-
-                return (
-                  <motion.button
-                    key={type.value}
-                    type="button"
-                    onClick={() => handleProjectTypeChange(type.value)}
-                    className={cn(
-                      // Compact card design - all visible without scrolling
-                      "relative p-4 rounded-xl border-2 text-left",
-                      "transition-all duration-200 touch-manipulation",
-                      "active:scale-[0.98]",
-                      "min-h-[100px]",
-                      // Last 2 items centered when on 3-column grid
-                      PROJECT_TYPES.indexOf(type) === 3 && "sm:col-start-1",
-                      PROJECT_TYPES.indexOf(type) === 4 && "sm:col-start-2",
-                      isSelected
-                        ? "border-construction-blue bg-construction-blue/5 shadow-md"
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
-                    )}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    {/* Icon + Content */}
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={cn(
-                          "shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all",
-                          isSelected
-                            ? "bg-construction-blue shadow-sm"
-                            : "bg-gray-100",
-                        )}
-                      >
-                        <TypeIcon
-                          className={cn(
-                            "w-5 h-5 transition-colors",
-                            isSelected ? "text-white" : "text-gray-600",
-                          )}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3
-                          className={cn(
-                            "font-semibold text-sm leading-tight",
-                            isSelected
-                              ? "text-construction-blue"
-                              : "text-gray-900",
-                          )}
-                        >
-                          {type.label}
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-snug">
-                          {type.description}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Selection indicator */}
-                    {isSelected && (
-                      <motion.div
-                        className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-construction-blue rounded-full flex items-center justify-center shadow-md"
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 20,
-                        }}
-                      >
-                        <Check
-                          className="w-3.5 h-3.5 text-white"
-                          strokeWidth={3}
-                        />
-                      </motion.div>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Phase Preview - Collapsible */}
-            {phaseTemplates.length > 0 && (
-              <div className="mt-5 pt-4 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => setShowPhasePreview(!showPhasePreview)}
-                  className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    <Layers className="w-4 h-4 text-construction-blue" />
-                    <span>Project Phases</span>
-                    <span className="px-2 py-0.5 bg-construction-blue/10 text-construction-blue text-xs font-semibold rounded-full">
-                      {phaseTemplates.length}
-                    </span>
-                  </div>
-                  {showPhasePreview ? (
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-500" />
-                  )}
-                </button>
-
-                <AnimatePresence>
-                  {showPhasePreview && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="pt-3 space-y-1.5">
-                        {phaseTemplates.map((template, index) => (
-                          <motion.div
-                            key={template.id}
-                            initial={{ opacity: 0, x: -8 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.03 }}
-                            className="flex items-center gap-2.5 p-2.5 bg-white border border-gray-100 rounded-lg"
-                          >
-                            <div className="w-6 h-6 rounded bg-construction-blue/10 text-construction-blue flex items-center justify-center text-xs font-bold">
-                              {index + 1}
-                            </div>
-                            <span className="text-sm font-medium text-gray-800 flex-1">
-                              {template.name}
-                            </span>
-                            <Check className="w-4 h-4 text-construction-green" />
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-          </motion.div>
+            <ProjectTypeSelector
+              projectType={projectType}
+              onProjectTypeChange={handleProjectTypeChange}
+              phaseTemplates={phaseTemplates}
+              phaseTemplatesLoading={phaseTemplatesLoading}
+              disabled={isPending}
+            />
+          </>
         )}
 
         {/* Step 1: Project Details */}
@@ -1150,6 +974,13 @@ export function CreateProjectForm({
           </motion.div>
         )}
       </form>
+
+      {/* Submission overlay with multi-step loader */}
+      <FormSubmissionOverlay
+        isSubmitting={isPending}
+        isComplete={success}
+        projectName={formValues.name}
+      />
     </ResponsiveModal>
   );
 }

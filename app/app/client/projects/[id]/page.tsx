@@ -9,7 +9,10 @@ const ClientSpatialViewer = dynamic(
   () =>
     import("@/components/projects/spatial/ClientSpatialViewer").then((mod) => ({
       default: mod.ClientSpatialViewer,
-    }))
+    })),
+  {
+    ssr: false,
+  },
 );
 
 /**

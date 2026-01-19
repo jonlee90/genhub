@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Package, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { toggleTracking, type MaterialWithStats } from '@/app/actions/materials';
-import { PriceChangeIndicator } from './PriceChangeIndicator';
+import { useState } from "react";
+import Image from "next/image";
+import { Package, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getMaterialStockStatusStyle } from "@/lib/materials-ui";
+import {
+  toggleTracking,
+  type MaterialWithStats,
+} from "@/app/actions/materials";
+import { PriceChangeIndicator } from "./PriceChangeIndicator";
 
 interface MaterialCardProps {
   material: MaterialWithStats;
@@ -38,7 +42,7 @@ export function MaterialCard({
   showPriceChange = false,
   priceChangePercent,
   onTrackingChange,
-  className = '',
+  className = "",
 }: MaterialCardProps) {
   const [isTracked, setIsTracked] = useState(material.is_tracked);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,35 +60,22 @@ export function MaterialCard({
     if (!result.success) {
       // Rollback on error
       setIsTracked(previousState);
-      setError(result.error || 'Failed to update tracking');
+      setError(result.error || "Failed to update tracking");
     } else {
       onTrackingChange?.();
     }
   };
 
-  // Stock status badge styles
-  const getStockStatusStyle = (status: string | null | undefined) => {
-    const s = status?.toLowerCase() || '';
-    if (s.includes('in stock') || s === 'available') {
-      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-    }
-    if (s.includes('low') || s.includes('limited')) {
-      return 'bg-amber-100 text-amber-700 border-amber-200';
-    }
-    if (s.includes('out') || s === 'unavailable') {
-      return 'bg-red-100 text-red-700 border-red-200';
-    }
-    return 'bg-gray-100 text-gray-600 border-gray-200';
-  };
+  const stockStatusStyle = getMaterialStockStatusStyle(material.stock_status);
 
   return (
     <div
       className={cn(
-        'bg-white rounded-xl overflow-hidden',
-        'border-2 border-gray-200 shadow-sm',
-        'transition-all duration-200',
-        'active:scale-[0.99] active:shadow-md',
-        className
+        "bg-white rounded-xl overflow-hidden",
+        "border-2 border-gray-200 shadow-sm",
+        "transition-all duration-200",
+        "active:scale-[0.99] active:shadow-md",
+        className,
       )}
     >
       {/* Image Header */}
@@ -112,11 +103,11 @@ export function MaterialCard({
         {/* Stock Status Badge */}
         <div
           className={cn(
-            'absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded-lg border',
-            getStockStatusStyle(material.stock_status)
+            "absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded-lg border",
+            stockStatusStyle,
           )}
         >
-          {material.stock_status || 'Unknown'}
+          {material.stock_status || "Unknown"}
         </div>
       </div>
 
@@ -170,14 +161,14 @@ export function MaterialCard({
           onClick={handleToggleTracking}
           disabled={isLoading}
           className={cn(
-            'w-full h-12 px-4 rounded-xl font-semibold text-sm',
-            'flex items-center justify-center gap-2',
-            'transition-all duration-150',
-            'active:scale-[0.98]',
-            'disabled:opacity-50 disabled:pointer-events-none',
+            "w-full h-12 px-4 rounded-xl font-semibold text-sm",
+            "flex items-center justify-center gap-2",
+            "transition-all duration-150",
+            "active:scale-[0.98]",
+            "disabled:opacity-50 disabled:pointer-events-none",
             isTracked
-              ? 'bg-gray-100 text-gray-700 border-2 border-gray-200 active:bg-gray-200'
-              : 'bg-[#001B51] text-white active:bg-[#001B51]/90'
+              ? "bg-gray-100 text-gray-700 border-2 border-gray-200 active:bg-gray-200"
+              : "bg-[#001B51] text-white active:bg-[#001B51]/90",
           )}
         >
           {isLoading ? (

@@ -19,7 +19,7 @@ import {
 } from "@/app/actions/projects";
 import { AddMemberModal } from "./AddMemberModal";
 import { AddSubcontractorModal } from "./AddSubcontractorModal";
-import { cn, formatCurrency } from "@/lib/utils";
+import { cn, formatCurrency, getInitials } from "@/lib/utils";
 import type { ProjectTeamMember } from "@/types/components/projects";
 
 interface CostSummary {
@@ -34,14 +34,6 @@ interface ProjectTeamProps {
   companyId: string;
   costSummaries?: Map<string, CostSummary>; // Map of member/sub ID to cost summary
 }
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
 // Role configuration with construction theme colors
 const ROLE_CONFIG = {

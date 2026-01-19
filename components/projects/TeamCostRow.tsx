@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Building2 from 'lucide-react/icons/building-2';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { formatBudget } from '@/lib/utils';
+import Building2 from "lucide-react/icons/building-2";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { cn, formatBudget, getInitials } from "@/lib/utils";
 
 /**
  * Team cost summary data for a single member
@@ -15,7 +14,7 @@ import { formatBudget } from '@/lib/utils';
 export interface TeamCostSummary {
   id: string;
   name: string;
-  type: 'member' | 'subcontractor';
+  type: "member" | "subcontractor";
   avatarUrl: string | null;
   role?: string;
   taskCosts: number;
@@ -50,45 +49,41 @@ export interface TeamCostRowProps {
  * - Mobile PWA compliant
  */
 export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
-  const {
-    name,
-    type,
-    avatarUrl,
-    role,
-    taskCosts,
-    expenseCosts,
-    totalCosts,
-  } = summary;
+  const { name, type, avatarUrl, role, taskCosts, expenseCosts, totalCosts } =
+    summary;
 
   // Performance optimization: Memoize computed values
   const isInteractive = useMemo(() => Boolean(onClick), [onClick]);
-  const Component = useMemo(() => isInteractive ? 'button' : 'div', [isInteractive]);
+  const Component = useMemo(
+    () => (isInteractive ? "button" : "div"),
+    [isInteractive],
+  );
 
   return (
     <Component
-      type={isInteractive ? 'button' : undefined}
+      type={isInteractive ? "button" : undefined}
       onClick={onClick}
       className={cn(
-        'w-full flex flex-col gap-2',
-        'min-h-[48px] px-4 py-3',
-        'bg-white border-b border-gray-100 last:border-b-0',
-        'transition-all duration-150',
+        "w-full flex flex-col gap-2",
+        "min-h-[48px] px-4 py-3",
+        "bg-white border-b border-gray-100 last:border-b-0",
+        "transition-all duration-150",
         isInteractive && [
-          'cursor-pointer',
-          'active:bg-gray-50',
-          'hover:bg-gray-50/50',
-        ]
+          "cursor-pointer",
+          "active:bg-gray-50",
+          "hover:bg-gray-50/50",
+        ],
       )}
     >
       {/* Top Row: Avatar, Name, Role, Chevron */}
       <div className="flex items-center gap-3">
         {/* Avatar / Icon */}
-        {type === 'subcontractor' ? (
+        {type === "subcontractor" ? (
           <div
             className={cn(
-              'flex items-center justify-center',
-              'w-9 h-9 rounded-full',
-              'bg-orange-100'
+              "flex items-center justify-center",
+              "w-9 h-9 rounded-full",
+              "bg-orange-100",
             )}
           >
             <Building2 className="w-5 h-5 text-orange-600" />
@@ -114,11 +109,11 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
           <Badge
             variant="secondary"
             className={cn(
-              'text-[10px] font-semibold uppercase tracking-wider',
-              'px-2 py-0.5',
-              type === 'subcontractor'
-                ? 'bg-orange-100 text-orange-700 border-orange-200'
-                : 'bg-gray-100 text-gray-600 border-gray-200'
+              "text-[10px] font-semibold uppercase tracking-wider",
+              "px-2 py-0.5",
+              type === "subcontractor"
+                ? "bg-orange-100 text-orange-700 border-orange-200"
+                : "bg-gray-100 text-gray-600 border-gray-200",
             )}
           >
             {formatRole(role)}
@@ -134,11 +129,7 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
       {/* Bottom Row: Cost Columns */}
       <div className="flex items-center justify-between pl-12">
         {/* Tasks Cost */}
-        <CostColumn
-          label="Tasks"
-          value={taskCosts}
-          className="text-left"
-        />
+        <CostColumn label="Tasks" value={taskCosts} className="text-left" />
 
         {/* Expenses Cost */}
         <CostColumn
@@ -169,18 +160,21 @@ interface CostColumnProps {
   className?: string;
 }
 
-function CostColumn({ label, value, isTotal = false, className }: CostColumnProps) {
+function CostColumn({
+  label,
+  value,
+  isTotal = false,
+  className,
+}: CostColumnProps) {
   return (
-    <div className={cn('flex-1', className)}>
+    <div className={cn("flex-1", className)}>
       <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
         {label}
       </div>
       <div
         className={cn(
-          'text-sm tabular-nums',
-          isTotal
-            ? 'font-bold text-[#001B51]'
-            : 'font-medium text-gray-700'
+          "text-sm tabular-nums",
+          isTotal ? "font-bold text-[#001B51]" : "font-medium text-gray-700",
         )}
       >
         {formatBudget(value)}
@@ -190,31 +184,19 @@ function CostColumn({ label, value, isTotal = false, className }: CostColumnProp
 }
 
 /**
- * Get initials from a name string
- */
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-/**
  * Format role for display
  * Handles common abbreviations and formatting
  */
 function formatRole(role: string): string {
   const roleMap: Record<string, string> = {
-    admin: 'Admin',
-    pm: 'PM',
-    project_manager: 'PM',
-    member: 'Member',
-    subcontractor: 'Sub',
-    owner: 'Owner',
-    superintendent: 'Super',
-    foreman: 'Foreman',
+    admin: "Admin",
+    pm: "PM",
+    project_manager: "PM",
+    member: "Member",
+    subcontractor: "Sub",
+    owner: "Owner",
+    superintendent: "Super",
+    foreman: "Foreman",
   };
 
   return roleMap[role.toLowerCase()] || role.slice(0, 6);

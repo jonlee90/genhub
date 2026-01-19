@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MessageCircle,
@@ -40,8 +40,6 @@ interface ConnectionState {
 // ============================================
 
 export function KakaoTalkSettings() {
-  console.log("[KakaoTalkSettings] Rendering component");
-
   const [connectionState, setConnectionState] = useState<ConnectionState>({
     isConnected: false,
     twoWaySync: false,
@@ -55,13 +53,11 @@ export function KakaoTalkSettings() {
   // Fetch Connection Status
   // ============================================
 
-  const fetchConnectionStatus = async () => {
-    console.log("[KakaoTalkSettings] Fetching connection status...");
+  const fetchConnectionStatus = useCallback(async () => {
     setIsLoading(true);
 
     try {
       const result = await getKakaoConnection();
-      console.log("[KakaoTalkSettings] Connection result:", result);
 
       if (result.success && result.connection) {
         setConnectionState({
@@ -83,7 +79,7 @@ export function KakaoTalkSettings() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchConnectionStatus();
@@ -93,19 +89,16 @@ export function KakaoTalkSettings() {
   // Handlers
   // ============================================
 
-  const handleConnect = () => {
-    console.log("[KakaoTalkSettings] Initiating KakaoTalk OAuth flow...");
+  const handleConnect = useCallback(() => {
     toast.loading("Redirecting to KakaoTalk...", { id: "kakao-connect" });
     window.location.href = "/api/kakao/connect";
-  };
+  }, []);
 
-  const handleDisconnect = async () => {
-    console.log("[KakaoTalkSettings] Disconnecting KakaoTalk account...");
+  const handleDisconnect = useCallback(async () => {
     setIsDisconnecting(true);
 
     try {
       const result = await disconnectKakao();
-      console.log("[KakaoTalkSettings] Disconnect result:", result);
 
       if (result.success) {
         toast.success("KakaoTalk account disconnected successfully");
@@ -123,15 +116,13 @@ export function KakaoTalkSettings() {
     } finally {
       setIsDisconnecting(false);
     }
-  };
+  }, []);
 
-  const handleSyncToggle = async (enabled: boolean) => {
-    console.log("[KakaoTalkSettings] Toggling two-way sync to:", enabled);
+  const handleSyncToggle = useCallback(async (enabled: boolean) => {
     setIsTogglingSync(true);
 
     try {
       const result = await updateTwoWaySync(enabled);
-      console.log("[KakaoTalkSettings] Sync toggle result:", result);
 
       if (result.success) {
         setConnectionState((prev) => ({
@@ -152,7 +143,7 @@ export function KakaoTalkSettings() {
     } finally {
       setIsTogglingSync(false);
     }
-  };
+  }, []);
 
   // ============================================
   // Render Loading State

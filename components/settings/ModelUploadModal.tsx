@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { FileUploadPanel } from "@/components/ui/FileUploadPanel";
 import { Upload, AlertCircle, Loader2 } from "lucide-react";
+import { formatFileSize } from "@/lib/format-utils";
 import { uploadCompanyDefaultModel } from "@/app/actions/default-models";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -24,8 +25,6 @@ export function ModelUploadModal({
   projectTypeName,
   onClose,
 }: ModelUploadModalProps) {
-  console.log("[ModelUploadModal] Opening for project type:", projectTypeName);
-
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -35,8 +34,7 @@ export function ModelUploadModal({
   const [error, setError] = useState<string | null>(null);
 
   // Handle file selection
-  const handleFileSelect = (file: File | null) => {
-    console.log("[ModelUploadModal] File selected");
+  const handleFileSelect = useCallback((file: File | null) => {
     if (!file) {
       setSelectedFile(null);
       return;
@@ -58,19 +56,12 @@ export function ModelUploadModal({
       return;
     }
 
-    console.log(
-      "[ModelUploadModal] File valid:",
-      file.name,
-      formatFileSize(file.size),
-    );
     setSelectedFile(file);
-  };
+  }, []);
 
   // Handle upload
-  const handleUpload = () => {
+  const handleUpload = useCallback(() => {
     if (!selectedFile) return;
-
-    console.log("[ModelUploadModal] Starting upload:", selectedFile.name);
 
     startTransition(async () => {
       try {
@@ -123,13 +114,7 @@ export function ModelUploadModal({
         });
       }
     });
-  };
-
-  // Format file size
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return mb > 1 ? `${mb.toFixed(2)} MB` : `${(bytes / 1024).toFixed(2)} KB`;
-  };
+  }, [selectedFile, projectTypeConfigId, projectTypeName, toast, router, onClose]);
 
   return (
     <ResponsiveModal

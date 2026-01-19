@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -73,7 +73,7 @@ const AVAILABLE_ICONS = {
  * Debug: Construction-themed card layout with industrial aesthetics
  */
 export function TaskTypeManager() {
-  console.log("[TaskTypeManager] Rendering task type manager");
+  // Removed console.log("[TaskTypeManager] Rendering task type manager");
 
   const [taskTypes, setTaskTypes] = useState<TaskTypeConfig[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -81,33 +81,28 @@ export function TaskTypeManager() {
   const [editingType, setEditingType] = useState<TaskTypeConfig | null>(null);
   const [deletingType, setDeletingType] = useState<TaskTypeConfig | null>(null);
 
-  // Debug: Fetch task types on mount
+  // Fetch task types on mount
   useEffect(() => {
     loadTaskTypes();
   }, []);
 
-  async function loadTaskTypes() {
-    console.log("[TaskTypeManager] Loading task types...");
+  const loadTaskTypes = useCallback(async () => {
+    // Removed console.log("[TaskTypeManager] Loading task types...");
     setIsLoading(true);
     const result = await getAllTaskTypes();
     if (result.taskTypes) {
       setTaskTypes(result.taskTypes);
-      console.log(
-        "[TaskTypeManager] Loaded",
-        result.taskTypes.length,
-        "task types",
-      );
     } else if (result.error) {
       console.error("[TaskTypeManager] Error loading:", result.error);
       toast.error(result.error);
     }
     setIsLoading(false);
-  }
+  }, []);
 
-  // Debug: Handle create submission
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  // Handle create submission
+  const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("[TaskTypeManager] Creating task type...");
+    // Removed console.log("[TaskTypeManager] Creating task type...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createTaskType(formData);
@@ -119,14 +114,14 @@ export function TaskTypeManager() {
     } else {
       toast.error(result.error || "Failed to create task type");
     }
-  }
+  }, [loadTaskTypes]);
 
-  // Debug: Handle update submission
-  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+  // Handle update submission
+  const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingType) return;
 
-    console.log("[TaskTypeManager] Updating task type:", editingType.id);
+    // Removed console.log("[TaskTypeManager] Updating task type:", editingType.id);
 
     const formData = new FormData(e.currentTarget);
     const result = await updateTaskType(editingType.id, formData);
@@ -138,13 +133,13 @@ export function TaskTypeManager() {
     } else {
       toast.error(result.error || "Failed to update task type");
     }
-  }
+  }, [editingType, loadTaskTypes]);
 
-  // Debug: Handle delete confirmation
-  async function handleDelete() {
+  // Handle delete confirmation
+  const handleDelete = useCallback(async () => {
     if (!deletingType) return;
 
-    console.log("[TaskTypeManager] Deleting task type:", deletingType.id);
+    // Removed console.log("[TaskTypeManager] Deleting task type:", deletingType.id);
 
     const result = await deleteTaskType(deletingType.id);
 
@@ -155,7 +150,7 @@ export function TaskTypeManager() {
     } else {
       toast.error(result.error || "Failed to delete task type");
     }
-  }
+  }, [deletingType, loadTaskTypes]);
 
   return (
     <div className="space-y-6">

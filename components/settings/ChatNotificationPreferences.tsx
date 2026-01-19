@@ -1,11 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePushNotifications } from "@/lib/hooks/usePushNotifications";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Mail, ShieldAlert, CheckCircle2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// Shared switch styling classes
+const SWITCH_CLASS = "data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300 scale-110";
 
 /**
  * ChatNotificationPreferences - Mobile-first notification settings
@@ -17,46 +20,26 @@ export function ChatNotificationPreferences() {
   const [pushEnabled, setPushEnabled] = useState(false);
   const [emailEnabled, setEmailEnabled] = useState(false);
 
-  console.log(
-    "[ChatNotificationPreferences] Rendering with permission:",
-    permission,
-  );
-
   // Update state based on permission
   useEffect(() => {
     const granted = permission === "granted";
-    console.log(
-      "[ChatNotificationPreferences] Permission changed:",
-      permission,
-      "-> pushEnabled:",
-      granted,
-    );
     setPushEnabled(granted);
   }, [permission]);
 
-  const handlePushToggle = async (enabled: boolean) => {
-    console.log("[ChatNotificationPreferences] Push toggle clicked:", enabled);
-
+  const handlePushToggle = useCallback(async (enabled: boolean) => {
     if (enabled && permission !== "granted") {
-      console.log("[ChatNotificationPreferences] Requesting permission...");
       const granted = await requestPermission();
-      console.log("[ChatNotificationPreferences] Permission result:", granted);
       setPushEnabled(granted);
     } else {
-      console.log(
-        "[ChatNotificationPreferences] Setting push enabled:",
-        enabled,
-      );
       setPushEnabled(enabled);
       // TODO: Unregister push subscription if disabled
     }
-  };
+  }, [permission, requestPermission]);
 
-  const handleEmailToggle = (enabled: boolean) => {
-    console.log("[ChatNotificationPreferences] Email toggle clicked:", enabled);
+  const handleEmailToggle = useCallback((enabled: boolean) => {
     setEmailEnabled(enabled);
     // TODO: Update user email notification preferences in database
-  };
+  }, []);
 
   // Helper to get status badge
   const getStatusBadge = () => {
@@ -132,9 +115,9 @@ export function ChatNotificationPreferences() {
                 checked={pushEnabled}
                 onCheckedChange={handlePushToggle}
                 disabled={isLoading || permission === "denied"}
+                aria-label="Toggle push notifications"
                 className={cn(
-                  "data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300",
-                  "scale-110",
+                  SWITCH_CLASS,
                   isLoading && "cursor-wait",
                 )}
               />
@@ -178,7 +161,8 @@ export function ChatNotificationPreferences() {
               <Switch
                 checked={emailEnabled}
                 onCheckedChange={handleEmailToggle}
-                className="data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300 scale-110"
+                aria-label="Toggle email notifications"
+                className={SWITCH_CLASS}
               />
               <span className="text-xs font-bold text-gray-500 uppercase">
                 {emailEnabled ? "ON" : "OFF"}

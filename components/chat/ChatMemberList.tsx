@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * ChatMemberList - Read-only member list for chat room settings
@@ -10,10 +10,10 @@
  * - Industrial-refined design
  */
 
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Shield, Wrench, HardHat, User } from 'lucide-react';
+import { motion } from "framer-motion";
+import { cn, getInitials } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Users, Shield, Wrench, HardHat, User } from "lucide-react";
 
 export interface ChatMember {
   id: string;
@@ -31,7 +31,7 @@ interface ChatMemberListProps {
 
 // Debug: Member list with construction-themed role badges
 export function ChatMemberList({ members }: ChatMemberListProps) {
-  console.log('[ChatMemberList] Rendering with members:', members.length);
+  console.log("[ChatMemberList] Rendering with members:", members.length);
 
   if (members.length === 0) {
     return (
@@ -51,10 +51,10 @@ export function ChatMemberList({ members }: ChatMemberListProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.05 }}
           className={cn(
-            'flex items-center gap-3 p-3 rounded-lg',
-            'bg-white border-2 border-gray-100',
-            'hover:border-construction-blue/20 hover:bg-construction-blue/5',
-            'transition-all duration-200'
+            "flex items-center gap-3 p-3 rounded-lg",
+            "bg-white border-2 border-gray-100",
+            "hover:border-construction-blue/20 hover:bg-construction-blue/5",
+            "transition-all duration-200",
           )}
         >
           {/* Debug: Avatar */}
@@ -73,7 +73,9 @@ export function ChatMemberList({ members }: ChatMemberListProps) {
               </span>
               <RoleBadge role={member.role} />
             </div>
-            <p className="text-xs font-mono text-gray-500 truncate">{member.email}</p>
+            <p className="text-xs font-mono text-gray-500 truncate">
+              {member.email}
+            </p>
           </div>
 
           {/* Debug: Role icon */}
@@ -90,34 +92,35 @@ export function ChatMemberList({ members }: ChatMemberListProps) {
 function RoleBadge({ role }: { role: string }) {
   const badges: Record<string, { label: string; className: string }> = {
     admin: {
-      label: 'GC ADMIN',
-      className: 'bg-construction-blue text-white border-construction-blue',
+      label: "GC ADMIN",
+      className: "bg-construction-blue text-white border-construction-blue",
     },
     pm: {
-      label: 'PM',
-      className: 'bg-construction-accent text-white border-construction-accent',
+      label: "PM",
+      className: "bg-construction-accent text-white border-construction-accent",
     },
     field_worker: {
-      label: 'FIELD',
-      className: 'bg-construction-yellow text-construction-accent border-construction-yellow',
+      label: "FIELD",
+      className:
+        "bg-construction-yellow text-construction-accent border-construction-yellow",
     },
     subcontractor: {
-      label: 'SUB',
-      className: 'bg-gray-100 text-gray-700 border-gray-300',
+      label: "SUB",
+      className: "bg-gray-100 text-gray-700 border-gray-300",
     },
   };
 
   const badge = badges[role] || {
     label: role.toUpperCase(),
-    className: 'bg-gray-100 text-gray-600 border-gray-200',
+    className: "bg-gray-100 text-gray-600 border-gray-200",
   };
 
   return (
     <span
       className={cn(
-        'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
-        'border-2',
-        badge.className
+        "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
+        "border-2",
+        badge.className,
       )}
     >
       {badge.label}
@@ -139,14 +142,4 @@ function RoleIcon({ role }: { role: string }) {
       {icons[role] || <User className="h-5 w-5 text-gray-400" />}
     </div>
   );
-}
-
-// Debug: Helper function
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 }

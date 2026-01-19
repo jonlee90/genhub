@@ -10,15 +10,9 @@ const priceFormatter = new Intl.NumberFormat("en-US", {
 });
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Package,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  Plus,
-  ArrowRight,
-} from "lucide-react";
+import { Package, CheckCircle2, Plus, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { STOCK_STATUS_CONFIG } from "@/lib/materials-ui";
 import { motion } from "framer-motion";
 import { AssignMaterialModal } from "./AssignMaterialModal";
 import Image from "next/image";
@@ -36,33 +30,6 @@ interface ProductCardProps {
   isSelectedForComparison: boolean;
   onToggleComparison: (product: HomeDepotProduct) => void;
 }
-
-const STOCK_STATUS_CONFIG = {
-  in_stock: {
-    label: "In Stock",
-    icon: CheckCircle2,
-    color:
-      "bg-construction-green/10 text-construction-green border-construction-green",
-  },
-  low_stock: {
-    label: "Low Stock",
-    icon: AlertCircle,
-    color:
-      "bg-construction-accent/10 text-construction-accent border-construction-accent",
-  },
-  out_of_stock: {
-    label: "Out of Stock",
-    icon: XCircle,
-    color:
-      "bg-construction-red/10 text-construction-red border-construction-red",
-  },
-  special_order: {
-    label: "Special Order",
-    icon: AlertCircle,
-    color:
-      "bg-construction-accent/10 text-construction-accent border-construction-accent",
-  },
-};
 
 export function ProductCard({
   product,

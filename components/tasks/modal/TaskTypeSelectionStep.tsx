@@ -6,7 +6,7 @@
  */
 'use client';
 
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { motion } from 'framer-motion';
 import { TaskTypeSelector } from '../TaskTypeSelector';
 import { getTaskTypeConfig } from '@/lib/config/task-type-fields';
@@ -24,14 +24,14 @@ interface TaskTypeSelectionStepProps {
  * Task type selection step for create mode
  * Applies task type defaults when a type is selected
  */
-export function TaskTypeSelectionStep({
+function TaskTypeSelectionStepInner({
   selectedType,
   onTypeSelect,
   onPriorityChange,
   onStartDateChange,
   disabled,
 }: TaskTypeSelectionStepProps) {
-  const handleTypeSelect = (type: TaskType) => {
+  const handleTypeSelect = useCallback((type: TaskType) => {
     onTypeSelect(type);
 
     // Apply task type defaults
@@ -46,7 +46,7 @@ export function TaskTypeSelectionStep({
     if (cfg.defaults.startDate === 'today' && onStartDateChange) {
       onStartDateChange(new Date().toISOString().split('T')[0]);
     }
-  };
+  }, [onTypeSelect, onPriorityChange, onStartDateChange]);
 
   return (
     <motion.div
@@ -63,3 +63,6 @@ export function TaskTypeSelectionStep({
     </motion.div>
   );
 }
+
+// Memoized component to prevent unnecessary re-renders
+export const TaskTypeSelectionStep = memo(TaskTypeSelectionStepInner);

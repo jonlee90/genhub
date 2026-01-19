@@ -22,14 +22,7 @@ import AlertCircle from "lucide-react/icons/alert-circle";
 import Mail from "lucide-react/icons/mail";
 import { motion, AnimatePresence } from "framer-motion";
 import { addProjectTeamMember } from "@/app/actions/projects";
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+import { getInitials } from "@/lib/utils";
 
 // Debug: User profile interface for team member selection
 interface UserProfile {

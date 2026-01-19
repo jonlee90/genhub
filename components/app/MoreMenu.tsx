@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Receipt,
@@ -16,61 +16,61 @@ import {
   MessageSquare,
   Zap,
   Shield,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { signOut } from 'next-auth/react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { Session } from 'next-auth';
+} from "lucide-react";
+import { cn, getInitials } from "@/lib/utils";
+import { signOut } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Session } from "next-auth";
 
 // Navigation grid items - designed for quick access
 const navGridItems = [
   {
-    name: 'Expenses',
-    href: '/app/expenses',
+    name: "Expenses",
+    href: "/app/expenses",
     icon: Receipt,
-    color: 'from-emerald-500 to-emerald-600',
-    iconBg: 'bg-emerald-500/20',
-    description: 'Expenses',
+    color: "from-emerald-500 to-emerald-600",
+    iconBg: "bg-emerald-500/20",
+    description: "Expenses",
   },
   {
-    name: 'Chat',
-    href: '/app/chat',
+    name: "Chat",
+    href: "/app/chat",
     icon: MessageSquare,
-    color: 'from-blue-500 to-blue-600',
-    iconBg: 'bg-blue-500/20',
-    description: 'Messages',
+    color: "from-blue-500 to-blue-600",
+    iconBg: "bg-blue-500/20",
+    description: "Messages",
   },
   {
-    name: 'Team',
-    href: '/app/team',
+    name: "Team",
+    href: "/app/team",
     icon: Users,
-    color: 'from-violet-500 to-violet-600',
-    iconBg: 'bg-violet-500/20',
-    description: 'Crew',
+    color: "from-violet-500 to-violet-600",
+    iconBg: "bg-violet-500/20",
+    description: "Crew",
   },
   {
-    name: 'Subs',
-    href: '/app/team/subcontractors',
+    name: "Subs",
+    href: "/app/team/subcontractors",
     icon: HardHat,
-    color: 'from-amber-500 to-amber-600',
-    iconBg: 'bg-amber-500/20',
-    description: 'Contractors',
+    color: "from-amber-500 to-amber-600",
+    iconBg: "bg-amber-500/20",
+    description: "Contractors",
   },
   {
-    name: 'Alerts',
-    href: '/app/notifications',
+    name: "Alerts",
+    href: "/app/notifications",
     icon: Bell,
-    color: 'from-rose-500 to-rose-600',
-    iconBg: 'bg-rose-500/20',
-    description: 'Notifications',
+    color: "from-rose-500 to-rose-600",
+    iconBg: "bg-rose-500/20",
+    description: "Notifications",
   },
   {
-    name: 'Settings',
-    href: '/app/settings',
+    name: "Settings",
+    href: "/app/settings",
     icon: Settings,
-    color: 'from-slate-500 to-slate-600',
-    iconBg: 'bg-slate-500/20',
-    description: 'Preferences',
+    color: "from-slate-500 to-slate-600",
+    iconBg: "bg-slate-500/20",
+    description: "Preferences",
   },
 ];
 
@@ -86,29 +86,29 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
   // Lock body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
   // Close on ESC key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
 
@@ -118,18 +118,10 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
   };
 
   // Get user initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const handleSignOut = async () => {
     onClose();
-    await signOut({ callbackUrl: '/' });
+    await signOut({ callbackUrl: "/" });
   };
 
   // Animation variants
@@ -139,22 +131,22 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
   } as const;
 
   const panelVariants = {
-    hidden: { y: '100%', opacity: 0.5 },
+    hidden: { y: "100%", opacity: 0.5 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        type: 'spring' as const,
+        type: "spring" as const,
         damping: 28,
         stiffness: 350,
         mass: 0.8,
       },
     },
     exit: {
-      y: '100%',
+      y: "100%",
       opacity: 0,
       transition: {
-        type: 'spring' as const,
+        type: "spring" as const,
         damping: 35,
         stiffness: 400,
       },
@@ -168,7 +160,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
       scale: 1,
       y: 0,
       transition: {
-        type: 'spring' as const,
+        type: "spring" as const,
         damping: 20,
         stiffness: 300,
         delay: i * 0.05,
@@ -199,7 +191,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
             animate="visible"
             exit="exit"
             style={{
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
             <div className="relative bg-white rounded-t-[28px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
@@ -220,7 +212,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                     style={{
                       backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
                                         linear-gradient(to bottom, white 1px, transparent 1px)`,
-                      backgroundSize: '20px 20px',
+                      backgroundSize: "20px 20px",
                     }}
                   />
 
@@ -271,13 +263,21 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                         className="flex items-center gap-3 p-3 bg-white/[0.08] backdrop-blur-sm rounded-xl border border-white/10"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.15, type: 'spring', damping: 20 }}
+                        transition={{
+                          delay: 0.15,
+                          type: "spring",
+                          damping: 20,
+                        }}
                       >
                         <div className="relative">
                           <Avatar className="h-11 w-11 ring-2 ring-white/20">
-                            <AvatarImage src={session.user.image || undefined} />
+                            <AvatarImage
+                              src={session.user.image || undefined}
+                            />
                             <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black text-sm">
-                              {session.user.name ? getInitials(session.user.name) : 'U'}
+                              {session.user.name
+                                ? getInitials(session.user.name)
+                                : "U"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#002d7a] flex items-center justify-center">
@@ -286,7 +286,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold text-white truncate">
-                            {session.user.name || 'User'}
+                            {session.user.name || "User"}
                           </p>
                           <p className="text-xs text-white/50 truncate font-medium">
                             {session.user.email}
@@ -325,13 +325,13 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           href={item.href}
                           onClick={onClose}
                           className={cn(
-                            'relative flex flex-col items-center justify-center',
-                            'aspect-square rounded-2xl',
-                            'transition-all duration-150',
-                            'active:scale-[0.96]',
+                            "relative flex flex-col items-center justify-center",
+                            "aspect-square rounded-2xl",
+                            "transition-all duration-150",
+                            "active:scale-[0.96]",
                             active
-                              ? 'bg-construction-blue shadow-lg shadow-construction-blue/25'
-                              : 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300'
+                              ? "bg-construction-blue shadow-lg shadow-construction-blue/25"
+                              : "bg-gray-100 hover:bg-gray-200 active:bg-gray-300",
                           )}
                         >
                           {/* Active indicator glow */}
@@ -342,17 +342,17 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           {/* Icon container */}
                           <div
                             className={cn(
-                              'flex items-center justify-center w-11 h-11 rounded-xl mb-1.5',
-                              'transition-all duration-150',
+                              "flex items-center justify-center w-11 h-11 rounded-xl mb-1.5",
+                              "transition-all duration-150",
                               active
-                                ? 'bg-white/20 text-white'
-                                : `${item.iconBg} text-gray-700`
+                                ? "bg-white/20 text-white"
+                                : `${item.iconBg} text-gray-700`,
                             )}
                           >
                             <Icon
                               className={cn(
-                                'w-6 h-6',
-                                active && 'text-white drop-shadow-sm'
+                                "w-6 h-6",
+                                active && "text-white drop-shadow-sm",
                               )}
                               strokeWidth={active ? 2.5 : 2}
                             />
@@ -361,8 +361,8 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           {/* Label */}
                           <span
                             className={cn(
-                              'text-[11px] font-bold tracking-wide',
-                              active ? 'text-white' : 'text-gray-700'
+                              "text-[11px] font-bold tracking-wide",
+                              active ? "text-white" : "text-gray-700",
                             )}
                           >
                             {item.name}
@@ -374,7 +374,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                               className="absolute top-2 right-2 w-2 h-2 rounded-full bg-white shadow-sm"
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              transition={{ type: 'spring', delay: 0.2 }}
+                              transition={{ type: "spring", delay: 0.2 }}
                             />
                           )}
                         </Link>
@@ -389,11 +389,11 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                 <motion.button
                   onClick={handleSignOut}
                   className={cn(
-                    'flex items-center justify-center gap-2.5 w-full',
-                    'h-14 rounded-xl',
-                    'bg-gray-100 hover:bg-gray-200 active:bg-gray-300',
-                    'text-gray-700 font-bold',
-                    'transition-colors duration-150'
+                    "flex items-center justify-center gap-2.5 w-full",
+                    "h-14 rounded-xl",
+                    "bg-gray-100 hover:bg-gray-200 active:bg-gray-300",
+                    "text-gray-700 font-bold",
+                    "transition-colors duration-150",
                   )}
                   whileTap={{ scale: 0.98 }}
                 >

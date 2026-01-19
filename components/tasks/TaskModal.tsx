@@ -784,14 +784,10 @@ export function TaskModal({
   userRole,
   isLoadingData,
 }: TaskModalProps) {
-  // Generate unique key for form remounting
-  const formKey = mode === 'edit' && task ? `edit-${task.id}` : 'create';
-
   if (!isOpen) return null;
 
   return (
     <TaskModalForm
-      key={formKey}
       mode={mode}
       task={task}
       projects={projects}

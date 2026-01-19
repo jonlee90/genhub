@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * SearchMessages - Message search component with blueprint-inspired design
@@ -10,15 +10,15 @@
  * - Industrial-refined aesthetic with blueprint grid overlays
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { Search, X, MessageSquare, Hash, Users, Loader2 } from 'lucide-react';
-import { searchMessages } from '@/app/actions/chat-search';
-import { useRouter } from 'next/navigation';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { toast } from 'sonner';
-import DOMPurify from 'dompurify';
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn, getInitials } from "@/lib/utils";
+import { Search, X, MessageSquare, Hash, Users, Loader2 } from "lucide-react";
+import { searchMessages } from "@/app/actions/chat-search";
+import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import DOMPurify from "dompurify";
 
 interface SearchMessagesProps {
   isOpen: boolean;
@@ -53,13 +53,13 @@ export function SearchMessages({
   currentRoomId,
   currentRoomName,
 }: SearchMessagesProps) {
-  const [query, setQuery] = useState('');
-  const [searchScope, setSearchScope] = useState<'room' | 'all'>('room');
+  const [query, setQuery] = useState("");
+  const [searchScope, setSearchScope] = useState<"room" | "all">("room");
   const [results, setResults] = useState<SearchResultItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const router = useRouter();
 
-  console.log('[SearchMessages] Rendering:', {
+  console.log("[SearchMessages] Rendering:", {
     isOpen,
     currentRoomId,
     searchScope,
@@ -69,9 +69,9 @@ export function SearchMessages({
   // Debug: Reset state when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setQuery('');
+      setQuery("");
       setResults([]);
-      setSearchScope('room');
+      setSearchScope("room");
     }
   }, [isOpen]);
 
@@ -94,26 +94,30 @@ export function SearchMessages({
   const handleSearch = useCallback(async () => {
     if (!query.trim() || query.length < 2) return;
 
-    console.log('[SearchMessages] Searching:', { query, searchScope, currentRoomId });
+    console.log("[SearchMessages] Searching:", {
+      query,
+      searchScope,
+      currentRoomId,
+    });
     setIsSearching(true);
 
     try {
       const result = await searchMessages(
         query,
-        searchScope === 'room' ? currentRoomId : undefined
+        searchScope === "room" ? currentRoomId : undefined,
       );
 
       if (result.success && result.results) {
-        console.log('[SearchMessages] Found results:', result.results.length);
+        console.log("[SearchMessages] Found results:", result.results.length);
         setResults(result.results as SearchResultItem[]);
       } else {
-        console.error('[SearchMessages] Search failed:', result.error);
-        toast.error(result.error || 'Search failed');
+        console.error("[SearchMessages] Search failed:", result.error);
+        toast.error(result.error || "Search failed");
         setResults([]);
       }
     } catch (error) {
-      console.error('[SearchMessages] Search error:', error);
-      toast.error('An error occurred while searching');
+      console.error("[SearchMessages] Search error:", error);
+      toast.error("An error occurred while searching");
       setResults([]);
     } finally {
       setIsSearching(false);
@@ -122,7 +126,7 @@ export function SearchMessages({
 
   // Debug: Navigate to message in context
   const handleResultClick = (result: SearchResultItem) => {
-    console.log('[SearchMessages] Navigating to message:', result.id);
+    console.log("[SearchMessages] Navigating to message:", result.id);
     router.push(`/app/chat?room=${result.chatRoom.id}&highlight=${result.id}`);
     onClose();
   };
@@ -130,13 +134,13 @@ export function SearchMessages({
   // Debug: Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   return (
@@ -155,7 +159,7 @@ export function SearchMessages({
                 linear-gradient(rgba(0,27,81,0.03) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0,27,81,0.03) 1px, transparent 1px)
               `,
-              backgroundSize: '24px 24px',
+              backgroundSize: "24px 24px",
             }}
           />
 
@@ -164,14 +168,14 @@ export function SearchMessages({
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              'fixed top-[10%] left-1/2 -translate-x-1/2 z-50',
-              'w-full max-w-2xl mx-auto',
-              'bg-white rounded-xl shadow-construction-xl',
-              'border-4 border-construction-blue/20',
-              'overflow-hidden'
+              "fixed top-[10%] left-1/2 -translate-x-1/2 z-50",
+              "w-full max-w-2xl mx-auto",
+              "bg-white rounded-xl shadow-construction-xl",
+              "border-4 border-construction-blue/20",
+              "overflow-hidden",
             )}
           >
             {/* Debug: Header with stamped metal style */}
@@ -184,7 +188,7 @@ export function SearchMessages({
                     linear-gradient(white 1px, transparent 1px),
                     linear-gradient(90deg, white 1px, transparent 1px)
                   `,
-                  backgroundSize: '16px 16px',
+                  backgroundSize: "16px 16px",
                 }}
               />
 
@@ -218,12 +222,12 @@ export function SearchMessages({
                   placeholder="Search messages..."
                   autoFocus
                   className={cn(
-                    'w-full px-4 py-3 pl-12 pr-4',
-                    'bg-gray-50 border-2 border-gray-200',
-                    'rounded-lg font-medium text-gray-900',
-                    'focus:outline-none focus:ring-4 focus:ring-construction-blue/20 focus:border-construction-blue',
-                    'transition-all duration-200',
-                    'placeholder:text-gray-400 placeholder:font-normal'
+                    "w-full px-4 py-3 pl-12 pr-4",
+                    "bg-gray-50 border-2 border-gray-200",
+                    "rounded-lg font-medium text-gray-900",
+                    "focus:outline-none focus:ring-4 focus:ring-construction-blue/20 focus:border-construction-blue",
+                    "transition-all duration-200",
+                    "placeholder:text-gray-400 placeholder:font-normal",
                   )}
                 />
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -237,27 +241,27 @@ export function SearchMessages({
               {currentRoomId && (
                 <div className="flex gap-2 mt-4">
                   <button
-                    onClick={() => setSearchScope('room')}
+                    onClick={() => setSearchScope("room")}
                     className={cn(
-                      'flex-1 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide',
-                      'border-2 transition-all duration-200',
-                      searchScope === 'room'
-                        ? 'bg-construction-blue text-white border-construction-blue shadow-md'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-construction-blue/40 hover:bg-gray-50'
+                      "flex-1 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide",
+                      "border-2 transition-all duration-200",
+                      searchScope === "room"
+                        ? "bg-construction-blue text-white border-construction-blue shadow-md"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-construction-blue/40 hover:bg-gray-50",
                     )}
                   >
                     <Hash className="inline-block h-4 w-4 mr-1.5 -mt-0.5" />
-                    {currentRoomName || 'This Room'}
+                    {currentRoomName || "This Room"}
                   </button>
 
                   <button
-                    onClick={() => setSearchScope('all')}
+                    onClick={() => setSearchScope("all")}
                     className={cn(
-                      'flex-1 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide',
-                      'border-2 transition-all duration-200',
-                      searchScope === 'all'
-                        ? 'bg-construction-blue text-white border-construction-blue shadow-md'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-construction-blue/40 hover:bg-gray-50'
+                      "flex-1 px-4 py-2 rounded-lg font-bold text-sm uppercase tracking-wide",
+                      "border-2 transition-all duration-200",
+                      searchScope === "all"
+                        ? "bg-construction-blue text-white border-construction-blue shadow-md"
+                        : "bg-white text-gray-700 border-gray-200 hover:border-construction-blue/40 hover:bg-gray-50",
                     )}
                   >
                     <MessageSquare className="inline-block h-4 w-4 mr-1.5 -mt-0.5" />
@@ -282,7 +286,9 @@ export function SearchMessages({
                   <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-3">
                     <Search className="h-8 w-8 text-gray-400" />
                   </div>
-                  <p className="text-sm font-bold text-gray-900">No results found</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    No results found
+                  </p>
                   <p className="text-xs text-gray-500 mt-1 font-mono">
                     Try different keywords
                   </p>
@@ -307,8 +313,10 @@ export function SearchMessages({
             {results.length > 0 && (
               <div className="px-6 py-3 bg-gray-50 border-t-2 border-gray-200">
                 <p className="text-xs font-mono text-gray-600">
-                  <span className="font-bold text-construction-blue">{results.length}</span>{' '}
-                  result{results.length !== 1 ? 's' : ''} found
+                  <span className="font-bold text-construction-blue">
+                    {results.length}
+                  </span>{" "}
+                  result{results.length !== 1 ? "s" : ""} found
                 </p>
               </div>
             )}
@@ -327,7 +335,7 @@ interface SearchResultItemProps {
 }
 
 function SearchResultItem({ result, onClick, index }: SearchResultItemProps) {
-  console.log('[SearchResultItem] Rendering:', result.id);
+  console.log("[SearchResultItem] Rendering:", result.id);
 
   return (
     <motion.button
@@ -336,10 +344,10 @@ function SearchResultItem({ result, onClick, index }: SearchResultItemProps) {
       transition={{ delay: index * 0.05 }}
       onClick={onClick}
       className={cn(
-        'w-full px-6 py-4 text-left',
-        'hover:bg-construction-blue/5 transition-all duration-200',
-        'border-l-4 border-transparent hover:border-construction-yellow',
-        'group'
+        "w-full px-6 py-4 text-left",
+        "hover:bg-construction-blue/5 transition-all duration-200",
+        "border-l-4 border-transparent hover:border-construction-yellow",
+        "group",
       )}
     >
       <div className="flex gap-3">
@@ -359,7 +367,7 @@ function SearchResultItem({ result, onClick, index }: SearchResultItemProps) {
             </span>
             <span className="text-xs font-mono text-gray-400">•</span>
             <div className="flex items-center gap-1.5">
-              {result.chatRoom.type === 'project' ? (
+              {result.chatRoom.type === "project" ? (
                 <Hash className="h-3 w-3 text-gray-400" />
               ) : (
                 <Users className="h-3 w-3 text-gray-400" />
@@ -376,7 +384,7 @@ function SearchResultItem({ result, onClick, index }: SearchResultItemProps) {
             className="text-sm text-gray-700 line-clamp-2 leading-relaxed"
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(result.snippet, {
-                ALLOWED_TAGS: ['mark'], // Only allow <mark> tags for highlights
+                ALLOWED_TAGS: ["mark"], // Only allow <mark> tags for highlights
                 ALLOWED_ATTR: [], // No attributes allowed
               }),
             }}
@@ -396,15 +404,6 @@ function SearchResultItem({ result, onClick, index }: SearchResultItemProps) {
 
 // Debug: Helper functions
 
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 function formatMessageTime(timestamp: string): string {
   const date = new Date(timestamp);
   const now = new Date();
@@ -414,9 +413,9 @@ function formatMessageTime(timestamp: string): string {
   yesterday.setDate(yesterday.getDate() - 1);
   const isYesterday = date.toDateString() === yesterday.toDateString();
 
-  const timeStr = date.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
+  const timeStr = date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
     hour12: true,
   });
 
@@ -424,9 +423,9 @@ function formatMessageTime(timestamp: string): string {
   if (isYesterday) return `Yesterday at ${timeStr}`;
 
   return (
-    date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     }) + ` at ${timeStr}`
   );
 }

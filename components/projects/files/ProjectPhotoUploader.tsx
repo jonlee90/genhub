@@ -10,15 +10,12 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Camera from "lucide-react/icons/camera";
 import Upload from "lucide-react/icons/upload";
-import Loader2 from "lucide-react/icons/loader-2";
-import AlertCircle from "lucide-react/icons/alert-circle";
 import ImagePlus from "lucide-react/icons/image-plus";
 import { cn } from "@/lib/utils";
+import { FileUploadPanel } from "./FileUploadPanel";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategorySelector } from "./CategorySelector";
@@ -75,82 +72,89 @@ export function ProjectPhotoUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    console.log("[ProjectPhotoUploader] File selected:", file.name);
-    setError(null);
+  const uploadFile = useCallback(
+    async (file: File) => {
+      console.log("[ProjectPhotoUploader] Uploading file:", file.name);
+      setUploading(true);
+      setProgress(0);
 
-    // Validate file
-    const validation = validatePhoto(file);
-    if (!validation.valid) {
-      setError(validation.error || "Invalid file");
-      toast.error(validation.error || "Invalid file");
-      return;
-    }
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("projectId", projectId);
+        formData.append("category", category);
+        formData.append("clientVisible", clientVisible.toString());
 
-    // Generate preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+        // Simulate progress (since we can't track actual upload progress easily)
+        const progressInterval = setInterval(() => {
+          setProgress((prev) => Math.min(prev + 10, 90));
+        }, 200);
 
-    // Upload file
-    await uploadFile(file);
-  }, []);
+        const response = await fetch("/api/project-photos/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-  const uploadFile = async (file: File) => {
-    console.log("[ProjectPhotoUploader] Uploading file:", file.name);
-    setUploading(true);
-    setProgress(0);
+        clearInterval(progressInterval);
+        setProgress(100);
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("projectId", projectId);
-      formData.append("category", category);
-      formData.append("clientVisible", clientVisible.toString());
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Upload failed");
+        }
 
-      // Simulate progress (since we can't track actual upload progress easily)
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 10, 90));
-      }, 200);
+        const result = await response.json();
 
-      const response = await fetch("/api/project-photos/upload", {
-        method: "POST",
-        body: formData,
-      });
+        console.log("[ProjectPhotoUploader] Upload success:", result.photo.id);
+        toast.success("Photo uploaded successfully");
 
-      clearInterval(progressInterval);
-      setProgress(100);
+        // Call callback with photo URL
+        onComplete(result.photo.photo_url);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Upload failed");
+        // Reset state after a short delay
+        setTimeout(() => {
+          setPreview(null);
+          setProgress(0);
+          setUploading(false);
+        }, 500);
+      } catch (err) {
+        console.error("[ProjectPhotoUploader] Upload error:", err);
+        const errorMessage =
+          err instanceof Error ? err.message : "Upload failed";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setUploading(false);
+        setProgress(0);
+      }
+    },
+    [category, clientVisible, onComplete, projectId],
+  );
+
+  const handleFileSelect = useCallback(
+    async (file: File) => {
+      console.log("[ProjectPhotoUploader] File selected:", file.name);
+      setError(null);
+
+      // Validate file
+      const validation = validatePhoto(file);
+      if (!validation.valid) {
+        setError(validation.error || "Invalid file");
+        toast.error(validation.error || "Invalid file");
+        return;
       }
 
-      const result = await response.json();
+      // Generate preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
 
-      console.log("[ProjectPhotoUploader] Upload success:", result.photo.id);
-      toast.success("Photo uploaded successfully");
-
-      // Call callback with photo URL
-      onComplete(result.photo.photo_url);
-
-      // Reset state after a short delay
-      setTimeout(() => {
-        setPreview(null);
-        setProgress(0);
-        setUploading(false);
-      }, 500);
-    } catch (err) {
-      console.error("[ProjectPhotoUploader] Upload error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      setError(errorMessage);
-      toast.error(errorMessage);
-      setUploading(false);
-      setProgress(0);
-    }
-  };
+      // Upload file
+      await uploadFile(file);
+    },
+    [uploadFile],
+  );
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -227,54 +231,13 @@ export function ProjectPhotoUploader({
         </div>
       )}
 
-      {/* Preview */}
-      <AnimatePresence mode="wait">
-        {preview && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="relative rounded-lg overflow-hidden border-2 border-gray-200"
-          >
-            <Image
-              src={preview}
-              alt="Preview"
-              width={1200}
-              height={800}
-              className="w-full h-auto max-h-64 object-contain"
-              unoptimized
-            />
-
-            {/* Progress overlay */}
-            {uploading && (
-              <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center">
-                <Loader2 className="w-8 h-8 text-white animate-spin mb-4" />
-                <div className="w-3/4 bg-gray-700 rounded-full h-2 overflow-hidden">
-                  <motion.div
-                    className="h-full bg-[#001B51]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.3 }}
-                  />
-                </div>
-                <p className="text-white text-sm mt-2">{progress}%</p>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Error message */}
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg"
-        >
-          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-600">{error}</p>
-        </motion.div>
-      )}
+      <FileUploadPanel
+        preview={preview}
+        uploading={uploading}
+        progress={progress}
+        error={error}
+        imageClassName="max-h-64 object-contain"
+      />
 
       {/* Upload buttons */}
       {!uploading && !preview && (

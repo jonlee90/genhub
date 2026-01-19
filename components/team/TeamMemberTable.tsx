@@ -53,6 +53,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
+import { getInitials } from "@/lib/utils";
 import { InviteTeamMemberModal } from "./InviteTeamMemberModal";
 
 interface TeamMember {
@@ -129,14 +130,6 @@ const STATUS_CONFIG = {
     color: "bg-gray-100 text-gray-800 border-gray-300",
   },
 } as const;
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
 export function TeamMemberTable({
   members,

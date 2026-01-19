@@ -23,22 +23,10 @@ export function CreateProjectModal({
   onSuccess,
 }: CreateProjectModalProps) {
   const router = useRouter();
-  const [formKey, setFormKey] = useState(0);
-
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setFormKey(Date.now());
-    }
-  }, [isOpen]);
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleClose = useCallback(() => {
     onClose();
-    // Reset form on close
-    setTimeout(() => {
-      setFormKey(Date.now());
-    }, 300); // Wait for modal close animation
   }, [onClose]);
 
   const handleSuccess = useCallback(
@@ -56,7 +44,6 @@ export function CreateProjectModal({
   // Always render the form, let ResponsiveModal handle visibility
   return (
     <CreateProjectForm
-      key={formKey}
       isOpen={isOpen}
       onClose={handleClose}
       onSuccess={handleSuccess}

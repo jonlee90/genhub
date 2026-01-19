@@ -1,11 +1,12 @@
 /**
  * StepIndicator Component
  * Horizontal stepper with construction-themed styling
+ * Enhanced with mobile compact mode and ARIA live announcements
  */
 
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { StepIndicatorProps } from './types';
@@ -16,11 +17,21 @@ export const StepIndicator = memo(function StepIndicator({
   theme,
   className,
 }: StepIndicatorProps) {
+  const liveRegionRef = useRef<HTMLDivElement>(null);
+
   console.log('[StepIndicator] Rendering stepper:', {
     totalSteps: steps.length,
     currentStep,
     steps,
   });
+
+  // Announce step changes to screen readers
+  useEffect(() => {
+    if (liveRegionRef.current && currentStep > 0 && currentStep <= steps.length) {
+      const stepName = steps[currentStep - 1];
+      liveRegionRef.current.textContent = `Step ${currentStep} of ${steps.length}: ${stepName}`;
+    }
+  }, [currentStep, steps]);
 
   if (!steps || steps.length === 0) {
     console.log('[StepIndicator] No steps provided, skipping render');
@@ -28,8 +39,18 @@ export const StepIndicator = memo(function StepIndicator({
   }
 
   return (
-    <div className={cn('px-6 py-4 border-b border-gray-200', className)}>
-      <div className="flex items-center justify-between relative">
+    <>
+      {/* ARIA live region for screen reader announcements */}
+      <div
+        ref={liveRegionRef}
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
+
+      {/* Desktop view - full stepper */}
+      <div className={cn('hidden md:block px-6 py-4 border-b border-gray-200', className)}>
+        <div className="flex items-center justify-between relative">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
           const isActive = stepNumber === currentStep;
@@ -142,5 +163,52 @@ export const StepIndicator = memo(function StepIndicator({
         })}
       </div>
     </div>
+
+      {/* Mobile view - compact dots with current label */}
+      <div className={cn('md:hidden px-6 py-4 border-b border-gray-200', className)}>
+        <div className="flex flex-col items-center gap-3">
+          {/* Dots indicator */}
+          <div className="flex items-center gap-2">
+            {steps.map((_, index) => {
+              const stepNumber = index + 1;
+              const isActive = stepNumber === currentStep;
+              const isCompleted = stepNumber < currentStep;
+
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    'h-2 w-2 rounded-full transition-all duration-300',
+                    isActive && 'w-6',
+                    isCompleted && 'bg-opacity-100',
+                    !isActive && !isCompleted && 'bg-gray-300'
+                  )}
+                  style={
+                    isActive || isCompleted
+                      ? {
+                          background: `linear-gradient(135deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+                        }
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+
+          {/* Current step label */}
+          <div className="text-center">
+            <p
+              className="text-sm font-semibold"
+              style={{ color: theme.primary }}
+            >
+              {steps[currentStep - 1]}
+            </p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Step {currentStep} of {steps.length}
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
   );
 });

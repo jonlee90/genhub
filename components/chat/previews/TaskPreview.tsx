@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { ClipboardCheck, Calendar, Flag, User as UserIcon } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { EntityPreviewSkeleton, EntityPreviewError } from '../EntityPreview';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { cn, getInitials } from "@/lib/utils";
+import { ClipboardCheck, Calendar, Flag, User as UserIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { EntityPreviewSkeleton, EntityPreviewError } from "../EntityPreview";
+import { useRouter } from "next/navigation";
 
 interface TaskPreviewProps {
   id: string;
@@ -33,25 +33,27 @@ export function TaskPreview({ id }: TaskPreviewProps) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  console.log('[TaskPreview] Rendering for task:', id);
+  console.log("[TaskPreview] Rendering for task:", id);
 
   // Debug: Fetch task data
   useEffect(() => {
     async function fetchTask() {
-      console.log('[TaskPreview] Fetching task data:', id);
+      console.log("[TaskPreview] Fetching task data:", id);
 
       try {
-        const response = await fetch(`/api/chat/entity-preview?type=task&id=${id}`);
+        const response = await fetch(
+          `/api/chat/entity-preview?type=task&id=${id}`,
+        );
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || 'Failed to fetch task');
+          throw new Error(data.error || "Failed to fetch task");
         }
 
-        console.log('[TaskPreview] Task data loaded:', data);
+        console.log("[TaskPreview] Task data loaded:", data);
         setTask(data);
       } catch (err: any) {
-        console.error('[TaskPreview] Error fetching task:', err);
+        console.error("[TaskPreview] Error fetching task:", err);
         setError(err.message);
       } finally {
         setIsLoading(false);
@@ -68,7 +70,7 @@ export function TaskPreview({ id }: TaskPreviewProps) {
 
   // Debug: Error state
   if (error || !task) {
-    return <EntityPreviewError error={error || 'Task not found'} />;
+    return <EntityPreviewError error={error || "Task not found"} />;
   }
 
   // Debug: Status badge variant
@@ -83,9 +85,9 @@ export function TaskPreview({ id }: TaskPreviewProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        'w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4',
-        'hover:shadow-construction-lg transition-all duration-200 cursor-pointer',
-        'group'
+        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "hover:shadow-construction-lg transition-all duration-200 cursor-pointer",
+        "group",
       )}
     >
       {/* Debug: Header with icon and title */}
@@ -101,17 +103,17 @@ export function TaskPreview({ id }: TaskPreviewProps) {
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge
               className={cn(
-                'text-[10px] font-bold px-2 py-0.5',
+                "text-[10px] font-bold px-2 py-0.5",
                 statusVariant.bg,
-                statusVariant.text
+                statusVariant.text,
               )}
             >
               {task.status}
             </Badge>
             {task.priority && (
               <div className="flex items-center gap-1">
-                <Flag className={cn('h-3 w-3', priorityConfig.color)} />
-                <span className={cn('text-xs font-bold', priorityConfig.color)}>
+                <Flag className={cn("h-3 w-3", priorityConfig.color)} />
+                <span className={cn("text-xs font-bold", priorityConfig.color)}>
                   {task.priority}
                 </span>
               </div>
@@ -131,7 +133,9 @@ export function TaskPreview({ id }: TaskPreviewProps) {
                 {getInitials(task.assignee.name)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs text-gray-700 truncate">{task.assignee.name}</span>
+            <span className="text-xs text-gray-700 truncate">
+              {task.assignee.name}
+            </span>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-gray-400">
@@ -144,7 +148,9 @@ export function TaskPreview({ id }: TaskPreviewProps) {
         {task.due_date ? (
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-construction-blue" />
-            <span className="text-xs text-gray-700">{formatDate(task.due_date)}</span>
+            <span className="text-xs text-gray-700">
+              {formatDate(task.due_date)}
+            </span>
           </div>
         ) : (
           <div className="flex items-center gap-2 text-gray-400">
@@ -168,34 +174,28 @@ export function TaskPreview({ id }: TaskPreviewProps) {
 
 function getStatusVariant(status: string): { bg: string; text: string } {
   const variants: Record<string, { bg: string; text: string }> = {
-    todo: { bg: 'bg-gray-200', text: 'text-gray-700' },
-    in_progress: { bg: 'bg-construction-blue/20', text: 'text-construction-blue' },
-    blocked: { bg: 'bg-construction-red/20', text: 'text-construction-red' },
-    done: { bg: 'bg-construction-green/20', text: 'text-construction-green' },
+    todo: { bg: "bg-gray-200", text: "text-gray-700" },
+    in_progress: {
+      bg: "bg-construction-blue/20",
+      text: "text-construction-blue",
+    },
+    blocked: { bg: "bg-construction-red/20", text: "text-construction-red" },
+    done: { bg: "bg-construction-green/20", text: "text-construction-green" },
   };
 
-  return variants[status.toLowerCase().replace(' ', '_')] || variants.todo;
+  return variants[status.toLowerCase().replace(" ", "_")] || variants.todo;
 }
 
 function getPriorityConfig(priority: string | null): { color: string } {
-  if (!priority) return { color: 'text-gray-400' };
+  if (!priority) return { color: "text-gray-400" };
 
   const configs: Record<string, { color: string }> = {
-    low: { color: 'text-gray-500' },
-    medium: { color: 'text-construction-yellow' },
-    high: { color: 'text-construction-red' },
+    low: { color: "text-gray-500" },
+    medium: { color: "text-construction-yellow" },
+    high: { color: "text-construction-red" },
   };
 
   return configs[priority.toLowerCase()] || configs.low;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 // Note: Local formatDate with "Today"/"Tomorrow" logic - differs from shared utils
@@ -206,14 +206,14 @@ function formatDate(dateString: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   if (date.toDateString() === today.toDateString()) {
-    return 'Today';
+    return "Today";
   }
   if (date.toDateString() === tomorrow.toDateString()) {
-    return 'Tomorrow';
+    return "Tomorrow";
   }
 
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
   });
 }

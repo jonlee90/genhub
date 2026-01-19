@@ -291,8 +291,6 @@ function SortableTaskItem({
  * Debug: Construction-themed CRUD interface with drag-and-drop, filters, and modals
  */
 export function TaskTemplateManager() {
-  console.log("[TaskTemplateManager] Rendering task template manager");
-
   const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
   const [selectedProjectTypeId, setSelectedProjectTypeId] =
     useState<string>("");
@@ -344,7 +342,6 @@ export function TaskTemplateManager() {
   }, [selectedPhaseTemplateId]);
 
   async function loadProjectTypes() {
-    console.log("[TaskTemplateManager] Loading project types...");
     const result = await getProjectTypes();
     if (result.projectTypes) {
       const activeTypes = result.projectTypes.filter((pt) => pt.is_active);
@@ -363,10 +360,6 @@ export function TaskTemplateManager() {
   }
 
   async function loadPhaseTemplates(projectTypeId: string) {
-    console.log(
-      "[TaskTemplateManager] Loading phase templates for:",
-      projectTypeId,
-    );
     const result = await getPhaseTemplates(projectTypeId);
     if (result.phaseTemplates) {
       setPhaseTemplates(result.phaseTemplates);
@@ -384,19 +377,10 @@ export function TaskTemplateManager() {
   }
 
   async function loadTaskTemplates(phaseTemplateId: string) {
-    console.log(
-      "[TaskTemplateManager] Loading task templates for phase:",
-      phaseTemplateId,
-    );
     setIsLoading(true);
     const result = await getTaskTemplates(phaseTemplateId);
     if (result.taskTemplates) {
       setTaskTemplates(result.taskTemplates);
-      console.log(
-        "[TaskTemplateManager] Loaded",
-        result.taskTemplates.length,
-        "task templates",
-      );
     } else if (result.error) {
       console.error("[TaskTemplateManager] Error loading tasks:", result.error);
       toast.error(result.error);
@@ -405,7 +389,6 @@ export function TaskTemplateManager() {
   }
 
   async function loadTaskTypeConfigs() {
-    console.log("[TaskTemplateManager] Loading task type configs...");
     const result = await getTaskTypes();
     if (result.taskTypes) {
       const configMap = result.taskTypes.reduce(
@@ -458,7 +441,6 @@ export function TaskTemplateManager() {
   // Debug: Handle create submission
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log("[TaskTemplateManager] Creating task template...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createTaskTemplate(formData);
@@ -479,11 +461,6 @@ export function TaskTemplateManager() {
     e.preventDefault();
     if (!editingTask) return;
 
-    console.log(
-      "[TaskTemplateManager] Updating task template:",
-      editingTask.id,
-    );
-
     const formData = new FormData(e.currentTarget);
     const result = await updateTaskTemplate(editingTask.id, formData);
 
@@ -501,11 +478,6 @@ export function TaskTemplateManager() {
   // Debug: Handle delete confirmation
   async function handleDelete() {
     if (!deletingTask) return;
-
-    console.log(
-      "[TaskTemplateManager] Deleting task template:",
-      deletingTask.id,
-    );
 
     const result = await deleteTaskTemplate(deletingTask.id);
 

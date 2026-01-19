@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DndContext,
@@ -111,7 +111,7 @@ interface SortablePhaseItemProps {
   onDelete: () => void;
 }
 
-function SortablePhaseItem({
+const SortablePhaseItem = React.memo(function SortablePhaseItem({
   phase,
   isExpanded,
   onToggleExpand,
@@ -329,14 +329,14 @@ function SortablePhaseItem({
       </div>
     </div>
   );
-}
+});
 
 /**
  * PhaseTemplateManager - Main component for phase template management
- * Debug: Construction-themed CRUD interface with drag-and-drop
+ * Construction-themed CRUD interface with drag-and-drop
  */
 export function PhaseTemplateManager() {
-  console.log("[PhaseTemplateManager] Rendering phase template manager");
+  // Removed console.log("[PhaseTemplateManager] Rendering phase template manager");
 
   const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
   const [selectedProjectTypeId, setSelectedProjectTypeId] =
@@ -375,7 +375,7 @@ export function PhaseTemplateManager() {
   }, [selectedProjectTypeId]);
 
   async function loadProjectTypes() {
-    console.log("[PhaseTemplateManager] Loading project types...");
+    // Removed console.log("[PhaseTemplateManager] Loading project types...");
     const result = await getProjectTypes();
     if (result.projectTypes) {
       setProjectTypes(result.projectTypes.filter((pt) => pt.is_active));
@@ -394,19 +394,10 @@ export function PhaseTemplateManager() {
   }
 
   async function loadPhaseTemplates(projectTypeId: string) {
-    console.log(
-      "[PhaseTemplateManager] Loading phase templates for project type:",
-      projectTypeId,
-    );
     setIsLoading(true);
     const result = await getPhaseTemplates(projectTypeId);
     if (result.phaseTemplates) {
       setPhaseTemplates(result.phaseTemplates);
-      console.log(
-        "[PhaseTemplateManager] Loaded",
-        result.phaseTemplates.length,
-        "phase templates",
-      );
     } else if (result.error) {
       console.error(
         "[PhaseTemplateManager] Error loading phases:",
@@ -417,8 +408,8 @@ export function PhaseTemplateManager() {
     setIsLoading(false);
   }
 
-  // Debug: Handle drag end event
-  async function handleDragEnd(event: DragEndEvent) {
+  // Handle drag end event
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -446,10 +437,10 @@ export function PhaseTemplateManager() {
     } else {
       toast.success("Phase order updated");
     }
-  }
+  }, [phaseTemplates, selectedProjectTypeId, loadPhaseTemplates]);
 
-  // Debug: Toggle phase expansion
-  function togglePhaseExpansion(phaseId: string) {
+  // Toggle phase expansion
+  const togglePhaseExpansion = useCallback((phaseId: string) => {
     setExpandedPhases((prev) => {
       const next = new Set(prev);
       if (next.has(phaseId)) {
@@ -459,12 +450,12 @@ export function PhaseTemplateManager() {
       }
       return next;
     });
-  }
+  }, []);
 
-  // Debug: Handle create submission
+  // Handle create submission
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log("[PhaseTemplateManager] Creating phase template...");
+    // Removed console.log("[PhaseTemplateManager] Creating phase template...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createPhaseTemplate(formData);
@@ -483,11 +474,6 @@ export function PhaseTemplateManager() {
     e.preventDefault();
     if (!editingPhase) return;
 
-    console.log(
-      "[PhaseTemplateManager] Updating phase template:",
-      editingPhase.id,
-    );
-
     const formData = new FormData(e.currentTarget);
     const result = await updatePhaseTemplate(editingPhase.id, formData);
 
@@ -503,11 +489,6 @@ export function PhaseTemplateManager() {
   // Debug: Handle delete confirmation
   async function handleDelete() {
     if (!deletingPhase) return;
-
-    console.log(
-      "[PhaseTemplateManager] Deleting phase template:",
-      deletingPhase.id,
-    );
 
     const result = await deletePhaseTemplate(deletingPhase.id);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { ProjectTypeManager } from './ProjectTypeManager';
 import { TaskTypeManager } from './TaskTypeManager';
@@ -8,60 +8,74 @@ import { PhaseTemplateManager } from './PhaseTemplateManager';
 import { TaskTemplateManager } from './TaskTemplateManager';
 import { Wrench, Tag, Route, ListChecks } from 'lucide-react';
 
+type TabId = 'project-types' | 'task-types' | 'phase-templates' | 'task-templates';
+
+interface TabConfig {
+  id: TabId;
+  label: string;
+  shortLabel: string;
+  icon: typeof Wrench;
+  description: string;
+  comingSoon?: boolean;
+}
+
+const TABS: TabConfig[] = [
+  {
+    id: 'project-types',
+    label: 'Project Types',
+    shortLabel: 'Projects',
+    icon: Wrench,
+    description: 'Define project categories',
+  },
+  {
+    id: 'task-types',
+    label: 'Task Types',
+    shortLabel: 'Tasks',
+    icon: Tag,
+    description: 'Categorize work types',
+  },
+  {
+    id: 'phase-templates',
+    label: 'Phase Templates',
+    shortLabel: 'Phases',
+    icon: Route,
+    description: 'Auto-populate project phases',
+  },
+  {
+    id: 'task-templates',
+    label: 'Task Templates',
+    shortLabel: 'Templates',
+    icon: ListChecks,
+    description: 'Pre-built task checklists',
+  },
+];
+
 /**
  * ProjectConfigurationSection - Mobile-first tabbed interface for project configuration
  * Touch-friendly tabs with 44px minimum tap targets
  * Client component with tab navigation for project types, task types, phase templates, and task templates
  */
 export function ProjectConfigurationSection() {
-  console.log('[ProjectConfigurationSection] Rendering configuration tabs');
+  const [activeTab, setActiveTab] = useState<TabId>('project-types');
 
-  const [activeTab, setActiveTab] = useState<'project-types' | 'task-types' | 'phase-templates' | 'task-templates'>('project-types');
-
-  const tabs: Array<{ id: 'project-types' | 'task-types' | 'phase-templates' | 'task-templates'; label: string; shortLabel: string; icon: typeof Wrench; description: string; comingSoon?: boolean }> = [
-    {
-      id: 'project-types' as const,
-      label: 'Project Types',
-      shortLabel: 'Projects',
-      icon: Wrench,
-      description: 'Define project categories',
-    },
-    {
-      id: 'task-types' as const,
-      label: 'Task Types',
-      shortLabel: 'Tasks',
-      icon: Tag,
-      description: 'Categorize work types',
-    },
-    {
-      id: 'phase-templates' as const,
-      label: 'Phase Templates',
-      shortLabel: 'Phases',
-      icon: Route,
-      description: 'Auto-populate project phases',
-    },
-    {
-      id: 'task-templates' as const,
-      label: 'Task Templates',
-      shortLabel: 'Templates',
-      icon: ListChecks,
-      description: 'Pre-built task checklists',
-    },
-  ];
+  const handleTabChange = useCallback((tabId: TabId) => {
+    setActiveTab(tabId);
+  }, []);
 
   return (
     <div className="border-2 border-gray-200 rounded-xl shadow-construction bg-white overflow-hidden">
       {/* Tab navigation bar - touch-friendly with 44px+ height */}
       <div className="border-b-2 border-gray-200 bg-gray-50/80">
         <nav className="flex overflow-x-auto scrollbar-hide snap-x snap-mandatory">
-          {tabs.map((tab) => {
+          {TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => !tab.comingSoon && setActiveTab(tab.id)}
+                onClick={() => !tab.comingSoon && handleTabChange(tab.id)}
                 disabled={tab.comingSoon}
+                aria-current={isActive ? 'page' : undefined}
                 className={cn(
                   // Base styles with touch-friendly sizing
                   'flex items-center justify-center gap-2',

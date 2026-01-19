@@ -1,3 +1,4 @@
+import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,16 +15,18 @@ interface SettingsSectionHeaderProps {
   disabled?: boolean; // For "coming soon" sections
 }
 
-export function SettingsSectionHeader({
+export const SettingsSectionHeader = React.memo(function SettingsSectionHeader({
   icon: Icon,
   title,
   description,
   disabled = false,
 }: SettingsSectionHeaderProps) {
-  console.log('[SettingsSectionHeader] Rendering:', { title, disabled });
+  const sectionId = `section-${title.toLowerCase().replace(/\s+/g, '-')}`;
 
   return (
     <div
+      role="region"
+      aria-labelledby={sectionId}
       className={cn(
         'flex items-center gap-3 md:gap-4',
         disabled && 'opacity-40'
@@ -46,10 +49,13 @@ export function SettingsSectionHeader({
 
       {/* Text Content */}
       <div className="min-w-0 flex-1">
-        <h2 className={cn(
-          'text-lg md:text-xl font-black uppercase tracking-tighter leading-tight',
-          disabled ? 'text-gray-400' : 'text-construction-blue'
-        )}>
+        <h2
+          id={sectionId}
+          className={cn(
+            'text-lg md:text-xl font-black uppercase tracking-tighter leading-tight',
+            disabled ? 'text-gray-400' : 'text-construction-blue'
+          )}
+        >
           {title}
         </h2>
         <p className={cn(
@@ -61,4 +67,4 @@ export function SettingsSectionHeader({
       </div>
     </div>
   );
-}
+});

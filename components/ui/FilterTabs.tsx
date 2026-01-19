@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * FilterTabs Component - Reusable, Responsive Filter Tabs
@@ -21,9 +21,10 @@
  * - Status-specific or generic gradients
  */
 
-import { useCallback, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { useCallback, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useHapticFeedback } from "@/lib/hooks/useHapticFeedback";
 
 export interface FilterTab {
   /** Unique identifier */
@@ -61,11 +62,12 @@ export function FilterTabs({
   onChange,
   showCounts = true,
   className,
-  layoutId = 'filterTabBackground',
+  layoutId = "filterTabBackground",
   useStatusGradients = false,
 }: FilterTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
+  const { trigger } = useHapticFeedback();
 
   // Scroll active tab into view on mount and value change
   useEffect(() => {
@@ -81,7 +83,7 @@ export function FilterTabs({
 
       container.scrollTo({
         left: Math.max(0, scrollLeft),
-        behavior: 'smooth',
+        behavior: "smooth",
       });
     }
   }, [value]);
@@ -92,13 +94,11 @@ export function FilterTabs({
       if (tabValue === value) return;
 
       // Haptic feedback
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(10);
-      }
+      trigger("light");
 
       onChange(tabValue);
     },
-    [value, onChange]
+    [value, onChange, trigger],
   );
 
   // Get gradient for animated background
@@ -111,23 +111,23 @@ export function FilterTabs({
     // Use status-specific gradients if enabled
     if (useStatusGradients) {
       const statusGradients: Record<string, string> = {
-        all: 'from-[#001B51] to-[#002868]', // Navy gradient
-        todo: 'from-gray-500 to-gray-600',
-        in_progress: 'from-blue-600 to-blue-700',
-        review: 'from-yellow-500 to-yellow-600',
-        blocked: 'from-red-600 to-red-700',
-        completed: 'from-green-600 to-green-700',
+        all: "from-[#001B51] to-[#002868]", // Navy gradient
+        todo: "from-gray-500 to-gray-600",
+        in_progress: "from-blue-600 to-blue-700",
+        review: "from-yellow-500 to-yellow-600",
+        blocked: "from-red-600 to-red-700",
+        completed: "from-green-600 to-green-700",
         // Project statuses
-        planning: 'from-amber-500 to-amber-600',
-        active: 'from-blue-600 to-blue-700',
-        on_hold: 'from-orange-500 to-orange-600',
+        planning: "from-amber-500 to-amber-600",
+        active: "from-blue-600 to-blue-700",
+        on_hold: "from-orange-500 to-orange-600",
       };
 
-      return statusGradients[tab.value] || 'from-[#001B51] to-[#002868]';
+      return statusGradients[tab.value] || "from-[#001B51] to-[#002868]";
     }
 
     // Default GenHub navy gradient
-    return 'from-[#001B51] to-[#002868]';
+    return "from-[#001B51] to-[#002868]";
   };
 
   return (
@@ -135,21 +135,21 @@ export function FilterTabs({
       ref={scrollRef}
       className={cn(
         // Container with Aceternity-inspired styling
-        'relative flex items-center gap-2',
-        'p-1.5 bg-gray-100 rounded-xl',
-        'border-2 border-gray-200',
+        "relative flex items-center gap-2",
+        "p-1.5 bg-gray-100 rounded-xl",
+        "border-2 border-gray-200",
         // Mobile: Scrollable with hidden scrollbar
-        'overflow-x-auto scrollbar-hide',
-        'snap-x snap-mandatory',
-        'scroll-smooth',
+        "overflow-x-auto scrollbar-hide",
+        "snap-x snap-mandatory",
+        "scroll-smooth",
         // Tablet: Allow wrapping if needed
-        'md:overflow-x-auto',
+        "md:overflow-x-auto",
         // Desktop: Grid layout, no scroll
-        'lg:grid lg:overflow-x-visible',
-        className
+        "lg:grid lg:overflow-x-visible",
+        className,
       )}
       style={{
-        WebkitOverflowScrolling: 'touch',
+        WebkitOverflowScrolling: "touch",
         gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
       }}
     >
@@ -165,25 +165,25 @@ export function FilterTabs({
             onClick={() => handleClick(tab.value)}
             className={cn(
               // Base styles - position relative for motion background
-              'relative z-10',
-              'flex-shrink-0 snap-start',
-              'inline-flex items-center justify-center gap-2',
+              "relative z-10",
+              "flex-shrink-0 snap-start",
+              "inline-flex items-center justify-center gap-2",
               // Touch-friendly sizing
               // Mobile/Tablet: 44px min height
-              'h-11 px-4',
+              "h-11 px-4",
               // Desktop: Can be slightly more compact if needed
-              'lg:h-10 lg:px-3',
-              'rounded-lg',
+              "lg:h-10 lg:px-3",
+              "rounded-lg",
               // Typography
-              'font-bold text-sm',
+              "font-bold text-sm",
               // Transitions for non-background properties
-              'transition-colors duration-200',
+              "transition-colors duration-200",
               // Touch feedback
-              'active:scale-[0.97]',
+              "active:scale-[0.97]",
               // Text color based on active state
-              isActive ? 'text-white' : 'text-gray-600 hover:text-gray-900',
+              isActive ? "text-white" : "text-gray-600 hover:text-gray-900",
               // Desktop: Full width in grid
-              'lg:w-full'
+              "lg:w-full",
             )}
           >
             {/* Content layer */}
@@ -194,12 +194,12 @@ export function FilterTabs({
             {showCounts && tab.count !== undefined && tab.count >= 0 && (
               <span
                 className={cn(
-                  'inline-flex items-center justify-center',
-                  'min-w-[22px] h-[22px] px-1.5',
-                  'rounded-full text-xs font-black',
+                  "inline-flex items-center justify-center",
+                  "min-w-[22px] h-[22px] px-1.5",
+                  "rounded-full text-xs font-black",
                   isActive
-                    ? 'bg-white/20 text-white'
-                    : 'bg-gray-200 text-gray-700'
+                    ? "bg-white/20 text-white"
+                    : "bg-gray-200 text-gray-700",
                 )}
               >
                 {tab.count}
@@ -211,12 +211,12 @@ export function FilterTabs({
               <motion.div
                 layoutId={layoutId}
                 className={cn(
-                  'absolute inset-0 rounded-lg',
-                  'bg-gradient-to-r shadow-md',
-                  getGradient(tab)
+                  "absolute inset-0 rounded-lg",
+                  "bg-gradient-to-r shadow-md",
+                  getGradient(tab),
                 )}
                 transition={{
-                  type: 'spring',
+                  type: "spring",
                   stiffness: 380,
                   damping: 30,
                 }}

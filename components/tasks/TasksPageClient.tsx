@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef, memo } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { TaskModalProvider, useTaskModal } from "./TaskModalContext";
@@ -47,7 +47,8 @@ const STATUS_TABS = [
 ];
 
 // Modal renderer - consumes TaskModalContext
-function TaskModalRenderer({
+// Wrapped in memo to prevent re-renders when parent updates
+const TaskModalRenderer = memo(function TaskModalRenderer({
   projects,
   teamMembers,
   assignees,
@@ -74,7 +75,7 @@ function TaskModalRenderer({
       assignees={assignees}
     />
   );
-}
+});
 
 export function TasksPageClient({
   tasks,
@@ -136,10 +137,12 @@ export function TasksPageClient({
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
 
   // Stabilize modal data object to prevent unnecessary effect re-runs
+  // Includes assignees to prevent re-fetches when TaskModal is rendered
   const modalData = useMemo(() => ({
     projects,
     teamMembers,
-  }), [projects, teamMembers]);
+    assignees,
+  }), [projects, teamMembers, assignees]);
 
   // Register create modal data for bottom nav
   useEffect(() => {
@@ -151,6 +154,11 @@ export function TasksPageClient({
   const handleRefresh = useCallback(async () => {
     // Small delay to show spinner before refresh
     await new Promise((resolve) => setTimeout(resolve, 500));
+    router.refresh();
+  }, [router]);
+
+  // Memoized callback for task modal success to prevent TaskModalRenderer re-renders
+  const handleModalSuccess = useCallback(() => {
     router.refresh();
   }, [router]);
 
@@ -374,10 +382,10 @@ export function TasksPageClient({
 
         {/* Task modal - rendered via context */}
         <TaskModalRenderer
-          projects={projects}
-          teamMembers={teamMembers}
-          assignees={assignees}
-          onSuccess={() => router.refresh()}
+          projects={modalData.projects}
+          teamMembers={modalData.teamMembers}
+          assignees={modalData.assignees}
+          onSuccess={handleModalSuccess}
         />
         </div>
       </TaskModalProvider>
@@ -447,10 +455,10 @@ export function TasksPageClient({
 
       {/* Task modal - rendered via context */}
       <TaskModalRenderer
-        projects={projects}
-        teamMembers={teamMembers}
-        assignees={assignees}
-        onSuccess={() => router.refresh()}
+        projects={modalData.projects}
+        teamMembers={modalData.teamMembers}
+        assignees={modalData.assignees}
+        onSuccess={handleModalSuccess}
       />
       </div>
     </TaskModalProvider>

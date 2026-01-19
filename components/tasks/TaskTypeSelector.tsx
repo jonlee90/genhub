@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { Loader2 } from "lucide-react";
@@ -14,6 +14,10 @@ import type { TaskType } from "@/types/db/enums";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 type TaskTypeConfig = TaskTypeConfigsRow;
+
+// In-memory cache for task types with deduplication
+let taskTypesCache: ReturnType<typeof convertTaskTypeConfig>[] | null = null;
+let taskTypesFetchPromise: Promise<void> | null = null;
 
 // Color palette for task types (used when hex color is provided)
 const TAILWIND_COLORS: Record<string, { text: string; bg: string; border: string; ring: string; bgLight: string }> = {
@@ -131,16 +135,38 @@ interface TaskTypeSelectorProps {
   disabled?: boolean;
 }
 
-export function TaskTypeSelector({
+function TaskTypeSelectorInner({
   selectedType,
   onSelect,
   disabled = false,
 }: TaskTypeSelectorProps) {
-  // Fetch task types from database
-  const [taskTypes, setTaskTypes] = useState(DEFAULT_TASK_TYPES);
-  const [isLoading, setIsLoading] = useState(true);
+  // Fetch task types from database with deduplication
+  const [taskTypes, setTaskTypes] = useState(() => {
+    // If cache exists, use it immediately
+    return taskTypesCache || DEFAULT_TASK_TYPES;
+  });
+  const [isLoading, setIsLoading] = useState(() => taskTypesCache === null);
 
   useEffect(() => {
+    // If cache exists, use it and skip fetch
+    if (taskTypesCache) {
+      setTaskTypes(taskTypesCache);
+      setIsLoading(false);
+      return;
+    }
+
+    // If fetch is already in progress, wait for it
+    if (taskTypesFetchPromise) {
+      taskTypesFetchPromise.then(() => {
+        if (taskTypesCache) {
+          setTaskTypes(taskTypesCache);
+        }
+        setIsLoading(false);
+      });
+      return;
+    }
+
+    // Start new fetch with deduplication
     const fetchTaskTypes = async () => {
       setIsLoading(true);
 
@@ -150,19 +176,23 @@ export function TaskTypeSelector({
         if (result.success && result.taskTypes && result.taskTypes.length > 0) {
           // Map database types to display format
           const mappedTypes = result.taskTypes.map(convertTaskTypeConfig);
+          taskTypesCache = mappedTypes;
           setTaskTypes(mappedTypes);
         } else {
+          taskTypesCache = DEFAULT_TASK_TYPES;
           setTaskTypes(DEFAULT_TASK_TYPES);
         }
       } catch (error) {
         console.error("[TaskTypeSelector] Error fetching task types:", error);
+        taskTypesCache = DEFAULT_TASK_TYPES;
         setTaskTypes(DEFAULT_TASK_TYPES);
       } finally {
         setIsLoading(false);
+        taskTypesFetchPromise = null;
       }
     };
 
-    fetchTaskTypes();
+    taskTypesFetchPromise = fetchTaskTypes();
   }, []);
 
   if (isLoading) {
@@ -260,6 +290,9 @@ export function TaskTypeSelector({
     </div>
   );
 }
+
+// Memoized TaskTypeSelector to prevent unnecessary re-renders when parent updates
+export const TaskTypeSelector = memo(TaskTypeSelectorInner);
 
 // Helper function to get task type display info
 export function getTaskTypeInfo(type: TaskType) {

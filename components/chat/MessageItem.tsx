@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageWithSender, EntityReference } from "@/types/db/chat";
 import {
@@ -412,15 +412,6 @@ export function MessageItem({
 }
 
 // Debug: Helper functions
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 // Debug: Format message time (9:45 AM, Yesterday at 3:00 PM, Dec 15 at 2:30 PM)
 function formatMessageTime(timestamp: string): string {

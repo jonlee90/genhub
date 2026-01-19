@@ -17,15 +17,7 @@ import Star from "lucide-react/icons/star";
 import Check from "lucide-react/icons/check";
 import { motion, AnimatePresence } from "framer-motion";
 import { addSubcontractorToProject } from "@/app/actions/projects";
-import { cn } from "@/lib/utils";
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+import { cn, getInitials } from "@/lib/utils";
 
 interface Subcontractor {
   id: string;

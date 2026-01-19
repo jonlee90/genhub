@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -15,8 +15,10 @@ import {
   Check,
   AlertCircle,
   Loader2,
+  LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatFileSize } from '@/lib/format-utils';
 import { ModelUploadModal } from './ModelUploadModal';
 import { ModelPreviewModal } from './ModelPreviewModal';
 import { resetToSystemDefault } from '@/app/actions/default-models';
@@ -24,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 // Map icon names to Lucide icons
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, LucideIcon> = {
   home: Home,
   residential: Home,
   coffee: Coffee,
@@ -68,8 +70,6 @@ export function DefaultModelCard({
   systemDefault,
   companyCustom,
 }: DefaultModelCardProps) {
-  console.log('[DefaultModelCard] Rendering:', { projectTypeName, hasCustom: !!companyCustom });
-
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -86,20 +86,13 @@ export function DefaultModelCard({
   const isUsingCustom = !!companyCustom;
   const currentModel = isUsingCustom ? companyCustom : systemDefault;
 
-  // Format file size
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return mb > 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(1)} KB`;
-  };
-
   // Handle preview
-  const handlePreview = () => {
-    console.log('[DefaultModelCard] Opening preview modal');
+  const handlePreview = useCallback(() => {
     if (currentModel) {
       setPreviewUrl(isUsingCustom ? companyCustom!.xktUrl : systemDefault!.xkt_file_url);
       setShowPreviewModal(true);
     }
-  };
+  }, [currentModel, isUsingCustom, companyCustom, systemDefault]);
 
   return (
     <>
@@ -152,13 +145,15 @@ export function DefaultModelCard({
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">File Size</p>
                 <p className="text-sm font-bold text-[#001B51] font-mono">
-                  {formatFileSize('fileSize' in currentModel ? currentModel.fileSize : (currentModel as any).file_size_bytes)}
+                  {formatFileSize('fileSize' in currentModel ? currentModel.fileSize : (currentModel as { file_size_bytes: number }).file_size_bytes)}
                 </p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Elements</p>
                 <p className="text-sm font-bold text-[#001B51] font-mono">
-                  {('elementCount' in currentModel ? currentModel.elementCount : (currentModel as any).element_count)?.toLocaleString() || (currentModel as any).element_count?.toLocaleString() || 'N/A'}
+                  {('elementCount' in currentModel
+                    ? currentModel.elementCount
+                    : (currentModel as { element_count?: number }).element_count)?.toLocaleString() || 'N/A'}
                 </p>
               </div>
             </div>
@@ -214,8 +209,6 @@ export function DefaultModelCard({
           {isUsingCustom && (
             <Button
               onClick={() => {
-                console.log('[DefaultModelCard] Reset to system default:', projectTypeConfigId);
-
                 if (!confirm(`Reset ${projectTypeName} to system default model?\n\nThis will remove your custom model and use the GenHub default instead. This action cannot be undone.`)) {
                   return;
                 }

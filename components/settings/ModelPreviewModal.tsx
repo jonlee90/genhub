@@ -16,12 +16,6 @@ export function ModelPreviewModal({
   projectTypeName,
   onClose,
 }: ModelPreviewModalProps) {
-  console.log(
-    "[ModelPreviewModal] Opening preview for:",
-    projectTypeName,
-    modelUrl,
-  );
-
   return (
     <ResponsiveModal
       isOpen={true}

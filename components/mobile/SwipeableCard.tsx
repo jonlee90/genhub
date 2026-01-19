@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useRef, useCallback } from 'react';
-import { Check, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useRef, useCallback } from "react";
+import { Check, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useHapticFeedback } from "@/lib/hooks/useHapticFeedback";
 
 interface SwipeableCardProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ const RESISTANCE = 0.5;
  * Features:
  * - Native touch events (touchstart, touchmove, touchend)
  * - Resistance curve at edges
- * - Haptic feedback via navigator.vibrate
+ * - Haptic feedback via useHapticFeedback
  * - Priority: vertical scroll > horizontal swipe
  * - Smooth 200ms ease-out snap-back animation
  */
@@ -47,13 +48,14 @@ export function SwipeableCard({
   onSwipeLeft,
   leftActionIcon,
   rightActionIcon,
-  leftActionColor = 'bg-[#059669]',
-  rightActionColor = 'bg-[#DC2626]',
+  leftActionColor = "bg-[#059669]",
+  rightActionColor = "bg-[#DC2626]",
   disabled = false,
   className,
 }: SwipeableCardProps) {
   const [translateX, setTranslateX] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const { trigger } = useHapticFeedback();
 
   // Refs for touch tracking
   const startX = useRef(0);
@@ -78,58 +80,67 @@ export function SwipeableCard({
 
   // Trigger haptic feedback
   const triggerHaptic = useCallback(() => {
-    if (!hasTriggedHaptic.current && typeof navigator !== 'undefined' && navigator.vibrate) {
-      navigator.vibrate(10);
+    if (!hasTriggedHaptic.current) {
+      trigger("light");
       hasTriggedHaptic.current = true;
     }
-  }, []);
+  }, [trigger]);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (disabled) return;
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (disabled) return;
 
-    // Record start position
-    startX.current = e.touches[0].clientX;
-    startY.current = e.touches[0].clientY;
-    isHorizontalSwipe.current = null;
-    hasTriggedHaptic.current = false;
-    setIsAnimating(false);
-  }, [disabled]);
+      // Record start position
+      startX.current = e.touches[0].clientX;
+      startY.current = e.touches[0].clientY;
+      isHorizontalSwipe.current = null;
+      hasTriggedHaptic.current = false;
+      setIsAnimating(false);
+    },
+    [disabled],
+  );
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (disabled) return;
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (disabled) return;
 
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const diffX = currentX - startX.current;
-    const diffY = currentY - startY.current;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = currentX - startX.current;
+      const diffY = currentY - startY.current;
 
-    // Determine swipe direction on first significant movement
-    if (isHorizontalSwipe.current === null) {
-      const absDiffX = Math.abs(diffX);
-      const absDiffY = Math.abs(diffY);
+      // Determine swipe direction on first significant movement
+      if (isHorizontalSwipe.current === null) {
+        const absDiffX = Math.abs(diffX);
+        const absDiffY = Math.abs(diffY);
 
-      // Need some minimum movement to determine direction
-      if (absDiffX > 5 || absDiffY > 5) {
-        // Vertical scroll takes priority - if vertical movement is greater, don't swipe
-        isHorizontalSwipe.current = absDiffX > absDiffY;
+        // Need some minimum movement to determine direction
+        if (absDiffX > 5 || absDiffY > 5) {
+          // Vertical scroll takes priority - if vertical movement is greater, don't swipe
+          isHorizontalSwipe.current = absDiffX > absDiffY;
+        }
       }
-    }
 
-    // Only handle horizontal swipes
-    if (isHorizontalSwipe.current === true) {
-      // Prevent vertical scroll during horizontal swipe
-      e.preventDefault();
+      // Only handle horizontal swipes
+      if (isHorizontalSwipe.current === true) {
+        // Prevent vertical scroll during horizontal swipe
+        e.preventDefault();
 
-      // Apply resistance and set translation
-      const resistantX = getResistantTranslate(diffX);
-      setTranslateX(resistantX);
+        // Apply resistance and set translation
+        const resistantX = getResistantTranslate(diffX);
+        setTranslateX(resistantX);
 
-      // Haptic feedback when crossing threshold
-      if (Math.abs(resistantX) >= SWIPE_THRESHOLD && !hasTriggedHaptic.current) {
-        triggerHaptic();
+        // Haptic feedback when crossing threshold
+        if (
+          Math.abs(resistantX) >= SWIPE_THRESHOLD &&
+          !hasTriggedHaptic.current
+        ) {
+          triggerHaptic();
+        }
       }
-    }
-  }, [disabled, getResistantTranslate, triggerHaptic]);
+    },
+    [disabled, getResistantTranslate, triggerHaptic],
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (disabled) return;
@@ -139,15 +150,11 @@ export function SwipeableCard({
     // Check if we've passed threshold
     if (translateX >= SWIPE_THRESHOLD && onSwipeRight) {
       // Trigger haptic on action
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(15);
-      }
+      trigger("light", 15);
       onSwipeRight();
     } else if (translateX <= -SWIPE_THRESHOLD && onSwipeLeft) {
       // Trigger haptic on action
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        navigator.vibrate(15);
-      }
+      trigger("light", 15);
       onSwipeLeft();
     }
 
@@ -156,20 +163,20 @@ export function SwipeableCard({
 
     // Reset swipe direction
     isHorizontalSwipe.current = null;
-  }, [disabled, translateX, onSwipeRight, onSwipeLeft]);
+  }, [disabled, translateX, onSwipeRight, onSwipeLeft, trigger]);
 
   // Calculate action reveal progress (0 to 1)
   const leftProgress = Math.min(Math.max(translateX / SWIPE_THRESHOLD, 0), 1);
   const rightProgress = Math.min(Math.max(-translateX / SWIPE_THRESHOLD, 0), 1);
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl', className)}>
+    <div className={cn("relative overflow-hidden rounded-xl", className)}>
       {/* Left action (revealed when swiping right) */}
       {onSwipeRight && (
         <div
           className={cn(
-            'absolute inset-y-0 left-0 flex items-center justify-center transition-opacity',
-            leftActionColor
+            "absolute inset-y-0 left-0 flex items-center justify-center transition-opacity",
+            leftActionColor,
           )}
           style={{
             width: `${Math.max(Math.abs(translateX), 0)}px`,
@@ -192,8 +199,8 @@ export function SwipeableCard({
       {onSwipeLeft && (
         <div
           className={cn(
-            'absolute inset-y-0 right-0 flex items-center justify-center transition-opacity',
-            rightActionColor
+            "absolute inset-y-0 right-0 flex items-center justify-center transition-opacity",
+            rightActionColor,
           )}
           style={{
             width: `${Math.max(Math.abs(translateX), 0)}px`,
@@ -215,8 +222,8 @@ export function SwipeableCard({
       {/* Main content */}
       <div
         className={cn(
-          'relative bg-white',
-          isAnimating && 'transition-transform duration-200 ease-out'
+          "relative bg-white",
+          isAnimating && "transition-transform duration-200 ease-out",
         )}
         style={{
           transform: `translateX(${translateX}px)`,
