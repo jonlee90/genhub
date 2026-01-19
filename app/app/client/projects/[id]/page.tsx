@@ -117,7 +117,7 @@ export default async function ClientProjectDetailPage({
         <ClientSpatialViewerWrapper
           projectId={project.id}
           projectType={project.project_type || "commercial_office"}
-          modelHighURL={activeModel?.xkt_file_url}
+          modelHighURL={activeModel?.xkt_file_url ?? undefined}
           hasBudgetVisibility={permissions.can_view_budget}
         />
       </div>

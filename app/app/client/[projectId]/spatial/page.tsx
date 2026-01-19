@@ -91,7 +91,7 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
         <ClientSpatialViewerWrapper
           projectId={params.projectId}
           projectType={project.project_type || "residential"}
-          modelHighURL={activeModel?.xkt_file_url}
+          modelHighURL={activeModel?.xkt_file_url ?? undefined}
           hasBudgetVisibility={company?.client_can_view_budget ?? false}
         />
       </div>
