@@ -6,6 +6,8 @@ import { ExpenseSummary } from "@/components/expenses/ExpenseSummary";
 import { getExpenseAnalytics } from "@/app/actions/expenses";
 import { getExpensesData } from "@/lib/expenses";
 
+export const dynamic = "force-dynamic";
+
 const BLUEPRINT_BACKGROUND_STYLE = {
   backgroundImage: `
     linear-gradient(to right, currentColor 1px, transparent 1px),
