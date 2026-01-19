@@ -35,7 +35,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -658,7 +658,7 @@ export function PhaseTemplateManager() {
       )}
 
       {/* Debug: Create Phase Modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         icon={Layers}
@@ -739,11 +739,11 @@ export function PhaseTemplateManager() {
             </p>
           </div>
         </form>
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Debug: Edit Phase Modal */}
       {editingPhase && (
-        <BaseModal
+        <ResponsiveModal
           isOpen={!!editingPhase}
           onClose={() => setEditingPhase(null)}
           icon={Pencil}
@@ -829,7 +829,7 @@ export function PhaseTemplateManager() {
               </Label>
             </div>
           </form>
-        </BaseModal>
+        </ResponsiveModal>
       )}
 
       {/* Debug: Delete Confirmation */}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { TopAccentBar } from "@/components/ui/TopAccentBar";
 
 // Routes where the mobile header should be hidden (page has its own header)
 const HIDE_HEADER_ROUTES = ["/app/tasks"];
@@ -17,7 +18,7 @@ export function Header() {
 
   // Hide header on specific routes that have their own mobile header
   const shouldHideHeader = HIDE_HEADER_ROUTES.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (shouldHideHeader) {
@@ -40,7 +41,7 @@ export function Header() {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       {/* Top accent border */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-construction-blue via-construction-accent to-construction-blue" />
+      <TopAccentBar />
 
       <div className="flex items-center justify-between px-4 py-3 pt-4">
         {/* Left Side - Back Button or Empty Space */}

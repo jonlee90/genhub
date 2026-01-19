@@ -1,49 +1,49 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
-import { TaskModalProvider, useTaskModal } from './TaskModalContext';
-import { TaskBoard } from './/TaskBoard';
-import { TaskModalTrigger } from './TaskModalTrigger';
-import { ProjectFilterHeader } from './/ProjectFilterHeader';
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { TaskModalProvider, useTaskModal } from "./TaskModalContext";
+import { TaskBoard } from ".//TaskBoard";
+import { TaskModalTrigger } from "./TaskModalTrigger";
+import { ProjectFilterHeader } from ".//ProjectFilterHeader";
 
 // Dynamic import TaskModal (only loads when modal opens)
 const TaskModal = dynamic(
-  () => import('./TaskModal').then(mod => ({ default: mod.TaskModal })),
+  () => import("./TaskModal").then(mod => ({ default: mod.TaskModal })),
   { ssr: false }
 );
-import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { BlueprintBackground } from '@/components/shared';
-import { BottomSheet } from '@/components/ui/bottom-sheet';
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import { useBottomNav } from '@/lib/contexts/BottomNavContext';
-import { ClipboardList } from 'lucide-react';
-import { getProjectAssignees, type AssigneeOption } from '@/app/actions/tasks';
+import { PullToRefresh, type PullToRefreshHandle } from "@/components/mobile/PullToRefresh";
+import { BlueprintBackground } from "@/components/shared";
+import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { useIsMobile } from "@/lib/hooks/useMediaQuery";
+import { useBottomNav } from "@/lib/contexts/BottomNavContext";
+import { ClipboardList } from "lucide-react";
+import { getProjectAssignees, type AssigneeOption } from "@/app/actions/tasks";
 import type {
   TaskWithRelations,
   TaskProject,
   TeamMember,
   TaskDependencyRow,
-} from '@/types/db/task';
+} from "@/types/db/task";
 
 interface TasksPageClientProps {
   tasks: TaskWithRelations[];
   projects: TaskProject[];
   teamMembers: TeamMember[];
   taskDependencies: TaskDependencyRow[];
-  initialView: 'kanban' | 'list';
+  initialView: "kanban" | "list";
   userRole: string | null;
 }
 
-// Status filter tabs for mobile (all 5 statuses + 'all')
+// Status filter tabs for mobile (all 5 statuses + "all")
 const STATUS_TABS = [
-  { value: 'all', label: 'All' },
-  { value: 'todo', label: 'To Do' },
-  { value: 'in_progress', label: 'In Progress' },
-  { value: 'review', label: 'Review' },
-  { value: 'blocked', label: 'Blocked' },
-  { value: 'completed', label: 'Completed' },
+  { value: "all", label: "All" },
+  { value: "todo", label: "To Do" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "review", label: "Review" },
+  { value: "blocked", label: "Blocked" },
+  { value: "completed", label: "Completed" },
 ];
 
 // Modal renderer - consumes TaskModalContext
@@ -84,9 +84,9 @@ export function TasksPageClient({
   initialView,
   userRole,
 }: TasksPageClientProps) {
-  const [projectFilter, setProjectFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [showFilterSheet, setShowFilterSheet] = useState(false);
   const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
   const router = useRouter();
@@ -106,33 +106,46 @@ export function TasksPageClient({
   // Fetch assignees when project filter changes (Option A: Page-level fetch)
   // This eliminates the N+1 query pattern by fetching assignees once
   useEffect(() => {
-    // Only fetch assignees if a specific project is selected
-    if (projectFilter && projectFilter !== 'all') {
-      getProjectAssignees(projectFilter).then((result) => {
-        if (result.data) {
-          setAssignees(result.data);
-        } else {
-          setAssignees([]);
-        }
-      });
-    } else {
-      // Clear assignees when 'all' projects selected
+    // Early return for "all" projects case
+    if (projectFilter === "all") {
       setAssignees([]);
+      return;
     }
+
+    // Cleanup flag to prevent race conditions when filter changes rapidly
+    let cancelled = false;
+
+    getProjectAssignees(projectFilter).then((result) => {
+      // Don't update state if this effect has been cleaned up
+      if (cancelled) return;
+
+      if (result.data) {
+        setAssignees(result.data);
+      } else {
+        setAssignees([]);
+      }
+    });
+
+    // Cleanup function runs when projectFilter changes or component unmounts
+    return () => {
+      cancelled = true;
+    };
   }, [projectFilter]);
 
   // Ref for pull-to-refresh
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
 
+  // Stabilize modal data object to prevent unnecessary effect re-runs
+  const modalData = useMemo(() => ({
+    projects,
+    teamMembers,
+  }), [projects, teamMembers]);
+
   // Register create modal data for bottom nav
   useEffect(() => {
-    registerCreateModal('/app/tasks', {
-      projects,
-      teamMembers,
-    });
-    return () => unregisterCreateModal('/app/tasks');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [registerCreateModal, unregisterCreateModal]);
+    registerCreateModal("/app/tasks", modalData);
+    return () => unregisterCreateModal("/app/tasks");
+  }, [registerCreateModal, unregisterCreateModal, modalData]);
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -141,11 +154,11 @@ export function TasksPageClient({
     router.refresh();
   }, [router]);
 
-  // Calculate active filter count (excluding 'all' selections)
+  // Calculate active filter count (excluding "all" selections)
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (projectFilter !== 'all') count++;
-    // Status filter is shown in segmented control, so don't count it here
+    if (projectFilter !== "all") count++;
+    // Status filter is shown in segmented control, so don"t count it here
     return count;
   }, [projectFilter]);
 
@@ -174,8 +187,8 @@ export function TasksPageClient({
       }
 
       // Check project filter match
-      const matchesProject = projectFilter === 'all' || task.project_id === projectFilter;
-      if (matchesProject && projectFilter !== 'all') {
+      const matchesProject = projectFilter === "all" || task.project_id === projectFilter;
+      if (matchesProject && projectFilter !== "all") {
         projectTaskCount++;
       }
 
@@ -195,7 +208,7 @@ export function TasksPageClient({
       }
 
       // Check status filter for final filtered list
-      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+      const matchesStatus = statusFilter === "all" || task.status === statusFilter;
 
       if (matchesProject && matchesSearch && matchesStatus) {
         filtered.push(task);
@@ -204,7 +217,7 @@ export function TasksPageClient({
 
     return {
       filteredTasks: filtered,
-      projectTaskCount: projectFilter === 'all' ? tasks.length : projectTaskCount,
+      projectTaskCount: projectFilter === "all" ? tasks.length : projectTaskCount,
       projectTaskCounts: projectCounts,
       statusCounts,
     };
@@ -288,9 +301,9 @@ export function TasksPageClient({
                   No tasks found
                 </h3>
                 <p className="text-sm text-gray-500 mb-4 max-w-xs">
-                  {searchQuery || statusFilter !== 'all' || projectFilter !== 'all'
-                    ? 'Try adjusting your filters'
-                    : 'Create your first task to get started'}
+                  {searchQuery || statusFilter !== "all" || projectFilter !== "all"
+                    ? "Try adjusting your filters"
+                    : "Create your first task to get started"}
                 </p>
               </div>
             )}
@@ -312,13 +325,13 @@ export function TasksPageClient({
                 <button
                   type="button"
                   onClick={() => {
-                    setProjectFilter('all');
+                    setProjectFilter("all");
                     setShowFilterSheet(false);
                   }}
                   className={`w-full h-12 px-4 rounded-xl text-left font-medium transition-colors ${
-                    projectFilter === 'all'
-                      ? 'bg-[#001B51] text-white'
-                      : 'bg-gray-100 text-gray-700 active:bg-gray-200'
+                    projectFilter === "all"
+                      ? "bg-[#001B51] text-white"
+                      : "bg-gray-100 text-gray-700 active:bg-gray-200"
                   }`}
                 >
                   All Projects
@@ -333,8 +346,8 @@ export function TasksPageClient({
                     }}
                     className={`w-full h-12 px-4 rounded-xl text-left font-medium transition-colors ${
                       projectFilter === project.id
-                        ? 'bg-[#001B51] text-white'
-                        : 'bg-gray-100 text-gray-700 active:bg-gray-200'
+                        ? "bg-[#001B51] text-white"
+                        : "bg-gray-100 text-gray-700 active:bg-gray-200"
                     }`}
                   >
                     {project.name}
@@ -348,7 +361,7 @@ export function TasksPageClient({
               <button
                 type="button"
                 onClick={() => {
-                  setProjectFilter('all');
+                  setProjectFilter("all");
                   setShowFilterSheet(false);
                 }}
                 className="w-full h-12 px-4 rounded-xl text-center font-medium text-[#DC2626] bg-red-50 active:bg-red-100 transition-colors"
@@ -407,7 +420,7 @@ export function TasksPageClient({
             />
 
             {/* Selected project indicator on mobile */}
-            {projectFilter !== 'all' && (
+            {projectFilter !== "all" && (
               <div className="sm:hidden text-xs text-gray-500">
                 Showing tasks for selected project only
               </div>

@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { AlertCircle } from 'lucide-react';
+import { useState } from "react";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { AlertCircle } from "lucide-react";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 interface BlockedReasonModalProps {
   isOpen: boolean;
@@ -13,31 +15,35 @@ interface BlockedReasonModalProps {
   onConfirm: (reason: string) => void;
 }
 
-export function BlockedReasonModal({ isOpen, onClose, onConfirm }: BlockedReasonModalProps) {
-  const [reason, setReason] = useState('');
-  const [error, setError] = useState<string | null>(null);
+export function BlockedReasonModal({
+  isOpen,
+  onClose,
+  onConfirm,
+}: BlockedReasonModalProps) {
+  const [reason, setReason] = useState("");
+  const { error, setError, clearError } = useActionWithError();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!reason.trim()) {
-      setError('Please enter a reason for blocking this task');
+      setError("Please enter a reason for blocking this task");
       return;
     }
 
     onConfirm(reason.trim());
-    setReason('');
-    setError(null);
+    setReason("");
+    clearError();
   };
 
   const handleClose = () => {
-    setReason('');
-    setError(null);
+    setReason("");
+    clearError();
     onClose();
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={handleClose}
       icon={AlertCircle}
@@ -59,16 +65,16 @@ export function BlockedReasonModal({ isOpen, onClose, onConfirm }: BlockedReason
               value={reason}
               onChange={(e) => {
                 setReason(e.target.value);
-                setError(null);
+                clearError();
               }}
               rows={3}
               autoFocus
               className="border-2 border-gray-300 focus:border-construction-red"
             />
-            {error && (
-              <p className="text-sm text-red-600 font-medium">{error}</p>
-            )}
           </div>
+
+          {/* Error Banner */}
+          {error && <ErrorBanner error={error} onDismiss={clearError} />}
         </div>
 
         <div className="flex justify-end gap-3 pt-6">
@@ -83,6 +89,6 @@ export function BlockedReasonModal({ isOpen, onClose, onConfirm }: BlockedReason
           </Button>
         </div>
       </form>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

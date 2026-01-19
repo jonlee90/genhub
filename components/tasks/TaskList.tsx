@@ -28,7 +28,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, getInitials } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { updateTaskStatus } from "@/app/actions/tasks";
 import { useIsMobile } from "@/lib/hooks/useMediaQuery";
@@ -42,7 +42,7 @@ import type { TaskWithRelations, Phase, TaskStatus } from "@/types/db/task";
 interface TaskListProps {
   tasks: TaskWithRelations[];
   onTaskClick?: (task: TaskWithRelations) => void;
-  /** When provided, we're in project context - look up phase from this array */
+  /** When provided, we"re in project context - look up phase from this array */
   phases?: Phase[];
 }
 
@@ -60,14 +60,6 @@ const STATUS_ORDER: Record<string, number> = {
   todo: 3,
   completed: 4,
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
 const isOverdue = (task: TaskWithRelations) => {
   if (!task.due_date || task.status === "completed") return false;

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useRef, useTransition } from 'react';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { Upload, File, AlertCircle, Loader2 } from 'lucide-react';
-import { uploadCompanyDefaultModel } from '@/app/actions/default-models';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation';
+import { useState, useTransition } from "react";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { FileUploadPanel } from "@/components/ui/FileUploadPanel";
+import { Upload, AlertCircle, Loader2 } from "lucide-react";
+import { uploadCompanyDefaultModel } from "@/app/actions/default-models";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 interface ModelUploadModalProps {
   projectTypeConfigId: string;
@@ -17,18 +17,17 @@ interface ModelUploadModalProps {
 
 const MAX_FILE_SIZE_MB = 100;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-const ACCEPTED_FILE_TYPES = ['.ifc'];
+const ACCEPTED_FILE_TYPES = [".ifc"];
 
 export function ModelUploadModal({
   projectTypeConfigId,
   projectTypeName,
   onClose,
 }: ModelUploadModalProps) {
-  console.log('[ModelUploadModal] Opening for project type:', projectTypeName);
+  console.log("[ModelUploadModal] Opening for project type:", projectTypeName);
 
   const router = useRouter();
   const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -36,16 +35,18 @@ export function ModelUploadModal({
   const [error, setError] = useState<string | null>(null);
 
   // Handle file selection
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('[ModelUploadModal] File selected');
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileSelect = (file: File | null) => {
+    console.log("[ModelUploadModal] File selected");
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
 
     setError(null);
 
     // Validate file type
-    if (!file.name.toLowerCase().endsWith('.ifc')) {
-      setError('Invalid file type. Please select an IFC file (.ifc)');
+    if (!file.name.toLowerCase().endsWith(".ifc")) {
+      setError("Invalid file type. Please select an IFC file (.ifc)");
       setSelectedFile(null);
       return;
     }
@@ -57,7 +58,11 @@ export function ModelUploadModal({
       return;
     }
 
-    console.log('[ModelUploadModal] File valid:', file.name, formatFileSize(file.size));
+    console.log(
+      "[ModelUploadModal] File valid:",
+      file.name,
+      formatFileSize(file.size),
+    );
     setSelectedFile(file);
   };
 
@@ -65,53 +70,56 @@ export function ModelUploadModal({
   const handleUpload = () => {
     if (!selectedFile) return;
 
-    console.log('[ModelUploadModal] Starting upload:', selectedFile.name);
+    console.log("[ModelUploadModal] Starting upload:", selectedFile.name);
 
     startTransition(async () => {
       try {
         const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('projectTypeConfigId', projectTypeConfigId);
+        formData.append("file", selectedFile);
+        formData.append("projectTypeConfigId", projectTypeConfigId);
 
         // Simulate upload progress (replace with real progress tracking)
         const progressInterval = setInterval(() => {
           setUploadProgress((prev) => Math.min(prev + 10, 90));
         }, 200);
 
-        const result = await uploadCompanyDefaultModel(formData, projectTypeConfigId);
+        const result = await uploadCompanyDefaultModel(
+          formData,
+          projectTypeConfigId,
+        );
 
         clearInterval(progressInterval);
         setUploadProgress(100);
 
         if (result.success) {
           toast({
-            title: 'Upload Successful',
+            title: "Upload Successful",
             description: `Custom default model for ${projectTypeName} has been uploaded.`,
-            variant: 'default',
+            variant: "default",
           });
 
           // Refresh the page to show updated data
           router.refresh();
           onClose();
         } else {
-          setError(result.error || 'Upload failed. Please try again.');
+          setError(result.error || "Upload failed. Please try again.");
           setUploadProgress(0);
 
           toast({
-            title: 'Upload Failed',
-            description: result.error || 'An error occurred during upload.',
-            variant: 'destructive',
+            title: "Upload Failed",
+            description: result.error || "An error occurred during upload.",
+            variant: "destructive",
           });
         }
       } catch (err) {
-        console.error('[ModelUploadModal] Upload error:', err);
-        setError('An unexpected error occurred. Please try again.');
+        console.error("[ModelUploadModal] Upload error:", err);
+        setError("An unexpected error occurred. Please try again.");
         setUploadProgress(0);
 
         toast({
-          title: 'Upload Failed',
-          description: 'An unexpected error occurred.',
-          variant: 'destructive',
+          title: "Upload Failed",
+          description: "An unexpected error occurred.",
+          variant: "destructive",
         });
       }
     });
@@ -124,7 +132,7 @@ export function ModelUploadModal({
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={Upload}
@@ -176,86 +184,27 @@ export function ModelUploadModal({
           </ul>
         </div>
 
-        {/* File Upload Area */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Select IFC File
-          </label>
-
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept={ACCEPTED_FILE_TYPES.join(',')}
-            onChange={handleFileSelect}
-            className="hidden"
-            disabled={isPending}
-          />
-
-          {/* Dropzone / Upload Button */}
-          <div
-            onClick={() => !isPending && fileInputRef.current?.click()}
-            className={cn(
-              'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all',
-              selectedFile
-                ? 'border-[#059669] bg-[#059669]/5'
-                : 'border-gray-300 hover:border-[#001B51] hover:bg-gray-50',
-              isPending && 'opacity-50 cursor-not-allowed'
-            )}
-          >
-            {selectedFile ? (
-              <div className="space-y-3">
-                <div className="p-3 bg-[#059669]/10 rounded-lg inline-block">
-                  <File className="w-8 h-8 text-[#059669]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-[#001B51]">{selectedFile.name}</p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {formatFileSize(selectedFile.size)}
-                  </p>
-                </div>
-                {!isPending && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFile(null);
-                      setError(null);
-                      if (fileInputRef.current) {
-                        fileInputRef.current.value = '';
-                      }
-                    }}
-                    className="border-2 border-gray-300"
-                  >
-                    Choose Different File
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="p-3 bg-gray-100 rounded-lg inline-block">
-                  <Upload className="w-8 h-8 text-gray-400" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-700">
-                    Click to select IFC file
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    or drag and drop
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <FileUploadPanel
+          label="Select IFC File"
+          accept={ACCEPTED_FILE_TYPES.join(",")}
+          disabled={isPending}
+          file={selectedFile}
+          onFileSelect={handleFileSelect}
+          onClear={() => {
+            setSelectedFile(null);
+            setError(null);
+          }}
+          formatFileSize={formatFileSize}
+        />
 
         {/* Upload Progress */}
         {isPending && uploadProgress > 0 && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="font-semibold text-gray-700">Uploading...</span>
-              <span className="font-mono text-[#001B51]">{uploadProgress}%</span>
+              <span className="font-mono text-[#001B51]">
+                {uploadProgress}%
+              </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -286,13 +235,14 @@ export function ModelUploadModal({
             <div>
               <p className="font-semibold text-[#FFB627]">Important</p>
               <p className="text-sm text-gray-600 mt-1">
-                Uploading a custom model will replace the system default for all <strong>new</strong> {projectTypeName} projects.
-                Existing projects will not be affected.
+                Uploading a custom model will replace the system default for all{" "}
+                <strong>new</strong> {projectTypeName} projects. Existing
+                projects will not be affected.
               </p>
             </div>
           </div>
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

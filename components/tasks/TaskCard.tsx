@@ -16,7 +16,7 @@ import {
   Box,
   Receipt,
 } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, getInitials } from "@/lib/utils";
 import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
 import { getTaskTypeDisplayConfig } from "@/lib/config/task-type-display";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
@@ -25,7 +25,7 @@ interface TaskCardProps {
   task: TaskWithRelations;
   isDragging?: boolean;
   onTaskClick?: (task: TaskWithRelations) => void;
-  /** When provided, we're in project context - show phase from this array instead of task.phase */
+  /** When provided, we"re in project context - show phase from this array instead of task.phase */
   phases?: Phase[];
   /** Show edit indicator on hover - default true when phases provided */
   showEditIndicator?: boolean;
@@ -40,15 +40,6 @@ interface TaskCardProps {
 const CARD_BORDER = "border-l-4 border-construction-blue";
 
 // Utility functions extracted outside component to prevent recreation on every render
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 function formatCurrency(amount: number) {
   if (amount >= 1000) {
     return `$${(amount / 1000).toFixed(1)}k`;
@@ -73,7 +64,7 @@ export const TaskCard = React.memo(function TaskCard({
     isDragging: isSortableDragging,
   } = useSortable({ id: task.id });
 
-  // When in DragOverlay (isDragging=true), don't apply transform
+  // When in DragOverlay (isDragging=true), don"t apply transform
   // The DragOverlay handles positioning via its own internal transform
   const style = isDragging
     ? {}
@@ -114,7 +105,7 @@ export const TaskCard = React.memo(function TaskCard({
   // Check if task has 3D location
   const has3DLocation = !!task.spatial_marker_id;
 
-  // Get task type configuration with fallback to 'work'
+  // Get task type configuration with fallback to "work"
   const taskTypeConfig = getTaskTypeDisplayConfig(task.task_type);
   const TaskTypeIcon = taskTypeConfig.icon;
 
@@ -371,5 +362,19 @@ export const TaskCard = React.memo(function TaskCard({
         </Card>
       </div>
     </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if these specific props changed
+  // Returns true if props are equal (skip re-render), false if different (re-render)
+  return (
+    prevProps.task.id === nextProps.task.id &&
+    prevProps.task.status === nextProps.task.status &&
+    prevProps.task.title === nextProps.task.title &&
+    prevProps.task.updated_at === nextProps.task.updated_at &&
+    prevProps.isDragging === nextProps.isDragging &&
+    prevProps.showEditIndicator === nextProps.showEditIndicator &&
+    // Compare expense stats if present
+    prevProps.expenseStats?.count === nextProps.expenseStats?.count &&
+    prevProps.expenseStats?.totalAmount === nextProps.expenseStats?.totalAmount
   );
 });

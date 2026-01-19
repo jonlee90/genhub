@@ -1,33 +1,37 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useTransition, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Layers from 'lucide-react/icons/layers';
-import Plus from 'lucide-react/icons/plus';
-import Edit from 'lucide-react/icons/edit';
-import Trash2 from 'lucide-react/icons/trash-2';
-import Loader2 from 'lucide-react/icons/loader-2';
-import AlertTriangle from 'lucide-react/icons/alert-triangle';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import Layers from "lucide-react/icons/layers";
+import Plus from "lucide-react/icons/plus";
+import Edit from "lucide-react/icons/edit";
+import Trash2 from "lucide-react/icons/trash-2";
+import Loader2 from "lucide-react/icons/loader-2";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { createPhase, updatePhaseName, deletePhase } from '@/app/actions/phases';
-import { cn } from '@/lib/utils';
-import { toast } from 'sonner';
-import type { ProjectPhasesRow } from '@/types/db/tables/projects';
+} from "@/components/ui/select";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import {
+  createPhase,
+  updatePhaseName,
+  deletePhase,
+} from "@/app/actions/phases";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 
 type Phase = ProjectPhasesRow;
 
@@ -39,7 +43,7 @@ interface ManagePhasesModalProps {
   onSuccess?: () => void;
 }
 
-type ModalMode = 'list' | 'create' | 'edit' | 'delete';
+type ModalMode = "list" | "create" | "edit" | "delete";
 
 export function ManagePhasesModal({
   isOpen,
@@ -50,27 +54,32 @@ export function ManagePhasesModal({
 }: ManagePhasesModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [mode, setMode] = useState<ModalMode>('list');
+  const [mode, setMode] = useState<ModalMode>("list");
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Form state
-  const [phaseName, setPhaseName] = useState('');
-  const [phaseDescription, setPhaseDescription] = useState('');
-  const [deleteTaskHandling, setDeleteTaskHandling] = useState<'move' | 'delete'>('move');
-  const [targetPhaseId, setTargetPhaseId] = useState<string>('');
+  const [phaseName, setPhaseName] = useState("");
+  const [phaseDescription, setPhaseDescription] = useState("");
+  const [deleteTaskHandling, setDeleteTaskHandling] = useState<
+    "move" | "delete"
+  >("move");
+  const [targetPhaseId, setTargetPhaseId] = useState<string>("");
 
-  console.log('[ManagePhasesModal] Rendering:', { mode, selectedPhase: selectedPhase?.id });
+  console.log("[ManagePhasesModal] Rendering:", {
+    mode,
+    selectedPhase: selectedPhase?.id,
+  });
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleCreatePhase = useCallback(async () => {
-    console.log('[ManagePhasesModal] Creating phase:', phaseName);
+    console.log("[ManagePhasesModal] Creating phase:", phaseName);
     setError(null);
 
     const formData = new FormData();
-    formData.append('name', phaseName);
+    formData.append("name", phaseName);
     if (phaseDescription) {
-      formData.append('description', phaseDescription);
+      formData.append("description", phaseDescription);
     }
 
     startTransition(async () => {
@@ -80,10 +89,10 @@ export function ManagePhasesModal({
         setError(result.error);
         toast.error(result.error);
       } else {
-        toast.success('Phase created successfully');
-        setPhaseName('');
-        setPhaseDescription('');
-        setMode('list');
+        toast.success("Phase created successfully");
+        setPhaseName("");
+        setPhaseDescription("");
+        setMode("list");
         onSuccess?.();
         router.refresh();
       }
@@ -93,13 +102,13 @@ export function ManagePhasesModal({
   const handleUpdatePhase = useCallback(async () => {
     if (!selectedPhase) return;
 
-    console.log('[ManagePhasesModal] Updating phase:', selectedPhase.id);
+    console.log("[ManagePhasesModal] Updating phase:", selectedPhase.id);
     setError(null);
 
     const formData = new FormData();
-    formData.append('name', phaseName);
+    formData.append("name", phaseName);
     if (phaseDescription) {
-      formData.append('description', phaseDescription);
+      formData.append("description", phaseDescription);
     }
 
     startTransition(async () => {
@@ -109,8 +118,8 @@ export function ManagePhasesModal({
         setError(result.error);
         toast.error(result.error);
       } else {
-        toast.success('Phase updated successfully');
-        setMode('list');
+        toast.success("Phase updated successfully");
+        setMode("list");
         setSelectedPhase(null);
         onSuccess?.();
         router.refresh();
@@ -121,15 +130,15 @@ export function ManagePhasesModal({
   const handleDeletePhase = useCallback(async () => {
     if (!selectedPhase) return;
 
-    console.log('[ManagePhasesModal] Deleting phase:', selectedPhase.id, {
+    console.log("[ManagePhasesModal] Deleting phase:", selectedPhase.id, {
       taskHandling: deleteTaskHandling,
       targetPhaseId,
     });
     setError(null);
 
-    if (deleteTaskHandling === 'move' && !targetPhaseId) {
-      setError('Please select a target phase for tasks');
-      toast.error('Please select a target phase for tasks');
+    if (deleteTaskHandling === "move" && !targetPhaseId) {
+      setError("Please select a target phase for tasks");
+      toast.error("Please select a target phase for tasks");
       return;
     }
 
@@ -137,15 +146,15 @@ export function ManagePhasesModal({
       const result = await deletePhase(
         selectedPhase.id,
         deleteTaskHandling,
-        targetPhaseId || undefined
+        targetPhaseId || undefined,
       );
 
       if (result.error) {
         setError(result.error);
         toast.error(result.error);
       } else {
-        toast.success('Phase deleted successfully');
-        setMode('list');
+        toast.success("Phase deleted successfully");
+        setMode("list");
         setSelectedPhase(null);
         onSuccess?.();
         router.refresh();
@@ -154,55 +163,55 @@ export function ManagePhasesModal({
   }, [selectedPhase, deleteTaskHandling, targetPhaseId, onSuccess, router]);
 
   const handleEditClick = useCallback((phase: Phase) => {
-    console.log('[ManagePhasesModal] Edit phase:', phase.id);
+    console.log("[ManagePhasesModal] Edit phase:", phase.id);
     setSelectedPhase(phase);
     setPhaseName(phase.name);
-    setPhaseDescription(phase.notes || '');
-    setMode('edit');
+    setPhaseDescription(phase.notes || "");
+    setMode("edit");
   }, []);
 
   const handleDeleteClick = useCallback((phase: Phase) => {
-    console.log('[ManagePhasesModal] Delete phase:', phase.id);
+    console.log("[ManagePhasesModal] Delete phase:", phase.id);
     setSelectedPhase(phase);
-    setMode('delete');
+    setMode("delete");
   }, []);
 
   const handleBackToList = useCallback(() => {
-    setMode('list');
+    setMode("list");
     setSelectedPhase(null);
-    setPhaseName('');
-    setPhaseDescription('');
+    setPhaseName("");
+    setPhaseDescription("");
     setError(null);
   }, []);
 
   const getModalTitle = () => {
     switch (mode) {
-      case 'create':
-        return 'Create New Phase';
-      case 'edit':
-        return 'Edit Phase';
-      case 'delete':
-        return 'Delete Phase';
+      case "create":
+        return "Create New Phase";
+      case "edit":
+        return "Edit Phase";
+      case "delete":
+        return "Delete Phase";
       default:
-        return 'Manage Phases';
+        return "Manage Phases";
     }
   };
 
   const getModalSubtitle = () => {
     switch (mode) {
-      case 'create':
-        return 'Add a new phase to your project';
-      case 'edit':
-        return 'Update phase details';
-      case 'delete':
-        return 'Choose how to handle tasks in this phase';
+      case "create":
+        return "Add a new phase to your project";
+      case "edit":
+        return "Update phase details";
+      case "delete":
+        return "Choose how to handle tasks in this phase";
       default:
-        return 'Add, edit, or remove project phases';
+        return "Add, edit, or remove project phases";
     }
   };
 
   const renderLeftActions = () => {
-    if (mode !== 'list') {
+    if (mode !== "list") {
       return (
         <Button variant="ghost" onClick={handleBackToList} disabled={isPending}>
           Back
@@ -214,17 +223,17 @@ export function ManagePhasesModal({
 
   const renderRightActions = () => {
     switch (mode) {
-      case 'list':
+      case "list":
         return (
           <Button
-            onClick={() => setMode('create')}
+            onClick={() => setMode("create")}
             className="bg-construction-blue hover:bg-blue-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Phase
           </Button>
         );
-      case 'create':
+      case "create":
         return (
           <Button
             onClick={handleCreatePhase}
@@ -244,7 +253,7 @@ export function ManagePhasesModal({
             )}
           </Button>
         );
-      case 'edit':
+      case "edit":
         return (
           <Button
             onClick={handleUpdatePhase}
@@ -264,7 +273,7 @@ export function ManagePhasesModal({
             )}
           </Button>
         );
-      case 'delete':
+      case "delete":
         return (
           <Button
             onClick={handleDeletePhase}
@@ -288,7 +297,7 @@ export function ManagePhasesModal({
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={Layers}
@@ -314,7 +323,7 @@ export function ManagePhasesModal({
         )}
 
         {/* List Mode */}
-        {mode === 'list' && (
+        {mode === "list" && (
           <motion.div
             key="list"
             initial={{ opacity: 0, x: -20 }}
@@ -378,7 +387,7 @@ export function ManagePhasesModal({
         )}
 
         {/* Create/Edit Mode */}
-        {(mode === 'create' || mode === 'edit') && (
+        {(mode === "create" || mode === "edit") && (
           <motion.div
             key={mode}
             initial={{ opacity: 0, x: 20 }}
@@ -418,7 +427,7 @@ export function ManagePhasesModal({
         )}
 
         {/* Delete Mode */}
-        {mode === 'delete' && selectedPhase && (
+        {mode === "delete" && selectedPhase && (
           <motion.div
             key="delete"
             initial={{ opacity: 0, x: 20 }}
@@ -433,7 +442,8 @@ export function ManagePhasesModal({
                   Delete "{selectedPhase.name}"?
                 </p>
                 <p className="text-sm text-amber-700 mt-1">
-                  This action cannot be undone. Choose how to handle tasks in this phase.
+                  This action cannot be undone. Choose how to handle tasks in
+                  this phase.
                 </p>
               </div>
             </div>
@@ -442,20 +452,24 @@ export function ManagePhasesModal({
               <Label className="font-bold">Task Handling</Label>
               <Select
                 value={deleteTaskHandling}
-                onValueChange={(value: 'move' | 'delete') => setDeleteTaskHandling(value)}
+                onValueChange={(value: "move" | "delete") =>
+                  setDeleteTaskHandling(value)
+                }
                 disabled={isPending}
               >
                 <SelectTrigger className="border-2">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="move">Move tasks to another phase</SelectItem>
+                  <SelectItem value="move">
+                    Move tasks to another phase
+                  </SelectItem>
                   <SelectItem value="delete">Delete all tasks</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {deleteTaskHandling === 'move' && (
+            {deleteTaskHandling === "move" && (
               <div className="space-y-2">
                 <Label className="font-bold">Target Phase *</Label>
                 <Select
@@ -481,6 +495,6 @@ export function ManagePhasesModal({
           </motion.div>
         )}
       </AnimatePresence>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

@@ -1,14 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { X, ArrowRight, ArrowLeft, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
-import { removeTaskDependency } from '@/app/actions/tasks';
-import { cn } from '@/lib/utils';
-import type { TaskDependency, TaskDependent } from '@/types/db/task';
+import { useState } from "react";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { CheckCircle } from "lucide-react";
+import { Clock } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { removeTaskDependency } from "@/app/actions/tasks";
+import { cn } from "@/lib/utils";
+import type { TaskDependency, TaskDependent } from "@/types/db/task";
 
 interface TaskDependenciesProps {
   taskId: string;
@@ -18,11 +23,11 @@ interface TaskDependenciesProps {
 }
 
 const STATUS_ICON = {
-  completed: { icon: CheckCircle, color: 'text-green-600' },
-  in_progress: { icon: Clock, color: 'text-blue-600' },
-  todo: { icon: Clock, color: 'text-gray-400' },
-  review: { icon: Clock, color: 'text-purple-600' },
-  blocked: { icon: AlertTriangle, color: 'text-red-600' },
+  completed: { icon: CheckCircle, color: "text-green-600" },
+  in_progress: { icon: Clock, color: "text-blue-600" },
+  todo: { icon: Clock, color: "text-gray-400" },
+  review: { icon: Clock, color: "text-purple-600" },
+  blocked: { icon: AlertTriangle, color: "text-red-600" },
 };
 
 export function TaskDependencies({
@@ -42,7 +47,7 @@ export function TaskDependencies({
   const getStatusDisplay = (status: string) => {
     const config = STATUS_ICON[status as keyof typeof STATUS_ICON] || STATUS_ICON.todo;
     const Icon = config.icon;
-    return <Icon className={cn('h-4 w-4', config.color)} />;
+    return <Icon className={cn("h-4 w-4", config.color)} />;
   };
 
   return (
@@ -83,12 +88,12 @@ export function TaskDependencies({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        dep.depends_on.status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                        dep.depends_on.status === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
                       )}
                     >
-                      {dep.depends_on.status === 'completed' ? 'Completed' : 'Pending'}
+                      {dep.depends_on.status === "completed" ? "Completed" : "Pending"}
                     </Badge>
                   </div>
                   <Button
@@ -109,7 +114,7 @@ export function TaskDependencies({
           {dependencies.length > 0 && (
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 text-sm">
-                {dependencies.every((d) => d.depends_on.status === 'completed') ? (
+                {dependencies.every((d) => d.depends_on.status === "completed") ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <span className="text-green-600">All dependencies completed</span>
@@ -118,7 +123,7 @@ export function TaskDependencies({
                   <>
                     <AlertTriangle className="h-4 w-4 text-yellow-600" />
                     <span className="text-yellow-600">
-                      {dependencies.filter((d) => d.depends_on.status !== 'completed').length} pending
+                      {dependencies.filter((d) => d.depends_on.status !== "completed").length} pending
                       dependencies
                     </span>
                   </>
@@ -163,12 +168,12 @@ export function TaskDependencies({
                     <Badge
                       variant="secondary"
                       className={cn(
-                        dep.task.status === 'blocked'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-slate-100 text-slate-700'
+                        dep.task.status === "blocked"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-slate-100 text-slate-700"
                       )}
                     >
-                      {dep.task.status === 'blocked' ? 'Waiting' : dep.task.status}
+                      {dep.task.status === "blocked" ? "Waiting" : dep.task.status}
                     </Badge>
                   </div>
                 </div>
@@ -179,8 +184,8 @@ export function TaskDependencies({
           {/* Info */}
           {dependents.length > 0 && (
             <div className="mt-4 pt-4 border-t text-sm text-muted-foreground">
-              Completing this task may unblock{' '}
-              {dependents.filter((d) => d.task.status === 'blocked').length} tasks.
+              Completing this task may unblock{" "}
+              {dependents.filter((d) => d.task.status === "blocked").length} tasks.
             </div>
           )}
         </CardContent>

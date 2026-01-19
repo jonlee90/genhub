@@ -1,9 +1,16 @@
-import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
-import { createClient } from '@/utils/supabase/server';
-import { ClientSpatialViewer } from '@/components/projects/spatial/ClientSpatialViewer';
-import { getActiveModel } from '@/app/actions/spatial';
-import { Building2 } from 'lucide-react';
+import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
+import { auth } from "@/lib/auth";
+import { createClient } from "@/utils/supabase/server";
+import { getActiveModel } from "@/app/actions/spatial";
+import { Building2 } from "lucide-react";
+
+const ClientSpatialViewer = dynamic(
+  () =>
+    import("@/components/projects/spatial/ClientSpatialViewer").then((mod) => ({
+      default: mod.ClientSpatialViewer,
+    }))
+);
 
 interface ClientSpatialPageProps {
   params: Promise<{
@@ -19,40 +26,40 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
   const params = await props.params;
   const session = await auth();
   if (!session?.user) {
-    redirect('/');
+    redirect("/");
   }
 
   const supabase = await createClient();
 
   // Verify client has access to this project
   const { data: companyUser } = await supabase
-    .from('company_users')
-    .select('company_id, role')
-    .eq('user_id', session.user.id!)
-    .eq('status', 'active')
+    .from("company_users")
+    .select("company_id, role")
+    .eq("user_id", session.user.id!)
+    .eq("status", "active")
     .single();
 
   if (!companyUser) {
-    redirect('/app');
+    redirect("/app");
   }
 
   // Get project details including type and client budget visibility
   const { data: project } = await supabase
-    .from('projects')
-    .select('id, name, description, company_id, project_type')
-    .eq('id', params.projectId)
-    .eq('company_id', companyUser.company_id)
+    .from("projects")
+    .select("id, name, description, company_id, project_type")
+    .eq("id", params.projectId)
+    .eq("company_id", companyUser.company_id)
     .single();
 
   // Get company settings for client budget visibility
   const { data: company } = await supabase
-    .from('companies')
-    .select('client_can_view_budget')
-    .eq('id', companyUser.company_id)
+    .from("companies")
+    .select("client_can_view_budget")
+    .eq("id", companyUser.company_id)
     .single();
 
   if (!project) {
-    redirect('/app/client');
+    redirect("/app/client");
   }
 
   // Get active 3D model
@@ -87,10 +94,10 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
       </div>
 
       {/* 3D Viewer */}
-      <div className="relative z-10" style={{ height: 'calc(100vh - 120px)' }}>
+      <div className="relative z-10" style={{ height: "calc(100vh - 120px)" }}>
         <ClientSpatialViewer
           projectId={params.projectId}
-          projectType={project.project_type || 'residential'}
+          projectType={project.project_type || "residential"}
           modelHighURL={activeModel?.xkt_file_url}
           hasBudgetVisibility={company?.client_can_view_budget ?? false}
         />

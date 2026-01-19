@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import Image from 'next/image';
-import { Building2, Trophy, TrendingUp, CheckCircle2, Target, Users } from 'lucide-react';
-import { formatPercentWhole } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { useMemo } from "react";
+import Image from "next/image";
+import { Building2 } from "lucide-react";
+import { Trophy } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Target } from "lucide-react";
+import { Users } from "lucide-react";
+import { formatPercentWhole } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * Top Contributor type for team member display
@@ -70,7 +75,7 @@ export function TopProjectsCard({
     tasks.forEach((task) => {
       const stats = projectStats.get(task.project_id) || { completed: 0, total: 0 };
       stats.total += 1;
-      if (task.status === 'completed') {
+      if (task.status === "completed") {
         stats.completed += 1;
       }
       projectStats.set(task.project_id, stats);
@@ -105,7 +110,7 @@ export function TopProjectsCard({
 
   // Filter based on project selection
   const displayedProjects = useMemo(() => {
-    if (projectFilter === 'all') {
+    if (projectFilter === "all") {
       return rankedProjects.slice(0, 5);
     }
     return rankedProjects.filter((p) => p.id === projectFilter).slice(0, 1);
@@ -128,8 +133,8 @@ export function TopProjectsCard({
     return (
       <div
         className={cn(
-          'bg-white rounded-xl overflow-hidden',
-          'border-2 border-gray-200 shadow-sm'
+          "bg-white rounded-xl overflow-hidden",
+          "border-2 border-gray-200 shadow-sm"
         )}
       >
         {/* Header */}
@@ -164,9 +169,9 @@ export function TopProjectsCard({
   return (
     <div
       className={cn(
-        'bg-white rounded-xl overflow-hidden',
-        'border-2 border-gray-200 shadow-sm',
-        'transition-all duration-200'
+        "bg-white rounded-xl overflow-hidden",
+        "border-2 border-gray-200 shadow-sm",
+        "transition-all duration-200"
       )}
     >
       {/* Header */}
@@ -180,7 +185,7 @@ export function TopProjectsCard({
               Top Projects
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
-              {displayedProjects.length} project{displayedProjects.length !== 1 ? 's' : ''} ranked
+              {displayedProjects.length} project{displayedProjects.length !== 1 ? "s" : ""} ranked
             </p>
           </div>
           {/* Summary Badge */}
@@ -221,12 +226,12 @@ export function TopProjectsCard({
               <div
                 key={assignee.id}
                 className={cn(
-                  'flex items-center gap-2.5 px-3 py-2.5 relative',
-                  'bg-gray-50 border rounded-xl',
-                  'min-h-[44px]', // Touch-friendly
-                  'active:scale-[0.98] active:bg-gray-100',
-                  'transition-all duration-150',
-                  index === 0 ? 'border-[#059669]/30 bg-[#059669]/5' : 'border-gray-100'
+                  "flex items-center gap-2.5 px-3 py-2.5 relative",
+                  "bg-gray-50 border rounded-xl",
+                  "min-h-[44px]", // Touch-friendly
+                  "active:scale-[0.98] active:bg-gray-100",
+                  "transition-all duration-150",
+                  index === 0 ? "border-[#059669]/30 bg-[#059669]/5" : "border-gray-100"
                 )}
               >
                 <div className="relative">
@@ -255,7 +260,7 @@ export function TopProjectsCard({
                 <div className="flex flex-col">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-gray-900 leading-tight">
-                      {assignee.name.split(' ')[0]}
+                      {assignee.name.split(" ")[0]}
                     </span>
                     {index === 0 && (
                       <span className="px-1.5 py-0.5 bg-[#059669]/10 border border-[#059669]/20 text-[#059669] text-[10px] font-bold uppercase tracking-wider rounded">
@@ -264,7 +269,7 @@ export function TopProjectsCard({
                     )}
                   </div>
                   <span className="text-[11px] text-gray-500">
-                    {assignee.taskCount} task{assignee.taskCount !== 1 ? 's' : ''}
+                    {assignee.taskCount} task{assignee.taskCount !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
@@ -304,42 +309,42 @@ function ProjectRow({ project, rank }: ProjectRowProps) {
 
   // Determine progress bar color based on completion
   const getProgressColor = () => {
-    if (isCompleted) return 'bg-[#059669]';
-    if (project.completionRatio >= 0.7) return 'bg-[#001B51]';
-    if (project.completionRatio >= 0.4) return 'bg-[#F59E0B]';
-    return 'bg-gray-400';
+    if (isCompleted) return "bg-[#059669]";
+    if (project.completionRatio >= 0.7) return "bg-[#001B51]";
+    if (project.completionRatio >= 0.4) return "bg-[#F59E0B]";
+    return "bg-gray-400";
   };
 
   // Determine status dot color
   const getStatusDotColor = () => {
-    if (isCompleted) return 'bg-[#059669]';
-    if (project.completionRatio >= 0.7) return 'bg-[#001B51]';
-    if (project.completionRatio >= 0.4) return 'bg-[#F59E0B]';
-    return 'bg-gray-400';
+    if (isCompleted) return "bg-[#059669]";
+    if (project.completionRatio >= 0.7) return "bg-[#001B51]";
+    if (project.completionRatio >= 0.4) return "bg-[#F59E0B]";
+    return "bg-gray-400";
   };
 
   return (
     <div
       className={cn(
-        'relative rounded-xl p-3.5',
-        'bg-gray-50 border',
-        'min-h-[76px]',
-        'active:scale-[0.99] active:bg-gray-100',
-        'transition-all duration-150',
-        isTopProject ? 'border-[#059669]/30 bg-[#059669]/5' : 'border-gray-200'
+        "relative rounded-xl p-3.5",
+        "bg-gray-50 border",
+        "min-h-[76px]",
+        "active:scale-[0.99] active:bg-gray-100",
+        "transition-all duration-150",
+        isTopProject ? "border-[#059669]/30 bg-[#059669]/5" : "border-gray-200"
       )}
     >
       <div className="flex items-start gap-3">
         {/* Rank Badge */}
         <div
           className={cn(
-            'flex items-center justify-center',
-            'w-9 h-9 rounded-lg flex-shrink-0',
-            'font-bold text-sm',
-            'transition-transform',
+            "flex items-center justify-center",
+            "w-9 h-9 rounded-lg flex-shrink-0",
+            "font-bold text-sm",
+            "transition-transform",
             isTopProject
-              ? 'bg-[#059669] text-white shadow-sm'
-              : 'bg-white border-2 border-gray-200 text-[#001B51]'
+              ? "bg-[#059669] text-white shadow-sm"
+              : "bg-white border-2 border-gray-200 text-[#001B51]"
           )}
         >
           {isTopProject ? <Trophy className="w-4 h-4" /> : rank}
@@ -365,8 +370,8 @@ function ProjectRow({ project, rank }: ProjectRowProps) {
           <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden mb-1.5">
             <div
               className={cn(
-                'absolute inset-y-0 left-0 rounded-full',
-                'transition-all duration-500 ease-out',
+                "absolute inset-y-0 left-0 rounded-full",
+                "transition-all duration-500 ease-out",
                 getProgressColor()
               )}
               style={{ width: `${project.completionRatio * 100}%` }}
@@ -376,7 +381,7 @@ function ProjectRow({ project, rank }: ProjectRowProps) {
           {/* Stats Row */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <span className={cn('w-2 h-2 rounded-full flex-shrink-0', getStatusDotColor())} />
+              <span className={cn("w-2 h-2 rounded-full flex-shrink-0", getStatusDotColor())} />
               <span className="text-xs text-gray-500">
                 {formatPercentWhole(project.completionRatio * 100)} complete
               </span>
@@ -388,10 +393,10 @@ function ProjectRow({ project, rank }: ProjectRowProps) {
         <div className="flex flex-col items-end flex-shrink-0">
           <div
             className={cn(
-              'px-2.5 py-1.5 rounded-lg',
-              'font-bold text-sm tabular-nums',
-              'bg-white border-2',
-              isTopProject ? 'border-[#059669]/30 text-[#059669]' : 'border-gray-200 text-[#001B51]'
+              "px-2.5 py-1.5 rounded-lg",
+              "font-bold text-sm tabular-nums",
+              "bg-white border-2",
+              isTopProject ? "border-[#059669]/30 text-[#059669]" : "border-gray-200 text-[#001B51]"
             )}
           >
             {project.completedTasks}/{project.totalTasks}

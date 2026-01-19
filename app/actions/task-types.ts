@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext as getBaseUserContext } from "@/lib/auth-context";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 // ============================================
@@ -40,42 +39,22 @@ const updateTaskTypeSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
+// NOTE: Using cached getUserContext from @/lib/auth-context (CRIT-001 optimization)
 
 async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    console.error(
-      "[getUserContext] Error fetching company user:",
-      companyError,
-    );
-    return { error: "No active company found for user" };
+  const ctx = await getBaseUserContext();
+  if ("error" in ctx) {
+    return ctx;
   }
 
   // Only Admin can manage task types
-  if (companyUser.role !== "admin") {
+  if (ctx.role !== "admin") {
     return {
       error: "Insufficient permissions. Only Admin can manage task types.",
     };
   }
 
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
+  return ctx;
 }
 
 // ============================================
@@ -93,29 +72,19 @@ export async function getTaskTypes(): Promise<{
 }> {
   console.log("[getTaskTypes] Fetching active task types...");
 
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
+  // Use cached getUserContext (CRIT-001 optimization)
+  const ctx = await getBaseUserContext();
+  if ("error" in ctx) {
+    return { error: ctx.error };
   }
 
-  const supabase = await createClient();
-
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
-  }
+  const { companyId, supabase } = ctx;
 
   // Fetch active task types only
   const { data: taskTypes, error } = await supabase
     .from("task_type_configs")
     .select("*")
-    .eq("company_id", companyUser.company_id)
+    .eq("company_id", companyId)
     .eq("is_active", true)
     .order("name", { ascending: true });
 

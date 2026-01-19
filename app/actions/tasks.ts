@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
+import { getUserContext } from "@/lib/auth-context";
 import { invalidateDashboardCache } from "@/app/actions/dashboard";
 import type {
   TasksRow,
@@ -193,37 +195,7 @@ const updateApprovalStatusSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext() {
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  // Create Supabase client
-  const supabase = await createClient();
-
-  // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (companyError || !companyUser) {
-    return { error: "No active company found for user" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
+// NOTE: getUserContext moved to @/lib/auth-context for React.cache optimization
 
 async function verifyProjectAccess(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -361,10 +333,12 @@ export async function getProjectAssignees(projectId: string): Promise<{
   const { data: subs, error: subsError } = subsResult;
 
   if (usersError) {
-    console.error(
-      "[getProjectAssignees] Error fetching company users:",
-      usersError,
-    );
+    after(() => {
+      console.error(
+        "[getProjectAssignees] Error fetching company users:",
+        usersError,
+      );
+    });
     return { error: "Failed to fetch team members" };
   }
 
@@ -387,10 +361,12 @@ export async function getProjectAssignees(projectId: string): Promise<{
   });
 
   if (subsError) {
-    console.error(
-      "[getProjectAssignees] Error fetching subcontractors:",
-      subsError,
-    );
+    after(() => {
+      console.error(
+        "[getProjectAssignees] Error fetching subcontractors:",
+        subsError,
+      );
+    });
     // Don't fail - just continue without subcontractors
   }
 
@@ -439,7 +415,9 @@ async function insertTaskAssignees(
     .insert(assigneeInserts);
 
   if (error) {
-    console.error("[insertTaskAssignees] Error:", error);
+    after(() => {
+      console.error("[insertTaskAssignees] Error:", error);
+    });
     return { error: "Failed to assign users to task" };
   }
 
@@ -462,7 +440,9 @@ async function updateTaskAssignees(
     .eq("task_id", taskId);
 
   if (deleteError) {
-    console.error("[updateTaskAssignees] Delete error:", deleteError);
+    after(() => {
+      console.error("[updateTaskAssignees] Delete error:", deleteError);
+    });
     return { error: "Failed to update assignees" };
   }
 
@@ -583,29 +563,38 @@ export async function createTask(
     .single();
 
   if (insertError) {
-    console.error("Error creating task:", insertError);
+    after(() => {
+      console.error("Error creating task:", insertError);
+    });
     return { error: "Failed to create task. Please try again." };
   }
 
-  // Log activity
-  await logTaskActivity(supabase, task.id, userId, "created");
+  // CRITICAL OPTIMIZATION (HIGH-002): Parallelize post-creation operations
+  // Estimated savings: 300ms sequential → 150ms parallel (50% reduction)
+  const postCreationOps: Promise<unknown>[] = [
+    // Log activity
+    logTaskActivity(supabase, task.id, userId, "created"),
+  ];
 
-  // Insert multi-assignees into junction table
+  // Insert multi-assignees
   if (assigneeIds && assigneeIds.length > 0) {
-    const assigneeResult = await insertTaskAssignees(
-      supabase,
-      task.id,
-      assigneeIds,
-      userId,
+    postCreationOps.push(
+      insertTaskAssignees(supabase, task.id, assigneeIds, userId).then(
+        (assigneeResult) => {
+          if (assigneeResult.error) {
+            after(() => {
+              console.warn(
+                "[createTask] Failed to insert assignees:",
+                assigneeResult.error,
+              );
+            });
+          }
+        },
+      ),
     );
-    if (assigneeResult.error) {
-      console.warn(
-        "[createTask] Failed to insert assignees:",
-        assigneeResult.error,
-      );
-    }
 
-    // Notify all user assignees (not subcontractors)
+    // CRITICAL OPTIMIZATION (CRIT-003): Batch notification inserts
+    // Estimated savings: N × 50ms → 50ms (200-500ms for 10 notifications)
     const assigneeNotifications = assigneeIds
       .filter((assignee) => assignee.type === "user" && assignee.id !== userId)
       .map((assignee) => ({
@@ -617,51 +606,80 @@ export async function createTask(
       }));
 
     if (assigneeNotifications.length > 0) {
-      const { error: notificationError } = await supabase
-        .from("notifications")
-        .insert(assigneeNotifications);
-
-      if (notificationError) {
-        console.error(
-          "[createTask] Error sending assignee notifications:",
-          notificationError,
-        );
-      }
+      postCreationOps.push(
+        Promise.resolve(
+          supabase.from("notifications").insert(assigneeNotifications),
+        ).then(({ error: notificationError }) => {
+          if (notificationError) {
+            after(() => {
+              console.error(
+                "[createTask] Error sending assignee notifications:",
+                notificationError,
+              );
+            });
+          }
+        }),
+      );
     }
   }
 
-  // Create notification for assignee if assigned
+  // Create notification for primary assignee if assigned
   if (data.assignee_id && data.assignee_id !== userId) {
-    await supabase.from("notifications").insert({
-      user_id: data.assignee_id,
-      type: "task_assigned",
-      title: "New Task Assigned",
-      message: `You have been assigned to: ${data.title}`,
-      link: `/app/tasks/${task.id}`,
-    });
+    postCreationOps.push(
+      Promise.resolve(
+        supabase.from("notifications").insert({
+          user_id: data.assignee_id,
+          type: "task_assigned",
+          title: "New Task Assigned",
+          message: `You have been assigned to: ${data.title}`,
+          link: `/app/tasks/${task.id}`,
+        }),
+      ).then(({ error }) => {
+        if (error) {
+          after(() => {
+            console.error(
+              "[createTask] Error creating primary assignee notification:",
+              error,
+            );
+          });
+        }
+      }),
+    );
 
-    // Send AlimTalk notification to assignee (Task 0018)
-    try {
-      const { KakaoService } = await import("@/lib/services/kakao");
-      const { data: project } = await supabase
-        .from("projects")
-        .select("name")
-        .eq("id", data.project_id)
-        .single();
-
-      await KakaoService.sendAlimTalk(data.assignee_id, {
-        template: "task_assignment",
-        params: {
-          taskTitle: data.title,
-          dueDate: data.due_date || "Not set",
-          projectName: project?.name || "Unknown Project",
-        },
-      });
-    } catch (error) {
-      console.error("[createTask] Error sending AlimTalk:", error);
-      // Don't fail task creation if AlimTalk fails
-    }
+    // Send AlimTalk notification to assignee (Task 0018) - parallel
+    // HIGH-010 FIX: Parallelize Kakao + Project fetch
+    postCreationOps.push(
+      Promise.all([
+        import("@/lib/services/kakao"),
+        Promise.resolve(
+          supabase
+            .from("projects")
+            .select("name")
+            .eq("id", data.project_id)
+            .single(),
+        ),
+      ])
+        .then(([{ KakaoService }, { data: project }]) => {
+          return KakaoService.sendAlimTalk(data.assignee_id!, {
+            template: "task_assignment",
+            params: {
+              taskTitle: data.title,
+              dueDate: data.due_date || "Not set",
+              projectName: project?.name || "Unknown Project",
+            },
+          });
+        })
+        .catch((error) => {
+          after(() => {
+            console.error("[createTask] Error sending AlimTalk:", error);
+          });
+          // Don't fail task creation if AlimTalk fails
+        }),
+    );
   }
+
+  // Execute all post-creation operations in parallel (allSettled to prevent one failure from blocking others)
+  await Promise.allSettled(postCreationOps);
 
   // Revalidate paths
   revalidatePath("/app/tasks");
@@ -806,20 +824,32 @@ export async function updateTask(formData: FormData) {
     .single();
 
   if (updateError) {
-    console.error("Error updating task:", updateError);
+    after(() => {
+      console.error("Error updating task:", updateError);
+    });
     return { error: "Failed to update task. Please try again." };
   }
 
-  // Log changes
-  for (const change of changes) {
-    await logTaskActivity(
-      supabase,
-      id,
-      userId,
-      "updated",
-      `${change.field}: ${change.oldValue}`,
-      `${change.field}: ${change.newValue}`,
-    );
+  // CRITICAL OPTIMIZATION (CRIT-005): Batch activity logging
+  // Estimated savings: N × 50ms → 50ms (250ms for 5 changes)
+  if (changes.length > 0) {
+    const activityInserts = changes.map((change) => ({
+      task_id: id,
+      user_id: userId,
+      action: "updated" as ActivityAction,
+      old_value: `${change.field}: ${change.oldValue}`,
+      new_value: `${change.field}: ${change.newValue}`,
+    }));
+
+    const { error: activityError } = await supabase
+      .from("task_activity")
+      .insert(activityInserts);
+
+    if (activityError) {
+      after(() => {
+        console.error("[updateTask] Error logging activity:", activityError);
+      });
+    }
   }
 
   // Notify new assignee if changed
@@ -846,13 +876,16 @@ export async function updateTask(formData: FormData) {
       userId,
     );
     if (assigneeResult.error) {
-      console.warn(
-        "[updateTask] Failed to update assignees:",
-        assigneeResult.error,
-      );
+      after(() => {
+        console.warn(
+          "[updateTask] Failed to update assignees:",
+          assigneeResult.error,
+        );
+      });
     }
 
-    // Notify new user assignees
+    // CRITICAL OPTIMIZATION (CRIT-003): Batch notification inserts (location 2/4)
+    // Estimated savings: N × 50ms → 50ms (200-500ms for 10 notifications)
     const assigneeNotifications = assigneeIds
       .filter((assignee) => assignee.type === "user" && assignee.id !== userId)
       .map((assignee) => ({
@@ -869,10 +902,12 @@ export async function updateTask(formData: FormData) {
         .insert(assigneeNotifications);
 
       if (notificationError) {
-        console.error(
-          "[updateTask] Error sending assignee notifications:",
-          notificationError,
-        );
+        after(() => {
+          console.error(
+            "[updateTask] Error sending assignee notifications:",
+            notificationError,
+          );
+        });
       }
     }
   }
@@ -1057,10 +1092,12 @@ export async function setPrimaryAssignee(
   assigneeId: string,
   assigneeType: "user" | "subcontractor",
 ): Promise<{ success: boolean; error?: string }> {
-  console.log("[setPrimaryAssignee] Setting primary assignee:", {
-    taskId,
-    assigneeId,
-    assigneeType,
+  after(() => {
+    console.log("[setPrimaryAssignee] Setting primary assignee:", {
+      taskId,
+      assigneeId,
+      assigneeType,
+    });
   });
 
   // Validate inputs
@@ -1108,10 +1145,12 @@ export async function setPrimaryAssignee(
     .maybeSingle();
 
   if (checkError) {
-    console.error(
-      "[setPrimaryAssignee] Error checking existing assignee:",
-      checkError,
-    );
+    after(() => {
+      console.error(
+        "[setPrimaryAssignee] Error checking existing assignee:",
+        checkError,
+      );
+    });
     return { success: false, error: "Failed to check assignee status" };
   }
 
@@ -1133,10 +1172,12 @@ export async function setPrimaryAssignee(
     .eq("id", existingAssignee.id);
 
   if (updateError) {
-    console.error(
-      "[setPrimaryAssignee] Error updating primary status:",
-      updateError,
-    );
+    after(() => {
+      console.error(
+        "[setPrimaryAssignee] Error updating primary status:",
+        updateError,
+      );
+    });
     return { success: false, error: "Failed to set primary assignee" };
   }
 
@@ -1145,7 +1186,9 @@ export async function setPrimaryAssignee(
   revalidatePath(`/app/tasks/${taskId}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  console.log("[setPrimaryAssignee] Primary assignee set successfully");
+  after(() => {
+    console.log("[setPrimaryAssignee] Primary assignee set successfully");
+  });
   return { success: true };
 }
 
@@ -1209,7 +1252,9 @@ export async function updateTaskStatus(
     .single();
 
   if (updateError) {
-    console.error("Error updating task status:", updateError);
+    after(() => {
+      console.error("Error updating task status:", updateError);
+    });
     return { error: "Failed to update task status. Please try again." };
   }
 
@@ -1238,15 +1283,30 @@ export async function updateTaskStatus(
       .eq("project_id", projectId)
       .eq("role", "project_manager");
 
-    if (managers) {
-      for (const manager of managers) {
-        if (manager.user_id) {
-          await supabase.from("notifications").insert({
-            user_id: manager.user_id,
-            type: "task_blocked",
-            title: "Task Blocked",
-            message: `Task "${task.title}" is blocked: ${blockedReason}`,
-            link: `/app/tasks/${taskId}`,
+    // CRITICAL OPTIMIZATION (CRIT-003): Batch notification inserts (location 3/4)
+    // Estimated savings: N × 50ms → 50ms (200-500ms for 10 notifications)
+    if (managers && managers.length > 0) {
+      const managerNotifications = managers
+        .filter((manager) => manager.user_id)
+        .map((manager) => ({
+          user_id: manager.user_id!,
+          type: "task_blocked" as const,
+          title: "Task Blocked",
+          message: `Task "${task.title}" is blocked: ${blockedReason}`,
+          link: `/app/tasks/${taskId}`,
+        }));
+
+      if (managerNotifications.length > 0) {
+        const { error: notificationError } = await supabase
+          .from("notifications")
+          .insert(managerNotifications);
+
+        if (notificationError) {
+          after(() => {
+            console.error(
+              "[updateTaskStatus] Error sending manager notifications:",
+              notificationError,
+            );
           });
         }
       }
@@ -1333,7 +1393,9 @@ export async function addTaskDependency(
     if (insertError.code === "23505") {
       return { error: "This dependency already exists" };
     }
-    console.error("Error adding dependency:", insertError);
+    after(() => {
+      console.error("Error adding dependency:", insertError);
+    });
     return { error: "Failed to add dependency. Please try again." };
   }
 
@@ -1405,7 +1467,9 @@ export async function removeTaskDependency(
     .eq("depends_on_task_id", dependsOnTaskId);
 
   if (deleteError) {
-    console.error("Error removing dependency:", deleteError);
+    after(() => {
+      console.error("Error removing dependency:", deleteError);
+    });
     return { error: "Failed to remove dependency. Please try again." };
   }
 
@@ -1464,7 +1528,9 @@ export async function addTaskComment(taskId: string, comment: string) {
     .single();
 
   if (insertError) {
-    console.error("Error adding comment:", insertError);
+    after(() => {
+      console.error("Error adding comment:", insertError);
+    });
     return { error: "Failed to add comment. Please try again." };
   }
 
@@ -1479,14 +1545,29 @@ export async function addTaskComment(taskId: string, comment: string) {
     notifyUsers.add(task.assignee_id);
   }
 
-  for (const notifyUserId of notifyUsers) {
-    await supabase.from("notifications").insert({
+  // CRITICAL OPTIMIZATION (CRIT-003): Batch notification inserts (location 4/4)
+  // Estimated savings: N × 50ms → 50ms (200-500ms for 10 notifications)
+  if (notifyUsers.size > 0) {
+    const userNotifications = Array.from(notifyUsers).map((notifyUserId) => ({
       user_id: notifyUserId,
-      type: "mention",
+      type: "mention" as const,
       title: "New Comment",
       message: `New comment on task: ${task.title}`,
       link: `/app/tasks/${taskId}`,
-    });
+    }));
+
+    const { error: notificationError } = await supabase
+      .from("notifications")
+      .insert(userNotifications);
+
+    if (notificationError) {
+      after(() => {
+        console.error(
+          "[addTaskComment] Error sending notifications:",
+          notificationError,
+        );
+      });
+    }
   }
 
   // Revalidate paths
@@ -1528,7 +1609,9 @@ export async function deleteTask(taskId: string) {
     .eq("id", taskId);
 
   if (deleteError) {
-    console.error("Error deleting task:", deleteError);
+    after(() => {
+      console.error("Error deleting task:", deleteError);
+    });
     return { error: "Failed to delete task. Please try again." };
   }
 
@@ -1635,11 +1718,15 @@ export async function updateApprovalStatus(
     .single();
 
   if (updateError) {
-    console.error("[updateApprovalStatus] Error updating task:", updateError);
+    after(() => {
+      console.error("[updateApprovalStatus] Error updating task:", updateError);
+    });
     return { error: "Failed to update approval status. Please try again." };
   }
 
-  console.log("[updateApprovalStatus] Task updated successfully:", task.id);
+  after(() => {
+    console.log("[updateApprovalStatus] Task updated successfully:", task.id);
+  });
 
   // Log activity
   await logTaskActivity(
@@ -1668,14 +1755,31 @@ export async function updateApprovalStatus(
     revision_requested: "requires revision",
   };
 
-  for (const notifyUserId of notifyUsers) {
-    await supabase.from("notifications").insert({
-      user_id: notifyUserId,
-      type: "system", // Using 'system' for approval workflow notifications
-      title: `Approval ${approvalStatus === "approved" ? "Granted" : "Update"}`,
-      message: `Task "${existingTask.title}" ${statusMessages[approvalStatus]}`,
-      link: `/app/tasks/${taskId}`,
-    });
+  // CRITICAL OPTIMIZATION (CRIT-003): Batch notification inserts (final location)
+  // Estimated savings: N × 50ms → 50ms (200-500ms for 10 notifications)
+  if (notifyUsers.size > 0) {
+    const approvalNotifications = Array.from(notifyUsers).map(
+      (notifyUserId) => ({
+        user_id: notifyUserId,
+        type: "system" as const, // Using 'system' for approval workflow notifications
+        title: `Approval ${approvalStatus === "approved" ? "Granted" : "Update"}`,
+        message: `Task "${existingTask.title}" ${statusMessages[approvalStatus]}`,
+        link: `/app/tasks/${taskId}`,
+      }),
+    );
+
+    const { error: notificationError } = await supabase
+      .from("notifications")
+      .insert(approvalNotifications);
+
+    if (notificationError) {
+      after(() => {
+        console.error(
+          "[updateApprovalStatus] Error sending notifications:",
+          notificationError,
+        );
+      });
+    }
   }
 
   // Revalidate paths

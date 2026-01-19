@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { Eye, X } from 'lucide-react';
-import { SpatialViewer } from '@/components/projects/spatial/SpatialViewer';
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { Eye, X } from "lucide-react";
+import { SpatialViewer } from "@/components/projects/spatial/SpatialViewer";
 
 interface ModelPreviewModalProps {
   modelUrl: string;
@@ -16,10 +16,14 @@ export function ModelPreviewModal({
   projectTypeName,
   onClose,
 }: ModelPreviewModalProps) {
-  console.log('[ModelPreviewModal] Opening preview for:', projectTypeName, modelUrl);
+  console.log(
+    "[ModelPreviewModal] Opening preview for:",
+    projectTypeName,
+    modelUrl,
+  );
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={Eye}
@@ -35,7 +39,9 @@ export function ModelPreviewModal({
         {/* Info Banner */}
         <div className="bg-blue-50 border-l-4 border-[#001B51] p-4 rounded-lg">
           <p className="text-sm text-gray-600">
-            Use your mouse to rotate, pan, and zoom the model. This is a preview of the default model that will be loaded when creating new {projectTypeName} projects.
+            Use your mouse to rotate, pan, and zoom the model. This is a preview
+            of the default model that will be loaded when creating new{" "}
+            {projectTypeName} projects.
           </p>
         </div>
 
@@ -54,19 +60,29 @@ export function ModelPreviewModal({
         {/* Model Metadata */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Type</p>
-            <p className="text-sm font-bold text-[#001B51]">{projectTypeName}</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">
+              Type
+            </p>
+            <p className="text-sm font-bold text-[#001B51]">
+              {projectTypeName}
+            </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Format</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">
+              Format
+            </p>
             <p className="text-sm font-bold text-[#001B51] font-mono">XKT</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Status</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">
+              Status
+            </p>
             <p className="text-sm font-bold text-[#059669]">Ready</p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Preview</p>
+            <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">
+              Preview
+            </p>
             <p className="text-sm font-bold text-[#001B51]">Live</p>
           </div>
         </div>
@@ -83,6 +99,6 @@ export function ModelPreviewModal({
           </Button>
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

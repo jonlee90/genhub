@@ -21,16 +21,16 @@
  * ```
  */
 
-'use client';
+"use client";
 
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { BottomSheetModal } from '@/components/mobile/BottomSheetModal';
-import type { LucideIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
-import type { ModalThemeName } from '@/lib/config/modal-themes';
-import type { ModalSize } from '@/components/ui/BaseModal/types';
-import type { SnapPoint } from '@/components/mobile/BottomSheetModal/types';
+import { useIsMobile } from "@/lib/hooks/useMediaQuery";
+import { BaseModal } from "@/components/ui/BaseModal";
+import { BottomSheetModal } from "@/components/mobile/BottomSheetModal";
+import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
+import type { ModalThemeName } from "@/lib/config/modal-themes";
+import type { ModalSize } from "@/components/ui/BaseModal/types";
+import type { SnapPoint } from "@/components/mobile/BottomSheetModal/types";
 
 export interface ResponsiveModalProps {
   // Core props
@@ -48,6 +48,10 @@ export interface ResponsiveModalProps {
   leftActions?: ReactNode;
   rightActions?: ReactNode;
   showFooter?: boolean;
+
+  // Stepper (desktop only)
+  steps?: string[];
+  currentStep?: number;
 
   // Theming
   theme?: ModalThemeName;
@@ -87,13 +91,15 @@ export function ResponsiveModal({
   leftActions,
   rightActions,
   showFooter = true,
-  theme = 'default',
+  steps,
+  currentStep,
+  theme = "default",
   closeOnBackdropClick = true,
   closeOnEscape = true,
   enableDragToDismiss = true,
-  maxWidth = 'xl',
+  maxWidth = "xl",
   formKey,
-  snapPoints = ['half', 'full'],
+  snapPoints = ["half", "full"],
   initialSnapPoint,
   className,
   contentClassName,
@@ -141,12 +147,14 @@ export function ResponsiveModal({
       isOpen={isOpen}
       onClose={onClose}
       icon={icon}
-      title={title || ''}
+      title={title || ""}
       subtitle={subtitle}
       badges={badges}
       leftActions={leftActions}
       rightActions={rightActions}
       showFooter={showFooter}
+      steps={steps}
+      currentStep={currentStep}
       theme={theme}
       closeOnBackdropClick={closeOnBackdropClick}
       closeOnEscape={closeOnEscape}

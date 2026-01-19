@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { SwipeableCard } from '@/components/mobile/SwipeableCard';
-import { TaskCard } from './/TaskCard';
-import { FolderKanban, Check, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { updateTaskStatus, deleteTask } from '@/app/actions/tasks';
-import type { TaskWithRelations, Phase } from '@/types/db/task';
+import { useState, useCallback } from "react";
+import { SwipeableCard } from "@/components/mobile/SwipeableCard";
+import { TaskCard } from ".//TaskCard";
+import { FolderKanban } from "lucide-react";
+import { Check } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
+import type { TaskWithRelations, Phase } from "@/types/db/task";
 
 interface TaskListMobileProps {
   tasks: TaskWithRelations[];
   onTaskClick?: (task: TaskWithRelations) => void;
-  /** When provided, we're in project context - look up phase from this array */
+  /** When provided, we"re in project context - look up phase from this array */
   phases?: Phase[];
   /** Enable swipe-to-complete action */
   enableComplete?: boolean;
@@ -40,12 +42,12 @@ export function TaskListMobile({
 
   // Memoize handleComplete to prevent unnecessary re-renders of SwipeableCard
   const handleComplete = useCallback(async (task: TaskWithRelations) => {
-    if (task.status === 'completed' || pendingActions.has(task.id)) return;
+    if (task.status === "completed" || pendingActions.has(task.id)) return;
 
     setPendingActions((prev) => new Set(prev).add(task.id));
 
     try {
-      await updateTaskStatus(task.id, 'completed');
+      await updateTaskStatus(task.id, "completed");
     } catch {
       // Task completion failed - UI will remain in pending state briefly
     } finally {
@@ -112,7 +114,7 @@ export function TaskListMobile({
             >
               <SwipeableCard
                 onSwipeRight={
-                  enableComplete && task.status !== 'completed'
+                  enableComplete && task.status !== "completed"
                     ? () => handleComplete(task)
                     : undefined
                 }

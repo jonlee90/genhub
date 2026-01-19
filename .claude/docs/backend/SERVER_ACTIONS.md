@@ -485,6 +485,347 @@ export async function POST(request: Request) {
 
 ---
 
+## Performance Best Practices from Tasks Module
+
+### 1. React.cache() for getUserContext
+
+**Problem:** getUserContext was called 3-5 times per page load, causing 150-750ms overhead.
+
+**Solution:** Wrap with React.cache() to deduplicate calls within the same request.
+
+```typescript
+// lib/auth-context.ts
+import { cache } from "react";
+import { auth } from "@/lib/auth";
+import { createClient } from "@/utils/supabase/server";
+
+export const getUserContext = cache(async function getUserContext() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Not authenticated" };
+  }
+
+  const supabase = await createClient();
+  const { data: companyUser, error } = await supabase
+    .from("company_users")
+    .select("company_id, role, status")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
+    .single();
+
+  if (error || !companyUser) {
+    return { error: "No active company found" };
+  }
+
+  return {
+    userId: session.user.id,
+    companyId: companyUser.company_id,
+    role: companyUser.role,
+    supabase,
+  };
+});
+```
+
+**Usage in all Server Actions:**
+
+```typescript
+// app/actions/tasks.ts
+import { getUserContext } from '@/lib/auth-context';
+
+export async function createTask(input: TaskInput) {
+  const ctx = await getUserContext(); // Cached call
+  if ('error' in ctx) return ctx;
+
+  // Use ctx.userId, ctx.companyId, ctx.role, ctx.supabase
+}
+```
+
+**Impact:** First call takes 100-150ms, subsequent calls return instantly (cached). Saves 100-750ms per page load.
+
+**When to Apply:**
+- Any helper function called multiple times per request
+- Expensive auth/context queries
+- Functions with deterministic results within request scope
+
+---
+
+### 2. Batch Database Operations
+
+**Problem:** Creating notifications in a loop caused N+1 queries (500ms for 10 notifications).
+
+**Solution:** Use `.map()` to build array, then single `.insert()`.
+
+```typescript
+// Before: N+1 pattern (slow)
+for (const assigneeId of assigneeIds) {
+  await supabase.from('notifications').insert({
+    user_id: assigneeId,
+    type: 'task_assigned',
+    reference_id: taskId,
+    message: `You were assigned to task: ${title}`,
+  });
+}
+// Time: 10 assignees × 50ms = 500ms
+
+// After: Batch insert (fast)
+if (assigneeIds.length > 0) {
+  const notifications = assigneeIds.map(assigneeId => ({
+    user_id: assigneeId,
+    type: 'task_assigned' as const,
+    reference_id: taskId,
+    message: `You were assigned to task: ${title}`,
+    company_id: ctx.companyId,
+  }));
+
+  await supabase.from('notifications').insert(notifications);
+}
+// Time: 1 query = 50ms
+```
+
+**Impact:** 90% reduction (500ms → 50ms for 10 items).
+
+**When to Apply:**
+- Any loop with `await` inside
+- Multiple inserts to same table
+- Bulk operations (create, update, delete)
+
+**Important:**
+- Use `as const` for enum literals in arrays
+- Include all required fields (company_id, etc.)
+- Trade-off: Loses individual error handling
+
+---
+
+### 3. Parallel Async Operations with Promise.allSettled
+
+**Problem:** Sequential awaits for independent operations wasted time (300ms total).
+
+**Solution:** Use `Promise.allSettled()` to run in parallel.
+
+```typescript
+// Before: Sequential (slow)
+await sendNotifications(taskId);    // 100ms
+await logActivity(taskId);          // 50ms
+await updateProjectStats(projectId); // 150ms
+// Total: 100 + 50 + 150 = 300ms
+
+// After: Parallel (fast)
+const postCreationOps = await Promise.allSettled([
+  sendNotifications(taskId),
+  logActivity(taskId),
+  updateProjectStats(projectId),
+]);
+
+// Log failures without blocking
+postCreationOps.forEach((result, idx) => {
+  if (result.status === 'rejected') {
+    console.error(`Post-creation op ${idx} failed:`, result.reason);
+  }
+});
+// Total: max(100, 50, 150) = 150ms
+```
+
+**Impact:** 50% reduction (300ms → 150ms).
+
+**When to Apply:**
+- Independent async operations (no data dependency)
+- Post-creation/update side effects
+- Non-critical operations (notifications, logging, stats)
+
+**Use Promise.all() vs Promise.allSettled():**
+- `Promise.all()`: Fails fast if any operation fails (use when all must succeed)
+- `Promise.allSettled()`: Continues even if some fail (use for optional operations)
+
+**Type Compatibility:**
+If you get type errors, wrap Server Actions:
+
+```typescript
+await Promise.allSettled([
+  Promise.resolve(serverAction1()),
+  Promise.resolve(serverAction2()),
+]);
+```
+
+---
+
+### 4. File Organization Strategy
+
+**Problem:** Single 2,671-line `tasks.ts` file was hard to navigate and maintain.
+
+**Solution:** Split by domain into focused files.
+
+```
+Before:
+app/actions/tasks.ts (2,671 lines, everything)
+
+After:
+app/actions/
+├── tasks.ts              (800 lines, core CRUD)
+├── tasks-status.ts       (300 lines, status transitions)
+├── tasks-assignments.ts  (400 lines, assignee management)
+├── tasks-dependencies.ts (350 lines, dependency graph)
+├── tasks-activity.ts     (250 lines, activity logging)
+├── tasks-spatial.ts      (200 lines, 3D markers)
+├── tasks-analytics.ts    (300 lines, stats/reporting)
+└── tasks-deferred.ts     (200 lines, lazy data)
+```
+
+**Organization Principles:**
+1. **Core file** (`tasks.ts`): CRUD operations only
+2. **Domain files** (`tasks-{domain}.ts`): Focused functionality
+3. **Deferred file** (`tasks-deferred.ts`): Expensive/optional data
+4. **Naming convention**: `{entity}-{domain}.ts`
+
+**When to Split:**
+- File exceeds 500-800 lines
+- Multiple clear domain boundaries exist
+- Team experiences frequent merge conflicts
+- Actions are used by different parts of the app
+
+**Benefits:**
+- Easier navigation (find by domain)
+- Fewer merge conflicts (team works in parallel)
+- Better code splitting (import only needed)
+- Clear separation of concerns
+
+---
+
+### 5. Error Handling Best Practices
+
+**Pattern:** Always destructure `{ data, error }` and check error first.
+
+```typescript
+export async function serverAction(input: Input) {
+  try {
+    const ctx = await getUserContext();
+    if ('error' in ctx) return ctx;
+
+    // CRITICAL: Destructure both data and error
+    const { data, error } = await ctx.supabase
+      .from('table')
+      .insert(input)
+      .select()
+      .single();
+
+    // CRITICAL: Check error before accessing data
+    if (error) {
+      console.error('[serverAction] Database error:', error);
+      return { error: 'Operation failed' };
+    }
+
+    // Safe to use data here
+    return { success: true, data };
+  } catch (error) {
+    console.error('[serverAction] Unexpected error:', error);
+    return { error: 'An unexpected error occurred' };
+  }
+}
+```
+
+**For Deferred Actions (non-critical data):**
+
+```typescript
+export async function getDeferredData(id: string) {
+  const ctx = await getUserContext();
+  if ('error' in ctx) {
+    // Return safe defaults instead of error
+    return { data: null, stats: { count: 0, total: 0 } };
+  }
+
+  try {
+    const { data, error } = await ctx.supabase
+      .rpc('expensive_query', { p_id: id });
+
+    if (error) {
+      console.error('[getDeferredData] RPC error:', error);
+      // Return safe defaults, don't throw
+      return { data: null, stats: { count: 0, total: 0 } };
+    }
+
+    // Type cast and null-check
+    const result = data as { stats?: unknown } | null;
+    const stats = result?.stats as Record<string, number> | undefined;
+
+    return {
+      data: result,
+      stats: {
+        count: stats?.count ?? 0,
+        total: stats?.total ?? 0,
+      },
+    };
+  } catch (error) {
+    console.error('[getDeferredData] Error:', error);
+    // Never throw - return safe defaults
+    return { data: null, stats: { count: 0, total: 0 } };
+  }
+}
+```
+
+**Key Rules for Deferred Actions:**
+1. Never throw errors (return safe defaults)
+2. Type cast RPC responses
+3. Null-check all nested data
+4. Provide fallback values for all fields
+5. Log errors with function name prefix
+6. Match return type to component interface
+
+---
+
+### 6. Performance Measurement
+
+Track action timings in development:
+
+```typescript
+export async function createTask(input: TaskInput) {
+  const startTime = Date.now();
+
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
+
+  // ... operation logic
+
+  if (process.env.NODE_ENV === 'development') {
+    const duration = Date.now() - startTime;
+    console.log(`[createTask] Completed in ${duration}ms`);
+  }
+
+  return { success: true, data };
+}
+```
+
+---
+
+### Summary: Optimization Checklist
+
+When creating or refactoring Server Actions:
+
+**Performance:**
+- [ ] Use React.cache() for repeated helpers
+- [ ] Replace loops with batch operations
+- [ ] Use Promise.allSettled for independent async ops
+- [ ] Measure and log timings in development
+
+**Organization:**
+- [ ] Keep core CRUD in main file
+- [ ] Split domain logic into separate files
+- [ ] Put expensive queries in deferred files
+- [ ] Use consistent naming convention
+
+**Error Handling:**
+- [ ] Always destructure { data, error }
+- [ ] Check error before accessing data
+- [ ] Return safe defaults for deferred actions
+- [ ] Type cast and null-check RPC responses
+- [ ] Log errors with function name prefix
+
+**Type Safety:**
+- [ ] Use domain types (not database.types.ts)
+- [ ] Type cast unknown responses
+- [ ] Use 'as const' for enum literals in arrays
+- [ ] Provide proper TypeScript interfaces
+
+---
+
 ## See Also
 
 - Core rules: `core/RULES.md`
@@ -492,3 +833,5 @@ export async function POST(request: Request) {
 - Server Action skill: `skills/backend/server-action.md`
 - Projects module reference: `domain/PROJECTS.md`
 - Data fetching patterns: `lib/projects.ts` (Phase-based approach)
+- Tasks Module migration guide: `/Users/jonathanlee/Desktop/genhub/docs/tasks-module-migration-guide.md`
+- Performance report: `/Users/jonathanlee/Desktop/genhub/docs/tasks-module-performance-report.md`

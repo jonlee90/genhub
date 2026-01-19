@@ -15,7 +15,10 @@ import { FilterTabs } from "@/components/ui/FilterTabs";
 import { FilterButton } from "@/components/mobile/FilterButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LayoutGrid, List, Plus, Loader2 } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
+import { List } from "lucide-react";
+import { Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { TaskStats } from "@/app/actions/projects";
@@ -76,7 +79,7 @@ interface TaskBoardProps {
   projects: TaskProject[];
   teamMembers: TeamMember[];
   initialView: "kanban" | "list";
-  /** When provided, we're in project context - shows phase filter and New Task button */
+  /** When provided, we"re in project context - shows phase filter and New Task button */
   projectId?: string;
   /** Phases for project context */
   phases?: Phase[];
@@ -140,7 +143,7 @@ export function TaskBoard({
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
-  // Determine if we're in project context
+  // Determine if we"re in project context
   const isProjectContext = !!projectId;
 
   const [view, setView] = useState<"kanban" | "list">(initialView);
@@ -341,7 +344,7 @@ export function TaskBoard({
       // Sum all project budgets
       return projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
     } else {
-      // Get selected project's budget
+      // Get selected project"s budget
       const selectedProject = projects.find((p) => p.id === projectFilter);
       return selectedProject ? Number(selectedProject.budget) || 0 : 0;
     }

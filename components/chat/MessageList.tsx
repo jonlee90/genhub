@@ -11,14 +11,21 @@
  * - Connection status indicator
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMessages } from "@/app/actions/chat-queries";
-import { markMessagesAsRead } from "@/app/actions/chat";
+import {
+  getMessageReplyCounts,
+  getMessagesAttachments,
+  getMessagesReactions,
+  markMessagesAsRead,
+} from "@/app/actions/chat";
 import { useMessages, type OptimisticMessage } from "@/lib/hooks/useMessages";
 import { MessageItem } from "./MessageItem";
 import { ConnectionStatus } from "./ConnectionStatus";
+import type { MessageReactionGroup } from "./MessageReactions";
+import type { MessageAttachment } from "./FilePreview";
 import { MessageWithSender } from "@/types/db/chat";
 import { Loader2 } from "lucide-react";
 
@@ -47,6 +54,15 @@ export function MessageList({
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [reactionsMap, setReactionsMap] = useState<
+    Record<string, MessageReactionGroup[]>
+  >({});
+  const [replyCountsMap, setReplyCountsMap] = useState<Record<string, number>>(
+    {},
+  );
+  const [attachmentsMap, setAttachmentsMap] = useState<
+    Record<string, MessageAttachment[]>
+  >({});
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const prevChatRoomId = useRef<string>(chatRoomId);
@@ -131,6 +147,53 @@ export function MessageList({
     onNewMessage: handleNewMessage,
     onMessageUpdate: handleMessageUpdate,
   });
+
+  const messageIds = useMemo(
+    () =>
+      messages
+        .filter((message) => !message.deleted_at)
+        .filter((message) => !(message as OptimisticMessage)._optimistic)
+        .filter((message) => !message.id.startsWith("temp-"))
+        .map((message) => message.id),
+    [messages],
+  );
+
+  const fetchMetadata = useCallback(async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    const [reactionsResult, replyCountResult, attachmentsResult] =
+      await Promise.all([
+        getMessagesReactions(ids),
+        getMessageReplyCounts(ids),
+        getMessagesAttachments(ids),
+      ]);
+
+    if (reactionsResult.success && reactionsResult.reactionsMap) {
+      setReactionsMap((prev) => ({ ...prev, ...reactionsResult.reactionsMap }));
+    }
+
+    if (replyCountResult.success && replyCountResult.counts) {
+      setReplyCountsMap((prev) => ({ ...prev, ...replyCountResult.counts }));
+    }
+
+    if (attachmentsResult.success && attachmentsResult.attachmentsMap) {
+      setAttachmentsMap((prev) => ({
+        ...prev,
+        ...attachmentsResult.attachmentsMap,
+      }));
+    }
+  }, []);
+
+  const refreshMetadataFor = useCallback(
+    async (messageId: string) => {
+      await fetchMetadata([messageId]);
+    },
+    [fetchMetadata],
+  );
+
+  useEffect(() => {
+    fetchMetadata(messageIds);
+  }, [messageIds, fetchMetadata]);
 
   // Debug: Expose optimistic UI functions to parent
   useEffect(() => {
@@ -329,6 +392,10 @@ export function MessageList({
                   <MessageItem
                     message={message}
                     onReply={onReply}
+                    reactions={reactionsMap[message.id]}
+                    replyCount={replyCountsMap[message.id]}
+                    attachments={attachmentsMap[message.id]}
+                    onRefreshMetadata={refreshMetadataFor}
                     isOptimistic={message._optimistic}
                     status={message._status}
                     error={message._error}

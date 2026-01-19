@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -187,7 +187,7 @@ export function ExpenseDetailModal({
   const canDelete = expense.status === "submitted";
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={Receipt}
@@ -519,6 +519,6 @@ export function ExpenseDetailModal({
           </motion.div>
         )}
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

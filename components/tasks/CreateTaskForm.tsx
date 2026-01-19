@@ -1,26 +1,31 @@
-'use client';
+"use client";
 
-import { useActionState, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { useActionState, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Loader2, ChevronLeft, ChevronRight, Package, AlertCircle, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createTask, type CreateTaskFormState } from '@/app/actions/tasks';
-import { TaskTypeSelector, TaskTypeBadge } from './/TaskTypeSelector';
-import { TaskMaterialsManager } from './TaskMaterialsManager';
-import { TaskReceiptUpload } from './TaskReceiptUpload';
-import type { TaskType, TaskProject, TeamMember } from '@/types/db/task';
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { Package } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { createTask, type CreateTaskFormState } from "@/app/actions/tasks";
+import { TaskTypeSelector, TaskTypeBadge } from ".//TaskTypeSelector";
+import { TaskMaterialsManager } from "./TaskMaterialsManager";
+import { TaskReceiptUpload } from "./TaskReceiptUpload";
+import type { TaskType, TaskProject, TeamMember } from "@/types/db/task";
 
 interface CreateTaskFormProps {
   projects: TaskProject[];
@@ -45,15 +50,15 @@ const initialState: CreateTaskFormState = {
 // Approval: Type -> Details (2 steps)
 // Admin: Type -> Details (2 steps)
 const getStepCount = (taskType: TaskType | null): number => {
-  if (taskType === 'purchase') return 3;
+  if (taskType === "purchase") return 3;
   return 2;
 };
 
 const getStepLabel = (step: number, taskType: TaskType | null): string => {
-  if (step === 1) return 'Task Type';
-  if (step === 2) return 'Details';
-  if (step === 3 && taskType === 'purchase') return 'Materials';
-  return '';
+  if (step === 1) return "Task Type";
+  if (step === 2) return "Details";
+  if (step === 3 && taskType === "purchase") return "Materials";
+  return "";
 };
 
 export function CreateTaskForm({
@@ -66,7 +71,7 @@ export function CreateTaskForm({
 }: CreateTaskFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(createTask, initialState);
-  const [selectedProjectId, setSelectedProjectId] = useState(preselectedProjectId || '');
+  const [selectedProjectId, setSelectedProjectId] = useState(preselectedProjectId || "");
 
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -88,7 +93,7 @@ export function CreateTaskForm({
   useEffect(() => {
     if (state?.success && state?.task) {
       // For Purchase tasks, go to materials step after task creation
-      if (selectedTaskType === 'purchase' && currentStep === 2) {
+      if (selectedTaskType === "purchase" && currentStep === 2) {
         setCreatedTaskId(state.task.id);
         setCurrentStep(3);
         return;
@@ -135,7 +140,7 @@ export function CreateTaskForm({
   };
 
   // Determine if cost fields should be shown (not for approval tasks)
-  const showCostFields = selectedTaskType !== 'approval';
+  const showCostFields = selectedTaskType !== "approval";
 
   return (
     <Card className="border-2 border-gray-200 shadow-lg">
@@ -239,7 +244,7 @@ export function CreateTaskForm({
             >
               <form action={formAction} className="space-y-6">
                 {/* Hidden task_type field */}
-                <input type="hidden" name="task_type" value={selectedTaskType || 'work'} />
+                <input type="hidden" name="task_type" value={selectedTaskType || "work"} />
 
                 {/* Title */}
                 <div className="space-y-2">
@@ -250,10 +255,10 @@ export function CreateTaskForm({
                     id="title"
                     name="title"
                     placeholder={
-                      selectedTaskType === 'purchase' ? 'e.g., Order lumber for framing' :
-                      selectedTaskType === 'approval' ? 'e.g., Building permit approval' :
-                      selectedTaskType === 'admin' ? 'e.g., Update project schedule' :
-                      'Enter task title'
+                      selectedTaskType === "purchase" ? "e.g., Order lumber for framing" :
+                      selectedTaskType === "approval" ? "e.g., Building permit approval" :
+                      selectedTaskType === "admin" ? "e.g., Update project schedule" :
+                      "Enter task title"
                     }
                     required
                     disabled={isPending}
@@ -314,7 +319,7 @@ export function CreateTaskForm({
                     </Label>
                     <Select
                       name="phase_id"
-                      defaultValue={preselectedPhaseId || 'none'}
+                      defaultValue={preselectedPhaseId || "none"}
                       disabled={isPending || !selectedProjectId}
                     >
                       <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
@@ -338,8 +343,8 @@ export function CreateTaskForm({
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="assignee_id" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === 'purchase' ? 'Purchaser' :
-                       selectedTaskType === 'approval' ? 'Approver' : 'Assignee'}
+                      {selectedTaskType === "purchase" ? "Purchaser" :
+                       selectedTaskType === "approval" ? "Approver" : "Assignee"}
                     </Label>
                     <Select name="assignee_id" defaultValue="unassigned" disabled={isPending}>
                       <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
@@ -362,7 +367,7 @@ export function CreateTaskForm({
                     </Label>
                     <Select
                       name="priority"
-                      defaultValue={selectedTaskType === 'admin' ? 'low' : 'medium'}
+                      defaultValue={selectedTaskType === "admin" ? "low" : "medium"}
                       disabled={isPending}
                     >
                       <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
@@ -379,7 +384,7 @@ export function CreateTaskForm({
 
                 {/* Date Range - hide start_date for approval tasks */}
                 <div className="grid gap-4 md:grid-cols-2">
-                  {selectedTaskType !== 'approval' && (
+                  {selectedTaskType !== "approval" && (
                     <div className="space-y-2">
                       <Label htmlFor="start_date" className="text-sm font-bold text-gray-700">
                         Start Date
@@ -394,10 +399,10 @@ export function CreateTaskForm({
                     </div>
                   )}
 
-                  <div className={`space-y-2 ${selectedTaskType === 'approval' ? 'md:col-span-2' : ''}`}>
+                  <div className={`space-y-2 ${selectedTaskType === "approval" ? "md:col-span-2" : ""}`}>
                     <Label htmlFor="due_date" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === 'approval' ? 'Deadline' :
-                       selectedTaskType === 'purchase' ? 'Order By Date' : 'Due Date'}
+                      {selectedTaskType === "approval" ? "Deadline" :
+                       selectedTaskType === "purchase" ? "Order By Date" : "Due Date"}
                     </Label>
                     <Input
                       id="due_date"
@@ -413,7 +418,7 @@ export function CreateTaskForm({
                 {showCostFields && (
                   <div className="space-y-2">
                     <Label htmlFor="planned_cost" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === 'purchase' ? 'Budget Estimate ($)' : 'Planned Cost ($)'}
+                      {selectedTaskType === "purchase" ? "Budget Estimate ($)" : "Planned Cost ($)"}
                     </Label>
                     <Input
                       id="planned_cost"
@@ -476,7 +481,7 @@ export function CreateTaskForm({
                           <Loader2 className="h-4 w-4 animate-spin" />
                           Creating...
                         </>
-                      ) : selectedTaskType === 'purchase' ? (
+                      ) : selectedTaskType === "purchase" ? (
                         <>
                           <Plus className="h-4 w-4 mr-1" />
                           Add & Materials
@@ -496,7 +501,7 @@ export function CreateTaskForm({
           )}
 
           {/* STEP 3: Materials (Purchase tasks only) */}
-          {currentStep === 3 && selectedTaskType === 'purchase' && createdTaskId && (
+          {currentStep === 3 && selectedTaskType === "purchase" && createdTaskId && (
             <motion.div
               key="step-3"
               initial={{ opacity: 0, x: 20 }}

@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import { getTodayPosition } from './gantt-utils';
-import type { GanttConfig, DateCell } from './gantt-types';
+import React, { useMemo } from "react";
+import { getTodayPosition } from "./gantt-utils";
+import type { GanttConfig, DateCell } from "./gantt-types";
 
 interface GanttTimelineProps {
   config: GanttConfig;
@@ -45,14 +45,14 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
       <defs>
         <marker
           id="today-arrow"
-          markerWidth={isMobile ? '6' : '8'}
-          markerHeight={isMobile ? '6' : '8'}
-          refX={isMobile ? '3' : '4'}
-          refY={isMobile ? '3' : '4'}
+          markerWidth={isMobile ? "6" : "8"}
+          markerHeight={isMobile ? "6" : "8"}
+          refX={isMobile ? "3" : "4"}
+          refY={isMobile ? "3" : "4"}
           orient="auto-start-reverse"
         >
           <polygon
-            points={isMobile ? '0 0, 6 3, 0 6' : '0 0, 8 4, 0 8'}
+            points={isMobile ? "0 0, 6 3, 0 6" : "0 0, 8 4, 0 8"}
             fill="#001B51"
           />
         </marker>
@@ -83,7 +83,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           x2={cell.x}
           y2={totalHeight}
           stroke="#E5E7EB"
-          strokeWidth={isMobile ? '0.5' : '1'}
+          strokeWidth={isMobile ? "0.5" : "1"}
         />
       ))}
 
@@ -96,7 +96,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           x2="100%"
           y2={y}
           stroke="#E5E7EB"
-          strokeWidth={isMobile ? '0.5' : '1'}
+          strokeWidth={isMobile ? "0.5" : "1"}
         />
       ))}
 
@@ -108,8 +108,8 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           x2={todayX}
           y2={totalHeight}
           stroke="#001B51"
-          strokeWidth={isMobile ? '1.5' : '2'}
-          strokeDasharray={isMobile ? '3 2' : '4 2'}
+          strokeWidth={isMobile ? "1.5" : "2"}
+          strokeDasharray={isMobile ? "3 2" : "4 2"}
         />
         {/* Top arrow */}
         <line
@@ -118,7 +118,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           x2={todayX}
           y2={0}
           stroke="#001B51"
-          strokeWidth={isMobile ? '1.5' : '2'}
+          strokeWidth={isMobile ? "1.5" : "2"}
           markerStart="url(#today-arrow)"
         />
       </g>

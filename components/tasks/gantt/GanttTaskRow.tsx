@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useCallback, useMemo } from 'react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { GanttTaskBar } from './GanttTaskBar';
-import type { GanttTask, TaskPosition, GanttConfig } from './gantt-types';
-import { getTaskTypeInfo } from '@/components/tasks/TaskTypeSelector';
-import type { TaskType } from '@/types/db/enums';
+import React, { useCallback, useMemo } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { GanttTaskBar } from "./GanttTaskBar";
+import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
+import { getTaskTypeInfo } from "@/components/tasks/TaskTypeSelector";
+import type { TaskType } from "@/types/db/enums";
 
 interface GanttTaskRowProps {
   task: GanttTask;
@@ -37,7 +37,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
 
   // Memoize keyboard handler
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onClick(task);
     }
@@ -56,16 +56,16 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
         height: rowHeight,
         // content-visibility: auto provides automatic virtualization (rendering-content-visibility)
         // Browser skips rendering off-screen rows, improving performance for large task lists
-        contentVisibility: 'auto',
+        contentVisibility: "auto",
         containIntrinsicSize: `auto ${rowHeight}px`,
       }}
     >
       {/* Left sidebar: Task info - clickable to open edit modal */}
       <div
         className={cn(
-          'sticky left-0 z-10 bg-white border-r border-gray-200 flex items-center cursor-pointer transition-colors',
-          'hover:bg-gray-100',
-          isMobile ? 'gap-1.5 px-2 py-1' : 'gap-3 px-3 py-2'
+          "sticky left-0 z-10 bg-white border-r border-gray-200 flex items-center cursor-pointer transition-colors",
+          "hover:bg-gray-100",
+          isMobile ? "gap-1.5 px-2 py-1" : "gap-3 px-3 py-2"
         )}
         style={{ width: sidebarWidth }}
         onClick={handleClick}
@@ -75,7 +75,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
       >
         {/* Assignee avatar - only show on larger mobile/desktop */}
         {task.assignee && !isMobile && (
-          <Avatar className={cn(isMobile ? 'h-6 w-6' : 'h-7 w-7', 'shrink-0')}>
+          <Avatar className={cn(isMobile ? "h-6 w-6" : "h-7 w-7", "shrink-0")}>
             <AvatarImage src={task.assignee.avatar_url || undefined} />
             <AvatarFallback className="text-xs bg-construction-blue text-white">
               {task.assignee.name.charAt(0).toUpperCase()}
@@ -91,9 +91,9 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             {taskTypeInfo && (
               <taskTypeInfo.icon
                 className={cn(
-                  'shrink-0',
+                  "shrink-0",
                   taskTypeInfo.textClass,
-                  isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'
+                  isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
                 )}
                 strokeWidth={2}
                 aria-label={taskTypeInfo.name}
@@ -101,15 +101,15 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             )}
             {/* Task title */}
             <span className={cn(
-              'font-semibold text-gray-900 truncate flex-1 min-w-0',
-              isMobile ? 'text-xs' : 'text-sm'
+              "font-semibold text-gray-900 truncate flex-1 min-w-0",
+              isMobile ? "text-xs" : "text-sm"
             )}>
               {task.title}
             </span>
             {/* Duration days badge */}
             <span className={cn(
-              'shrink-0 px-1.5 py-0.5 rounded bg-construction-blue/10 text-construction-blue font-semibold',
-              isMobile ? 'text-[10px]' : 'text-xs'
+              "shrink-0 px-1.5 py-0.5 rounded bg-construction-blue/10 text-construction-blue font-semibold",
+              isMobile ? "text-[10px]" : "text-xs"
             )}>
               {task.durationDays}d
             </span>
@@ -117,8 +117,8 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
           {/* Project name - secondary line */}
           {task.project && (
             <span className={cn(
-              'text-gray-500 truncate',
-              isMobile ? 'text-[10px] mt-0.5' : 'text-xs mt-0.5'
+              "text-gray-500 truncate",
+              isMobile ? "text-[10px] mt-0.5" : "text-xs mt-0.5"
             )}>
               {task.project.name}
             </span>

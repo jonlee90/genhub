@@ -960,9 +960,568 @@ function ExpenseStatsSkeleton() {
 
 ---
 
+## Component Refactoring Strategy
+
+### When to Split Components
+
+Split components when they exceed maintainability thresholds:
+
+**Size Thresholds:**
+- `>500 lines`: Consider splitting by responsibility
+- `>800 lines`: Definitely split into multiple components
+- `>1,000 lines`: Urgent refactoring needed
+
+**Complexity Indicators:**
+- Multiple distinct responsibilities (details, approval, materials)
+- 10+ useState declarations
+- 15+ event handlers
+- Multiple tabs or sections
+- Difficult to locate specific logic
+
+**Real Example from Tasks Module:**
+- `TaskDetail.tsx`: 1,404 lines → Split into orchestrator + 4 sections = 572 lines (59% reduction)
+- `TaskModal.tsx`: 1,499 lines → Split into orchestrator + 4 steps = 808 lines (46% reduction)
+
+---
+
+### Pattern 1: Orchestrator + Sections
+
+**Use For:** Display components with multiple sections (detail views, dashboards)
+
+**Structure:**
+```
+components/tasks/
+├── TaskDetail.tsx          (orchestrator, 250-300 lines)
+└── detail/
+    ├── TaskDetailsSection.tsx      (200 lines)
+    ├── TaskApprovalSection.tsx     (150 lines)
+    ├── TaskDependenciesSection.tsx (200 lines)
+    └── TaskMaterialsSection.tsx    (300 lines)
+```
+
+**Orchestrator Responsibilities:**
+- Layout and structure
+- Tab/section navigation
+- Global state (activeTab, isLoading)
+- Error boundaries
+- Close/dismiss handlers
+
+**Section Responsibilities:**
+- Domain-specific logic
+- Local state management
+- Domain-specific data fetching
+- Field validation
+- Domain-specific error handling
+
+**Example:**
+
+```typescript
+// TaskDetail.tsx (Orchestrator)
+'use client';
+
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TaskDetailsSection } from './detail/TaskDetailsSection';
+import { TaskApprovalSection } from './detail/TaskApprovalSection';
+import { TaskDependenciesSection } from './detail/TaskDependenciesSection';
+import { TaskMaterialsSection } from './detail/TaskMaterialsSection';
+
+export function TaskDetail({ task, onClose }: Props) {
+  const [activeTab, setActiveTab] = useState('details');
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="border-b p-4">
+        <h2>{task.title}</h2>
+        <button onClick={onClose}>Close</button>
+      </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
+        <TabsList>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="materials">Materials</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details" className="space-y-4">
+          <TaskDetailsSection task={task} />
+          <TaskApprovalSection task={task} />
+          <TaskDependenciesSection task={task} />
+        </TabsContent>
+
+        <TabsContent value="materials">
+          <TaskMaterialsSection taskId={task.id} />
+        </TabsContent>
+
+        <TabsContent value="activity">
+          <ActivityLog taskId={task.id} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+```
+
+```typescript
+// detail/TaskDetailsSection.tsx (Section)
+'use client';
+
+import { useActionWithError } from '@/hooks/useActionWithError';
+import { ErrorBanner } from '@/components/shared/ErrorBanner';
+import { updateTask } from '@/app/actions/tasks';
+
+export function TaskDetailsSection({ task }: { task: Task }) {
+  const { execute, error, success } = useActionWithError(updateTask);
+
+  const handleUpdateTitle = async (title: string) => {
+    await execute(task.id, { title });
+  };
+
+  const handleUpdateDescription = async (description: string) => {
+    await execute(task.id, { description });
+  };
+
+  return (
+    <div className="space-y-4">
+      <ErrorBanner message={error} />
+
+      <div>
+        <Label>Title</Label>
+        <Input
+          value={task.title}
+          onChange={(e) => handleUpdateTitle(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={task.description || ''}
+          onChange={(e) => handleUpdateDescription(e.target.value)}
+        />
+      </div>
+
+      {/* More fields... */}
+    </div>
+  );
+}
+```
+
+**Benefits:**
+- Clear separation of concerns
+- Easier to test sections independently
+- Reusable sections across different views
+- Better code splitting (lazy load sections)
+- Easier to maintain (smaller files)
+
+**Key Principles:**
+1. Orchestrator manages **layout**, sections manage **logic**
+2. Pass only required data to sections (not entire parent state)
+3. Sections are self-contained (manage own state and actions)
+4. Use shared error handling patterns (useActionWithError)
+5. Each section has a single clear responsibility
+
+---
+
+### Pattern 2: Multi-Step Form (Wizard)
+
+**Use For:** Multi-step forms, wizards, onboarding flows
+
+**Structure:**
+```
+components/tasks/
+├── TaskModal.tsx           (orchestrator, 200-250 lines)
+└── modal/
+    ├── TaskTypeSelectionStep.tsx   (150 lines)
+    ├── TaskFormFieldsStep.tsx      (250 lines)
+    ├── TaskAssigneeStep.tsx        (180 lines)
+    └── TaskMaterialsExtrasStep.tsx (200 lines)
+```
+
+**Orchestrator Responsibilities:**
+- Step navigation (next, back, jump to step)
+- Form state management (centralized)
+- Validation coordination
+- Submit handler
+- Progress indication
+
+**Step Responsibilities:**
+- Step-specific UI
+- Field validation
+- Help text and instructions
+- Step-specific error display
+
+**Example:**
+
+```typescript
+// TaskModal.tsx (Orchestrator)
+'use client';
+
+import { useState } from 'react';
+import { useTaskFormState } from '@/hooks/useTaskFormState';
+import { TaskTypeSelectionStep } from './modal/TaskTypeSelectionStep';
+import { TaskFormFieldsStep } from './modal/TaskFormFieldsStep';
+import { TaskAssigneeStep } from './modal/TaskAssigneeStep';
+import { TaskMaterialsExtrasStep } from './modal/TaskMaterialsExtrasStep';
+
+const STEPS = ['type', 'fields', 'assignee', 'extras'] as const;
+type Step = typeof STEPS[number];
+
+export function TaskModal({ isOpen, onClose, projectId }: Props) {
+  const [currentStep, setCurrentStep] = useState<Step>('type');
+  const formState = useTaskFormState(); // Centralized form state
+
+  const handleNext = () => {
+    const currentIndex = STEPS.indexOf(currentStep);
+    if (currentIndex < STEPS.length - 1) {
+      setCurrentStep(STEPS[currentIndex + 1]);
+    }
+  };
+
+  const handleBack = () => {
+    const currentIndex = STEPS.indexOf(currentStep);
+    if (currentIndex > 0) {
+      setCurrentStep(STEPS[currentIndex - 1]);
+    }
+  };
+
+  const handleSubmit = async () => {
+    const result = await createTask(formState.toInput());
+    if ('error' in result) {
+      setError(result.error);
+    } else {
+      onClose();
+      router.refresh();
+    }
+  };
+
+  return (
+    <ResponsiveModal isOpen={isOpen} onClose={onClose} title="Create Task">
+      {/* Progress indicator */}
+      <StepProgress steps={STEPS} currentStep={currentStep} />
+
+      {/* Step content */}
+      {currentStep === 'type' && (
+        <TaskTypeSelectionStep
+          value={formState.taskType}
+          onChange={formState.setTaskType}
+          onNext={handleNext}
+        />
+      )}
+
+      {currentStep === 'fields' && (
+        <TaskFormFieldsStep
+          formState={formState}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      )}
+
+      {currentStep === 'assignee' && (
+        <TaskAssigneeStep
+          value={formState.assigneeId}
+          onChange={formState.setAssigneeId}
+          onNext={handleNext}
+          onBack={handleBack}
+        />
+      )}
+
+      {currentStep === 'extras' && (
+        <TaskMaterialsExtrasStep
+          formState={formState}
+          onSubmit={handleSubmit}
+          onBack={handleBack}
+        />
+      )}
+    </ResponsiveModal>
+  );
+}
+```
+
+```typescript
+// modal/TaskFormFieldsStep.tsx (Step)
+'use client';
+
+export function TaskFormFieldsStep({
+  formState,
+  onNext,
+  onBack,
+}: Props) {
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  const handleNext = () => {
+    // Validate step fields
+    const errors: Record<string, string> = {};
+
+    if (!formState.title?.trim()) {
+      errors.title = 'Title is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
+    onNext();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>Title *</Label>
+        <Input
+          value={formState.title}
+          onChange={(e) => formState.setTitle(e.target.value)}
+          error={validationErrors.title}
+        />
+        {validationErrors.title && (
+          <p className="text-sm text-red-600 mt-1">{validationErrors.title}</p>
+        )}
+      </div>
+
+      <div>
+        <Label>Description</Label>
+        <Textarea
+          value={formState.description}
+          onChange={(e) => formState.setDescription(e.target.value)}
+        />
+      </div>
+
+      {/* More fields... */}
+
+      <div className="flex justify-between pt-4">
+        <Button variant="outline" onClick={onBack}>
+          Back
+        </Button>
+        <Button onClick={handleNext}>
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+**Benefits:**
+- Clear step boundaries
+- Progressive validation
+- Easy to reorder steps
+- Can skip optional steps
+- Better UX (focused on one task at a time)
+
+**Key Principles:**
+1. Centralized form state in orchestrator or custom hook
+2. Each step validates its own fields
+3. Steps are dumb components (receive props, call callbacks)
+4. Orchestrator manages step progression logic
+5. Use step progress indicator for user feedback
+
+---
+
+### Pattern 3: Shared Utilities for Common Patterns
+
+**Use For:** Duplicate patterns across multiple components (error handling, loading states, etc.)
+
+**Problem:** Tasks Module had 8 components with duplicate error handling code (15 lines each = 120 lines total).
+
+**Solution:** Extract to shared hook + banner components.
+
+```typescript
+// hooks/useActionWithError.ts
+'use client';
+
+import { useState, useCallback } from 'react';
+
+export function useActionWithError<T extends (...args: any[]) => Promise<any>>(
+  action: T
+) {
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const execute = useCallback(
+    async (...args: Parameters<T>) => {
+      setError(null);
+      setSuccess(false);
+      setIsLoading(true);
+
+      try {
+        const result = await action(...args);
+
+        if (result && 'error' in result) {
+          setError(result.error);
+          return result;
+        }
+
+        setSuccess(true);
+        return result;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+        setError(message);
+        return { error: message };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [action]
+  );
+
+  const clearError = useCallback(() => setError(null), []);
+  const clearSuccess = useCallback(() => setSuccess(false), []);
+
+  return { execute, error, success, isLoading, clearError, clearSuccess };
+}
+```
+
+```typescript
+// components/shared/ErrorBanner.tsx
+'use client';
+
+import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+
+export function ErrorBanner({
+  message,
+  onDismiss,
+}: {
+  message: string | null;
+  onDismiss?: () => void;
+}) {
+  if (!message) return null;
+
+  return (
+    <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+      <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+      <p className="flex-1 text-sm text-red-700">{message}</p>
+      {onDismiss && (
+        <button onClick={onDismiss} className="shrink-0">
+          <X className="w-4 h-4 text-red-600" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function SuccessBanner({ message }: { message: string | null }) {
+  if (!message) return null;
+
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-start gap-2">
+      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
+      <p className="flex-1 text-sm text-green-700">{message}</p>
+    </div>
+  );
+}
+```
+
+**Usage in Components:**
+
+```typescript
+// Before (15 lines per component × 8 components = 120 lines)
+export function SomeComponent() {
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAction = async () => {
+    try {
+      const result = await someAction();
+      if ('error' in result) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('Error occurred');
+    }
+  };
+
+  return (
+    <div>
+      {error && (
+        <div className="bg-red-50 p-3 text-red-700">{error}</div>
+      )}
+      {/* ... */}
+    </div>
+  );
+}
+
+// After (5 lines per component × 8 components = 40 lines + 50 lines shared = 90 lines total)
+import { useActionWithError } from '@/hooks/useActionWithError';
+import { ErrorBanner } from '@/components/shared/ErrorBanner';
+
+export function SomeComponent() {
+  const { execute, error, clearError } = useActionWithError(someAction);
+
+  return (
+    <div>
+      <ErrorBanner message={error} onDismiss={clearError} />
+      <Button onClick={() => execute(params)}>Action</Button>
+    </div>
+  );
+}
+```
+
+**Impact:** 120 lines → 90 lines total, 74% duplicate code eliminated.
+
+**When to Extract:**
+- Pattern appears in 3+ components
+- Logic is identical or nearly identical
+- Pattern is self-contained (doesn't depend on parent state)
+- Pattern is likely to be needed in future components
+
+**Common Shared Utilities:**
+- Error handling (useActionWithError)
+- Loading states (useLoadingState)
+- Modal state (useModal)
+- Form state (useFormState)
+- Async data (useAsyncData)
+- Debounced input (useDebouncedValue)
+
+---
+
+### Refactoring Checklist
+
+When splitting or refactoring components:
+
+**Planning:**
+- [ ] Identify clear responsibility boundaries
+- [ ] Choose appropriate pattern (orchestrator, steps, shared utility)
+- [ ] Document component structure before starting
+- [ ] Plan prop interfaces for each section/step
+
+**Implementation:**
+- [ ] Create directory structure (detail/, modal/, etc.)
+- [ ] Extract sections/steps one at a time
+- [ ] Verify functionality after each extraction
+- [ ] Update imports in parent component
+- [ ] Run build to catch type errors
+
+**Quality:**
+- [ ] Each component <500 lines
+- [ ] Single responsibility per component
+- [ ] Clear prop interfaces
+- [ ] Shared patterns extracted to utilities
+- [ ] No duplicate error handling code
+
+**Testing:**
+- [ ] Test all features still work
+- [ ] Verify error handling
+- [ ] Check loading states
+- [ ] Test on mobile
+- [ ] Verify no console errors
+
+**Performance:**
+- [ ] Add React.memo() to list item components
+- [ ] Use useMemo() for expensive computations
+- [ ] Use useCallback() for stable handlers
+- [ ] Consider lazy loading for heavy sections
+
+---
+
 ## See Also
 
 - Design system: `frontend/DESIGN_SYSTEM.md`
 - Page layouts: `frontend/LAYOUTS.md`
 - Form patterns skill: `skills/frontend/form-patterns.md`
 - Deferred loading skill: `skills/frontend/deferred-loading.md`
+- Tasks Module migration guide: `/Users/jonathanlee/Desktop/genhub/docs/tasks-module-migration-guide.md`
+- Performance report: `/Users/jonathanlee/Desktop/genhub/docs/tasks-module-performance-report.md`
+- Optimization runbook: `/Users/jonathanlee/Desktop/genhub/docs/module-optimization-runbook.md`

@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Check, Loader2, Hammer, ShoppingCart, ClipboardCheck, FileText } from 'lucide-react';
-import { getTaskTypes } from '@/app/actions/task-types';
-import { TASK_TYPE_ICON_MAP } from '@/lib/config/task-type-display';
-import type { TaskType } from '@/types/db/enums';
-import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Hammer } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
+import { ClipboardCheck } from "lucide-react";
+import { FileText } from "lucide-react";
+import { getTaskTypes } from "@/app/actions/task-types";
+import { TASK_TYPE_ICON_MAP } from "@/lib/config/task-type-display";
+import type { TaskType } from "@/types/db/enums";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 type TaskTypeConfig = TaskTypeConfigsRow;
 
 // Color palette for task types (used when hex color is provided)
 const TAILWIND_COLORS: Record<string, { text: string; bg: string; border: string; ring: string; bgLight: string }> = {
-  '#3b82f6': { text: 'text-blue-600', bg: 'bg-blue-50 hover:bg-blue-100', border: 'border-blue-200 data-[selected=true]:border-blue-500', ring: '#3b82f6', bgLight: 'bg-blue-100' },
-  '#10b981': { text: 'text-emerald-600', bg: 'bg-emerald-50 hover:bg-emerald-100', border: 'border-emerald-200 data-[selected=true]:border-emerald-500', ring: '#10b981', bgLight: 'bg-emerald-100' },
-  '#f59e0b': { text: 'text-amber-600', bg: 'bg-amber-50 hover:bg-amber-100', border: 'border-amber-200 data-[selected=true]:border-amber-500', ring: '#f59e0b', bgLight: 'bg-amber-100' },
-  '#64748b': { text: 'text-slate-600', bg: 'bg-slate-50 hover:bg-slate-100', border: 'border-slate-200 data-[selected=true]:border-slate-500', ring: '#64748b', bgLight: 'bg-slate-100' },
+  "#3b82f6": { text: "text-blue-600", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 data-[selected=true]:border-blue-500", ring: "#3b82f6", bgLight: "bg-blue-100" },
+  "#10b981": { text: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100", border: "border-emerald-200 data-[selected=true]:border-emerald-500", ring: "#10b981", bgLight: "bg-emerald-100" },
+  "#f59e0b": { text: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100", border: "border-amber-200 data-[selected=true]:border-amber-500", ring: "#f59e0b", bgLight: "bg-amber-100" },
+  "#64748b": { text: "text-slate-600", bg: "bg-slate-50 hover:bg-slate-100", border: "border-slate-200 data-[selected=true]:border-slate-500", ring: "#64748b", bgLight: "bg-slate-100" },
 };
 
 // Default fallback task types (used if database fetch fails)
@@ -32,57 +37,57 @@ const DEFAULT_TASK_TYPES: Array<{
   bgLightClass: string;
 }> = [
   {
-    id: 'work',
-    name: 'Work',
-    description: 'Standard labor and construction tasks',
+    id: "work",
+    name: "Work",
+    description: "Standard labor and construction tasks",
     icon: Hammer,
-    color: '#3b82f6',
-    textClass: 'text-blue-600',
-    bgClass: 'bg-blue-50 hover:bg-blue-100',
-    borderClass: 'border-blue-200 data-[selected=true]:border-blue-500',
-    ringColor: '#3b82f6',
-    bgLightClass: 'bg-blue-100',
+    color: "#3b82f6",
+    textClass: "text-blue-600",
+    bgClass: "bg-blue-50 hover:bg-blue-100",
+    borderClass: "border-blue-200 data-[selected=true]:border-blue-500",
+    ringColor: "#3b82f6",
+    bgLightClass: "bg-blue-100",
   },
   {
-    id: 'purchase',
-    name: 'Purchase',
-    description: 'Materials, equipment, and supplies',
+    id: "purchase",
+    name: "Purchase",
+    description: "Materials, equipment, and supplies",
     icon: ShoppingCart,
-    color: '#10b981',
-    textClass: 'text-emerald-600',
-    bgClass: 'bg-emerald-50 hover:bg-emerald-100',
-    borderClass: 'border-emerald-200 data-[selected=true]:border-emerald-500',
-    ringColor: '#10b981',
-    bgLightClass: 'bg-emerald-100',
+    color: "#10b981",
+    textClass: "text-emerald-600",
+    bgClass: "bg-emerald-50 hover:bg-emerald-100",
+    borderClass: "border-emerald-200 data-[selected=true]:border-emerald-500",
+    ringColor: "#10b981",
+    bgLightClass: "bg-emerald-100",
   },
   {
-    id: 'approval',
-    name: 'Approval',
-    description: 'Permits, sign-offs, and inspections',
+    id: "approval",
+    name: "Approval",
+    description: "Permits, sign-offs, and inspections",
     icon: ClipboardCheck,
-    color: '#f59e0b',
-    textClass: 'text-amber-600',
-    bgClass: 'bg-amber-50 hover:bg-amber-100',
-    borderClass: 'border-amber-200 data-[selected=true]:border-amber-500',
-    ringColor: '#f59e0b',
-    bgLightClass: 'bg-amber-100',
+    color: "#f59e0b",
+    textClass: "text-amber-600",
+    bgClass: "bg-amber-50 hover:bg-amber-100",
+    borderClass: "border-amber-200 data-[selected=true]:border-amber-500",
+    ringColor: "#f59e0b",
+    bgLightClass: "bg-amber-100",
   },
   {
-    id: 'admin',
-    name: 'Admin',
-    description: 'Administrative and overhead tasks',
+    id: "admin",
+    name: "Admin",
+    description: "Administrative and overhead tasks",
     icon: FileText,
-    color: '#64748b',
-    textClass: 'text-slate-600',
-    bgClass: 'bg-slate-50 hover:bg-slate-100',
-    borderClass: 'border-slate-200 data-[selected=true]:border-slate-500',
-    ringColor: '#64748b',
-    bgLightClass: 'bg-slate-100',
+    color: "#64748b",
+    textClass: "text-slate-600",
+    bgClass: "bg-slate-50 hover:bg-slate-100",
+    borderClass: "border-slate-200 data-[selected=true]:border-slate-500",
+    ringColor: "#64748b",
+    bgLightClass: "bg-slate-100",
   },
 ];
 
 // Valid TaskType enum values for mapping
-const VALID_TASK_TYPES: TaskType[] = ['work', 'purchase', 'approval', 'admin'];
+const VALID_TASK_TYPES: TaskType[] = ["work", "purchase", "approval", "admin"];
 
 // Derive TaskType enum from config name (case-insensitive match)
 function deriveTaskTypeKey(name: string): TaskType {
@@ -93,15 +98,15 @@ function deriveTaskTypeKey(name: string): TaskType {
   }
   // Partial match (e.g., "Work Tasks" → "work")
   const match = VALID_TASK_TYPES.find(type => normalized.startsWith(type));
-  return match || 'work'; // Fallback to 'work'
+  return match || "work"; // Fallback to "work"
 }
 
 // Convert database config to display format
 function convertTaskTypeConfig(config: TaskTypeConfig) {
   const defaultIcon = DEFAULT_TASK_TYPES[0].icon; // Fallback to first icon
   const IconComponent = config.icon_name ? (TASK_TYPE_ICON_MAP[config.icon_name] || defaultIcon) : defaultIcon;
-  const color = config.color || '#3b82f6';
-  const colorInfo = TAILWIND_COLORS[color] || TAILWIND_COLORS['#3b82f6']; // Fallback to blue
+  const color = config.color || "#3b82f6";
+  const colorInfo = TAILWIND_COLORS[color] || TAILWIND_COLORS["#3b82f6"]; // Fallback to blue
 
   // Use derived type key instead of UUID id
   const typeKey = deriveTaskTypeKey(config.name);
@@ -109,7 +114,7 @@ function convertTaskTypeConfig(config: TaskTypeConfig) {
   return {
     id: typeKey, // TaskType enum value, not UUID
     name: config.name,
-    description: config.description || '',
+    description: config.description || "",
     icon: IconComponent,
     color: color,
     textClass: colorInfo.text,
@@ -150,7 +155,7 @@ export function TaskTypeSelector({
           setTaskTypes(DEFAULT_TASK_TYPES);
         }
       } catch (error) {
-        console.error('[TaskTypeSelector] Error fetching task types:', error);
+        console.error("[TaskTypeSelector] Error fetching task types:", error);
         setTaskTypes(DEFAULT_TASK_TYPES);
       } finally {
         setIsLoading(false);
@@ -196,12 +201,12 @@ export function TaskTypeSelector({
                 relative flex flex-col items-center p-4 sm:p-5 rounded-xl border-2
                 transition-all duration-200 cursor-pointer
                 ${taskType.bgClass} ${taskType.borderClass}
-                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                ${isSelected ? 'ring-2 ring-offset-2 shadow-md' : 'shadow-sm'}
+                ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+                ${isSelected ? "ring-2 ring-offset-2 shadow-md" : "shadow-sm"}
                 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary
               `}
               style={{
-                '--tw-ring-color': isSelected ? taskType.ringColor : undefined,
+                "--tw-ring-color": isSelected ? taskType.ringColor : undefined,
               } as React.CSSProperties}
             >
               {/* Selected Checkmark */}
@@ -250,7 +255,7 @@ export function TaskTypeSelector({
       <input
         type="hidden"
         name="task_type"
-        value={selectedType || 'work'}
+        value={selectedType || "work"}
       />
     </div>
   );

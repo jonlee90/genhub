@@ -15,7 +15,7 @@ import {
   format,
   isWeekend,
   isSameDay,
-} from 'date-fns';
+} from "date-fns";
 import type {
   GanttTask,
   GanttConfig,
@@ -27,7 +27,7 @@ import type {
   DateGroup,
   DateCell,
   TIME_SCALE_CONFIGS,
-} from './gantt-types';
+} from "./gantt-types";
 
 /**
  * Calculate the date range for the Gantt chart based on tasks
@@ -69,10 +69,10 @@ export function getTaskPosition(
   let left: number;
   let width: number;
 
-  if (timeScale === 'day') {
+  if (timeScale === "day") {
     left = daysFromStart * cellWidth;
     width = Math.max(taskDuration * cellWidth, cellWidth); // Minimum 1 cell
-  } else if (timeScale === 'week') {
+  } else if (timeScale === "week") {
     left = (daysFromStart / 7) * cellWidth;
     width = Math.max((taskDuration / 7) * cellWidth, cellWidth / 2);
   } else {
@@ -95,11 +95,11 @@ export function getTaskPosition(
  */
 export function snapToDate(date: Date, timeScale: TimeScale): Date {
   switch (timeScale) {
-    case 'day':
+    case "day":
       return startOfDay(date);
-    case 'week':
+    case "week":
       return startOfWeek(date, { weekStartsOn: 1 }); // Monday
-    case 'month':
+    case "month":
       return startOfMonth(date);
     default:
       return startOfDay(date);
@@ -117,11 +117,11 @@ export function pixelsToDateOffset(
   const cells = pixels / cellWidth;
 
   switch (timeScale) {
-    case 'day':
+    case "day":
       return Math.round(cells); // Days
-    case 'week':
+    case "week":
       return Math.round(cells * 7); // Days
-    case 'month':
+    case "month":
       return Math.round(cells * 30); // Days
     default:
       return Math.round(cells);
@@ -141,7 +141,7 @@ export function generateDateGroups(
   let currentDate = new Date(viewStartDate);
   let currentX = 0;
 
-  if (timeScale === 'day' || timeScale === 'week') {
+  if (timeScale === "day" || timeScale === "week") {
     // Group by months
     while (currentDate <= viewEndDate) {
       const monthStart = startOfMonth(currentDate);
@@ -151,7 +151,7 @@ export function generateDateGroups(
       const groupEnd = monthEnd > viewEndDate ? viewEndDate : monthEnd;
 
       const daysInGroup = differenceInCalendarDays(groupEnd, groupStart) + 1;
-      const width = timeScale === 'day' ? daysInGroup * cellWidth : (daysInGroup / 7) * cellWidth;
+      const width = timeScale === "day" ? daysInGroup * cellWidth : (daysInGroup / 7) * cellWidth;
 
       groups.push({
         label: format(currentDate, timeScaleConfig.groupFormat),
@@ -215,9 +215,9 @@ export function generateDateCells(
     currentX += cellWidth;
 
     // Increment based on time scale
-    if (timeScale === 'day') {
+    if (timeScale === "day") {
       currentDate = addDays(currentDate, 1);
-    } else if (timeScale === 'week') {
+    } else if (timeScale === "week") {
       currentDate = addWeeks(currentDate, 1);
     } else {
       currentDate = addMonths(currentDate, 1);
@@ -290,9 +290,9 @@ export function calculateTotalWidth(config: GanttConfig): number {
   const { totalDays, cellWidth, timeScale, sidebarWidth } = config;
 
   let gridWidth: number;
-  if (timeScale === 'day') {
+  if (timeScale === "day") {
     gridWidth = totalDays * cellWidth;
-  } else if (timeScale === 'week') {
+  } else if (timeScale === "week") {
     gridWidth = Math.ceil(totalDays / 7) * cellWidth;
   } else {
     gridWidth = Math.ceil(totalDays / 30) * cellWidth;
@@ -302,15 +302,15 @@ export function calculateTotalWidth(config: GanttConfig): number {
 }
 
 /**
- * Get today's position on the timeline
+ * Get today"s position on the timeline
  */
 export function getTodayPosition(config: GanttConfig): number {
   const today = startOfDay(new Date());
   const daysFromStart = differenceInCalendarDays(today, config.viewStartDate);
 
-  if (config.timeScale === 'day') {
+  if (config.timeScale === "day") {
     return daysFromStart * config.cellWidth;
-  } else if (config.timeScale === 'week') {
+  } else if (config.timeScale === "week") {
     return (daysFromStart / 7) * config.cellWidth;
   } else {
     return (daysFromStart / 30) * config.cellWidth;
@@ -384,12 +384,12 @@ export function transformTasksForGantt(tasks: TaskInput[]): GanttTask[] {
  * Get optimal time scale based on task date range
  */
 export function getOptimalTimeScale(tasks: GanttTask[]): TimeScale {
-  if (tasks.length === 0) return 'week';
+  if (tasks.length === 0) return "week";
 
   const dateRange = calculateDateRange(tasks, 0);
   const daySpan = differenceInDays(dateRange.end, dateRange.start);
 
-  if (daySpan <= 14) return 'day';
-  if (daySpan <= 60) return 'week';
-  return 'month';
+  if (daySpan <= 14) return "day";
+  if (daySpan <= 60) return "week";
+  return "month";
 }

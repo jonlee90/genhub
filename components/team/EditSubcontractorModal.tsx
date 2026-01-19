@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * EditSubcontractorModal Component
@@ -7,24 +7,24 @@
  * Construction-themed design matching the GenHub PWA aesthetic
  */
 
-import { useState, useTransition, useEffect, useCallback } from 'react';
-import { updateSubcontractor } from '@/app/actions/subcontractors';
-import type { SubcontractorsRow } from '@/types/db/tables/companies';
-import type { TradeType } from '@/types/db/enums';
-import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useTransition, useEffect, useCallback } from "react";
+import { updateSubcontractor } from "@/app/actions/subcontractors";
+import type { SubcontractorsRow } from "@/types/db/tables/companies";
+import type { TradeType } from "@/types/db/enums";
+import { formatPhoneNumber } from "@/lib/hooks/usePhoneMask";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Loader2,
   Building2,
@@ -38,30 +38,30 @@ import {
   CheckCircle2,
   XCircle,
   Pencil,
-} from 'lucide-react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { toast } from "sonner";
 
 type Subcontractor = SubcontractorsRow;
 
 const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
-  { value: 'general', label: 'General' },
-  { value: 'electrical', label: 'Electrical' },
-  { value: 'plumbing', label: 'Plumbing' },
-  { value: 'hvac', label: 'HVAC' },
-  { value: 'carpentry', label: 'Carpentry' },
-  { value: 'masonry', label: 'Masonry' },
-  { value: 'roofing', label: 'Roofing' },
-  { value: 'flooring', label: 'Flooring' },
-  { value: 'painting', label: 'Painting' },
-  { value: 'drywall', label: 'Drywall' },
-  { value: 'concrete', label: 'Concrete' },
-  { value: 'landscaping', label: 'Landscaping' },
-  { value: 'demolition', label: 'Demolition' },
-  { value: 'steel_work', label: 'Steel Work' },
-  { value: 'glass_glazing', label: 'Glass & Glazing' },
-  { value: 'fire_protection', label: 'Fire Protection' },
-  { value: 'insulation', label: 'Insulation' },
-  { value: 'other', label: 'Other' },
+  { value: "general", label: "General" },
+  { value: "electrical", label: "Electrical" },
+  { value: "plumbing", label: "Plumbing" },
+  { value: "hvac", label: "HVAC" },
+  { value: "carpentry", label: "Carpentry" },
+  { value: "masonry", label: "Masonry" },
+  { value: "roofing", label: "Roofing" },
+  { value: "flooring", label: "Flooring" },
+  { value: "painting", label: "Painting" },
+  { value: "drywall", label: "Drywall" },
+  { value: "concrete", label: "Concrete" },
+  { value: "landscaping", label: "Landscaping" },
+  { value: "demolition", label: "Demolition" },
+  { value: "steel_work", label: "Steel Work" },
+  { value: "glass_glazing", label: "Glass & Glazing" },
+  { value: "fire_protection", label: "Fire Protection" },
+  { value: "insulation", label: "Insulation" },
+  { value: "other", label: "Other" },
 ];
 
 interface EditSubcontractorModalProps {
@@ -75,63 +75,86 @@ export function EditSubcontractorModal({
   onClose,
   subcontractor,
 }: EditSubcontractorModalProps) {
-  console.log('[EditSubcontractorModal] Rendering with subcontractor:', subcontractor.id);
+  console.log(
+    "[EditSubcontractorModal] Rendering with subcontractor:",
+    subcontractor.id,
+  );
 
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<
+    string,
+    string[]
+  > | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   // Form state - pre-populated with existing data
-  const [companyName, setCompanyName] = useState(subcontractor.company_name || '');
-  const [contactName, setContactName] = useState(subcontractor.contact_name || '');
-  const [email, setEmail] = useState(subcontractor.email || '');
+  const [companyName, setCompanyName] = useState(
+    subcontractor.company_name || "",
+  );
+  const [contactName, setContactName] = useState(
+    subcontractor.contact_name || "",
+  );
+  const [email, setEmail] = useState(subcontractor.email || "");
   const [phone, setPhone] = useState(
-    subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : ''
+    subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : "",
   );
-  const [address, setAddress] = useState(subcontractor.address || '');
+  const [address, setAddress] = useState(subcontractor.address || "");
   const [selectedTrade, setSelectedTrade] = useState<TradeType>(
-    subcontractor.trade_specialization || 'general'
+    subcontractor.trade_specialization || "general",
   );
-  const [licenseNumber, setLicenseNumber] = useState(subcontractor.license_number || '');
+  const [licenseNumber, setLicenseNumber] = useState(
+    subcontractor.license_number || "",
+  );
   const [licenseExpiry, setLicenseExpiry] = useState(
-    subcontractor.license_expiry ? subcontractor.license_expiry.split('T')[0] : ''
+    subcontractor.license_expiry
+      ? subcontractor.license_expiry.split("T")[0]
+      : "",
   );
   const [insuranceProvider, setInsuranceProvider] = useState(
-    subcontractor.insurance_provider || ''
+    subcontractor.insurance_provider || "",
   );
   const [insuranceExpiry, setInsuranceExpiry] = useState(
-    subcontractor.insurance_expiry ? subcontractor.insurance_expiry.split('T')[0] : ''
+    subcontractor.insurance_expiry
+      ? subcontractor.insurance_expiry.split("T")[0]
+      : "",
   );
   const [rating, setRating] = useState(subcontractor.performance_rating || 0);
-  const [notes, setNotes] = useState(subcontractor.notes || '');
+  const [notes, setNotes] = useState(subcontractor.notes || "");
 
   // Reset form when subcontractor changes
   useEffect(() => {
-    console.log('[EditSubcontractorModal] Resetting form for subcontractor:', subcontractor.id);
-    setCompanyName(subcontractor.company_name || '');
-    setContactName(subcontractor.contact_name || '');
-    setEmail(subcontractor.email || '');
-    setPhone(subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : '');
-    setAddress(subcontractor.address || '');
-    setSelectedTrade(subcontractor.trade_specialization || 'general');
-    setLicenseNumber(subcontractor.license_number || '');
-    setLicenseExpiry(
-      subcontractor.license_expiry ? subcontractor.license_expiry.split('T')[0] : ''
+    console.log(
+      "[EditSubcontractorModal] Resetting form for subcontractor:",
+      subcontractor.id,
     );
-    setInsuranceProvider(subcontractor.insurance_provider || '');
+    setCompanyName(subcontractor.company_name || "");
+    setContactName(subcontractor.contact_name || "");
+    setEmail(subcontractor.email || "");
+    setPhone(subcontractor.phone ? formatPhoneNumber(subcontractor.phone) : "");
+    setAddress(subcontractor.address || "");
+    setSelectedTrade(subcontractor.trade_specialization || "general");
+    setLicenseNumber(subcontractor.license_number || "");
+    setLicenseExpiry(
+      subcontractor.license_expiry
+        ? subcontractor.license_expiry.split("T")[0]
+        : "",
+    );
+    setInsuranceProvider(subcontractor.insurance_provider || "");
     setInsuranceExpiry(
-      subcontractor.insurance_expiry ? subcontractor.insurance_expiry.split('T')[0] : ''
+      subcontractor.insurance_expiry
+        ? subcontractor.insurance_expiry.split("T")[0]
+        : "",
     );
     setRating(subcontractor.performance_rating || 0);
-    setNotes(subcontractor.notes || '');
+    setNotes(subcontractor.notes || "");
     setError(null);
     setFieldErrors(null);
     setIsSuccess(false);
   }, [subcontractor]);
 
   const handleClose = useCallback(() => {
-    console.log('[EditSubcontractorModal] Closing modal');
+    console.log("[EditSubcontractorModal] Closing modal");
     setError(null);
     setFieldErrors(null);
     setIsSuccess(false);
@@ -140,7 +163,10 @@ export function EditSubcontractorModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[EditSubcontractorModal] Submitting form for subcontractor:', subcontractor.id);
+    console.log(
+      "[EditSubcontractorModal] Submitting form for subcontractor:",
+      subcontractor.id,
+    );
 
     setError(null);
     setFieldErrors(null);
@@ -163,11 +189,11 @@ export function EditSubcontractorModal({
           notes: notes || undefined,
         });
 
-        console.log('[EditSubcontractorModal] Update result:', result);
+        console.log("[EditSubcontractorModal] Update result:", result);
 
         if (result.success) {
           setIsSuccess(true);
-          toast.success('Subcontractor updated successfully!');
+          toast.success("Subcontractor updated successfully!");
 
           // Close modal after a short delay
           setTimeout(() => {
@@ -177,14 +203,14 @@ export function EditSubcontractorModal({
           if (result.fieldErrors) {
             setFieldErrors(result.fieldErrors as Record<string, string[]>);
           } else {
-            setError(result.error || 'Failed to update subcontractor');
+            setError(result.error || "Failed to update subcontractor");
           }
-          toast.error(result.error || 'Failed to update subcontractor');
+          toast.error(result.error || "Failed to update subcontractor");
         }
       } catch (err) {
-        console.error('[EditSubcontractorModal] Unexpected error:', err);
-        setError('An unexpected error occurred. Please try again.');
-        toast.error('An unexpected error occurred');
+        console.error("[EditSubcontractorModal] Unexpected error:", err);
+        setError("An unexpected error occurred. Please try again.");
+        toast.error("An unexpected error occurred");
       }
     });
   };
@@ -192,7 +218,7 @@ export function EditSubcontractorModal({
   const isDisabled = isPending || isSuccess;
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={handleClose}
       icon={Pencil}
@@ -216,7 +242,9 @@ export function EditSubcontractorModal({
         {error && !fieldErrors && (
           <Alert className="bg-red-50 border-2 border-red-300 text-red-900">
             <XCircle className="h-5 w-5 text-red-600" />
-            <AlertDescription className="ml-2 font-semibold">{error}</AlertDescription>
+            <AlertDescription className="ml-2 font-semibold">
+              {error}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -240,7 +268,9 @@ export function EditSubcontractorModal({
             className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
           />
           {fieldErrors?.company_name && (
-            <p className="text-sm text-red-600 font-medium">{fieldErrors.company_name[0]}</p>
+            <p className="text-sm text-red-600 font-medium">
+              {fieldErrors.company_name[0]}
+            </p>
           )}
         </div>
 
@@ -296,7 +326,9 @@ export function EditSubcontractorModal({
             className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
           />
           {fieldErrors?.contact_name && (
-            <p className="text-sm text-red-600 font-medium">{fieldErrors.contact_name[0]}</p>
+            <p className="text-sm text-red-600 font-medium">
+              {fieldErrors.contact_name[0]}
+            </p>
           )}
         </div>
 
@@ -320,7 +352,9 @@ export function EditSubcontractorModal({
             className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
           />
           {fieldErrors?.email && (
-            <p className="text-sm text-red-600 font-medium">{fieldErrors.email[0]}</p>
+            <p className="text-sm text-red-600 font-medium">
+              {fieldErrors.email[0]}
+            </p>
           )}
         </div>
 
@@ -373,7 +407,10 @@ export function EditSubcontractorModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit_license_number" className="text-gray-900 font-semibold">
+              <Label
+                htmlFor="edit_license_number"
+                className="text-gray-900 font-semibold"
+              >
                 License Number
               </Label>
               <Input
@@ -388,7 +425,10 @@ export function EditSubcontractorModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit_license_expiry" className="text-gray-900 font-semibold">
+              <Label
+                htmlFor="edit_license_expiry"
+                className="text-gray-900 font-semibold"
+              >
                 Expiry Date
               </Label>
               <Input
@@ -412,7 +452,10 @@ export function EditSubcontractorModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="edit_insurance_provider" className="text-gray-900 font-semibold">
+              <Label
+                htmlFor="edit_insurance_provider"
+                className="text-gray-900 font-semibold"
+              >
                 Provider
               </Label>
               <Input
@@ -427,7 +470,10 @@ export function EditSubcontractorModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit_insurance_expiry" className="text-gray-900 font-semibold">
+              <Label
+                htmlFor="edit_insurance_expiry"
+                className="text-gray-900 font-semibold"
+              >
                 Expiry Date
               </Label>
               <Input
@@ -461,14 +507,14 @@ export function EditSubcontractorModal({
                 <Star
                   className={`h-8 w-8 transition-colors ${
                     i <= rating
-                      ? 'fill-construction-yellow text-construction-yellow'
-                      : 'text-gray-300 hover:text-construction-yellow'
+                      ? "fill-construction-yellow text-construction-yellow"
+                      : "text-gray-300 hover:text-construction-yellow"
                   }`}
                 />
               </button>
             ))}
             <span className="text-sm text-gray-600 ml-2">
-              {rating > 0 ? `${rating}/5` : 'Not rated'}
+              {rating > 0 ? `${rating}/5` : "Not rated"}
             </span>
           </div>
         </div>
@@ -516,11 +562,11 @@ export function EditSubcontractorModal({
                 Saved!
               </>
             ) : (
-              'Save Changes'
+              "Save Changes"
             )}
           </Button>
         </div>
       </form>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

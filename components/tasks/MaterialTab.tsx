@@ -1,12 +1,15 @@
-'use client';
+"use client";
 
 // Phase 4 - Material Tab (display materials linked to task)
 // Fetches and displays material assignments with status badges and cost totals
 
-import { useState, useEffect } from 'react';
-import { Package, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getTaskMaterials } from '@/app/actions/materials';
+import { useState, useEffect } from "react";
+import { Package } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getTaskMaterials } from "@/app/actions/materials";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 // Material assignment type (from server action)
 type MaterialAssignment = {
@@ -14,8 +17,8 @@ type MaterialAssignment = {
   quantity: number;
   unit_cost: number;
   total_cost: number | null;
-  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  purchaser_type: 'subcontractor' | 'gc' | 'pm';
+  procurement_status: "needed" | "ordered" | "delivered" | "installed";
+  purchaser_type: "subcontractor" | "gc" | "pm";
   notes: string | null;
   created_at: string;
   material: {
@@ -45,7 +48,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
   // State
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError } = useActionWithError();
 
   // Fetch materials on mount
   useEffect(() => {
@@ -71,12 +74,12 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
   // Material status color helper
   const getMaterialStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      needed: 'bg-gray-400',
-      ordered: 'bg-blue-500',
-      delivered: 'bg-green-500',
-      installed: 'bg-gray-500',
+      needed: "bg-gray-400",
+      ordered: "bg-blue-500",
+      delivered: "bg-green-500",
+      installed: "bg-gray-500",
     };
-    return colors[status] || 'bg-gray-400';
+    return colors[status] || "bg-gray-400";
   };
 
   // Loading state
@@ -91,12 +94,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
 
   // Error state
   if (error) {
-    return (
-      <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-        <p className="text-red-600 font-semibold">Error loading materials</p>
-        <p className="text-sm text-red-500 mt-1">{error}</p>
-      </div>
-    );
+    return <ErrorBanner error={error} onDismiss={clearError} />;
   }
 
   // Empty state
@@ -131,8 +129,8 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
               <tr
                 key={material.id}
                 className={cn(
-                  'border-b border-gray-100 hover:bg-gray-50 transition-colors',
-                  index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                  "border-b border-gray-100 hover:bg-gray-50 transition-colors",
+                  index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
                 )}
               >
                 {/* Material name and SKU */}
@@ -153,7 +151,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
                 {/* Status badge */}
                 <td className="p-3 text-center">
                   <span className={cn(
-                    'px-2 py-1 rounded text-xs font-bold uppercase text-white inline-block',
+                    "px-2 py-1 rounded text-xs font-bold uppercase text-white inline-block",
                     getMaterialStatusColor(material.procurement_status)
                   )}>
                     {material.procurement_status}
@@ -191,7 +189,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
             </span>
           </div>
           <p className="text-xs text-gray-600 mt-2">
-            Based on {materials.length} material assignment{materials.length !== 1 ? 's' : ''}
+            Based on {materials.length} material assignment{materials.length !== 1 ? "s" : ""}
           </p>
         </div>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,12 +27,7 @@ import { FilePreview, MessageAttachment } from "./FilePreview";
 import { EntityPreview } from "./EntityPreview";
 import { EditMessageForm } from "./EditMessageForm";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
-import {
-  getMessageReplyCounts,
-  getMessagesReactions,
-  getMessagesAttachments,
-  toggleReaction,
-} from "@/app/actions/chat";
+import { toggleReaction } from "@/app/actions/chat";
 
 interface MessageItemProps {
   message: MessageWithSender;
@@ -41,6 +36,10 @@ interface MessageItemProps {
   onDelete?: (messageId: string) => void;
   onRetry?: () => void;
   onOpenThread?: (messageId: string) => void;
+  reactions?: MessageReactionGroup[];
+  replyCount?: number;
+  attachments?: MessageAttachment[];
+  onRefreshMetadata?: (messageId: string) => void;
   // Optimistic UI props
   isOptimistic?: boolean;
   status?: MessageStatus;
@@ -55,6 +54,10 @@ export function MessageItem({
   onDelete: _onDelete,
   onRetry,
   onOpenThread,
+  reactions: reactionsProp,
+  replyCount: replyCountProp,
+  attachments: attachmentsProp,
+  onRefreshMetadata,
   isOptimistic,
   status,
   error,
@@ -62,12 +65,13 @@ export function MessageItem({
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showReactionPicker, setShowReactionPicker] = useState(false);
-  const [reactions, setReactions] = useState<MessageReactionGroup[]>([]);
-  const [replyCount, setReplyCount] = useState(0);
-  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { data: session } = useSession();
+
+  const reactions = reactionsProp ?? [];
+  const replyCount = replyCountProp ?? 0;
+  const attachments = attachmentsProp ?? [];
 
   console.log(
     "[MessageItem] Rendering message:",
@@ -87,56 +91,16 @@ export function MessageItem({
   const isSending = isOptimistic && status === "sending";
   const hasFailed = isOptimistic && status === "error";
 
-  // Debug: Fetch reactions, reply counts, and attachments
-  useEffect(() => {
-    if (!message.id || isOptimistic) return;
-
-    async function fetchMessageData() {
-      console.log(
-        "[MessageItem] Fetching reactions, replies, and attachments for message:",
-        message.id,
-      );
-
-      // Fetch all data in parallel
-      const [reactionsResult, replyCountResult, attachmentsResult] =
-        await Promise.all([
-          getMessagesReactions([message.id]),
-          getMessageReplyCounts([message.id]),
-          getMessagesAttachments([message.id]),
-        ]);
-
-      if (reactionsResult.success) {
-        setReactions(reactionsResult.reactionsMap?.[message.id] || []);
-      }
-
-      if (replyCountResult.success) {
-        setReplyCount(replyCountResult.counts?.[message.id] || 0);
-      }
-
-      if (attachmentsResult.success) {
-        setAttachments(attachmentsResult.attachmentsMap?.[message.id] || []);
-      }
-    }
-
-    fetchMessageData();
-  }, [message.id, isOptimistic]);
-
   // Debug: Handle reaction change
   const handleReactionChange = async () => {
     console.log("[MessageItem] Reaction changed, refreshing reactions...");
-    const result = await getMessagesReactions([message.id]);
-    if (result.success) {
-      setReactions(result.reactionsMap?.[message.id] || []);
-    }
+    onRefreshMetadata?.(message.id);
   };
 
   // Debug: Handle attachment deletion
   const handleAttachmentDelete = async () => {
     console.log("[MessageItem] Attachment deleted, refreshing attachments...");
-    const result = await getMessagesAttachments([message.id]);
-    if (result.success) {
-      setAttachments(result.attachmentsMap?.[message.id] || []);
-    }
+    onRefreshMetadata?.(message.id);
   };
 
   // Debug: Handle copy to clipboard

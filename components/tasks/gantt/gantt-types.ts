@@ -1,15 +1,15 @@
-import type { TasksRow } from '@/types/db/tables/tasks';
-import type { TaskDependenciesRow } from '@/types/db/tables/tasks';
+import type { TasksRow } from "@/types/db/tables/tasks";
+import type { TaskDependenciesRow } from "@/types/db/tables/tasks";
 
 // Base types from database
 type TaskRow = TasksRow;
 type TaskDependencyRow = TaskDependenciesRow;
 
 // Time scale options
-export type TimeScale = 'day' | 'week' | 'month';
+export type TimeScale = "day" | "week" | "month";
 
 // Extended task with Gantt-specific fields
-export interface GanttTask extends Omit<TaskRow, 'due_date'> {
+export interface GanttTask extends Omit<TaskRow, "due_date"> {
   due_date: string | null;
   assignee?: {
     id: string;
@@ -51,7 +51,7 @@ export interface TimeScaleConfig {
   cellWidth: number;
   headerFormat: string;
   groupFormat: string;
-  snapUnit: 'day' | 'week' | 'month';
+  snapUnit: "day" | "week" | "month";
 }
 
 // Position data for a task bar
@@ -145,21 +145,21 @@ export interface GanttDependencyLinesProps {
 export const TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
   day: {
     cellWidth: 40,
-    headerFormat: 'EEE d',    // "Mon 15"
-    groupFormat: 'MMMM yyyy', // "January 2025"
-    snapUnit: 'day',
+    headerFormat: "EEE d",    // "Mon 15"
+    groupFormat: "MMMM yyyy", // "January 2025"
+    snapUnit: "day",
   },
   week: {
     cellWidth: 120,
-    headerFormat: 'MMM d',    // "Jan 15"
-    groupFormat: 'MMMM yyyy',
-    snapUnit: 'week',
+    headerFormat: "MMM d",    // "Jan 15"
+    groupFormat: "MMMM yyyy",
+    snapUnit: "week",
   },
   month: {
     cellWidth: 160,
-    headerFormat: 'MMMM',     // "January"
-    groupFormat: 'yyyy',
-    snapUnit: 'month',
+    headerFormat: "MMMM",     // "January"
+    groupFormat: "yyyy",
+    snapUnit: "month",
   },
 };
 
@@ -167,27 +167,27 @@ export const TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
 export const MOBILE_TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
   day: {
     cellWidth: 28,
-    headerFormat: 'dd',       // "15"
-    groupFormat: 'MMM yy',    // "Jan 25"
-    snapUnit: 'day',
+    headerFormat: "dd",       // "15"
+    groupFormat: "MMM yy",    // "Jan 25"
+    snapUnit: "day",
   },
   week: {
     cellWidth: 80,
-    headerFormat: 'M/d',      // "1/15"
-    groupFormat: 'MMM yy',    // "Jan 25"
-    snapUnit: 'week',
+    headerFormat: "M/d",      // "1/15"
+    groupFormat: "MMM yy",    // "Jan 25"
+    snapUnit: "week",
   },
   month: {
     cellWidth: 100,
-    headerFormat: 'MMM',      // "Jan"
-    groupFormat: 'yyyy',
-    snapUnit: 'month',
+    headerFormat: "MMM",      // "Jan"
+    groupFormat: "yyyy",
+    snapUnit: "month",
   },
 };
 
 // Default Gantt configuration (Desktop)
-export const DEFAULT_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndDate' | 'totalDays'> = {
-  timeScale: 'week',
+export const DEFAULT_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+  timeScale: "week",
   cellWidth: 120,
   rowHeight: 48,
   headerHeight: 64,
@@ -195,8 +195,8 @@ export const DEFAULT_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndD
 };
 
 // Mobile-optimized Gantt configuration
-export const MOBILE_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndDate' | 'totalDays'> = {
-  timeScale: 'week',
+export const MOBILE_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+  timeScale: "week",
   cellWidth: 80,
   rowHeight: 44,
   headerHeight: 48,
@@ -204,8 +204,8 @@ export const MOBILE_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndDa
 };
 
 // Tablet-optimized Gantt configuration
-export const TABLET_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndDate' | 'totalDays'> = {
-  timeScale: 'week',
+export const TABLET_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+  timeScale: "week",
   cellWidth: 100,
   rowHeight: 46,
   headerHeight: 56,
@@ -215,32 +215,32 @@ export const TABLET_GANTT_CONFIG: Omit<GanttConfig, 'viewStartDate' | 'viewEndDa
 // Priority colors - uniform construction-themed background with priority-based borders
 export const PRIORITY_COLORS = {
   low: {
-    bg: 'bg-gradient-to-r from-construction-blue to-blue-700',
-    border: 'border-emerald-700',
-    text: 'text-white',
+    bg: "bg-gradient-to-r from-construction-blue to-blue-700",
+    border: "border-emerald-700",
+    text: "text-white",
   },
   medium: {
-    bg: 'bg-gradient-to-r from-construction-blue to-blue-700',
-    border: 'border-amber-600',
-    text: 'text-white',
+    bg: "bg-gradient-to-r from-construction-blue to-blue-700",
+    border: "border-amber-600",
+    text: "text-white",
   },
   high: {
-    bg: 'bg-gradient-to-r from-construction-blue to-blue-700',
-    border: 'border-red-700',
-    text: 'text-white',
+    bg: "bg-gradient-to-r from-construction-blue to-blue-700",
+    border: "border-red-700",
+    text: "text-white",
   },
   critical: {
-    bg: 'bg-gradient-to-r from-construction-blue to-blue-700',
-    border: 'border-red-800',
-    text: 'text-white',
+    bg: "bg-gradient-to-r from-construction-blue to-blue-700",
+    border: "border-red-800",
+    text: "text-white",
   },
 };
 
 // Status styles for task bars
 export const STATUS_STYLES = {
-  todo: '',
-  in_progress: '',
-  review: 'ring-2 ring-amber-400 ring-offset-1',
-  blocked: 'border-dashed opacity-75',
-  completed: 'opacity-50',
+  todo: "",
+  in_progress: "",
+  review: "ring-2 ring-amber-400 ring-offset-1",
+  blocked: "border-dashed opacity-75",
+  completed: "opacity-50",
 };

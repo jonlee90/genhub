@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import type { VendorOption } from "@/app/actions/expenses";
 
 /**
@@ -285,7 +285,7 @@ export function VendorCombobox({
 
         {/* Mobile Bottom Sheet Modal */}
         {open && (
-          <BaseModal
+          <ResponsiveModal
             isOpen={open}
             onClose={() => {
               setOpen(false);
@@ -380,7 +380,7 @@ export function VendorCombobox({
                 )}
               </div>
             </div>
-          </BaseModal>
+          </ResponsiveModal>
         )}
       </div>
     );

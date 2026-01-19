@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -198,7 +198,7 @@ export function AddSubcontractorModal({
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={open}
       onClose={() => onOpenChange(false)}
       icon={HardHat}
@@ -419,6 +419,6 @@ export function AddSubcontractorModal({
           </motion.div>
         )}
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

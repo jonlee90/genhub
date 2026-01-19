@@ -1,8 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Building2, Home, Factory, UtensilsCrossed, Store, Warehouse, Pencil, CheckCircle2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  Building2,
+  Home,
+  Factory,
+  UtensilsCrossed,
+  Store,
+  Warehouse,
+  Pencil,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,8 +23,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { BaseModal } from '@/components/ui/BaseModal';
+} from "@/components/ui/table";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,26 +34,26 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   getProjectTypes,
   createProjectType,
   updateProjectType,
   deleteProjectType,
   type ProjectTypeWithCount,
-} from '@/app/actions/project-types';
+} from "@/app/actions/project-types";
 
 /**
  * Icon mapping for project type selection
@@ -60,14 +73,18 @@ const AVAILABLE_ICONS = {
  * Debug: Main component for CRUD operations on project types with full accessibility
  */
 export function ProjectTypeManager() {
-  console.log('[ProjectTypeManager] Rendering project type manager');
+  console.log("[ProjectTypeManager] Rendering project type manager");
 
   const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingType, setEditingType] = useState<ProjectTypeWithCount | null>(null);
-  const [deletingType, setDeletingType] = useState<ProjectTypeWithCount | null>(null);
+  const [editingType, setEditingType] = useState<ProjectTypeWithCount | null>(
+    null,
+  );
+  const [deletingType, setDeletingType] = useState<ProjectTypeWithCount | null>(
+    null,
+  );
 
   // Debug: Fetch project types on mount
   useEffect(() => {
@@ -75,14 +92,18 @@ export function ProjectTypeManager() {
   }, []);
 
   async function loadProjectTypes() {
-    console.log('[ProjectTypeManager] Loading project types...');
+    console.log("[ProjectTypeManager] Loading project types...");
     setIsLoading(true);
     const result = await getProjectTypes();
     if (result.projectTypes) {
       setProjectTypes(result.projectTypes);
-      console.log('[ProjectTypeManager] Loaded', result.projectTypes.length, 'project types');
+      console.log(
+        "[ProjectTypeManager] Loaded",
+        result.projectTypes.length,
+        "project types",
+      );
     } else if (result.error) {
-      console.error('[ProjectTypeManager] Error loading:', result.error);
+      console.error("[ProjectTypeManager] Error loading:", result.error);
       toast.error(result.error);
     }
     setIsLoading(false);
@@ -91,7 +112,7 @@ export function ProjectTypeManager() {
   // Debug: Handle create submission
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log('[ProjectTypeManager] Creating project type...');
+    console.log("[ProjectTypeManager] Creating project type...");
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -100,11 +121,11 @@ export function ProjectTypeManager() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Project type created successfully');
+      toast.success("Project type created successfully");
       setShowCreateModal(false);
       loadProjectTypes();
     } else {
-      toast.error(result.error || 'Failed to create project type');
+      toast.error(result.error || "Failed to create project type");
     }
   }
 
@@ -113,7 +134,7 @@ export function ProjectTypeManager() {
     e.preventDefault();
     if (!editingType) return;
 
-    console.log('[ProjectTypeManager] Updating project type:', editingType.id);
+    console.log("[ProjectTypeManager] Updating project type:", editingType.id);
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -122,11 +143,11 @@ export function ProjectTypeManager() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Project type updated successfully');
+      toast.success("Project type updated successfully");
       setEditingType(null);
       loadProjectTypes();
     } else {
-      toast.error(result.error || 'Failed to update project type');
+      toast.error(result.error || "Failed to update project type");
     }
   }
 
@@ -134,7 +155,7 @@ export function ProjectTypeManager() {
   async function handleDelete() {
     if (!deletingType) return;
 
-    console.log('[ProjectTypeManager] Deleting project type:', deletingType.id);
+    console.log("[ProjectTypeManager] Deleting project type:", deletingType.id);
     setIsSubmitting(true);
 
     const result = await deleteProjectType(deletingType.id);
@@ -142,16 +163,20 @@ export function ProjectTypeManager() {
     setIsSubmitting(false);
 
     if (result.success) {
-      toast.success('Project type deleted successfully');
+      toast.success("Project type deleted successfully");
       setDeletingType(null);
       loadProjectTypes();
     } else {
-      toast.error(result.error || 'Failed to delete project type');
+      toast.error(result.error || "Failed to delete project type");
     }
   }
 
   return (
-    <div className="space-y-4" role="region" aria-label="Project Type Management">
+    <div
+      className="space-y-4"
+      role="region"
+      aria-label="Project Type Management"
+    >
       {/* Debug: Header with Add button */}
       <div className="flex items-center justify-between gap-4">
         <div>
@@ -179,10 +204,18 @@ export function ProjectTypeManager() {
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="font-bold text-gray-900">Type</TableHead>
-              <TableHead className="font-bold text-gray-900 hidden md:table-cell">Description</TableHead>
-              <TableHead className="font-bold text-gray-900 text-center">Projects</TableHead>
-              <TableHead className="font-bold text-gray-900 text-center">Status</TableHead>
-              <TableHead className="font-bold text-gray-900 text-right">Actions</TableHead>
+              <TableHead className="font-bold text-gray-900 hidden md:table-cell">
+                Description
+              </TableHead>
+              <TableHead className="font-bold text-gray-900 text-center">
+                Projects
+              </TableHead>
+              <TableHead className="font-bold text-gray-900 text-center">
+                Status
+              </TableHead>
+              <TableHead className="font-bold text-gray-900 text-right">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -219,10 +252,15 @@ export function ProjectTypeManager() {
                 <TableCell colSpan={5} className="text-center py-16">
                   <div className="flex flex-col items-center gap-4">
                     <div className="p-4 bg-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-                      <Building2 className="h-12 w-12 text-construction-blue" aria-hidden="true" />
+                      <Building2
+                        className="h-12 w-12 text-construction-blue"
+                        aria-hidden="true"
+                      />
                     </div>
                     <div>
-                      <p className="text-gray-900 font-bold text-lg mb-1">No project types defined</p>
+                      <p className="text-gray-900 font-bold text-lg mb-1">
+                        No project types defined
+                      </p>
                       <p className="text-sm text-gray-600">
                         Add your first project type to get started
                       </p>
@@ -233,7 +271,10 @@ export function ProjectTypeManager() {
             ) : (
               // Debug: Project type rows
               projectTypes.map((type) => {
-                const IconComponent = AVAILABLE_ICONS[type.icon_name as keyof typeof AVAILABLE_ICONS] || Building2;
+                const IconComponent =
+                  AVAILABLE_ICONS[
+                    type.icon_name as keyof typeof AVAILABLE_ICONS
+                  ] || Building2;
                 return (
                   <TableRow
                     key={type.id}
@@ -244,21 +285,23 @@ export function ProjectTypeManager() {
                         <div
                           className="p-2 rounded-lg border-2 transition-all duration-300"
                           style={{
-                            backgroundColor: `${type.color || '#001B51'}15`,
-                            borderColor: `${type.color || '#001B51'}30`,
+                            backgroundColor: `${type.color || "#001B51"}15`,
+                            borderColor: `${type.color || "#001B51"}30`,
                           }}
                           aria-hidden="true"
                         >
                           <IconComponent
                             className="h-5 w-5"
-                            style={{ color: type.color || '#001B51' }}
+                            style={{ color: type.color || "#001B51" }}
                           />
                         </div>
-                        <span className="font-semibold text-gray-900">{type.name}</span>
+                        <span className="font-semibold text-gray-900">
+                          {type.name}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-gray-600 max-w-xs truncate hidden md:table-cell">
-                      {type.description || '-'}
+                      {type.description || "-"}
                     </TableCell>
                     <TableCell className="text-center">
                       <span
@@ -271,14 +314,14 @@ export function ProjectTypeManager() {
                     <TableCell className="text-center">
                       <span
                         className={cn(
-                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-bold transition-colors duration-200',
+                          "inline-flex items-center px-2 py-1 rounded-full text-xs font-bold transition-colors duration-200",
                           type.is_active
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-gray-100 text-gray-600'
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-600",
                         )}
-                        aria-label={`Status: ${type.is_active ? 'Active' : 'Inactive'}`}
+                        aria-label={`Status: ${type.is_active ? "Active" : "Inactive"}`}
                       >
-                        {type.is_active ? 'Active' : 'Inactive'}
+                        {type.is_active ? "Active" : "Inactive"}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -290,7 +333,10 @@ export function ProjectTypeManager() {
                           className="hover:bg-construction-blue/10 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 min-h-[44px] min-w-[44px]"
                           aria-label={`Edit ${type.name}`}
                         >
-                          <Edit className="h-4 w-4 text-construction-blue" aria-hidden="true" />
+                          <Edit
+                            className="h-4 w-4 text-construction-blue"
+                            aria-hidden="true"
+                          />
                         </Button>
                         <Button
                           variant="ghost"
@@ -300,7 +346,10 @@ export function ProjectTypeManager() {
                           aria-label={`Delete ${type.name}`}
                           disabled={(type.project_count || 0) > 0}
                         >
-                          <Trash2 className="h-4 w-4 text-red-600" aria-hidden="true" />
+                          <Trash2
+                            className="h-4 w-4 text-red-600"
+                            aria-hidden="true"
+                          />
                         </Button>
                       </div>
                     </TableCell>
@@ -313,7 +362,7 @@ export function ProjectTypeManager() {
       </div>
 
       {/* Debug: Create Modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         icon={Building2}
@@ -341,7 +390,10 @@ export function ProjectTypeManager() {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                <Loader2
+                  className="mr-2 h-4 w-4 animate-spin"
+                  aria-hidden="true"
+                />
                 Creating...
               </>
             ) : (
@@ -353,7 +405,11 @@ export function ProjectTypeManager() {
           </Button>
         }
       >
-        <form id="create-project-type-form" onSubmit={handleCreate} className="space-y-4">
+        <form
+          id="create-project-type-form"
+          onSubmit={handleCreate}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="create-name" className="font-bold text-gray-900">
               Name *
@@ -373,7 +429,10 @@ export function ProjectTypeManager() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="create-description" className="font-bold text-gray-900">
+            <Label
+              htmlFor="create-description"
+              className="font-bold text-gray-900"
+            >
               Description
             </Label>
             <Textarea
@@ -395,7 +454,11 @@ export function ProjectTypeManager() {
               <Label htmlFor="create-icon" className="font-bold text-gray-900">
                 Icon
               </Label>
-              <Select name="icon_name" defaultValue="Building2" disabled={isSubmitting}>
+              <Select
+                name="icon_name"
+                defaultValue="Building2"
+                disabled={isSubmitting}
+              >
                 <SelectTrigger
                   id="create-icon"
                   className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
@@ -405,7 +468,8 @@ export function ProjectTypeManager() {
                 </SelectTrigger>
                 <SelectContent>
                   {Object.keys(AVAILABLE_ICONS).map((iconName) => {
-                    const Icon = AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
+                    const Icon =
+                      AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
                     return (
                       <SelectItem key={iconName} value={iconName}>
                         <div className="flex items-center gap-2">
@@ -441,11 +505,11 @@ export function ProjectTypeManager() {
             </div>
           </div>
         </form>
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Debug: Edit Modal */}
       {editingType && (
-        <BaseModal
+        <ResponsiveModal
           isOpen={!!editingType}
           onClose={() => setEditingType(null)}
           icon={Pencil}
@@ -473,7 +537,10 @@ export function ProjectTypeManager() {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="mr-2 h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
                   Saving...
                 </>
               ) : (
@@ -485,7 +552,11 @@ export function ProjectTypeManager() {
             </Button>
           }
         >
-          <form id="edit-project-type-form" onSubmit={handleUpdate} className="space-y-4">
+          <form
+            id="edit-project-type-form"
+            onSubmit={handleUpdate}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="edit-name" className="font-bold text-gray-900">
                 Name *
@@ -505,13 +576,16 @@ export function ProjectTypeManager() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-description" className="font-bold text-gray-900">
+              <Label
+                htmlFor="edit-description"
+                className="font-bold text-gray-900"
+              >
                 Description
               </Label>
               <Textarea
                 id="edit-description"
                 name="description"
-                defaultValue={editingType.description || ''}
+                defaultValue={editingType.description || ""}
                 rows={2}
                 disabled={isSubmitting}
                 className="border-2 resize-none focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
@@ -527,7 +601,11 @@ export function ProjectTypeManager() {
                 <Label htmlFor="edit-icon" className="font-bold text-gray-900">
                   Icon
                 </Label>
-                <Select name="icon_name" defaultValue={editingType.icon_name || 'Building2'} disabled={isSubmitting}>
+                <Select
+                  name="icon_name"
+                  defaultValue={editingType.icon_name || "Building2"}
+                  disabled={isSubmitting}
+                >
                   <SelectTrigger
                     id="edit-icon"
                     className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
@@ -537,7 +615,10 @@ export function ProjectTypeManager() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.keys(AVAILABLE_ICONS).map((iconName) => {
-                      const Icon = AVAILABLE_ICONS[iconName as keyof typeof AVAILABLE_ICONS];
+                      const Icon =
+                        AVAILABLE_ICONS[
+                          iconName as keyof typeof AVAILABLE_ICONS
+                        ];
                       return (
                         <SelectItem key={iconName} value={iconName}>
                           <div className="flex items-center gap-2">
@@ -562,7 +643,7 @@ export function ProjectTypeManager() {
                   id="edit-color"
                   name="color"
                   type="color"
-                  defaultValue={editingType.color || '#001B51'}
+                  defaultValue={editingType.color || "#001B51"}
                   disabled={isSubmitting}
                   className="h-10 border-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                   aria-describedby="edit-color-hint"
@@ -585,21 +666,30 @@ export function ProjectTypeManager() {
                 aria-describedby="edit-is-active-hint"
               />
               <div className="flex-1">
-                <Label htmlFor="edit-is-active" className="cursor-pointer font-bold text-gray-900">
+                <Label
+                  htmlFor="edit-is-active"
+                  className="cursor-pointer font-bold text-gray-900"
+                >
                   Active
                 </Label>
-                <p id="edit-is-active-hint" className="text-xs text-gray-600 mt-0.5">
+                <p
+                  id="edit-is-active-hint"
+                  className="text-xs text-gray-600 mt-0.5"
+                >
                   Visible when creating new projects
                 </p>
               </div>
             </div>
           </form>
-        </BaseModal>
+        </ResponsiveModal>
       )}
 
       {/* Debug: Delete Confirmation */}
       {deletingType && (
-        <AlertDialog open={!!deletingType} onOpenChange={() => setDeletingType(null)}>
+        <AlertDialog
+          open={!!deletingType}
+          onOpenChange={() => setDeletingType(null)}
+        >
           <AlertDialogContent className="border-2 border-red-200">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-red-600 font-black uppercase tracking-tight">
@@ -608,24 +698,36 @@ export function ProjectTypeManager() {
               <AlertDialogDescription className="space-y-3 text-gray-700">
                 {(deletingType.project_count || 0) > 0 ? (
                   <>
-                    <p className="font-semibold text-red-600">Cannot delete this project type!</p>
+                    <p className="font-semibold text-red-600">
+                      Cannot delete this project type!
+                    </p>
                     <p>
-                      This project type is assigned to{' '}
-                      <span className="font-bold">{deletingType.project_count}</span>{' '}
-                      {deletingType.project_count === 1 ? 'project' : 'projects'}.
+                      This project type is assigned to{" "}
+                      <span className="font-bold">
+                        {deletingType.project_count}
+                      </span>{" "}
+                      {deletingType.project_count === 1
+                        ? "project"
+                        : "projects"}
+                      .
                     </p>
                     <p className="text-sm text-gray-600">
-                      To remove this type, first reassign all projects to a different type, or mark the type as inactive instead.
+                      To remove this type, first reassign all projects to a
+                      different type, or mark the type as inactive instead.
                     </p>
                   </>
                 ) : (
                   <>
                     <p>
-                      Are you sure you want to delete{' '}
-                      <span className="font-bold text-gray-900">"{deletingType.name}"</span>?
+                      Are you sure you want to delete{" "}
+                      <span className="font-bold text-gray-900">
+                        "{deletingType.name}"
+                      </span>
+                      ?
                     </p>
                     <p className="text-sm text-gray-600">
-                      This will also delete all associated phase and task templates. This action cannot be undone.
+                      This will also delete all associated phase and task
+                      templates. This action cannot be undone.
                     </p>
                   </>
                 )}
@@ -647,7 +749,10 @@ export function ProjectTypeManager() {
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                      <Loader2
+                        className="h-4 w-4 mr-2 animate-spin"
+                        aria-hidden="true"
+                      />
                       Deleting...
                     </>
                   ) : (

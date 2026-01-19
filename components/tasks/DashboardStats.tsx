@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { ClipboardList, Building2, DollarSign } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useMemo } from "react";
+import { ClipboardList } from "lucide-react";
+import { Building2 } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // DashboardStats - Main dashboard component with 8 metrics
 interface DashboardStatsProps {
@@ -18,7 +20,7 @@ interface DashboardStatsProps {
     project_id: string;
   }>;
 
-  // Current project filter value ('all' or project_id)
+  // Current project filter value ("all" or project_id)
   projectFilter: string;
 
   // List of all projects (for counting active when not filtered)
@@ -43,10 +45,10 @@ export function DashboardStats({
     // Total tasks from filtered array
     const totalTasks = tasks.length;
 
-    // Total active projects - 1 if filtered, or count active projects if 'all'
+    // Total active projects - 1 if filtered, or count active projects if "all"
     const totalActiveProjects =
-      projectFilter === 'all'
-        ? projects.filter((p) => p.status === 'active').length
+      projectFilter === "all"
+        ? projects.filter((p) => p.status === "active").length
         : 1;
 
     // Sum of actual cost
@@ -71,9 +73,9 @@ export function DashboardStats({
 
   // Format currency values
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -186,7 +188,7 @@ export function DashboardStats({
                 </div>
               </div>
 
-              {/* Variance - only show if there's cost data */}
+              {/* Variance - only show if there"s cost data */}
               {(stats.totalPlannedCost !== 0 || stats.totalActualCost !== 0) && (
                 <div className="text-center lg:text-left">
                   <div className={cn(

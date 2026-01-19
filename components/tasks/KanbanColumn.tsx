@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { TaskCard } from './TaskCard';
-import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { HardHat } from 'lucide-react';
-import type { TaskStatus } from '@/types/db/enums';
-import type { TaskWithRelations } from '@/types/db/task';
+import { useMemo, useCallback } from "react";
+import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { TaskCard } from "./TaskCard";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { HardHat } from "lucide-react";
+import type { TaskStatus } from "@/types/db/enums";
+import type { TaskWithRelations } from "@/types/db/task";
 
 // Phase type for project context
 type Phase = {
@@ -23,7 +23,7 @@ interface KanbanColumnProps {
   color: string;
   tasks: TaskWithRelations[];
   onTaskClick?: (task: TaskWithRelations) => void;
-  /** When provided, we're in project context - pass to TaskCard for phase lookup */
+  /** When provided, we"re in project context - pass to TaskCard for phase lookup */
   phases?: Phase[];
   /** Mobile mode - full width layout */
   isMobile?: boolean;
@@ -37,23 +37,28 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
   // Memoize task IDs to prevent unnecessary re-renders
   const taskIds = useMemo(() => tasks.map((t) => t.id), [tasks]);
 
+  // Stabilize callback to prevent TaskCard re-renders
+  const handleTaskClick = useCallback((task: TaskWithRelations) => {
+    onTaskClick?.(task);
+  }, [onTaskClick]);
+
   return (
     <motion.div
       className={cn(
-        'flex-shrink-0 rounded-lg border-2 transition-all duration-300 bg-white shadow-construction',
-        'border-gray-200',
-        isMobile ? 'w-full' : 'w-[300px]'
+        "flex-shrink-0 rounded-lg border-2 transition-all duration-300 bg-white shadow-construction",
+        "border-gray-200",
+        isMobile ? "w-full" : "w-[300px]"
       )}
       animate={isOver ? {
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 20px rgba(0, 27, 81, 0.4), inset 0 0 10px rgba(0, 27, 81, 0.2)',
-        borderColor: 'rgba(0, 27, 81, 0.5)',
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 20px rgba(0, 27, 81, 0.4), inset 0 0 10px rgba(0, 27, 81, 0.2)",
+        borderColor: "rgba(0, 27, 81, 0.5)",
         scale: isMobile ? 1 : 1.02
       } : {
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        borderColor: 'rgba(229, 231, 235, 1)',
+        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        borderColor: "rgba(229, 231, 235, 1)",
         scale: 1
       }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
     >
       {/* Column Header - hidden on mobile since we have tabs */}
       {!isMobile && (
@@ -94,7 +99,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
               >
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 >
                   <HardHat className="w-16 h-16 text-[#001B51]/30" />
                 </motion.div>
@@ -106,7 +111,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
                 <TaskCard
                   key={task.id}
                   task={task}
-                  onTaskClick={onTaskClick}
+                  onTaskClick={handleTaskClick}
                   phases={phases}
                   expenseStats={task.expenseStats}
                 />

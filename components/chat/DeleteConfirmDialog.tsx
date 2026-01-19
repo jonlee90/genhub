@@ -22,7 +22,7 @@ import AlertTriangle from "lucide-react/icons/alert-triangle";
 import Loader2 from "lucide-react/icons/loader-2";
 import { deleteMessage } from "@/app/actions/chat";
 import { toast } from "sonner";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 
 interface DeleteConfirmDialogProps {
@@ -64,7 +64,7 @@ export function DeleteConfirmDialog({
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onCancel}
       icon={AlertTriangle}
@@ -135,6 +135,6 @@ export function DeleteConfirmDialog({
           </div>
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Paperclip, FileText, Image as ImageIcon, Loader2, Download } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getTaskAttachments } from '@/app/actions/tasks';
+import { useState, useEffect, useCallback } from "react";
+import { Paperclip } from "lucide-react";
+import { FileText } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Download } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getTaskAttachments } from "@/app/actions/tasks";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 interface Attachment {
   id: string;
@@ -28,7 +34,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
   // Component state
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError } = useActionWithError();
 
   // Fetch attachments on mount
   useEffect(() => {
@@ -53,7 +59,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
 
   // Format file size helper
   const formatFileSize = (bytes?: number) => {
-    if (!bytes) return 'Unknown size';
+    if (!bytes) return "Unknown size";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -71,12 +77,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
 
   // Error state
   if (error) {
-    return (
-      <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-        <p className="text-red-600 font-semibold">Error loading attachments</p>
-        <p className="text-sm text-red-500 mt-1">{error}</p>
-      </div>
-    );
+    return <ErrorBanner error={error} onDismiss={clearError} />;
   }
 
   // Empty state
@@ -91,8 +92,8 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
   }
 
   // Separate images from other files
-  const images = attachments.filter(a => a.file_type?.startsWith('image/'));
-  const files = attachments.filter(a => !a.file_type?.startsWith('image/'));
+  const images = attachments.filter(a => a.file_type?.startsWith("image/"));
+  const files = attachments.filter(a => !a.file_type?.startsWith("image/"));
 
   return (
     <div className="space-y-6">
@@ -110,12 +111,12 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
             {images.map(image => (
               <button
                 key={image.id}
-                onClick={() => window.open(image.file_url, '_blank')}
+                onClick={() => window.open(image.file_url, "_blank")}
                 className={cn(
-                  'aspect-square rounded-lg overflow-hidden',
-                  'border-2 border-gray-200 hover:border-[#001B51]',
-                  'transition-all duration-200 hover:shadow-lg',
-                  'relative group'
+                  "aspect-square rounded-lg overflow-hidden",
+                  "border-2 border-gray-200 hover:border-[#001B51]",
+                  "transition-all duration-200 hover:shadow-lg",
+                  "relative group"
                 )}
                 aria-label={`View ${image.file_name}`}
               >
@@ -127,16 +128,16 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 />
                 {/* Overlay on hover */}
                 <div className={cn(
-                  'absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100',
-                  'transition-opacity duration-200',
-                  'flex items-center justify-center'
+                  "absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100",
+                  "transition-opacity duration-200",
+                  "flex items-center justify-center"
                 )}>
                   <ImageIcon className="h-8 w-8 text-white" />
                 </div>
                 {/* File name label */}
                 <div className={cn(
-                  'absolute bottom-0 left-0 right-0 bg-black/70 p-2',
-                  'opacity-0 group-hover:opacity-100 transition-opacity duration-200'
+                  "absolute bottom-0 left-0 right-0 bg-black/70 p-2",
+                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                 )}>
                   <p className="text-xs text-white truncate">{image.file_name}</p>
                 </div>
@@ -165,11 +166,11 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
-                  'flex items-center gap-3 p-3',
-                  'border-2 border-gray-200 rounded-lg',
-                  'hover:border-[#001B51] hover:bg-gray-50',
-                  'transition-all duration-200',
-                  'group'
+                  "flex items-center gap-3 p-3",
+                  "border-2 border-gray-200 rounded-lg",
+                  "hover:border-[#001B51] hover:bg-gray-50",
+                  "transition-all duration-200",
+                  "group"
                 )}
               >
                 {/* File icon */}
@@ -184,7 +185,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                   </p>
                   <p className="text-xs text-gray-500">
                     {formatFileSize(file.file_size ?? undefined)}
-                    {file.file_type && ` • ${file.file_type.split('/')[1]?.toUpperCase()}`}
+                    {file.file_type && ` • ${file.file_type.split("/")[1]?.toUpperCase()}`}
                   </p>
                 </div>
 
@@ -199,9 +200,9 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
       {/* Summary */}
       <div className="border-t border-gray-200 pt-4 text-xs text-gray-500">
         <p>
-          Total: {attachments.length} attachment{attachments.length !== 1 ? 's' : ''}
-          {images.length > 0 && ` (${images.length} image${images.length !== 1 ? 's' : ''})`}
-          {files.length > 0 && ` (${files.length} file${files.length !== 1 ? 's' : ''})`}
+          Total: {attachments.length} attachment{attachments.length !== 1 ? "s" : ""}
+          {images.length > 0 && ` (${images.length} image${images.length !== 1 ? "s" : ""})`}
+          {files.length > 0 && ` (${files.length} file${files.length !== 1 ? "s" : ""})`}
         </p>
       </div>
     </div>

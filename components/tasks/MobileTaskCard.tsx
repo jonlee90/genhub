@@ -13,7 +13,7 @@ import {
   Circle,
   Receipt,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { TASK_STATUS_CONFIG } from "@/lib/config/task-colors";
 import type { TaskStatus } from "@/types/db/enums";
 
@@ -53,14 +53,6 @@ const STATUS_ICONS: Record<
   blocked: AlertTriangle,
   completed: CheckCircle,
 };
-
-const getInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 
 const formatDate = (date: string) => {
   const [year, month, day] = date.split("T")[0].split("-").map(Number);

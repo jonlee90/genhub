@@ -1,17 +1,20 @@
-'use client';
+"use client";
 
 // Phase 4 - Task Detail Panel (slide-out drawer)
 // Main panel component with tab navigation for task details, materials, expenses, attachments, activity
 
-import { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { getTaskDetails } from '@/app/actions/tasks';
-import { TaskDetailsTab } from './/TaskDetailsTab';
-import { MaterialTab } from './/MaterialTab';
-import { ExpensesTab } from './/ExpensesTab';
-import { AttachmentsTab } from './/AttachmentsTab';
-import { ActivityTab } from './/ActivityTab';
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { getTaskDetails } from "@/app/actions/tasks";
+import { TaskDetailsTab } from ".//TaskDetailsTab";
+import { MaterialTab } from ".//MaterialTab";
+import { ExpensesTab } from ".//ExpensesTab";
+import { AttachmentsTab } from ".//AttachmentsTab";
+import { ActivityTab } from ".//ActivityTab";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 // Task details type (from server action)
 export type TaskDetails = {
@@ -57,7 +60,7 @@ export interface TaskDetailPanelProps {
 }
 
 // Tab type
-type TabType = 'details' | 'materials' | 'expenses' | 'attachments' | 'activity';
+type TabType = "details" | "materials" | "expenses" | "attachments" | "activity";
 
 /**
  * TaskDetailPanel - Slide-out drawer showing full task information
@@ -68,10 +71,10 @@ type TabType = 'details' | 'materials' | 'expenses' | 'attachments' | 'activity'
  */
 export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVisibility = true }: TaskDetailPanelProps) {
   // Tab and data state
-  const [activeTab, setActiveTab] = useState<TabType>('details');
+  const [activeTab, setActiveTab] = useState<TabType>("details");
   const [taskData, setTaskData] = useState<TaskDetails | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError } = useActionWithError();
 
   // Fetch task details when panel opens
   useEffect(() => {
@@ -103,11 +106,11 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
   // Reset tab when panel opens
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('details');
+      setActiveTab("details");
     }
   }, [isOpen]);
 
-  // Don't render if closed
+  // Don"t render if closed
   if (!isOpen) return null;
 
   return (
@@ -115,8 +118,8 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
       {/* Overlay (mobile only) */}
       <div
         className={cn(
-          'fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300',
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          "fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300",
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
         aria-hidden="true"
@@ -125,16 +128,16 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
       {/* Panel Container - Bottom sheet on mobile, side drawer on desktop */}
       <div
         className={cn(
-          'fixed bg-white shadow-2xl z-50 transition-transform duration-300 ease-out',
+          "fixed bg-white shadow-2xl z-50 transition-transform duration-300 ease-out",
           // Desktop: slide from right, 500px width, full height
-          'md:top-0 md:right-0 md:w-[500px] md:h-full md:border-l-4 md:border-l-[#001B51]',
-          isOpen ? 'md:translate-x-0' : 'md:translate-x-full',
+          "md:top-0 md:right-0 md:w-[500px] md:h-full md:border-l-4 md:border-l-[#001B51]",
+          isOpen ? "md:translate-x-0" : "md:translate-x-full",
           // Mobile: slide from bottom (bottom sheet), full width, 70vh height
-          'bottom-0 left-0 right-0 rounded-t-2xl border-t-4 border-t-[#001B51]',
-          isOpen ? 'translate-y-0' : 'translate-y-full'
+          "bottom-0 left-0 right-0 rounded-t-2xl border-t-4 border-t-[#001B51]",
+          isOpen ? "translate-y-0" : "translate-y-full"
         )}
         style={{
-          height: typeof window !== 'undefined' && window.innerWidth < 768 ? '70vh' : '100vh',
+          height: typeof window !== "undefined" && window.innerWidth < 768 ? "70vh" : "100vh",
         }}
         role="dialog"
         aria-modal="true"
@@ -157,11 +160,11 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                 Loading...
               </span>
             ) : error ? (
-              'Error'
+              "Error"
             ) : taskData ? (
               taskData.title
             ) : (
-              'Task Details'
+              "Task Details"
             )}
           </h2>
           <button
@@ -175,16 +178,16 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
 
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 flex overflow-x-auto bg-gray-50">
-          {(['details', 'materials', 'expenses', 'attachments', 'activity'] as TabType[]).map(tab => {
+          {(["details", "materials", "expenses", "attachments", "activity"] as TabType[]).map(tab => {
             // Get badge count for tab
             const getBadgeCount = () => {
               if (!taskData) return null;
               switch (tab) {
-                case 'materials':
+                case "materials":
                   return taskData.material_count || 0;
-                case 'expenses':
+                case "expenses":
                   return taskData.expense_count || 0;
-                case 'attachments':
+                case "attachments":
                   return taskData.attachment_count || 0;
                 default:
                   return null;
@@ -198,11 +201,11 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  'px-4 py-3 font-bold uppercase text-xs whitespace-nowrap relative transition-all',
-                  'flex items-center gap-2',
+                  "px-4 py-3 font-bold uppercase text-xs whitespace-nowrap relative transition-all",
+                  "flex items-center gap-2",
                   activeTab === tab
-                    ? 'text-[#001B51] bg-white'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    ? "text-[#001B51] bg-white"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                 )}
                 aria-selected={activeTab === tab}
                 role="tab"
@@ -210,8 +213,8 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                 {tab}
                 {badgeCount !== null && badgeCount > 0 && (
                   <span className={cn(
-                    'px-1.5 py-0.5 rounded text-xs font-bold',
-                    activeTab === tab ? 'bg-[#001B51] text-white' : 'bg-gray-300 text-gray-700'
+                    "px-1.5 py-0.5 rounded text-xs font-bold",
+                    activeTab === tab ? "bg-[#001B51] text-white" : "bg-gray-300 text-gray-700"
                   )}>
                     {badgeCount}
                   </span>
@@ -226,26 +229,23 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
         </div>
 
         {/* Tab Content */}
-        <div className="overflow-y-auto" style={{ height: 'calc(100% - 120px)' }}>
+        <div className="overflow-y-auto" style={{ height: "calc(100% - 120px)" }}>
           {loading ? (
             <div className="flex flex-col items-center justify-center h-32 gap-3">
               <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
               <p className="text-sm text-gray-500">Loading task details...</p>
             </div>
           ) : error ? (
-            <div className="p-6 text-center">
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-                <p className="text-red-600 font-semibold">Error loading task</p>
-                <p className="text-sm text-red-500 mt-1">{error}</p>
-              </div>
+            <div className="p-6">
+              <ErrorBanner error={error} onDismiss={clearError} />
             </div>
           ) : taskData ? (
             <div className="p-4">
-              {activeTab === 'details' && <TaskDetailsTab task={taskData} userRole={userRole} />}
-              {activeTab === 'materials' && <MaterialTab taskId={taskData.id} hasBudgetVisibility={hasBudgetVisibility} />}
-              {activeTab === 'expenses' && <ExpensesTab taskId={taskData.id} hasBudgetVisibility={hasBudgetVisibility} />}
-              {activeTab === 'attachments' && <AttachmentsTab taskId={taskData.id} />}
-              {activeTab === 'activity' && <ActivityTab taskId={taskData.id} />}
+              {activeTab === "details" && <TaskDetailsTab task={taskData} userRole={userRole} />}
+              {activeTab === "materials" && <MaterialTab taskId={taskData.id} hasBudgetVisibility={hasBudgetVisibility} />}
+              {activeTab === "expenses" && <ExpensesTab taskId={taskData.id} hasBudgetVisibility={hasBudgetVisibility} />}
+              {activeTab === "attachments" && <AttachmentsTab taskId={taskData.id} />}
+              {activeTab === "activity" && <ActivityTab taskId={taskData.id} />}
             </div>
           ) : (
             <div className="p-6 text-center text-gray-500">

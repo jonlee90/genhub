@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * TaskMaterialSearch Component
@@ -9,8 +9,8 @@
  * Construction-themed with #001B51 primary, debounced 500ms search
  */
 
-import { useState, useTransition, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useTransition, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Loader2,
@@ -19,23 +19,23 @@ import {
   AlertCircle,
   CheckCircle2,
   Minus,
-} from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { searchProducts, addProductToTask } from '@/app/actions/materials';
-import { useToast } from '@/hooks/use-toast';
-import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { searchProducts, addProductToTask } from "@/app/actions/materials";
+import { useToast } from "@/hooks/use-toast";
+import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 // Interface definitions
-import type { TempMaterial } from './/TaskMaterialsManager';
+import type { TempMaterial } from ".//TaskMaterialsManager";
 
 interface TaskMaterialSearchProps {
   taskId?: string;              // Optional for create mode
   projectId: string;
   onMaterialAdded: () => void;  // Edit mode callback
-  mode?: 'create' | 'edit';     // Mode determines behavior
+  mode?: "create" | "edit";     // Mode determines behavior
   tempMaterials?: TempMaterial[];
   onTempMaterialAdd?: (material: TempMaterial) => void;
 }
@@ -43,20 +43,20 @@ interface TaskMaterialSearchProps {
 // Stock status configuration
 const STOCK_STATUS_CONFIG = {
   in_stock: {
-    label: 'In Stock',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+    label: "In Stock",
+    color: "bg-construction-green/10 text-construction-green border-construction-green/30",
   },
   low_stock: {
-    label: 'Low Stock',
-    color: 'bg-amber-50 text-amber-700 border-amber-300',
+    label: "Low Stock",
+    color: "bg-amber-50 text-amber-700 border-amber-300",
   },
   out_of_stock: {
-    label: 'Out of Stock',
-    color: 'bg-red-50 text-red-700 border-red-300',
+    label: "Out of Stock",
+    color: "bg-red-50 text-red-700 border-red-300",
   },
   special_order: {
-    label: 'Special Order',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30',
+    label: "Special Order",
+    color: "bg-construction-blue/10 text-construction-blue border-construction-blue/30",
   },
 };
 
@@ -64,12 +64,12 @@ export function TaskMaterialSearch({
   taskId,
   projectId,
   onMaterialAdded,
-  mode = 'edit',
+  mode = "edit",
   tempMaterials = [],
   onTempMaterialAdd,
 }: TaskMaterialSearchProps) {
   // State management
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<HomeDepotProduct[]>([]);
   const [isSearching, startSearch] = useTransition();
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
@@ -106,9 +106,9 @@ export function TaskMaterialSearch({
         setProducts(result.data.products);
       } else {
         toast({
-          title: 'Search Failed',
-          description: result.error || 'Failed to search products',
-          variant: 'destructive',
+          title: "Search Failed",
+          description: result.error || "Failed to search products",
+          variant: "destructive",
         });
       }
       setHasSearched(true);
@@ -138,14 +138,14 @@ export function TaskMaterialSearch({
     const quantity = getQuantity(product.id);
 
     // Create mode: add to temporary materials list
-    if (mode === 'create') {
+    if (mode === "create") {
       // Check if product already in temp list
       const existing = tempMaterials.find(m => m.product_id === product.id);
       if (existing) {
         toast({
-          title: 'Material Already Added',
+          title: "Material Already Added",
           description: `${product.name} is already in your selection`,
-          variant: 'destructive',
+          variant: "destructive",
         });
         return;
       }
@@ -171,7 +171,7 @@ export function TaskMaterialSearch({
       });
 
       toast({
-        title: 'Material Selected',
+        title: "Material Selected",
         description: `Added ${quantity}x ${product.name} to your selection`,
       });
 
@@ -181,9 +181,9 @@ export function TaskMaterialSearch({
     // Edit mode: add directly to task
     if (!taskId) {
       toast({
-        title: 'Error',
-        description: 'Task ID is required',
-        variant: 'destructive',
+        title: "Error",
+        description: "Task ID is required",
+        variant: "destructive",
       });
       return;
     }
@@ -194,7 +194,7 @@ export function TaskMaterialSearch({
 
     if (result.success) {
       toast({
-        title: 'Material Added',
+        title: "Material Added",
         description: `Added ${quantity}x ${product.name} to task`,
       });
       // Reset quantity for this product
@@ -204,11 +204,11 @@ export function TaskMaterialSearch({
       });
       onMaterialAdded();
     } else {
-      const errorMessage = 'error' in result ? result.error : 'An error occurred';
+      const errorMessage = "error" in result ? result.error : "An error occurred";
       toast({
-        title: 'Failed to Add Material',
-        description: errorMessage || 'An error occurred',
-        variant: 'destructive',
+        title: "Failed to Add Material",
+        description: errorMessage || "An error occurred",
+        variant: "destructive",
       });
     }
 
@@ -217,9 +217,9 @@ export function TaskMaterialSearch({
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -285,7 +285,7 @@ export function TaskMaterialSearch({
                     </span>
                     <Badge
                       variant="outline"
-                      className={cn('text-[10px] px-1.5 py-0 border', stockConfig.color)}
+                      className={cn("text-[10px] px-1.5 py-0 border", stockConfig.color)}
                     >
                       {stockConfig.label}
                     </Badge>
@@ -330,12 +330,12 @@ export function TaskMaterialSearch({
                     type="button"
                     size="sm"
                     onClick={() => handleAddProduct(product)}
-                    disabled={isAdding || product.stockStatus === 'out_of_stock'}
+                    disabled={isAdding || product.stockStatus === "out_of_stock"}
                     className={cn(
-                      'h-7 px-3 text-xs font-bold',
-                      product.stockStatus === 'out_of_stock'
-                        ? 'bg-gray-200 text-gray-500'
-                        : 'bg-construction-blue hover:bg-construction-blue/90 text-white'
+                      "h-7 px-3 text-xs font-bold",
+                      product.stockStatus === "out_of_stock"
+                        ? "bg-gray-200 text-gray-500"
+                        : "bg-construction-blue hover:bg-construction-blue/90 text-white"
                     )}
                   >
                     {isAdding ? (

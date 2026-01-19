@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useCallback } from 'react';
-import { useDraggable } from '@dnd-kit/core';
-import { cn } from '@/lib/utils';
-import type { GanttTaskBarProps } from './gantt-types';
-import { STATUS_STYLES } from './gantt-types';
+import React, { useCallback } from "react";
+import { useDraggable } from "@dnd-kit/core";
+import { cn } from "@/lib/utils";
+import type { GanttTaskBarProps } from "./gantt-types";
+import { STATUS_STYLES } from "./gantt-types";
 
 export const GanttTaskBar = React.memo(function GanttTaskBar({
   task,
@@ -65,22 +65,22 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
       {...attributes}
       {...listeners}
       className={cn(
-        'absolute rounded-md cursor-grab active:cursor-grabbing bg-construction-blue',
+        "absolute rounded-md cursor-grab active:cursor-grabbing bg-construction-blue",
         // CSS animations replace Framer Motion (bundle-defer-third-party optimization)
-        'animate-scale-in origin-left',
-        'transition-all duration-200',
+        "animate-scale-in origin-left",
+        "transition-all duration-200",
         isMobile
-          ? 'touch-manipulation active:scale-[0.98]'
-          : 'hover:shadow-md hover:scale-[1.01] hover:-translate-y-px',
+          ? "touch-manipulation active:scale-[0.98]"
+          : "hover:shadow-md hover:scale-[1.01] hover:-translate-y-px",
         // Clean background based on priority - removed gradients for simplicity
-        task.priority === 'high' && 'bg-red-600 border border-red-700',
-        task.priority === 'medium' && 'border border-amber-600 text-amber-600',
-        task.priority === 'low' && 'border border-emerald-600 text-emerald-600',
+        task.priority === "high" && "bg-red-600 border border-red-700",
+        task.priority === "medium" && "border border-amber-600 text-amber-600",
+        task.priority === "low" && "border border-emerald-600 text-emerald-600",
         // Status overlay styles
         statusStyle,
         // Dragging and hover states
-        isDragging && 'opacity-50 scale-[1.03] shadow-[0_8px_16px_rgba(0,27,81,0.2)] z-50',
-        isHovered && 'ring-2 ring-construction-blue/50 ring-offset-1'
+        isDragging && "opacity-50 scale-[1.03] shadow-[0_8px_16px_rgba(0,27,81,0.2)] z-50",
+        isHovered && "ring-2 ring-construction-blue/50 ring-offset-1"
       )}
       style={barStyle}
       onMouseEnter={handleMouseEnter}
@@ -101,8 +101,8 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
 
       {/* Task title - clean white text */}
       <span className={cn(
-        'absolute inset-0 flex items-center font-semibold text-white truncate z-10',
-        isMobile ? 'px-1.5 text-[10px]' : 'px-2.5 text-xs'
+        "absolute inset-0 flex items-center font-semibold text-white truncate z-10",
+        isMobile ? "px-1.5 text-[10px]" : "px-2.5 text-xs"
       )}>
         {task.title}
       </span>

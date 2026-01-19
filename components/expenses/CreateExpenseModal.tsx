@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition, useRef, useEffect } from "react";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -219,7 +220,7 @@ export function CreateExpenseModal({
     selectedProject && description && amount && parseFloat(amount) > 0;
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={FileText}
@@ -469,13 +470,7 @@ export function CreateExpenseModal({
           </div>
 
           {/* Description */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="description"
-              className="text-sm font-bold text-gray-700"
-            >
-              Description *
-            </Label>
+          <FormField label="Description *" htmlFor="description">
             <Textarea
               id="description"
               value={description}
@@ -484,7 +479,7 @@ export function CreateExpenseModal({
               placeholder="e.g., Lumber for framing, electrical supplies, etc."
               rows={3}
             />
-          </div>
+          </FormField>
 
           {/* Amount, Category, Date */}
           <div className="grid gap-4 md:grid-cols-3">
@@ -572,6 +567,6 @@ export function CreateExpenseModal({
           </div>
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

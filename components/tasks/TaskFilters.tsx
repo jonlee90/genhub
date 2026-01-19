@@ -1,15 +1,16 @@
-'use client';
+"use client";
 
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import React from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { TaskProject, TeamMember } from '@/types/db/task';
+} from "@/components/ui/select";
+import type { TaskProject, TeamMember } from "@/types/db/task";
 
 interface TaskFiltersProps {
   searchQuery: string;
@@ -22,18 +23,18 @@ interface TaskFiltersProps {
   onPriorityChange: (value: string) => void;
   projects: TaskProject[];
   teamMembers: TeamMember[];
-  /** Hide project filter when it's displayed elsewhere (e.g., page header) */
+  /** Hide project filter when it"s displayed elsewhere (e.g., page header) */
   hideProjectFilter?: boolean;
 }
 
 const PRIORITIES = [
-  { value: 'all', label: 'All Priorities' },
-  { value: 'high', label: 'High' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'low', label: 'Low' },
+  { value: "all", label: "All Priorities" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
 ];
 
-export function TaskFilters({
+export const TaskFilters = React.memo(function TaskFilters({
   searchQuery,
   onSearchChange,
   projectFilter,
@@ -107,4 +108,4 @@ export function TaskFilters({
       </Select>
     </div>
   );
-}
+});

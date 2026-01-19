@@ -1,11 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { BaseModal } from '@/components/ui/BaseModal';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Truck, DollarSign, AlertTriangle, Package } from 'lucide-react';
-import { createExpenseFromMaterial } from '@/app/actions/expenses';
+import { useState } from "react";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Truck } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { Package } from "lucide-react";
+import { createExpenseFromMaterial } from "@/app/actions/expenses";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner, SuccessBanner } from "@/components/shared/ErrorBanner";
 
 // Material assignment interface matching TaskMaterialsList structure
 interface Material {
@@ -24,8 +29,8 @@ interface MaterialAssignment {
   quantity: number;
   unit_cost: number;
   total_cost: number;
-  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  purchaser_type: 'gc' | 'pm' | 'subcontractor';
+  procurement_status: "needed" | "ordered" | "delivered" | "installed";
+  purchaser_type: "gc" | "pm" | "subcontractor";
   notes: string | null;
   created_at: string;
   material: Material;
@@ -66,7 +71,7 @@ export function MaterialDeliveryPrompt({
   onExpenseCreated,
 }: MaterialDeliveryPromptProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError, successMessage, showSuccess } = useActionWithError();
 
   // Early return if no material assignment
   if (!materialAssignment) {
@@ -88,21 +93,24 @@ export function MaterialDeliveryPrompt({
         project_id: projectId,
         amount: materialAssignment.total_cost,
         description: `Material: ${materialAssignment.material.product_name}`,
-        category: 'materials',
+        category: "materials",
       });
 
       // Check success flag for consistency with server action pattern
       if (!result.success || result.error) {
-        setError(result.error || 'Failed to create expense');
+        setError(result.error || "Failed to create expense");
         setIsCreating(false);
         return;
       }
 
-      // Success - close dialog and notify parent
-      onClose();
-      onExpenseCreated?.();
+      // Success - show success message and close dialog
+      showSuccess("Expense created successfully");
+      setTimeout(() => {
+        onClose();
+        onExpenseCreated?.();
+      }, 1000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create expense');
+      setError(err instanceof Error ? err.message : "Failed to create expense");
       setIsCreating(false);
     }
   };
@@ -118,7 +126,7 @@ export function MaterialDeliveryPrompt({
   const totalCost = materialAssignment.total_cost || 0;
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={handleDismiss}
       icon={Truck}
@@ -159,49 +167,44 @@ export function MaterialDeliveryPrompt({
     >
       {/* Material Details */}
       <div className="space-y-4">
-          {/* Material Info */}
-          <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4 space-y-2">
-            <div className="font-bold text-construction-blue">
-              {materialAssignment.material.product_name}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="text-gray-600">Quantity:</div>
-              <div className="font-medium text-gray-900">
-                {materialAssignment.quantity} {materialAssignment.material.unit_of_measure}
-              </div>
-
-              <div className="text-gray-600">Price/Unit:</div>
-              <div className="font-medium text-gray-900">
-                ${(materialAssignment.unit_cost || 0).toFixed(2)}
-              </div>
-
-              <div className="text-gray-600">Total Cost:</div>
-              <div className="font-black text-construction-blue">
-                ${totalCost.toFixed(2)}
-              </div>
-            </div>
+        {/* Material Info */}
+        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4 space-y-2">
+          <div className="font-bold text-construction-blue">
+            {materialAssignment.material.product_name}
           </div>
 
-          {/* Info Alert */}
-          <Alert className="border-construction-blue/20 bg-construction-blue/5">
-            <DollarSign className="h-4 w-4 text-construction-blue" />
-            <AlertDescription className="text-sm text-gray-600">
-              An expense will be created for this material delivery.
-              It will be linked to this task and require approval.
-            </AlertDescription>
-          </Alert>
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            <div className="text-gray-600">Quantity:</div>
+            <div className="font-medium text-gray-900">
+              {materialAssignment.quantity}{" "}
+              {materialAssignment.material.unit_of_measure}
+            </div>
 
-          {/* Error Alert */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
+            <div className="text-gray-600">Price/Unit:</div>
+            <div className="font-medium text-gray-900">
+              ${(materialAssignment.unit_cost || 0).toFixed(2)}
+            </div>
+
+            <div className="text-gray-600">Total Cost:</div>
+            <div className="font-black text-construction-blue">
+              ${totalCost.toFixed(2)}
+            </div>
+          </div>
         </div>
-    </BaseModal>
+
+        {/* Info Alert */}
+        <Alert className="border-construction-blue/20 bg-construction-blue/5">
+          <DollarSign className="h-4 w-4 text-construction-blue" />
+          <AlertDescription className="text-sm text-gray-600">
+            An expense will be created for this material delivery. It will be
+            linked to this task and require approval.
+          </AlertDescription>
+        </Alert>
+
+        {/* Error & Success Messages */}
+        {error && <ErrorBanner error={error} onDismiss={clearError} />}
+        {successMessage && <SuccessBanner message={successMessage} />}
+      </div>
+    </ResponsiveModal>
   );
 }

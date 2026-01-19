@@ -379,6 +379,29 @@ export function formatPercentWhole(
 	return includeSymbol ? `${rounded}%` : String(rounded);
 }
 
+// ============================================
+// String Formatting Helpers
+// ============================================
+
+/**
+ * Get initials from a name (e.g., "John Doe" => "JD")
+ * @param name - Full name string
+ * @returns Uppercase initials (1-2 characters)
+ *
+ * @example
+ * getInitials('John Doe') => 'JD'
+ * getInitials('Alice') => 'A'
+ * getInitials('John Paul Smith') => 'JS' (first + last)
+ * getInitials('') => ''
+ */
+export function getInitials(name: string | null | undefined): string {
+	if (!name) return '';
+	const parts = name.trim().split(/\s+/);
+	if (parts.length === 0 || parts[0] === '') return '';
+	if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+	return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
 export function getScheduleStatusDisplay(
 	endDate: string | null | undefined,
 	completionPercentage: number = 0,

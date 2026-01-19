@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import { Star, Building2, Users } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
+import { Star } from "lucide-react";
+import { Building2 } from "lucide-react";
+import { Users } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn, getInitials } from "@/lib/utils";
 
 /**
  * Assignee option for the primary selector
  */
 export interface AssigneeOption {
   id: string;
-  type: 'user' | 'subcontractor';
+  type: "user" | "subcontractor";
   name: string;
   avatarUrl?: string | null;
   companyName?: string; // For subcontractors
@@ -66,8 +68,8 @@ export function PrimaryAssigneeSelector({
       {/* Assignee List */}
       <div
         className={cn(
-          'rounded-xl border-2 border-gray-200 bg-white overflow-hidden',
-          disabled && 'opacity-50'
+          "rounded-xl border-2 border-gray-200 bg-white overflow-hidden",
+          disabled && "opacity-50",
         )}
       >
         {assignees.map((assignee, index) => {
@@ -81,35 +83,31 @@ export function PrimaryAssigneeSelector({
               onClick={() => !disabled && onPrimaryChange(assignee.id)}
               disabled={disabled}
               className={cn(
-                'w-full flex items-center gap-3 px-4',
-                'min-h-[48px] py-2.5',
-                'transition-all duration-150',
-                !isLast && 'border-b border-gray-100',
-                isPrimary
-                  ? 'bg-[#001B51]/5'
-                  : 'bg-white hover:bg-gray-50',
+                "w-full flex items-center gap-3 px-4",
+                "min-h-[48px] py-2.5",
+                "transition-all duration-150",
+                !isLast && "border-b border-gray-100",
+                isPrimary ? "bg-[#001B51]/5" : "bg-white hover:bg-gray-50",
                 disabled
-                  ? 'cursor-not-allowed'
-                  : 'cursor-pointer active:bg-gray-100'
+                  ? "cursor-not-allowed"
+                  : "cursor-pointer active:bg-gray-100",
               )}
             >
               {/* Star Icon */}
               <div
                 className={cn(
-                  'flex items-center justify-center',
-                  'w-8 h-8 rounded-full',
-                  'transition-colors duration-150',
-                  isPrimary
-                    ? 'bg-amber-100'
-                    : 'bg-gray-100'
+                  "flex items-center justify-center",
+                  "w-8 h-8 rounded-full",
+                  "transition-colors duration-150",
+                  isPrimary ? "bg-amber-100" : "bg-gray-100",
                 )}
               >
                 <Star
                   className={cn(
-                    'w-4 h-4 transition-colors duration-150',
+                    "w-4 h-4 transition-colors duration-150",
                     isPrimary
-                      ? 'text-amber-500 fill-amber-500'
-                      : 'text-gray-400'
+                      ? "text-amber-500 fill-amber-500"
+                      : "text-gray-400",
                   )}
                 />
               </div>
@@ -119,10 +117,8 @@ export function PrimaryAssigneeSelector({
                 <AvatarImage src={assignee.avatarUrl || undefined} />
                 <AvatarFallback
                   className={cn(
-                    'text-[10px] font-semibold text-white',
-                    assignee.type === 'user'
-                      ? 'bg-[#001B51]'
-                      : 'bg-orange-600'
+                    "text-[10px] font-semibold text-white",
+                    assignee.type === "user" ? "bg-[#001B51]" : "bg-orange-600",
                   )}
                 >
                   {getInitials(assignee.name)}
@@ -133,19 +129,19 @@ export function PrimaryAssigneeSelector({
               <div className="flex-1 min-w-0 text-left">
                 <div
                   className={cn(
-                    'font-medium text-sm truncate',
-                    isPrimary ? 'text-[#001B51]' : 'text-gray-900'
+                    "font-medium text-sm truncate",
+                    isPrimary ? "text-[#001B51]" : "text-gray-900",
                   )}
                 >
                   {assignee.name}
                 </div>
-                {assignee.type === 'subcontractor' && assignee.companyName && (
+                {assignee.type === "subcontractor" && assignee.companyName && (
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Building2 className="w-3 h-3" />
                     <span className="truncate">{assignee.companyName}</span>
                   </div>
                 )}
-                {assignee.type === 'subcontractor' && !assignee.companyName && (
+                {assignee.type === "subcontractor" && !assignee.companyName && (
                   <div className="text-xs text-gray-400">Subcontractor</div>
                 )}
               </div>
@@ -153,17 +149,15 @@ export function PrimaryAssigneeSelector({
               {/* Selection Indicator */}
               <div
                 className={cn(
-                  'flex items-center justify-center',
-                  'w-5 h-5 rounded-full border-2',
-                  'transition-all duration-150',
+                  "flex items-center justify-center",
+                  "w-5 h-5 rounded-full border-2",
+                  "transition-all duration-150",
                   isPrimary
-                    ? 'border-[#001B51] bg-[#001B51]'
-                    : 'border-gray-300 bg-white'
+                    ? "border-[#001B51] bg-[#001B51]"
+                    : "border-gray-300 bg-white",
                 )}
               >
-                {isPrimary && (
-                  <div className="w-2 h-2 rounded-full bg-white" />
-                )}
+                {isPrimary && <div className="w-2 h-2 rounded-full bg-white" />}
               </div>
             </button>
           );
@@ -172,7 +166,8 @@ export function PrimaryAssigneeSelector({
 
       {/* Hint Text */}
       <p className="text-xs text-gray-500 px-1">
-        The primary assignee will be used as the vendor name for auto-created expenses.
+        The primary assignee will be used as the vendor name for auto-created
+        expenses.
       </p>
     </div>
   );
@@ -181,11 +176,3 @@ export function PrimaryAssigneeSelector({
 /**
  * Get initials from a name string
  */
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}

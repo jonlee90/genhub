@@ -1,81 +1,90 @@
-'use client';
+"use client";
 
-import { useActionState, useState, useEffect, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createProject } from '@/app/actions/projects';
-import { getPhaseTemplates } from '@/app/actions/phase-templates';
-import { getProjectTypes } from '@/app/actions/project-types';
-import { MobileInput } from '@/components/mobile/MobileInput';
-import { TouchButton } from '@/components/mobile/TouchButton';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { StateSelect } from '@/components/ui/StateSelect';
+import {
+  useActionState,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { createProject } from "@/app/actions/projects";
+import { getPhaseTemplates } from "@/app/actions/phase-templates";
+import { getProjectTypes } from "@/app/actions/project-types";
+import { MobileInput } from "@/components/mobile/MobileInput";
+import { TouchButton } from "@/components/mobile/TouchButton";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { StateSelect } from "@/components/ui/StateSelect";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import MapPin from 'lucide-react/icons/map-pin';
-import DollarSign from 'lucide-react/icons/dollar-sign';
-import Calendar from 'lucide-react/icons/calendar';
-import Users from 'lucide-react/icons/users';
-import FolderKanban from 'lucide-react/icons/folder-kanban';
-import FileText from 'lucide-react/icons/file-text';
-import Check from 'lucide-react/icons/check';
-import ChevronDown from 'lucide-react/icons/chevron-down';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import Layers from 'lucide-react/icons/layers';
-import Building2 from 'lucide-react/icons/building-2';
-import Home from 'lucide-react/icons/home';
-import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
-import Coffee from 'lucide-react/icons/coffee';
-import Factory from 'lucide-react/icons/factory';
-import ArrowRight from 'lucide-react/icons/arrow-right';
-import ArrowLeft from 'lucide-react/icons/arrow-left';
-import Sparkles from 'lucide-react/icons/sparkles';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import Plus from 'lucide-react/icons/plus';
-import { cn } from '@/lib/utils';
-import { formatPhoneNumber, extractPhoneDigits } from '@/lib/hooks/usePhoneMask';
-import { BaseModal } from '@/components/ui/BaseModal';
-import type { PhaseTemplatesRow } from '@/types/db/tables/projects';
-import type { CreateProjectFormState } from '@/types/components/projects';
+import AlertCircle from "lucide-react/icons/alert-circle";
+import MapPin from "lucide-react/icons/map-pin";
+import DollarSign from "lucide-react/icons/dollar-sign";
+import Calendar from "lucide-react/icons/calendar";
+import Users from "lucide-react/icons/users";
+import FolderKanban from "lucide-react/icons/folder-kanban";
+import FileText from "lucide-react/icons/file-text";
+import Check from "lucide-react/icons/check";
+import ChevronDown from "lucide-react/icons/chevron-down";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import Layers from "lucide-react/icons/layers";
+import Building2 from "lucide-react/icons/building-2";
+import Home from "lucide-react/icons/home";
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed";
+import Coffee from "lucide-react/icons/coffee";
+import Factory from "lucide-react/icons/factory";
+import ArrowRight from "lucide-react/icons/arrow-right";
+import ArrowLeft from "lucide-react/icons/arrow-left";
+import Sparkles from "lucide-react/icons/sparkles";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Plus from "lucide-react/icons/plus";
+import { cn } from "@/lib/utils";
+import {
+  formatPhoneNumber,
+  extractPhoneDigits,
+} from "@/lib/hooks/usePhoneMask";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import type { PhaseTemplatesRow } from "@/types/db/tables/projects";
+import type { CreateProjectFormState } from "@/types/components/projects";
 
 type PhaseTemplate = PhaseTemplatesRow;
 
 const PROJECT_TYPES = [
   {
-    value: 'residential',
-    label: 'Residential',
+    value: "residential",
+    label: "Residential",
     icon: Home,
-    description: 'Homes & apartments',
+    description: "Homes & apartments",
   },
   {
-    value: 'restaurant',
-    label: 'Restaurant',
+    value: "restaurant",
+    label: "Restaurant",
     icon: UtensilsCrossed,
-    description: 'Full-service dining',
+    description: "Full-service dining",
   },
   {
-    value: 'cafe',
-    label: 'Cafe',
+    value: "cafe",
+    label: "Cafe",
     icon: Coffee,
-    description: 'Coffee & eateries',
+    description: "Coffee & eateries",
   },
   {
-    value: 'commercial_office',
-    label: 'Commercial',
+    value: "commercial_office",
+    label: "Commercial",
     icon: Building2,
-    description: 'Office & retail',
+    description: "Office & retail",
   },
   {
-    value: 'industrial',
-    label: 'Industrial',
+    value: "industrial",
+    label: "Industrial",
     icon: Factory,
-    description: 'Warehouse & factory',
+    description: "Warehouse & factory",
   },
 ];
 
 // Form steps configuration
-const FORM_STEPS = ['Type', 'Details', 'Location', 'Timeline'];
+const FORM_STEPS = ["Type", "Details", "Location", "Timeline"];
 
 type FormState = CreateProjectFormState;
 
@@ -103,17 +112,21 @@ export function CreateProjectForm({
   isOpen,
   onClose,
   onSuccess,
-  isModal = false
+  isModal = false,
 }: CreateProjectFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [projectType, setProjectType] = useState<string>('residential');
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [projectType, setProjectType] = useState<string>("residential");
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {},
+  );
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
   const [success, setSuccess] = useState(false);
 
   // Project type configs (for mapping to phase templates)
-  const [projectTypeConfigs, setProjectTypeConfigs] = useState<Record<string, string>>({});
+  const [projectTypeConfigs, setProjectTypeConfigs] = useState<
+    Record<string, string>
+  >({});
 
   // Phase template preview state
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
@@ -123,19 +136,19 @@ export function CreateProjectForm({
   // Track all form values across steps
   // Performance optimization: Lazy state initialization to avoid object recreation on every render
   const [formValues, setFormValues] = useState(() => ({
-    project_type: 'residential',
-    name: '',
-    description: '',
-    client_name: '',
-    client_email: '',
-    client_phone: '',
-    address: '',
-    city: '',
-    state: '',
-    zip_code: '',
-    start_date: '',
-    end_date: '',
-    budget: '',
+    project_type: "residential",
+    name: "",
+    description: "",
+    client_name: "",
+    client_email: "",
+    client_phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    start_date: "",
+    end_date: "",
+    budget: "",
   }));
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
@@ -143,7 +156,7 @@ export function CreateProjectForm({
       const result = await createProject(formData);
       return result as FormState;
     },
-    {}
+    {},
   );
 
   // Handle success - redirect or callback
@@ -166,7 +179,7 @@ export function CreateProjectForm({
     if (!email) return undefined;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return 'Please enter a valid email address';
+      return "Please enter a valid email address";
     }
     return undefined;
   };
@@ -175,7 +188,7 @@ export function CreateProjectForm({
     if (!phone) return undefined;
     const digits = extractPhoneDigits(phone);
     if (digits.length > 0 && digits.length !== 10) {
-      return 'Phone number must be 10 digits';
+      return "Phone number must be 10 digits";
     }
     return undefined;
   };
@@ -184,7 +197,7 @@ export function CreateProjectForm({
     if (!zip) return undefined;
     const zipRegex = /^\d{5}(-\d{4})?$/;
     if (!zipRegex.test(zip)) {
-      return 'Please enter a valid ZIP code';
+      return "Please enter a valid ZIP code";
     }
     return undefined;
   };
@@ -192,44 +205,52 @@ export function CreateProjectForm({
   const validateBudget = (budget: string): string | undefined => {
     if (!budget) return undefined;
     const num = parseFloat(budget);
-    if (isNaN(num)) return 'Budget must be a valid number';
-    if (num < 0) return 'Budget must be positive';
+    if (isNaN(num)) return "Budget must be a valid number";
+    if (num < 0) return "Budget must be positive";
     return undefined;
   };
 
-  const validateEndDate = (startDate: string, endDate: string): string | undefined => {
+  const validateEndDate = (
+    startDate: string,
+    endDate: string,
+  ): string | undefined => {
     if (!endDate || !startDate) return undefined;
     const start = new Date(startDate);
     const end = new Date(endDate);
-    if (end <= start) return 'End date must be after start date';
+    if (end <= start) return "End date must be after start date";
     return undefined;
   };
 
-  const validateField = (fieldName: string, value: string): string | undefined => {
+  const validateField = (
+    fieldName: string,
+    value: string,
+  ): string | undefined => {
     switch (fieldName) {
-      case 'name':
-        if (!value || value.trim().length === 0) return 'Project name is required';
-        if (value.length > 200) return 'Must be less than 200 characters';
+      case "name":
+        if (!value || value.trim().length === 0)
+          return "Project name is required";
+        if (value.length > 200) return "Must be less than 200 characters";
         return undefined;
-      case 'client_name':
-        if (!value || value.trim().length === 0) return 'Client name is required';
-        if (value.length > 200) return 'Must be less than 200 characters';
+      case "client_name":
+        if (!value || value.trim().length === 0)
+          return "Client name is required";
+        if (value.length > 200) return "Must be less than 200 characters";
         return undefined;
-      case 'client_email':
+      case "client_email":
         return validateEmail(value);
-      case 'client_phone':
+      case "client_phone":
         return validatePhone(value);
-      case 'address':
-        if (!value || value.trim().length === 0) return 'Address is required';
+      case "address":
+        if (!value || value.trim().length === 0) return "Address is required";
         return undefined;
-      case 'zip_code':
+      case "zip_code":
         return validateZipCode(value);
-      case 'start_date':
-        if (!value) return 'Start date is required';
+      case "start_date":
+        if (!value) return "Start date is required";
         return undefined;
-      case 'end_date':
+      case "end_date":
         return validateEndDate(formValues.start_date, value);
-      case 'budget':
+      case "budget":
         return validateBudget(value);
       default:
         return undefined;
@@ -241,36 +262,66 @@ export function CreateProjectForm({
     let hasErrors = false;
 
     if (currentStep === 1) {
-      const nameError = validateField('name', formValues.name);
-      if (nameError) { errors.name = nameError; hasErrors = true; }
+      const nameError = validateField("name", formValues.name);
+      if (nameError) {
+        errors.name = nameError;
+        hasErrors = true;
+      }
 
-      const clientNameError = validateField('client_name', formValues.client_name);
-      if (clientNameError) { errors.client_name = clientNameError; hasErrors = true; }
+      const clientNameError = validateField(
+        "client_name",
+        formValues.client_name,
+      );
+      if (clientNameError) {
+        errors.client_name = clientNameError;
+        hasErrors = true;
+      }
 
-      const emailError = validateField('client_email', formValues.client_email);
-      if (emailError) { errors.client_email = emailError; hasErrors = true; }
+      const emailError = validateField("client_email", formValues.client_email);
+      if (emailError) {
+        errors.client_email = emailError;
+        hasErrors = true;
+      }
 
-      const phoneError = validateField('client_phone', formValues.client_phone);
-      if (phoneError) { errors.client_phone = phoneError; hasErrors = true; }
+      const phoneError = validateField("client_phone", formValues.client_phone);
+      if (phoneError) {
+        errors.client_phone = phoneError;
+        hasErrors = true;
+      }
     }
 
     if (currentStep === 2) {
-      const addressError = validateField('address', formValues.address);
-      if (addressError) { errors.address = addressError; hasErrors = true; }
+      const addressError = validateField("address", formValues.address);
+      if (addressError) {
+        errors.address = addressError;
+        hasErrors = true;
+      }
 
-      const zipError = validateField('zip_code', formValues.zip_code);
-      if (zipError) { errors.zip_code = zipError; hasErrors = true; }
+      const zipError = validateField("zip_code", formValues.zip_code);
+      if (zipError) {
+        errors.zip_code = zipError;
+        hasErrors = true;
+      }
     }
 
     if (currentStep === 3) {
-      const startDateError = validateField('start_date', formValues.start_date);
-      if (startDateError) { errors.start_date = startDateError; hasErrors = true; }
+      const startDateError = validateField("start_date", formValues.start_date);
+      if (startDateError) {
+        errors.start_date = startDateError;
+        hasErrors = true;
+      }
 
-      const endDateError = validateField('end_date', formValues.end_date);
-      if (endDateError) { errors.end_date = endDateError; hasErrors = true; }
+      const endDateError = validateField("end_date", formValues.end_date);
+      if (endDateError) {
+        errors.end_date = endDateError;
+        hasErrors = true;
+      }
 
-      const budgetError = validateField('budget', formValues.budget);
-      if (budgetError) { errors.budget = budgetError; hasErrors = true; }
+      const budgetError = validateField("budget", formValues.budget);
+      if (budgetError) {
+        errors.budget = budgetError;
+        hasErrors = true;
+      }
     }
 
     setValidationErrors(errors);
@@ -279,29 +330,32 @@ export function CreateProjectForm({
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleFieldBlur = useCallback((fieldName: string, value: string) => {
-    setTouchedFields(prev => new Set(prev).add(fieldName));
+    setTouchedFields((prev) => new Set(prev).add(fieldName));
     const error = validateField(fieldName, value);
-    setValidationErrors(prev => ({ ...prev, [fieldName]: error }));
+    setValidationErrors((prev) => ({ ...prev, [fieldName]: error }));
   }, []);
 
-  const handleNext = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const isValid = validateCurrentStep();
-    if (!isValid) return;
+  const handleNext = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      const isValid = validateCurrentStep();
+      if (!isValid) return;
 
-    if (currentStep < FORM_STEPS.length - 1) {
-      const form = e.currentTarget.closest('form');
-      if (form) {
-        const formData = new FormData(form);
-        const newValues = { ...formValues };
-        formData.forEach((value, key) => {
-          newValues[key as keyof typeof formValues] = value as string;
-        });
-        setFormValues(newValues);
+      if (currentStep < FORM_STEPS.length - 1) {
+        const form = e.currentTarget.closest("form");
+        if (form) {
+          const formData = new FormData(form);
+          const newValues = { ...formValues };
+          formData.forEach((value, key) => {
+            newValues[key as keyof typeof formValues] = value as string;
+          });
+          setFormValues(newValues);
+        }
+        setCurrentStep(currentStep + 1);
       }
-      setCurrentStep(currentStep + 1);
-    }
-  }, [currentStep, formValues]);
+    },
+    [currentStep, formValues],
+  );
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
@@ -326,9 +380,9 @@ export function CreateProjectForm({
         if (result.success && result.projectTypes) {
           // Create mapping from project type name (lowercase) to config ID
           const mapping: Record<string, string> = {};
-          result.projectTypes.forEach(pt => {
+          result.projectTypes.forEach((pt) => {
             // Map both the config name and a lowercase version
-            const key = pt.name.toLowerCase().replace(/\s+/g, '_');
+            const key = pt.name.toLowerCase().replace(/\s+/g, "_");
             mapping[key] = pt.id;
             // Also map exact name match
             mapping[pt.name] = pt.id;
@@ -349,14 +403,16 @@ export function CreateProjectForm({
 
       // Map the project type to config name for lookup
       const typeNameMapping: Record<string, string> = {
-        'residential': 'Residential',
-        'restaurant': 'Restaurant',
-        'cafe': 'Cafe',
-        'commercial_office': 'Commercial Office',
-        'industrial': 'Industrial',
+        residential: "Residential",
+        restaurant: "Restaurant",
+        cafe: "Cafe",
+        commercial_office: "Commercial Office",
+        industrial: "Industrial",
       };
       const configName = typeNameMapping[formValues.project_type];
-      const configId = projectTypeConfigs[configName] || projectTypeConfigs[formValues.project_type];
+      const configId =
+        projectTypeConfigs[configName] ||
+        projectTypeConfigs[formValues.project_type];
 
       if (!configId) {
         // Config not found yet, skip fetching
@@ -382,29 +438,37 @@ export function CreateProjectForm({
   }, [formValues.project_type, projectTypeConfigs]);
 
   // Performance optimization: Memoize event handler to prevent recreation on every render
-  const handleProjectTypeChange = useCallback((value: string) => {
-    setProjectType(value);
-    setFormValues({ ...formValues, project_type: value });
-  }, [formValues]);
+  const handleProjectTypeChange = useCallback(
+    (value: string) => {
+      setProjectType(value);
+      setFormValues({ ...formValues, project_type: value });
+    },
+    [formValues],
+  );
 
   // Dynamic modal title based on step
   const modalTitle = useMemo(() => {
-    const titles = ['Select Project Type', 'Project Details', 'Project Location', 'Timeline & Budget'];
-    return titles[currentStep] || 'Create New Project';
+    const titles = [
+      "Select Project Type",
+      "Project Details",
+      "Project Location",
+      "Timeline & Budget",
+    ];
+    return titles[currentStep] || "Create New Project";
   }, [currentStep]);
 
   const modalSubtitle = useMemo(() => {
     const subtitles = [
-      'Choose your construction project type',
-      'Enter project and client information',
-      'Specify the project location',
-      'Set timeline and budget',
+      "Choose your construction project type",
+      "Enter project and client information",
+      "Specify the project location",
+      "Set timeline and budget",
     ];
     return subtitles[currentStep];
   }, [currentStep]);
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={FolderKanban}
@@ -454,7 +518,7 @@ export function CreateProjectForm({
             icon={isPending ? undefined : Plus}
             iconPosition="left"
           >
-            {isPending ? 'Creating...' : 'Create Project'}
+            {isPending ? "Creating..." : "Create Project"}
           </TouchButton>
         )
       }
@@ -481,22 +545,44 @@ export function CreateProjectForm({
               className="flex items-center gap-3 p-4 mb-5 bg-green-50 border border-green-200 rounded-xl text-green-700"
             >
               <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-medium">Project created successfully!</span>
+              <span className="text-sm font-medium">
+                Project created successfully!
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Hidden inputs to preserve form values across steps */}
         {currentStep > 0 && (
-          <input type="hidden" name="project_type" value={formValues.project_type} />
+          <input
+            type="hidden"
+            name="project_type"
+            value={formValues.project_type}
+          />
         )}
         {currentStep > 1 && (
           <>
             <input type="hidden" name="name" value={formValues.name} />
-            <input type="hidden" name="description" value={formValues.description} />
-            <input type="hidden" name="client_name" value={formValues.client_name} />
-            <input type="hidden" name="client_email" value={formValues.client_email} />
-            <input type="hidden" name="client_phone" value={formValues.client_phone} />
+            <input
+              type="hidden"
+              name="description"
+              value={formValues.description}
+            />
+            <input
+              type="hidden"
+              name="client_name"
+              value={formValues.client_name}
+            />
+            <input
+              type="hidden"
+              name="client_email"
+              value={formValues.client_email}
+            />
+            <input
+              type="hidden"
+              name="client_phone"
+              value={formValues.client_phone}
+            />
           </>
         )}
         {currentStep > 2 && (
@@ -531,37 +617,45 @@ export function CreateProjectForm({
                     onClick={() => handleProjectTypeChange(type.value)}
                     className={cn(
                       // Compact card design - all visible without scrolling
-                      'relative p-4 rounded-xl border-2 text-left',
-                      'transition-all duration-200 touch-manipulation',
-                      'active:scale-[0.98]',
-                      'min-h-[100px]',
+                      "relative p-4 rounded-xl border-2 text-left",
+                      "transition-all duration-200 touch-manipulation",
+                      "active:scale-[0.98]",
+                      "min-h-[100px]",
                       // Last 2 items centered when on 3-column grid
-                      PROJECT_TYPES.indexOf(type) === 3 && 'sm:col-start-1',
-                      PROJECT_TYPES.indexOf(type) === 4 && 'sm:col-start-2',
+                      PROJECT_TYPES.indexOf(type) === 3 && "sm:col-start-1",
+                      PROJECT_TYPES.indexOf(type) === 4 && "sm:col-start-2",
                       isSelected
-                        ? 'border-construction-blue bg-construction-blue/5 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? "border-construction-blue bg-construction-blue/5 shadow-md"
+                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50",
                     )}
                     whileTap={{ scale: 0.98 }}
                   >
                     {/* Icon + Content */}
                     <div className="flex items-start gap-3">
-                      <div className={cn(
-                        'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all',
-                        isSelected
-                          ? 'bg-construction-blue shadow-sm'
-                          : 'bg-gray-100'
-                      )}>
-                        <TypeIcon className={cn(
-                          'w-5 h-5 transition-colors',
-                          isSelected ? 'text-white' : 'text-gray-600'
-                        )} />
+                      <div
+                        className={cn(
+                          "shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all",
+                          isSelected
+                            ? "bg-construction-blue shadow-sm"
+                            : "bg-gray-100",
+                        )}
+                      >
+                        <TypeIcon
+                          className={cn(
+                            "w-5 h-5 transition-colors",
+                            isSelected ? "text-white" : "text-gray-600",
+                          )}
+                        />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className={cn(
-                          'font-semibold text-sm leading-tight',
-                          isSelected ? 'text-construction-blue' : 'text-gray-900'
-                        )}>
+                        <h3
+                          className={cn(
+                            "font-semibold text-sm leading-tight",
+                            isSelected
+                              ? "text-construction-blue"
+                              : "text-gray-900",
+                          )}
+                        >
                           {type.label}
                         </h3>
                         <p className="text-xs text-gray-500 mt-0.5 leading-snug">
@@ -576,9 +670,16 @@ export function CreateProjectForm({
                         className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-construction-blue rounded-full flex items-center justify-center shadow-md"
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 20,
+                        }}
                       >
-                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                        <Check
+                          className="w-3.5 h-3.5 text-white"
+                          strokeWidth={3}
+                        />
                       </motion.div>
                     )}
                   </motion.button>
@@ -612,7 +713,7 @@ export function CreateProjectForm({
                   {showPhasePreview && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
+                      animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
@@ -654,7 +755,10 @@ export function CreateProjectForm({
           >
             {/* Project Name */}
             <div className="space-y-1.5">
-              <Label htmlFor="name" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <Label
+                htmlFor="name"
+                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+              >
                 <Sparkles className="h-4 w-4 text-construction-blue" />
                 Project Name <span className="text-red-500">*</span>
               </Label>
@@ -664,10 +768,14 @@ export function CreateProjectForm({
                 placeholder="e.g., Smith Residence Renovation"
                 required
                 disabled={isPending}
-                error={touchedFields.has('name') ? validationErrors.name : undefined}
+                error={
+                  touchedFields.has("name") ? validationErrors.name : undefined
+                }
                 value={formValues.name}
-                onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
-                onBlur={(e) => handleFieldBlur('name', e.target.value)}
+                onChange={(e) =>
+                  setFormValues({ ...formValues, name: e.target.value })
+                }
+                onBlur={(e) => handleFieldBlur("name", e.target.value)}
                 inputMode="text"
                 enterKeyHint="next"
               />
@@ -675,7 +783,10 @@ export function CreateProjectForm({
 
             {/* Description */}
             <div className="space-y-1.5">
-              <Label htmlFor="description" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+              >
                 <FileText className="h-4 w-4 text-gray-400" />
                 Description
               </Label>
@@ -687,7 +798,9 @@ export function CreateProjectForm({
                 disabled={isPending}
                 className="border-gray-200 resize-none text-sm rounded-xl min-h-[72px]"
                 value={formValues.description}
-                onChange={(e) => setFormValues({ ...formValues, description: e.target.value })}
+                onChange={(e) =>
+                  setFormValues({ ...formValues, description: e.target.value })
+                }
               />
             </div>
 
@@ -701,7 +814,10 @@ export function CreateProjectForm({
               <div className="space-y-4">
                 {/* Client Name */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="client_name" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="client_name"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Client Name <span className="text-red-500">*</span>
                   </Label>
                   <MobileInput
@@ -710,10 +826,21 @@ export function CreateProjectForm({
                     placeholder="e.g., John Smith"
                     required
                     disabled={isPending}
-                    error={touchedFields.has('client_name') ? validationErrors.client_name : undefined}
+                    error={
+                      touchedFields.has("client_name")
+                        ? validationErrors.client_name
+                        : undefined
+                    }
                     value={formValues.client_name}
-                    onChange={(e) => setFormValues({ ...formValues, client_name: e.target.value })}
-                    onBlur={(e) => handleFieldBlur('client_name', e.target.value)}
+                    onChange={(e) =>
+                      setFormValues({
+                        ...formValues,
+                        client_name: e.target.value,
+                      })
+                    }
+                    onBlur={(e) =>
+                      handleFieldBlur("client_name", e.target.value)
+                    }
                     inputMode="text"
                     enterKeyHint="next"
                   />
@@ -728,10 +855,21 @@ export function CreateProjectForm({
                     label="Email"
                     placeholder="client@example.com"
                     disabled={isPending}
-                    error={touchedFields.has('client_email') ? validationErrors.client_email : undefined}
+                    error={
+                      touchedFields.has("client_email")
+                        ? validationErrors.client_email
+                        : undefined
+                    }
                     value={formValues.client_email}
-                    onChange={(e) => setFormValues({ ...formValues, client_email: e.target.value })}
-                    onBlur={(e) => handleFieldBlur('client_email', e.target.value)}
+                    onChange={(e) =>
+                      setFormValues({
+                        ...formValues,
+                        client_email: e.target.value,
+                      })
+                    }
+                    onBlur={(e) =>
+                      handleFieldBlur("client_email", e.target.value)
+                    }
                     inputMode="email"
                     enterKeyHint="next"
                   />
@@ -742,10 +880,21 @@ export function CreateProjectForm({
                     label="Phone"
                     placeholder="(555) 123-4567"
                     disabled={isPending}
-                    error={touchedFields.has('client_phone') ? validationErrors.client_phone : undefined}
+                    error={
+                      touchedFields.has("client_phone")
+                        ? validationErrors.client_phone
+                        : undefined
+                    }
                     value={formValues.client_phone}
-                    onChange={(e) => setFormValues({ ...formValues, client_phone: formatPhoneNumber(e.target.value) })}
-                    onBlur={(e) => handleFieldBlur('client_phone', e.target.value)}
+                    onChange={(e) =>
+                      setFormValues({
+                        ...formValues,
+                        client_phone: formatPhoneNumber(e.target.value),
+                      })
+                    }
+                    onBlur={(e) =>
+                      handleFieldBlur("client_phone", e.target.value)
+                    }
                     inputMode="tel"
                     enterKeyHint="next"
                   />
@@ -766,7 +915,10 @@ export function CreateProjectForm({
           >
             {/* Street Address */}
             <div className="space-y-1.5">
-              <Label htmlFor="address" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <Label
+                htmlFor="address"
+                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+              >
                 <MapPin className="h-4 w-4 text-gray-400" />
                 Street Address <span className="text-red-500">*</span>
               </Label>
@@ -776,10 +928,16 @@ export function CreateProjectForm({
                 placeholder="123 Main Street"
                 required
                 disabled={isPending}
-                error={touchedFields.has('address') ? validationErrors.address : undefined}
+                error={
+                  touchedFields.has("address")
+                    ? validationErrors.address
+                    : undefined
+                }
                 value={formValues.address}
-                onChange={(e) => setFormValues({ ...formValues, address: e.target.value })}
-                onBlur={(e) => handleFieldBlur('address', e.target.value)}
+                onChange={(e) =>
+                  setFormValues({ ...formValues, address: e.target.value })
+                }
+                onBlur={(e) => handleFieldBlur("address", e.target.value)}
                 inputMode="text"
                 enterKeyHint="next"
               />
@@ -794,12 +952,17 @@ export function CreateProjectForm({
                 placeholder="City"
                 disabled={isPending}
                 value={formValues.city}
-                onChange={(e) => setFormValues({ ...formValues, city: e.target.value })}
+                onChange={(e) =>
+                  setFormValues({ ...formValues, city: e.target.value })
+                }
                 inputMode="text"
                 enterKeyHint="next"
               />
               <div className="space-y-1.5">
-                <Label htmlFor="state" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="state"
+                  className="text-sm font-medium text-gray-700"
+                >
                   State
                 </Label>
                 <StateSelect
@@ -808,7 +971,9 @@ export function CreateProjectForm({
                   placeholder="Select state"
                   disabled={isPending}
                   value={formValues.state}
-                  onValueChange={(value) => setFormValues({ ...formValues, state: value })}
+                  onValueChange={(value) =>
+                    setFormValues({ ...formValues, state: value })
+                  }
                 />
               </div>
             </div>
@@ -821,10 +986,16 @@ export function CreateProjectForm({
                 label="ZIP Code"
                 placeholder="12345"
                 disabled={isPending}
-                error={touchedFields.has('zip_code') ? validationErrors.zip_code : undefined}
+                error={
+                  touchedFields.has("zip_code")
+                    ? validationErrors.zip_code
+                    : undefined
+                }
                 value={formValues.zip_code}
-                onChange={(e) => setFormValues({ ...formValues, zip_code: e.target.value })}
-                onBlur={(e) => handleFieldBlur('zip_code', e.target.value)}
+                onChange={(e) =>
+                  setFormValues({ ...formValues, zip_code: e.target.value })
+                }
+                onBlur={(e) => handleFieldBlur("zip_code", e.target.value)}
                 inputMode="numeric"
                 enterKeyHint="next"
               />
@@ -844,7 +1015,10 @@ export function CreateProjectForm({
             {/* Dates */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="start_date" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <Label
+                  htmlFor="start_date"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                >
                   <Calendar className="h-4 w-4 text-gray-400" />
                   Start Date <span className="text-red-500">*</span>
                 </Label>
@@ -855,28 +1029,35 @@ export function CreateProjectForm({
                   required
                   disabled={isPending}
                   className={cn(
-                    'block w-full h-12 px-4 text-sm bg-white text-gray-900',
-                    'border rounded-xl transition-all',
-                    touchedFields.has('start_date') && validationErrors.start_date
-                      ? 'border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20',
-                    'focus:outline-none focus:ring-2',
-                    'disabled:bg-gray-50 disabled:text-gray-500'
+                    "block w-full h-12 px-4 text-sm bg-white text-gray-900",
+                    "border rounded-xl transition-all",
+                    touchedFields.has("start_date") &&
+                      validationErrors.start_date
+                      ? "border-red-500 focus:ring-red-500/20"
+                      : "border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20",
+                    "focus:outline-none focus:ring-2",
+                    "disabled:bg-gray-50 disabled:text-gray-500",
                   )}
                   value={formValues.start_date}
-                  onChange={(e) => setFormValues({ ...formValues, start_date: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('start_date', e.target.value)}
+                  onChange={(e) =>
+                    setFormValues({ ...formValues, start_date: e.target.value })
+                  }
+                  onBlur={(e) => handleFieldBlur("start_date", e.target.value)}
                 />
-                {touchedFields.has('start_date') && validationErrors.start_date && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {validationErrors.start_date}
-                  </p>
-                )}
+                {touchedFields.has("start_date") &&
+                  validationErrors.start_date && (
+                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {validationErrors.start_date}
+                    </p>
+                  )}
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="end_date" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <Label
+                  htmlFor="end_date"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                >
                   <Calendar className="h-4 w-4 text-gray-400" />
                   Expected End Date
                 </Label>
@@ -886,19 +1067,21 @@ export function CreateProjectForm({
                   type="date"
                   disabled={isPending}
                   className={cn(
-                    'block w-full h-12 px-4 text-sm bg-white text-gray-900',
-                    'border rounded-xl transition-all',
-                    touchedFields.has('end_date') && validationErrors.end_date
-                      ? 'border-red-500 focus:ring-red-500/20'
-                      : 'border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20',
-                    'focus:outline-none focus:ring-2',
-                    'disabled:bg-gray-50 disabled:text-gray-500'
+                    "block w-full h-12 px-4 text-sm bg-white text-gray-900",
+                    "border rounded-xl transition-all",
+                    touchedFields.has("end_date") && validationErrors.end_date
+                      ? "border-red-500 focus:ring-red-500/20"
+                      : "border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20",
+                    "focus:outline-none focus:ring-2",
+                    "disabled:bg-gray-50 disabled:text-gray-500",
                   )}
                   value={formValues.end_date}
-                  onChange={(e) => setFormValues({ ...formValues, end_date: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('end_date', e.target.value)}
+                  onChange={(e) =>
+                    setFormValues({ ...formValues, end_date: e.target.value })
+                  }
+                  onBlur={(e) => handleFieldBlur("end_date", e.target.value)}
                 />
-                {touchedFields.has('end_date') && validationErrors.end_date && (
+                {touchedFields.has("end_date") && validationErrors.end_date && (
                   <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
                     <AlertCircle className="w-3 h-3" />
                     {validationErrors.end_date}
@@ -910,7 +1093,10 @@ export function CreateProjectForm({
             {/* Budget */}
             <div className="sm:w-1/2">
               <div className="space-y-1.5">
-                <Label htmlFor="budget" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                <Label
+                  htmlFor="budget"
+                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                >
                   <DollarSign className="h-4 w-4 text-gray-400" />
                   Budget
                 </Label>
@@ -920,10 +1106,16 @@ export function CreateProjectForm({
                   type="number"
                   placeholder="50000"
                   disabled={isPending}
-                  error={touchedFields.has('budget') ? validationErrors.budget : undefined}
+                  error={
+                    touchedFields.has("budget")
+                      ? validationErrors.budget
+                      : undefined
+                  }
                   value={formValues.budget}
-                  onChange={(e) => setFormValues({ ...formValues, budget: e.target.value })}
-                  onBlur={(e) => handleFieldBlur('budget', e.target.value)}
+                  onChange={(e) =>
+                    setFormValues({ ...formValues, budget: e.target.value })
+                  }
+                  onBlur={(e) => handleFieldBlur("budget", e.target.value)}
                   inputMode="decimal"
                   min={0}
                   step={0.01}
@@ -939,9 +1131,12 @@ export function CreateProjectForm({
                   <Check className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-construction-blue">Ready to Create</h4>
+                  <h4 className="font-semibold text-sm text-construction-blue">
+                    Ready to Create
+                  </h4>
                   <p className="text-xs text-gray-600 mt-0.5">
-                    Your project will be created with automatic phase setup and health tracking.
+                    Your project will be created with automatic phase setup and
+                    health tracking.
                   </p>
                 </div>
               </div>
@@ -949,6 +1144,6 @@ export function CreateProjectForm({
           </motion.div>
         )}
       </form>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

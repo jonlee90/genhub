@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useOptimistic, useTransition, useId, useMemo } from 'react';
+import { useState, useOptimistic, useTransition, useId, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -11,38 +11,38 @@ import {
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
-} from '@dnd-kit/core';
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { KanbanColumn } from './/KanbanColumn';
-import { TaskCard } from './TaskCard';
-import { updateTaskStatus } from '@/app/actions/tasks';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import type { TaskWithRelations, Phase, TaskStatus } from '@/types/db/task';
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { KanbanColumn } from ".//KanbanColumn";
+import { TaskCard } from "./TaskCard";
+import { updateTaskStatus } from "@/app/actions/tasks";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import type { TaskWithRelations, Phase, TaskStatus } from "@/types/db/task";
 
 interface KanbanBoardProps {
   tasks: TaskWithRelations[];
   onTaskClick?: (task: TaskWithRelations) => void;
-  /** When provided, we're in project context - pass to KanbanColumn for phase lookup */
+  /** When provided, we"re in project context - pass to KanbanColumn for phase lookup */
   phases?: Phase[];
 }
 
 const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: string }[] = [
-  { id: 'todo', title: 'To Do', shortTitle: 'To Do', color: 'bg-gray-50' },
-  { id: 'in_progress', title: 'In Progress', shortTitle: 'In Progress', color: 'bg-gray-50' },
-  { id: 'review', title: 'Review', shortTitle: 'Review', color: 'bg-gray-50' },
-  { id: 'blocked', title: 'Blocked', shortTitle: 'Blocked', color: 'bg-gray-50' },
-  { id: 'completed', title: 'Completed', shortTitle: 'Completed', color: 'bg-gray-50' },
+  { id: "todo", title: "To Do", shortTitle: "To Do", color: "bg-gray-50" },
+  { id: "in_progress", title: "In Progress", shortTitle: "In Progress", color: "bg-gray-50" },
+  { id: "review", title: "Review", shortTitle: "Review", color: "bg-gray-50" },
+  { id: "blocked", title: "Blocked", shortTitle: "Blocked", color: "bg-gray-50" },
+  { id: "completed", title: "Completed", shortTitle: "Completed", color: "bg-gray-50" },
 ];
 
 // Valid status values for checking drop targets
-const VALID_STATUSES = new Set<string>(['todo', 'in_progress', 'review', 'blocked', 'completed']);
+const VALID_STATUSES = new Set<string>(["todo", "in_progress", "review", "blocked", "completed"]);
 
 export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [isPending, startTransition] = useTransition();
   // Mobile-specific state - track active column/status tab
-  const [mobileActiveStatus, setMobileActiveStatus] = useState<TaskStatus>('todo');
+  const [mobileActiveStatus, setMobileActiveStatus] = useState<TaskStatus>("todo");
 
   // Stable ID for DndContext to prevent hydration mismatch
   const dndContextId = useId();
@@ -103,7 +103,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
 
     // Determine the target status:
     // - If overId is a valid status (dropped on column), use it directly
-    // - Otherwise, overId is a task ID (dropped on a task), find that task's status
+    // - Otherwise, overId is a task ID (dropped on a task), find that task"s status
     let newStatus: TaskStatus;
     if (VALID_STATUSES.has(overId)) {
       newStatus = overId as TaskStatus;
@@ -119,8 +119,8 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
     if (!task || task.status === newStatus) return;
 
     // Handle blocked status - need reason
-    if (newStatus === 'blocked') {
-      const reason = window.prompt('Please enter a reason for blocking this task:');
+    if (newStatus === "blocked") {
+      const reason = window.prompt("Please enter a reason for blocking this task:");
       if (!reason) return;
 
       startTransition(async () => {
@@ -200,7 +200,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
         </div>
 
         {/* Desktop view - All columns side by side */}
-        <div className="hidden md:flex gap-4 overflow-x-auto pb-4 relative z-10" style={{ contentVisibility: 'auto' }}>
+        <div className="hidden md:flex gap-4 overflow-x-auto pb-4 relative z-10" style={{ contentVisibility: "auto" }}>
           {COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}
@@ -224,7 +224,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
                 key={column.id}
                 initial={false}
                 animate={{
-                  display: isActive ? 'block' : 'none',
+                  display: isActive ? "block" : "none",
                   opacity: isActive ? 1 : 0,
                 }}
                 transition={{ duration: 0.2 }}

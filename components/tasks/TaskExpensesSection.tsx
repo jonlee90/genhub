@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Receipt,
   Plus,
   Clock,
   CheckCircle2,
   XCircle,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { CreateExpenseModal } from '@/components/expenses/CreateExpenseModal';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { CreateExpenseModal } from "@/components/expenses/CreateExpenseModal";
 
 // Task expense interface
 export interface TaskExpense {
   id: string;
   description: string;
   amount: number;
-  status: 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
+  status: "submitted" | "under_review" | "approved" | "rejected" | "paid";
   expense_date: string;
   vendor_name: string | null;
   category: string;
@@ -41,41 +41,41 @@ interface TaskExpensesSectionProps {
 const STATUS_CONFIG = {
   submitted: {
     icon: Clock,
-    color: 'text-gray-600',
-    bg: 'bg-gray-100',
-    label: 'Submitted',
+    color: "text-gray-600",
+    bg: "bg-gray-100",
+    label: "Submitted",
   },
   under_review: {
     icon: Clock,
-    color: 'text-construction-blue',
-    bg: 'bg-construction-blue/10',
-    label: 'Under Review',
+    color: "text-construction-blue",
+    bg: "bg-construction-blue/10",
+    label: "Under Review",
   },
   approved: {
     icon: CheckCircle2,
-    color: 'text-construction-green',
-    bg: 'bg-construction-green/10',
-    label: 'Approved',
+    color: "text-construction-green",
+    bg: "bg-construction-green/10",
+    label: "Approved",
   },
   rejected: {
     icon: XCircle,
-    color: 'text-construction-red',
-    bg: 'bg-construction-red/10',
-    label: 'Rejected',
+    color: "text-construction-red",
+    bg: "bg-construction-red/10",
+    label: "Rejected",
   },
   paid: {
     icon: CheckCircle2,
-    color: 'text-construction-green',
-    bg: 'bg-construction-green/10',
-    label: 'Paid',
+    color: "text-construction-green",
+    bg: "bg-construction-green/10",
+    label: "Paid",
   },
 };
 
 // Format currency helper
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(amount);
 };
 
@@ -96,7 +96,7 @@ export function TaskExpensesSection({
   // Calculate expense totals
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   const approvedAmount = expenses
-    .filter(e => e.status === 'approved' || e.status === 'paid')
+    .filter(e => e.status === "approved" || e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
 
   // Handle expense created callback
@@ -141,11 +141,11 @@ export function TaskExpensesSection({
       {expenses.length > 0 && (
         <div className="flex items-center gap-4 p-2 bg-gray-50 rounded-lg text-sm">
           <div>
-            <span className="text-gray-500">Total:</span>{' '}
+            <span className="text-gray-500">Total:</span>{" "}
             <span className="font-bold text-gray-900">{formatCurrency(totalAmount)}</span>
           </div>
           <div>
-            <span className="text-gray-500">Approved:</span>{' '}
+            <span className="text-gray-500">Approved:</span>{" "}
             <span className="font-bold text-construction-green">{formatCurrency(approvedAmount)}</span>
           </div>
         </div>
@@ -171,7 +171,7 @@ export function TaskExpensesSection({
                     {expense.description}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>{expense.vendor_name || 'No vendor'}</span>
+                    <span>{expense.vendor_name || "No vendor"}</span>
                     <span>-</span>
                     <span>{new Date(expense.expense_date).toLocaleDateString()}</span>
                   </div>
@@ -181,8 +181,8 @@ export function TaskExpensesSection({
                   <span className="text-sm font-bold text-gray-900">
                     {formatCurrency(expense.amount)}
                   </span>
-                  <div className={cn('p-1 rounded', status.bg)}>
-                    <StatusIcon className={cn('h-4 w-4', status.color)} />
+                  <div className={cn("p-1 rounded", status.bg)}>
+                    <StatusIcon className={cn("h-4 w-4", status.color)} />
                   </div>
                 </div>
               </motion.div>

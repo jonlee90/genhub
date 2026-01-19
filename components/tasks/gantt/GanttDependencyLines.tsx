@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
-import { createDependencyPath } from './gantt-utils';
-import type { GanttDependencyLinesProps, DependencyLine } from './gantt-types';
+import React, { useMemo } from "react";
+import { createDependencyPath } from "./gantt-utils";
+import type { GanttDependencyLinesProps, DependencyLine } from "./gantt-types";
 
 // Memoized individual path component to prevent unnecessary re-renders
 const DependencyPath = React.memo(function DependencyPath({
@@ -33,16 +33,16 @@ const DependencyPath = React.memo(function DependencyPath({
   return (
     <path
       d={pathD}
-      stroke={isHighlighted ? '#001B51' : '#7A7A7A'}
+      stroke={isHighlighted ? "#001B51" : "#7A7A7A"}
       strokeWidth={isHighlighted ? 3 : 2}
       fill="none"
-      markerEnd={isHighlighted ? 'url(#arrow-head-highlight)' : 'url(#arrow-head)'}
+      markerEnd={isHighlighted ? "url(#arrow-head-highlight)" : "url(#arrow-head)"}
       className="transition-all duration-300"
       style={{
         strokeDasharray: pathLength,
         strokeDashoffset: 0,
         opacity: isHighlighted ? 1 : 0.5,
-        animation: 'drawLine 0.8s ease-in-out forwards',
+        animation: "drawLine 0.8s ease-in-out forwards",
       }}
     />
   );
@@ -52,7 +52,7 @@ export const GanttDependencyLines = React.memo(function GanttDependencyLines({ l
   if (lines.length === 0) return null;
 
   return (
-    <svg className="absolute inset-0 pointer-events-none z-5" style={{ overflow: 'visible' }}>
+    <svg className="absolute inset-0 pointer-events-none z-5" style={{ overflow: "visible" }}>
       <defs>
         {/* Arrow marker for dependencies */}
         <marker

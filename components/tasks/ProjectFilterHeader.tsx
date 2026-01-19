@@ -1,15 +1,17 @@
-'use client';
+"use client";
 
-import { FolderKanban, Clock, ClipboardList } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
+import { FolderKanban } from "lucide-react";
+import { Clock } from "lucide-react";
+import { ClipboardList } from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import type { TaskProject } from '@/types/db/task';
+} from "@/components/ui/select";
+import type { TaskProject } from "@/types/db/task";
 
 type Project = TaskProject;
 
@@ -45,21 +47,21 @@ function getProjectDateIndicator(endDate: string | null | undefined): {
     // Future date - show number only
     return {
       display: String(daysLeft),
-      colorClass: daysLeft <= 7 ? 'text-amber-500' : 'text-emerald-500',
+      colorClass: daysLeft <= 7 ? "text-amber-500" : "text-emerald-500",
       daysLeft,
     };
   } else if (daysLeft === 0) {
     // Due today
     return {
-      display: '0',
-      colorClass: 'text-amber-500',
+      display: "0",
+      colorClass: "text-amber-500",
       daysLeft,
     };
   } else {
     // Past date - show compact date
     return {
       display: formatDate(endDate),
-      colorClass: 'text-red-500',
+      colorClass: "text-red-500",
       daysLeft,
     };
   }
@@ -103,7 +105,7 @@ interface ProjectFilterHeaderProps {
   projects: Project[];
   selectedProjectId: string;
   onProjectChange: (projectId: string) => void;
-  /** Total task count for the selected project (or all projects if 'all' selected) */
+  /** Total task count for the selected project (or all projects if "all" selected) */
   taskCount?: number;
   /** Map of project ID to task count for each project in the dropdown */
   projectTaskCounts?: Record<string, number>;
@@ -116,9 +118,9 @@ export function ProjectFilterHeader({
   taskCount,
   projectTaskCounts,
 }: ProjectFilterHeaderProps) {
-  const projectName = selectedProjectId === 'all'
-    ? 'All Projects'
-    : projects.find((p) => p.id === selectedProjectId)?.name || 'Select Project';
+  const projectName = selectedProjectId === "all"
+    ? "All Projects"
+    : projects.find((p) => p.id === selectedProjectId)?.name || "Select Project";
 
   return (
     <div className="flex items-center gap-3">
@@ -130,11 +132,11 @@ export function ProjectFilterHeader({
             "hover:border-construction-blue/40 transition-colors",
             "focus:ring-2 focus:ring-construction-blue/20 focus:border-construction-blue",
             "font-semibold text-construction-blue",
-            selectedProjectId !== 'all' && "bg-construction-blue/5"
+            selectedProjectId !== "all" && "bg-construction-blue/5"
           )}
         >
           <div className="flex items-center gap-2 truncate">
-            {selectedProjectId !== 'all' && (
+            {selectedProjectId !== "all" && (
               <div className="w-2 h-2 rounded-full bg-construction-blue animate-pulse" />
             )}
             <SelectValue placeholder="All Projects">
@@ -158,7 +160,7 @@ export function ProjectFilterHeader({
             value="all"
             className="font-medium [&>span]:flex-1 [&>span]:w-full"
           >
-            <div className="flex items-center gap-2 w-full" style={{ width: '100%' }}>
+            <div className="flex items-center gap-2 w-full" style={{ width: "100%" }}>
               <FolderKanban className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <span className="flex-1">All Projects</span>
               <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
@@ -178,15 +180,15 @@ export function ProjectFilterHeader({
                 value={project.id}
                 className="font-medium [&>span]:flex-1 [&>span]:w-full"
               >
-                <div className="flex items-center justify-between w-full min-w-0 gap-3" style={{ width: '100%' }}>
+                <div className="flex items-center justify-between w-full min-w-0 gap-3" style={{ width: "100%" }}>
                   {/* Left side: Status indicator + Project name + Task count */}
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <div
                       className={cn(
                         "w-2 h-2 rounded-full flex-shrink-0",
-                        project.status === 'active' && "bg-green-500",
-                        project.status === 'on_hold' && "bg-yellow-500",
-                        project.status === 'completed' && "bg-blue-500",
+                        project.status === "active" && "bg-green-500",
+                        project.status === "on_hold" && "bg-yellow-500",
+                        project.status === "completed" && "bg-blue-500",
                         !project.status && "bg-gray-400"
                       )}
                     />

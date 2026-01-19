@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
-import { Switch } from '@/components/ui/switch';
-import { Receipt, DollarSign, Tag, Building2, Calendar } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { formatDate, formatBudgetFull } from '@/lib/utils';
+import { Switch } from "@/components/ui/switch";
+import { Receipt } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import { Tag } from "lucide-react";
+import { Building2 } from "lucide-react";
+import { Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { formatDate, formatBudgetFull } from "@/lib/utils";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useState } from 'react';
+} from "@/components/ui/select";
+import { useState } from "react";
 
 /**
  * Props for AutoExpenseToggle component
@@ -66,15 +70,15 @@ export function AutoExpenseToggle({
       {/* Toggle Row - 44px minimum height for touch target */}
       <div
         className={cn(
-          'w-full flex items-center justify-between gap-3',
-          'min-h-[44px] px-4 py-3',
-          'rounded-xl border-2 transition-all duration-200',
+          "w-full flex items-center justify-between gap-3",
+          "min-h-[44px] px-4 py-3",
+          "rounded-xl border-2 transition-all duration-200",
           enabled
-            ? 'bg-green-50 border-green-200'
-            : 'bg-gray-50 border-gray-200',
+            ? "bg-green-50 border-green-200"
+            : "bg-gray-50 border-gray-200",
           disabled
-            ? 'opacity-50 cursor-not-allowed'
-            : 'cursor-pointer'
+            ? "opacity-50 cursor-not-allowed"
+            : "cursor-pointer"
         )}
       >
         <div
@@ -83,14 +87,14 @@ export function AutoExpenseToggle({
         >
           <div
             className={cn(
-              'flex items-center justify-center w-9 h-9 rounded-lg',
-              enabled ? 'bg-green-100' : 'bg-gray-100'
+              "flex items-center justify-center w-9 h-9 rounded-lg",
+              enabled ? "bg-green-100" : "bg-gray-100"
             )}
           >
             <Receipt
               className={cn(
-                'w-5 h-5',
-                enabled ? 'text-green-600' : 'text-gray-500'
+                "w-5 h-5",
+                enabled ? "text-green-600" : "text-gray-500"
               )}
             />
           </div>
@@ -114,10 +118,10 @@ export function AutoExpenseToggle({
       {enabled && (
         <div
           className={cn(
-            'rounded-xl border-2 border-green-200 bg-green-50/50',
-            'border-l-4 border-l-green-500',
-            'p-4 space-y-3',
-            'animate-in slide-in-from-top-2 duration-200'
+            "rounded-xl border-2 border-green-200 bg-green-50/50",
+            "border-l-4 border-l-green-500",
+            "p-4 space-y-3",
+            "animate-in slide-in-from-top-2 duration-200"
           )}
         >
           <div className="flex items-center gap-2 mb-2">
@@ -140,7 +144,7 @@ export function AutoExpenseToggle({
             <PreviewField
               icon={Receipt}
               label="Description"
-              value={taskTitle || 'Untitled task'}
+              value={taskTitle || "Untitled task"}
             />
 
             {/* Category - Editable Dropdown */}
@@ -177,8 +181,8 @@ export function AutoExpenseToggle({
             <PreviewField
               icon={Building2}
               label="Vendor"
-              value={vendorName || 'Not specified'}
-              valueClassName={!vendorName ? 'text-gray-400 italic' : undefined}
+              value={vendorName || "Not specified"}
+              valueClassName={!vendorName ? "text-gray-400 italic" : undefined}
             />
 
             {/* Date */}
@@ -214,7 +218,7 @@ function PreviewField({ icon: Icon, label, value, valueClassName }: PreviewField
         <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
           {label}
         </div>
-        <div className={cn('text-sm font-medium text-gray-900 truncate', valueClassName)}>
+        <div className={cn("text-sm font-medium text-gray-900 truncate", valueClassName)}>
           {value}
         </div>
       </div>
@@ -227,8 +231,8 @@ function PreviewField({ icon: Icon, label, value, valueClassName }: PreviewField
  * Capitalizes first letter and replaces underscores with spaces
  */
 function formatCategory(category: string): string {
-  if (!category) return 'Other';
+  if (!category) return "Other";
   return category
-    .replace(/_/g, ' ')
+    .replace(/_/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }

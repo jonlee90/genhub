@@ -19,7 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -330,7 +330,7 @@ export function TaskTypeManager() {
       </div>
 
       {/* Debug: Create Modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         icon={Hammer}
@@ -458,11 +458,11 @@ export function TaskTypeManager() {
             </div>
           </div>
         </form>
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Debug: Edit Modal */}
       {editingType && (
-        <BaseModal
+        <ResponsiveModal
           isOpen={!!editingType}
           onClose={() => setEditingType(null)}
           icon={Pencil}
@@ -612,7 +612,7 @@ export function TaskTypeManager() {
               </Label>
             </div>
           </form>
-        </BaseModal>
+        </ResponsiveModal>
       )}
 
       {/* Debug: Delete Confirmation */}

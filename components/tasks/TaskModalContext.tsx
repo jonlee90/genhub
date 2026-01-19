@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { TaskWithRelations } from '@/types/db/task';
+import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import type { TaskWithRelations } from "@/types/db/task";
 
 interface TaskModalContextType {
   isOpen: boolean;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   selectedTask: TaskWithRelations | null;
   openCreate: () => void;
   openEdit: (task: TaskWithRelations) => void;
@@ -16,17 +16,17 @@ const TaskModalContext = createContext<TaskModalContextType | null>(null);
 
 export function TaskModalProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [mode, setMode] = useState<'create' | 'edit'>('create');
+  const [mode, setMode] = useState<"create" | "edit">("create");
   const [selectedTask, setSelectedTask] = useState<TaskWithRelations | null>(null);
 
   const openCreate = useCallback(() => {
-    setMode('create');
+    setMode("create");
     setSelectedTask(null);
     setIsOpen(true);
   }, []);
 
   const openEdit = useCallback((task: TaskWithRelations) => {
-    setMode('edit');
+    setMode("edit");
     setSelectedTask(task);
     setIsOpen(true);
   }, []);
@@ -46,7 +46,7 @@ export function TaskModalProvider({ children }: { children: ReactNode }) {
 export function useTaskModal() {
   const context = useContext(TaskModalContext);
   if (!context) {
-    throw new Error('useTaskModal must be used within TaskModalProvider');
+    throw new Error("useTaskModal must be used within TaskModalProvider");
   }
   return context;
 }

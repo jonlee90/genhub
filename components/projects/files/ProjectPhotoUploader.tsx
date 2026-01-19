@@ -7,25 +7,26 @@
  * - Upload to /api/project-photos/upload
  */
 
-'use client';
+"use client";
 
-import { useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Camera from 'lucide-react/icons/camera';
-import Upload from 'lucide-react/icons/upload';
-import Loader2 from 'lucide-react/icons/loader-2';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import ImagePlus from 'lucide-react/icons/image-plus';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CategorySelector } from './CategorySelector';
-import { toast } from 'sonner';
+import Camera from "lucide-react/icons/camera";
+import Upload from "lucide-react/icons/upload";
+import Loader2 from "lucide-react/icons/loader-2";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import ImagePlus from "lucide-react/icons/image-plus";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CategorySelector } from "./CategorySelector";
+import { toast } from "sonner";
 
 // Client-side validation constants (matching server)
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface ProjectPhotoUploaderProps {
   projectId: string;
@@ -37,12 +38,12 @@ interface ProjectPhotoUploaderProps {
  * Client-side photo validation (without importing server-only code)
  */
 function validatePhoto(file: File): { valid: boolean; error?: string } {
-  console.log('[validatePhoto] Validating:', file.name, file.type, file.size);
+  console.log("[validatePhoto] Validating:", file.name, file.type, file.size);
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return {
       valid: false,
-      error: 'Invalid file type. Only JPEG, PNG, and WebP are allowed.',
+      error: "Invalid file type. Only JPEG, PNG, and WebP are allowed.",
     };
   }
 
@@ -61,13 +62,13 @@ export function ProjectPhotoUploader({
   onComplete,
   onCancel,
 }: ProjectPhotoUploaderProps) {
-  console.log('[ProjectPhotoUploader] Rendering for project:', projectId);
+  console.log("[ProjectPhotoUploader] Rendering for project:", projectId);
 
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [category, setCategory] = useState('general');
+  const [category, setCategory] = useState("general");
   const [clientVisible, setClientVisible] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -75,14 +76,14 @@ export function ProjectPhotoUploader({
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = useCallback(async (file: File) => {
-    console.log('[ProjectPhotoUploader] File selected:', file.name);
+    console.log("[ProjectPhotoUploader] File selected:", file.name);
     setError(null);
 
     // Validate file
     const validation = validatePhoto(file);
     if (!validation.valid) {
-      setError(validation.error || 'Invalid file');
-      toast.error(validation.error || 'Invalid file');
+      setError(validation.error || "Invalid file");
+      toast.error(validation.error || "Invalid file");
       return;
     }
 
@@ -98,24 +99,24 @@ export function ProjectPhotoUploader({
   }, []);
 
   const uploadFile = async (file: File) => {
-    console.log('[ProjectPhotoUploader] Uploading file:', file.name);
+    console.log("[ProjectPhotoUploader] Uploading file:", file.name);
     setUploading(true);
     setProgress(0);
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('projectId', projectId);
-      formData.append('category', category);
-      formData.append('clientVisible', clientVisible.toString());
+      formData.append("file", file);
+      formData.append("projectId", projectId);
+      formData.append("category", category);
+      formData.append("clientVisible", clientVisible.toString());
 
       // Simulate progress (since we can't track actual upload progress easily)
       const progressInterval = setInterval(() => {
         setProgress((prev) => Math.min(prev + 10, 90));
       }, 200);
 
-      const response = await fetch('/api/project-photos/upload', {
-        method: 'POST',
+      const response = await fetch("/api/project-photos/upload", {
+        method: "POST",
         body: formData,
       });
 
@@ -124,13 +125,13 @@ export function ProjectPhotoUploader({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Upload failed');
+        throw new Error(errorData.error || "Upload failed");
       }
 
       const result = await response.json();
 
-      console.log('[ProjectPhotoUploader] Upload success:', result.photo.id);
-      toast.success('Photo uploaded successfully');
+      console.log("[ProjectPhotoUploader] Upload success:", result.photo.id);
+      toast.success("Photo uploaded successfully");
 
       // Call callback with photo URL
       onComplete(result.photo.photo_url);
@@ -142,8 +143,8 @@ export function ProjectPhotoUploader({
         setUploading(false);
       }, 500);
     } catch (err) {
-      console.error('[ProjectPhotoUploader] Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      console.error("[ProjectPhotoUploader] Upload error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
       setError(errorMessage);
       toast.error(errorMessage);
       setUploading(false);
@@ -157,7 +158,7 @@ export function ProjectPhotoUploader({
       handleFileSelect(file);
     }
     // Reset input so same file can be selected again
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -200,7 +201,11 @@ export function ProjectPhotoUploader({
 
       {/* Category selector (only show before upload) */}
       {!preview && !uploading && (
-        <CategorySelector type="photo" value={category} onChange={setCategory} />
+        <CategorySelector
+          type="photo"
+          value={category}
+          onChange={setCategory}
+        />
       )}
 
       {/* Client visible checkbox (only show before upload) */}
@@ -209,7 +214,7 @@ export function ProjectPhotoUploader({
           <Checkbox
             id="client-visible"
             checked={clientVisible}
-            onCheckedChange={(checked: boolean | 'indeterminate') =>
+            onCheckedChange={(checked: boolean | "indeterminate") =>
               setClientVisible(checked === true)
             }
           />
@@ -231,7 +236,14 @@ export function ProjectPhotoUploader({
             exit={{ opacity: 0, y: -10 }}
             className="relative rounded-lg overflow-hidden border-2 border-gray-200"
           >
-            <img src={preview} alt="Preview" className="w-full h-auto max-h-64 object-contain" />
+            <Image
+              src={preview}
+              alt="Preview"
+              width={1200}
+              height={800}
+              className="w-full h-auto max-h-64 object-contain"
+              unoptimized
+            />
 
             {/* Progress overlay */}
             {uploading && (
@@ -256,7 +268,7 @@ export function ProjectPhotoUploader({
       {error && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
+          animate={{ opacity: 1, height: "auto" }}
           className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg"
         >
           <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
@@ -271,11 +283,11 @@ export function ProjectPhotoUploader({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={cn(
-            'border-2 border-dashed rounded-lg p-8 transition-colors',
+            "border-2 border-dashed rounded-lg p-8 transition-colors",
             isDragOver
-              ? 'border-[#001B51] bg-[#001B51]/5'
-              : 'border-gray-300 hover:border-[#001B51] hover:bg-gray-50',
-            'cursor-pointer'
+              ? "border-[#001B51] bg-[#001B51]/5"
+              : "border-gray-300 hover:border-[#001B51] hover:bg-gray-50",
+            "cursor-pointer",
           )}
         >
           <div className="flex flex-col items-center gap-4">
@@ -308,8 +320,12 @@ export function ProjectPhotoUploader({
               </Button>
             </div>
 
-            <p className="text-sm text-gray-500 text-center">or drag and drop your photo here</p>
-            <p className="text-xs text-gray-400 text-center">JPEG, PNG, WebP - Max 10MB</p>
+            <p className="text-sm text-gray-500 text-center">
+              or drag and drop your photo here
+            </p>
+            <p className="text-xs text-gray-400 text-center">
+              JPEG, PNG, WebP - Max 10MB
+            </p>
           </div>
         </div>
       )}

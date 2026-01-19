@@ -1,12 +1,17 @@
-'use client';
+"use client";
 
 // Phase 4 - Task Details Tab (read-only task information display)
 // Shows all task metadata: title, description, status, priority, dates, assignee, phase, location, costs
 
-import { Calendar, User, MapPin, DollarSign, Flag, Clock } from 'lucide-react';
-import { cn, formatPercent, formatDate } from '@/lib/utils';
-import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { TaskDetails } from './/TaskDetailPanel';
+import { Calendar } from "lucide-react";
+import { User } from "lucide-react";
+import { MapPin } from "lucide-react";
+import { DollarSign } from "lucide-react";
+import { Flag } from "lucide-react";
+import { Clock } from "lucide-react";
+import { cn, formatPercent, formatDate } from "@/lib/utils";
+import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
+import type { TaskDetails } from ".//TaskDetailPanel";
 
 // Component props
 export interface TaskDetailsTabProps {
@@ -28,14 +33,14 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
       {/* Status and Priority Badges */}
       <div className="flex gap-2 flex-wrap">
         <div className={cn(
-          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border',
+          "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
           statusConfig.badgeColor
         )}>
           <Clock className="h-4 w-4" />
           {statusConfig.label}
         </div>
         <div className={cn(
-          'px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border',
+          "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
           priorityConfig.badgeColor
         )}>
           <Flag className="h-4 w-4" />
@@ -86,7 +91,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             Phase
           </div>
           <span className="font-semibold text-sm">
-            {task.phase ? task.phase.name : 'No phase'}
+            {task.phase ? task.phase.name : "No phase"}
           </span>
         </div>
 
@@ -106,10 +111,10 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             Due Date
           </div>
           <span className={cn(
-            'font-semibold text-sm',
-            task.due_date && new Date(task.due_date) < new Date() && task.status !== 'completed'
-              ? 'text-red-600'
-              : ''
+            "font-semibold text-sm",
+            task.due_date && new Date(task.due_date) < new Date() && task.status !== "completed"
+              ? "text-red-600"
+              : ""
           )}>
             {formatDate(task.due_date)}
           </span>
@@ -162,10 +167,10 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             <div>
               <span className="text-xs text-gray-500 block mb-1">Actual</span>
               <span className={cn(
-                'text-lg font-black',
+                "text-lg font-black",
                 task.actual_cost && task.planned_cost && task.actual_cost > task.planned_cost
-                  ? 'text-red-600'
-                  : 'text-green-600'
+                  ? "text-red-600"
+                  : "text-green-600"
               )}>
                 ${(task.actual_cost || 0).toFixed(2)}
               </span>
@@ -175,13 +180,13 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             <div className="mt-3 pt-3 border-t border-gray-200">
               <span className="text-xs text-gray-500 block mb-1">Variance</span>
               <span className={cn(
-                'text-sm font-bold',
-                task.actual_cost > task.planned_cost ? 'text-red-600' : 'text-green-600'
+                "text-sm font-bold",
+                task.actual_cost > task.planned_cost ? "text-red-600" : "text-green-600"
               )}>
-                {task.actual_cost > task.planned_cost ? '+' : ''}
+                {task.actual_cost > task.planned_cost ? "+" : ""}
                 ${(task.actual_cost - task.planned_cost).toFixed(2)}
-                {' '}
-                ({task.actual_cost > task.planned_cost ? '+' : '-'}{formatPercent(Math.abs((task.actual_cost / task.planned_cost - 1) * 100))})
+                {" "}
+                ({task.actual_cost > task.planned_cost ? "+" : "-"}{formatPercent(Math.abs((task.actual_cost / task.planned_cost - 1) * 100))})
               </span>
             </div>
           )}

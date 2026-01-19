@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * TaskMaterialsList Component
@@ -9,8 +9,8 @@
  * Construction-themed with #001B51 primary, editable quantities
  */
 
-import { useState, useTransition, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useTransition, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Package,
   Trash2,
@@ -22,9 +22,9 @@ import {
   Receipt,
   Check,
   ChevronDown,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,19 +35,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
-import { removeMaterialFromTask, updateMaterialQuantity, updateMaterialAssignment } from '@/app/actions/materials';
-import { getMaterialExpenseLink } from '@/app/actions/expenses';
-import { useToast } from '@/hooks/use-toast';
-import { MaterialDeliveryPrompt } from './/MaterialDeliveryPrompt';
-import type { TempMaterial } from './/TaskMaterialsManager';
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import { removeMaterialFromTask, updateMaterialQuantity, updateMaterialAssignment } from "@/app/actions/materials";
+import { getMaterialExpenseLink } from "@/app/actions/expenses";
+import { useToast } from "@/hooks/use-toast";
+import { MaterialDeliveryPrompt } from ".//MaterialDeliveryPrompt";
+import type { TempMaterial } from ".//TaskMaterialsManager";
 
 // Interface definitions
 interface Material {
@@ -66,8 +66,8 @@ interface MaterialAssignment {
   quantity: number;
   unit_cost: number;
   total_cost: number;
-  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  purchaser_type: 'gc' | 'pm' | 'subcontractor';
+  procurement_status: "needed" | "ordered" | "delivered" | "installed";
+  purchaser_type: "gc" | "pm" | "subcontractor";
   notes: string | null;
   created_at: string;
   material: Material;
@@ -82,7 +82,7 @@ interface TaskMaterialsListProps {
   onQuantityUpdate: () => void;
   onStatusUpdate?: () => void;  // Added for status change refresh
   // Create mode props
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
   tempMaterials?: TempMaterial[];
   onTempMaterialRemove?: (productId: string) => void;
   onTempMaterialQuantityChange?: (productId: string, quantity: number) => void;
@@ -91,24 +91,24 @@ interface TaskMaterialsListProps {
 // Procurement status configuration
 const PROCUREMENT_STATUS_CONFIG = {
   needed: {
-    label: 'Need to Order',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
-    dotColor: 'bg-gray-400',
+    label: "Need to Order",
+    color: "bg-gray-100 text-gray-700 border-gray-300",
+    dotColor: "bg-gray-400",
   },
   ordered: {
-    label: 'Ordered',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue/30',
-    dotColor: 'bg-construction-blue',
+    label: "Ordered",
+    color: "bg-construction-blue/10 text-construction-blue border-construction-blue/30",
+    dotColor: "bg-construction-blue",
   },
   delivered: {
-    label: 'Delivered',
-    color: 'bg-amber-50 text-amber-700 border-amber-300',
-    dotColor: 'bg-amber-500',
+    label: "Delivered",
+    color: "bg-amber-50 text-amber-700 border-amber-300",
+    dotColor: "bg-amber-500",
   },
   installed: {
-    label: 'Installed',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-    dotColor: 'bg-construction-green',
+    label: "Installed",
+    color: "bg-construction-green/10 text-construction-green border-construction-green/30",
+    dotColor: "bg-construction-green",
   },
 };
 
@@ -120,7 +120,7 @@ export function TaskMaterialsList({
   onRemove,
   onQuantityUpdate,
   onStatusUpdate,
-  mode = 'edit',
+  mode = "edit",
   tempMaterials = [],
   onTempMaterialRemove,
   onTempMaterialQuantityChange,
@@ -167,9 +167,9 @@ export function TaskMaterialsList({
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -183,15 +183,15 @@ export function TaskMaterialsList({
 
       if (result.success) {
         toast({
-          title: 'Material Removed',
+          title: "Material Removed",
           description: `Removed ${materialName} from task`,
         });
         onRemove();
       } else {
         toast({
-          title: 'Failed to Remove',
-          description: result.error || 'An error occurred',
-          variant: 'destructive',
+          title: "Failed to Remove",
+          description: result.error || "An error occurred",
+          variant: "destructive",
         });
       }
 
@@ -212,9 +212,9 @@ export function TaskMaterialsList({
         onQuantityUpdate();
       } else {
         toast({
-          title: 'Failed to Update',
-          description: result.error || 'An error occurred',
-          variant: 'destructive',
+          title: "Failed to Update",
+          description: result.error || "An error occurred",
+          variant: "destructive",
         });
       }
 
@@ -225,7 +225,7 @@ export function TaskMaterialsList({
   // Handle status update
   const handleStatusUpdate = async (
     assignment: MaterialAssignment,
-    newStatus: 'needed' | 'ordered' | 'delivered' | 'installed'
+    newStatus: "needed" | "ordered" | "delivered" | "installed"
   ) => {
     setUpdatingStatusId(assignment.id);
 
@@ -237,7 +237,7 @@ export function TaskMaterialsList({
 
       if (result.success) {
         // Check expense link BEFORE showing success toast to prevent race conditions
-        if (newStatus === 'delivered') {
+        if (newStatus === "delivered") {
           const expenseLink = await getMaterialExpenseLink(assignment.id);
 
           if (expenseLink.success && !expenseLink.expenseId) {
@@ -248,7 +248,7 @@ export function TaskMaterialsList({
 
         // Show toast after expense check completes
         toast({
-          title: 'Status Updated',
+          title: "Status Updated",
           description: `Material marked as ${newStatus}`,
         });
 
@@ -260,9 +260,9 @@ export function TaskMaterialsList({
         }
       } else {
         toast({
-          title: 'Failed to Update Status',
-          description: result.error || 'An error occurred',
-          variant: 'destructive',
+          title: "Failed to Update Status",
+          description: result.error || "An error occurred",
+          variant: "destructive",
         });
       }
 
@@ -271,7 +271,7 @@ export function TaskMaterialsList({
   };
 
   // Empty state (check both materials and tempMaterials)
-  const isEmpty = mode === 'edit'
+  const isEmpty = mode === "edit"
     ? materials.length === 0
     : tempMaterials.length === 0;
 
@@ -280,7 +280,7 @@ export function TaskMaterialsList({
       <div className="py-8 text-center">
         <Package className="h-10 w-10 text-gray-300 mx-auto mb-3" />
         <p className="text-sm font-semibold text-gray-900">
-          {mode === 'create' ? 'No Materials Selected' : 'No Materials Assigned'}
+          {mode === "create" ? "No Materials Selected" : "No Materials Assigned"}
         </p>
         <p className="text-xs text-gray-500 mt-1">
           Search and add materials from the "Search Products" tab
@@ -292,7 +292,7 @@ export function TaskMaterialsList({
   return (
     <div className="space-y-3">
       {/* Materials List - Edit Mode */}
-      {mode === 'edit' && (
+      {mode === "edit" && (
         <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
           <AnimatePresence mode="popLayout">
             {materials.map((assignment, index) => {
@@ -308,8 +308,8 @@ export function TaskMaterialsList({
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ delay: index * 0.03 }}
                 className={cn(
-                  'flex items-start gap-3 p-3 bg-white border-2 rounded-lg transition-all',
-                  isRemoving ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-construction-blue/30'
+                  "flex items-start gap-3 p-3 bg-white border-2 rounded-lg transition-all",
+                  isRemoving ? "border-red-300 bg-red-50" : "border-gray-200 hover:border-construction-blue/30"
                 )}
               >
                 {/* Material Image */}
@@ -343,31 +343,31 @@ export function TaskMaterialsList({
                           type="button"
                           disabled={isUpdating || isRemoving || updatingStatusId === assignment.id}
                           className={cn(
-                            'flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] transition-colors',
+                            "flex items-center gap-1 px-1.5 py-0.5 rounded border text-[10px] transition-colors",
                             statusConfig.color,
-                            'hover:opacity-80 disabled:opacity-50'
+                            "hover:opacity-80 disabled:opacity-50"
                           )}
                         >
-                          <span className={cn('w-1.5 h-1.5 rounded-full', statusConfig.dotColor)} />
+                          <span className={cn("w-1.5 h-1.5 rounded-full", statusConfig.dotColor)} />
                           {statusConfig.label}
                           {updatingStatusId !== assignment.id && <ChevronDown className="h-3 w-3 ml-0.5" />}
                           {updatingStatusId === assignment.id && <Loader2 className="h-3 w-3 ml-0.5 animate-spin" />}
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-[160px]">
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'needed')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, "needed")}>
                           <span className="w-2 h-2 rounded-full bg-gray-400 mr-2" />
                           Need to Order
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'ordered')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, "ordered")}>
                           <span className="w-2 h-2 rounded-full bg-construction-blue mr-2" />
                           Ordered
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'delivered')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, "delivered")}>
                           <span className="w-2 h-2 rounded-full bg-amber-500 mr-2" />
                           Delivered
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, 'installed')}>
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(assignment, "installed")}>
                           <span className="w-2 h-2 rounded-full bg-construction-green mr-2" />
                           Installed
                         </DropdownMenuItem>
@@ -481,7 +481,7 @@ export function TaskMaterialsList({
       )}
 
       {/* Materials List - Create Mode (Temporary) */}
-      {mode === 'create' && (
+      {mode === "create" && (
         <div className="max-h-[280px] overflow-y-auto space-y-2 pr-1">
           <AnimatePresence mode="popLayout">
             {tempMaterials.map((material, index) => {

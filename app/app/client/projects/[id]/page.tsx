@@ -1,9 +1,16 @@
-import { auth } from '@/lib/auth';
-import { redirect } from 'next/navigation';
-import { getProjectWithStats } from '@/app/actions/projects';
-import { getClientPermissions } from '@/app/actions/client';
-import { getActiveModel } from '@/app/actions/spatial';
-import { ClientSpatialViewer } from '@/components/projects/spatial/ClientSpatialViewer';
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import dynamic from "next/dynamic";
+import { getProjectWithStats } from "@/app/actions/projects";
+import { getClientPermissions } from "@/app/actions/client";
+import { getActiveModel } from "@/app/actions/spatial";
+
+const ClientSpatialViewer = dynamic(
+  () =>
+    import("@/components/projects/spatial/ClientSpatialViewer").then((mod) => ({
+      default: mod.ClientSpatialViewer,
+    }))
+);
 
 /**
  * Client Portal Project Detail Page
@@ -20,25 +27,33 @@ export default async function ClientProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  console.log('[ClientProjectDetailPage] Loading project:', id);
+  console.log("[ClientProjectDetailPage] Loading project:", id);
 
   // Verify user is authenticated
   const session = await auth();
   if (!session?.user) {
-    console.log('[ClientProjectDetailPage] Not authenticated, redirecting to home');
-    redirect('/');
+    console.log(
+      "[ClientProjectDetailPage] Not authenticated, redirecting to home",
+    );
+    redirect("/");
   }
 
   // Fetch project data
   const projectResult = await getProjectWithStats(id);
   if (projectResult.error || !projectResult.project) {
-    console.error('[ClientProjectDetailPage] Project not found:', projectResult.error);
+    console.error(
+      "[ClientProjectDetailPage] Project not found:",
+      projectResult.error,
+    );
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white border-2 border-red-500 rounded-lg p-8 shadow-construction max-w-md">
-          <h2 className="text-2xl font-black text-red-600 uppercase mb-2">Project Not Found</h2>
+          <h2 className="text-2xl font-black text-red-600 uppercase mb-2">
+            Project Not Found
+          </h2>
           <p className="text-gray-600">
-            The project you are trying to access does not exist or you do not have permission to view it.
+            The project you are trying to access does not exist or you do not
+            have permission to view it.
           </p>
         </div>
       </div>
@@ -59,9 +74,9 @@ export default async function ClientProjectDetailPage({
   const modelResult = await getActiveModel(id);
   const activeModel = modelResult.success ? modelResult.data : null;
 
-  console.log('[ClientProjectDetailPage] Project loaded:', project.name);
-  console.log('[ClientProjectDetailPage] Client permissions:', permissions);
-  console.log('[ClientProjectDetailPage] Active model:', activeModel?.id);
+  console.log("[ClientProjectDetailPage] Project loaded:", project.name);
+  console.log("[ClientProjectDetailPage] Client permissions:", permissions);
+  console.log("[ClientProjectDetailPage] Active model:", activeModel?.id);
 
   return (
     <div className="flex flex-col h-screen bg-white">
@@ -108,7 +123,7 @@ export default async function ClientProjectDetailPage({
       <div className="relative z-10 flex-1 overflow-hidden">
         <ClientSpatialViewer
           projectId={project.id}
-          projectType={project.project_type || 'commercial_office'}
+          projectType={project.project_type || "commercial_office"}
           modelHighURL={activeModel?.xkt_file_url}
           hasBudgetVisibility={permissions.can_view_budget}
         />

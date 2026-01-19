@@ -10,7 +10,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, MessageCircle, Loader2, Briefcase } from "lucide-react";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { createDMRoom } from "@/app/actions/chat";
@@ -85,7 +85,7 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
   };
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={open}
       onClose={handleClose}
       title="New Message"
@@ -248,6 +248,6 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
           </motion.div>
         )}
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useTransition } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Package, Loader2, TrendingUp, AlertTriangle, CheckCircle2, Truck, Wrench } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn, formatDate } from '@/lib/utils';
-import { updateMaterialAssignment, getMaterialAssignmentsByTask } from '@/app/actions/materials';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect, useTransition } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Package } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { TrendingUp } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { Truck } from "lucide-react";
+import { Wrench } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn, formatDate } from "@/lib/utils";
+import { updateMaterialAssignment, getMaterialAssignmentsByTask } from "@/app/actions/materials";
+import { useToast } from "@/hooks/use-toast";
 
 interface Material {
   id: string;
@@ -25,8 +31,8 @@ interface MaterialAssignment {
   quantity: number;
   unit_cost: number;
   total_cost: number | null;
-  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  purchaser_type: 'gc' | 'pm' | 'subcontractor';
+  procurement_status: "needed" | "ordered" | "delivered" | "installed";
+  purchaser_type: "gc" | "pm" | "subcontractor";
   ordered_date: string | null;
   estimated_delivery_date: string | null;
   delivered_date: string | null;
@@ -41,28 +47,28 @@ interface TaskMaterialsProps {
 
 const PROCUREMENT_STATUS_CONFIG = {
   needed: {
-    label: 'Need to Order',
+    label: "Need to Order",
     icon: Package,
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
-    dotColor: 'bg-gray-400',
+    color: "bg-gray-100 text-gray-700 border-gray-300",
+    dotColor: "bg-gray-400",
   },
   ordered: {
-    label: 'Ordered',
+    label: "Ordered",
     icon: TrendingUp,
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
-    dotColor: 'bg-construction-blue',
+    color: "bg-construction-blue/10 text-construction-blue border-construction-blue",
+    dotColor: "bg-construction-blue",
   },
   delivered: {
-    label: 'Delivered',
+    label: "Delivered",
     icon: Truck,
-    color: 'bg-amber-50 text-amber-700 border-amber-300',
-    dotColor: 'bg-amber-500',
+    color: "bg-amber-50 text-amber-700 border-amber-300",
+    dotColor: "bg-amber-500",
   },
   installed: {
-    label: 'Installed',
+    label: "Installed",
     icon: CheckCircle2,
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
-    dotColor: 'bg-construction-green',
+    color: "bg-construction-green/10 text-construction-green border-construction-green/30",
+    dotColor: "bg-construction-green",
   },
 };
 
@@ -91,8 +97,8 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
         quantity: assignment.quantity as number,
         unit_cost: assignment.unit_cost as number,
         total_cost: (assignment.total_cost as number | null) ?? null,
-        procurement_status: assignment.procurement_status as MaterialAssignment['procurement_status'],
-        purchaser_type: assignment.purchaser_type as MaterialAssignment['purchaser_type'],
+        procurement_status: assignment.procurement_status as MaterialAssignment["procurement_status"],
+        purchaser_type: assignment.purchaser_type as MaterialAssignment["purchaser_type"],
         ordered_date: (assignment.ordered_date as string | null) ?? null,
         estimated_delivery_date: (assignment.estimated_delivery_date as string | null) ?? null,
         delivered_date: (assignment.delivered_date as string | null) ?? null,
@@ -110,20 +116,20 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
     startTransition(async () => {
       const result = await updateMaterialAssignment({
         id: materialAssignmentId,
-        procurement_status: newStatus as 'needed' | 'ordered' | 'delivered' | 'installed',
+        procurement_status: newStatus as "needed" | "ordered" | "delivered" | "installed",
       });
 
       if (result.success) {
         toast({
-          title: 'Status Updated',
+          title: "Status Updated",
           description: `Material status updated to ${PROCUREMENT_STATUS_CONFIG[newStatus as keyof typeof PROCUREMENT_STATUS_CONFIG].label}`,
         });
         await loadMaterials();
       } else {
         toast({
-          title: 'Error',
-          description: result.error || 'Failed to update material status',
-          variant: 'destructive',
+          title: "Error",
+          description: result.error || "Failed to update material status",
+          variant: "destructive",
         });
       }
       setUpdatingId(null);
@@ -131,9 +137,9 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 2,
     }).format(amount);
   };
@@ -232,27 +238,27 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                       {/* Quantity and Cost */}
                       <div className="flex items-center gap-6 text-sm">
                         <div>
-                          <span className="text-gray-600">Quantity:</span>{' '}
+                          <span className="text-gray-600">Quantity:</span>{" "}
                           <span className="font-bold text-gray-900">
                             {assignment.quantity} {assignment.material.unit_of_measure}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-600">Unit Cost:</span>{' '}
+                          <span className="text-gray-600">Unit Cost:</span>{" "}
                           <span className="font-bold text-gray-900">{formatCurrency(assignment.unit_cost)}</span>
                         </div>
                         <div>
-                          <span className="text-gray-600">Total:</span>{' '}
+                          <span className="text-gray-600">Total:</span>{" "}
                           <span className="font-bold text-construction-blue">{formatCurrency(assignment.total_cost ?? 0)}</span>
                         </div>
                       </div>
 
                       {/* Purchaser */}
                       <div className="text-sm">
-                        <span className="text-gray-600">Purchaser:</span>{' '}
+                        <span className="text-gray-600">Purchaser:</span>{" "}
                         <Badge variant="outline" className="ml-1 capitalize font-semibold">
-                          {assignment.purchaser_type === 'gc' ? 'General Contractor' :
-                           assignment.purchaser_type === 'pm' ? 'Project Manager' : 'Subcontractor'}
+                          {assignment.purchaser_type === "gc" ? "General Contractor" :
+                           assignment.purchaser_type === "pm" ? "Project Manager" : "Subcontractor"}
                         </Badge>
                       </div>
 
@@ -289,13 +295,13 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                           onValueChange={(value) => handleStatusUpdate(assignment.id, value)}
                           disabled={isUpdating}
                         >
-                          <SelectTrigger className={cn('w-[160px] border-2 font-semibold', statusConfig.color)}>
+                          <SelectTrigger className={cn("w-[160px] border-2 font-semibold", statusConfig.color)}>
                             <div className="flex items-center gap-2">
                               {isUpdating ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
                               ) : (
                                 <>
-                                  <div className={cn('h-2 w-2 rounded-full', statusConfig.dotColor)} />
+                                  <div className={cn("h-2 w-2 rounded-full", statusConfig.dotColor)} />
                                   <StatusIcon className="h-3 w-3" />
                                 </>
                               )}
@@ -330,9 +336,9 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Badge className={cn('font-semibold border-2 px-3 py-2', statusConfig.color)}>
+                        <Badge className={cn("font-semibold border-2 px-3 py-2", statusConfig.color)}>
                           <div className="flex items-center gap-2">
-                            <div className={cn('h-2 w-2 rounded-full', statusConfig.dotColor)} />
+                            <div className={cn("h-2 w-2 rounded-full", statusConfig.dotColor)} />
                             <StatusIcon className="h-3 w-3" />
                             {statusConfig.label}
                           </div>

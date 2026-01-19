@@ -32,7 +32,7 @@ import {
   ListChecks,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -726,7 +726,7 @@ export function TaskTemplateManager() {
       )}
 
       {/* Debug: Create Task Template Modal */}
-      <BaseModal
+      <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         icon={ListChecks}
@@ -903,11 +903,11 @@ export function TaskTemplateManager() {
             </p>
           </div>
         </form>
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Debug: Edit Task Template Modal */}
       {editingTask && (
-        <BaseModal
+        <ResponsiveModal
           isOpen={!!editingTask}
           onClose={() => setEditingTask(null)}
           icon={Edit}
@@ -1095,7 +1095,7 @@ export function TaskTemplateManager() {
               </Label>
             </div>
           </form>
-        </BaseModal>
+        </ResponsiveModal>
       )}
 
       {/* Debug: Delete Confirmation */}

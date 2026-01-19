@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from 'react';
-import { addDays, format, differenceInCalendarDays } from 'date-fns';
+import { useState, useMemo, useCallback, useTransition, useEffect, useRef } from "react";
+import { addDays, format, differenceInCalendarDays } from "date-fns";
 import {
   DndContext,
   DragOverlay,
@@ -10,14 +10,14 @@ import {
   PointerSensor,
   type DragStartEvent,
   type DragEndEvent,
-} from '@dnd-kit/core';
-import { restrictToHorizontalAxis } from '@dnd-kit/modifiers';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { GanttHeader } from './GanttHeader';
-import { GanttTimeline } from './GanttTimeline';
-import { GanttTaskRow } from './GanttTaskRow';
-import { GanttDependencyLines } from './GanttDependencyLines';
-import { GanttViewToggle } from './GanttViewToggle';
+} from "@dnd-kit/core";
+import { restrictToHorizontalAxis } from "@dnd-kit/modifiers";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { GanttHeader } from "./GanttHeader";
+import { GanttTimeline } from "./GanttTimeline";
+import { GanttTaskRow } from "./GanttTaskRow";
+import { GanttDependencyLines } from "./GanttDependencyLines";
+import { GanttViewToggle } from "./GanttViewToggle";
 import {
   calculateDateRange,
   getTaskPosition,
@@ -27,21 +27,21 @@ import {
   generateDateGroups,
   generateDateCells,
   calculateTotalWidth,
-} from './gantt-utils';
+} from "./gantt-utils";
 import type {
   GanttChartProps,
   TimeScale,
   GanttConfig,
   TaskPosition,
-} from './gantt-types';
+} from "./gantt-types";
 import {
   DEFAULT_GANTT_CONFIG,
   MOBILE_GANTT_CONFIG,
   TABLET_GANTT_CONFIG,
   TIME_SCALE_CONFIGS,
   MOBILE_TIME_SCALE_CONFIGS,
-} from './gantt-types';
-import { cn } from '@/lib/utils';
+} from "./gantt-types";
+import { cn } from "@/lib/utils";
 
 export function GanttChart({
   tasks,
@@ -50,7 +50,7 @@ export function GanttChart({
   onTaskDateChange,
   className,
 }: GanttChartProps) {
-  const [timeScale, setTimeScale] = useState<TimeScale>('week');
+  const [timeScale, setTimeScale] = useState<TimeScale>("week");
   const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -70,13 +70,13 @@ export function GanttChart({
     };
 
     handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Mouse drag scrolling handlers
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const container = e.currentTarget.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
+    const container = e.currentTarget.querySelector("[data-radix-scroll-area-viewport]") as HTMLDivElement;
     if (!container) return;
 
     setIsDraggingScroll(true);
@@ -89,7 +89,7 @@ export function GanttChart({
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDraggingScroll) return;
 
-    const container = e.currentTarget.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
+    const container = e.currentTarget.querySelector("[data-radix-scroll-area-viewport]") as HTMLDivElement;
     if (!container) return;
 
     e.preventDefault();
@@ -109,11 +109,11 @@ export function GanttChart({
   // Sort tasks by: 1) phases, 2) to-do status, 3) priority (high to low)
   const sortedTasks = useMemo(() => {
     const phaseOrder: Record<string, number> = {
-      'initiation': 1,
-      'pre-construction': 2,
-      'procurement': 3,
-      'construction': 4,
-      'post-construction': 5,
+      "initiation": 1,
+      "pre-construction": 2,
+      "procurement": 3,
+      "construction": 4,
+      "post-construction": 5,
     };
 
     const priorityOrder: Record<string, number> = {
@@ -125,8 +125,8 @@ export function GanttChart({
 
     return [...tasks].sort((a, b) => {
       // 1. Sort by phase (custom order: initiation, pre-construction, procurement, construction, post-construction, others, null)
-      const phaseA = a.phase?.name?.toLowerCase() || '';
-      const phaseB = b.phase?.name?.toLowerCase() || '';
+      const phaseA = a.phase?.name?.toLowerCase() || "";
+      const phaseB = b.phase?.name?.toLowerCase() || "";
 
       if (phaseA !== phaseB) {
         // Handle null/empty phases (go to end)
@@ -149,15 +149,15 @@ export function GanttChart({
       }
 
       // 2. Sort by to-do status (to-do tasks first)
-      const isToDoA = a.status === 'todo' ? 1 : 0;
-      const isToDoB = b.status === 'todo' ? 1 : 0;
+      const isToDoA = a.status === "todo" ? 1 : 0;
+      const isToDoB = b.status === "todo" ? 1 : 0;
       if (isToDoA !== isToDoB) {
         return isToDoB - isToDoA;
       }
 
       // 3. Sort by priority (high to low)
-      const priorityA = priorityOrder[a.priority || 'low'] || 1;
-      const priorityB = priorityOrder[b.priority || 'low'] || 1;
+      const priorityA = priorityOrder[a.priority || "low"] || 1;
+      const priorityB = priorityOrder[b.priority || "low"] || 1;
       return priorityB - priorityA;
     });
   }, [tasks]);
@@ -261,8 +261,8 @@ export function GanttChart({
       startTransition(async () => {
         await onTaskDateChange(
           taskId,
-          format(snappedStartDate, 'yyyy-MM-dd'),
-          format(snappedDueDate, 'yyyy-MM-dd')
+          format(snappedStartDate, "yyyy-MM-dd"),
+          format(snappedDueDate, "yyyy-MM-dd")
         );
       });
     },
@@ -280,18 +280,18 @@ export function GanttChart({
   }
 
   return (
-    <div className={cn('bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden', className)}>
+    <div className={cn("bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden", className)}>
       {/* Header with time scale toggle */}
       <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         
-        {isMobile ? '' 
+        {isMobile ? "" 
           :  
           <div className="flex items-center gap-2 sm:gap-3">
             <h3 className="text-sm sm:text-lg font-black text-construction-blue">
               PROJECT TIMELINE
             </h3>
             <span className="text-xs sm:text-sm text-gray-500">
-              {sortedTasks.length} {sortedTasks.length === 1 ? 'task' : 'tasks'}
+              {sortedTasks.length} {sortedTasks.length === 1 ? "task" : "tasks"}
             </span>
           </div>
         }
@@ -365,8 +365,8 @@ export function GanttChart({
         <DragOverlay>
           {activeTaskId && (
             <div className={cn(
-              'bg-construction-blue text-white rounded-lg shadow-construction-lg font-bold',
-              isMobile ? 'px-3 py-1.5 text-xs' : 'px-4 py-2 text-sm'
+              "bg-construction-blue text-white rounded-lg shadow-construction-lg font-bold",
+              isMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
             )}>
               {sortedTasks.find((t) => t.id === activeTaskId)?.title}
             </div>

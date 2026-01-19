@@ -1,12 +1,16 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { Receipt, Loader2, ExternalLink } from 'lucide-react';
-import { cn, formatDate } from '@/lib/utils';
-import { getTaskExpenses } from '@/app/actions/expenses';
+import { useState, useEffect, useCallback } from "react";
+import { Receipt } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
+import { getTaskExpenses } from "@/app/actions/expenses";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
-type ExpenseStatus = 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
-type ExpenseCategory = 'permits' | 'materials' | 'labor' | 'equipment' | 'subcontractor' | 'utilities' | 'professional' | 'other';
+type ExpenseStatus = "submitted" | "under_review" | "approved" | "rejected" | "paid";
+type ExpenseCategory = "permits" | "materials" | "labor" | "equipment" | "subcontractor" | "utilities" | "professional" | "other";
 
 interface Expense {
   id: string;
@@ -33,7 +37,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
   // Component state
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError } = useActionWithError();
 
   // Fetch expenses on mount
   useEffect(() => {
@@ -59,12 +63,12 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
   // Status badge color helper
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      submitted: 'bg-gray-400 text-white',
-      reviewed: 'bg-blue-500 text-white',
-      approved: 'bg-green-500 text-white',
-      rejected: 'bg-red-500 text-white',
+      submitted: "bg-gray-400 text-white",
+      reviewed: "bg-blue-500 text-white",
+      approved: "bg-green-500 text-white",
+      rejected: "bg-red-500 text-white",
     };
-    return colors[status] || 'bg-gray-400 text-white';
+    return colors[status] || "bg-gray-400 text-white";
   };
 
   // Loading state
@@ -79,12 +83,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
 
   // Error state
   if (error) {
-    return (
-      <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
-        <p className="text-red-600 font-semibold">Error loading expenses</p>
-        <p className="text-sm text-red-500 mt-1">{error}</p>
-      </div>
-    );
+    return <ErrorBanner error={error} onDismiss={clearError} />;
   }
 
   // Empty state
@@ -101,7 +100,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
   // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
   const approvedExpenses = expenses
-    .filter(e => e.status === 'approved')
+    .filter(e => e.status === "approved")
     .reduce((sum, e) => sum + e.amount, 0);
 
   return (
@@ -142,7 +141,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
             {/* Status and Receipt */}
             <div className="flex items-center justify-between gap-2 mt-3">
               <span className={cn(
-                'px-2 py-1 rounded text-xs font-bold uppercase',
+                "px-2 py-1 rounded text-xs font-bold uppercase",
                 getStatusColor(expense.status)
               )}>
                 {expense.status}
@@ -183,7 +182,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
             </div>
           )}
           <p className="text-xs text-gray-600 mt-2">
-            {expenses.length} expense{expenses.length !== 1 ? 's' : ''} recorded
+            {expenses.length} expense{expenses.length !== 1 ? "s" : ""} recorded
           </p>
         </div>
       )}

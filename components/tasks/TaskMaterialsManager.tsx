@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * TaskMaterialsManager Component
@@ -9,21 +9,26 @@
  * Construction-themed design with #001B51 primary color
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Package, Search, Loader2, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { TaskMaterialSearch } from './/TaskMaterialSearch';
-import { TaskMaterialsList } from './/TaskMaterialsList';
-import { getTaskMaterials } from '@/app/actions/materials';
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Package } from "lucide-react";
+import { Search } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { TaskMaterialSearch } from ".//TaskMaterialSearch";
+import { TaskMaterialsList } from ".//TaskMaterialsList";
+import { getTaskMaterials } from "@/app/actions/materials";
+import { useActionWithError } from "@/hooks/useActionWithError";
+import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 // Interface definitions
 interface TaskMaterialsManagerProps {
   taskId?: string;          // For edit mode (existing task)
   projectId: string;        // Required for material assignment
   onMaterialsChange?: () => void; // Callback when materials are added/removed
-  mode: 'create' | 'edit';  // Determines UI behavior
+  mode: "create" | "edit";  // Determines UI behavior
   // Create mode: store materials temporarily
   tempMaterials?: TempMaterial[];
   onTempMaterialsChange?: (materials: TempMaterial[]) => void;
@@ -34,8 +39,8 @@ interface MaterialAssignment {
   quantity: number;
   unit_cost: number;
   total_cost: number;
-  procurement_status: 'needed' | 'ordered' | 'delivered' | 'installed';
-  purchaser_type: 'gc' | 'pm' | 'subcontractor';
+  procurement_status: "needed" | "ordered" | "delivered" | "installed";
+  purchaser_type: "gc" | "pm" | "subcontractor";
   notes: string | null;
   created_at: string;
   material: {
@@ -64,7 +69,7 @@ export interface TempMaterial {
 }
 
 // Tab type for interface
-type TabType = 'search' | 'assigned';
+type TabType = "search" | "assigned";
 
 export function TaskMaterialsManager({
   taskId,
@@ -75,10 +80,10 @@ export function TaskMaterialsManager({
   onTempMaterialsChange,
 }: TaskMaterialsManagerProps) {
   // State management
-  const [activeTab, setActiveTab] = useState<TabType>(mode === 'edit' ? 'assigned' : 'search');
+  const [activeTab, setActiveTab] = useState<TabType>(mode === "edit" ? "assigned" : "search");
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, clearError } = useActionWithError();
 
   // Load materials when in edit mode
   const loadMaterials = useCallback(async () => {
@@ -94,7 +99,7 @@ export function TaskMaterialsManager({
     if (result.success && result.data) {
       setMaterials(result.data as MaterialAssignment[]);
     } else {
-      setError(result.error || 'Failed to load materials');
+      setError(result.error || "Failed to load materials");
     }
 
     setIsLoading(false);
@@ -102,7 +107,7 @@ export function TaskMaterialsManager({
 
   // Initial load
   useEffect(() => {
-    if (mode === 'edit' && taskId) {
+    if (mode === "edit" && taskId) {
       loadMaterials();
     }
   }, [mode, taskId, loadMaterials]);
@@ -112,7 +117,7 @@ export function TaskMaterialsManager({
     loadMaterials();
     onMaterialsChange?.();
     // Switch to assigned tab to show the newly added material
-    setActiveTab('assigned');
+    setActiveTab("assigned");
   }, [loadMaterials, onMaterialsChange]);
 
   // Handle material removed callback
@@ -128,12 +133,12 @@ export function TaskMaterialsManager({
   }, [loadMaterials, onMaterialsChange]);
 
   // Calculate total cost (edit mode uses materials, create mode uses tempMaterials)
-  const totalCost = mode === 'edit'
+  const totalCost = mode === "edit"
     ? materials.reduce((sum, m) => sum + (m.total_cost || 0), 0)
     : tempMaterials.reduce((sum, m) => sum + (m.price * m.quantity), 0);
 
   // Get material count for badge
-  const materialCount = mode === 'edit' ? materials.length : tempMaterials.length;
+  const materialCount = mode === "edit" ? materials.length : tempMaterials.length;
   return (
     <div className="space-y-4">
       {/* Tab Navigation */}
@@ -141,12 +146,12 @@ export function TaskMaterialsManager({
         {/* Search Tab */}
         <button
           type="button"
-          onClick={() => setActiveTab('search')}
+          onClick={() => setActiveTab("search")}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all',
-            activeTab === 'search'
-              ? 'bg-white text-construction-blue shadow-sm'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all",
+            activeTab === "search"
+              ? "bg-white text-construction-blue shadow-sm"
+              : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
           )}
         >
           <Search className="h-4 w-4" />
@@ -156,24 +161,24 @@ export function TaskMaterialsManager({
         {/* Assigned Tab */}
         <button
           type="button"
-          onClick={() => setActiveTab('assigned')}
+          onClick={() => setActiveTab("assigned")}
           className={cn(
-            'flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all',
-            activeTab === 'assigned'
-              ? 'bg-white text-construction-blue shadow-sm'
-              : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all",
+            activeTab === "assigned"
+              ? "bg-white text-construction-blue shadow-sm"
+              : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
           )}
         >
           <Package className="h-4 w-4" />
-          {mode === 'create' ? 'Selected' : 'Assigned'}
+          {mode === "create" ? "Selected" : "Assigned"}
           {materialCount > 0 && (
             <Badge
               variant="secondary"
               className={cn(
-                'ml-1 text-xs h-5 min-w-5 flex items-center justify-center',
-                activeTab === 'assigned'
-                  ? 'bg-construction-blue text-white'
-                  : 'bg-gray-200 text-gray-700'
+                "ml-1 text-xs h-5 min-w-5 flex items-center justify-center",
+                activeTab === "assigned"
+                  ? "bg-construction-blue text-white"
+                  : "bg-gray-200 text-gray-700"
               )}
             >
               {materialCount}
@@ -183,19 +188,7 @@ export function TaskMaterialsManager({
       </div>
 
       {/* Error State */}
-      <AnimatePresence mode="wait">
-        {error && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700"
-          >
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            <span className="text-sm">{error}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {error && <ErrorBanner error={error} onDismiss={clearError} />}
 
       {/* Loading State */}
       {isLoading && (
@@ -207,7 +200,7 @@ export function TaskMaterialsManager({
       {/* Tab Content */}
       {!isLoading && (
         <AnimatePresence mode="wait">
-          {activeTab === 'search' && (
+          {activeTab === "search" && (
             <motion.div
               key="search"
               initial={{ opacity: 0, x: -10 }}
@@ -223,13 +216,13 @@ export function TaskMaterialsManager({
                 tempMaterials={tempMaterials}
                 onTempMaterialAdd={(material) => {
                   onTempMaterialsChange?.([...tempMaterials, material]);
-                  setActiveTab('assigned');
+                  setActiveTab("assigned");
                 }}
               />
             </motion.div>
           )}
 
-          {activeTab === 'assigned' && (
+          {activeTab === "assigned" && (
             <motion.div
               key="assigned"
               initial={{ opacity: 0, x: 10 }}
@@ -240,7 +233,7 @@ export function TaskMaterialsManager({
               <TaskMaterialsList
                 materials={materials}
                 totalCost={totalCost}
-                taskId={taskId || ''}
+                taskId={taskId || ""}
                 projectId={projectId}
                 onRemove={handleMaterialRemoved}
                 onQuantityUpdate={handleQuantityUpdated}
