@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import Image from "next/image";
 import { Package, Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ interface MaterialCardProps {
  *
  * @component
  */
-export function MaterialCard({
+export const MaterialCard = memo(function MaterialCard({
   material,
   showPriceChange = false,
   priceChangePercent,
@@ -195,5 +195,26 @@ export function MaterialCard({
         )}
       </div>
     </div>
+  );
+}, areMaterialCardEqual);
+
+function areMaterialCardEqual(
+  prev: MaterialCardProps,
+  next: MaterialCardProps,
+): boolean {
+  return (
+    prev.material.material_id === next.material.material_id &&
+    prev.material.product_name === next.material.product_name &&
+    prev.material.sku === next.material.sku &&
+    prev.material.unit_price === next.material.unit_price &&
+    prev.material.stock_status === next.material.stock_status &&
+    prev.material.product_image_url === next.material.product_image_url &&
+    prev.material.total_quantity === next.material.total_quantity &&
+    prev.material.task_count === next.material.task_count &&
+    prev.material.is_tracked === next.material.is_tracked &&
+    prev.showPriceChange === next.showPriceChange &&
+    prev.priceChangePercent === next.priceChangePercent &&
+    prev.className === next.className &&
+    prev.onTrackingChange === next.onTrackingChange
   );
 }

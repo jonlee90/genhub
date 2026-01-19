@@ -10,6 +10,7 @@
  * - Industrial-refined design
  */
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,46 +46,71 @@ export function ChatMemberList({ members }: ChatMemberListProps) {
   return (
     <div className="space-y-2">
       {members.map((member, index) => (
-        <motion.div
-          key={member.id}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.05 }}
-          className={cn(
-            "flex items-center gap-3 p-3 rounded-lg",
-            "bg-white border-2 border-gray-100",
-            "hover:border-construction-blue/20 hover:bg-construction-blue/5",
-            "transition-all duration-200",
-          )}
-        >
-          {/* Debug: Avatar */}
-          <Avatar className="h-10 w-10 shrink-0 border-2 border-gray-200">
-            <AvatarImage src={member.avatar_url || undefined} />
-            <AvatarFallback className="bg-gradient-to-br from-construction-blue to-construction-blue/80 text-white text-xs font-black">
-              {getInitials(member.name)}
-            </AvatarFallback>
-          </Avatar>
-
-          {/* Debug: Member info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-gray-900 truncate">
-                {member.name}
-              </span>
-              <RoleBadge role={member.role} />
-            </div>
-            <p className="text-xs font-mono text-gray-500 truncate">
-              {member.email}
-            </p>
-          </div>
-
-          {/* Debug: Role icon */}
-          <div className="shrink-0">
-            <RoleIcon role={member.role} />
-          </div>
-        </motion.div>
+        <ChatMemberRow key={member.id} member={member} index={index} />
       ))}
     </div>
+  );
+}
+
+const ChatMemberRow = memo(function ChatMemberRow({
+  member,
+  index,
+}: {
+  member: ChatMember;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.05 }}
+      className={cn(
+        "flex items-center gap-3 p-3 rounded-lg",
+        "bg-white border-2 border-gray-100",
+        "hover:border-construction-blue/20 hover:bg-construction-blue/5",
+        "transition-all duration-200",
+      )}
+    >
+      {/* Debug: Avatar */}
+      <Avatar className="h-10 w-10 shrink-0 border-2 border-gray-200">
+        <AvatarImage src={member.avatar_url || undefined} />
+        <AvatarFallback className="bg-gradient-to-br from-construction-blue to-construction-blue/80 text-white text-xs font-black">
+          {getInitials(member.name)}
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Debug: Member info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-gray-900 truncate">
+            {member.name}
+          </span>
+          <RoleBadge role={member.role} />
+        </div>
+        <p className="text-xs font-mono text-gray-500 truncate">
+          {member.email}
+        </p>
+      </div>
+
+      {/* Debug: Role icon */}
+      <div className="shrink-0">
+        <RoleIcon role={member.role} />
+      </div>
+    </motion.div>
+  );
+}, areChatMemberEqual);
+
+function areChatMemberEqual(
+  prev: { member: ChatMember; index: number },
+  next: { member: ChatMember; index: number },
+) {
+  return (
+    prev.member.id === next.member.id &&
+    prev.member.name === next.member.name &&
+    prev.member.email === next.member.email &&
+    prev.member.avatar_url === next.member.avatar_url &&
+    prev.member.role === next.member.role &&
+    prev.index === next.index
   );
 }
 

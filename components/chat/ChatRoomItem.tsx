@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { cn, getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,7 +16,7 @@ interface ChatRoomItemProps {
 }
 
 // Debug: Individual chat room item with unread badges and hover effects
-export function ChatRoomItem({
+export const ChatRoomItem = memo(function ChatRoomItem({
   room,
   isActive,
   onSelect,
@@ -131,9 +132,23 @@ export function ChatRoomItem({
       </div>
     </motion.button>
   );
-}
+}, areChatRoomItemEqual);
 
 // Debug: Helper functions
+
+function areChatRoomItemEqual(
+  prev: ChatRoomItemProps,
+  next: ChatRoomItemProps,
+): boolean {
+  return (
+    prev.room.id === next.room.id &&
+    prev.room.unread_count === next.room.unread_count &&
+    prev.room.last_message?.created_at === next.room.last_message?.created_at &&
+    prev.room.created_at === next.room.created_at &&
+    prev.isActive === next.isActive &&
+    prev.index === next.index
+  );
+}
 
 function getAvatarUrl(room: ChatRoomWithUnread): string | undefined {
   if (room.type === "project") {

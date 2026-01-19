@@ -133,25 +133,41 @@ interface TaskTypeSelectorProps {
   selectedType: TaskType | null;
   onSelect: (type: TaskType) => void;
   disabled?: boolean;
+  prefetchedTaskTypes?: any[]; // Server-side prefetched task types
 }
 
 function TaskTypeSelectorInner({
   selectedType,
   onSelect,
   disabled = false,
+  prefetchedTaskTypes,
 }: TaskTypeSelectorProps) {
   // Fetch task types from database with deduplication
   const [taskTypes, setTaskTypes] = useState(() => {
+    // If prefetched data exists, use it immediately
+    if (prefetchedTaskTypes && prefetchedTaskTypes.length > 0) {
+      const mappedTypes = prefetchedTaskTypes.map(convertTaskTypeConfig);
+      if (!taskTypesCache) {
+        taskTypesCache = mappedTypes;
+      }
+      return mappedTypes;
+    }
     // If cache exists, use it immediately
-    return taskTypesCache || DEFAULT_TASK_TYPES;
+    if (taskTypesCache) {
+      return taskTypesCache;
+    }
+    return DEFAULT_TASK_TYPES;
   });
-  const [isLoading, setIsLoading] = useState(() => taskTypesCache === null);
+  const [isLoading, setIsLoading] = useState(() => {
+    // Don't show loading if we have prefetched data or cache
+    if (prefetchedTaskTypes && prefetchedTaskTypes.length > 0) return false;
+    if (taskTypesCache) return false;
+    return true;
+  });
 
   useEffect(() => {
-    // If cache exists, use it and skip fetch
-    if (taskTypesCache) {
-      setTaskTypes(taskTypesCache);
-      setIsLoading(false);
+    // If we already have data (from prefetch or cache), don't fetch
+    if (taskTypesCache || (prefetchedTaskTypes && prefetchedTaskTypes.length > 0)) {
       return;
     }
 
@@ -166,7 +182,7 @@ function TaskTypeSelectorInner({
       return;
     }
 
-    // Start new fetch with deduplication
+    // Start new fetch with deduplication (only as fallback)
     const fetchTaskTypes = async () => {
       setIsLoading(true);
 
@@ -193,7 +209,7 @@ function TaskTypeSelectorInner({
     };
 
     taskTypesFetchPromise = fetchTaskTypes();
-  }, []);
+  }, [prefetchedTaskTypes]);
 
   if (isLoading) {
     return (

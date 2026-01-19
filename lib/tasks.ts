@@ -46,7 +46,7 @@ export const getTasksPageData = cache(async function getTasksPageData() {
   const userRole = companyUser.role;
 
   // OPTIMIZATION: Run all independent queries in parallel
-  const [projectsResult, teamMembersResult, tasksResult] = await Promise.all([
+  const [projectsResult, teamMembersResult, tasksResult, taskTypesResult] = await Promise.all([
     // Get all projects for this company (for filtering and modal)
     supabase
       .from("projects")
@@ -105,12 +105,21 @@ export const getTasksPageData = cache(async function getTasksPageData() {
       )
       .eq("project.company_id", companyId)
       .order("created_at", { ascending: false }),
+
+    // Get all active task types for this company (for modal)
+    supabase
+      .from("task_type_configs")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
   ]);
 
   const projects = projectsResult.data || [];
   const teamMembers =
     teamMembersResult.data?.map((tm) => tm.user_profiles).filter(Boolean) || [];
   const tasks = tasksResult.data || [];
+  const taskTypes = taskTypesResult.data || [];
 
   if (tasksResult.error || tasks.length === 0) {
     return {
@@ -118,6 +127,7 @@ export const getTasksPageData = cache(async function getTasksPageData() {
       projects,
       teamMembers,
       taskDependencies: [],
+      taskTypes,
       userRole,
     };
   }
@@ -219,6 +229,7 @@ export const getTasksPageData = cache(async function getTasksPageData() {
     projects,
     teamMembers,
     taskDependencies: dependenciesResult.data || [],
+    taskTypes,
     userRole,
   };
 });

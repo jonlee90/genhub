@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DndContext,
@@ -19,21 +19,20 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  GripVertical,
-  ChevronDown,
-  ChevronRight,
-  Layers,
-  AlertCircle,
-  CheckCircle2,
-  Pencil,
-  Package,
-  Hammer,
-  ListChecks,
-} from "lucide-react";
+// Direct Lucide imports - avoid barrel file (200-800ms import cost)
+import Plus from "lucide-react/icons/plus";
+import Edit from "lucide-react/icons/edit";
+import Trash2 from "lucide-react/icons/trash-2";
+import GripVertical from "lucide-react/icons/grip-vertical";
+import ChevronDown from "lucide-react/icons/chevron-down";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import Layers from "lucide-react/icons/layers";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Pencil from "lucide-react/icons/pencil";
+import Package from "lucide-react/icons/package";
+import Hammer from "lucide-react/icons/hammer";
+import ListChecks from "lucide-react/icons/list-checks";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
@@ -60,7 +59,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  getPhaseTemplates,
   createPhaseTemplate,
   updatePhaseTemplate,
   deletePhaseTemplate,
@@ -68,7 +66,6 @@ import {
   type PhaseTemplateWithTasks,
 } from "@/app/actions/phase-templates";
 import {
-  getProjectTypes,
   type ProjectTypeWithCount,
 } from "@/app/actions/project-types";
 
@@ -147,19 +144,23 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
       <div className="relative bg-white border-2 border-gray-200 rounded-lg shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300">
         {/* Debug: Phase header with drag handle */}
         <div className="flex items-center gap-3 p-4">
-          {/* Drag handle - better touch target on mobile */}
+          {/* Drag handle - better touch target on mobile, stops propagation */}
           <button
             {...attributes}
             {...listeners}
+            onClick={(e) => e.stopPropagation()}
             className="shrink-0 p-3 md:p-2 hover:bg-gray-100 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
             aria-label="Drag to reorder phase"
           >
             <GripVertical className="h-5 w-5 text-gray-400" />
           </button>
 
-          {/* Expand/collapse toggle */}
+          {/* Expand/collapse toggle - stops propagation */}
           <button
-            onClick={onToggleExpand}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleExpand();
+            }}
             className="shrink-0 p-2 hover:bg-construction-blue/10 rounded-md transition-colors"
           >
             {isExpanded ? (
@@ -169,51 +170,56 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
             )}
           </button>
 
-          {/* Phase icon */}
-          <div className="p-2.5 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
-            <Layers className="h-5 w-5 text-construction-blue" />
-          </div>
+          {/* Clickable phase info area - opens edit modal */}
+          <div
+            onClick={onEdit}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onEdit();
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer hover:bg-construction-blue/5 -mx-2 px-2 py-1 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 rounded-lg"
+          >
+            {/* Phase icon */}
+            <div className="p-2.5 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
+              <Layers className="h-5 w-5 text-construction-blue" />
+            </div>
 
-          {/* Phase info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight truncate">
-                {phase.name}
-              </h4>
-              {taskCount > 0 && (
-                <Badge className="bg-construction-blue/10 text-construction-blue border-construction-blue/20 text-xs font-bold shrink-0">
-                  {taskCount} {taskCount === 1 ? "task" : "tasks"}
-                </Badge>
+            {/* Phase info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight truncate">
+                  {phase.name}
+                </h4>
+                {taskCount > 0 && (
+                  <Badge className="bg-construction-blue/10 text-construction-blue border-construction-blue/20 text-xs font-bold shrink-0">
+                    {taskCount} {taskCount === 1 ? "task" : "tasks"}
+                  </Badge>
+                )}
+              </div>
+              {phase.description && (
+                <p className="text-sm text-gray-600 line-clamp-1">
+                  {phase.description}
+                </p>
               )}
             </div>
-            {phase.description && (
-              <p className="text-sm text-gray-600 line-clamp-1">
-                {phase.description}
-              </p>
-            )}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-1 shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-              className="hover:bg-construction-blue/10 hover:text-construction-blue font-semibold transition-colors"
-            >
-              <Edit className="h-4 w-4 mr-1.5" />
-              Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-              className="hover:bg-red-50 hover:text-red-600 font-semibold transition-colors"
-            >
-              <Trash2 className="h-4 w-4 mr-1.5" />
-              Delete
-            </Button>
-          </div>
+          {/* Delete button only - stops propagation */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="hover:bg-red-50 hover:text-red-600 font-semibold transition-colors min-h-[44px] min-w-[44px]"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Debug: Expandable task templates section */}
@@ -272,12 +278,14 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
                       const TypeIcon = typeConfig.icon;
 
                       return (
-                        <motion.div
+                        <div
                           key={task.id}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-construction-blue/30 transition-colors"
+                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-construction-blue/30 transition-colors animate-in fade-in slide-in-from-left-2"
+                          style={{
+                            animationDelay: `${index * 50}ms`,
+                            animationDuration: "300ms",
+                            animationFillMode: "both",
+                          }}
                         >
                           {/* Task type badge */}
                           <div
@@ -317,7 +325,7 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
                           >
                             {task.default_priority}
                           </Badge>
-                        </motion.div>
+                        </div>
                       );
                     })}
                   </div>
@@ -332,20 +340,33 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
 });
 
 /**
+ * Props for PhaseTemplateManager
+ */
+interface PhaseTemplateManagerProps {
+  projectTypes: ProjectTypeWithCount[];
+  selectedProjectTypeId: string;
+  onProjectTypeChange: (id: string) => void;
+  phaseTemplates: PhaseTemplateWithTasks[];
+  isLoadingProjectTypes: boolean;
+  isLoadingPhases: boolean;
+  onRefreshPhases: () => void;
+}
+
+/**
  * PhaseTemplateManager - Main component for phase template management
  * Construction-themed CRUD interface with drag-and-drop
+ * Performance: Receives data via props from parent to eliminate redundant network calls
  */
-export function PhaseTemplateManager() {
-  // Removed console.log("[PhaseTemplateManager] Rendering phase template manager");
-
-  const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
-  const [selectedProjectTypeId, setSelectedProjectTypeId] =
-    useState<string>("");
-  const [phaseTemplates, setPhaseTemplates] = useState<
-    PhaseTemplateWithTasks[]
-  >([]);
+export const PhaseTemplateManager = memo(function PhaseTemplateManager({
+  projectTypes,
+  selectedProjectTypeId,
+  onProjectTypeChange,
+  phaseTemplates,
+  isLoadingProjectTypes,
+  isLoadingPhases,
+  onRefreshPhases,
+}: PhaseTemplateManagerProps) {
   const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
-  const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPhase, setEditingPhase] =
     useState<PhaseTemplateWithTasks | null>(null);
@@ -360,53 +381,8 @@ export function PhaseTemplateManager() {
     }),
   );
 
-  // Debug: Load project types on mount
-  useEffect(() => {
-    loadProjectTypes();
-  }, []);
-
-  // Debug: Load phase templates when project type changes
-  useEffect(() => {
-    if (selectedProjectTypeId) {
-      loadPhaseTemplates(selectedProjectTypeId);
-    } else {
-      setPhaseTemplates([]);
-    }
-  }, [selectedProjectTypeId]);
-
-  async function loadProjectTypes() {
-    // Removed console.log("[PhaseTemplateManager] Loading project types...");
-    const result = await getProjectTypes();
-    if (result.projectTypes) {
-      setProjectTypes(result.projectTypes.filter((pt) => pt.is_active));
-      // Auto-select first active project type
-      const firstActive = result.projectTypes.find((pt) => pt.is_active);
-      if (firstActive) {
-        setSelectedProjectTypeId(firstActive.id);
-      }
-    } else if (result.error) {
-      console.error(
-        "[PhaseTemplateManager] Error loading project types:",
-        result.error,
-      );
-      toast.error(result.error);
-    }
-  }
-
-  async function loadPhaseTemplates(projectTypeId: string) {
-    setIsLoading(true);
-    const result = await getPhaseTemplates(projectTypeId);
-    if (result.phaseTemplates) {
-      setPhaseTemplates(result.phaseTemplates);
-    } else if (result.error) {
-      console.error(
-        "[PhaseTemplateManager] Error loading phases:",
-        result.error,
-      );
-      toast.error(result.error);
-    }
-    setIsLoading(false);
-  }
+  // Filter to only active project types
+  const activeProjectTypes = projectTypes.filter((pt) => pt.is_active);
 
   // Handle drag end event
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
@@ -419,11 +395,11 @@ export function PhaseTemplateManager() {
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // Optimistic update
-    const newOrder = arrayMove(phaseTemplates, oldIndex, newIndex);
-    setPhaseTemplates(newOrder);
+    // Note: Optimistic update removed since phaseTemplates is a prop
+    // The backend will update and parent will refresh
 
     // Persist to backend
+    const newOrder = arrayMove(phaseTemplates, oldIndex, newIndex);
     const orderedIds = newOrder.map((p) => p.id);
     const result = await reorderPhaseTemplates(
       selectedProjectTypeId,
@@ -432,12 +408,13 @@ export function PhaseTemplateManager() {
 
     if (result.error) {
       toast.error("Failed to reorder phases");
-      // Revert on error
-      loadPhaseTemplates(selectedProjectTypeId);
     } else {
       toast.success("Phase order updated");
     }
-  }, [phaseTemplates, selectedProjectTypeId, loadPhaseTemplates]);
+
+    // Refresh data from server
+    onRefreshPhases();
+  }, [phaseTemplates, selectedProjectTypeId, onRefreshPhases]);
 
   // Toggle phase expansion
   const togglePhaseExpansion = useCallback((phaseId: string) => {
@@ -452,10 +429,9 @@ export function PhaseTemplateManager() {
     });
   }, []);
 
-  // Handle create submission
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  // Handle create submission - memoized
+  const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Removed console.log("[PhaseTemplateManager] Creating phase template...");
 
     const formData = new FormData(e.currentTarget);
     const result = await createPhaseTemplate(formData);
@@ -463,14 +439,14 @@ export function PhaseTemplateManager() {
     if (result.success) {
       toast.success("Phase template created successfully");
       setShowCreateModal(false);
-      loadPhaseTemplates(selectedProjectTypeId);
+      onRefreshPhases();
     } else {
       toast.error(result.error || "Failed to create phase template");
     }
-  }
+  }, [onRefreshPhases]);
 
-  // Debug: Handle update submission
-  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+  // Debug: Handle update submission - memoized
+  const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingPhase) return;
 
@@ -480,14 +456,14 @@ export function PhaseTemplateManager() {
     if (result.success) {
       toast.success("Phase template updated successfully");
       setEditingPhase(null);
-      loadPhaseTemplates(selectedProjectTypeId);
+      onRefreshPhases();
     } else {
       toast.error(result.error || "Failed to update phase template");
     }
-  }
+  }, [editingPhase, onRefreshPhases]);
 
-  // Debug: Handle delete confirmation
-  async function handleDelete() {
+  // Debug: Handle delete confirmation - memoized
+  const handleDelete = useCallback(async () => {
     if (!deletingPhase) return;
 
     const result = await deletePhaseTemplate(deletingPhase.id);
@@ -495,11 +471,11 @@ export function PhaseTemplateManager() {
     if (result.success) {
       toast.success("Phase template deleted successfully");
       setDeletingPhase(null);
-      loadPhaseTemplates(selectedProjectTypeId);
+      onRefreshPhases();
     } else {
       toast.error(result.error || "Failed to delete phase template");
     }
-  }
+  }, [deletingPhase, onRefreshPhases]);
 
   return (
     <div className="space-y-6">
@@ -517,13 +493,13 @@ export function PhaseTemplateManager() {
           {/* Project type filter dropdown */}
           <Select
             value={selectedProjectTypeId}
-            onValueChange={setSelectedProjectTypeId}
+            onValueChange={onProjectTypeChange}
           >
             <SelectTrigger className="w-[200px] border-2 border-gray-200 focus:border-construction-blue font-semibold">
               <SelectValue placeholder="Select project type" />
             </SelectTrigger>
             <SelectContent>
-              {projectTypes.map((type) => (
+              {activeProjectTypes.map((type) => (
                 <SelectItem key={type.id} value={type.id}>
                   {type.name}
                 </SelectItem>
@@ -557,13 +533,18 @@ export function PhaseTemplateManager() {
             phase templates
           </p>
         </div>
-      ) : isLoading ? (
-        // Debug: Loading skeleton
+      ) : isLoadingPhases ? (
+        // Debug: Loading skeleton with CSS animate-in
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border-2 border-gray-200 rounded-lg p-4 animate-pulse"
+              className="bg-white border-2 border-gray-200 rounded-lg p-4 animate-pulse animate-in fade-in slide-in-from-bottom-4"
+              style={{
+                animationDelay: `${i * 50}ms`,
+                animationDuration: "400ms",
+                animationFillMode: "both",
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="h-5 w-5 bg-gray-200 rounded" />
@@ -578,12 +559,8 @@ export function PhaseTemplateManager() {
           ))}
         </div>
       ) : phaseTemplates.length === 0 ? (
-        // Debug: Empty state
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-16 text-center"
-        >
+        // Debug: Empty state - CSS animation only
+        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
             <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
@@ -604,9 +581,9 @@ export function PhaseTemplateManager() {
             <Plus className="h-4 w-4 mr-2" />
             Create First Phase
           </Button>
-        </motion.div>
+        </div>
       ) : (
-        // Debug: Sortable phase templates list
+        // Debug: Sortable phase templates list with CSS stagger
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -618,11 +595,14 @@ export function PhaseTemplateManager() {
           >
             <div className="space-y-3">
               {phaseTemplates.map((phase, index) => (
-                <motion.div
+                <div
                   key={phase.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, duration: 0.3 }}
+                  className="animate-in fade-in slide-in-from-bottom-4"
+                  style={{
+                    animationDelay: `${Math.min(index * 50, 300)}ms`,
+                    animationDuration: "400ms",
+                    animationFillMode: "both",
+                  }}
                 >
                   <SortablePhaseItem
                     phase={phase}
@@ -631,7 +611,7 @@ export function PhaseTemplateManager() {
                     onEdit={() => setEditingPhase(phase)}
                     onDelete={() => setDeletingPhase(phase)}
                   />
-                </motion.div>
+                </div>
               ))}
             </div>
           </SortableContext>
@@ -877,4 +857,4 @@ export function PhaseTemplateManager() {
       )}
     </div>
   );
-}
+});

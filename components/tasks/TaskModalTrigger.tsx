@@ -16,6 +16,7 @@ const TaskModal = dynamic(
 interface TaskModalTriggerProps {
   projects: TaskProject[];
   teamMembers: TeamMember[];
+  taskTypes?: any[]; // Prefetched task types
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   variant?: "default" | "outline" | "ghost";
@@ -28,6 +29,7 @@ interface TaskModalTriggerProps {
 export function TaskModalTrigger({
   projects,
   teamMembers,
+  taskTypes,
   preselectedProjectId,
   preselectedPhaseId,
   variant = "default",
@@ -74,6 +76,7 @@ export function TaskModalTrigger({
           mode="create"
           projects={projects}
           teamMembers={teamMembers}
+          taskTypes={taskTypes}
           preselectedProjectId={preselectedProjectId}
           preselectedPhaseId={preselectedPhaseId}
           onSuccess={handleSuccess}

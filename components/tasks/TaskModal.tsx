@@ -129,6 +129,7 @@ interface TaskModalProps {
   onSuccess?: () => void;
   tasks?: Array<{ id: string; title: string; project_id: string }>;
   assignees?: TaskAssigneeOption[];
+  taskTypes?: any[]; // Prefetched task types
   userRole?: string | null;
   isLoadingData?: boolean;
 }
@@ -147,6 +148,7 @@ function TaskModalForm({
   onSuccess,
   tasks = [],
   assignees,
+  taskTypes,
   userRole,
 }: Omit<TaskModalProps, "isOpen">) {
   const router = useRouter();
@@ -485,6 +487,7 @@ function TaskModalForm({
           onPriorityChange={formState.setPriority}
           onStartDateChange={formState.setStartDate}
           disabled={isPending}
+          prefetchedTaskTypes={taskTypes}
         />
       </ResponsiveModal>
     );
@@ -730,6 +733,7 @@ export function TaskModal({
   onSuccess,
   tasks = [],
   assignees,
+  taskTypes,
   userRole,
   isLoadingData,
 }: TaskModalProps) {
@@ -747,6 +751,7 @@ export function TaskModal({
       onSuccess={onSuccess}
       tasks={tasks}
       assignees={assignees}
+      taskTypes={taskTypes}
       userRole={userRole}
     />
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, memo, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   DndContext,
@@ -19,18 +19,17 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  GripVertical,
-  Package,
-  Hammer,
-  CheckCircle2,
-  Clipboard,
-  AlertCircle,
-  ListChecks,
-} from "lucide-react";
+// Performance optimization: Direct imports instead of barrel file
+import Plus from "lucide-react/icons/plus";
+import Edit from "lucide-react/icons/edit";
+import Trash2 from "lucide-react/icons/trash-2";
+import GripVertical from "lucide-react/icons/grip-vertical";
+import Package from "lucide-react/icons/package";
+import Hammer from "lucide-react/icons/hammer";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Clipboard from "lucide-react/icons/clipboard";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import ListChecks from "lucide-react/icons/list-checks";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
@@ -64,14 +63,11 @@ import {
   reorderTaskTemplates,
 } from "@/app/actions/task-templates";
 import {
-  getProjectTypes,
   type ProjectTypeWithCount,
 } from "@/app/actions/project-types";
 import {
-  getPhaseTemplates,
   type PhaseTemplateWithTasks,
 } from "@/app/actions/phase-templates";
-import { getTaskTypes } from "@/app/actions/task-types";
 import type {
   TaskTemplatesRow,
   TaskTypeConfigsRow,
@@ -124,6 +120,7 @@ const PRIORITY_CONFIG = {
 /**
  * SortableTaskItem - Individual draggable task template card
  * Debug: Compact horizontal layout with drag handle, badges, and actions
+ * Performance: Wrapped in React.memo to prevent unnecessary re-renders
  */
 interface SortableTaskItemProps {
   task: TaskTemplate;
@@ -132,7 +129,7 @@ interface SortableTaskItemProps {
   onDelete: () => void;
 }
 
-function SortableTaskItem({
+const SortableTaskItem = memo(function SortableTaskItem({
   task,
   taskTypeConfigs,
   onEdit,
@@ -184,23 +181,35 @@ function SortableTaskItem({
       <div className="absolute inset-0 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       {/* Debug: Main task card container - RESPONSIVE: Stacked on mobile, horizontal on desktop */}
-      <div className="relative bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:shadow-construction hover:border-construction-blue/30 transition-all duration-300">
+      <div
+        onClick={onEdit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onEdit();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        className="relative bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:shadow-construction hover:border-construction-blue/30 transition-all duration-300 cursor-pointer active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
+      >
         {/*
           MOBILE LAYOUT (<640px):
           - Row 1: Drag handle + Task title (truncated)
           - Row 2: Index badge + Type badge + Priority badge
-          - Row 3: Edit + Delete buttons (full width, side by side)
+          - Row 3: "Click to edit" + Delete button
 
           DESKTOP LAYOUT (≥640px):
-          - Single row: Drag + Index + Type + Task + Priority + Buttons
+          - Single row: Drag + Index + Type + Task + Priority + "Click to edit" + Delete button
         */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3">
           {/* Row 1 on mobile: Drag handle + Task title */}
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            {/* Drag handle - better touch target on mobile */}
+            {/* Drag handle - better touch target on mobile, stops propagation */}
             <button
               {...attributes}
               {...listeners}
+              onClick={(e) => e.stopPropagation()}
               className="shrink-0 p-3 sm:p-2 hover:bg-gray-100 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
               aria-label="Drag to reorder"
             >
@@ -259,51 +268,67 @@ function SortableTaskItem({
             </Badge>
           </div>
 
-          {/* Row 3 on mobile: Action buttons - better touch targets */}
-          <div className="flex items-center gap-2 pl-11 sm:pl-0 sm:ml-auto">
+          {/* Row 3 on mobile: "Click to edit" text + Delete button */}
+          <div className="flex items-center justify-between gap-2 pl-11 sm:pl-0 sm:ml-auto">
+            <span className="text-xs text-gray-500 font-medium">
+              Click to edit
+            </span>
             <Button
               variant="ghost"
               size="sm"
-              onClick={onEdit}
-              className="h-11 sm:h-8 px-3 sm:px-2 hover:bg-construction-blue/10 hover:text-construction-blue font-semibold transition-colors touch-manipulation flex-1 sm:flex-none"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent edit modal from opening
+                onDelete();
+              }}
+              className="h-11 sm:h-8 px-3 sm:px-2 hover:bg-red-50 hover:text-red-600 font-semibold transition-colors touch-manipulation min-h-[44px] sm:min-h-0"
             >
-              <Edit className="h-3.5 w-3.5 mr-1" />
-              Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onDelete}
-              className="h-11 sm:h-8 px-3 sm:px-2 hover:bg-red-50 hover:text-red-600 font-semibold transition-colors touch-manipulation flex-1 sm:flex-none"
-            >
-              <Trash2 className="h-3.5 w-3.5 mr-1" />
-              Delete
+              <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
         </div>
       </div>
     </div>
   );
+});
+
+/**
+ * Props for TaskTemplateManager
+ * Performance: Receives all shared data via props to eliminate redundant network calls
+ */
+interface TaskTemplateManagerProps {
+  projectTypes: ProjectTypeWithCount[];
+  selectedProjectTypeId: string;
+  onProjectTypeChange: (id: string) => void;
+  phaseTemplates: PhaseTemplateWithTasks[];
+  selectedPhaseTemplateId: string;
+  onPhaseTemplateChange: (id: string) => void;
+  taskTypes: TaskTypeConfigsRow[];
+  isLoadingProjectTypes: boolean;
+  isLoadingPhases: boolean;
+  onRefreshPhases: () => void;
 }
 
 /**
  * TaskTemplateManager - Main component for task template management
  * Debug: Construction-themed CRUD interface with drag-and-drop, filters, and modals
+ * Performance:
+ * - Wrapped in memo to prevent unnecessary re-renders
+ * - Receives shared data via props from parent to eliminate redundant network calls
  */
-export function TaskTemplateManager() {
-  const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
-  const [selectedProjectTypeId, setSelectedProjectTypeId] =
-    useState<string>("");
-  const [phaseTemplates, setPhaseTemplates] = useState<
-    PhaseTemplateWithTasks[]
-  >([]);
-  const [selectedPhaseTemplateId, setSelectedPhaseTemplateId] =
-    useState<string>("");
+export const TaskTemplateManager = memo(function TaskTemplateManager({
+  projectTypes,
+  selectedProjectTypeId,
+  onProjectTypeChange,
+  phaseTemplates,
+  selectedPhaseTemplateId,
+  onPhaseTemplateChange,
+  taskTypes,
+  isLoadingProjectTypes,
+  isLoadingPhases,
+  onRefreshPhases,
+}: TaskTemplateManagerProps) {
   const [taskTemplates, setTaskTemplates] = useState<TaskTemplate[]>([]);
-  const [taskTypeConfigs, setTaskTypeConfigs] = useState<
-    Record<string, TaskTypeConfig>
-  >({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskTemplate | null>(null);
   const [deletingTask, setDeletingTask] = useState<TaskTemplate | null>(null);
@@ -316,21 +341,32 @@ export function TaskTemplateManager() {
     }),
   );
 
-  // Debug: Load initial data on mount
-  useEffect(() => {
-    loadProjectTypes();
-    loadTaskTypeConfigs();
-  }, []);
+  // Filter to only active project types
+  const activeProjectTypes = projectTypes.filter((pt) => pt.is_active);
 
-  // Debug: Load phase templates when project type changes
-  useEffect(() => {
-    if (selectedProjectTypeId) {
-      loadPhaseTemplates(selectedProjectTypeId);
-    } else {
-      setPhaseTemplates([]);
-      setSelectedPhaseTemplateId("");
+  // Convert taskTypes array to lookup map using useMemo for performance
+  // Following rerender-dependencies: only recompute when taskTypes changes
+  const taskTypeConfigs = useMemo(() => {
+    return taskTypes.reduce(
+      (acc, type) => {
+        acc[type.name.toLowerCase()] = type;
+        return acc;
+      },
+      {} as Record<string, TaskTypeConfig>,
+    );
+  }, [taskTypes]);
+
+  const loadTaskTemplates = useCallback(async (phaseTemplateId: string) => {
+    setIsLoadingTasks(true);
+    const result = await getTaskTemplates(phaseTemplateId);
+    if (result.taskTemplates) {
+      setTaskTemplates(result.taskTemplates);
+    } else if (result.error) {
+      console.error("[TaskTemplateManager] Error loading tasks:", result.error);
+      toast.error(result.error);
     }
-  }, [selectedProjectTypeId]);
+    setIsLoadingTasks(false);
+  }, []);
 
   // Debug: Load task templates when phase changes
   useEffect(() => {
@@ -339,76 +375,10 @@ export function TaskTemplateManager() {
     } else {
       setTaskTemplates([]);
     }
-  }, [selectedPhaseTemplateId]);
-
-  async function loadProjectTypes() {
-    const result = await getProjectTypes();
-    if (result.projectTypes) {
-      const activeTypes = result.projectTypes.filter((pt) => pt.is_active);
-      setProjectTypes(activeTypes);
-      // Auto-select first active project type
-      if (activeTypes.length > 0) {
-        setSelectedProjectTypeId(activeTypes[0].id);
-      }
-    } else if (result.error) {
-      console.error(
-        "[TaskTemplateManager] Error loading project types:",
-        result.error,
-      );
-      toast.error(result.error);
-    }
-  }
-
-  async function loadPhaseTemplates(projectTypeId: string) {
-    const result = await getPhaseTemplates(projectTypeId);
-    if (result.phaseTemplates) {
-      setPhaseTemplates(result.phaseTemplates);
-      // Auto-select first phase
-      if (result.phaseTemplates.length > 0) {
-        setSelectedPhaseTemplateId(result.phaseTemplates[0].id);
-      }
-    } else if (result.error) {
-      console.error(
-        "[TaskTemplateManager] Error loading phases:",
-        result.error,
-      );
-      toast.error(result.error);
-    }
-  }
-
-  async function loadTaskTemplates(phaseTemplateId: string) {
-    setIsLoading(true);
-    const result = await getTaskTemplates(phaseTemplateId);
-    if (result.taskTemplates) {
-      setTaskTemplates(result.taskTemplates);
-    } else if (result.error) {
-      console.error("[TaskTemplateManager] Error loading tasks:", result.error);
-      toast.error(result.error);
-    }
-    setIsLoading(false);
-  }
-
-  async function loadTaskTypeConfigs() {
-    const result = await getTaskTypes();
-    if (result.taskTypes) {
-      const configMap = result.taskTypes.reduce(
-        (acc, type) => {
-          acc[type.name.toLowerCase()] = type;
-          return acc;
-        },
-        {} as Record<string, TaskTypeConfig>,
-      );
-      setTaskTypeConfigs(configMap);
-    } else if (result.error) {
-      console.error(
-        "[TaskTemplateManager] Error loading task types:",
-        result.error,
-      );
-    }
-  }
+  }, [selectedPhaseTemplateId, loadTaskTemplates]);
 
   // Debug: Handle drag end event
-  async function handleDragEnd(event: DragEndEvent) {
+  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id || !selectedPhaseTemplateId) return;
@@ -436,10 +406,10 @@ export function TaskTemplateManager() {
     } else {
       toast.success("Task order updated");
     }
-  }
+  }, [taskTemplates, selectedPhaseTemplateId, loadTaskTemplates]);
 
   // Debug: Handle create submission
-  async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+  const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
@@ -454,10 +424,10 @@ export function TaskTemplateManager() {
     } else {
       toast.error(result.error || "Failed to create task template");
     }
-  }
+  }, [selectedPhaseTemplateId, loadTaskTemplates]);
 
   // Debug: Handle update submission
-  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+  const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingTask) return;
 
@@ -473,10 +443,10 @@ export function TaskTemplateManager() {
     } else {
       toast.error(result.error || "Failed to update task template");
     }
-  }
+  }, [editingTask, selectedPhaseTemplateId, loadTaskTemplates]);
 
   // Debug: Handle delete confirmation
-  async function handleDelete() {
+  const handleDelete = useCallback(async () => {
     if (!deletingTask) return;
 
     const result = await deleteTaskTemplate(deletingTask.id);
@@ -490,7 +460,7 @@ export function TaskTemplateManager() {
     } else {
       toast.error(result.error || "Failed to delete task template");
     }
-  }
+  }, [deletingTask, selectedPhaseTemplateId, loadTaskTemplates]);
 
   // Get available task type options from DB configs
   const taskTypeOptions = Object.entries(taskTypeConfigs).map(
@@ -520,7 +490,7 @@ export function TaskTemplateManager() {
           <Button
             onClick={() => setShowCreateModal(true)}
             disabled={!selectedPhaseTemplateId}
-            className="bg-construction-blue hover:bg-blue-700 text-white font-bold shadow-construction shrink-0"
+            className="bg-construction-blue hover:bg-blue-700 text-white font-bold shadow-construction shrink-0 min-h-[44px]"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Task Template
@@ -539,7 +509,7 @@ export function TaskTemplateManager() {
             </Label>
             <Select
               value={selectedProjectTypeId}
-              onValueChange={setSelectedProjectTypeId}
+              onValueChange={onProjectTypeChange}
             >
               <SelectTrigger
                 id="project-type-filter"
@@ -548,7 +518,7 @@ export function TaskTemplateManager() {
                 <SelectValue placeholder="Select project type" />
               </SelectTrigger>
               <SelectContent>
-                {projectTypes.map((type) => (
+                {activeProjectTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.name}
                   </SelectItem>
@@ -567,7 +537,7 @@ export function TaskTemplateManager() {
             </Label>
             <Select
               value={selectedPhaseTemplateId}
-              onValueChange={setSelectedPhaseTemplateId}
+              onValueChange={onPhaseTemplateChange}
               disabled={!selectedProjectTypeId || phaseTemplates.length === 0}
             >
               <SelectTrigger
@@ -618,13 +588,18 @@ export function TaskTemplateManager() {
               : "Choose a phase template to view its task templates"}
           </p>
         </div>
-      ) : isLoading ? (
-        // Debug: Loading skeleton
+      ) : isLoadingTasks ? (
+        // Debug: Loading skeleton - CSS animate-in for performance
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border-2 border-gray-200 rounded-lg p-3 animate-pulse"
+              className="bg-white border-2 border-gray-200 rounded-lg p-3 animate-pulse animate-in fade-in slide-in-from-bottom-4"
+              style={{
+                animationDelay: `${i * 50}ms`,
+                animationDuration: '400ms',
+                animationFillMode: 'both',
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="h-5 w-5 bg-gray-200 rounded" />
@@ -639,12 +614,8 @@ export function TaskTemplateManager() {
           ))}
         </div>
       ) : taskTemplates.length === 0 ? (
-        // Debug: Empty state
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-16 text-center"
-        >
+        // Debug: Empty state - matches ProjectsPageClient pattern with CSS animation
+        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
           <div className="relative mb-6">
             <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
             <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
@@ -659,12 +630,12 @@ export function TaskTemplateManager() {
           </p>
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-construction-blue hover:bg-blue-700 text-white font-bold"
+            className="bg-construction-blue hover:bg-blue-700 text-white font-bold min-h-[44px]"
           >
             <Plus className="h-4 w-4 mr-2" />
             Create First Task Template
           </Button>
-        </motion.div>
+        </div>
       ) : (
         // Debug: Sortable task templates list
         <DndContext
@@ -678,11 +649,14 @@ export function TaskTemplateManager() {
           >
             <div className="space-y-2">
               {taskTemplates.map((task, index) => (
-                <motion.div
+                <div
                   key={task.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.3 }}
+                  className="animate-in fade-in slide-in-from-bottom-4"
+                  style={{
+                    animationDelay: `${Math.min(index * 50, 300)}ms`,
+                    animationDuration: '400ms',
+                    animationFillMode: 'both',
+                  }}
                 >
                   <SortableTaskItem
                     task={task}
@@ -690,7 +664,7 @@ export function TaskTemplateManager() {
                     onEdit={() => setEditingTask(task)}
                     onDelete={() => setDeletingTask(task)}
                   />
-                </motion.div>
+                </div>
               ))}
             </div>
           </SortableContext>
@@ -1123,4 +1097,4 @@ export function TaskTemplateManager() {
       )}
     </div>
   );
-}
+});

@@ -174,7 +174,8 @@
       "mcp__playwright__browser_network_requests",
       "mcp__playwright__browser_wait_for",
       "Bash(killall:*)",
-      "mcp__plugin_context7_context7__resolve-library-id"
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "Bash(perl -pi -e 's{lucide-react/dist/esm/icons/}{lucide-react/icons/}g':*)"
     ],
     "deny": [],
     "ask": []

@@ -6,7 +6,7 @@ interface TasksPageProps {
 }
 
 export default async function TasksPage({ searchParams }: TasksPageProps) {
-  const [params, { tasks, projects, teamMembers, taskDependencies, userRole }] =
+  const [params, { tasks, projects, teamMembers, taskDependencies, taskTypes, userRole }] =
     await Promise.all([searchParams, getTasksPageData()]);
 
   // Get view mode from URL or default to kanban
@@ -18,6 +18,7 @@ export default async function TasksPage({ searchParams }: TasksPageProps) {
       projects={projects}
       teamMembers={teamMembers}
       taskDependencies={taskDependencies || []}
+      taskTypes={taskTypes || []}
       initialView={viewMode as "kanban" | "list"}
       userRole={userRole}
     />

@@ -1,5 +1,5 @@
 /**
- * GenHub PWA Service Worker
+ * GenHub PWA Service Worker - Enhanced for Phase 1
  *
  * Provides offline support for the GenHub construction management PWA
  * with intelligent caching strategies for different resource types.
@@ -7,14 +7,21 @@
  * Caching Strategies:
  * - Cache-First: Static assets (JS, CSS, images, fonts, icons)
  * - Network-First: API calls and dynamic content
+ * - Stale-While-Revalidate: Project/task data for instant loading
  * - App Shell: Core app routes for offline access
  * - Offline Fallback: Serves offline page when network unavailable
  *
- * @version 1.0.0
+ * Phase 1 Enhancements:
+ * - Navigation preload for instant HTML delivery
+ * - Stale-while-revalidate for project/task data
+ * - Background sync for entity queue
+ * - Cache versioning for schema updates
+ *
+ * @version 2.0.0
  */
 
 // Cache version - increment to invalidate old caches
-const CACHE_VERSION = '1';
+const CACHE_VERSION = '2';
 const CACHE_PREFIX = 'genhub';
 
 // Cache names
@@ -23,6 +30,7 @@ const CACHE_NAMES = {
   api: `${CACHE_PREFIX}-api-v${CACHE_VERSION}`,
   pages: `${CACHE_PREFIX}-pages-v${CACHE_VERSION}`,
   images: `${CACHE_PREFIX}-images-v${CACHE_VERSION}`,
+  data: `${CACHE_PREFIX}-data-v${CACHE_VERSION}`, // New: For project/task data
 };
 
 // All cache names for cleanup
@@ -59,8 +67,18 @@ const IMAGE_PATTERNS = [
   /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
 ];
 
+// Data patterns (stale-while-revalidate for instant loading)
+const DATA_PATTERNS = [
+  /\/api\/projects$/,
+  /\/api\/projects\/[^/]+\/tasks$/,
+  /\/api\/tasks$/,
+];
+
 // Maximum cache age (7 days in milliseconds)
 const MAX_CACHE_AGE = 7 * 24 * 60 * 60 * 1000;
+
+// Data cache age (5 minutes for stale-while-revalidate)
+const DATA_CACHE_AGE = 5 * 60 * 1000;
 
 // Maximum number of items in image cache
 const MAX_IMAGE_CACHE_SIZE = 50;
@@ -90,7 +108,7 @@ self.addEventListener('install', (event) => {
 });
 
 /**
- * Activate Event - Clean up old caches
+ * Activate Event - Clean up old caches and enable navigation preload
  */
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating service worker...');
@@ -108,6 +126,12 @@ self.addEventListener('activate', (event) => {
               return caches.delete(name);
             })
         );
+
+        // Enable navigation preload for instant HTML delivery
+        if (self.registration.navigationPreload) {
+          await self.registration.navigationPreload.enable();
+          console.log('[Service Worker] Navigation preload enabled');
+        }
 
         // Claim clients to take control immediately
         await self.clients.claim();
@@ -142,7 +166,10 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Route to appropriate strategy
-  if (matchesPattern(url, API_PATTERNS)) {
+  if (matchesPattern(url, DATA_PATTERNS)) {
+    // Stale-while-revalidate for project/task data (instant loading)
+    event.respondWith(staleWhileRevalidate(request, CACHE_NAMES.data));
+  } else if (matchesPattern(url, API_PATTERNS)) {
     // Network-first for API calls
     event.respondWith(networkFirst(request, CACHE_NAMES.api));
   } else if (matchesPattern(url, IMAGE_PATTERNS)) {
@@ -153,7 +180,8 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(cacheFirst(request, CACHE_NAMES.static));
   } else if (url.origin === self.location.origin) {
     // Network-first for same-origin requests (HTML pages)
-    event.respondWith(networkFirst(request, CACHE_NAMES.pages));
+    // Use navigation preload if available
+    event.respondWith(navigationWithPreload(event, request, CACHE_NAMES.pages));
   }
 });
 
@@ -321,7 +349,124 @@ async function fetchAndCache(request, cacheName) {
 }
 
 /**
- * Message handler for SW updates
+ * Stale-While-Revalidate Strategy
+ * Serve cached version immediately, fetch fresh in background
+ */
+async function staleWhileRevalidate(request, cacheName) {
+  try {
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match(request);
+
+    // Fetch fresh version in background
+    const fetchPromise = fetch(request).then(async (response) => {
+      if (response.ok) {
+        await cacheResponse(cache, request, response.clone());
+      }
+      return response;
+    });
+
+    // Return cached version immediately if available
+    if (cached) {
+      console.log('[Service Worker] Serving stale data, revalidating:', request.url);
+
+      // Check cache age
+      const cacheDate = cached.headers.get('sw-cache-date');
+      if (cacheDate && Date.now() - parseInt(cacheDate) < DATA_CACHE_AGE) {
+        return cached;
+      }
+
+      // Cache is old, wait for fresh data
+      return fetchPromise;
+    }
+
+    // No cache, wait for network
+    return fetchPromise;
+  } catch (error) {
+    console.error('[Service Worker] Stale-while-revalidate failed:', error);
+
+    // Try cache as fallback
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match(request);
+    if (cached) {
+      return cached;
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Navigation with Preload Strategy
+ * Use navigation preload for instant HTML delivery
+ */
+async function navigationWithPreload(event, request, cacheName) {
+  try {
+    // Try to use preloaded response
+    const preloadResponse = await event.preloadResponse;
+    if (preloadResponse) {
+      console.log('[Service Worker] Using preloaded response:', request.url);
+      return preloadResponse;
+    }
+
+    // Fallback to network-first
+    return await networkFirst(request, cacheName);
+  } catch (error) {
+    console.error('[Service Worker] Navigation with preload failed:', error);
+    return await networkFirst(request, cacheName);
+  }
+}
+
+/**
+ * Background Sync Event - Process entity sync queue
+ */
+self.addEventListener('sync', (event) => {
+  console.log('[Service Worker] Background sync triggered:', event.tag);
+
+  if (event.tag === 'sync-entities') {
+    event.waitUntil(
+      (async () => {
+        try {
+          // Notify clients to process sync queue
+          const clients = await self.clients.matchAll();
+          for (const client of clients) {
+            client.postMessage({
+              type: 'SYNC_ENTITIES_START',
+              timestamp: Date.now(),
+            });
+          }
+
+          console.log('[Service Worker] Entity sync notification sent');
+        } catch (error) {
+          console.error('[Service Worker] Background sync failed:', error);
+        }
+      })()
+    );
+  }
+
+  // Legacy marker sync support
+  if (event.tag === 'sync-markers') {
+    event.waitUntil(
+      (async () => {
+        try {
+          const clients = await self.clients.matchAll();
+          for (const client of clients) {
+            client.postMessage({
+              type: 'SYNC_MARKERS_START',
+              timestamp: Date.now(),
+            });
+          }
+
+          console.log('[Service Worker] Marker sync notification sent');
+        } catch (error) {
+          console.error('[Service Worker] Marker sync failed:', error);
+        }
+      })()
+    );
+  }
+});
+
+/**
+ * Message handler for SW updates and cache management
  */
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -340,6 +485,11 @@ self.addEventListener('message', (event) => {
         );
       })
     );
+  }
+
+  if (event.data && event.data.type === 'CLEAR_DATA_CACHE') {
+    console.log('[Service Worker] Clearing data cache');
+    event.waitUntil(caches.delete(CACHE_NAMES.data));
   }
 });
 

@@ -1,29 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Building2,
-  Home,
-  Factory,
-  UtensilsCrossed,
-  Store,
-  Warehouse,
-  Pencil,
-  CheckCircle2,
-  Loader2,
-} from "lucide-react";
+import { useState, useEffect, useCallback, memo } from "react";
+// Performance optimization: Direct imports instead of barrel file
+import Plus from 'lucide-react/icons/plus';
+import Edit from 'lucide-react/icons/edit';
+import Trash2 from 'lucide-react/icons/trash-2';
+import Building2 from 'lucide-react/icons/building-2';
+import Home from 'lucide-react/icons/home';
+import Factory from 'lucide-react/icons/factory';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Store from 'lucide-react/icons/store';
+import Warehouse from 'lucide-react/icons/warehouse';
+import Pencil from 'lucide-react/icons/pencil';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Loader2 from 'lucide-react/icons/loader-2';
+import XCircle from 'lucide-react/icons/x-circle';
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   AlertDialog,
@@ -48,7 +40,6 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
-  getProjectTypes,
   createProjectType,
   updateProjectType,
   deleteProjectType,
@@ -69,14 +60,30 @@ const AVAILABLE_ICONS = {
 };
 
 /**
+ * Props for ProjectTypeManager
+ */
+interface ProjectTypeManagerProps {
+  projectTypes: ProjectTypeWithCount[];
+  isLoading: boolean;
+  onRefresh: () => void;
+}
+
+/**
  * ProjectTypeManager - Manage project type configurations
  * Debug: Main component for CRUD operations on project types with full accessibility
+ *
+ * Performance optimizations:
+ * - Wrapped in memo() to prevent unnecessary re-renders
+ * - Direct Lucide imports instead of barrel file
+ * - CSS stagger animations instead of per-item framer-motion
+ * - All callbacks use useCallback for stable references
+ * - Receives data via props from parent to eliminate redundant network calls
  */
-export function ProjectTypeManager() {
-  // Removed console.log("[ProjectTypeManager] Rendering project type manager");
-
-  const [projectTypes, setProjectTypes] = useState<ProjectTypeWithCount[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const ProjectTypeManager = memo(function ProjectTypeManager({
+  projectTypes,
+  isLoading,
+  onRefresh,
+}: ProjectTypeManagerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingType, setEditingType] = useState<ProjectTypeWithCount | null>(
@@ -86,28 +93,9 @@ export function ProjectTypeManager() {
     null,
   );
 
-  // Fetch project types on mount
-  useEffect(() => {
-    loadProjectTypes();
-  }, []);
-
-  const loadProjectTypes = useCallback(async () => {
-    // Removed console.log("[ProjectTypeManager] Loading project types...");
-    setIsLoading(true);
-    const result = await getProjectTypes();
-    if (result.projectTypes) {
-      setProjectTypes(result.projectTypes);
-    } else if (result.error) {
-      console.error("[ProjectTypeManager] Error loading:", result.error);
-      toast.error(result.error);
-    }
-    setIsLoading(false);
-  }, []);
-
   // Handle create submission
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Removed console.log("[ProjectTypeManager] Creating project type...");
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -118,18 +106,17 @@ export function ProjectTypeManager() {
     if (result.success) {
       toast.success("Project type created successfully");
       setShowCreateModal(false);
-      loadProjectTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to create project type");
     }
-  }, [loadProjectTypes]);
+  }, [onRefresh]);
 
   // Handle update submission
   const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingType) return;
 
-    // Removed console.log("[ProjectTypeManager] Updating project type:", editingType.id);
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -140,17 +127,16 @@ export function ProjectTypeManager() {
     if (result.success) {
       toast.success("Project type updated successfully");
       setEditingType(null);
-      loadProjectTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to update project type");
     }
-  }, [editingType, loadProjectTypes]);
+  }, [editingType, onRefresh]);
 
   // Handle delete confirmation
   const handleDelete = useCallback(async () => {
     if (!deletingType) return;
 
-    // Removed console.log("[ProjectTypeManager] Deleting project type:", deletingType.id);
     setIsSubmitting(true);
 
     const result = await deleteProjectType(deletingType.id);
@@ -160,11 +146,11 @@ export function ProjectTypeManager() {
     if (result.success) {
       toast.success("Project type deleted successfully");
       setDeletingType(null);
-      loadProjectTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to delete project type");
     }
-  }, [deletingType, loadProjectTypes]);
+  }, [deletingType, onRefresh]);
 
   return (
     <div
@@ -190,170 +176,164 @@ export function ProjectTypeManager() {
         </Button>
       </div>
 
-      {/* Debug: Project types table */}
-      <div
-        className="border-2 border-gray-200 rounded-lg overflow-hidden shadow-construction transition-all duration-300"
-        aria-busy={isLoading}
-      >
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-50">
-              <TableHead className="font-bold text-gray-900">Type</TableHead>
-              <TableHead className="font-bold text-gray-900 hidden md:table-cell">
-                Description
-              </TableHead>
-              <TableHead className="font-bold text-gray-900 text-center">
-                Projects
-              </TableHead>
-              <TableHead className="font-bold text-gray-900 text-center">
-                Status
-              </TableHead>
-              <TableHead className="font-bold text-gray-900 text-right">
-                Actions
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              // Debug: Loading skeleton with improved contrast
-              Array.from({ length: 4 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-gray-300 rounded-lg animate-pulse" />
-                      <div className="h-4 w-32 bg-gray-300 rounded animate-pulse" />
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    <div className="h-4 w-48 bg-gray-300 rounded animate-pulse" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="h-6 w-8 bg-gray-300 rounded-full mx-auto animate-pulse" />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <div className="h-6 w-16 bg-gray-300 rounded-full mx-auto animate-pulse" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-2">
-                      <div className="h-10 w-10 bg-gray-300 rounded animate-pulse" />
-                      <div className="h-10 w-10 bg-gray-300 rounded animate-pulse" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : projectTypes.length === 0 ? (
-              // Debug: Empty state with improved visual hierarchy
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-16">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="p-4 bg-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-                      <Building2
-                        className="h-12 w-12 text-construction-blue"
-                        aria-hidden="true"
+      {/* Debug: Project types grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {isLoading ? (
+          // Debug: Loading skeleton cards with CSS stagger animation
+          Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="relative group animate-in fade-in slide-in-from-bottom-4"
+              style={{
+                animationDelay: `${Math.min(i * 50, 300)}ms`,
+                animationDuration: '400ms',
+                animationFillMode: 'both',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg animate-pulse" />
+              <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="h-12 w-12 bg-gray-200 rounded-lg animate-pulse" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100">
+                  <div className="h-6 w-20 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                </div>
+              </div>
+            </div>
+          ))
+        ) : projectTypes.length === 0 ? (
+          // Debug: Empty state matching ProjectsPageClient pattern
+          <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
+              <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
+                <Building2 className="h-16 w-16 text-construction-blue" />
+              </div>
+            </div>
+            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+              No Project Types Defined
+            </h3>
+            <p className="text-gray-500 max-w-md mb-6">
+              Create your first project type to start organizing construction projects
+            </p>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              className="min-h-[44px] min-w-[44px] bg-construction-blue hover:bg-blue-700 active:bg-blue-800 text-white font-bold transition-all duration-150 active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Create First Project Type
+            </Button>
+          </div>
+        ) : (
+          // Debug: Project type cards with CSS stagger animation
+          projectTypes.map((type, index) => {
+            const IconComponent =
+              AVAILABLE_ICONS[
+                type.icon_name as keyof typeof AVAILABLE_ICONS
+              ] || Building2;
+            const cardColor = type.color || "#001B51";
+
+            return (
+              <div
+                key={type.id}
+                className="relative group h-full animate-in fade-in slide-in-from-bottom-4"
+                style={{
+                  animationDelay: `${Math.min(index * 50, 300)}ms`,
+                  animationDuration: '400ms',
+                  animationFillMode: 'both',
+                }}
+              >
+                {/* Debug: Gradient background glow */}
+                <div
+                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
+                  style={{
+                    background: `linear-gradient(135deg, ${cardColor}15, ${cardColor}05)`,
+                  }}
+                />
+
+                {/* Debug: Clickable card container - Opens edit modal on click */}
+                <div
+                  onClick={() => setEditingType(type)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEditingType(type);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="relative w-full bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
+                >
+                  {/* Debug: Card header with icon and info */}
+                  <div className="flex items-start gap-4 mb-4">
+                    {/* Icon */}
+                    <div
+                      className="p-3 rounded-lg border-2 shrink-0 transition-transform duration-300 group-hover:scale-110"
+                      style={{
+                        backgroundColor: `${cardColor}15`,
+                        borderColor: `${cardColor}30`,
+                      }}
+                    >
+                      <IconComponent
+                        className="h-6 w-6"
+                        style={{ color: cardColor }}
                       />
                     </div>
-                    <div>
-                      <p className="text-gray-900 font-bold text-lg mb-1">
-                        No project types defined
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Add your first project type to get started
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              // Debug: Project type rows
-              projectTypes.map((type) => {
-                const IconComponent =
-                  AVAILABLE_ICONS[
-                    type.icon_name as keyof typeof AVAILABLE_ICONS
-                  ] || Building2;
-                return (
-                  <TableRow
-                    key={type.id}
-                    className="hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="p-2 rounded-lg border-2 transition-all duration-300"
-                          style={{
-                            backgroundColor: `${type.color || "#001B51"}15`,
-                            borderColor: `${type.color || "#001B51"}30`,
-                          }}
-                          aria-hidden="true"
-                        >
-                          <IconComponent
-                            className="h-5 w-5"
-                            style={{ color: type.color || "#001B51" }}
-                          />
-                        </div>
-                        <span className="font-semibold text-gray-900">
+
+                    {/* Name and status */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight">
                           {type.name}
+                        </h4>
+                        {!type.is_active && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs font-bold shrink-0">
+                            <XCircle className="h-3 w-3" />
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
+                        {type.description || "No description provided"}
+                      </p>
+                      {/* Project count badge */}
+                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-md">
+                        <Building2 className="h-3.5 w-3.5 text-gray-600" />
+                        <span className="text-xs font-bold text-gray-900">
+                          {type.project_count || 0} project{type.project_count !== 1 ? 's' : ''}
                         </span>
                       </div>
-                    </TableCell>
-                    <TableCell className="text-gray-600 max-w-xs truncate hidden md:table-cell">
-                      {type.description || "-"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span
-                        className="inline-flex items-center justify-center px-2 py-1 bg-gray-100 text-gray-900 rounded-full text-sm font-bold min-w-[2rem]"
-                        aria-label={`${type.project_count || 0} projects`}
-                      >
-                        {type.project_count || 0}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <span
-                        className={cn(
-                          "inline-flex items-center px-2 py-1 rounded-full text-xs font-bold transition-colors duration-200",
-                          type.is_active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-600",
-                        )}
-                        aria-label={`Status: ${type.is_active ? "Active" : "Inactive"}`}
-                      >
-                        {type.is_active ? "Active" : "Inactive"}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setEditingType(type)}
-                          className="hover:bg-construction-blue/10 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 min-h-[44px] min-w-[44px]"
-                          aria-label={`Edit ${type.name}`}
-                        >
-                          <Edit
-                            className="h-4 w-4 text-construction-blue"
-                            aria-hidden="true"
-                          />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setDeletingType(type)}
-                          className="hover:bg-red-50 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 min-h-[44px] min-w-[44px]"
-                          aria-label={`Delete ${type.name}`}
-                          disabled={(type.project_count || 0) > 0}
-                        >
-                          <Trash2
-                            className="h-4 w-4 text-red-600"
-                            aria-hidden="true"
-                          />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
+                    </div>
+                  </div>
+
+                  {/* Debug: Card footer with delete action only */}
+                  <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t-2 border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium">
+                      Click to edit
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent edit modal from opening
+                        setDeletingType(type);
+                      }}
+                      disabled={(type.project_count || 0) > 0}
+                      className="min-h-[44px] min-w-[44px] hover:bg-red-50 hover:text-red-600 active:bg-red-100 font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* Debug: Create Modal */}
@@ -764,4 +744,4 @@ export function ProjectTypeManager() {
       )}
     </div>
   );
-}
+});

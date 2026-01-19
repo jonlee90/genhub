@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -95,6 +95,178 @@ const STATUS_ANIMATE: Record<string, boolean> = {
 type SortField = "title" | "project" | "due_date" | "priority" | "status";
 type SortOrder = "asc" | "desc";
 
+interface TaskListRowProps {
+  task: TaskWithRelations;
+  onTaskClick?: (task: TaskWithRelations) => void;
+  getPhaseName: (task: TaskWithRelations) => string;
+  onStatusChange: (
+    taskId: string,
+    newStatus: TaskStatus,
+    currentStatus: TaskStatus,
+  ) => void;
+}
+
+const TaskListRow = memo(function TaskListRow({
+  task,
+  onTaskClick,
+  getPhaseName,
+  onStatusChange,
+}: TaskListRowProps) {
+  const statusConfig = TASK_STATUS_CONFIG[task.status];
+  const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
+  const taskIsOverdue = isOverdue(task);
+
+  return (
+    <TableRow className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100">
+      {/* Title */}
+      <TableCell>
+        <button
+          onClick={() => onTaskClick?.(task)}
+          className="font-bold text-sm hover:text-[#001B51] transition-colors flex items-center gap-2 relative group text-left"
+        >
+          {task.status === "blocked" && (
+            <Ban className="h-4 w-4 text-red-500 flex-shrink-0" />
+          )}
+          {taskIsOverdue && task.status !== "blocked" && (
+            <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+          )}
+          <span className="line-clamp-1 relative">
+            {task.title}
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#001B51] group-hover:w-full transition-all duration-300" />
+          </span>
+        </button>
+      </TableCell>
+
+      {/* Project */}
+      <TableCell>
+        {task.project ? (
+          <Link
+            href={`/app/projects/${task.project.id}`}
+            className="hover:underline text-sm"
+          >
+            {task.project.name}
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
+      </TableCell>
+
+      {/* Phase */}
+      <TableCell>
+        <span className="text-sm text-muted-foreground">
+          {getPhaseName(task)}
+        </span>
+      </TableCell>
+
+      {/* Assignee */}
+      <TableCell>
+        {task.assignee ? (
+          <div className="flex items-center gap-2">
+            <Avatar className="h-6 w-6">
+              <AvatarImage src={task.assignee.avatar_url || undefined} />
+              <AvatarFallback className="text-xs">
+                {getInitials(task.assignee.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="text-sm">{task.assignee.name}</span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">Unassigned</span>
+        )}
+      </TableCell>
+
+      {/* Due Date */}
+      <TableCell>
+        {task.due_date ? (
+          <div
+            className={cn(
+              "flex items-center gap-1 text-sm",
+              taskIsOverdue && "text-red-600",
+            )}
+          >
+            <Calendar className="h-3 w-3" />
+            {formatDate(task.due_date)}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">-</span>
+        )}
+      </TableCell>
+
+      {/* Priority */}
+      <TableCell>
+        <Badge
+          variant="secondary"
+          className={cn("font-bold", priorityConfig.badgeColor)}
+        >
+          {priorityConfig.label}
+        </Badge>
+      </TableCell>
+
+      {/* Status (Inline Edit) */}
+      <TableCell>
+        <motion.div
+          animate={STATUS_ANIMATE[task.status] ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <Select
+            value={task.status}
+            onValueChange={(value) =>
+              onStatusChange(task.id, value as TaskStatus, task.status)
+            }
+          >
+            <SelectTrigger
+              className={cn("w-[140px] h-8 font-bold", statusConfig.solidColor)}
+            >
+              <div className="flex items-center gap-1.5">
+                {STATUS_ICONS[task.status] &&
+                  (() => {
+                    const Icon = STATUS_ICONS[task.status]!;
+                    return <Icon className="w-3 h-3" />;
+                  })()}
+                <SelectValue />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(TASK_STATUS_CONFIG).map(([value, config]) => (
+                <SelectItem key={value} value={value}>
+                  <div className="flex items-center gap-1.5">
+                    {STATUS_ICONS[value] &&
+                      (() => {
+                        const Icon = STATUS_ICONS[value]!;
+                        return <Icon className="w-3 h-3" />;
+                      })()}
+                    {config.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </motion.div>
+      </TableCell>
+    </TableRow>
+  );
+}, areTaskListRowEqual);
+
+function areTaskListRowEqual(prev: TaskListRowProps, next: TaskListRowProps) {
+  return (
+    prev.task.id === next.task.id &&
+    prev.task.title === next.task.title &&
+    prev.task.status === next.task.status &&
+    prev.task.priority === next.task.priority &&
+    prev.task.due_date === next.task.due_date &&
+    prev.task.project?.id === next.task.project?.id &&
+    prev.task.project?.name === next.task.project?.name &&
+    prev.task.assignee?.id === next.task.assignee?.id &&
+    prev.task.assignee?.name === next.task.assignee?.name &&
+    prev.task.assignee?.avatar_url === next.task.assignee?.avatar_url &&
+    prev.task.phase_id === next.task.phase_id &&
+    prev.task.phase?.name === next.task.phase?.name &&
+    prev.onTaskClick === next.onTaskClick &&
+    prev.getPhaseName === next.getPhaseName &&
+    prev.onStatusChange === next.onStatusChange
+  );
+}
+
 export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
   const [sortField, setSortField] = useState<SortField>("due_date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
@@ -152,23 +324,26 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
     return tasksToSort;
   }, [tasks, sortField, sortOrder]);
 
-  const handleStatusChange = async (
-    taskId: string,
-    newStatus: TaskStatus,
-    currentStatus: TaskStatus,
-  ) => {
-    if (newStatus === currentStatus) return;
+  const handleStatusChange = useCallback(
+    async (
+      taskId: string,
+      newStatus: TaskStatus,
+      currentStatus: TaskStatus,
+    ) => {
+      if (newStatus === currentStatus) return;
 
-    if (newStatus === "blocked") {
-      const reason = window.prompt(
-        "Please enter a reason for blocking this task:",
-      );
-      if (!reason) return;
-      await updateTaskStatus(taskId, newStatus, reason);
-    } else {
-      await updateTaskStatus(taskId, newStatus);
-    }
-  };
+      if (newStatus === "blocked") {
+        const reason = window.prompt(
+          "Please enter a reason for blocking this task:",
+        );
+        if (!reason) return;
+        await updateTaskStatus(taskId, newStatus, reason);
+      } else {
+        await updateTaskStatus(taskId, newStatus);
+      }
+    },
+    [],
+  );
 
   const getPhaseName = useCallback(
     (task: TaskWithRelations) => {
@@ -254,159 +429,15 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedTasks.map((task) => {
-            const statusConfig = TASK_STATUS_CONFIG[task.status];
-            const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
-            const taskIsOverdue = isOverdue(task);
-
-            return (
-              <TableRow
-                key={task.id}
-                className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100"
-              >
-                {/* Title */}
-                <TableCell>
-                  <button
-                    onClick={() => onTaskClick?.(task)}
-                    className="font-bold text-sm hover:text-[#001B51] transition-colors flex items-center gap-2 relative group text-left"
-                  >
-                    {task.status === "blocked" && (
-                      <Ban className="h-4 w-4 text-red-500 flex-shrink-0" />
-                    )}
-                    {taskIsOverdue && task.status !== "blocked" && (
-                      <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                    )}
-                    <span className="line-clamp-1 relative">
-                      {task.title}
-                      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#001B51] group-hover:w-full transition-all duration-300" />
-                    </span>
-                  </button>
-                </TableCell>
-
-                {/* Project */}
-                <TableCell>
-                  {task.project ? (
-                    <Link
-                      href={`/app/projects/${task.project.id}`}
-                      className="hover:underline text-sm"
-                    >
-                      {task.project.name}
-                    </Link>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </TableCell>
-
-                {/* Phase */}
-                <TableCell>
-                  <span className="text-sm text-muted-foreground">
-                    {getPhaseName(task)}
-                  </span>
-                </TableCell>
-
-                {/* Assignee */}
-                <TableCell>
-                  {task.assignee ? (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage
-                          src={task.assignee.avatar_url || undefined}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {getInitials(task.assignee.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm">{task.assignee.name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">
-                      Unassigned
-                    </span>
-                  )}
-                </TableCell>
-
-                {/* Due Date */}
-                <TableCell>
-                  {task.due_date ? (
-                    <div
-                      className={cn(
-                        "flex items-center gap-1 text-sm",
-                        taskIsOverdue && "text-red-600",
-                      )}
-                    >
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(task.due_date)}
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">-</span>
-                  )}
-                </TableCell>
-
-                {/* Priority */}
-                <TableCell>
-                  <Badge
-                    variant="secondary"
-                    className={cn("font-bold", priorityConfig.badgeColor)}
-                  >
-                    {priorityConfig.label}
-                  </Badge>
-                </TableCell>
-
-                {/* Status (Inline Edit) */}
-                <TableCell>
-                  <motion.div
-                    animate={
-                      STATUS_ANIMATE[task.status] ? { scale: [1, 1.05, 1] } : {}
-                    }
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <Select
-                      value={task.status}
-                      onValueChange={(value) =>
-                        handleStatusChange(
-                          task.id,
-                          value as TaskStatus,
-                          task.status,
-                        )
-                      }
-                    >
-                      <SelectTrigger
-                        className={cn(
-                          "w-[140px] h-8 font-bold",
-                          statusConfig.solidColor,
-                        )}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          {STATUS_ICONS[task.status] &&
-                            (() => {
-                              const Icon = STATUS_ICONS[task.status]!;
-                              return <Icon className="w-3 h-3" />;
-                            })()}
-                          <SelectValue />
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(TASK_STATUS_CONFIG).map(
-                          ([value, config]) => (
-                            <SelectItem key={value} value={value}>
-                              <div className="flex items-center gap-1.5">
-                                {STATUS_ICONS[value] &&
-                                  (() => {
-                                    const Icon = STATUS_ICONS[value]!;
-                                    return <Icon className="w-3 h-3" />;
-                                  })()}
-                                {config.label}
-                              </div>
-                            </SelectItem>
-                          ),
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </motion.div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {sortedTasks.map((task) => (
+            <TaskListRow
+              key={task.id}
+              task={task}
+              onTaskClick={onTaskClick}
+              getPhaseName={getPhaseName}
+              onStatusChange={handleStatusChange}
+            />
+          ))}
         </TableBody>
       </Table>
     </div>

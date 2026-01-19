@@ -32,6 +32,7 @@ interface TasksPageClientProps {
   projects: TaskProject[];
   teamMembers: TeamMember[];
   taskDependencies: TaskDependencyRow[];
+  taskTypes: any[]; // TaskTypeConfigsRow[]
   initialView: "kanban" | "list";
   userRole: string | null;
 }
@@ -52,11 +53,13 @@ const TaskModalRenderer = memo(function TaskModalRenderer({
   projects,
   teamMembers,
   assignees,
+  taskTypes,
   onSuccess
 }: {
   projects: TaskProject[],
   teamMembers: TeamMember[],
   assignees: AssigneeOption[],
+  taskTypes: any[],
   onSuccess: () => void
 }) {
   const { isOpen, mode, selectedTask, close } = useTaskModal();
@@ -73,6 +76,7 @@ const TaskModalRenderer = memo(function TaskModalRenderer({
       teamMembers={teamMembers}
       onSuccess={onSuccess}
       assignees={assignees}
+      taskTypes={taskTypes}
     />
   );
 });
@@ -82,6 +86,7 @@ export function TasksPageClient({
   projects,
   teamMembers,
   taskDependencies,
+  taskTypes,
   initialView,
   userRole,
 }: TasksPageClientProps) {
@@ -142,7 +147,8 @@ export function TasksPageClient({
     projects,
     teamMembers,
     assignees,
-  }), [projects, teamMembers, assignees]);
+    taskTypes,
+  }), [projects, teamMembers, assignees, taskTypes]);
 
   // Register create modal data for bottom nav
   useEffect(() => {
@@ -259,7 +265,7 @@ export function TasksPageClient({
                   </h1>
                   
                   {/* Action Button with Construction Theme */}
-                  <TaskModalTrigger projects={projects} teamMembers={teamMembers} />
+                  <TaskModalTrigger projects={projects} teamMembers={teamMembers} taskTypes={taskTypes} />
                 </div>
             </div>
 
@@ -385,6 +391,7 @@ export function TasksPageClient({
           projects={modalData.projects}
           teamMembers={modalData.teamMembers}
           assignees={modalData.assignees}
+          taskTypes={modalData.taskTypes}
           onSuccess={handleModalSuccess}
         />
         </div>
@@ -414,7 +421,7 @@ export function TasksPageClient({
             </div>
 
             {/* Action Button with Construction Theme */}
-            <TaskModalTrigger projects={projects} teamMembers={teamMembers} />
+            <TaskModalTrigger projects={projects} teamMembers={teamMembers} taskTypes={taskTypes} />
           </div>
 
           {/* Prominent Project Filter */}
@@ -458,6 +465,7 @@ export function TasksPageClient({
         projects={modalData.projects}
         teamMembers={modalData.teamMembers}
         assignees={modalData.assignees}
+        taskTypes={modalData.taskTypes}
         onSuccess={handleModalSuccess}
       />
       </div>

@@ -18,6 +18,7 @@ interface TaskTypeSelectionStepProps {
   onPriorityChange?: (priority: string) => void;
   onStartDateChange?: (date: string) => void;
   disabled?: boolean;
+  prefetchedTaskTypes?: any[]; // Prefetched task types from server
 }
 
 /**
@@ -30,6 +31,7 @@ function TaskTypeSelectionStepInner({
   onPriorityChange,
   onStartDateChange,
   disabled,
+  prefetchedTaskTypes,
 }: TaskTypeSelectionStepProps) {
   const handleTypeSelect = useCallback((type: TaskType) => {
     onTypeSelect(type);
@@ -59,6 +61,7 @@ function TaskTypeSelectionStepInner({
         selectedType={selectedType}
         onSelect={handleTypeSelect}
         disabled={disabled}
+        prefetchedTaskTypes={prefetchedTaskTypes}
       />
     </motion.div>
   );

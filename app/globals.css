@@ -190,6 +190,98 @@ textarea:focus {
   }
 }
 
+/* View Transitions API Support */
+@supports (view-transition-name: auto) {
+  /* Root transition configuration */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 250ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Fade + slide transition for page changes */
+  ::view-transition-old(root) {
+    animation-name: fade-out, slide-to-left;
+  }
+
+  ::view-transition-new(root) {
+    animation-name: fade-in, slide-from-right;
+  }
+
+  /* Smooth fade transitions */
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  /* Subtle slide transitions */
+  @keyframes slide-to-left {
+    to {
+      transform: translateX(-30px);
+    }
+  }
+
+  @keyframes slide-from-right {
+    from {
+      transform: translateX(30px);
+    }
+  }
+
+  /* Card transition - for card-based layouts */
+  .view-transition-card {
+    view-transition-name: card;
+  }
+
+  ::view-transition-old(card),
+  ::view-transition-new(card) {
+    animation-duration: 300ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Modal transition - for modals and sheets */
+  .view-transition-modal {
+    view-transition-name: modal;
+  }
+
+  ::view-transition-old(modal) {
+    animation: fade-out 200ms ease-out;
+  }
+
+  ::view-transition-new(modal) {
+    animation: fade-in 200ms ease-in, scale-up 200ms ease-in;
+  }
+
+  @keyframes scale-up {
+    from {
+      transform: scale(0.95);
+    }
+  }
+
+  /* List item transition */
+  .view-transition-item {
+    view-transition-name: var(--view-transition-name);
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-old(card),
+  ::view-transition-new(card),
+  ::view-transition-old(modal),
+  ::view-transition-new(modal) {
+    animation: none !important;
+  }
+}
+
 /* Debug: Mobile-specific utilities */
 /* Hide scrollbar but maintain functionality */
 .scrollbar-hide {

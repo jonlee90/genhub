@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { motion } from "framer-motion";
-import {
-  Plus,
-  Edit,
-  Trash2,
-  Hammer,
-  Wrench,
-  HardHat,
-  Ruler,
-  Package,
-  Clipboard,
-  Pencil,
-  CheckCircle2,
-  AlertCircle,
-  Sparkles,
-  XCircle,
-} from "lucide-react";
+// Performance optimization: Direct imports instead of barrel file
+import Plus from 'lucide-react/icons/plus';
+import Edit from 'lucide-react/icons/edit';
+import Trash2 from 'lucide-react/icons/trash-2';
+import Hammer from 'lucide-react/icons/hammer';
+import Wrench from 'lucide-react/icons/wrench';
+import HardHat from 'lucide-react/icons/hard-hat';
+import Ruler from 'lucide-react/icons/ruler';
+import Package from 'lucide-react/icons/package';
+import Clipboard from 'lucide-react/icons/clipboard';
+import Pencil from 'lucide-react/icons/pencil';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Sparkles from 'lucide-react/icons/sparkles';
+import XCircle from 'lucide-react/icons/x-circle';
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
@@ -42,7 +41,6 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import {
-  getAllTaskTypes,
   createTaskType,
   updateTaskType,
   deleteTaskType,
@@ -52,6 +50,12 @@ import {
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 type TaskTypeConfig = TaskTypeConfigsRow;
+
+interface TaskTypeManagerProps {
+  taskTypes: TaskTypeConfig[];
+  isLoading: boolean;
+  onRefresh: () => void;
+}
 
 /**
  * Icon mapping for task type selection
@@ -71,33 +75,22 @@ const AVAILABLE_ICONS = {
 /**
  * TaskTypeManager - Grid-based task type configuration manager
  * Debug: Construction-themed card layout with industrial aesthetics
+ *
+ * Performance optimizations:
+ * - Memoized component wrapper
+ * - Direct Lucide imports (no barrel file)
+ * - CSS stagger animations instead of per-item framer-motion
+ * - All callbacks use useCallback
+ * - Receives data via props instead of fetching independently
  */
-export function TaskTypeManager() {
-  // Removed console.log("[TaskTypeManager] Rendering task type manager");
-
-  const [taskTypes, setTaskTypes] = useState<TaskTypeConfig[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export const TaskTypeManager = memo(function TaskTypeManager({
+  taskTypes,
+  isLoading,
+  onRefresh,
+}: TaskTypeManagerProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingType, setEditingType] = useState<TaskTypeConfig | null>(null);
   const [deletingType, setDeletingType] = useState<TaskTypeConfig | null>(null);
-
-  // Fetch task types on mount
-  useEffect(() => {
-    loadTaskTypes();
-  }, []);
-
-  const loadTaskTypes = useCallback(async () => {
-    // Removed console.log("[TaskTypeManager] Loading task types...");
-    setIsLoading(true);
-    const result = await getAllTaskTypes();
-    if (result.taskTypes) {
-      setTaskTypes(result.taskTypes);
-    } else if (result.error) {
-      console.error("[TaskTypeManager] Error loading:", result.error);
-      toast.error(result.error);
-    }
-    setIsLoading(false);
-  }, []);
 
   // Handle create submission
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,11 +103,11 @@ export function TaskTypeManager() {
     if (result.success) {
       toast.success("Task type created successfully");
       setShowCreateModal(false);
-      loadTaskTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to create task type");
     }
-  }, [loadTaskTypes]);
+  }, [onRefresh]);
 
   // Handle update submission
   const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
@@ -129,11 +122,11 @@ export function TaskTypeManager() {
     if (result.success) {
       toast.success("Task type updated successfully");
       setEditingType(null);
-      loadTaskTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to update task type");
     }
-  }, [editingType, loadTaskTypes]);
+  }, [editingType, onRefresh]);
 
   // Handle delete confirmation
   const handleDelete = useCallback(async () => {
@@ -146,11 +139,11 @@ export function TaskTypeManager() {
     if (result.success) {
       toast.success("Task type deleted successfully");
       setDeletingType(null);
-      loadTaskTypes();
+      onRefresh();
     } else {
       toast.error(result.error || "Failed to delete task type");
     }
-  }, [deletingType, loadTaskTypes]);
+  }, [deletingType, onRefresh]);
 
   return (
     <div className="space-y-6">
@@ -166,7 +159,7 @@ export function TaskTypeManager() {
         </div>
         <Button
           onClick={() => setShowCreateModal(true)}
-          className="bg-construction-blue hover:bg-blue-700 text-white font-bold shadow-construction shrink-0"
+          className="min-h-[44px] min-w-[44px] bg-construction-blue hover:bg-blue-700 active:bg-blue-800 text-white font-bold shadow-construction shrink-0 transition-all duration-150 active:scale-[0.98]"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Task Type
@@ -176,14 +169,16 @@ export function TaskTypeManager() {
       {/* Debug: Task types grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {isLoading ? (
-          // Debug: Loading skeleton cards
+          // Debug: Loading skeleton cards with CSS stagger animation
           Array.from({ length: 6 }).map((_, i) => (
-            <motion.div
+            <div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="relative group"
+              className="relative group animate-in fade-in slide-in-from-bottom-4"
+              style={{
+                animationDelay: `${Math.min(i * 50, 300)}ms`,
+                animationDuration: '400ms',
+                animationFillMode: 'both',
+              }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg animate-pulse" />
               <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
@@ -199,7 +194,7 @@ export function TaskTypeManager() {
                   <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
                 </div>
               </div>
-            </motion.div>
+            </div>
           ))
         ) : taskTypes.length === 0 ? (
           // Debug: Empty state
@@ -223,14 +218,14 @@ export function TaskTypeManager() {
             </p>
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-construction-blue hover:bg-blue-700 text-white font-bold"
+              className="min-h-[44px] min-w-[44px] bg-construction-blue hover:bg-blue-700 active:bg-blue-800 text-white font-bold transition-all duration-150 active:scale-[0.98]"
             >
               <Plus className="h-4 w-4 mr-2" />
               Create First Task Type
             </Button>
           </motion.div>
         ) : (
-          // Debug: Task type cards with staggered animation
+          // Debug: Task type cards with CSS stagger animation (no per-item framer-motion)
           taskTypes.map((type, index) => {
             const IconComponent =
               AVAILABLE_ICONS[type.icon_name as keyof typeof AVAILABLE_ICONS] ||
@@ -238,12 +233,14 @@ export function TaskTypeManager() {
             const cardColor = type.color || "#3b82f6";
 
             return (
-              <motion.div
+              <div
                 key={type.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.08, duration: 0.4 }}
-                className="relative group h-full"
+                className="relative group h-full animate-in fade-in slide-in-from-bottom-4"
+                style={{
+                  animationDelay: `${Math.min(index * 50, 300)}ms`,
+                  animationDuration: '400ms',
+                  animationFillMode: 'both',
+                }}
               >
                 {/* Debug: Gradient background glow */}
                 <div
@@ -253,8 +250,19 @@ export function TaskTypeManager() {
                   }}
                 />
 
-                {/* Debug: Card container */}
-                <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col">
+                {/* Debug: Clickable card container - Opens edit modal on click */}
+                <div
+                  onClick={() => setEditingType(type)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setEditingType(type);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  className="relative w-full bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
+                >
                   {/* Debug: Card header with icon and badges */}
                   <div className="flex items-start gap-4 mb-4">
                     {/* Icon */}
@@ -296,29 +304,25 @@ export function TaskTypeManager() {
                     </div>
                   </div>
 
-                  {/* Debug: Card footer with actions */}
-                  <div className="flex items-center justify-end gap-2 pt-3 mt-auto border-t-2 border-gray-100">
+                  {/* Debug: Card footer with delete action only */}
+                  <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t-2 border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium">
+                      Click to edit
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setEditingType(type)}
-                      className="hover:bg-construction-blue/10 hover:text-construction-blue font-semibold transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent edit modal from opening
+                        setDeletingType(type);
+                      }}
+                      className="min-h-[44px] min-w-[44px] hover:bg-red-50 hover:text-red-600 active:bg-red-100 font-semibold transition-all duration-150 active:scale-[0.98]"
                     >
-                      <Edit className="h-4 w-4 mr-1.5" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeletingType(type)}
-                      className="hover:bg-red-50 hover:text-red-600 font-semibold transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1.5" />
-                      Delete
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             );
           })
         )}
@@ -656,4 +660,4 @@ export function TaskTypeManager() {
       )}
     </div>
   );
-}
+});
