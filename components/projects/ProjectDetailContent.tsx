@@ -703,10 +703,9 @@ export function ProjectDetailContent({
               projects={resolvedProjects}
               teamMembers={resolvedTeamMembers}
               phaseTaskStats={phaseTaskStats}
-              // Omit deferred data - will load in background via useDeferredData
-              // expenseStats={expenseStats}
-              // taskStats={taskStats}
-              // teamCostSummaries={teamCostSummaries}
+              expenseStats={expenseStats}
+              taskStats={taskStats}
+              teamCostSummaries={teamCostSummaries}
               onModalOpen={handleModalOpen}
             />
           )}
