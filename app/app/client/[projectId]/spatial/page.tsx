@@ -1,19 +1,9 @@
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
 import { auth } from "@/lib/auth";
 import { createClient } from "@/utils/supabase/server";
 import { getActiveModel } from "@/app/actions/spatial";
 import { Building2 } from "lucide-react";
-
-const ClientSpatialViewer = dynamic(
-  () =>
-    import("@/components/projects/spatial/ClientSpatialViewer").then((mod) => ({
-      default: mod.ClientSpatialViewer,
-    })),
-  {
-    ssr: false,
-  },
-);
+import { ClientSpatialViewerWrapper } from "@/components/projects/spatial/ClientSpatialViewerWrapper";
 
 interface ClientSpatialPageProps {
   params: Promise<{
@@ -98,7 +88,7 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
 
       {/* 3D Viewer */}
       <div className="relative z-10" style={{ height: "calc(100vh - 120px)" }}>
-        <ClientSpatialViewer
+        <ClientSpatialViewerWrapper
           projectId={params.projectId}
           projectType={project.project_type || "residential"}
           modelHighURL={activeModel?.xkt_file_url}

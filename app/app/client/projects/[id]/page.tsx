@@ -1,19 +1,9 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import dynamic from "next/dynamic";
 import { getProjectWithStats } from "@/app/actions/projects";
 import { getClientPermissions } from "@/app/actions/client";
 import { getActiveModel } from "@/app/actions/spatial";
-
-const ClientSpatialViewer = dynamic(
-  () =>
-    import("@/components/projects/spatial/ClientSpatialViewer").then((mod) => ({
-      default: mod.ClientSpatialViewer,
-    })),
-  {
-    ssr: false,
-  },
-);
+import { ClientSpatialViewerWrapper } from "@/components/projects/spatial/ClientSpatialViewerWrapper";
 
 /**
  * Client Portal Project Detail Page
@@ -124,7 +114,7 @@ export default async function ClientProjectDetailPage({
 
       {/* 3D Viewer (Full Height) */}
       <div className="relative z-10 flex-1 overflow-hidden">
-        <ClientSpatialViewer
+        <ClientSpatialViewerWrapper
           projectId={project.id}
           projectType={project.project_type || "commercial_office"}
           modelHighURL={activeModel?.xkt_file_url}
