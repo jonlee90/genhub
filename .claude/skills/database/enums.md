@@ -148,27 +148,40 @@ CREATE TYPE public.material_status AS ENUM (
 - Start with minimal set (can add, hard to remove)
 - Consider workflow order
 
-### 2. Create Migration
+### 2. Create Migration via MCP
 ```
-mcp__supabase__apply_migration
-name: "create_{enum_name}_enum"
-query: "CREATE TYPE public.{enum_name} AS ENUM ('value1', 'value2');"
+mcp__supabase__apply_migration(
+  name: "create_{enum_name}_enum",
+  query: "CREATE TYPE public.{enum_name} AS ENUM ('value1', 'value2');
+
+          COMMENT ON TYPE public.{enum_name} IS '{Description of what this enum represents}';"
+)
 ```
 
-### 3. Use in Table
+### 3. Save Migration
+```bash
+cat > supabase/migrations/$(date +%Y%m%d%H%M%S)_create_{enum_name}_enum.sql << 'EOF'
+-- [Your SQL here]
+EOF
+```
+
+### 4. Use in Table
 ```sql
 ALTER TABLE public.{table}
-ADD COLUMN {column} public.{enum_name} DEFAULT 'value1';
+ADD COLUMN {column} public.{enum_name} DEFAULT 'value1' NOT NULL;
+
+COMMENT ON COLUMN public.{table}.{column} IS '{Description of what this column tracks}';
 ```
 
-### 4. Regenerate Types
+### 5. Regenerate Types
 ```bash
 source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
 npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
 ```
 
-### 5. Update Documentation
-- Add to `docs/indexes/enums.md`
+### 6. Update Documentation
+- Add to `.claude/docs/indexes/enums.md`
+- Add to `.claude/docs/indexes/tables.md` (if new column)
 
 ---
 
@@ -307,9 +320,14 @@ After enum changes:
 
 ## Checklist
 
-- [ ] Enum name is descriptive (table_column format)
+- [ ] **MCP ONLY**: Enum created via `mcp__supabase__apply_migration`
+- [ ] Enum name is descriptive (`{table}_{column}` format)
 - [ ] Values are lowercase snake_case
-- [ ] DEFAULT value specified in column
-- [ ] Types regenerated
-- [ ] `docs/indexes/enums.md` updated
-- [ ] TypeScript config objects updated
+- [ ] Values represent workflow/state progression
+- [ ] DEFAULT value specified in column definition
+- [ ] NOT NULL constraint added (enums should have explicit state)
+- [ ] COMMENT ON TYPE added for documentation
+- [ ] Migration SQL saved to `supabase/migrations/`
+- [ ] Types regenerated to `types/database.types.ts`
+- [ ] `.claude/docs/indexes/enums.md` updated
+- [ ] TypeScript config objects updated (e.g., status colors, labels)

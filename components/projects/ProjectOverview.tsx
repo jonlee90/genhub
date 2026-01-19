@@ -2,10 +2,6 @@
 
 import { useMemo } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Calendar from "lucide-react/icons/calendar";
-import Building2 from "lucide-react/icons/building-2";
-import MapPin from "lucide-react/icons/map-pin";
-import DollarSign from "lucide-react/icons/dollar-sign";
 import User from "lucide-react/icons/user";
 import Mail from "lucide-react/icons/mail";
 import Phone from "lucide-react/icons/phone";
@@ -15,41 +11,64 @@ import { ProjectExpenseSummary } from "./ProjectExpenseSummary";
 import { ProjectTaskSummary } from "./ProjectTaskSummary";
 import { InfoCard } from "./InfoCard";
 import { formatDate } from "@/lib/utils";
-
-interface PhaseStats {
-  phaseId: string;
-  totalTasks: number;
-  completedTasks: number;
-  blockedTasks: number;
-  overdueTasks: number;
-}
-
-// Fix C2: Import ExpenseStats instead of duplicating
-import type {
-  ExpenseStats,
-  TaskStats,
-  TeamCostSummary,
-} from "@/app/actions/projects";
 import type { ProjectOverviewProps } from "@/types/components/projects";
+import type { ProjectPhasesRow } from "@/types/db/tables/projects";
+import type { TasksRow } from "@/types/db/tables/tasks";
 import { TeamCostSummaryCard } from "./TeamCostSummaryCard";
+import { useDeferredData } from "@/hooks/use-deferred-data";
+import {
+  getProjectExpenseStats,
+  getProjectTeamCosts,
+} from "@/app/actions/project-deferred";
+import {
+  ProjectTaskSummarySkeleton,
+  ProjectExpenseSummarySkeleton,
+  TeamCostSummaryCardSkeleton,
+} from "./ProjectOverviewSkeletons";
 
 export function ProjectOverview({
   project,
   projects = [],
   teamMembers = [],
   phaseTaskStats = [],
-  expenseStats,
-  taskStats,
-  teamCostSummaries = [],
+  expenseStats: initialExpenseStats,
+  taskStats: initialTaskStats,
+  teamCostSummaries: initialTeamCostSummaries = [],
+  onModalOpen,
 }: ProjectOverviewProps) {
-  console.log(
-    "[ProjectOverview] Rendering with expense stats:",
-    expenseStats,
-    "task stats:",
-    taskStats,
-    "teamCostSummaries:",
-    teamCostSummaries?.length,
-  );
+  // Performance optimization: Deferred loading for non-critical data
+  // Load expense/task stats 800ms after initial render (high priority deferred)
+  const {
+    data: statsData,
+    loading: statsLoading,
+    hasFetched: statsFetched,
+  } = useDeferredData({
+    fetchFn: () => getProjectExpenseStats(project.id),
+    delay: 800,
+    cacheKey: `project-${project.id}-stats`,
+    enabled: !initialExpenseStats || !initialTaskStats, // Skip if already provided
+  });
+
+  // Load team costs 1200ms after initial render (lower priority)
+  const {
+    data: teamData,
+    loading: teamLoading,
+    hasFetched: teamFetched,
+  } = useDeferredData({
+    fetchFn: () => getProjectTeamCosts(project.id),
+    delay: 1200,
+    cacheKey: `project-${project.id}-team-costs`,
+    enabled: initialTeamCostSummaries.length === 0, // Skip if already provided
+  });
+
+  // Use deferred data if available, fallback to initial props
+  const expenseStats = statsFetched
+    ? statsData?.expenseStats
+    : initialExpenseStats;
+  const taskStats = statsFetched ? statsData?.taskStats : initialTaskStats;
+  const teamCostSummaries = teamFetched
+    ? teamData?.teamCostSummaries ?? []
+    : initialTeamCostSummaries;
 
   // Performance optimization: Memoize computed values to prevent unnecessary recalculations
   const hasPhases = useMemo(
@@ -126,12 +145,13 @@ export function ProjectOverview({
           className="relative"
         >
           <MetroJourney
-            phases={(project.project_phases || []) as any}
-            tasks={(project.tasks || []) as any}
+            phases={(project.project_phases || []) as ProjectPhasesRow[]}
+            tasks={(project.tasks || []) as TasksRow[]}
             phaseStats={phaseTaskStats}
             projectId={project.id}
             projects={projects}
-            teamMembers={teamMembers as any}
+            teamMembers={(teamMembers || []).filter((m): m is { id: string; name: string; email: string; avatar_url: string | null } => !!m.name)}
+            onModalOpen={onModalOpen}
           />
         </motion.div>
       )}
@@ -145,33 +165,49 @@ export function ProjectOverview({
           transition={{ duration: 0.4, delay: hasPhases ? 0.3 : 0 }}
           className="lg:col-span-2 space-y-6"
         >
-          {/* Task Summary Widget */}
-          {taskStats && (
+          {/* Task Summary Widget - Deferred Loading */}
+          {statsLoading && !taskStats ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.6 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProjectTaskSummarySkeleton />
+            </motion.div>
+          ) : taskStats ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
             >
               <ProjectTaskSummary
                 taskStats={taskStats}
                 projectBudget={project.budget ?? undefined}
               />
             </motion.div>
-          )}
+          ) : null}
 
-          {/* Expense Summary Widget */}
-          {expenseStats && project.budget && project.budget > 0 && (
+          {/* Expense Summary Widget - Deferred Loading */}
+          {statsLoading && !expenseStats ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.5 }}
+              transition={{ duration: 0.3 }}
+            >
+              <ProjectExpenseSummarySkeleton />
+            </motion.div>
+          ) : expenseStats && project.budget && project.budget > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
             >
               <ProjectExpenseSummary
                 expenseStats={expenseStats}
                 budget={project.budget}
               />
             </motion.div>
-          )}
+          ) : null}
         </motion.div>
 
         {/* Sidebar Column - 1/3 */}
@@ -195,10 +231,12 @@ export function ProjectOverview({
             />
           )}
 
-          {/* Team Cost Summary Card - Below Client Information */}
-          {teamCostSummaries && (
+          {/* Team Cost Summary Card - Deferred Loading */}
+          {teamLoading && teamCostSummaries.length === 0 ? (
+            <TeamCostSummaryCardSkeleton />
+          ) : teamCostSummaries.length > 0 ? (
             <TeamCostSummaryCard summaries={teamCostSummaries} />
-          )}
+          ) : null}
         </motion.div>
       </div>
     </div>

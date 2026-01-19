@@ -46,9 +46,18 @@ interface MetroJourneyProps {
     email: string;
     avatar_url: string | null;
   }>;
+  onModalOpen?: () => void;
 }
 
-export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, teamMembers }: MetroJourneyProps) {
+export function MetroJourney({
+  phases,
+  tasks,
+  phaseStats,
+  projectId,
+  projects = [],
+  teamMembers = [],
+  onModalOpen
+}: MetroJourneyProps) {
   console.log('[MetroJourney] Rendering with phases:', phases.length);
 
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
@@ -342,6 +351,7 @@ export function MetroJourney({ phases, tasks, phaseStats, projectId, projects, t
                 onClose={() => setSelectedPhaseId(null)}
                 projects={projects}
                 teamMembers={teamMembers}
+                onModalOpen={onModalOpen}
               />
             </motion.div>
           )}

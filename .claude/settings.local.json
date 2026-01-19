@@ -165,7 +165,12 @@
       "Bash(git mv:*)",
       "Bash(git stash:*)",
       "Bash(1)",
-      "Bash(ESLINT_NO_DEV_ERRORS=true npm run build:*)"
+      "Bash(ESLINT_NO_DEV_ERRORS=true npm run build:*)",
+      "WebFetch(domain:openai.com)",
+      "Bash(for component in \"ConflictDialog\" \"TaskLinkerEnhanced\" \"TaskLinker\" \"BottomSheetModal/example\")",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(rg:*)"
     ],
     "deny": [],
     "ask": []

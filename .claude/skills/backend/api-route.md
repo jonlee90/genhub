@@ -203,6 +203,42 @@ export async function POST(request: NextRequest) {
 }
 ```
 
+### 6. Non-Blocking Post-Response Operations (Vercel)
+
+Use Vercel's `after()` for operations that don't need to block the response:
+
+```typescript
+// app/api/events/route.ts
+import { after } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function POST(request: NextRequest) {
+  const body = await request.json()
+
+  // Critical: Save event to database
+  await saveEvent(body)
+
+  // Return response immediately
+  const response = NextResponse.json({ success: true })
+
+  // Non-blocking: Send analytics, notifications, etc.
+  after(async () => {
+    await sendAnalytics(body)
+    await notifyWebhooks(body)
+    await updateCache()
+  })
+
+  return response
+}
+```
+
+**When to use `after()`:**
+- Analytics tracking
+- Webhook notifications
+- Cache warming
+- Non-critical logging
+- Background cleanup
+
 ---
 
 ## HTTP Methods

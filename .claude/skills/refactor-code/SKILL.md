@@ -1,6 +1,6 @@
 ---
 name: refactor-code
-description: Intelligently Refactor and Improve Code Quality. Detects similar UI patterns (modals, cards, forms, tables) across modules, extracts shared base components, and systematically replaces duplicate implementations. Use when: (1) consolidating duplicate modal/dialog patterns into BaseModal, (2) extracting common UI patterns into shared components, (3) reducing code duplication across modules, (4) standardizing component APIs across a project. Triggers on "refactor similar components", "create shared component", "deduplicate UI", "extract base component", "consolidate patterns", or "DRY up components".
+description: "Intelligently Refactor and Improve Code Quality. Detects similar UI patterns (modals, cards, forms, tables) across modules, extracts shared base components, and systematically replaces duplicate implementations. Use when: (1) consolidating duplicate modal/dialog patterns into BaseModal, (2) extracting common UI patterns into shared components, (3) reducing code duplication across modules, (4) standardizing component APIs across a project. Triggers on \"refactor similar components\", \"create shared component\", \"deduplicate UI\", \"extract base component\", \"consolidate patterns\", or \"DRY up components\"."
 ---
 
 # Refactor Code Skill

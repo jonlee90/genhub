@@ -385,29 +385,56 @@ Last updated: ${new Date().toISOString().split('T')[0]}
 
 `
 
-    // Parse enum definitions
+    // Parse enum definitions (handles multi-line enums)
     const enumSection = enumsMatch[1]
-    const enumPattern = /(\w+):\s*["']([^"']+)["']\s*(?:\||\n)/g
     const enums: Record<string, string[]> = {}
 
-    let match
-    let currentEnum = ''
     const lines = enumSection.split('\n')
+    let currentEnum: string | null = null
+    let currentValues: string[] = []
 
     for (const line of lines) {
-      const enumDef = line.match(/(\w+):\s*(.+)/)
-      if (enumDef) {
-        const enumName = enumDef[1]
-        const values = enumDef[2]
-          .replace(/['"]/g, '')
+      const trimmed = line.trim()
+
+      // Check if this is a new enum definition (ends with colon)
+      const enumNameMatch = trimmed.match(/^(\w+):\s*$/)
+      if (enumNameMatch) {
+        // Save previous enum if exists
+        if (currentEnum && currentValues.length > 0) {
+          enums[currentEnum] = currentValues
+        }
+        // Start new enum
+        currentEnum = enumNameMatch[1]
+        currentValues = []
+        continue
+      }
+
+      // Check if this is an enum value line (starts with | and has quotes)
+      const valueMatch = trimmed.match(/^\|\s*["']([^"']+)["']/)
+      if (valueMatch && currentEnum) {
+        currentValues.push(valueMatch[1])
+        continue
+      }
+
+      // Check if this is a single-line enum (name: "value" | "value")
+      const singleLineMatch = trimmed.match(/^(\w+):\s*(.+)/)
+      if (singleLineMatch && !enumNameMatch) {
+        const enumName = singleLineMatch[1]
+        const valuesStr = singleLineMatch[2]
+        const values = valuesStr
           .split('|')
-          .map((v) => v.trim())
+          .map((v) => v.trim().replace(/^["']|["']$/g, ''))
           .filter((v) => v)
 
         if (values.length > 0) {
           enums[enumName] = values
         }
       }
+    }
+
+    // Save last enum
+    if (currentEnum && currentValues.length > 0) {
+      enums[currentEnum] = currentValues
     }
 
     // Group by category

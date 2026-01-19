@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Building2 from "lucide-react/icons/building-2";
@@ -37,6 +37,7 @@ import {
 } from "@/components/tasks/TaskModalContext";
 import { ProjectFilesTab } from "./files/ProjectFilesTab";
 import { DashboardStats } from "../tasks/DashboardStats";
+import { useModalData } from "@/hooks/use-modal-data";
 
 // Dynamic import TaskModal (only loads when modal opens)
 const TaskModal = dynamic(
@@ -47,7 +48,7 @@ const TaskModal = dynamic(
   { ssr: false },
 );
 
-import type { ProjectDetailProps } from "@/types/components/projects";
+import type { ProjectDetailProps, ProjectSimple } from "@/types/components/projects";
 import type {
   TaskWithRelations,
   TeamMember as TaskBoardTeamMember,
@@ -58,19 +59,30 @@ type ProjectDetailContentProps = ProjectDetailProps;
 
 // Modal renderer - consumes TaskModalContext
 function TaskModalRenderer({
-  projects,
+  projects = [],
   teamMembers,
   projectId,
   tasks,
   onSuccess,
+  onModalOpen,
+  isLoadingModalData,
 }: {
-  projects: ProjectDetailContentProps["projects"];
+  projects?: ProjectSimple[];
   teamMembers: TaskBoardTeamMember[];
   projectId: string;
   tasks: TaskWithRelations[];
   onSuccess: () => void;
+  onModalOpen: () => void;
+  isLoadingModalData?: boolean;
 }) {
   const { isOpen, mode, selectedTask, close } = useTaskModal();
+
+  // Trigger modal data fetch when modal opens (useEffect prevents on every render)
+  useEffect(() => {
+    if (isOpen) {
+      onModalOpen();
+    }
+  }, [isOpen, onModalOpen]);
 
   if (!isOpen) return null;
 
@@ -87,6 +99,7 @@ function TaskModalRenderer({
       tasks={tasks}
       assignees={[]} // No assignees filter needed in project context
       userRole={null}
+      isLoadingData={isLoadingModalData}
     />
   );
 }
@@ -126,8 +139,8 @@ const getHealthColor = (score: number) => {
 
 export function ProjectDetailContent({
   project,
-  projects,
-  teamMembers,
+  projects = [],
+  teamMembers = [],
   phaseTaskStats,
   taskDependencies = [],
   expenseStats,
@@ -136,30 +149,28 @@ export function ProjectDetailContent({
   projectPhotos = [],
   teamCostSummaries = [],
 }: ProjectDetailContentProps) {
-  console.log(
-    "[ProjectDetailContent] Rendering with expense stats:",
-    expenseStats,
-    "task stats:",
-    taskStats,
-    "files:",
-    projectFiles?.length,
-    "photos:",
-    projectPhotos?.length,
-    "teamCostSummaries:",
-    teamCostSummaries?.length,
-  );
-
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
     "overview" | "team" | "tasks" | "files" | "settings"
   >("overview");
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
+  // Lazy-load modal data (projects + team members) when needed
+  const { data: modalData, fetchData: fetchModalData, isLoading } = useModalData();
+
   // Handler for when primary photo changes - refresh to get updated project data
   const handlePrimaryPhotoChange = useCallback(() => {
-    console.log("[ProjectDetailContent] Primary photo changed, refreshing...");
     router.refresh();
   }, [router]);
+
+  // Handler to trigger modal data fetch (called when modals open)
+  const handleModalOpen = useCallback(() => {
+    fetchModalData();
+  }, [fetchModalData]);
+
+  // Use lazy-loaded data with fallback to props (always default to empty array)
+  const resolvedProjects = modalData?.projects || projects || [];
+  const resolvedTeamMembers = modalData?.teamMembers || teamMembers || [];
 
   // Performance optimization: Memoize computed values
   const statusConfig = useMemo(
@@ -509,9 +520,22 @@ export function ProjectDetailContent({
           {/* Task Stats - Only show on Tasks tab */}
           {activeTab === "tasks" && (
             <DashboardStats
-              tasks={(project.tasks || []) as any}
+              tasks={
+                (project.tasks || []).filter(
+                  (t) => t.id && t.title && t.project_id
+                ) as Array<{
+                  id: string;
+                  title: string;
+                  status: string | null;
+                  due_date?: string | null;
+                  actual_cost?: number | string | null;
+                  planned_cost?: number | string | null;
+                  assignee_id?: string | null;
+                  project_id: string;
+                }>
+              }
               projectFilter={project.id}
-              projects={projects}
+              projects={resolvedProjects}
               budget={project.budget}
             />
           )}
@@ -666,116 +690,85 @@ export function ProjectDetailContent({
           </div>
         </motion.div>
 
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
+        {/* Tab Content - Lazy rendered: Only active tab is mounted */}
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
           {activeTab === "overview" && (
-            <motion.div
-              key="overview"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ProjectOverview
-                project={project}
-                projects={projects}
-                teamMembers={teamMembers}
-                phaseTaskStats={phaseTaskStats}
-                expenseStats={expenseStats}
-                taskStats={taskStats}
-                teamCostSummaries={teamCostSummaries}
-              />
-            </motion.div>
+            <ProjectOverview
+              project={project}
+              projects={resolvedProjects}
+              teamMembers={resolvedTeamMembers}
+              phaseTaskStats={phaseTaskStats}
+              // Omit deferred data - will load in background via useDeferredData
+              // expenseStats={expenseStats}
+              // taskStats={taskStats}
+              // teamCostSummaries={teamCostSummaries}
+              onModalOpen={handleModalOpen}
+            />
           )}
 
           {activeTab === "team" && (
-            <motion.div
-              key="team"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ProjectTeam
-                projectId={project.id}
-                companyId={project.company_id || ""}
-                team={project.project_team || []}
-                costSummaries={
-                  teamCostSummaries && teamCostSummaries.length > 0
-                    ? new Map(
-                        teamCostSummaries.map((s) => [
-                          s.id,
-                          {
-                            taskCount: s.taskCount,
-                            taskCosts: s.taskCosts,
-                            expenseCosts: s.expenseCosts,
-                          },
-                        ]),
-                      )
-                    : undefined
-                }
-              />
-            </motion.div>
+            <ProjectTeam
+              projectId={project.id}
+              companyId={project.company_id || ""}
+              team={project.project_team || []}
+              costSummaries={
+                teamCostSummaries && teamCostSummaries.length > 0
+                  ? new Map(
+                      teamCostSummaries.map((s) => [
+                        s.id,
+                        {
+                          taskCount: s.taskCount,
+                          taskCosts: s.taskCosts,
+                          expenseCosts: s.expenseCosts,
+                        },
+                      ]),
+                    )
+                  : undefined
+              }
+            />
           )}
 
           {activeTab === "tasks" && (
-            <motion.div
-              key="tasks"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <TaskBoard
-                initialTasks={(project.tasks || []) as TaskWithRelations[]}
-                taskDependencies={taskDependencies}
-                projects={projects}
-                teamMembers={teamMembers as TaskBoardTeamMember[]}
-                initialView="kanban"
-                projectId={project.id}
-                phases={(project.project_phases || []) as Phase[]}
-              />
-            </motion.div>
+            <TaskBoard
+              initialTasks={(project.tasks || []) as TaskWithRelations[]}
+              taskDependencies={taskDependencies}
+              projects={resolvedProjects}
+              teamMembers={resolvedTeamMembers as TaskBoardTeamMember[]}
+              initialView="kanban"
+              projectId={project.id}
+              phases={(project.project_phases || []) as Phase[]}
+            />
           )}
 
           {activeTab === "files" && (
-            <motion.div
-              key="files"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ProjectFilesTab
-                projectId={project.id}
-                initialFiles={projectFiles || []}
-                initialPhotos={projectPhotos || []}
-                currentImageUrl={project.image_url}
-                onPrimaryPhotoChange={handlePrimaryPhotoChange}
-              />
-            </motion.div>
+            <ProjectFilesTab
+              projectId={project.id}
+              initialFiles={projectFiles || []}
+              initialPhotos={projectPhotos || []}
+              currentImageUrl={project.image_url}
+              onPrimaryPhotoChange={handlePrimaryPhotoChange}
+            />
           )}
 
           {activeTab === "settings" && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ProjectSettings project={project as any} />
-            </motion.div>
+            <ProjectSettings project={project} />
           )}
-        </AnimatePresence>
+        </motion.div>
 
         {/* Task modal - rendered via context */}
         <TaskModalRenderer
-          projects={projects}
-          teamMembers={teamMembers as TaskBoardTeamMember[]}
+          projects={resolvedProjects}
+          teamMembers={resolvedTeamMembers as TaskBoardTeamMember[]}
           projectId={project.id}
           tasks={(project.tasks || []) as TaskWithRelations[]}
           onSuccess={() => router.refresh()}
+          onModalOpen={handleModalOpen}
+          isLoadingModalData={isLoading}
         />
       </div>
     </TaskModalProvider>

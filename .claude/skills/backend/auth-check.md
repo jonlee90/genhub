@@ -49,20 +49,61 @@ export async function createTask(input: CreateTaskInput) {
 }
 ```
 
-### With Supabase Client
+### With Centralized User Context (Recommended)
 ```typescript
-import { createClient } from '@/utils/supabase/server'
+import { getUserContext } from '@/lib/auth/user-context'
 
 export async function getProjects() {
-  // createClient already handles auth - redirects if not authenticated
-  const supabase = await createClient()
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
 
-  const { data, error } = await supabase
+  const { data, error } = await ctx.supabase
     .from('projects')
     .select('*')
-  // RLS ensures user only sees their company's projects
+    .eq('company_id', ctx.companyId) // Explicit company isolation
+
+  if (error) return { error: error.message }
+  return { data }
 }
 ```
+
+---
+
+## Three-Level Permission Pattern
+
+GenHub uses a **3-level permission verification strategy** for secure data access:
+
+### Level 1: User Context (Authentication)
+```typescript
+import { getUserContext } from '@/lib/auth/user-context'
+
+const ctx = await getUserContext()
+if ('error' in ctx) return ctx
+// Now have: userId, companyId, role, supabase
+```
+
+**Purpose:** Verify user is authenticated and has an active company membership.
+
+### Level 2: Resource Ownership (Authorization)
+```typescript
+import { verifyProjectAccess } from '@/lib/auth/user-context'
+
+const verification = await verifyProjectAccess(ctx.supabase, projectId, ctx.companyId)
+if ('error' in verification) return verification
+// User's company owns this resource
+```
+
+**Purpose:** Verify the resource (project, task, etc.) belongs to user's company.
+
+### Level 3: Role-Based Access Control (RBAC)
+```typescript
+if (ctx.role !== 'admin' && ctx.role !== 'project_manager') {
+  return { error: 'Insufficient permissions' }
+}
+// User has required role
+```
+
+**Purpose:** Verify user has appropriate role for the operation.
 
 ---
 
@@ -78,48 +119,60 @@ client           → Read-only project view
 viewer           → Read-only
 ```
 
-### Role Check Helper
+### Role-Based Permission Checks
+
+Use `getUserContext()` which automatically includes the user's role:
+
 ```typescript
-// lib/auth/roles.ts
-import { createClient } from '@/utils/supabase/server'
+import { getUserContext, getAdminUserContext } from '@/lib/auth/user-context'
 
-export async function getUserRole(userId: string): Promise<string | null> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('company_users')
-    .select('role')
-    .eq('user_id', userId)
-    .single()
+// Standard: Get user context with role
+const ctx = await getUserContext()
+if ('error' in ctx) return ctx
 
-  return data?.role ?? null
+// Check role inline
+if (ctx.role === 'admin') {
+  // Admin-only operation
 }
 
-export async function isGcAdmin(userId: string): Promise<boolean> {
-  const role = await getUserRole(userId)
-  return role === 'gc_admin'
+if (ctx.role === 'admin' || ctx.role === 'project_manager') {
+  // Management operations
 }
 
-export async function canManageProject(userId: string): Promise<boolean> {
-  const role = await getUserRole(userId)
-  return ['gc_admin', 'project_manager'].includes(role ?? '')
-}
+// Admin-only shortcut: Use getAdminUserContext
+const adminCtx = await getAdminUserContext()
+if ('error' in adminCtx) return adminCtx
+// adminCtx.role is typed as 'admin' (guaranteed)
 ```
 
-### In Server Action
+### Complete Example: 3-Level Verification
 ```typescript
-export async function deleteProject(projectId: string) {
-  const session = await auth()
-  if (!session?.user) {
-    return { error: 'Authentication required' }
-  }
+import { getUserContext, verifyProjectAccess } from '@/lib/auth/user-context'
 
-  // Check role
-  const canDelete = await isGcAdmin(session.user.id)
-  if (!canDelete) {
+export async function deleteProject(projectId: string) {
+  // Level 1: User Context
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // Level 2: Resource Ownership
+  const verification = await verifyProjectAccess(ctx.supabase, projectId, ctx.companyId)
+  if ('error' in verification) return verification
+
+  // Level 3: Role-Based Access
+  if (ctx.role !== 'admin') {
     return { error: 'Only administrators can delete projects' }
   }
 
-  // Proceed with deletion
+  // All checks passed - proceed with deletion
+  const { error } = await ctx.supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId)
+
+  if (error) return { error: 'Failed to delete project' }
+
+  revalidatePath('/app/projects')
+  return { success: true }
 }
 ```
 
@@ -127,59 +180,81 @@ export async function deleteProject(projectId: string) {
 
 ## Resource Authorization
 
-### Project Access Check
+### Resource Access Verification
+
+Use centralized verification helpers from `@/lib/auth/user-context`:
+
 ```typescript
-export async function hasProjectAccess(
-  userId: string,
-  projectId: string
-): Promise<boolean> {
-  const supabase = await createClient()
-  const { data } = await supabase
+import { getUserContext, verifyProjectAccess } from '@/lib/auth/user-context'
+
+export async function updateProject(projectId: string, input: UpdateInput) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // Verify project ownership
+  const verification = await verifyProjectAccess(ctx.supabase, projectId, ctx.companyId)
+  if ('error' in verification) return verification
+
+  // Proceed with update
+  const { data, error } = await ctx.supabase
     .from('projects')
-    .select('id')
+    .update(input)
     .eq('id', projectId)
+    .select()
     .single()
 
-  // RLS handles the filtering - if we get data, user has access
-  return !!data
+  if (error) return { error: 'Failed to update project' }
+  return { data }
 }
 ```
 
-### Task Access Check
+### Custom Access Verification Helpers
+
+Create domain-specific verification helpers when needed:
+
 ```typescript
-export async function canAccessTask(
-  userId: string,
-  taskId: string
-): Promise<boolean> {
-  const supabase = await createClient()
-  const { data } = await supabase
+import { getUserContext } from '@/lib/auth/user-context'
+import { createClient } from '@/utils/supabase/server'
+
+/**
+ * Verify user has access to a task via company ownership
+ */
+async function verifyTaskAccess(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  taskId: string,
+  companyId: string
+): Promise<{ error: string } | { task: { id: string; project_id: string } }> {
+  const { data: task, error } = await supabase
     .from('tasks')
-    .select('id, assignee_id, project:projects(company_id)')
+    .select(`
+      id,
+      project_id,
+      project:projects!inner(company_id)
+    `)
     .eq('id', taskId)
     .single()
 
-  return !!data
+  if (error || !task) {
+    return { error: 'Task not found' }
+  }
+
+  const project = task.project as unknown as { company_id: string }
+  if (project.company_id !== companyId) {
+    return { error: 'Access denied' }
+  }
+
+  return { task: { id: task.id, project_id: task.project_id } }
 }
 
-export async function canEditTask(
-  userId: string,
-  taskId: string
-): Promise<boolean> {
-  const supabase = await createClient()
-  const { data: task } = await supabase
-    .from('tasks')
-    .select('assignee_id')
-    .eq('id', taskId)
-    .single()
+// Usage
+export async function updateTask(taskId: string, input: UpdateInput) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
 
-  if (!task) return false
+  const verification = await verifyTaskAccess(ctx.supabase, taskId, ctx.companyId)
+  if ('error' in verification) return verification
 
-  // Assignee can edit
-  if (task.assignee_id === userId) return true
-
-  // Project manager can edit any task in their projects
-  const canManage = await canManageProject(userId)
-  return canManage
+  // Proceed with update...
 }
 ```
 
@@ -369,19 +444,25 @@ session?.supabaseAccessToken  // For realtime (if enabled)
 ```
 
 ### Getting Company Context
-```typescript
-export async function getCurrentCompany() {
-  const session = await auth()
-  if (!session?.user) return null
 
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('company_users')
-    .select('company_id, role, company:companies(*)')
-    .eq('user_id', session.user.id)
+Use `getUserContext()` which includes company info:
+
+```typescript
+import { getUserContext } from '@/lib/auth/user-context'
+
+export async function getCompanyInfo() {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // ctx already has companyId, fetch additional company details if needed
+  const { data: company, error } = await ctx.supabase
+    .from('companies')
+    .select('*')
+    .eq('id', ctx.companyId)
     .single()
 
-  return data
+  if (error) return { error: 'Company not found' }
+  return { data: company }
 }
 ```
 

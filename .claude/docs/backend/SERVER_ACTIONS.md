@@ -290,6 +290,173 @@ revalidatePath('/app/entities', 'layout');
 
 ---
 
+## Advanced Patterns from Projects Module
+
+### 1. FormData Processing Pattern
+
+```typescript
+export async function createProject(formData: FormData) {
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
+
+  // Convert FormData to object
+  const input = {
+    name: formData.get('name') as string,
+    description: formData.get('description') as string || '',
+    budget: formData.get('budget') ? parseFloat(formData.get('budget') as string) : null,
+    project_type: formData.get('project_type') as string,
+    // ... more fields
+  };
+
+  // Validate with Zod
+  const validation = createProjectSchema.safeParse(input);
+  if (!validation.success) {
+    return {
+      error: 'Validation failed',
+      details: validation.error.flatten().fieldErrors
+    };
+  }
+
+  // Proceed with validated data
+  const { data, error } = await ctx.supabase
+    .from('projects')
+    .insert(validation.data)
+    .select()
+    .single();
+
+  if (error) return { error: 'Failed to create project' };
+
+  revalidatePath('/app/projects');
+  revalidatePath('/app/dashboard');
+  revalidateTag('projects');
+
+  return { success: true, data };
+}
+```
+
+### 2. Multi-Level Revalidation Strategy
+
+```typescript
+// Revalidate: paths + tags for comprehensive cache clearing
+revalidatePath('/app/projects');              // List page
+revalidatePath(`/app/projects/${projectId}`); // Detail page
+revalidateTag('projects');                    // List view data
+revalidateTag(`project-${projectId}`);        // Detail view data
+revalidateTag('dashboard');                   // Related aggregations
+```
+
+### 3. RPC Function Optimization
+
+```typescript
+// Instead of multiple queries:
+// const { data: project } = await supabase.from('projects').select('*');
+// const { data: tasks } = await supabase.from('tasks').select('*');
+// const { data: stats } = await supabase.from('...').select('*');
+// ... (4+ queries)
+
+// Use RPC with server-side aggregation:
+const { data } = await supabase.rpc('get_project_with_full_stats', {
+  p_project_id: projectId,
+  p_company_id: companyId
+});
+
+// Returns all data in 1 query with pre-computed aggregations
+// ~1200ms → ~150ms (4 queries → 1 query)
+```
+
+### 4. Permission Verification Pattern (3-Level)
+
+```typescript
+export async function updateProject(projectId: string, input: UpdateInput) {
+  // Level 1: User Context
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
+
+  // Level 2: Project Ownership
+  const { data: project } = await ctx.supabase
+    .from('projects')
+    .select('company_id')
+    .eq('id', projectId)
+    .single();
+
+  if (!project || project.company_id !== ctx.companyId) {
+    return { error: 'Project not found or access denied' };
+  }
+
+  // Level 3: Role-Based Access
+  if (ctx.role !== 'admin' && ctx.role !== 'project_manager') {
+    return { error: 'Insufficient permissions' };
+  }
+
+  // Proceed with update...
+}
+```
+
+### 5. Structured Error Handling with Logging
+
+```typescript
+export async function serverAction(input: Input) {
+  try {
+    const ctx = await getUserContext();
+    if ('error' in ctx) return ctx;
+
+    const { data, error } = await ctx.supabase
+      .from('table')
+      .insert(input)
+      .select()
+      .single();
+
+    if (error) {
+      // Development-only detailed logging
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Action Error]', {
+          action: 'serverAction',
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+      }
+      return { error: 'Operation failed' };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('[Unexpected Error]', error);
+    return { error: 'An unexpected error occurred' };
+  }
+}
+```
+
+### 6. Optional Query Pattern
+
+```typescript
+// Only execute queries if data exists
+const optionalQueries: Array<PromiseLike<any>> = [];
+
+if (creatorId) {
+  optionalQueries.push(
+    supabase.from('user_profiles').select('*').eq('id', creatorId).single()
+  );
+}
+
+if (teamUserIds.length > 0) {
+  optionalQueries.push(
+    supabase.from('user_profiles').select('*').in('id', teamUserIds)
+  );
+}
+
+// Execute with Promise.allSettled (doesn't fail if one fails)
+const optionalResults = await Promise.allSettled(optionalQueries);
+
+// Safely extract results
+const creator = optionalResults[0]?.status === 'fulfilled'
+  ? optionalResults[0].value.data
+  : null;
+```
+
+---
+
 ## API Routes (When Needed)
 
 Use API routes only for:
@@ -321,5 +488,7 @@ export async function POST(request: Request) {
 ## See Also
 
 - Core rules: `core/RULES.md`
-- Database schema: `docs/law/DB_SCHEMA.md`
-- Skill reference: `skills/backend/server-action.md`
+- Database schema: `backend/SCHEMA_CORE.md`
+- Server Action skill: `skills/backend/server-action.md`
+- Projects module reference: `domain/PROJECTS.md`
+- Data fetching patterns: `lib/projects.ts` (Phase-based approach)

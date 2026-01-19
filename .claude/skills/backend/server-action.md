@@ -361,6 +361,204 @@ export async function bulkUpdateTaskStatus(
 
 ---
 
+## Advanced Patterns
+
+### FormData Processing
+
+Handle HTML form submissions in Server Actions:
+
+```typescript
+export async function createProject(formData: FormData) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // Extract and type-convert FormData
+  const rawData = {
+    name: formData.get('name') as string,
+    description: formData.get('description') as string || '',
+    budget: formData.get('budget') ? parseFloat(formData.get('budget') as string) : null,
+    project_type: formData.get('project_type') as string,
+    start_date: formData.get('start_date') as string,
+    end_date: formData.get('end_date') as string || null,
+  }
+
+  // Validate with Zod
+  const validation = createProjectSchema.safeParse(rawData)
+  if (!validation.success) {
+    return {
+      error: 'Validation failed',
+      fieldErrors: validation.error.flatten().fieldErrors
+    }
+  }
+
+  // Proceed with validated data
+  const { data, error } = await ctx.supabase
+    .from('projects')
+    .insert({ ...validation.data, company_id: ctx.companyId })
+    .select()
+    .single()
+
+  if (error) return { error: 'Failed to create project' }
+
+  revalidatePath('/app/projects')
+  return { success: true, data }
+}
+```
+
+### RPC Function Optimization
+
+Use Supabase RPC functions for complex queries instead of multiple round trips:
+
+```typescript
+// BEFORE: Multiple queries + JS aggregation (~1200ms)
+const { data: project } = await supabase.from('projects').select('*').eq('id', id).single()
+const { data: tasks } = await supabase.from('tasks').select('*').eq('project_id', id)
+const { data: expenses } = await supabase.from('expenses').select('*').eq('project_id', id)
+const { data: team } = await supabase.from('project_team').select('*').eq('project_id', id)
+// ... JavaScript aggregation of stats
+
+// AFTER: Single RPC call with server-side aggregation (~150ms)
+const { data, error } = await supabase.rpc('get_project_with_full_stats', {
+  p_project_id: projectId,
+  p_company_id: companyId
+})
+// Returns project + all aggregated stats in one query
+```
+
+**When to use RPC:**
+- Need to aggregate data from 3+ tables
+- Complex calculations (sums, counts, percentages)
+- Performance-critical queries (>500ms)
+- Reduce client-server round trips
+
+### Multi-Level Revalidation
+
+Revalidate both paths AND tags for comprehensive cache clearing:
+
+```typescript
+export async function updateProject(id: string, input: UpdateInput) {
+  // ... update logic
+
+  // Revalidate list pages
+  revalidatePath('/app/projects')
+  revalidatePath('/app/dashboard')
+
+  // Revalidate detail page
+  revalidatePath(`/app/projects/${id}`)
+
+  // Revalidate cached data with tags
+  revalidateTag('projects')           // All project lists
+  revalidateTag(`project-${id}`)      // Specific project data
+  revalidateTag('dashboard')          // Dashboard aggregations
+
+  return { success: true, data }
+}
+```
+
+**Revalidation strategy:**
+- **Paths**: Clear page-level cached HTML
+- **Tags**: Clear data-level cached queries
+- **Both**: Ensure full cache refresh for consistency
+
+### Optional Queries with Promise.allSettled
+
+Handle conditional queries that may or may not exist:
+
+```typescript
+export async function getTaskDetails(taskId: string) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // Get task
+  const { data: task, error } = await ctx.supabase
+    .from('tasks')
+    .select('*')
+    .eq('id', taskId)
+    .single()
+
+  if (error || !task) return { error: 'Task not found' }
+
+  // Conditionally fetch related data
+  const optionalQueries = []
+
+  if (task.assignee_id) {
+    optionalQueries.push(
+      ctx.supabase
+        .from('user_profiles')
+        .select('id, name, avatar_url')
+        .eq('id', task.assignee_id)
+        .single()
+    )
+  }
+
+  if (task.expense_ids?.length > 0) {
+    optionalQueries.push(
+      ctx.supabase
+        .from('expenses')
+        .select('*')
+        .in('id', task.expense_ids)
+    )
+  }
+
+  // Execute with allSettled (doesn't fail if one fails)
+  const results = await Promise.allSettled(optionalQueries)
+
+  // Safely extract results
+  const assignee = results[0]?.status === 'fulfilled' ? results[0].value.data : null
+  const expenses = results[1]?.status === 'fulfilled' ? results[1].value.data : []
+
+  return {
+    data: {
+      ...task,
+      assignee,
+      expenses
+    }
+  }
+}
+```
+
+### Environment-Aware Logging
+
+Use conditional logging for development debugging:
+
+```typescript
+export async function createTask(input: CreateTaskInput) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[createTask] Input:', { input, userId: ctx.userId, companyId: ctx.companyId })
+  }
+
+  const { data, error } = await ctx.supabase
+    .from('tasks')
+    .insert({ ...input, company_id: ctx.companyId })
+    .select()
+    .single()
+
+  if (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[createTask] Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
+    }
+    return { error: 'Failed to create task' }
+  }
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[createTask] Success:', data.id)
+  }
+
+  revalidatePath('/app/tasks')
+  return { data }
+}
+```
+
+---
+
 ## Anti-Patterns
 
 - **Never** import Supabase client in client components

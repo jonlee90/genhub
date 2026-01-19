@@ -54,11 +54,39 @@ description: GenHub-specific Next.js backend conventions with security-first pat
 
 ## Quick Reference
 
-### getUserContext() Template
+### getUserContext() - Centralized Helper
+
+**IMPORTANT:** Use the centralized version from `@/lib/auth/user-context`:
 
 ```typescript
+import { getUserContext } from '@/lib/auth/user-context'
+
+export async function myAction() {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  // ctx includes: userId, companyId, role, supabase
+  const { userId, companyId, role, supabase } = ctx
+
+  // ... proceed with action
+}
+```
+
+**Benefits:**
+- Cached per-request (React `cache()`)
+- Consistent error handling
+- TypeScript type safety
+- No duplicate auth lookups
+
+**If you need to implement getUserContext locally** (rare cases only):
+
+```typescript
+import { auth } from '@/lib/auth'
+import { createClient } from '@/utils/supabase/server'
+import { cache } from 'react'
+
 // SECURITY: Always use this pattern - never skip auth verification
-async function getUserContext() {
+const getUserContext = cache(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return { error: 'Not authenticated' };
@@ -84,7 +112,7 @@ async function getUserContext() {
     role: companyUser.role,
     supabase,
   };
-}
+})
 
 // Usage with type narrowing
 const ctx = await getUserContext();

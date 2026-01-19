@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext, verifyProjectAccess } from "@/lib/auth/user-context";
 import type { DocumentCategory } from "@/types/db/enums";
 
 type FileFilters = {
@@ -14,53 +14,6 @@ type FileFilters = {
   fileType?: ("document" | "image" | "cad" | "archive")[];
 };
 
-// Debug: Helper to get user context
-async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
-
-// Debug: Verify project access
-async function verifyProjectAccess(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  projectId: string,
-  companyId: string,
-) {
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id, company_id")
-    .eq("id", projectId)
-    .eq("company_id", companyId)
-    .single();
-
-  if (!project) {
-    return { error: "Project not found or access denied" };
-  }
-
-  return { project };
-}
-
 /**
  * Get project files with filters
  */
@@ -68,7 +21,9 @@ export async function getProjectFiles(
   projectId: string,
   filters?: FileFilters,
 ) {
-  console.log("[getProjectFiles] Fetching files for project:", projectId);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getProjectFiles] Fetching files for project:", projectId);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -139,7 +94,9 @@ export async function getProjectFiles(
     return { error: error.message };
   }
 
-  console.log("[getProjectFiles] Success:", files.length, "files");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getProjectFiles] Success:", files.length, "files");
+  }
   return { data: files };
 }
 
@@ -147,7 +104,9 @@ export async function getProjectFiles(
  * Delete project file (soft delete)
  */
 export async function deleteProjectFile(fileId: string) {
-  console.log("[deleteProjectFile] Deleting file:", fileId);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectFile] Deleting file:", fileId);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -188,7 +147,9 @@ export async function deleteProjectFile(fileId: string) {
     new_state: { ...file, deleted_at: new Date().toISOString() },
   });
 
-  console.log("[deleteProjectFile] Success");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectFile] Success");
+  }
   revalidatePath(`/app/projects/${file.project_id}`);
   return { success: true };
 }
@@ -200,12 +161,14 @@ export async function updateFileCategory(
   fileId: string,
   category: DocumentCategory,
 ) {
-  console.log(
-    "[updateFileCategory] Updating file:",
-    fileId,
-    "to category:",
-    category,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[updateFileCategory] Updating file:",
+      fileId,
+      "to category:",
+      category,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -248,7 +211,9 @@ export async function updateFileCategory(
     new_state: { ...file, category, updated_at: new Date().toISOString() },
   });
 
-  console.log("[updateFileCategory] Success");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateFileCategory] Success");
+  }
   revalidatePath(`/app/projects/${file.project_id}`);
   return { success: true };
 }
@@ -257,7 +222,9 @@ export async function updateFileCategory(
  * Get file version history
  */
 export async function getFileVersionHistory(fileId: string) {
-  console.log("[getFileVersionHistory] Fetching versions for file:", fileId);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getFileVersionHistory] Fetching versions for file:", fileId);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -292,7 +259,9 @@ export async function getFileVersionHistory(fileId: string) {
     return { error: error.message };
   }
 
-  console.log("[getFileVersionHistory] Success:", versions.length, "versions");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getFileVersionHistory] Success:", versions.length, "versions");
+  }
   return { data: versions };
 }
 
@@ -300,7 +269,9 @@ export async function getFileVersionHistory(fileId: string) {
  * Bulk delete files
  */
 export async function bulkDeleteFiles(fileIds: string[], projectId: string) {
-  console.log("[bulkDeleteFiles] Deleting files:", fileIds.length);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[bulkDeleteFiles] Deleting files:", fileIds.length);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -373,13 +344,15 @@ export async function bulkDeleteFiles(fileIds: string[], projectId: string) {
     }
   }
 
-  console.log(
-    "[bulkDeleteFiles] Success:",
-    files.length,
-    "deleted,",
-    errors.length,
-    "errors",
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[bulkDeleteFiles] Success:",
+      files.length,
+      "deleted,",
+      errors.length,
+      "errors",
+    );
+  }
   revalidatePath(`/app/projects/${projectId}`);
 
   return {

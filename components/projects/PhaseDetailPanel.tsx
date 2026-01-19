@@ -77,6 +77,7 @@ interface PhaseDetailPanelProps {
     email: string;
     avatar_url: string | null;
   }>;
+  onModalOpen?: () => void;
 }
 
 // Status icon mapping (icons are component-specific, colors come from shared config)
@@ -94,18 +95,14 @@ export function PhaseDetailPanel({
   stats,
   projectId,
   onClose,
-  projects,
-  teamMembers,
+  projects = [],
+  teamMembers = [],
+  onModalOpen,
 }: PhaseDetailPanelProps) {
-  console.log('[PhaseDetailPanel] Rendering phase detail:', phase.name);
-
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [applyingTemplates, setApplyingTemplates] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
-
-  // Debug: Log when editingTask changes
-  console.log('[PhaseDetailPanel] editingTask state:', editingTask?.id, editingTask?.title);
 
   // Performance optimization: Memoize computed values
   const statusConfig = useMemo(() => ({
@@ -126,7 +123,6 @@ export function PhaseDetailPanel({
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleApplyTemplates = useCallback(async () => {
-    console.log('[PhaseDetailPanel] Applying task templates to phase:', phase.id);
     setApplyingTemplates(true);
 
     startTransition(async () => {
@@ -516,44 +512,6 @@ export function PhaseDetailPanel({
           </div>
         </motion.div>
 
-
-        {/* Warning Alerts */}
-        {(stats.blockedTasks > 0 || stats.overdueTasks > 0) && (
-          <motion.div
-            className="space-y-3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            {stats.blockedTasks > 0 && (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-200 rounded-xl shadow-sm">
-                <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                  <Ban className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-red-700">
-                    {stats.blockedTasks} Blocked Task{stats.blockedTasks > 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-red-600">Requires immediate attention</p>
-                </div>
-              </div>
-            )}
-
-            {stats.overdueTasks > 0 && (
-              <div className="flex items-center gap-3 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl shadow-sm">
-                <div className="flex-shrink-0 w-10 h-10 bg-yellow-100 rounded-xl flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-yellow-700">
-                    {stats.overdueTasks} Overdue Task{stats.overdueTasks > 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-yellow-600">Past due date</p>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
       </div>
 
       {/* RIGHT COLUMN - Task List */}
@@ -575,6 +533,7 @@ export function PhaseDetailPanel({
             size="default"
             label="Add New Task"
             className="w-full bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold shadow-construction h-11 transition-all"
+            onOpen={onModalOpen}
           />
         </div>
 
@@ -608,13 +567,13 @@ export function PhaseDetailPanel({
                   className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-[#001B51]/40 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log('[PhaseDetailPanel] Task clicked:', task.id, task.title);
+                    onModalOpen?.();
                     setEditingTask(task);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      console.log('[PhaseDetailPanel] Task key activated:', task.id, task.title);
+                      onModalOpen?.();
                       setEditingTask(task);
                     }
                   }}

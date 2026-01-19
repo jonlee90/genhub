@@ -4,6 +4,15 @@
  * - Sub-navigation: Photos | Documents | All Files
  * - State management for selected files, filters
  * - Coordinates search, bulk actions, and content sections
+ *
+ * Performance Pattern: initialData Strategy
+ * - Server fetches files/photos once in getProjectDetailData (lib/projects.ts)
+ * - Client component receives initialFiles and initialPhotos as props
+ * - Uses initialData on mount, only refetches on explicit user actions:
+ *   * Filter changes (search, category, date range, etc.)
+ *   * Tab view changes (after filters applied)
+ *   * Upload/delete/refresh actions
+ * - This eliminates duplicate fetches on page load (was causing 2-4 unnecessary POST requests)
  */
 
 'use client';
@@ -58,10 +67,14 @@ export function ProjectFilesTab({
   // Tab state
   const [activeView, setActiveView] = useState<TabView>('photos');
 
-  // Data state
+  // Data state - Use initialData from server, track if filters have been applied
   const [files, setFiles] = useState(initialFiles);
   const [photos, setPhotos] = useState(initialPhotos);
   const [loading, setLoading] = useState(false);
+
+  // Track if filters/view have been changed from initial state
+  // This ensures we only use initialData on first load, then refetch on user actions
+  const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
 
   // Selection state
   // Performance optimization: Lazy initialization for Set
@@ -81,6 +94,7 @@ export function ProjectFilesTab({
   }));
 
   // Performance optimization: Wrap fetchData in useCallback to prevent re-creation
+  // Only fetch when explicitly called (user action: filter change, upload, delete)
   const fetchData = useCallback(async () => {
     console.log('[ProjectFilesTab] Fetching data with filters:', filters);
     setLoading(true);
@@ -127,15 +141,46 @@ export function ProjectFilesTab({
     }
   }, [projectId, activeView, filters]);
 
-  // Debug: Fetch data on mount or filter change
+  // Only refetch when user explicitly changes filters or view (not on initial mount)
   useEffect(() => {
+    // Skip if we haven't applied any filters yet (using initialData from server)
+    if (!hasAppliedFilters) {
+      return;
+    }
+
+    // User has changed filters/view - refetch data
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, hasAppliedFilters]);
 
   const handleFilterChange = (newFilters: any) => {
     console.log('[ProjectFilesTab] Filters changed:', newFilters);
     setFilters(newFilters);
+    setHasAppliedFilters(true); // Mark that filters have been applied
     setSelectedIds(new Set()); // Clear selection on filter change
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      category: [],
+      dateFrom: undefined,
+      dateTo: undefined,
+      uploadedBy: [],
+      fileType: [],
+      source: [],
+      showReceipts: true,
+    });
+    setHasAppliedFilters(true); // Mark that user took action (clearing is also an action)
+  };
+
+  const handleTabChange = (view: TabView) => {
+    setActiveView(view);
+    // Only refetch if we've moved away from initial state
+    // Initial state has all data already loaded from server
+    if (hasAppliedFilters) {
+      // Filters are applied, so we need to refetch when changing views
+      setHasAppliedFilters(true);
+    }
   };
 
   const handleSelectToggle = (id: string) => {
@@ -174,7 +219,7 @@ export function ProjectFilesTab({
       <div className="flex items-center gap-2 border-b border-gray-200">
         <Button
           variant="ghost"
-          onClick={() => setActiveView('photos')}
+          onClick={() => handleTabChange('photos')}
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'photos'
@@ -193,7 +238,7 @@ export function ProjectFilesTab({
 
         <Button
           variant="ghost"
-          onClick={() => setActiveView('documents')}
+          onClick={() => handleTabChange('documents')}
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'documents'
@@ -212,7 +257,7 @@ export function ProjectFilesTab({
 
         <Button
           variant="ghost"
-          onClick={() => setActiveView('all')}
+          onClick={() => handleTabChange('all')}
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'all'
@@ -234,18 +279,7 @@ export function ProjectFilesTab({
       <SearchFilterPanel
         filters={filters}
         onFilterChange={handleFilterChange}
-        onClear={() =>
-          setFilters({
-            search: '',
-            category: [],
-            dateFrom: undefined,
-            dateTo: undefined,
-            uploadedBy: [],
-            fileType: [],
-            source: [],
-            showReceipts: true,
-          })
-        }
+        onClear={handleClearFilters}
         viewType={activeView}
       />
 

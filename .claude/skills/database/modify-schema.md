@@ -80,27 +80,68 @@ DROP COLUMN IF EXISTS deprecated_field;
 
 ### 1. Check Current Schema
 ```
-mcp__supabase__execute_sql
-query: "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = '{table}';"
+mcp__supabase__execute_sql(
+  query: "SELECT column_name, data_type, is_nullable, column_default
+          FROM information_schema.columns
+          WHERE table_schema = 'public' AND table_name = '{table}'
+          ORDER BY ordinal_position;"
+)
 ```
 
-### 2. Check Dependencies
+### 2. Check Existing Constraints
 ```
-mcp__supabase__execute_sql
-query: "SELECT conname, pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid = '{table}'::regclass;"
-```
-
-### 3. Apply Migration
-```
-mcp__supabase__apply_migration
-name: "alter_{table}_{description}"
-query: "[ALTER SQL]"
+mcp__supabase__execute_sql(
+  query: "SELECT conname, contype, pg_get_constraintdef(oid)
+          FROM pg_constraint
+          WHERE conrelid = 'public.{table}'::regclass;"
+)
 ```
 
-### 4. Update RLS if Needed
-If new column affects access control, update policies.
+### 3. Check Existing Indexes
+```
+mcp__supabase__execute_sql(
+  query: "SELECT indexname, indexdef
+          FROM pg_indexes
+          WHERE schemaname = 'public' AND tablename = '{table}';"
+)
+```
 
-### 5. Regenerate Types
+### 4. Apply Migration via MCP
+
+**CRITICAL**: Always use MCP, NEVER CLI
+```
+mcp__supabase__apply_migration(
+  name: "alter_{table}_{description}",
+  query: "[ALTER SQL]"
+)
+```
+
+### 5. Save Migration to File System
+```bash
+cat > supabase/migrations/$(date +%Y%m%d%H%M%S)_alter_{table}_{description}.sql << 'EOF'
+-- [Your SQL here]
+EOF
+```
+
+### 6. Update RLS if Needed
+If new column affects access control, update policies:
+```sql
+-- Example: New status column affects which users can see rows
+DROP POLICY IF EXISTS "project_access" ON public.{table};
+CREATE POLICY "project_access" ON public.{table}
+FOR SELECT USING (
+  company_id = public.get_user_company_id(next_auth.uid())
+  AND (status != 'archived' OR public.is_user_gc_admin(next_auth.uid()))
+);
+```
+
+### 7. Run Security Advisors
+```
+mcp__supabase__get_advisors(type: "security")
+mcp__supabase__get_advisors(type: "performance")
+```
+
+### 8. Regenerate Types
 ```bash
 source <(grep -E '^SUPABASE_' .env.local | xargs -I {} echo "export {}") && \
 npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/database.types.ts
@@ -132,14 +173,29 @@ USING (
 );
 ```
 
-### Add JSON Metadata
+### Add JSON Metadata with Validation
 ```sql
+-- Migration: add_projects_metadata
 ALTER TABLE public.projects
-ADD COLUMN metadata jsonb DEFAULT '{}';
+ADD COLUMN metadata jsonb DEFAULT '{}' NOT NULL;
+
+COMMENT ON COLUMN public.projects.metadata IS 'Flexible JSON storage for project-specific custom fields';
+
+-- GIN index for efficient JSON queries
+CREATE INDEX idx_projects_metadata_gin ON public.projects USING GIN (metadata);
 
 -- Partial index for common query
 CREATE INDEX idx_projects_metadata_type ON public.projects((metadata->>'type'))
 WHERE metadata->>'type' IS NOT NULL;
+```
+
+### Add CHECK Constraint
+```sql
+-- Migration: add_project_budget_validation
+ALTER TABLE public.projects
+ADD CONSTRAINT check_budget_positive CHECK (budget IS NULL OR budget > 0);
+
+COMMENT ON CONSTRAINT check_budget_positive ON public.projects IS 'Budget must be positive when specified';
 ```
 
 ---
@@ -147,14 +203,47 @@ WHERE metadata->>'type' IS NOT NULL;
 ## Anti-Patterns
 
 ```sql
--- WRONG: Dropping column with FK dependencies
-ALTER TABLE projects DROP COLUMN company_id;  -- Breaks RLS!
+-- WRONG: Using CLI instead of MCP
+psql $DATABASE_URL -c "ALTER TABLE..."  -- ❌
+supabase db push  -- ❌
 
--- WRONG: Adding NOT NULL without default
-ALTER TABLE tasks ADD COLUMN required_field text NOT NULL;  -- Fails on existing rows
+-- CORRECT: MCP Supabase
+mcp__supabase__apply_migration(...)  -- ✅
+
+-- WRONG: Dropping column with FK dependencies
+ALTER TABLE projects DROP COLUMN company_id;  -- ❌ Breaks RLS!
+
+-- WRONG: Adding NOT NULL without default (breaks existing rows)
+ALTER TABLE tasks ADD COLUMN required_field text NOT NULL;  -- ❌
 
 -- CORRECT: Add with default, then optionally remove default
-ALTER TABLE tasks ADD COLUMN required_field text NOT NULL DEFAULT '';
+ALTER TABLE tasks ADD COLUMN required_field text NOT NULL DEFAULT '';  -- ✅
+
+-- WRONG: Dropping column without checking dependencies
+ALTER TABLE projects DROP COLUMN status;  -- ❌ What if other tables reference this?
+
+-- CORRECT: Check first
+-- SELECT * FROM information_schema.columns WHERE column_name = 'status';
+-- Then decide if safe to drop
+
+-- WRONG: Renaming column without updating app code
+ALTER TABLE tasks RENAME COLUMN assignee_id TO assigned_to;  -- ❌ Breaks queries!
+
+-- CORRECT: Add new column, migrate data, update app, then drop old
+-- More work but safer
+
+-- WRONG: Adding FK without index
+ALTER TABLE tasks ADD COLUMN phase_id uuid REFERENCES phases(id);  -- ❌
+
+-- CORRECT: Always index FKs
+ALTER TABLE tasks ADD COLUMN phase_id uuid REFERENCES phases(id);
+CREATE INDEX idx_tasks_phase ON tasks(phase_id);  -- ✅
+
+-- WRONG: Changing column type without checking data compatibility
+ALTER TABLE tasks ALTER COLUMN estimated_hours TYPE smallint;  -- ❌ Data loss if values > 32767
+
+-- CORRECT: Check data range first, or use USING clause
+ALTER TABLE tasks ALTER COLUMN estimated_hours TYPE smallint USING estimated_hours::smallint;
 ```
 
 ---
@@ -170,10 +259,17 @@ After modifying schema:
 
 ## Checklist
 
-- [ ] Current schema checked
-- [ ] Dependencies identified
+- [ ] **MCP ONLY**: Used `mcp__supabase__apply_migration` (NOT CLI)
+- [ ] Current schema checked via `mcp__supabase__execute_sql`
+- [ ] Existing constraints checked
+- [ ] Existing indexes checked
+- [ ] Dependencies identified (FKs, triggers, views)
 - [ ] Migration applied via MCP
-- [ ] RLS policies still valid
+- [ ] Migration SQL saved to `supabase/migrations/`
+- [ ] New FK columns indexed
+- [ ] CHECK constraints added for validation (if applicable)
+- [ ] COMMENT ON added for new columns
+- [ ] RLS policies updated (if access control affected)
+- [ ] Security advisors checked
 - [ ] Types regenerated
-- [ ] Indexes added for new FKs
-- [ ] Documentation updated
+- [ ] Documentation updated (`.claude/docs/indexes/tables.md`)

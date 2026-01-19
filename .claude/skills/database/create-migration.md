@@ -10,9 +10,10 @@
 
 ## Prerequisites
 
-- MCP Supabase connected
+- MCP Supabase connected (check with `mcp__supabase__list_tables`)
 - Understanding of which company/project the data belongs to
 - Knowledge of related tables for foreign keys
+- Review `.claude/docs/indexes/tables.md` for existing schema
 
 ## Type Imports
 
@@ -105,6 +106,8 @@ Identify:
 
 ### 3. Create Migration via MCP
 
+**CRITICAL**: Always use MCP Supabase tools, NEVER use CLI (`psql`, `supabase db push`)
+
 ```
 mcp__supabase__apply_migration(
   name: "create_{table_name}",
@@ -112,7 +115,18 @@ mcp__supabase__apply_migration(
 )
 ```
 
-### 4. Add RLS Policies
+### 4. Save Migration to File System
+
+After MCP applies migration successfully, save SQL to version control:
+
+```bash
+# Create timestamped migration file
+cat > supabase/migrations/$(date +%Y%m%d%H%M%S)_create_{table_name}.sql << 'EOF'
+-- [Your SQL here]
+EOF
+```
+
+### 5. Add RLS Policies
 
 **Standard Company Isolation:**
 ```sql
@@ -152,7 +166,7 @@ FOR SELECT USING (
 );
 ```
 
-### 5. Add Indexes
+### 6. Add Indexes
 
 ```sql
 -- Always index foreign keys
@@ -169,7 +183,24 @@ WHERE deleted_at IS NULL;
 CREATE INDEX idx_{table}_project_status ON public.{table}(project_id, status);
 ```
 
-### 6. Regenerate Types
+### 7. Add Comments (Best Practice)
+
+Document table and constraint purpose:
+```sql
+COMMENT ON TABLE public.{table} IS '{Description of table purpose}';
+COMMENT ON COLUMN public.{table}.{column} IS '{Description}';
+COMMENT ON CONSTRAINT {constraint_name} ON public.{table} IS '{Why this constraint exists}';
+```
+
+### 8. Run Security Advisors
+
+Check for RLS issues and security vulnerabilities:
+```
+mcp__supabase__get_advisors(type: "security")
+mcp__supabase__get_advisors(type: "performance")
+```
+
+### 9. Regenerate Types
 
 After migration succeeds:
 ```bash
@@ -181,9 +212,13 @@ npx supabase gen types typescript --project-id "$SUPABASE_PROJECT_ID" > types/da
 
 ## Examples
 
-### Example 1: Simple Lookup Table
+### Example 1: Simple Lookup Table with Validation
 
 ```sql
+-- Migration: create_equipment_types
+-- Purpose: Equipment catalog with hourly rates for cost estimation
+-- Date: 2026-01-18
+
 -- Create equipment_types table
 CREATE TABLE public.equipment_types (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -193,16 +228,24 @@ CREATE TABLE public.equipment_types (
   hourly_rate numeric(10,2),
   is_active boolean DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now()
+  updated_at timestamptz NOT NULL DEFAULT now(),
+
+  -- Data validation
+  CONSTRAINT check_hourly_rate_positive CHECK (hourly_rate IS NULL OR hourly_rate > 0)
 );
 
 COMMENT ON TABLE public.equipment_types IS 'Equipment types catalog for the company';
+COMMENT ON COLUMN public.equipment_types.hourly_rate IS 'Cost per hour for equipment rental/usage';
+COMMENT ON CONSTRAINT check_hourly_rate_positive ON public.equipment_types IS 'Hourly rate must be positive';
 
+-- Indexes
 CREATE INDEX idx_equipment_types_company ON public.equipment_types(company_id);
 CREATE UNIQUE INDEX idx_equipment_types_name ON public.equipment_types(company_id, name);
 
+-- Enable RLS
 ALTER TABLE public.equipment_types ENABLE ROW LEVEL SECURITY;
 
+-- RLS Policies
 CREATE POLICY "equipment_types_select" ON public.equipment_types
 FOR SELECT USING (company_id = public.get_user_company_id(next_auth.uid()));
 
@@ -215,6 +258,7 @@ FOR UPDATE USING (company_id = public.get_user_company_id(next_auth.uid()));
 CREATE POLICY "equipment_types_delete" ON public.equipment_types
 FOR DELETE USING (company_id = public.get_user_company_id(next_auth.uid()));
 
+-- Auto-update trigger
 CREATE TRIGGER update_equipment_types_updated_at
 BEFORE UPDATE ON public.equipment_types
 FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -259,12 +303,60 @@ FOR SELECT USING (
 
 ## Anti-Patterns
 
-- **Never** skip RLS - every table MUST have `ENABLE ROW LEVEL SECURITY`
-- **Never** use `serial` for IDs - always use `uuid`
-- **Never** forget `company_id` - all data must be company-isolated
-- **Never** use raw `timestamp` - always use `timestamptz`
-- **Never** hardcode IDs in migrations - use references or generate at runtime
-- **Never** skip indexes on foreign keys - causes slow queries
+```sql
+-- WRONG: Using CLI instead of MCP
+psql $DATABASE_URL -c "CREATE TABLE..."  -- ❌
+supabase db push  -- ❌
+
+-- CORRECT: MCP Supabase
+mcp__supabase__apply_migration(...)  -- ✅
+
+-- WRONG: No RLS enabled
+CREATE TABLE tasks (...);  -- ❌ World readable!
+
+-- CORRECT: Always enable RLS
+ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;  -- ✅
+
+-- WRONG: Using serial IDs
+id serial PRIMARY KEY  -- ❌ Sequential, predictable
+
+-- CORRECT: UUID
+id uuid PRIMARY KEY DEFAULT gen_random_uuid()  -- ✅
+
+-- WRONG: No company isolation
+CREATE TABLE docs (id uuid, content text);  -- ❌
+
+-- CORRECT: Always include company_id
+CREATE TABLE docs (
+  id uuid,
+  company_id uuid NOT NULL REFERENCES companies(id),
+  content text
+);  -- ✅
+
+-- WRONG: Using timestamp without timezone
+created_at timestamp  -- ❌ Loses timezone info
+
+-- CORRECT: timestamptz
+created_at timestamptz NOT NULL DEFAULT now()  -- ✅
+
+-- WRONG: Hardcoding UUIDs in migration
+INSERT INTO companies (id, name) VALUES ('123e4567...', 'Acme');  -- ❌
+
+-- CORRECT: Let database generate
+INSERT INTO companies (name) VALUES ('Acme');  -- ✅
+
+-- WRONG: No index on FK
+ALTER TABLE tasks ADD COLUMN project_id uuid REFERENCES projects(id);  -- ❌ Slow joins
+
+-- CORRECT: Always index FKs
+CREATE INDEX idx_tasks_project ON tasks(project_id);  -- ✅
+
+-- WRONG: No migration file saved
+-- Apply via MCP only, don't save to supabase/migrations/  -- ❌
+
+-- CORRECT: Save after MCP apply
+-- Save SQL to supabase/migrations/{timestamp}_{name}.sql  -- ✅
+```
 
 ---
 
@@ -280,12 +372,16 @@ FOR SELECT USING (
 
 ## Checklist
 
+- [ ] **MCP ONLY**: Used `mcp__supabase__apply_migration` (NOT CLI)
 - [ ] Table has `id uuid PRIMARY KEY DEFAULT gen_random_uuid()`
 - [ ] Table has `company_id` with foreign key to companies
 - [ ] Table has `created_at` and `updated_at` timestamps
-- [ ] RLS is enabled
-- [ ] At least SELECT policy exists
+- [ ] RLS is enabled (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)
+- [ ] At least 4 RLS policies (SELECT, INSERT, UPDATE, DELETE)
 - [ ] Foreign key columns are indexed
-- [ ] Migration applied via `mcp__supabase__apply_migration`
+- [ ] CHECK constraints added for data validation (if applicable)
+- [ ] COMMENT ON TABLE/COLUMN added for documentation
+- [ ] Security advisors checked (`mcp__supabase__get_advisors`)
+- [ ] Migration SQL saved to `supabase/migrations/{timestamp}_{name}.sql`
 - [ ] Types regenerated via `npx supabase gen types typescript...`
-- [ ] Types saved to `types/database.types.ts`
+- [ ] Documentation updated (`.claude/docs/indexes/tables.md`)

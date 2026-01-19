@@ -12,7 +12,69 @@ color: purple
 
 ---
 
-## PHASE 0: INTELLIGENT INITIALIZATION
+## PHASE 0: MANDATORY PRE-WORK CONTEXT LOADING
+
+**BEFORE any specification work, you MUST load relevant context. This is not optional.**
+
+### Step 0: Read Required Documentation
+
+```
+ALWAYS READ FIRST (before ANY spec work):
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. INDEXES (Understand what exists)                              │
+│    → .claude/docs/indexes/tables.md (existing database schema)  │
+│    → .claude/docs/indexes/actions.md (existing Server Actions)  │
+│    → .claude/docs/indexes/components.md (existing components)   │
+│    → .claude/docs/indexes/routes.md (existing pages)            │
+│    → .claude/docs/indexes/enums.md (available enum values)      │
+│                                                                  │
+│ 2. ARCHITECTURE DOCS (Understand patterns)                      │
+│    → .claude/docs/backend/SCHEMA_CORE.md (database patterns)    │
+│    → .claude/docs/backend/SERVER_ACTIONS.md (action patterns)   │
+│    → .claude/docs/frontend/COMPONENTS.md (UI patterns)          │
+│    → .claude/docs/frontend/DESIGN_SYSTEM.md (design standards)  │
+│                                                                  │
+│ 3. DOMAIN DOCS (Based on feature area - CRITICAL)               │
+│    PROJECT_FEATURE  → .claude/docs/domain/PROJECTS.md           │
+│    TASK_FEATURE     → .claude/docs/domain/TASKS.md              │
+│    MATERIAL_FEATURE → .claude/docs/domain/MATERIALS.md          │
+│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md            │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Step 0.5: Load Required Skills
+
+```
+LOAD SKILL BY SPEC PHASE:
+┌─────────────────────────────────────────────────────────────────┐
+│ Spec Phase            │ Required Skills                         │
+│───────────────────────┼─────────────────────────────────────────│
+│ WORKFLOW SKILLS (understand implementation patterns):           │
+│ All phases            │ .claude/skills/workflow/feature-lifecycle.md│
+│ Documentation sync    │ .claude/skills/workflow/doc-sync.md     │
+│───────────────────────┼─────────────────────────────────────────│
+│ DOMAIN SKILLS (understand feature domains):                     │
+│ "task" features       │ .claude/skills/domain/task-workflow.md  │
+│ "project" features    │ .claude/skills/domain/project-crud.md   │
+│ "expense" features    │ .claude/skills/domain/expense-workflow.md│
+│ "material" features   │ .claude/skills/domain/material-tracking.md│
+│ "spatial" features    │ .claude/skills/domain/spatial-markers.md│
+│ "chat" features       │ .claude/skills/domain/chat-realtime.md  │
+│───────────────────────┼─────────────────────────────────────────│
+│ REFERENCE SKILLS (for design phase):                            │
+│ Database design       │ .claude/skills/database/create-migration.md│
+│ RLS patterns          │ .claude/skills/database/rls-patterns.md │
+│ Server Actions        │ .claude/skills/backend/server-action.md │
+│ Component patterns    │ .claude/skills/frontend/component-patterns.md│
+│ Page patterns         │ .claude/skills/frontend/page-creation.md│
+│ Form patterns         │ .claude/skills/frontend/form-patterns.md│
+│ Modal patterns        │ .claude/skills/frontend/modal-patterns.md│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PHASE 1: INTELLIGENT INITIALIZATION
 
 **Execute this decision tree at the START of every task:**
 
@@ -53,20 +115,30 @@ color: purple
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. LOAD RESOURCES (Tiered Strategy)                              │
 │                                                                  │
-│    TIER 1 - ALWAYS (Essential):                                  │
-│    ✓ This agent file (already loaded)                           │
-│    ✓ CLAUDE.md (auto-loaded in system context)                  │
+│    TIER 1 - ALWAYS (Essential for understanding architecture):  │
+│    ✓ Read: .claude/docs/indexes/tables.md (database overview)   │
+│    ✓ Read: .claude/docs/indexes/actions.md (existing actions)   │
+│    ✓ Read: .claude/docs/indexes/components.md (UI patterns)     │
+│    ✓ Read: .claude/docs/indexes/routes.md (existing pages)      │
 │                                                                  │
-│    TIER 2 - BY FEATURE TYPE (Load domain context):              │
-│    PROJECT_FEATURE  → docs/domain/PROJECTS.md                   │
-│    TASK_FEATURE     → docs/domain/TASKS.md                      │
-│    MATERIAL_FEATURE → docs/domain/MATERIALS.md                  │
-│    SPATIAL_FEATURE  → docs/domain/SPATIAL.md                    │
+│    TIER 2 - BY FEATURE TYPE (Load domain docs + skills):        │
+│    PROJECT_FEATURE  → .claude/docs/domain/PROJECTS.md           │
+│                     → .claude/skills/domain/project-crud.md     │
+│    TASK_FEATURE     → .claude/docs/domain/TASKS.md              │
+│                     → .claude/skills/domain/task-workflow.md    │
+│    MATERIAL_FEATURE → .claude/docs/domain/MATERIALS.md          │
+│                     → .claude/skills/domain/material-tracking.md│
+│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md            │
+│                     → .claude/skills/domain/spatial-markers.md  │
+│    EXPENSE_FEATURE  → .claude/skills/domain/expense-workflow.md │
+│    CHAT_FEATURE     → .claude/skills/domain/chat-realtime.md    │
 │                                                                  │
 │    TIER 3 - ON DEMAND (Research):                               │
 │    - WebSearch: Industry best practices                         │
 │    - Context7: Library documentation                            │
 │    - Existing codebase patterns via Serena/Grep                 │
+│    - Architecture docs: .claude/docs/backend/SCHEMA_*.md        │
+│    - Component docs: .claude/docs/frontend/COMPONENTS.md        │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼

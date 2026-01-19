@@ -2,7 +2,7 @@
 
 > Task-specific instruction modules for agents. Load BEFORE executing work.
 
-Last updated: 2026-01-16
+Last updated: 2026-01-18
 
 ---
 
@@ -21,6 +21,9 @@ Last updated: 2026-01-16
 | Create API route | `backend/api-route.md` | backend-engineer |
 | UI creation/redesign | `/frontend-design` | frontend-engineer |
 | Mobile PWA/native feel | `frontend/mobile-pwa-design/SKILL.md` | frontend-engineer |
+| React 19/Next.js 15 features | `frontend/react-19-nextjs-15-patterns.md` | frontend-engineer |
+| Performance optimization | `vercel-react-best-practices/SKILL.md` | frontend-engineer |
+| Deferred data loading | `frontend/deferred-loading.md` | frontend-engineer |
 | New page | `frontend/page-creation.md` | frontend-engineer |
 | Form with validation | `frontend/form-patterns.md` | frontend-engineer |
 | Modal dialog | `frontend/modal-patterns.md` | frontend-engineer |
@@ -58,8 +61,10 @@ Last updated: 2026-01-16
 - `frontend/mobile-pwa-design/SKILL.md` - Native mobile feel, PWA optimization
 - `refactor-code/SKILL.md` - Deduplicate similar components, extract base patterns
 - `vercel-react-best-practices/SKILL.md` - React/Next.js performance optimization (45 rules)
+- `frontend/react-19-nextjs-15-patterns.md` - React 19 & Next.js 15 features (NEW)
+- `frontend/deferred-loading.md` - Load non-critical data after initial render (NEW)
 - `frontend/page-creation.md` - New page setup
-- `frontend/component-patterns.md` - Component architecture
+- `frontend/component-patterns.md` - Component architecture (updated with performance patterns)
 - `frontend/form-patterns.md` - Forms with validation
 - `frontend/modal-patterns.md` - BaseModal usage
 - `frontend/list-patterns.md` - List/Table/Kanban
@@ -94,6 +99,50 @@ Last updated: 2026-01-16
 
 ---
 
+## Key Documentation References
+
+### Updated Pattern Documentation (2026-01-18)
+
+The projects module has been significantly optimized. Reference these docs for standard patterns:
+
+**Backend Patterns:**
+- `.claude/docs/backend/SERVER_ACTIONS.md` - All server action patterns including:
+  - FormData processing
+  - Multi-level revalidation (paths + tags)
+  - RPC function optimization (4 queries → 1)
+  - 3-level permission verification
+  - Structured error handling with dev-only logging
+  - Optional query pattern with Promise.allSettled
+
+**Frontend Patterns:**
+- `.claude/docs/frontend/COMPONENTS.md` - Component patterns including:
+  - Direct icon imports (200-800ms savings)
+  - useMemo/useCallback/useEffect patterns
+  - Lazy loading hooks with TTL cache
+  - Props merging with fallbacks
+  - Dynamic component loading
+  - Modal context provider pattern
+
+- `.claude/docs/frontend/PERFORMANCE_OPTIMIZATIONS_GUIDE.md` - Performance patterns:
+  - Data serialization optimization (71% reduction)
+  - RSC payload optimization
+  - Lazy loading strategies
+
+**Domain Patterns:**
+- `.claude/docs/domain/PROJECTS.md` - Complete projects module reference:
+  - Phase-based data fetching (PHASE 1 → 2 → 3)
+  - RPC functions for aggregation
+  - Lazy loading for modal data
+  - Data transformation for serialization
+
+**When to Reference:**
+- Building any new CRUD module → Follow projects module patterns
+- Optimizing existing modules → Apply projects optimization strategies
+- Creating server actions → Use SERVER_ACTIONS.md templates
+- Building client components → Follow COMPONENTS.md patterns
+
+---
+
 ## Skill Loading Protocol
 
 ### For Agents
@@ -113,9 +162,10 @@ Before starting ANY work:
 | Database schema change | `database/create-migration.md` OR `database/modify-schema.md` | `database/rls-patterns.md` |
 | New Server Action | `backend/server-action.md` | `backend/nextjs-patterns.md` |
 | UI creation/redesign | `/frontend-design` | Related frontend skills |
-| New page | `/frontend-design` + `frontend/page-creation.md` | `frontend/responsive.md` |
+| New page | `/frontend-design` + `frontend/page-creation.md` + `frontend/react-19-nextjs-15-patterns.md` | `frontend/responsive.md` |
 | Form UI | `/frontend-design` + `frontend/form-patterns.md` | `frontend/modal-patterns.md` |
 | Mobile native feel | `frontend/mobile-pwa-design/SKILL.md` | `frontend/responsive.md` |
+| Performance optimization | `vercel-react-best-practices/SKILL.md` + `frontend/component-patterns.md` | `frontend/react-19-nextjs-15-patterns.md` |
 | Refactor/deduplicate UI | `refactor-code/SKILL.md` | `frontend/component-patterns.md` |
 | GenHub domain feature | `domain/{feature}.md` | Related backend/frontend skills |
 | Multiple independent tasks | `dispatching-parallel-agents/SKILL.md` | - |
@@ -170,10 +220,10 @@ All skills follow this structure:
 
 ## Stats
 
-- Total skills: 31 (complete)
+- Total skills: 32 (complete)
 - Database: 6 skills ✓
 - Backend: 6 skills ✓
-- Frontend: 8 skills ✓ (includes mobile-pwa-design, refactor-code)
+- Frontend: 9 skills ✓ (includes mobile-pwa-design, refactor-code, react-19-nextjs-15-patterns)
 - Domain: 6 skills ✓
 - Integration: 4 skills ✓
 - Workflow: 3 skills ✓

@@ -199,6 +199,52 @@ import { PageSkeleton } from '@/components/ui/skeletons';
 </Suspense>
 ```
 
+**Parallel Data Loading (Next.js 15)**
+Server Components can fetch data in parallel automatically:
+
+```tsx
+// This is a Server Component
+export default async function ProjectPage({ params }: { params: { id: string } }) {
+  // These fetch in parallel automatically!
+  const projectPromise = getProject(params.id)
+  const tasksPromise = getProjectTasks(params.id)
+  const teamPromise = getProjectTeam(params.id)
+
+  // Await together for optimal parallelism
+  const [project, tasks, team] = await Promise.all([
+    projectPromise,
+    tasksPromise,
+    teamPromise
+  ])
+
+  return <ProjectDetail project={project} tasks={tasks} team={team} />
+}
+```
+
+**Streaming with Suspense (Next.js 15)**
+Stream slow sections while showing fast content immediately:
+
+```tsx
+export default async function Page() {
+  const criticalData = await getCriticalData()  // Fast, must have
+
+  return (
+    <div>
+      <Header data={criticalData} />
+
+      {/* Slow sections stream in when ready */}
+      <Suspense fallback={<AnalyticsSkeleton />}>
+        <Analytics />  {/* Server Component that fetches data */}
+      </Suspense>
+
+      <Suspense fallback={<ChartSkeleton />}>
+        <Chart />  {/* Server Component that fetches data */}
+      </Suspense>
+    </div>
+  )
+}
+```
+
 ### 5. Handle Errors
 
 ```tsx

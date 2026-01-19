@@ -91,7 +91,40 @@ z.number().int()                     // Integer only
 z.number().positive()                // > 0
 z.number().nonnegative()             // >= 0
 z.number().min(0).max(100)           // Range
-z.coerce.number()                    // Coerce string to number
+z.coerce.number()                    // Coerce string to number (e.g., "42" -> 42)
+```
+
+### FormData Coercion
+
+Use `z.coerce` for parsing FormData values (always strings):
+
+```typescript
+// FormData values are always strings, need coercion
+const formDataSchema = z.object({
+  name: z.string().min(1),
+  budget: z.coerce.number().positive(),        // "1000" -> 1000
+  quantity: z.coerce.number().int().min(1),    // "5" -> 5
+  is_active: z.coerce.boolean(),               // "true" -> true
+  priority: z.enum(['low', 'medium', 'high']), // Already string, no coercion
+})
+
+// Usage with FormData
+export async function handleForm(formData: FormData) {
+  const rawData = {
+    name: formData.get('name'),
+    budget: formData.get('budget'),
+    quantity: formData.get('quantity'),
+    is_active: formData.get('is_active'),
+    priority: formData.get('priority'),
+  }
+
+  const validation = formDataSchema.safeParse(rawData)
+  if (!validation.success) {
+    return { error: validation.error.flatten().fieldErrors }
+  }
+
+  // validation.data now has correctly typed values
+}
 ```
 
 ### Date Validations

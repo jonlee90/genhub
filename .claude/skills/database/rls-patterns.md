@@ -75,24 +75,63 @@ USING (
 
 ## Auth Helper Functions
 
-### Current User ID
+### SQL Functions (For RLS Policies)
+
 ```sql
+-- Get current authenticated user ID
 next_auth.uid()  -- Returns current user's UUID
+
+-- Get user's company ID
+public.get_user_company_id(user_uuid)  -- Returns company_id for user
+
+-- Check if user is GC Admin (now just "admin" role)
+public.is_user_gc_admin(user_uuid)  -- Returns true if admin role
 ```
 
-### User's Company
-```sql
-get_user_company_id(user_uuid)  -- Returns company_id for user
+### TypeScript Server Action Pattern
+
+**IMPORTANT**: Use centralized `getUserContext()` helper (NOT inline auth)
+
+```typescript
+// ❌ OLD PATTERN (Don't use)
+import { auth } from '@/lib/auth';
+import { createClient } from '@/utils/supabase/server';
+
+export async function myAction() {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Not authenticated' };
+
+  const supabase = await createClient();
+  const { data: companyUser } = await supabase
+    .from('company_users')
+    .select('company_id, role')
+    .eq('user_id', session.user.id)
+    .single();
+  // ...
+}
+
+// ✅ NEW PATTERN (Use this)
+import { getUserContext } from '@/lib/auth/user-context';
+
+export async function myAction() {
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
+
+  const { userId, companyId, role, supabase } = ctx;
+  // Use ctx.supabase for all DB queries
+  // Automatically includes company isolation via RLS
+}
 ```
 
-### Admin Check
-```sql
-is_user_gc_admin(user_uuid)  -- Returns true if GC admin
-```
+**Benefits:**
+- React `cache()` prevents redundant auth/DB lookups per request
+- Consistent error handling
+- Type-safe with `UserContextResult` type
+- Cleaner, less boilerplate
 
-### Project Access Check
+### Custom Project Access Function
 ```sql
--- Custom function pattern
+-- Custom function pattern for complex access checks
 CREATE OR REPLACE FUNCTION user_has_project_access(project_uuid uuid)
 RETURNS boolean AS $$
   SELECT EXISTS (
@@ -100,9 +139,9 @@ RETURNS boolean AS $$
     JOIN company_users cu ON cu.company_id = p.company_id
     WHERE p.id = project_uuid
     AND cu.user_id = (SELECT next_auth.uid())
+    AND cu.status = 'active'
   );
 $$ LANGUAGE sql SECURITY DEFINER STABLE;
-```
 
 ---
 
@@ -196,31 +235,59 @@ CREATE POLICY "slow" ON tasks USING (
 
 ## Debugging RLS
 
-### Check Policies
-```sql
-SELECT policyname, cmd, qual, with_check
-FROM pg_policies
-WHERE tablename = '{table}';
+### Check Policies via MCP
+```
+mcp__supabase__execute_sql(
+  query: "SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+          FROM pg_policies
+          WHERE schemaname = 'public'
+          ORDER BY tablename, policyname;"
+)
 ```
 
-### Test as User
+### Check if RLS is Enabled
+```
+mcp__supabase__execute_sql(
+  query: "SELECT tablename, rowsecurity
+          FROM pg_tables
+          WHERE schemaname = 'public'
+          ORDER BY tablename;"
+)
+```
+
+### Test Policy Logic (Simplified)
 ```sql
--- Set user context
-SET request.jwt.claims TO '{"sub": "user-uuid"}';
+-- Check what current auth state would be
+SELECT
+  next_auth.uid() as current_user_id,
+  public.get_user_company_id(next_auth.uid()) as current_company_id,
+  public.is_user_gc_admin(next_auth.uid()) as is_admin;
 
--- Try query
-SELECT * FROM {table};
-
--- Check what uid() returns
-SELECT next_auth.uid();
+-- Verify company_users record exists
+SELECT user_id, company_id, role, status
+FROM company_users
+WHERE user_id = next_auth.uid();
 ```
 
 ### Common Errors
 | Error | Cause | Fix |
 |-------|-------|-----|
-| "permission denied" | RLS blocking | Check policy USING clause |
-| Empty results | Policy too restrictive | Verify user's company/project access |
-| All rows returned | RLS not enabled | `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` |
+| "permission denied for table" | RLS blocking access | Check policy USING clause matches user's company_id |
+| Empty results (expected data exists) | Policy too restrictive | Verify user has active company_users record |
+| All rows returned (should be filtered) | RLS not enabled | `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` |
+| "new row violates row-level security" | INSERT policy failing | Check WITH CHECK clause in INSERT policy |
+| Policy exists but not working | Using service role key | Ensure using authenticated anon key, not service role |
+
+### Using Security Advisors
+```
+mcp__supabase__get_advisors(type: "security")
+```
+
+Checks for:
+- Tables without RLS enabled
+- Tables without policies
+- Missing indexes on policy filter columns
+- Overly permissive policies (e.g., `USING (true)`)
 
 ---
 
@@ -232,11 +299,49 @@ After RLS changes:
 
 ---
 
+## Server Actions & RLS
+
+RLS policies work automatically with Server Actions when using `getUserContext()`:
+
+```typescript
+// app/actions/tasks.ts
+'use server';
+
+import { getUserContext } from '@/lib/auth/user-context';
+
+export async function getTasks(projectId: string) {
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
+
+  // RLS automatically filters to ctx.companyId
+  // No need to add .eq('company_id', ctx.companyId) - RLS handles it!
+  const { data, error } = await ctx.supabase
+    .from('tasks')
+    .select('*')
+    .eq('project_id', projectId);
+
+  if (error) return { error: error.message };
+  return { data };
+}
+```
+
+**Key Points:**
+1. Always use `ctx.supabase` from `getUserContext()` (not a fresh client)
+2. RLS policies apply automatically based on JWT claims
+3. Don't manually filter by `company_id` - RLS does it
+4. Do verify project ownership if needed (3-level permission check)
+
+---
+
 ## Checklist
 
-- [ ] RLS enabled on table
-- [ ] Policy created with descriptive name
-- [ ] Uses auth helpers (not raw UUIDs)
-- [ ] Tested with real user context
-- [ ] Performance acceptable (no N+1 in policy)
-- [ ] Security advisor check passed
+- [ ] **MCP ONLY**: Policies applied via `mcp__supabase__apply_migration`
+- [ ] RLS enabled on table (`ALTER TABLE ... ENABLE ROW LEVEL SECURITY`)
+- [ ] At least 4 policies: SELECT, INSERT, UPDATE, DELETE
+- [ ] Policy names descriptive (e.g., "company_access", "project_team_access")
+- [ ] Uses auth helpers (`next_auth.uid()`, `get_user_company_id()`)
+- [ ] No raw UUIDs hardcoded in policies
+- [ ] Tested with `mcp__supabase__execute_sql` to verify user context
+- [ ] Performance acceptable (no N+1 queries in policy subqueries)
+- [ ] Security advisors checked (`mcp__supabase__get_advisors(type: "security")`)
+- [ ] Server Actions use `getUserContext()` helper (not inline auth)

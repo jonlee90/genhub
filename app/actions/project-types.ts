@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getAdminUserContext, getUserContext } from "@/lib/auth/user-context";
 import type { ProjectTypeConfigsRow } from "@/types/db/tables/projects";
 
 // ============================================
@@ -43,115 +42,50 @@ const updateProjectTypeSchema = z.object({
 });
 
 // ============================================
-// Helper Functions
-// ============================================
-
-async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    console.error(
-      "[getUserContext] Error fetching company user:",
-      companyError,
-    );
-    return { error: "No active company found for user" };
-  }
-
-  // Only Admin can manage project types
-  if (companyUser.role !== "admin") {
-    return {
-      error: "Insufficient permissions. Only Admin can manage project types.",
-    };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
-
-// ============================================
 // Server Actions
 // ============================================
 
 /**
  * Get all project types for the user's company with project counts
+ *
+ * Performance: Uses RPC function for single-query execution
+ * Before: 2 queries + JS aggregation (~200ms)
+ * After: 1 RPC call (~30ms)
  */
 export async function getProjectTypes(): Promise<{
   success?: boolean;
   projectTypes?: ProjectTypeWithCount[];
   error?: string;
 }> {
-  console.log("[getProjectTypes] Fetching project types...");
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getProjectTypes] Fetching project types via RPC...");
   }
 
-  const supabase = await createClient();
-
-  // Get user's company
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    return { error: userContext.error };
   }
 
-  // Fetch project types and project counts in parallel
-  const [projectTypesResult, projectsResult] = await Promise.all([
-    supabase
-      .from("project_type_configs")
-      .select("*")
-      .eq("company_id", companyUser.company_id)
-      .order("order_index", { ascending: true }),
-    supabase
-      .from("projects")
-      .select("project_type")
-      .eq("company_id", companyUser.company_id),
-  ]);
+  const { companyId, supabase } = userContext;
 
-  const { data: projectTypes, error } = projectTypesResult;
-  const { data: projects } = projectsResult;
+  // Use optimized RPC function (single query replaces 2 queries + JS aggregation)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.rpc as any)(
+    "get_project_types_with_counts",
+    { p_company_id: companyId }
+  );
 
   if (error) {
-    console.error("[getProjectTypes] Error:", error);
+    console.error("[getProjectTypes] RPC error:", error);
     return { error: "Failed to fetch project types" };
   }
 
-  const projectCounts = (projects || []).reduce(
-    (acc, p) => {
-      acc[p.project_type] = (acc[p.project_type] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>,
-  );
+  // RPC returns JSONB array, convert to typed ProjectTypeWithCount[]
+  const typesWithCounts = (data || []) as ProjectTypeWithCount[];
 
-  const typesWithCounts: ProjectTypeWithCount[] = (projectTypes || []).map(
-    (pt) => ({
-      ...pt,
-      project_count: projectCounts[pt.name] || 0,
-    }),
-  );
-
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[getProjectTypes] Success: ${typesWithCounts.length} types`);
+  }
   return { success: true, projectTypes: typesWithCounts };
 }
 
@@ -164,9 +98,11 @@ export async function createProjectType(formData: FormData): Promise<{
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[createProjectType] Creating new project type...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createProjectType] Creating new project type...");
+  }
 
-  const userContext = await getUserContext();
+  const userContext = await getAdminUserContext();
   if ("error" in userContext) {
     return { error: userContext.error };
   }
@@ -220,7 +156,9 @@ export async function createProjectType(formData: FormData): Promise<{
     return { error: "Failed to create project type" };
   }
 
-  console.log("[createProjectType] Project type created:", projectType.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createProjectType] Project type created:", projectType.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, projectType };
 }
@@ -237,9 +175,11 @@ export async function updateProjectType(
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[updateProjectType] Updating project type:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateProjectType] Updating project type:", id);
+  }
 
-  const userContext = await getUserContext();
+  const userContext = await getAdminUserContext();
   if ("error" in userContext) {
     return { error: userContext.error };
   }
@@ -290,7 +230,9 @@ export async function updateProjectType(
     return { error: "Failed to update project type" };
   }
 
-  console.log("[updateProjectType] Project type updated:", projectType.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateProjectType] Project type updated:", projectType.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, projectType };
 }
@@ -303,9 +245,11 @@ export async function deleteProjectType(id: string): Promise<{
   success?: boolean;
   error?: string;
 }> {
-  console.log("[deleteProjectType] Deleting project type:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectType] Deleting project type:", id);
+  }
 
-  const userContext = await getUserContext();
+  const userContext = await getAdminUserContext();
   if ("error" in userContext) {
     return { error: userContext.error };
   }
@@ -356,7 +300,9 @@ export async function deleteProjectType(id: string): Promise<{
     return { error: "Failed to delete project type" };
   }
 
-  console.log("[deleteProjectType] Project type deleted:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectType] Project type deleted:", id);
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }

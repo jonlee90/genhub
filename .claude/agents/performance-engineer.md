@@ -12,7 +12,68 @@ color: orange
 
 ---
 
-## PHASE 0: INTELLIGENT INITIALIZATION
+## PHASE 0: MANDATORY PRE-WORK CONTEXT LOADING
+
+**BEFORE any performance work, you MUST load relevant context. This is not optional.**
+
+### Step 0: Read Required Documentation
+
+```
+ALWAYS READ FIRST (before ANY performance work):
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. INDEXES (Understand current architecture)                     │
+│    → .claude/docs/indexes/tables.md (database schema overview)  │
+│    → .claude/docs/indexes/actions.md (Server Actions to audit)  │
+│    → .claude/docs/indexes/components.md (component inventory)   │
+│    → .claude/docs/indexes/routes.md (page routes to optimize)   │
+│                                                                  │
+│ 2. PERFORMANCE DOCS (Based on issue type)                       │
+│    DATABASE issues   → .claude/docs/backend/SCHEMA_CORE.md      │
+│                      → .claude/docs/backend/SCHEMA_RLS.md       │
+│    FRONTEND issues   → .claude/docs/frontend/COMPONENTS.md      │
+│                      → .claude/docs/frontend/RESPONSIVE.md      │
+│                      → .claude/docs/frontend/PERFORMANCE_OPTIMIZATIONS_GUIDE.md│
+│                      → .claude/docs/frontend/DEFERRED_LOADING_EXAMPLE.md│
+│    SERVER issues     → .claude/docs/backend/SERVER_ACTIONS.md   │
+│                                                                  │
+│ 3. DOMAIN DOCS (If investigating specific feature)              │
+│    Task performance  → .claude/docs/domain/TASKS.md             │
+│    Project performance→ .claude/docs/domain/PROJECTS.md         │
+│    Spatial performance→ .claude/docs/domain/SPATIAL.md          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Step 0.5: Load Required Skills
+
+```
+LOAD SKILL BY PERFORMANCE ISSUE TYPE:
+┌─────────────────────────────────────────────────────────────────┐
+│ Issue Type            │ Required Skill                          │
+│───────────────────────┼─────────────────────────────────────────│
+│ DATABASE PERFORMANCE:                                           │
+│ "slow query", "n+1"   │ .claude/skills/database/indexes.md      │
+│ "rls slow"            │ .claude/skills/database/rls-patterns.md │
+│ "trigger perf"        │ .claude/skills/database/triggers.md     │
+│───────────────────────┼─────────────────────────────────────────│
+│ FRONTEND PERFORMANCE:                                           │
+│ "bundle", "lcp"       │ .claude/skills/vercel-react-best-practices/SKILL.md│
+│ "component render"    │ .claude/skills/frontend/component-patterns.md│
+│ "list perf"           │ .claude/skills/frontend/list-patterns.md│
+│ "mobile perf"         │ .claude/skills/frontend/mobile-pwa-design/SKILL.md│
+│───────────────────────┼─────────────────────────────────────────│
+│ BACKEND PERFORMANCE:                                            │
+│ "action slow"         │ .claude/skills/backend/server-action.md │
+│ "api perf"            │ .claude/skills/backend/api-route.md     │
+│ "next.js patterns"    │ .claude/skills/backend/nextjs-patterns.md│
+│───────────────────────┼─────────────────────────────────────────│
+│ INTEGRATION:                                                    │
+│ "supabase mcp"        │ .claude/skills/integration/supabase-mcp.md│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## PHASE 1: INTELLIGENT INITIALIZATION
 
 **Execute this decision tree at the START of every task:**
 
@@ -37,11 +98,15 @@ color: orange
 │    │ "slow query" | "n+1" | "timeout"      → DATABASE_PERF    │ │
 │    │ "lcp" | "fcp" | "cls" | "fid"         → CORE_WEB_VITALS  │ │
 │    │ "bundle" | "chunk" | "tree-shake"     → BUNDLE_SIZE      │ │
+│    │ "barrel" | "import" | "cold start"    → BARREL_IMPORTS   │ │
 │    │ "cache" | "stale" | "revalidate"      → CACHING          │ │
+│    │ "waterfall" | "sequential" | "await"  → ASYNC_WATERFALL  │ │
 │    │ "memory" | "leak" | "gc"              → MEMORY           │ │
 │    │ "load test" | "concurrent" | "stress" → LOAD_TESTING     │ │
 │    │ "ssr" | "rsc" | "streaming"           → SERVER_RENDER    │ │
+│    │ "re-render" | "memo" | "callback"     → RERENDER_OPTIM   │ │
 │    │ "image" | "lazy" | "placeholder"      → ASSET_OPTIMIZE   │ │
+│    │ "list" | "scroll" | "virtualize"      → LIST_PERF        │ │
 │    │ "mobile" | "3g" | "offline"           → MOBILE_PERF      │ │
 │    │ "api" | "response time" | "latency"   → API_PERF         │ │
 │    └──────────────────────────────────────────────────────────┘ │
@@ -51,22 +116,30 @@ color: orange
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. LOAD RESOURCES (Tiered Strategy)                              │
 │                                                                  │
-│    TIER 1 - ALWAYS (Essential):                                 │
-│    ✓ This agent file (already loaded)                           │
-│    ✓ CLAUDE.md (auto-loaded in system context)                  │
+│    TIER 1 - ALWAYS (Essential for performance context):         │
+│    ✓ Read: .claude/docs/indexes/tables.md (schema overview)     │
+│    ✓ Read: .claude/docs/indexes/actions.md (action inventory)   │
+│    ✓ Read: .claude/docs/indexes/components.md (component list)  │
 │    ✓ Serena memory: read_memory("genhub-database-schema")       │
 │    ✓ Serena memory: read_memory("genhub-common-gotchas")        │
 │                                                                  │
-│    TIER 2 - BY ISSUE TYPE:                                      │
-│    DATABASE_PERF    → docs/backend/SCHEMA_*.md (relevant)       │
-│    CORE_WEB_VITALS  → docs/frontend/RESPONSIVE.md               │
+│    TIER 2 - BY ISSUE TYPE (Load relevant docs + skills):        │
+│    DATABASE_PERF    → .claude/docs/backend/SCHEMA_CORE.md       │
+│                     → .claude/skills/database/indexes.md        │
+│    CORE_WEB_VITALS  → .claude/docs/frontend/RESPONSIVE.md       │
+│                     → .claude/docs/frontend/PERFORMANCE_OPTIMIZATIONS_GUIDE.md│
+│                     → .claude/skills/vercel-react-best-practices/SKILL.md│
 │    BUNDLE_SIZE      → next.config.js, package.json              │
-│    CACHING          → Server Action patterns                    │
-│    SERVER_RENDER    → app/ layout patterns                      │
+│                     → .claude/skills/vercel-react-best-practices/SKILL.md│
+│    CACHING          → .claude/docs/backend/SERVER_ACTIONS.md    │
+│                     → .claude/skills/backend/nextjs-patterns.md │
+│    SERVER_RENDER    → .claude/skills/backend/nextjs-patterns.md │
 │                                                                  │
 │    TIER 3 - ON DEMAND (Only if needed):                         │
 │    - Context7: Next.js caching docs                             │
 │    - Context7: Supabase query optimization                      │
+│    - .claude/docs/frontend/DEFERRED_LOADING_EXAMPLE.md          │
+│    - .claude/skills/integration/supabase-mcp.md                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -143,6 +216,25 @@ PROCEED if:
 - Core Web Vitals failing
 - Database advisor flags issue
 ```
+
+---
+
+## VERCEL REACT BEST PRACTICES (Quick Reference)
+
+| Priority | Pattern | Impact | Check |
+|----------|---------|--------|-------|
+| CRITICAL | Barrel imports | 200-800ms | `optimizePackageImports` configured? |
+| CRITICAL | Promise.all | 2-10× | Independent fetches parallelized? |
+| CRITICAL | Dynamic imports | LCP/TTI | Heavy components lazy-loaded? |
+| CRITICAL | Defer await | Avoid blocking | Await only in branches that need it? |
+| HIGH | React.cache() | Per-request dedup | Wrapped with `cache()`? |
+| HIGH | after() | Non-blocking | Analytics/logging use `after()`? |
+| HIGH | RSC serialization | Data transfer | Only pass needed fields to client? |
+| MEDIUM | content-visibility | 10× list render | Long lists use CSS optimization? |
+| MEDIUM | Lazy state init | Every render | `useState(() => expensive())`? |
+| MEDIUM | Functional setState | Stable callbacks | `setX(curr => ...)`? |
+| MEDIUM | startTransition | UI responsive | Non-urgent updates wrapped? |
+| MEDIUM | Preload on intent | Perceived speed | Heavy bundles preload on hover? |
 
 ---
 
@@ -311,12 +403,33 @@ PROCEED if:
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ STEP 2: Identify largest contributors                            │
+│ STEP 2: Check for barrel import violations (CRITICAL)           │
+│                                                                  │
+│ Barrel imports add 200-800ms to cold starts!                    │
+│                                                                  │
+│ Grep: import.*from ['"]lucide-react['"]                         │
+│ Grep: import.*from ['"]@radix-ui/react-                         │
+│ Grep: import.*from ['"]date-fns['"]                             │
+│                                                                  │
+│ FIX: Configure optimizePackageImports in next.config.js:        │
+│   experimental: {                                                │
+│     optimizePackageImports: [                                   │
+│       'lucide-react',                                           │
+│       '@radix-ui/react-*',                                      │
+│       'date-fns',                                               │
+│       'framer-motion'                                           │
+│     ]                                                           │
+│   }                                                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ STEP 3: Identify largest contributors                            │
 │                                                                  │
 │ Common culprits in GenHub:                                       │
+│   - Barrel imports without optimizePackageImports               │
 │   - framer-motion (tree-shake unused)                           │
 │   - date-fns (import specific functions)                        │
-│   - lucide-react (already optimized)                            │
 │   - Full Supabase client in client bundles (VIOLATION)          │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -328,9 +441,10 @@ PROCEED if:
 │    const HeavyChart = dynamic(() => import('./Chart'),          │
 │      { loading: () => <Skeleton /> })                           │
 │                                                                  │
-│ B) Tree-shake imports:                                           │
-│    ❌ import { motion } from 'framer-motion'                    │
-│    ✅ import { motion } from 'framer-motion/m'                  │
+│ B) Avoid barrel imports (CRITICAL - 200-800ms savings):         │
+│    ❌ import { Check, X } from 'lucide-react'                   │
+│    ✅ import Check from 'lucide-react/dist/esm/icons/check'     │
+│    Or configure optimizePackageImports in next.config.js        │
 │                                                                  │
 │ C) Move to Server Components:                                    │
 │    Remove 'use client' if only using for data display           │
@@ -340,6 +454,66 @@ PROCEED if:
 ---
 
 ## OPTIMIZATION PATTERNS (Next.js 15 + Supabase)
+
+### Eliminating Waterfalls (CRITICAL - #1 Performance Killer)
+
+```typescript
+// Pattern 1: Defer await until needed
+// WRONG: blocks both branches
+async function handleRequest(projectId: string, skipAudit: boolean) {
+  const project = await getProject(projectId)  // Always waits
+
+  if (skipAudit) {
+    return { skipped: true }  // Didn't need project!
+  }
+
+  return processProject(project)
+}
+
+// CORRECT: only fetch when needed
+async function handleRequest(projectId: string, skipAudit: boolean) {
+  if (skipAudit) {
+    return { skipped: true }  // Returns immediately
+  }
+
+  const project = await getProject(projectId)
+  return processProject(project)
+}
+
+// Pattern 2: Start promises early, await late
+// WRONG: config waits for auth, data waits for both
+export async function GET(request: Request) {
+  const session = await auth()
+  const config = await getConfig()
+  const data = await fetchData(session.user.id)
+  return Response.json({ data, config })
+}
+
+// CORRECT: auth and config start immediately
+export async function GET(request: Request) {
+  const sessionPromise = auth()
+  const configPromise = getConfig()
+  const session = await sessionPromise
+  const [config, data] = await Promise.all([
+    configPromise,
+    fetchData(session.user.id)
+  ])
+  return Response.json({ data, config })
+}
+
+// Pattern 3: Use better-all for complex dependencies
+// When operations have partial dependencies
+import { all } from 'better-all'
+
+const { user, config, profile } = await all({
+  async user() { return fetchUser() },
+  async config() { return fetchConfig() },  // Independent
+  async profile() {
+    return fetchProfile((await this.$.user).id)  // Depends on user
+  }
+})
+// config and profile run in parallel!
+```
 
 ### Database Index Patterns
 
@@ -407,6 +581,88 @@ const getCachedDashboardStats = unstable_cache(
 
 // Pattern 4: Request deduplication (automatic in RSC)
 // Supabase calls with same params are deduped within a request
+
+// Pattern 5: Per-request deduplication with React.cache()
+// CRITICAL: Use for any async function called multiple times per request
+import { cache } from 'react'
+
+export const getProject = cache(async (id: string) => {
+  const { data } = await supabase.from('projects').select('*').eq('id', id).single()
+  return data
+})
+// Multiple components calling getProject(id) hit DB only ONCE per request
+
+// Pattern 6: Cross-request LRU caching
+// Use for data shared across sequential requests (user clicks A then B)
+import { LRUCache } from 'lru-cache'
+
+const projectCache = new LRUCache<string, Project>({
+  max: 500,
+  ttl: 5 * 60 * 1000  // 5 minutes
+})
+
+export async function getCachedProject(id: string) {
+  const cached = projectCache.get(id)
+  if (cached) return cached
+
+  const project = await getProject(id)
+  if (project) projectCache.set(id, project)
+  return project
+}
+```
+
+### Non-Blocking Operations with after()
+
+```typescript
+// Use after() for analytics, logging, audit trails (Next.js 15+)
+// Response is sent immediately, work happens in background
+import { after } from 'next/server'
+
+export async function updateProject(id: string, data: ProjectUpdate) {
+  await supabase.from('projects').update(data).eq('id', id)
+
+  // Log AFTER response is sent - doesn't block user
+  after(async () => {
+    await logAuditEvent({ action: 'project.update', projectId: id })
+    await notifyWebhooks('project.updated', { id })
+  })
+
+  revalidatePath('/app/projects')
+  return { success: true }
+}
+
+// Common use cases for after():
+// - Analytics tracking
+// - Audit logging
+// - Sending notifications
+// - Cache invalidation
+// - Cleanup tasks
+```
+
+### Minimize RSC Serialization
+
+```typescript
+// WRONG: Serializes all 50 user fields to client
+async function Page() {
+  const user = await getUser()  // 50 fields
+  return <Profile user={user} />
+}
+
+'use client'
+function Profile({ user }: { user: User }) {
+  return <div>{user.name}</div>  // Uses only 1 field!
+}
+
+// CORRECT: Serialize only what client needs
+async function Page() {
+  const user = await getUser()
+  return <Profile name={user.name} avatarUrl={user.avatarUrl} />
+}
+
+'use client'
+function Profile({ name, avatarUrl }: { name: string; avatarUrl: string }) {
+  return <div>{name}</div>
+}
 ```
 
 ### Server Component Optimization
@@ -474,6 +730,168 @@ export default function Page({ params }) {
 
 // Pattern 3: Static import for blur placeholder
 import heroImage from '@/public/hero.jpg'  // Auto blur placeholder
+```
+
+### Long List Optimization (content-visibility)
+
+```css
+/* Add to global CSS or component styles */
+/* Skips layout/paint for off-screen items - 10× faster initial render */
+.list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 80px;  /* Estimated height */
+}
+
+/* For task lists, project lists, etc. */
+.task-card {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 120px;
+}
+```
+
+```tsx
+// Example: Task list with content-visibility
+function TaskList({ tasks }: { tasks: Task[] }) {
+  return (
+    <div className="overflow-y-auto h-screen">
+      {tasks.map(task => (
+        <div key={task.id} className="task-card">
+          <TaskCard task={task} />
+        </div>
+      ))}
+    </div>
+  )
+}
+// 1000 tasks → browser renders only ~10 visible, skips 990
+```
+
+### Re-render Optimization Patterns
+
+```typescript
+// Pattern 1: Lazy state initialization
+// WRONG: buildIndex() runs on EVERY render
+const [index, setIndex] = useState(buildExpensiveIndex(items))
+
+// CORRECT: buildIndex() runs only on initial render
+const [index, setIndex] = useState(() => buildExpensiveIndex(items))
+
+// Pattern 2: Functional setState for stable callbacks
+// WRONG: Callback recreated when items changes, stale closure risk
+const addItem = useCallback((item: Item) => {
+  setItems([...items, item])
+}, [items])
+
+// CORRECT: Stable callback, no dependencies needed
+const addItem = useCallback((item: Item) => {
+  setItems(curr => [...curr, item])
+}, [])
+
+// Pattern 3: startTransition for non-urgent updates
+import { startTransition } from 'react'
+
+function FilterableList({ items }: Props) {
+  const [filter, setFilter] = useState('')
+
+  // Non-blocking: typing stays responsive
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    startTransition(() => {
+      setFilter(e.target.value)
+    })
+  }
+
+  return <input onChange={handleChange} />
+}
+
+// Pattern 4: Defer state reads to usage point
+// WRONG: Subscribes to all searchParams changes
+function ShareButton() {
+  const searchParams = useSearchParams()  // Re-renders on ANY change
+  const handleShare = () => {
+    const ref = searchParams.get('ref')
+    shareChat({ ref })
+  }
+  return <button onClick={handleShare}>Share</button>
+}
+
+// CORRECT: Read on-demand, no subscription
+function ShareButton() {
+  const handleShare = () => {
+    const params = new URLSearchParams(window.location.search)
+    const ref = params.get('ref')
+    shareChat({ ref })
+  }
+  return <button onClick={handleShare}>Share</button>
+}
+```
+
+### Preload on User Intent
+
+```tsx
+// Preload heavy components on hover/focus for perceived speed
+function EditorButton({ onClick }: { onClick: () => void }) {
+  const preload = () => {
+    if (typeof window !== 'undefined') {
+      void import('./heavy-editor')
+    }
+  }
+
+  return (
+    <button
+      onMouseEnter={preload}
+      onFocus={preload}
+      onClick={onClick}
+    >
+      Open Editor
+    </button>
+  )
+}
+```
+
+### Client-Side Deduplication with SWR
+
+```tsx
+// WRONG: Each component instance fetches separately
+function TaskList() {
+  const [tasks, setTasks] = useState([])
+  useEffect(() => {
+    fetch('/api/tasks').then(r => r.json()).then(setTasks)
+  }, [])
+}
+
+// CORRECT: Multiple instances share one request
+import useSWR from 'swr'
+
+function TaskList() {
+  const { data: tasks } = useSWR('/api/tasks', fetcher)
+  // Automatic deduplication, caching, revalidation
+}
+
+// For mutations with optimistic updates
+import useSWRMutation from 'swr/mutation'
+
+function TaskActions({ taskId }: { taskId: string }) {
+  const { trigger } = useSWRMutation(
+    `/api/tasks/${taskId}`,
+    updateTask
+  )
+  return <button onClick={() => trigger()}>Update</button>
+}
+```
+
+### Activity Component for Show/Hide (React 19+)
+
+```tsx
+// Use Activity to preserve state/DOM for expensive toggle components
+import { Activity } from 'react'
+
+function Dropdown({ isOpen }: { isOpen: boolean }) {
+  return (
+    <Activity mode={isOpen ? 'visible' : 'hidden'}>
+      <ExpensiveFilterPanel />
+    </Activity>
+  )
+}
+// Panel state preserved when hidden, no expensive re-renders
 ```
 
 ---
@@ -627,7 +1045,7 @@ After fix, return for bundle verification.
 
 ---
 
-## TOKEN EFFICIENCY (Budget: 30k)
+## TOKEN EFFICIENCY (Budget: 50k)
 
 ### Tiered Loading
 
@@ -660,7 +1078,10 @@ PREFER Bash when:
 
 PREFER Grep when:
   - Finding query patterns → ".from\\('"
+  - Finding barrel imports → "import.*from ['\"](lucide-react|@radix-ui)"
   - Finding heavy imports → "import.*framer-motion"
+  - Finding missing React.cache → "async function get.*supabase"
+  - Finding sync analytics → "await.*log|await.*track"
 ```
 
 ---
@@ -673,7 +1094,7 @@ Halt and request guidance if:
 - Optimization requires component rewrite → HANDOFF
 - No measurable performance problem found → Report findings
 - Fix causes test failures → Investigate before proceeding
-- Approaching 30k tokens → Request continuation
+- Approaching 50k tokens → Request continuation
 - Build fails after optimization → Debug or rollback
 
 ---
@@ -689,3 +1110,7 @@ Halt and request guidance if:
 | Premature optimization | Verify measurable impact |
 | Change business logic for performance | HANDOFF to appropriate agent |
 | Skip verification after changes | Always re-measure |
+| Barrel imports without optimizePackageImports | Configure next.config.js |
+| Sequential awaits for independent operations | Use Promise.all() |
+| Pass full objects to client components | Extract only needed fields |
+| Block response with logging/analytics | Use after() for non-blocking |

@@ -1,17 +1,27 @@
-import { CreateProjectFormPage } from '@/components/projects/CreateProjectFormPage';
+'use client';
 
-export const metadata = {
-  title: 'New Project | GenHub',
-  description: 'Create a new construction project',
-};
+import { useState } from 'react';
+import { CreateProjectForm } from '@/components/projects/CreateProjectForm';
 
 /**
  * New Project Page
  *
  * Standalone page for creating a new project.
- * Uses CreateProjectFormPage wrapper which internally uses CreateProjectForm
- * in non-modal mode with BaseModal wrapper (matching TaskModal design).
+ * Uses CreateProjectForm in non-modal mode.
  */
 export default function NewProjectPage() {
-  return <CreateProjectFormPage />;
+  const [isOpen] = useState(true);
+
+  return (
+    <CreateProjectForm
+      isOpen={isOpen}
+      onClose={() => {
+        // In page mode, navigation away is handled by router
+      }}
+      onSuccess={() => {
+        // Redirect happens in CreateProjectForm
+      }}
+      isModal={false}
+    />
+  );
 }

@@ -691,8 +691,278 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 ---
 
+## Performance Patterns from Projects Module
+
+### Direct Icon Imports (Critical Performance)
+
+**Problem:** Barrel imports from `lucide-react` add 200-800ms to page load.
+
+**Solution:** Import icons directly from their individual files.
+
+```typescript
+// ❌ BAD - Barrel import (slow)
+import { Building2, MapPin, Calendar } from 'lucide-react';
+
+// ✅ GOOD - Direct import (fast)
+import Building2 from 'lucide-react/icons/building-2';
+import MapPin from 'lucide-react/icons/map-pin';
+import Calendar from 'lucide-react/icons/calendar';
+```
+
+**Impact:** Saves 200-800ms per page load.
+
+---
+
+### useMemo for Expensive Computations
+
+Use `useMemo` to cache computed values that don't change often:
+
+```typescript
+const statusConfig = useMemo(
+  () =>
+    STATUS_CONFIG[project.status as keyof typeof STATUS_CONFIG] ||
+    STATUS_CONFIG.active,
+  [project.status],
+);
+
+const formattedBudget = useMemo(
+  () => new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(project.budget || 0),
+  [project.budget],
+);
+```
+
+**When to use:** Complex calculations, object/array transformations, expensive formatting.
+
+---
+
+### useCallback for Stable Event Handlers
+
+Use `useCallback` to prevent function recreation on every render:
+
+```typescript
+const handleModalOpen = useCallback(() => {
+  fetchModalData();
+}, [fetchModalData]);
+
+const handleRefresh = useCallback(() => {
+  router.refresh();
+}, [router]);
+```
+
+**When to use:** Event handlers, callbacks passed to child components, dependency arrays.
+
+---
+
+### useEffect for Conditional Side Effects
+
+Use `useEffect` for side effects that should only run when dependencies change:
+
+```typescript
+// Fetch modal data only when modal opens
+useEffect(() => {
+  if (isOpen) {
+    onModalOpen();
+  }
+}, [isOpen, onModalOpen]);
+```
+
+**Anti-pattern:**
+```typescript
+// ❌ BAD - Runs on every render while modal is open
+if (isOpen) {
+  onModalOpen();
+}
+```
+
+---
+
+### Props Merging with Fallbacks
+
+Handle optional props with multiple fallback levels:
+
+```typescript
+const resolvedProjects = modalData?.projects || projects || [];
+const resolvedTeamMembers = modalData?.teamMembers || teamMembers || [];
+```
+
+**Pattern:** Lazy-loaded data → Server props → Empty array
+
+---
+
+### Dynamic Component Loading
+
+Load heavy components only when needed:
+
+```typescript
+const TaskModal = dynamic(
+  () =>
+    import('@/components/tasks/TaskModal').then((mod) => ({
+      default: mod.TaskModal,
+    })),
+  { ssr: false },
+);
+```
+
+**When to use:** Modals, heavy charts, editor components, third-party widgets.
+
+---
+
+### Lazy Loading Hook Pattern
+
+Create custom hooks for lazy-loaded data with caching:
+
+```typescript
+export function useLazyData() {
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const isFetchingRef = useRef(false);
+  const hasFetchedRef = useRef(false);
+  const timestampRef = useRef(null);
+
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+  const isCacheValid = useCallback(() => {
+    if (!timestampRef.current) return false;
+    return Date.now() - timestampRef.current < CACHE_TTL;
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    // Skip if cache is valid or already fetching
+    if (isCacheValid() || isFetchingRef.current) return;
+
+    isFetchingRef.current = true;
+    setIsLoading(true);
+
+    try {
+      const result = await serverAction();
+      setData(result.data);
+      hasFetchedRef.current = true;
+      timestampRef.current = Date.now();
+    } finally {
+      setIsLoading(false);
+      isFetchingRef.current = false;
+    }
+  }, [isCacheValid]);
+
+  return { data, isLoading, fetchData };
+}
+```
+
+**Features:**
+- Manual trigger (not on mount)
+- Cache with TTL (prevents stale data)
+- Duplicate fetch prevention
+- Loading states
+
+**Usage:**
+```typescript
+const { data, isLoading, fetchData } = useLazyData();
+
+// Trigger fetch when modal opens
+useEffect(() => {
+  if (isModalOpen) {
+    fetchData();
+  }
+}, [isModalOpen, fetchData]);
+```
+
+---
+
+### Modal Context Provider Pattern
+
+Centralize modal state management:
+
+```typescript
+<TaskModalProvider>
+  <ProjectDetailContent />
+  {/* TaskModalRenderer consumes context */}
+</TaskModalProvider>
+```
+
+**Benefits:**
+- Avoids prop drilling
+- Consistent modal API
+- Easier testing
+
+---
+
+## Data Loading Patterns
+
+### Deferred Loading (Non-Critical Data)
+
+For expensive or non-critical data, use the deferred loading pattern to improve initial page load time.
+
+```tsx
+'use client';
+
+import { useDeferredData } from '@/hooks/use-deferred-data';
+import { getProjectExpenseStats } from '@/app/actions/project-deferred';
+
+export function ExpenseStatsPanel({ projectId }: { projectId: string }) {
+  // Load expense stats 1 second after page loads
+  const { data: statsData, loading, error } = useDeferredData({
+    fetchFn: () => getProjectExpenseStats(projectId),
+    delay: 1000,
+    cacheKey: `project-${projectId}-expense-stats`,
+  });
+
+  if (loading) {
+    return <ExpenseStatsSkeleton />;
+  }
+
+  if (!statsData) {
+    return null; // Graceful degradation
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      <StatCard title="Total" value={statsData.expenseStats.totalAmount} />
+      <StatCard title="Approved" value={statsData.expenseStats.approvedAmount} />
+      <StatCard title="Pending" value={statsData.expenseStats.pendingAmount} />
+    </div>
+  );
+}
+
+function ExpenseStatsSkeleton() {
+  return (
+    <div className="grid grid-cols-3 gap-4">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-16 mb-2" />
+          <div className="h-8 bg-gray-200 rounded w-24" />
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+**When to use:**
+- Expensive calculations (aggregations, stats)
+- Below-the-fold content
+- Inactive tab content
+- Secondary metrics not needed for initial render
+
+**Pattern:**
+1. Create deferred server action in `app/actions/{feature}-deferred.ts`
+2. Use `useDeferredData` hook with delay
+3. Show skeleton while loading
+4. Gracefully handle empty/error states
+5. Use cache key to prevent refetching
+
+**See:**
+- Skill: `.claude/skills/frontend/deferred-loading.md`
+- Example: `.claude/docs/frontend/DEFERRED_LOADING_EXAMPLE.md`
+- Reference: `app/actions/project-deferred.ts`, `hooks/use-deferred-data.ts`
+
+---
+
 ## See Also
 
 - Design system: `frontend/DESIGN_SYSTEM.md`
 - Page layouts: `frontend/LAYOUTS.md`
 - Form patterns skill: `skills/frontend/form-patterns.md`
+- Deferred loading skill: `skills/frontend/deferred-loading.md`

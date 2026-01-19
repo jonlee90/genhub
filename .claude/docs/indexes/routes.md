@@ -2,7 +2,7 @@
 
 > Auto-generated. Do not edit manually.
 
-Last updated: 2026-01-14
+Last updated: 2026-01-19
 
 ---
 
@@ -27,7 +27,7 @@ Last updated: 2026-01-14
 | /profile | Server | Yes |
 | /projects | Server | Yes |
 | /projects/[id] | Server | Yes |
-| /projects/new | Server | Yes |
+| /projects/new | Client | Yes |
 | /settings | Server | Yes |
 | /settings/default-models | Server | Yes |
 | /signup | Server | - |

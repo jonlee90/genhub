@@ -7,11 +7,13 @@
 - Implementing task-related features
 - User says: "task status", "task board", "kanban", "task dependencies"
 - Working with task data model
+- Task assignment and reassignment
+- Task templates and types
 
 ## Prerequisites
 
-- Understanding of GenHub task states
-- Access to task-related Server Actions
+- Check `.claude/docs/indexes/tables.md` for task schema
+- Check `.claude/docs/indexes/actions.md` for task actions
 
 ---
 
@@ -30,77 +32,123 @@
                 └─────────┘
 ```
 
+### Database Tables
+
+| Table | Purpose |
+|-------|---------|
+| `tasks` | Main tasks (24 columns) |
+| `task_assignees` | Many-to-many with users/subcontractors |
+| `task_dependencies` | Task blocking relationships |
+| `task_activity` | Audit log of changes |
+| `task_type_configs` | Custom task types |
+| `task_templates` | Templates for phases |
+
 ### Task Statuses
 
-| Status | Description | Color | Can Transition To |
-|--------|-------------|-------|-------------------|
-| `todo` | Not started | Gray | in_progress, blocked |
-| `in_progress` | Active work | Blue | todo, review, blocked, completed |
-| `review` | Awaiting approval | Yellow | in_progress, completed, blocked |
-| `blocked` | Cannot proceed | Red | todo, in_progress |
-| `completed` | Done | Green | in_progress (reopen) |
+| Status | Color | Transitions |
+|--------|-------|-------------|
+| `todo` | Gray | → in_progress, blocked |
+| `in_progress` | Blue | → todo, review, blocked, completed |
+| `review` | Yellow | → in_progress, completed, blocked |
+| `blocked` | Red | → todo, in_progress |
+| `completed` | Green | → in_progress (reopen) |
 
-### Task Types
-
-| Type | Description | Icon |
-|------|-------------|------|
-| `work` | Standard task | Wrench |
-| `purchase` | Material purchase | ShoppingCart |
-| `approval` | Needs sign-off | CheckCircle |
-| `admin` | Administrative | FileText |
-
-### Task Priorities
-
-| Priority | Description | Color |
-|----------|-------------|-------|
-| `low` | Can wait | Gray |
-| `medium` | Normal priority | Blue |
-| `high` | Urgent | Orange |
-| `critical` | Emergency | Red |
+### Task Types & Priorities
+```typescript
+type TaskStatus = 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed'
+type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
+type TaskType = 'work' | 'purchase' | 'approval' | 'admin'
+```
 
 ---
 
 ## Data Model
 
-### Task Table (Key Columns)
+### Task Assignees Pattern (IMPORTANT)
 
+Tasks use **many-to-many** assignments with a **primary assignee** flag:
+
+```sql
+-- task_assignees table
+task_assignees (
+  id uuid PRIMARY KEY,
+  task_id uuid REFERENCES tasks(id),
+  user_id uuid REFERENCES user_profiles(id),  -- nullable
+  subcontractor_id uuid REFERENCES subcontractors(id),  -- nullable
+  is_primary boolean DEFAULT false,
+  -- CHECK: Either user_id OR subcontractor_id (XOR)
+)
+```
+
+### Query Pattern for Assignees
 ```typescript
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  project_id: string;
-  phase_id: string | null;
-  assignee_id: string | null;
-  status: 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  task_type: 'work' | 'purchase' | 'approval' | 'admin';
-  start_date: string | null;
-  due_date: string | null;
-  planned_cost: number | null;
-  actual_cost: number | null;
-  blocked_reason: string | null;
-  approval_status: 'pending' | 'approved' | 'rejected' | 'revision_requested' | null;
-  created_at: string;
-  updated_at: string;
-}
+// Get task with all assignees
+const { data } = await supabase
+  .from('tasks')
+  .select(`
+    *,
+    task_assignees (
+      id,
+      is_primary,
+      user:user_profiles (*),
+      subcontractor:subcontractors (*)
+    )
+  `)
+  .eq('id', taskId)
+  .single()
+
+// Get primary assignee
+const primary = data.task_assignees.find(a => a.is_primary)
 ```
 
 ### Related Tables
 
-- `task_dependencies` - Task blocking relationships
+- `task_dependencies` - Task blocking relationships (depends_on)
 - `task_activity` - Audit log of changes
 - `material_assignments` - Materials linked to task
 - `expenses` - Expenses linked to task
+- `spatial_markers` - 3D location markers
 
 ---
 
 ## Server Actions
 
-### Status Update
+### Key Actions (tasks.ts)
 
+| Action | Purpose |
+|--------|---------|
+| `createTask` | Create new task |
+| `updateTask` | Update task fields |
+| `updateTaskStatus` | Change task status |
+| `updateTaskDueDate` | Update due date |
+| `updateTaskDates` | Update start/due dates |
+| `deleteTask` | Delete task |
+| `setPrimaryAssignee` | Set primary assignee |
+| `updateTaskWithExpense` | Update task + create expense |
+| `addTaskDependency` | Add dependency |
+| `removeTaskDependency` | Remove dependency |
+| `addTaskComment` | Add comment to activity |
+| `updateApprovalStatus` | Set approval status |
+| `getProjectTasks` | Get tasks for project |
+| `getProjectAssignees` | Get team for task assignment |
+| `getTaskDetails` | Full task details |
+| `getTaskActivity` | Activity log |
+| `getTaskAttachments` | Attached files |
+| `getTaskDependencies` | Get dependencies |
+| `getTaskAnalytics` | Task statistics |
+| `linkTaskToMarker` | Link to spatial marker |
+| `getTasksByMarker` | Tasks for marker |
+| `logTaskCompletionToMarker` | Log completion to marker |
+
+### Task Types & Templates
+
+| File | Actions |
+|------|---------|
+| `task-types.ts` | `getTaskTypes`, `getAllTaskTypes`, `createTaskType`, `updateTaskType`, `deleteTaskType` |
+| `task-templates.ts` | `getTaskTemplates`, `createTaskTemplate`, `updateTaskTemplate`, `deleteTaskTemplate`, `reorderTaskTemplates` |
+
+### Status Update Pattern
 ```typescript
-// app/actions/tasks.ts
 export async function updateTaskStatus(
   id: string,
   status: TaskStatus,
@@ -120,24 +168,13 @@ export async function updateTaskStatus(
     return { error: `Cannot transition from ${task.status} to ${status}` };
   }
 
-  const updateData: TaskUpdate = { status };
+  // Update with blocked_reason handling
+  const updateData = { status };
   if (status === 'blocked' && blockedReason) {
     updateData.blocked_reason = blockedReason;
   }
-  if (status !== 'blocked') {
-    updateData.blocked_reason = null;
-  }
 
-  const { data, error } = await ctx.supabase
-    .from('tasks')
-    .update(updateData)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) return { error: error.message };
-
-  // Log activity
+  // Log to task_activity
   await logTaskActivity(ctx.supabase, id, 'status_change', {
     from: task.status,
     to: status,
@@ -148,29 +185,54 @@ export async function updateTaskStatus(
 }
 ```
 
-### Transition Validation
-
+### Assignment Pattern
 ```typescript
-const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
-  todo: ['in_progress', 'blocked'],
-  in_progress: ['todo', 'review', 'blocked', 'completed'],
-  review: ['in_progress', 'completed', 'blocked'],
-  blocked: ['todo', 'in_progress'],
-  completed: ['in_progress'], // Reopen
-};
+export async function setPrimaryAssignee(
+  taskId: string,
+  assigneeId: string,
+  assigneeType: 'user' | 'subcontractor'
+) {
+  const ctx = await getUserContext();
+  if ('error' in ctx) return ctx;
 
-function isValidTransition(from: TaskStatus, to: TaskStatus): boolean {
-  return VALID_TRANSITIONS[from]?.includes(to) ?? false;
+  // Clear existing primary
+  await ctx.supabase
+    .from('task_assignees')
+    .update({ is_primary: false })
+    .eq('task_id', taskId);
+
+  // Set new primary
+  const assigneeField = assigneeType === 'user'
+    ? { user_id: assigneeId }
+    : { subcontractor_id: assigneeId };
+
+  await ctx.supabase
+    .from('task_assignees')
+    .upsert({
+      task_id: taskId,
+      ...assigneeField,
+      is_primary: true,
+    });
 }
 ```
 
 ---
 
-## UI Patterns
+## UI Components
 
-### Status Badge
+### Key Components
 
-```tsx
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `TaskModal` | `components/tasks/` | View/edit task modal |
+| `TaskModalTrigger` | `components/tasks/` | Trigger for task modal |
+| `TaskBoard` | `components/tasks/` | Kanban-style board |
+| `TaskCard` | `components/tasks/` | Task card in board |
+| `StatusBadge` | `components/shared/` | Status indicator |
+| `PriorityBadge` | `components/shared/` | Priority indicator |
+
+### Status Config Pattern
+```typescript
 const STATUS_CONFIG = {
   todo: { label: 'To Do', color: 'bg-gray-100 text-gray-800' },
   in_progress: { label: 'In Progress', color: 'bg-blue-100 text-blue-800' },
@@ -178,213 +240,58 @@ const STATUS_CONFIG = {
   blocked: { label: 'Blocked', color: 'bg-red-100 text-red-800' },
   completed: { label: 'Completed', color: 'bg-green-100 text-green-800' },
 };
-
-export function TaskStatusBadge({ status }: { status: TaskStatus }) {
-  const config = STATUS_CONFIG[status];
-  return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
-      {config.label}
-    </span>
-  );
-}
 ```
 
-### Kanban Board
-
-```tsx
-const KANBAN_COLUMNS: TaskStatus[] = ['todo', 'in_progress', 'review', 'completed'];
-
-export function KanbanBoard({ tasks }: { tasks: Task[] }) {
-  const tasksByStatus = KANBAN_COLUMNS.reduce((acc, status) => {
-    acc[status] = tasks.filter(t => t.status === status);
-    return acc;
-  }, {} as Record<TaskStatus, Task[]>);
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      {KANBAN_COLUMNS.map(status => (
-        <KanbanColumn
-          key={status}
-          status={status}
-          tasks={tasksByStatus[status]}
-        />
-      ))}
-    </div>
-  );
-}
-```
-
-### Task Card
-
-```tsx
-export function TaskCard({ task }: { task: Task }) {
-  return (
-    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="font-medium text-gray-900 line-clamp-2">{task.title}</h3>
-        <TaskPriorityIcon priority={task.priority} />
-      </div>
-
-      {task.due_date && (
-        <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
-          <Calendar className="h-3 w-3" />
-          {formatDate(task.due_date)}
-        </div>
-      )}
-
-      <div className="flex items-center justify-between">
-        <TaskStatusBadge status={task.status} />
-        {task.assignee && (
-          <Avatar src={task.assignee.avatar_url} size="sm" />
-        )}
-      </div>
-    </div>
-  );
-}
-```
-
----
-
-## Examples
-
-### Example 1: Status Dropdown
-
-```tsx
-export function TaskStatusSelect({ task, onUpdate }: Props) {
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  async function handleChange(newStatus: TaskStatus) {
-    setIsUpdating(true);
-    const result = await updateTaskStatus(task.id, newStatus);
-    if (result.error) {
-      toast.error(result.error);
-    }
-    setIsUpdating(false);
-  }
-
-  const validTransitions = VALID_TRANSITIONS[task.status];
-
-  return (
-    <select
-      value={task.status}
-      onChange={(e) => handleChange(e.target.value as TaskStatus)}
-      disabled={isUpdating}
-      className="..."
-    >
-      <option value={task.status}>{STATUS_CONFIG[task.status].label}</option>
-      {validTransitions.map(status => (
-        <option key={status} value={status}>
-          {STATUS_CONFIG[status].label}
-        </option>
-      ))}
-    </select>
-  );
-}
-```
-
-### Example 2: Block Task with Reason
-
-```tsx
-export function BlockTaskModal({ task, isOpen, onClose }: Props) {
-  const [reason, setReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  async function handleBlock() {
-    if (!reason.trim()) return;
-
-    setIsSubmitting(true);
-    const result = await updateTaskStatus(task.id, 'blocked', reason);
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      onClose();
-    }
-    setIsSubmitting(false);
-  }
-
-  return (
-    <BaseModal isOpen={isOpen} onClose={onClose} title="Block Task">
-      <div className="space-y-4">
-        <p className="text-gray-600">
-          Why is this task blocked?
-        </p>
-        <Textarea
-          value={reason}
-          onChange={(e) => setReason(e.target.value)}
-          placeholder="Describe the blocker..."
-          rows={3}
-        />
-        <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleBlock}
-            disabled={!reason.trim() || isSubmitting}
-            className="bg-red-600"
-          >
-            {isSubmitting ? 'Blocking...' : 'Block Task'}
-          </Button>
-        </div>
-      </div>
-    </BaseModal>
-  );
-}
-```
-
-### Example 3: Task Dependencies
-
+### Valid Transitions
 ```typescript
-// Check if task can be started (all dependencies completed)
-export async function canStartTask(taskId: string) {
-  const supabase = await createClient();
-
-  const { data: dependencies } = await supabase
-    .from('task_dependencies')
-    .select(`
-      depends_on_task:tasks!task_dependencies_depends_on_task_id_fkey(
-        id, status
-      )
-    `)
-    .eq('task_id', taskId);
-
-  const blockers = dependencies?.filter(
-    d => d.depends_on_task.status !== 'completed'
-  );
-
-  return {
-    canStart: blockers?.length === 0,
-    blockers: blockers?.map(b => b.depends_on_task),
-  };
-}
+const VALID_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
+  todo: ['in_progress', 'blocked'],
+  in_progress: ['todo', 'review', 'blocked', 'completed'],
+  review: ['in_progress', 'completed', 'blocked'],
+  blocked: ['todo', 'in_progress'],
+  completed: ['in_progress'], // Reopen only
+};
 ```
 
 ---
 
 ## Anti-Patterns
 
-- **Never** allow invalid status transitions - always validate
-- **Never** skip activity logging - audit trail is important
-- **Never** forget blocked_reason when transitioning to blocked
-- **Never** hardcode status colors - use STATUS_CONFIG
-- **Never** show all statuses in Kanban - exclude 'blocked'
+```typescript
+// WRONG: Using old single-assignee pattern
+task.assignee_id = userId;
+// Tasks now use many-to-many via task_assignees
 
----
+// CORRECT: Use task_assignees table
+await supabase.from('task_assignees').insert({
+  task_id: taskId,
+  user_id: userId,
+  is_primary: true,
+});
 
-## Affected Documentation
+// WRONG: Not checking valid transitions
+await updateTaskStatus(taskId, 'completed');
+// Should validate transition is allowed
 
-| Document | Update Action |
-|----------|---------------|
-| `docs/law/DB_SCHEMA.md` | Task schema reference |
-| `docs/domain/TASKS.md` | Task workflow details |
+// WRONG: Forgetting blocked_reason
+await updateTaskStatus(taskId, 'blocked');
+// Should include reason: updateTaskStatus(taskId, 'blocked', reason)
+
+// WRONG: Not logging activity
+await supabase.from('tasks').update({ status });
+// Should log to task_activity
+```
 
 ---
 
 ## Checklist
 
-- [ ] Status transition is validated
-- [ ] Activity is logged on status change
+- [ ] Status transition validated via `isValidTransition`
+- [ ] Activity logged via `logTaskActivity`
 - [ ] Blocked reason captured when blocking
-- [ ] UI reflects all possible statuses
-- [ ] Dependencies checked before starting
-- [ ] Mobile-friendly task cards
+- [ ] Assignees use `task_assignees` table (many-to-many)
+- [ ] Primary assignee set with `is_primary: true`
+- [ ] Dependencies checked via `task_dependencies`
+- [ ] Use `getUserContext()` for auth
+- [ ] `revalidatePath` called after mutations
+- [ ] Task templates link to phases correctly

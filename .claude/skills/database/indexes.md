@@ -5,14 +5,16 @@
 ## When to Use
 
 - Creating new tables (always index FKs)
-- Query performance issues
+- Query performance issues (slow queries, sequential scans)
 - Adding search functionality
 - Optimizing filtered queries
+- Dashboard/list views with filters
 
 ## Prerequisites
 
-- Know query patterns for the table
-- Check existing indexes before adding
+- Know query patterns for the table (check EXPLAIN ANALYZE)
+- Check existing indexes before adding (avoid duplicates)
+- Use `mcp__supabase__get_advisors(type: "performance")` for recommendations
 
 ---
 
@@ -101,37 +103,101 @@ CREATE INDEX idx_projects_company_status ON public.projects(company_id, status);
 
 ## Step-by-Step: Analyze & Optimize
 
-### 1. Check Existing Indexes
-```sql
-SELECT indexname, indexdef
-FROM pg_indexes
-WHERE tablename = '{table}';
+### 1. Check Existing Indexes via MCP
+```
+mcp__supabase__execute_sql(
+  query: "SELECT schemaname, tablename, indexname, indexdef
+          FROM pg_indexes
+          WHERE schemaname = 'public' AND tablename = '{table}'
+          ORDER BY indexname;"
+)
 ```
 
 ### 2. Analyze Query Performance
-```sql
-EXPLAIN ANALYZE
-SELECT * FROM tasks
-WHERE project_id = 'uuid' AND status = 'in_progress';
+```
+mcp__supabase__execute_sql(
+  query: "EXPLAIN ANALYZE
+          SELECT * FROM tasks
+          WHERE project_id = 'uuid' AND status = 'in_progress';"
+)
 ```
 
 ### 3. Look for Sequential Scans
 ```
-Seq Scan on tasks  -- BAD: Full table scan
-Index Scan on idx_tasks_project  -- GOOD: Using index
+Seq Scan on tasks  -- ❌ BAD: Full table scan
+Index Scan using idx_tasks_project on tasks  -- ✅ GOOD: Using index
+Bitmap Heap Scan  -- ⚠️ OK: Multiple index usage (can be optimized)
 ```
 
-### 4. Add Missing Index
-```
-mcp__supabase__apply_migration
-name: "add_idx_{table}_{column}"
-query: "CREATE INDEX idx_{table}_{column} ON public.{table}({column});"
-```
+### 4. Consider RPC Function Alternative
 
-### 5. Verify Improvement
+**Before adding complex indexes**, consider if RPC function would be better:
+
 ```sql
-EXPLAIN ANALYZE [same query]
--- Should show Index Scan now
+-- OPTION A: Complex composite index
+CREATE INDEX idx_tasks_project_status_date
+  ON tasks(project_id, status, due_date);
+-- Problem: Large index, only helps this specific query
+
+-- OPTION B: RPC function with server-side aggregation
+CREATE OR REPLACE FUNCTION get_project_dashboard(p_project_id uuid)
+RETURNS jsonb AS $$
+  SELECT jsonb_build_object(
+    'tasks', (
+      SELECT jsonb_agg(t.*)
+      FROM tasks t
+      WHERE t.project_id = p_project_id
+    ),
+    'stats', (
+      SELECT jsonb_build_object(
+        'total', COUNT(*),
+        'completed', COUNT(*) FILTER (WHERE status = 'completed')
+      )
+      FROM tasks
+      WHERE project_id = p_project_id
+    )
+  );
+$$ LANGUAGE sql STABLE SECURITY DEFINER;
+-- Benefits: 4 queries → 1, server-side aggregation, smaller indexes
+```
+
+**Use RPC when:**
+- Multiple related queries executed together
+- Complex aggregations needed
+- Fetching related data from multiple tables
+- Query is used frequently (dashboard, detail pages)
+
+**Example from projects module**: `get_project_with_full_stats()` RPC function reduced 4 queries + JS aggregation (~500ms) to 1 query (~50ms).
+
+### 5. Add Missing Index via MCP
+```
+mcp__supabase__apply_migration(
+  name: "add_idx_{table}_{column}",
+  query: "CREATE INDEX IF NOT EXISTS idx_{table}_{column}
+          ON public.{table}({column});
+
+          COMMENT ON INDEX idx_{table}_{column} IS 'Optimizes {description of query pattern}';"
+)
+```
+
+### 6. Save Migration
+```bash
+cat > supabase/migrations/$(date +%Y%m%d%H%M%S)_add_idx_{table}_{column}.sql << 'EOF'
+-- [Your SQL here]
+EOF
+```
+
+### 7. Verify Improvement
+```
+mcp__supabase__execute_sql(
+  query: "EXPLAIN ANALYZE [same query];"
+)
+-- Should show Index Scan now, faster execution time
+```
+
+### 8. Check Performance Advisors
+```
+mcp__supabase__get_advisors(type: "performance")
 ```
 
 ---
@@ -247,9 +313,14 @@ After index changes:
 
 ## Checklist
 
+- [ ] **MCP ONLY**: Indexes created via `mcp__supabase__apply_migration`
+- [ ] Existing indexes checked to avoid duplicates
+- [ ] Query patterns analyzed with EXPLAIN ANALYZE
 - [ ] FK columns indexed
-- [ ] Query patterns analyzed
-- [ ] No duplicate indexes
-- [ ] Partial indexes for filtered queries
-- [ ] CONCURRENTLY used for large tables
-- [ ] Performance verified with EXPLAIN ANALYZE
+- [ ] Considered RPC function alternative for complex queries
+- [ ] Partial indexes used for filtered queries (WHERE clause)
+- [ ] CONCURRENTLY used for large tables (>1M rows)
+- [ ] COMMENT ON INDEX added for documentation
+- [ ] Performance improvement verified with EXPLAIN ANALYZE
+- [ ] Performance advisors checked
+- [ ] Migration SQL saved to `supabase/migrations/`

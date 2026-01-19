@@ -22,24 +22,37 @@
 ```tsx
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { cn } from '@/lib/utils'
-import { HardHat } from 'lucide-react'
+// Performance: Direct imports instead of barrel file (saves 200-800ms)
+import HardHat from 'lucide-react/icons/hard-hat'
 
 interface ComponentNameProps {
   // Required props
   title: string
+  items: Item[]
   // Optional props
   className?: string
   children?: React.ReactNode
+  onItemClick?: (item: Item) => void
 }
 
 export function ComponentName({
   title,
+  items,
   className,
   children,
+  onItemClick,
 }: ComponentNameProps) {
   console.log('[ComponentName] Rendering:', { title })
+
+  // Performance: Memoize computed values
+  const itemCount = useMemo(() => items.length, [items])
+
+  // Performance: Memoize callbacks to prevent child re-renders
+  const handleClick = useCallback((item: Item) => {
+    onItemClick?.(item)
+  }, [onItemClick])
 
   return (
     <div className={cn(
@@ -373,6 +386,147 @@ export { TaskDetail } from './TaskDetail'
 
 // Usage
 import { TaskCard, TaskBoard } from '@/components/tasks'
+```
+
+---
+
+## Performance Optimization Patterns
+
+### Direct Icon Imports
+**ALWAYS use direct imports for Lucide icons to save 200-800ms per page**
+
+```tsx
+// WRONG: Barrel import (slow, loads all icons)
+import { HardHat, Wrench, Building } from 'lucide-react'
+
+// CORRECT: Direct import (fast, tree-shakeable)
+import HardHat from 'lucide-react/icons/hard-hat'
+import Wrench from 'lucide-react/icons/wrench'
+import Building from 'lucide-react/icons/building-2'
+```
+
+### useMemo for Expensive Computations
+```tsx
+'use client'
+
+export function TaskList({ tasks }: { tasks: Task[] }) {
+  // WRONG: Recalculates on every render
+  const completedCount = tasks.filter(t => t.status === 'completed').length
+
+  // CORRECT: Memoized, only recalculates when tasks change
+  const completedCount = useMemo(
+    () => tasks.filter(t => t.status === 'completed').length,
+    [tasks]
+  )
+
+  // When to use useMemo:
+  // - Filtering/mapping arrays
+  // - Complex calculations
+  // - Creating objects/arrays passed as props
+  // - Expensive string manipulations
+}
+```
+
+### useCallback for Event Handlers
+```tsx
+'use client'
+
+export function TaskCard({ task, onUpdate }: Props) {
+  // WRONG: New function on every render -> child re-renders
+  const handleClick = () => {
+    onUpdate(task.id)
+  }
+
+  // CORRECT: Stable reference -> child won't re-render unnecessarily
+  const handleClick = useCallback(() => {
+    onUpdate(task.id)
+  }, [task.id, onUpdate])
+
+  // When to use useCallback:
+  // - Callbacks passed to memoized child components
+  // - Functions passed to useEffect dependencies
+  // - Event handlers in lists
+}
+```
+
+### Lazy State Initialization
+```tsx
+'use client'
+
+export function ExpensiveComponent() {
+  // WRONG: Runs expensive calc on every render (even though useState only uses it once)
+  const [data, setData] = useState(expensiveCalculation())
+
+  // CORRECT: Function only runs once on mount
+  const [data, setData] = useState(() => expensiveCalculation())
+
+  // When to use:
+  // - Reading from localStorage
+  // - Computing initial values from props
+  // - Parsing JSON
+  // - Any expensive synchronous operation
+}
+```
+
+### Extract Memoized Components
+```tsx
+// WRONG: Entire parent re-renders when count changes
+export function Dashboard({ tasks }: { tasks: Task[] }) {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+      <ExpensiveChart data={tasks} />  {/* Re-renders unnecessarily */}
+    </div>
+  )
+}
+
+// CORRECT: Chart isolated from count updates
+const MemoizedChart = memo(function Chart({ data }: { data: Task[] }) {
+  return <ExpensiveChart data={data} />
+})
+
+export function Dashboard({ tasks }: { tasks: Task[] }) {
+  const [count, setCount] = useState(0)
+
+  return (
+    <div>
+      <button onClick={() => setCount(count + 1)}>Count: {count}</button>
+      <MemoizedChart data={tasks} />  {/* Only re-renders when tasks change */}
+    </div>
+  )
+}
+```
+
+### Deferred Data Loading Pattern
+```tsx
+'use client'
+
+import { useDeferredData } from '@/hooks/use-deferred-data'
+
+export function ProjectOverview({ projectId }: { projectId: string }) {
+  // Load non-critical data after initial render
+  const { data, loading, hasFetched } = useDeferredData({
+    fetchFn: () => getProjectStats(projectId),
+    delay: 800, // Wait 800ms after mount
+    cacheKey: `project-${projectId}-stats`,
+  })
+
+  return (
+    <div>
+      {/* Critical UI renders immediately */}
+      <ProjectHeader projectId={projectId} />
+
+      {/* Deferred data shows skeleton then content */}
+      {loading && !data ? (
+        <StatsSkeleton />
+      ) : data ? (
+        <StatsWidget stats={data} />
+      ) : null}
+    </div>
+  )
+}
 ```
 
 ---

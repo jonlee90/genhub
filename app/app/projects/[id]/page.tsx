@@ -20,7 +20,11 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const data = await getProjectDetailData(id);
+  // Defer-await pattern: Start the fetch without awaiting
+  // This allows Next.js to deduplicate the call with the page component
+  const dataPromise = getProjectDetailData(id);
+  const data = await dataPromise;
+
   if (!data?.project) {
     return { title: "Project Not Found | GenHub" };
   }
@@ -45,8 +49,6 @@ export default async function ProjectDetailPage({
 
   const {
     project,
-    projects,
-    teamMembers,
     phaseTaskStats,
     taskDependencies,
     expenseStats,
@@ -88,8 +90,6 @@ export default async function ProjectDetailPage({
         {/* Project Detail Content */}
         <ProjectDetailContent
           project={project}
-          projects={projects || []}
-          teamMembers={teamMembers || []}
           phaseTaskStats={phaseTaskStats || []}
           taskDependencies={taskDependencies || []}
           expenseStats={expenseStats}

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext } from "@/lib/auth/user-context";
 import type { ProjectPhotosRow } from "@/types/db/tables/projects";
 import type { PhotoCategory } from "@/types/db/enums";
 
@@ -33,33 +33,6 @@ export interface UnifiedPhoto {
   client_visible?: boolean;
 }
 
-// Debug: Helper to get user context (same as project-files.ts)
-async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
-
 /**
  * Get project photos with receipt aggregation (REQ-14)
  * Aggregates:
@@ -71,10 +44,12 @@ export async function getProjectPhotosWithReceipts(
   projectId: string,
   filters?: PhotoFilters,
 ) {
-  console.log(
-    "[getProjectPhotosWithReceipts] Fetching photos for project:",
-    projectId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[getProjectPhotosWithReceipts] Fetching photos for project:",
+      projectId,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -237,11 +212,13 @@ export async function getProjectPhotosWithReceipts(
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
   );
 
-  console.log(
-    "[getProjectPhotosWithReceipts] Success:",
-    photos.length,
-    "total photos",
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[getProjectPhotosWithReceipts] Success:",
+      photos.length,
+      "total photos",
+    );
+  }
   return { data: photos };
 }
 
@@ -253,10 +230,12 @@ export async function setProjectPrimaryPhoto(
   projectId: string,
   photoUrl: string | null,
 ): Promise<{ success: boolean; error?: string }> {
-  console.log(
-    "[setProjectPrimaryPhoto] Setting primary photo for project:",
-    projectId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[setProjectPrimaryPhoto] Setting primary photo for project:",
+      projectId,
+    );
+  }
 
   // 1. Validate user is authenticated
   const userContext = await getUserContext();
@@ -343,10 +322,12 @@ export async function setProjectPrimaryPhoto(
   revalidatePath(`/app/projects/${projectId}`);
   revalidatePath("/app/projects");
 
-  console.log(
-    "[setProjectPrimaryPhoto] Success - imageUrl:",
-    photoUrl ? "set" : "cleared",
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[setProjectPrimaryPhoto] Success - imageUrl:",
+      photoUrl ? "set" : "cleared",
+    );
+  }
   return { success: true };
 }
 
@@ -354,7 +335,9 @@ export async function setProjectPrimaryPhoto(
  * Delete project photo (soft delete)
  */
 export async function deleteProjectPhoto(photoId: string) {
-  console.log("[deleteProjectPhoto] Deleting photo:", photoId);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectPhoto] Deleting photo:", photoId);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -395,7 +378,9 @@ export async function deleteProjectPhoto(photoId: string) {
     new_state: { ...photo, deleted_at: new Date().toISOString() },
   });
 
-  console.log("[deleteProjectPhoto] Success");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteProjectPhoto] Success");
+  }
   revalidatePath(`/app/projects/${photo.project_id}`);
   return { success: true };
 }

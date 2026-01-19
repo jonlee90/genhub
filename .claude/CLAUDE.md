@@ -1,21 +1,15 @@
 # CLAUDE.md - GenHub PWA
 
-> CRITICAL rules loaded BEFORE any work. Non-negotiable.
+## CRITICAL (HARD FAIL)
 
----
-
-## CRITICAL RULES (HARD FAIL)
-
-### Supabase Client Isolation
-- **NEVER** in `'use client'` files: Supabase SDK, `createClient`, `@/utils/supabase/*`
-- **ALWAYS** use: Server Actions (`app/actions/*.ts`), API Routes, Server Components
+- **NEVER** Supabase SDK/`createClient`/`@/utils/supabase/*` in `'use client'` files
+- **ALWAYS** use Server Actions (`app/actions/*.ts`), API Routes, or Server Components for DB
 - Violation causes: `Module not found: Can't resolve 'child_process'`
 
-### Architecture Separation
-| Layer | Responsibilities | DB Access |
-|-------|-----------------|-----------|
-| Client (`'use client'`) | UI, interaction, local state | NEVER |
-| Server (Actions/Components) | Mutations, queries, data | YES |
+| Layer | Access | Responsibilities |
+|-------|--------|------------------|
+| Client (`'use client'`) | NO DB | UI, interaction, local state |
+| Server (Actions/Components) | YES DB | Mutations, queries, data |
 
 ---
 
@@ -24,98 +18,49 @@
 **GenHub**: Construction PWA for general contractors
 **Stack**: Next.js 15, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
 **Priorities**: Correctness > Token efficiency > Consistency > Speed
-**Details**: `.claude/docs/core/STACK.md`
 
 ---
 
-## BEFORE YOU START
+## BEFORE WORK
 
-1. **Load Skills**: Check `.claude/skills/index.md` for task-specific patterns
-2. **Load Serena Memories** (MCP runtime):
-   ```
-   mcp__plugin_serena_serena__read_memory("genhub-{topic}")
-   ```
-   Available: `project-overview`, `database-schema`, `server-actions`, `component-patterns`, `common-gotchas`
-3. Use skill dispatching-parallel-agents if it will help you with the task
+1. Load skills: `.claude/skills/index.md`
+2. Load Serena memories: `genhub-{project-overview|database-schema|server-actions|component-patterns|common-gotchas}`
+3. Use `dispatching-parallel-agents` skill when helpful
+
 ---
 
-## AGENTS
+## AGENTS (strict boundaries)
 
-| Agent | Authority | Budget |
-|-------|-----------|--------|
-| backend-engineer | Database, Server Actions, APIs | 35k |
-| frontend-engineer | UI, styling, client state | 45k |
-| code-reviewer | Review, testing, validation | 15k |
-| spec-writer | Requirements, design, planning | 60k |
-| orchestrator | Multi-agent coordination | 20k |
-| frontend-architect | UI planning, Aceternity research | planning |
-| performance-engineer | Query/bundle optimization | 30k |
-| supabase-schema-architect | Schema/RLS design | planning |
-| ai-sdk-v5-expert | AI SDK implementation | planning |
-| technical-documentation-writer | Documentation creation | planning |
+**With budgets**: backend-engineer(70k), frontend-engineer(80k), code-reviewer(30k), orchestrator(30k), performance-engineer(50k)
+
+**Planning-only**: frontend-architect, supabase-schema-architect, ai-sdk-v5-expert, technical-documentation-writer
 
 **Audit agents**: `.claude/agents/audit/` (7 specialists)
-**Boundaries are strict.** Cross-boundary work requires explicit handoff.
 
 ---
 
-## COMMANDS
+## DOCS & COMMANDS
 
-| Command | Purpose |
-|---------|---------|
-| `/kc:spec --mode={requirements\|design\|plan\|full}` | Feature specification |
-| `/kc:impl [task-id]` | Implement tasks from spec |
-| `/kc:build` | TypeScript + ESLint + build |
-| `/kc:sync-docs` | Sync documentation indexes |
-| `/kc:gen-index` | Regenerate index files |
-| `/kc:docs [target] [type]` | Create documentation |
-| `/kc:research-ui [topic]` | Aceternity UI patterns |
-| `/kc:research-ai-sdk [topic]` | AI SDK v5 patterns |
-| `/kc:update-dependencies` | Maintain dependencies.json |
-| `/refactor-code` | Intelligent code refactoring |
-
----
-
-## DOCUMENTATION MAP
-
-### Indexes (auto-synced)
-`.claude/docs/indexes/` → `tables.md`, `actions.md`, `components.md`, `enums.md`, `routes.md`
-
-### Core
-| File | Content |
-|------|---------|
-| `core/RULES.md` | Safety rules reference |
-| `core/STACK.md` | Technology details |
-| `core/AUDIT.md` | Audit report format |
-
-### Backend
-`.claude/docs/backend/` → `SCHEMA_CORE.md`, `SCHEMA_ENUMS.md`, `SCHEMA_RLS.md`, `SCHEMA_SPATIAL.md`, `SERVER_ACTIONS.md`
-
-### Frontend
-`.claude/docs/frontend/` → `DESIGN_SYSTEM.md`, `LAYOUTS.md`, `RESPONSIVE.md`, `COMPONENTS.md`
-
-### Domain
-`.claude/docs/domain/` → `PROJECTS.md`, `TASKS.md`, `MATERIALS.md`, `SPATIAL.md`
-
----
-
-## ORCHESTRATION
-
-| Flag | Agent Action |
-|------|--------------|
-| `ORCHESTRATED=true` | Skip build/sync; return status only |
-| `SKIP_BUILD=true` | Don't run `/kc:build` |
-| `SKIP_SYNC=true` | Don't run `/kc:sync-docs` |
-
-**Protocol**: `.claude/agents/orchestrator.md`
+- **Indexes**: `.claude/docs/indexes/` (tables, actions, components, enums, routes)
+- **Core/Backend/Frontend/Domain**: `.claude/docs/{core|backend|frontend|domain}/`
+- **Commands**: `.claude/skills/index.md` for all `/kc:*` commands
 
 ---
 
 ## TOKEN DISCIPLINE
 
-**Budgets**: backend: 35k | frontend: 45k | reviewer: 15k | orchestrator: 20k | perf: 30k
 **Strategy**: Grep/search first → Read with offset+limit → Full file only if <200 lines
 **Build logs**: `npm run build 2>&1 | grep -E "error|Error" -A 3`
+
+---
+
+## ORCHESTRATION FLAGS
+
+| Flag | Effect |
+|------|--------|
+| `ORCHESTRATED=true` | Skip build/sync; return status only |
+| `SKIP_BUILD=true` | Don't run `/kc:build` |
+| `SKIP_SYNC=true` | Don't run `/kc:sync-docs` |
 
 ---
 
@@ -126,13 +71,3 @@ Halt and request guidance if:
 - Task violates agent authority boundaries
 - Required context file missing
 - Approaching token cap
-
----
-
-## SEE ALSO
-
-- **Skills**: `.claude/skills/index.md`
-- **Agents**: `.claude/agents/`
-- **Commands**: `.claude/commands/kc/`
-- **Design System**: `.claude/docs/frontend/DESIGN_SYSTEM.md`
-- **Rules**: `.claude/docs/core/RULES.md`

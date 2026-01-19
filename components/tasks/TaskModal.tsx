@@ -133,6 +133,7 @@ interface TaskModalProps {
   tasks?: Array<{ id: string; title: string; project_id: string }>; // Optional: for expense modal task selection
   assignees?: TaskAssigneeOption[]; // Optional: Pre-fetched assignees to avoid N+1 queries
   userRole?: string | null; // User role for permission checks
+  isLoadingData?: boolean; // Optional: Loading state for modal data (projects/team members)
 }
 
 // Note: Status and Priority colors now come from shared config: TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG
@@ -1346,6 +1347,7 @@ export function TaskModal({
   tasks = [], // Default to empty array
   assignees, // Optional: Pre-fetched assignees
   userRole, // User role for permission checks
+  isLoadingData, // Optional: Loading state for modal data
 }: TaskModalProps) {
   // Generate a unique key for the form based on mode and task ID
   // This forces React to remount the form component with fresh state

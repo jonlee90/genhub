@@ -22,6 +22,7 @@ interface TaskModalTriggerProps {
   size?: 'default' | 'sm' | 'lg' | 'icon';
   label?: string;
   className?: string;
+  onOpen?: () => void;
 }
 
 export function TaskModalTrigger({
@@ -33,9 +34,15 @@ export function TaskModalTrigger({
   size = 'lg',
   label = 'NEW TASK',
   className,
+  onOpen,
 }: TaskModalTriggerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
+
+  const handleOpen = () => {
+    onOpen?.(); // Trigger data fetch if provided
+    setIsOpen(true);
+  };
 
   const handleSuccess = () => {
     setIsOpen(false);
@@ -45,7 +52,7 @@ export function TaskModalTrigger({
   return (
     <>
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         size={size}
         variant={variant}
         className={

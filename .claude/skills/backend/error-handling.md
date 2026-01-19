@@ -331,23 +331,161 @@ if (result.error) {
 
 ## Logging
 
-### Server-Side Logging
+### Environment-Aware Logging
+
+Use conditional logging for development debugging without cluttering production logs:
+
 ```typescript
 export async function deleteTask(id: string) {
-  console.log('[deleteTask] Starting:', { id })
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
 
-  const { error } = await supabase
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[deleteTask] Starting:', { id, userId: ctx.userId })
+  }
+
+  const { error } = await ctx.supabase
     .from('tasks')
     .delete()
     .eq('id', id)
 
   if (error) {
+    // Always log errors (production + development)
     console.error('[deleteTask] Failed:', { id, error })
+
+    // Development: Log full error details
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[deleteTask] Error details:', {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
+    }
+
     return { error: mapSupabaseError(error) }
   }
 
-  console.log('[deleteTask] Success:', { id })
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[deleteTask] Success:', { id })
+  }
+
+  revalidatePath('/app/tasks')
   return { success: true }
+}
+```
+
+### Structured Error Logging
+
+Log errors with consistent format for easier debugging:
+
+```typescript
+function logError(action: string, context: Record<string, any>, error: any) {
+  console.error(`[${action}] Error occurred`, {
+    timestamp: new Date().toISOString(),
+    context,
+    error: {
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint
+    }
+  })
+}
+
+// Usage
+export async function updateProject(id: string, input: UpdateInput) {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  const { data, error } = await ctx.supabase
+    .from('projects')
+    .update(input)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    logError('updateProject', { projectId: id, userId: ctx.userId }, error)
+    return { error: 'Failed to update project' }
+  }
+
+  return { data }
+}
+```
+
+---
+
+---
+
+## Return Type Patterns
+
+### Pattern 1: { data?, error? } - Most Common
+
+Use for queries and simple mutations:
+
+```typescript
+export async function getProject(id: string): Promise<{
+  data?: Project
+  error?: string
+}> {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return ctx
+
+  const { data, error } = await ctx.supabase
+    .from('projects')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (error) return { error: 'Project not found' }
+  return { data }
+}
+```
+
+### Pattern 2: { success: boolean, error? } - Deletions
+
+Use for operations that don't return data:
+
+```typescript
+export async function deleteProject(id: string): Promise<{
+  success: boolean
+  error?: string
+}> {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return { success: false, error: ctx.error }
+
+  const { error } = await ctx.supabase
+    .from('projects')
+    .delete()
+    .eq('id', id)
+
+  if (error) return { success: false, error: 'Failed to delete project' }
+  return { success: true }
+}
+```
+
+### Pattern 3: { success: boolean, data?, error? } - Complex Mutations
+
+Use when you need to return success status AND data:
+
+```typescript
+export async function createProject(input: CreateInput): Promise<{
+  success: boolean
+  data?: Project
+  error?: string
+}> {
+  const ctx = await getUserContext()
+  if ('error' in ctx) return { success: false, error: ctx.error }
+
+  const { data, error } = await ctx.supabase
+    .from('projects')
+    .insert(input)
+    .select()
+    .single()
+
+  if (error) return { success: false, error: 'Failed to create project' }
+  return { success: true, data }
 }
 ```
 
@@ -363,19 +501,30 @@ export async function createTask(input) {
 }
 
 // WRONG: Exposing internal error details
-return { error: error.message }  // May leak sensitive info
+return { error: error.message }  // May leak sensitive info (table names, schema)
+
+// CORRECT: Map to user-friendly message
+console.error('[createTask] Error:', error)
+return { error: 'Failed to create task' }
 
 // WRONG: Silent failures
 const { data } = await supabase...  // Error ignored!
 return { data }
 
+// CORRECT: Always check for errors
+const { data, error } = await supabase...
+if (error) return { error: 'Operation failed' }
+return { data }
+
 // WRONG: Inconsistent return types
-if (error) return null
-return data
+if (error) return null          // null
+return data                     // Project
+// Caller has to handle both null and Project
 
 // CORRECT: Consistent return type
 if (error) return { error: mapSupabaseError(error) }
 return { data }
+// Caller always receives { data?, error? }
 ```
 
 ---

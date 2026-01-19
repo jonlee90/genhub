@@ -195,10 +195,21 @@ CREATE TRIGGER soft_delete_tasks
 CREATE OR REPLACE FUNCTION public.{function_name}()
 RETURNS TRIGGER AS $$
 BEGIN
-  -- Logic here
+  -- Guard against infinite recursion
+  IF pg_trigger_depth() > 1 THEN
+    RETURN NEW;
+  END IF;
+
+  -- Your logic here
+  -- NEW = new row (INSERT/UPDATE)
+  -- OLD = old row (UPDATE/DELETE)
+  -- TG_OP = operation name ('INSERT', 'UPDATE', 'DELETE')
+
   RETURN NEW;  -- or OLD for DELETE, or NULL to abort
 END;
 $$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION public.{function_name}() IS '{Description of what this trigger does}';
 ```
 
 ### 3. Create Trigger
@@ -207,14 +218,42 @@ CREATE TRIGGER {trigger_name}
   {BEFORE|AFTER} {INSERT|UPDATE|DELETE} ON public.{table}
   FOR EACH ROW
   EXECUTE FUNCTION public.{function_name}();
+
+COMMENT ON TRIGGER {trigger_name} ON public.{table} IS '{When and why this fires}';
 ```
 
-### 4. Test
-```sql
--- Insert/update/delete and verify trigger fired
-INSERT INTO {table} (...) VALUES (...);
-SELECT * FROM {table} WHERE ...;  -- Check trigger effect
+### 4. Apply via MCP
 ```
+mcp__supabase__apply_migration(
+  name: "create_{trigger_name}_trigger",
+  query: "[Function + Trigger SQL]"
+)
+```
+
+### 5. Save Migration
+```bash
+cat > supabase/migrations/$(date +%Y%m%d%H%M%S)_create_{trigger_name}_trigger.sql << 'EOF'
+-- [Your SQL here]
+EOF
+```
+
+### 6. Test
+```
+mcp__supabase__execute_sql(
+  query: "-- Insert/update/delete and verify trigger fired
+          INSERT INTO {table} (...) VALUES (...) RETURNING *;
+
+          -- Check trigger effect
+          SELECT * FROM {related_table} WHERE ...;"
+)
+```
+
+### 7. Monitor Performance
+```
+mcp__supabase__get_advisors(type: "performance")
+```
+
+Check if trigger is causing slow writes.
 
 ---
 
@@ -296,24 +335,55 @@ IF pg_trigger_depth() > 1 THEN RETURN NEW; END IF;
 
 ## Debugging Triggers
 
-### List Triggers
-```sql
-SELECT trigger_name, event_manipulation, action_timing
-FROM information_schema.triggers
-WHERE event_object_table = '{table}';
+### List Triggers via MCP
+```
+mcp__supabase__execute_sql(
+  query: "SELECT
+            tgname as trigger_name,
+            tgrelid::regclass as table_name,
+            proname as function_name,
+            CASE tgtype::integer & 1
+              WHEN 1 THEN 'ROW' ELSE 'STATEMENT' END as level,
+            CASE tgtype::integer & 66
+              WHEN 2 THEN 'BEFORE'
+              WHEN 64 THEN 'INSTEAD OF'
+              ELSE 'AFTER' END as timing
+          FROM pg_trigger
+          JOIN pg_proc ON pg_proc.oid = tgfoid
+          WHERE tgrelid = 'public.{table}'::regclass
+          AND NOT tgisinternal;"
+)
 ```
 
-### Disable Temporarily
+### Check Function Source
+```
+mcp__supabase__execute_sql(
+  query: "SELECT
+            p.proname as function_name,
+            pg_get_functiondef(p.oid) as definition
+          FROM pg_proc p
+          WHERE p.proname = '{function_name}';"
+)
+```
+
+### Disable/Enable Trigger
 ```sql
-ALTER TABLE {table} DISABLE TRIGGER {trigger_name};
+-- Temporarily disable for testing
+ALTER TABLE public.{table} DISABLE TRIGGER {trigger_name};
+
 -- Test without trigger
-ALTER TABLE {table} ENABLE TRIGGER {trigger_name};
+INSERT INTO public.{table} (...) VALUES (...);
+
+-- Re-enable
+ALTER TABLE public.{table} ENABLE TRIGGER {trigger_name};
 ```
 
-### Check Function
-```sql
-SELECT prosrc FROM pg_proc WHERE proname = '{function_name}';
+### Performance Impact
 ```
+mcp__supabase__get_advisors(type: "performance")
+```
+
+Check if trigger is causing slow writes (look for lock contention, long execution times).
 
 ---
 
@@ -327,10 +397,16 @@ After trigger changes:
 
 ## Checklist
 
+- [ ] **MCP ONLY**: Trigger created via `mcp__supabase__apply_migration`
 - [ ] Function created with RETURNS TRIGGER
+- [ ] Guard against infinite recursion (`pg_trigger_depth()`)
 - [ ] Trigger timing correct (BEFORE/AFTER)
 - [ ] Trigger events specified (INSERT/UPDATE/DELETE)
 - [ ] Returns NEW, OLD, or NULL appropriately
-- [ ] No infinite recursion risk
+- [ ] No external API calls (triggers run in transaction)
+- [ ] No heavy computation (defer to background job if needed)
+- [ ] COMMENT ON FUNCTION and COMMENT ON TRIGGER added
 - [ ] Performance tested with realistic data
+- [ ] Migration SQL saved to `supabase/migrations/`
 - [ ] Migration includes both function and trigger
+- [ ] Tested via `mcp__supabase__execute_sql`

@@ -40,7 +40,9 @@ import {
 import { updateProject, updateProjectStatus } from '@/app/actions/projects';
 import type { ProjectsRow } from '@/types/db/tables/projects';
 
-type Project = ProjectsRow & {
+type Project = Partial<ProjectsRow> & {
+  id: string;
+  name: string;
   creator?: {
     id: string;
     name: string;
@@ -74,7 +76,7 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<'active' | 'on_hold' | 'completed' | 'archived'>(
-    (project.status === 'in_progress' || project.status === 'planning') ? 'active' : project.status
+    (project.status === 'in_progress' || project.status === 'planning') ? 'active' : (project.status || 'active')
   );
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
@@ -143,7 +145,7 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Creator Badge - Industrial Metadata Tag */}
-            {project.creator && (
+            {project.creator?.name && project.created_at && (
               <CreatorBadge
                 creatorName={project.creator.name}
                 createdAt={project.created_at}
