@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import type { SubcontractorsRow } from '@/types/db/tables/companies';
 import type { TradeType } from '@/types/db/enums';
 import { Badge } from '@/components/ui/badge';
@@ -23,23 +24,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  MoreVertical,
-  Phone,
-  Mail,
-  MapPin,
-  Star,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Edit,
-  Trash2,
-  FileText,
-  Shield,
-} from 'lucide-react';
+import MoreVertical from 'lucide-react/icons/more-vertical';
+import Phone from 'lucide-react/icons/phone';
+import Mail from 'lucide-react/icons/mail';
+import MapPin from 'lucide-react/icons/map-pin';
+import Star from 'lucide-react/icons/star';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import XCircle from 'lucide-react/icons/x-circle';
+import Edit from 'lucide-react/icons/edit';
+import Trash2 from 'lucide-react/icons/trash-2';
+import FileText from 'lucide-react/icons/file-text';
+import Shield from 'lucide-react/icons/shield';
 import { toast } from 'sonner';
 import { deactivateSubcontractor } from '@/app/actions/subcontractors';
-import { EditSubcontractorModal } from './EditSubcontractorModal';
+
+// Dynamic import for heavy modal component
+const EditSubcontractorModal = dynamic(
+  () => import('./EditSubcontractorModal').then((m) => ({ default: m.EditSubcontractorModal })),
+  { ssr: false }
+);
 
 type Subcontractor = SubcontractorsRow;
 
@@ -94,8 +98,6 @@ const TRADE_LABELS: Record<TradeType, string> = {
 };
 
 export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: SubcontractorCardProps) {
-  console.log('[SubcontractorCard] Rendering card for:', subcontractor.company_name);
-
   const [isPending, startTransition] = useTransition();
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -197,7 +199,6 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => {
-                    console.log('[SubcontractorCard] Opening edit modal for:', subcontractor.id);
                     setEditModalOpen(true);
                   }}
                   disabled={isPending}
@@ -352,7 +353,6 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
       <EditSubcontractorModal
         isOpen={editModalOpen}
         onClose={() => {
-          console.log('[SubcontractorCard] Closing edit modal');
           setEditModalOpen(false);
         }}
         subcontractor={subcontractor}

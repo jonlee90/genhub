@@ -23,21 +23,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Loader2,
-  Building2,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  FileText,
-  Shield,
-  Star,
-  Upload,
-  CheckCircle2,
-  XCircle,
-  HardHat,
-} from "lucide-react";
+import Loader2 from "lucide-react/icons/loader-2";
+import Building2 from "lucide-react/icons/building-2";
+import User from "lucide-react/icons/user";
+import Mail from "lucide-react/icons/mail";
+import Phone from "lucide-react/icons/phone";
+import MapPin from "lucide-react/icons/map-pin";
+import FileText from "lucide-react/icons/file-text";
+import Shield from "lucide-react/icons/shield";
+import Star from "lucide-react/icons/star";
+import Upload from "lucide-react/icons/upload";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import XCircle from "lucide-react/icons/x-circle";
+import HardHat from "lucide-react/icons/hard-hat";
 import { toast } from "sonner";
 
 interface AddSubcontractorModalProps {

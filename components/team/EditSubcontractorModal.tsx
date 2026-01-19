@@ -25,20 +25,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Loader2,
-  Building2,
-  User,
-  Mail,
-  Phone,
-  MapPin,
-  FileText,
-  Shield,
-  Star,
-  CheckCircle2,
-  XCircle,
-  Pencil,
-} from "lucide-react";
+import Loader2 from "lucide-react/icons/loader-2";
+import Building2 from "lucide-react/icons/building-2";
+import User from "lucide-react/icons/user";
+import Mail from "lucide-react/icons/mail";
+import Phone from "lucide-react/icons/phone";
+import MapPin from "lucide-react/icons/map-pin";
+import FileText from "lucide-react/icons/file-text";
+import Shield from "lucide-react/icons/shield";
+import Star from "lucide-react/icons/star";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import XCircle from "lucide-react/icons/x-circle";
+import Pencil from "lucide-react/icons/pencil";
 import { toast } from "sonner";
 
 type Subcontractor = SubcontractorsRow;
@@ -75,11 +73,6 @@ export function EditSubcontractorModal({
   onClose,
   subcontractor,
 }: EditSubcontractorModalProps) {
-  console.log(
-    "[EditSubcontractorModal] Rendering with subcontractor:",
-    subcontractor.id,
-  );
-
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<
@@ -124,10 +117,6 @@ export function EditSubcontractorModal({
 
   // Reset form when subcontractor changes
   useEffect(() => {
-    console.log(
-      "[EditSubcontractorModal] Resetting form for subcontractor:",
-      subcontractor.id,
-    );
     setCompanyName(subcontractor.company_name || "");
     setContactName(subcontractor.contact_name || "");
     setEmail(subcontractor.email || "");
@@ -154,7 +143,6 @@ export function EditSubcontractorModal({
   }, [subcontractor]);
 
   const handleClose = useCallback(() => {
-    console.log("[EditSubcontractorModal] Closing modal");
     setError(null);
     setFieldErrors(null);
     setIsSuccess(false);
@@ -163,10 +151,6 @@ export function EditSubcontractorModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(
-      "[EditSubcontractorModal] Submitting form for subcontractor:",
-      subcontractor.id,
-    );
 
     setError(null);
     setFieldErrors(null);
@@ -189,8 +173,6 @@ export function EditSubcontractorModal({
           notes: notes || undefined,
         });
 
-        console.log("[EditSubcontractorModal] Update result:", result);
-
         if (result.success) {
           setIsSuccess(true);
           toast.success("Subcontractor updated successfully!");
@@ -208,7 +190,6 @@ export function EditSubcontractorModal({
           toast.error(result.error || "Failed to update subcontractor");
         }
       } catch (err) {
-        console.error("[EditSubcontractorModal] Unexpected error:", err);
         setError("An unexpected error occurred. Please try again.");
         toast.error("An unexpected error occurred");
       }

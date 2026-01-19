@@ -284,8 +284,7 @@ export function GanttChart({
       {/* Header with time scale toggle */}
       <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         
-        {isMobile ? "" 
-          :  
+        {isMobile ? null : (
           <div className="flex items-center gap-2 sm:gap-3">
             <h3 className="text-sm sm:text-lg font-black text-construction-blue">
               PROJECT TIMELINE
@@ -294,7 +293,7 @@ export function GanttChart({
               {sortedTasks.length} {sortedTasks.length === 1 ? "task" : "tasks"}
             </span>
           </div>
-        }
+        )}
         <GanttViewToggle timeScale={timeScale} onTimeScaleChange={setTimeScale} isMobile={isMobile} />
       </div>
 
@@ -308,7 +307,8 @@ export function GanttChart({
         <ScrollArea
           className={cn(
             "w-full select-none bg-white",
-            isDraggingScroll ? "cursor-grabbing" : "cursor-grab"
+            // Only show grab cursor on desktop
+            !isMobile && (isDraggingScroll ? "cursor-grabbing" : "cursor-grab")
           )}
           style={{
             height: Math.min(
@@ -316,10 +316,10 @@ export function GanttChart({
               isMobile ? 400 : 600
             )
           }}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseLeave}
+          onMouseDown={!isMobile ? handleMouseDown : undefined}
+          onMouseMove={!isMobile ? handleMouseMove : undefined}
+          onMouseUp={!isMobile ? handleMouseUp : undefined}
+          onMouseLeave={!isMobile ? handleMouseLeave : undefined}
         >
           <div className="relative bg-white" style={{ width: totalWidth }}>
             {/* Header */}

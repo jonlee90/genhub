@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
 import { Button } from '@/components/ui/button';
 
 export default function TeamError({

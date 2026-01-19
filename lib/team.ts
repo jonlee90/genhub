@@ -3,39 +3,18 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { createUserClient } from "@/utils/supabase/server";
-import type { MemberStatus, UserRole } from "@/types/db/enums";
+import type { UserRole } from "@/types/db/enums";
 import type { SubcontractorsRow } from "@/types/db/tables/companies";
+import type { TeamMember, TeamStats } from "@/types/team";
 
-interface TeamMemberWithProfile {
-  id: string;
-  user_id: string;
-  role: UserRole;
-  status: MemberStatus;
-  activated_at: string | null;
-  invited_at: string | null;
-  user_profiles: {
-    id: string;
-    email: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-  project_count: number;
-}
-
-interface TeamStats {
-  total: number;
-  active: number;
-  invited: number;
-  admins: number;
-  projectManagers: number;
-  fieldWorkers: number;
-}
+// Re-export shared types for convenience
+export type { TeamMember, TeamStats };
 
 interface TeamPageOk {
   status: "ok";
   companyId: string;
   role: UserRole;
-  members: TeamMemberWithProfile[];
+  members: TeamMember[];
   stats: TeamStats;
 }
 
@@ -101,9 +80,9 @@ export async function getTeamPageData(): Promise<TeamPageOk | TeamPageError> {
   const members = (teamMembersResult.data || []).map((member) => ({
     ...member,
     user_profiles:
-      member.user_profiles as TeamMemberWithProfile["user_profiles"],
+      member.user_profiles as TeamMember["user_profiles"],
     project_count: countsMap.get(member.user_id) || 0,
-  })) as TeamMemberWithProfile[];
+  })) as TeamMember[];
 
   const stats = members.reduce(
     (acc, member) => {

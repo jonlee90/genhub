@@ -16,91 +16,15 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  HardHat,
-  Briefcase,
-  Users,
-  Hammer,
-  UserCheck,
-  Building2,
-} from "lucide-react";
 import { cn, getInitials } from "@/lib/utils";
-import type { UserRole, MemberStatus } from "@/types/db/enums";
-
-interface TeamMember {
-  id: string;
-  user_id: string;
-  role: UserRole;
-  status: MemberStatus;
-  activated_at: string | null;
-  invited_at: string | null;
-  user_profiles: {
-    id: string;
-    email: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-  project_count: number;
-}
+import { ROLE_CONFIG, STATUS_CONFIG } from "@/lib/team-config";
+import type { TeamMember } from "@/types/team";
 
 interface TeamMemberCardProps {
   member: TeamMember;
   onClick?: () => void;
   className?: string;
 }
-
-// Role configuration with icons and colors
-const ROLE_CONFIG = {
-  admin: {
-    label: "Admin",
-    color: "bg-[#001B51] text-white",
-    icon: Briefcase,
-  },
-  project_manager: {
-    label: "Project Manager",
-    color: "bg-[#3C3C3C] text-white",
-    icon: Building2,
-  },
-  foreman: {
-    label: "Foreman",
-    color: "bg-[#7A7A7A] text-white",
-    icon: HardHat,
-  },
-  field_worker: {
-    label: "Field Worker",
-    color: "bg-green-700 text-white",
-    icon: Hammer,
-  },
-  subcontractor: {
-    label: "Subcontractor",
-    color: "bg-yellow-600 text-white",
-    icon: Users,
-  },
-  client: {
-    label: "Client",
-    color: "bg-blue-600 text-white",
-    icon: UserCheck,
-  },
-} as const;
-
-// Status configuration
-const STATUS_CONFIG = {
-  active: {
-    label: "Active",
-    color: "bg-green-100 text-green-800",
-    dotColor: "bg-green-500",
-  },
-  invited: {
-    label: "Invited",
-    color: "bg-yellow-100 text-yellow-800",
-    dotColor: "bg-yellow-500",
-  },
-  inactive: {
-    label: "Inactive",
-    color: "bg-gray-100 text-gray-800",
-    dotColor: "bg-gray-400",
-  },
-} as const;
 
 export function TeamMemberCard({
   member,

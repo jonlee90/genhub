@@ -8,7 +8,8 @@ import {
   useCallback,
 } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import type { UserRole, MemberStatus } from "@/types/db/enums";
+import dynamic from "next/dynamic";
+import type { UserRole } from "@/types/db/enums";
 import { updateTeamMemberRole, deactivateTeamMember } from "@/app/actions/team";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,38 +40,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  MoreVertical,
-  ArrowUpDown,
-  HardHat,
-  Briefcase,
-  Users,
-  Hammer,
-  UserCheck,
-  Building2,
-  UserPlus,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import MoreVertical from "lucide-react/icons/more-vertical";
+import ArrowUpDown from "lucide-react/icons/arrow-up-down";
+import Users from "lucide-react/icons/users";
+import UserPlus from "lucide-react/icons/user-plus";
+import ChevronLeft from "lucide-react/icons/chevron-left";
+import ChevronRight from "lucide-react/icons/chevron-right";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/utils";
-import { InviteTeamMemberModal } from "./InviteTeamMemberModal";
+import { ROLE_CONFIG, STATUS_CONFIG } from "@/lib/team-config";
+import type { TeamMember } from "@/types/team";
 
-interface TeamMember {
-  id: string;
-  user_id: string;
-  role: UserRole;
-  status: MemberStatus;
-  activated_at: string | null;
-  invited_at: string | null;
-  user_profiles: {
-    id: string;
-    email: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-  project_count: number;
-}
+// Dynamic import for heavy modal component
+const InviteTeamMemberModal = dynamic(
+  () => import("./InviteTeamMemberModal").then((m) => ({ default: m.InviteTeamMemberModal })),
+  { ssr: false }
+);
 
 interface TeamMemberTableProps {
   members: TeamMember[];
@@ -82,54 +67,6 @@ type SortField = "name" | "email" | "role" | "status";
 type SortDirection = "asc" | "desc";
 
 const ITEMS_PER_PAGE = 25;
-
-const ROLE_CONFIG = {
-  admin: {
-    label: "Admin",
-    color: "bg-[#001B51] text-white border-[#001B51]",
-    icon: Briefcase,
-  },
-  project_manager: {
-    label: "Project Manager",
-    color: "bg-[#3C3C3C] text-white border-[#3C3C3C]",
-    icon: Building2,
-  },
-  foreman: {
-    label: "Foreman",
-    color: "bg-[#7A7A7A] text-white border-[#7A7A7A]",
-    icon: HardHat,
-  },
-  field_worker: {
-    label: "Field Worker",
-    color: "bg-green-700 text-white border-green-700",
-    icon: Hammer,
-  },
-  subcontractor: {
-    label: "Subcontractor",
-    color: "bg-yellow-600 text-white border-yellow-600",
-    icon: Users,
-  },
-  client: {
-    label: "Client",
-    color: "bg-blue-600 text-white border-blue-600",
-    icon: UserCheck,
-  },
-} as const;
-
-const STATUS_CONFIG = {
-  active: {
-    label: "Active",
-    color: "bg-green-100 text-green-800 border-green-300",
-  },
-  invited: {
-    label: "Invited",
-    color: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  },
-  inactive: {
-    label: "Inactive",
-    color: "bg-gray-100 text-gray-800 border-gray-300",
-  },
-} as const;
 
 export function TeamMemberTable({
   members,
@@ -226,11 +163,14 @@ export function TeamMemberTable({
 
   const handleRoleChange = useCallback(
     async (userId: string, newRole: UserRole) => {
-      // Optimistic update
-      const previousMembers = [...optimisticMembers];
-      setOptimisticMembers((prev) =>
-        prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m)),
-      );
+      // Store previous state for rollback
+      let previousMembers: TeamMember[] = [];
+
+      // Optimistic update using functional setState
+      setOptimisticMembers((prev) => {
+        previousMembers = [...prev];
+        return prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m));
+      });
 
       startTransition(async () => {
         const result = await updateTeamMemberRole(userId, newRole);
@@ -240,10 +180,12 @@ export function TeamMemberTable({
           toast.error(result.error);
         } else {
           toast.success("Role updated successfully");
+          // Sync with server state
+          router.refresh();
         }
       });
     },
-    [optimisticMembers],
+    [router],
   );
 
   const handleDeactivate = useCallback((userId: string) => {
@@ -255,9 +197,11 @@ export function TeamMemberTable({
         toast.error(result.error);
       } else {
         toast.success("Team member deactivated successfully");
+        // Sync with server state
+        router.refresh();
       }
     });
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-6">
@@ -365,7 +309,11 @@ export function TeamMemberTable({
                   return (
                     <TableRow
                       key={member.id}
-                      className="hover:bg-gray-50/50 transition-colors border-b border-gray-100"
+                      className="team-member-row hover:bg-gray-50/50 transition-colors border-b border-gray-100"
+                      style={{
+                        contentVisibility: "auto",
+                        containIntrinsicSize: "0 60px",
+                      }}
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">

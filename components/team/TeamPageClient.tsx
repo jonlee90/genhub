@@ -9,42 +9,26 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
 import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { FloatingActionButton } from '@/components/mobile/FloatingActionButton';
 import { TeamMemberCard } from './TeamMemberCard';
 import { TeamMemberTable } from './TeamMemberTable';
-import { InviteTeamMemberModal } from './InviteTeamMemberModal';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { deactivateTeamMember } from '@/app/actions/team';
-import { Users, UserMinus, UserPlus } from 'lucide-react';
+import Users from 'lucide-react/icons/users';
+import UserMinus from 'lucide-react/icons/user-minus';
+import UserPlus from 'lucide-react/icons/user-plus';
 import { toast } from 'sonner';
-import type { UserRole, MemberStatus } from '@/types/db/enums';
+import type { UserRole } from '@/types/db/enums';
+import type { TeamMember, TeamStats } from '@/types/team';
 
-interface TeamMember {
-  id: string;
-  user_id: string;
-  role: UserRole;
-  status: MemberStatus;
-  activated_at: string | null;
-  invited_at: string | null;
-  user_profiles: {
-    id: string;
-    email: string;
-    name: string;
-    avatar_url: string | null;
-  } | null;
-  project_count: number;
-}
-
-interface TeamStats {
-  total: number;
-  active: number;
-  invited: number;
-  admins: number;
-  projectManagers: number;
-  fieldWorkers: number;
-}
+// Dynamic import for heavy modal component
+const InviteTeamMemberModal = dynamic(
+  () => import('./InviteTeamMemberModal').then((m) => ({ default: m.InviteTeamMemberModal })),
+  { ssr: false }
+);
 
 interface TeamPageClientProps {
   members: TeamMember[];
@@ -99,7 +83,6 @@ export function TeamPageClient({
   // Handle member tap (for viewing details - could open modal in future)
   const handleMemberTap = useCallback((member: TeamMember) => {
     // For now, just log - could open a detail modal
-    console.log('[TeamPageClient] Member tapped:', member.user_profiles?.name);
   }, []);
 
   // Mobile layout with swipeable cards

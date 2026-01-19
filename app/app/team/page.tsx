@@ -1,12 +1,11 @@
 import { TeamPageClient } from "@/components/team/TeamPageClient";
-import {
-  Users,
-  UserCog,
-  HardHat,
-  Hammer,
-  UserPlus,
-  Shield,
-} from "lucide-react";
+import { StatCard } from "@/components/team/StatCard";
+import Users from "lucide-react/icons/users";
+import UserCog from "lucide-react/icons/user-cog";
+import HardHat from "lucide-react/icons/hard-hat";
+import Hammer from "lucide-react/icons/hammer";
+import UserPlus from "lucide-react/icons/user-plus";
+import Shield from "lucide-react/icons/shield";
 import { getTeamPageData } from "@/lib/team";
 
 const BLUEPRINT_BACKGROUND_STYLE = {
@@ -67,143 +66,48 @@ export default async function TeamPage() {
       {/* Industrial Stats Dashboard - Crew Roster */}
       {stats.total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
-          {/* Total Members */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <Users className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
-                  Total
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
-                  {stats.total}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  Team Members
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Members */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                  <UserCog className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">
-                  Active
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
-                  {stats.active}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  On Duty
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Invited Members */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <UserPlus className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">
-                  Pending
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">
-                  {stats.invited}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  Invited
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* GC Admins */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                  <Shield className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
-                  Admins
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
-                  {stats.admins}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  GC Admins
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Project Managers */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-accent/5 to-construction-accent/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
-                  <HardHat className="h-4 w-4 md:h-5 md:w-5 text-construction-accent" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-accent/60">
-                  Managers
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-accent leading-none mb-1">
-                  {stats.projectManagers}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  Project Mgrs
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Field Workers */}
-          <div className="relative group h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-            <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-2 md:mb-3">
-                <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                  <Hammer className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
-                </div>
-                <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">
-                  Crew
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
-                  {stats.fieldWorkers}
-                </div>
-                <div className="text-xs md:text-sm font-bold text-gray-600">
-                  Field Crew
-                </div>
-              </div>
-            </div>
-          </div>
+          <StatCard
+            icon={Users}
+            label="Total"
+            sublabel="Team Members"
+            value={stats.total}
+            colorClass="blue"
+          />
+          <StatCard
+            icon={UserCog}
+            label="Active"
+            sublabel="On Duty"
+            value={stats.active}
+            colorClass="green"
+          />
+          <StatCard
+            icon={UserPlus}
+            label="Pending"
+            sublabel="Invited"
+            value={stats.invited}
+            colorClass="accent"
+          />
+          <StatCard
+            icon={Shield}
+            label="Admins"
+            sublabel="GC Admins"
+            value={stats.admins}
+            colorClass="blue"
+          />
+          <StatCard
+            icon={HardHat}
+            label="Managers"
+            sublabel="Project Mgrs"
+            value={stats.projectManagers}
+            colorClass="accent"
+          />
+          <StatCard
+            icon={Hammer}
+            label="Crew"
+            sublabel="Field Crew"
+            value={stats.fieldWorkers}
+            colorClass="green"
+          />
         </div>
       )}
 

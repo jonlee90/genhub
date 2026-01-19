@@ -1,13 +1,21 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import type { SubcontractorsRow } from '@/types/db/tables/companies';
 import type { UserRole } from '@/types/db/enums';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Plus, HardHat } from 'lucide-react';
+import Search from 'lucide-react/icons/search';
+import Plus from 'lucide-react/icons/plus';
+import HardHat from 'lucide-react/icons/hard-hat';
 import { SubcontractorCard } from './SubcontractorCard';
-import { AddSubcontractorModal } from './AddSubcontractorModal';
+
+// Dynamic import for heavy modal component
+const AddSubcontractorModal = dynamic(
+  () => import('./AddSubcontractorModal').then((m) => ({ default: m.AddSubcontractorModal })),
+  { ssr: false }
+);
 
 type Subcontractor = SubcontractorsRow;
 

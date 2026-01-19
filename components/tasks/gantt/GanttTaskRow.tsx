@@ -74,14 +74,14 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
         onKeyDown={handleKeyDown}
       >
         {/* Assignee avatar - only show on larger mobile/desktop */}
-        {task.assignee && !isMobile && (
+        {task.assignee && !isMobile ? (
           <Avatar className={cn(isMobile ? "h-6 w-6" : "h-7 w-7", "shrink-0")}>
             <AvatarImage src={task.assignee.avatar_url || undefined} />
             <AvatarFallback className="text-xs bg-construction-blue text-white">
               {task.assignee.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-        )}
+        ) : null}
 
         {/* Task title and phase */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -115,14 +115,14 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             </span>
           </div>
           {/* Project name - secondary line */}
-          {task.project && (
+          {task.project ? (
             <span className={cn(
               "text-gray-500 truncate",
               isMobile ? "text-[10px] mt-0.5" : "text-xs mt-0.5"
             )}>
               {task.project.name}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
 

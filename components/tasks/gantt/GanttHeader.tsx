@@ -79,14 +79,14 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
                   )}>
                     {labelParts[0]}
                   </span>
-                  {!isMobile && (
+                  {!isMobile ? (
                     <span className={cn(
                       "font-black",
                       cell.isToday ? "text-construction-blue text-base" : "text-gray-800 text-sm"
                     )}>
                       {labelParts[1]}
                     </span>
-                  )}
+                  ) : null}
                 </div>
               );
             })}

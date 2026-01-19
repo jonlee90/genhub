@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState, useEffect, useCallback } from "react";
+import { useState, useActionState, useCallback } from "react";
 import { inviteTeamMember } from "@/app/actions/team";
 import type { UserRole } from "@/types/db/enums";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
@@ -15,19 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Loader2,
-  Mail,
-  User,
-  Shield,
-  CheckCircle2,
-  XCircle,
-  UserPlus,
-  Copy,
-  Check,
-  Link2,
-  Share2,
-} from "lucide-react";
+import Loader2 from "lucide-react/icons/loader-2";
+import Mail from "lucide-react/icons/mail";
+import User from "lucide-react/icons/user";
+import Shield from "lucide-react/icons/shield";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import XCircle from "lucide-react/icons/x-circle";
+import UserPlus from "lucide-react/icons/user-plus";
+import Copy from "lucide-react/icons/copy";
+import Check from "lucide-react/icons/check";
+import Link2 from "lucide-react/icons/link-2";
+import Share2 from "lucide-react/icons/share-2";
 
 interface InviteTeamMemberModalProps {
   isOpen: boolean;
@@ -76,46 +74,36 @@ export function InviteTeamMemberModal({
   const [selectedRole, setSelectedRole] = useState<UserRole>("field_worker");
   const [copied, setCopied] = useState(false);
 
-  // Debug: Track modal state
-  console.log("[InviteTeamMemberModal] Rendering modal");
-
   // Use useActionState hook for form submission
   const [state, formAction, isPending] = useActionState(
     async (prevState: any, formData: FormData) => {
-      console.log("[InviteTeamMemberModal] Submitting invitation...");
       const result = await inviteTeamMember(formData);
-      console.log("[InviteTeamMemberModal] Invitation result:", result);
       return result;
     },
     null,
   );
 
-  // Debug: Don't auto-close on success - let user copy link first
-  // Removed auto-close timer to allow user to copy the invite link
-
   const handleClose = useCallback(() => {
-    console.log("[InviteTeamMemberModal] Closing modal");
     setSelectedRole("field_worker");
     setCopied(false);
     onClose();
   }, [onClose]);
 
-  // Debug: Copy invitation link to clipboard
+  // Copy invitation link to clipboard
   const handleCopyLink = useCallback(async () => {
     if (state?.invitationLink) {
       try {
         await navigator.clipboard.writeText(state.invitationLink);
         setCopied(true);
-        console.log("[InviteTeamMemberModal] Link copied to clipboard");
         // Reset copied state after 3 seconds
         setTimeout(() => setCopied(false), 3000);
       } catch (err) {
-        console.error("[InviteTeamMemberModal] Failed to copy link:", err);
+        // Silently handle copy failure
       }
     }
   }, [state?.invitationLink]);
 
-  // Debug: Share link using Web Share API (if available)
+  // Share link using Web Share API (if available)
   const handleShareLink = useCallback(async () => {
     if (state?.invitationLink && navigator.share) {
       try {
@@ -124,10 +112,8 @@ export function InviteTeamMemberModal({
           text: "You have been invited to join our team on GenHub!",
           url: state.invitationLink,
         });
-        console.log("[InviteTeamMemberModal] Link shared successfully");
       } catch (err) {
-        // User cancelled or share failed
-        console.log("[InviteTeamMemberModal] Share cancelled or failed:", err);
+        // User cancelled or share failed - silently handle
       }
     }
   }, [state?.invitationLink]);
