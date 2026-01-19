@@ -19,6 +19,8 @@ interface TaskListMobileProps {
   enableComplete?: boolean;
   /** Enable swipe-to-delete action */
   enableDelete?: boolean;
+  /** Task type configs from database - for icon/color display */
+  taskTypes?: any[];
 }
 
 /**
@@ -37,6 +39,7 @@ export function TaskListMobile({
   phases,
   enableComplete = true,
   enableDelete = true,
+  taskTypes,
 }: TaskListMobileProps) {
   const [pendingActions, setPendingActions] = useState<Set<string>>(new Set());
 
@@ -128,6 +131,7 @@ export function TaskListMobile({
                   onTaskClick={onTaskClick}
                   phases={phases}
                   expenseStats={task.expenseStats}
+                  taskTypes={taskTypes}
                 />
               </SwipeableCard>
             </motion.div>

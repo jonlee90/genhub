@@ -14,11 +14,13 @@ import { DashboardHeader } from "./DashboardHeader";
 import { KPICardsGrid } from "./KPICardsGrid";
 import { WidgetsGrid } from "./WidgetsGrid";
 import type { DashboardData } from "@/types/dashboard";
+import type { ProjectTypeConfigsRow } from "@/types/db/tables/projects";
 
 export interface DashboardContentProps {
   data: DashboardData;
   userName: string;
   isLoading?: boolean;
+  projectTypes?: ProjectTypeConfigsRow[];
 }
 
 /**
@@ -178,6 +180,7 @@ export function DashboardContent({
   data,
   userName,
   isLoading = false,
+  projectTypes = [],
 }: DashboardContentProps) {
   const router = useRouter();
 
@@ -256,6 +259,7 @@ export function DashboardContent({
         isOpen={isProjectModalOpen}
         onClose={() => setIsProjectModalOpen(false)}
         onSuccess={handleProjectSuccess}
+        projectTypes={projectTypes}
       />
 
       <TaskModal

@@ -3,7 +3,8 @@
 import { FolderKanban } from "lucide-react";
 import { Clock } from "lucide-react";
 import { ClipboardList } from "lucide-react";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { getDateIndicator } from "@/lib/date-utils";
 import {
   Select,
   SelectContent,
@@ -16,58 +17,6 @@ import type { TaskProject } from "@/types/db/task";
 type Project = TaskProject;
 
 /**
- * Calculate days remaining until the target date
- * Returns positive number for future dates, negative for past dates
- */
-function getDaysUntil(dateString: string): number {
-  const targetDate = new Date(dateString);
-  const today = new Date();
-  // Reset time to compare just dates
-  today.setHours(0, 0, 0, 0);
-  targetDate.setHours(0, 0, 0, 0);
-  const diffTime = targetDate.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
-/**
- * Get compact date indicator for a project
- * Returns number of days for future dates, formatted date for past dates
- * Also returns daysLeft for sorting purposes
- */
-function getProjectDateIndicator(endDate: string | null | undefined): {
-  display: string;
-  colorClass: string;
-  daysLeft: number;
-} | null {
-  if (!endDate) return null;
-
-  const daysLeft = getDaysUntil(endDate);
-
-  if (daysLeft > 0) {
-    // Future date - show number only
-    return {
-      display: String(daysLeft),
-      colorClass: daysLeft <= 7 ? "text-amber-500" : "text-emerald-500",
-      daysLeft,
-    };
-  } else if (daysLeft === 0) {
-    // Due today
-    return {
-      display: "0",
-      colorClass: "text-amber-500",
-      daysLeft,
-    };
-  } else {
-    // Past date - show compact date
-    return {
-      display: formatDate(endDate),
-      colorClass: "text-red-500",
-      daysLeft,
-    };
-  }
-}
-
-/**
  * Sort projects by days left:
  * - Lowest days left (most urgent) at top
  * - Most days left at bottom
@@ -76,16 +25,16 @@ function getProjectDateIndicator(endDate: string | null | undefined): {
  */
 function sortProjectsByDaysLeft(projects: Project[]): Project[] {
   return [...projects].sort((a, b) => {
-    const aIndicator = getProjectDateIndicator(a.end_date);
-    const bIndicator = getProjectDateIndicator(b.end_date);
+    const aIndicator = getDateIndicator(a.end_date, { showPastAsDate: true, includeDaysLeft: true });
+    const bIndicator = getDateIndicator(b.end_date, { showPastAsDate: true, includeDaysLeft: true });
 
     // Projects without dates go near the bottom (before overdue)
     if (!aIndicator && !bIndicator) return 0;
     if (!aIndicator) return 1; // a goes after b
     if (!bIndicator) return -1; // a goes before b
 
-    const aDays = aIndicator.daysLeft;
-    const bDays = bIndicator.daysLeft;
+    const aDays = aIndicator.daysLeft!;
+    const bDays = bIndicator.daysLeft!;
 
     // Both overdue - sort by most recently overdue first (less negative = more recent)
     if (aDays < 0 && bDays < 0) {
@@ -172,7 +121,7 @@ export function ProjectFilterHeader({
           <div className="my-1 h-px bg-gray-200" />
 
           {sortProjectsByDaysLeft(projects).map((project) => {
-            const dateIndicator = getProjectDateIndicator(project.end_date);
+            const dateIndicator = getDateIndicator(project.end_date, { showPastAsDate: true, includeDaysLeft: true });
             const projectTaskCount = projectTaskCounts?.[project.id] ?? 0;
             return (
               <SelectItem

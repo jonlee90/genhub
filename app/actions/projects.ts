@@ -120,13 +120,9 @@ const createProjectSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z.enum([
-    "residential",
-    "restaurant",
-    "cafe",
-    "commercial_office",
-    "industrial",
-  ]),
+  // Accept either UUID (from database config) or legacy string enum
+  // Validation happens at runtime against database configs
+  project_type: z.string().min(1, "Project type is required"),
   description: z.string().optional(),
   start_date: z.string().min(1, "Start date is required"), // ISO date string
   end_date: z.string().optional().or(z.literal("")),
@@ -147,15 +143,8 @@ const updateProjectSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip_code: z.string().optional(),
-  project_type: z
-    .enum([
-      "residential",
-      "restaurant",
-      "cafe",
-      "commercial_office",
-      "industrial",
-    ])
-    .optional(),
+  // Accept either UUID (from database config) or legacy string enum
+  project_type: z.string().optional(),
   description: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional().or(z.literal("")),
@@ -221,33 +210,70 @@ export async function createProject(formData: FormData) {
 
   const data = validation.data;
 
-  // Step 1: Look up project_type_config_id BEFORE inserting project
-  // This allows the database trigger to automatically create phases and tasks
-  const mapProjectTypeToConfigName = (projectType: string): string => {
-    const mapping: Record<string, string> = {
-      residential: "Residential",
-      restaurant: "Restaurant",
-      cafe: "Cafe",
-      commercial_office: "Commercial Office",
-      industrial: "Industrial",
-    };
-    return mapping[projectType] || projectType;
-  };
+  // Step 1: Look up project_type_config
+  // The project_type value can be either:
+  // - A UUID from database config (new approach)
+  // - A legacy string like "residential" (backward compatibility)
+  let projectTypeConfig: { id: string; name: string } | null = null;
+  let projectTypeValue = data.project_type;
 
-  const projectTypeConfigName = mapProjectTypeToConfigName(data.project_type);
-  if (process.env.NODE_ENV === "development") {
-    console.log(
-      `[createProject] Looking for project_type_config: ${projectTypeConfigName}`,
-    );
+  // Check if it's a UUID (36 chars with hyphens)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.project_type);
+
+  if (isUuid) {
+    // New approach: Look up config by ID
+    const { data: config } = await supabase
+      .from("project_type_configs")
+      .select("id, name")
+      .eq("id", data.project_type)
+      .eq("company_id", companyId)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (config) {
+      projectTypeConfig = config;
+      // Derive the project_type enum value from config name
+      const nameToEnumMap: Record<string, string> = {
+        "residential": "residential",
+        "restaurant": "restaurant",
+        "cafe": "cafe",
+        "commercial office": "commercial_office",
+        "industrial": "industrial",
+      };
+      projectTypeValue = nameToEnumMap[config.name.toLowerCase()] || config.name.toLowerCase().replace(/\s+/g, '_');
+    }
+  } else {
+    // Legacy approach: Look up config by name mapping
+    const mapProjectTypeToConfigName = (projectType: string): string => {
+      const mapping: Record<string, string> = {
+        residential: "Residential",
+        restaurant: "Restaurant",
+        cafe: "Cafe",
+        commercial_office: "Commercial Office",
+        industrial: "Industrial",
+      };
+      return mapping[projectType] || projectType;
+    };
+
+    const projectTypeConfigName = mapProjectTypeToConfigName(data.project_type);
+    const { data: config } = await supabase
+      .from("project_type_configs")
+      .select("id, name")
+      .eq("company_id", companyId)
+      .eq("name", projectTypeConfigName)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (config) {
+      projectTypeConfig = config;
+    }
   }
 
-  const { data: projectTypeConfig } = await supabase
-    .from("project_type_configs")
-    .select("id")
-    .eq("company_id", companyId)
-    .eq("name", projectTypeConfigName)
-    .eq("is_active", true)
-    .maybeSingle();
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      `[createProject] Project type: ${data.project_type} (isUuid: ${isUuid}), Config found: ${projectTypeConfig?.id || 'none'}`,
+    );
+  }
 
   // Prepare project data for insertion
   const projectData: ProjectInsert = {
@@ -260,7 +286,7 @@ export async function createProject(formData: FormData) {
     city: data.city || null,
     state: data.state || null,
     zip_code: data.zip_code || null,
-    project_type: data.project_type,
+    project_type: projectTypeValue as any, // Use derived value (handles both UUID and legacy)
     project_type_config_id: projectTypeConfig?.id || null, // Set this for trigger
     description: data.description || null,
     start_date: data.start_date,
@@ -328,7 +354,7 @@ export async function createProject(formData: FormData) {
     // Step 1: Assign default model to project
     const defaultModel = await assignDefaultModel(
       project.id,
-      data.project_type,
+      projectTypeValue,
     );
 
     if (defaultModel) {
@@ -401,7 +427,7 @@ export async function createProject(formData: FormData) {
       if (process.env.NODE_ENV === "development") {
         console.log(
           "[createProject] No default model available for project type:",
-          data.project_type,
+          projectTypeValue,
         );
       }
     }
@@ -481,8 +507,10 @@ export async function updateProject(formData: FormData) {
   }
 
   // Prepare update data
+  // Cast project_type to any since it can now be a UUID or legacy enum string
   const projectUpdate: ProjectUpdate = {
     ...updateData,
+    project_type: updateData.project_type as any,
     client_email: updateData.client_email || null,
     client_phone: updateData.client_phone || null,
     city: updateData.city || null,

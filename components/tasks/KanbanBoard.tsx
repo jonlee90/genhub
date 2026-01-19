@@ -25,6 +25,8 @@ interface KanbanBoardProps {
   onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we"re in project context - pass to KanbanColumn for phase lookup */
   phases?: Phase[];
+  /** Task type configs from database - pass to KanbanColumn for TaskCard icon/color display */
+  taskTypes?: any[];
 }
 
 const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: string }[] = [
@@ -38,7 +40,7 @@ const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: strin
 // Valid status values for checking drop targets
 const VALID_STATUSES = new Set<string>(["todo", "in_progress", "review", "blocked", "completed"]);
 
-export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [isPending, startTransition] = useTransition();
   // Mobile-specific state - track active column/status tab
@@ -210,6 +212,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
               tasks={tasksByStatus[column.id] || []}
               onTaskClick={onTaskClick}
               phases={phases}
+              taskTypes={taskTypes}
             />
           ))}
         </div>
@@ -238,6 +241,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
                     onTaskClick={onTaskClick}
                     phases={phases}
                     isMobile={true}
+                    taskTypes={taskTypes}
                   />
                 )}
               </motion.div>
@@ -247,7 +251,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases }: KanbanBoardProps) {
 
         <DragOverlay>
           {activeTask ? (
-            <TaskCard task={activeTask} isDragging phases={phases} />
+            <TaskCard task={activeTask} isDragging phases={phases} taskTypes={taskTypes} />
           ) : null}
         </DragOverlay>
       </DndContext>

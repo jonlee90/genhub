@@ -8,12 +8,13 @@ import {
   getProjectsWithStats,
   getProjectTeamCostSummary,
 } from "@/app/actions/projects";
+import { getProjectTypes } from "@/app/actions/project-types";
 import { getProjectFiles } from "@/app/actions/project-files";
 import {
   getProjectPhotosWithReceipts,
   type UnifiedPhoto,
 } from "@/app/actions/project-photos";
-import type { ProjectFilesRow } from "@/types/db/tables/projects";
+import type { ProjectFilesRow, ProjectTypeConfigsRow } from "@/types/db/tables/projects";
 import type { TaskStats, TeamCostSummary } from "@/app/actions/projects";
 
 export const getProjectsPageData = cache(async function getProjectsPageData() {
@@ -35,10 +36,15 @@ export const getProjectsPageData = cache(async function getProjectsPageData() {
     return { projects: [], totalCount: 0, role: null, companyId: "" };
   }
 
-  // Fetch projects with enhanced stats (defaults: limit=20, offset=0)
-  const { projects, totalCount, error } = await getProjectsWithStats(
-    companyUser.company_id,
-  );
+  // Fetch projects and project types in parallel (async-parallel pattern)
+  // - Projects with enhanced stats
+  // - Project types for modal creation
+  const [projectsResult, projectTypesResult] = await Promise.all([
+    getProjectsWithStats(companyUser.company_id),
+    getProjectTypes(),
+  ]);
+
+  const { projects, totalCount, error } = projectsResult;
 
   if (error) {
     return {
@@ -46,6 +52,7 @@ export const getProjectsPageData = cache(async function getProjectsPageData() {
       totalCount: 0,
       role: companyUser.role,
       companyId: companyUser.company_id,
+      projectTypes: [],
     };
   }
 
@@ -54,6 +61,7 @@ export const getProjectsPageData = cache(async function getProjectsPageData() {
     totalCount: totalCount || 0,
     role: companyUser.role,
     companyId: companyUser.company_id,
+    projectTypes: projectTypesResult.success ? projectTypesResult.projectTypes || [] : [],
   };
 });
 

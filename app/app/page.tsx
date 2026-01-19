@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { getDashboardData } from "@/app/actions/dashboard";
+import { getDashboardPageData } from "@/lib/dashboard";
 import { DashboardContent } from "@/components/dashboard/DashboardContent";
 import { auth } from "@/lib/auth";
 import DashboardLoading from "./loading";
@@ -8,7 +8,8 @@ import DashboardLoading from "./loading";
 /**
  * GenHub Dashboard Page - Server Component
  *
- * Fetches dashboard data server-side and passes to client component.
+ * Fetches dashboard data and project types server-side in parallel.
+ * Passes prefetched project types to modal to avoid client-side fetching.
  * Handles authentication redirects and error states.
  */
 export default async function DashboardPage() {
@@ -19,8 +20,8 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  // Fetch dashboard data server-side
-  const { data, error } = await getDashboardData();
+  // Fetch dashboard data and project types in parallel (async-parallel pattern)
+  const { data, error, projectTypes } = await getDashboardPageData();
 
   // Handle error state
   if (error) {
@@ -77,7 +78,7 @@ export default async function DashboardPage() {
 
   return (
     <Suspense fallback={<DashboardLoading />}>
-      <DashboardContent data={data} userName={userName} />
+      <DashboardContent data={data} userName={userName} projectTypes={projectTypes} />
     </Suspense>
   );
 }

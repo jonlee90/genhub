@@ -17,6 +17,7 @@ export const BaseModalHeader = memo(function BaseModalHeader({
   badges,
   onClose,
   theme,
+  iconColor,
   className,
 }: BaseModalHeaderProps) {
   console.log('[BaseModalHeader] Rendering header:', {
@@ -25,7 +26,13 @@ export const BaseModalHeader = memo(function BaseModalHeader({
     hasSubtitle: !!subtitle,
     hasBadges: !!badges,
     theme: theme.primary,
+    iconColor,
   });
+
+  // Use iconColor if provided, otherwise use theme gradient
+  const iconBackground = iconColor
+    ? iconColor
+    : `linear-gradient(135deg, ${theme.iconGradientFrom} 0%, ${theme.iconGradientTo} 100%)`;
 
   return (
     <div
@@ -41,7 +48,7 @@ export const BaseModalHeader = memo(function BaseModalHeader({
           <div
             className="flex-shrink-0 h-12 w-12 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden"
             style={{
-              background: `linear-gradient(135deg, ${theme.iconGradientFrom} 0%, ${theme.iconGradientTo} 100%)`,
+              background: iconBackground,
             }}
           >
             {/* Blueprint grid overlay */}

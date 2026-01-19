@@ -1,12 +1,11 @@
 /**
  * Task Type Display Configuration
  *
- * UI display settings for task types (icons, colors, labels).
- * Separate from task-type-fields.ts which handles form field visibility.
+ * Static icon mapping for task types.
+ * Actual display configuration (colors, labels) comes from database task_type_configs.
  *
- * IMPORTANT: Components should prefer fetching task types from the database
- * using getTaskTypes() action and mapping via convertTaskTypeConfig().
- * These constants are used as fallbacks and for backward compatibility.
+ * IMPORTANT: Components should fetch task types from the database using getTaskTypes()
+ * action and use convertTaskTypeConfig() from TaskTypeSelector for display format.
  */
 
 import {
@@ -23,11 +22,11 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { TaskType } from '@/types/db/enums';
+import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
 /**
  * Icon mapping for all available task type icons
- * Used when converting database task type configs to display format
+ * Maps icon_name string from database to Lucide component
  */
 export const TASK_TYPE_ICON_MAP: Record<string, LucideIcon> = {
   Hammer,
@@ -44,7 +43,7 @@ export const TASK_TYPE_ICON_MAP: Record<string, LucideIcon> = {
 };
 
 /**
- * Task type display configuration
+ * Task type display configuration built from database config
  */
 export interface TaskTypeDisplayConfig {
   label: string;
@@ -54,41 +53,62 @@ export interface TaskTypeDisplayConfig {
 }
 
 /**
- * Task type display configuration for UI components
- * Used in TaskCard, TaskTypeBadge, and other display components
+ * Build task type display config from database row
+ * Use this when you need display info from a database config
  */
-export const TASK_TYPE_DISPLAY_CONFIG: Record<TaskType, TaskTypeDisplayConfig> = {
+export function buildTaskTypeDisplay(config: TaskTypeConfigsRow): TaskTypeDisplayConfig {
+  return {
+    label: config.name,
+    icon: config.icon_name ? (TASK_TYPE_ICON_MAP[config.icon_name] || Hammer) : Hammer,
+    color: config.color || '#3b82f6',
+    description: config.description || '',
+  };
+}
+
+/**
+ * Get icon component from icon name
+ */
+export function getTaskTypeIcon(iconName: string | null | undefined): LucideIcon {
+  if (!iconName) return Hammer;
+  return TASK_TYPE_ICON_MAP[iconName] || Hammer;
+}
+
+/**
+ * Fallback display config for task types based on enum value
+ * Used when database configs are not available
+ */
+const TASK_TYPE_FALLBACK_CONFIG: Record<string, TaskTypeDisplayConfig> = {
   work: {
     label: 'Work',
     icon: Hammer,
-    color: 'bg-construction-blue text-white',
+    color: '#3b82f6',
     description: 'Labor/Work Task',
   },
   purchase: {
     label: 'Purchase',
     icon: ShoppingCart,
-    color: 'bg-[#059669] text-white',
+    color: '#10b981',
     description: 'Material Purchase',
   },
   approval: {
     label: 'Approval',
     icon: ClipboardCheck,
-    color: 'bg-[#FFB627] text-white',
+    color: '#f59e0b',
     description: 'Permit/Inspection',
   },
   admin: {
     label: 'Admin',
     icon: FileText,
-    color: 'bg-construction-accent text-white',
+    color: '#64748b',
     description: 'Administrative Task',
   },
 };
 
 /**
  * Get task type display config with fallback to 'work'
+ * Uses static fallback values - does not require database configs
  */
-export function getTaskTypeDisplayConfig(type: TaskType | null | undefined): TaskTypeDisplayConfig {
-  return type && TASK_TYPE_DISPLAY_CONFIG[type]
-    ? TASK_TYPE_DISPLAY_CONFIG[type]
-    : TASK_TYPE_DISPLAY_CONFIG.work;
+export function getTaskTypeDisplayConfig(type: string | null | undefined): TaskTypeDisplayConfig {
+  if (!type) return TASK_TYPE_FALLBACK_CONFIG.work;
+  return TASK_TYPE_FALLBACK_CONFIG[type] || TASK_TYPE_FALLBACK_CONFIG.work;
 }

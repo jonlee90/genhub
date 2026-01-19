@@ -26,6 +26,12 @@ Last updated: 2026-01-19
 | Header | Client | - | app/Header.tsx |
 | MoreMenu | Client | - | app/MoreMenu.tsx |
 | Sidebar | Client | - | app/Sidebar.tsx |
+| SlideMenuBackdrop | Client | - | app/SlideMenu/SlideMenuBackdrop.tsx |
+| SlideMenuList | Client | - | app/SlideMenu/SlideMenuList.tsx |
+| SlideMenuListItem | Client | - | app/SlideMenu/SlideMenuListItem.tsx |
+| SlideMenuPanel | Client | - | app/SlideMenu/SlideMenuPanel.tsx |
+| SlideMenuUserSection | Client | - | app/SlideMenu/SlideMenuUserSection.tsx |
+| index | Client | - | app/SlideMenu/index.tsx |
 | BillingInfo | Client | - | app/billing/BillingInfo.tsx |
 | loading | Client | - | app/billing/loading.tsx |
 | ProfileAndBillingContent | Client | - | app/profile/ProfileAndBillingContent.tsx |
@@ -178,17 +184,21 @@ Last updated: 2026-01-19
 | ProjectFilters | Client | - | projects/ProjectFilters.tsx |
 | ProjectListSkeleton | Client | - | projects/ProjectListSkeleton.tsx |
 | ProjectOverview | Client | - | projects/ProjectOverview.tsx |
+| ProjectOverviewSkeletons | Client | - | projects/ProjectOverviewSkeletons.tsx |
 | ProjectSettings | Client | - | projects/ProjectSettings.tsx |
 | ProjectTaskSummary | Client | - | projects/ProjectTaskSummary.tsx |
 | ProjectTeam | Client | - | projects/ProjectTeam.tsx |
 | ProjectsPageClient | Client | - | projects/ProjectsPageClient.tsx |
 | TeamCostRow | Client | - | projects/TeamCostRow.tsx |
 | TeamCostSummaryCard | Client | - | projects/TeamCostSummaryCard.tsx |
+| CreateProjectHiddenFields | Client | - | projects/create/CreateProjectHiddenFields.tsx |
+| CreateProjectStatusAlerts | Client | - | projects/create/CreateProjectStatusAlerts.tsx |
 | BulkActionToolbar | Client | - | projects/files/BulkActionToolbar.tsx |
 | CategorySelector | Client | - | projects/files/CategorySelector.tsx |
 | DocumentCategoryList | Client | - | projects/files/DocumentCategoryList.tsx |
 | DocumentsSection | Client | - | projects/files/DocumentsSection.tsx |
 | FilePreviewModal | Client | - | projects/files/FilePreviewModal.tsx |
+| FileUploadPanel | Client | - | projects/files/FileUploadPanel.tsx |
 | FileVersionHistory | Client | - | projects/files/FileVersionHistory.tsx |
 | PhotoGallerySection | Client | - | projects/files/PhotoGallerySection.tsx |
 | PhotoLightbox | Client | - | projects/files/PhotoLightbox.tsx |
@@ -197,10 +207,15 @@ Last updated: 2026-01-19
 | ProjectPhotoUploader | Client | - | projects/files/ProjectPhotoUploader.tsx |
 | ReceiptPhotoBadge | Client | - | projects/files/ReceiptPhotoBadge.tsx |
 | SearchFilterPanel | Client | - | projects/files/SearchFilterPanel.tsx |
+| AnimatedFormField | Client | - | projects/form/AnimatedFormField.tsx |
+| FormSubmissionOverlay | Client | - | projects/form/FormSubmissionOverlay.tsx |
+| InteractiveTypeCard | Client | - | projects/form/InteractiveTypeCard.tsx |
+| ProjectTypeSelector | Client | - | projects/form/ProjectTypeSelector.tsx |
 | 3DViewerCanvas | Client | - | projects/spatial/3DViewerCanvas.tsx |
 | ActivityTimeline | Client | - | projects/spatial/ActivityTimeline.tsx |
 | CameraControls | Client | - | projects/spatial/CameraControls.tsx |
 | ClientSpatialViewer | Client | - | projects/spatial/ClientSpatialViewer.tsx |
+| ClientSpatialViewerWrapper | Client | - | projects/spatial/ClientSpatialViewerWrapper.tsx |
 | ConflictDialog | Client | - | projects/spatial/ConflictDialog.tsx |
 | ContentDrawer | Client | - | projects/spatial/ContentDrawer.tsx |
 | Empty3DState | Client | - | projects/spatial/Empty3DState.tsx |
@@ -240,12 +255,19 @@ Last updated: 2026-01-19
 | SpatialMarkerContextMenu | Client | - | projects/spatial/SpatialMarkerContextMenu.tsx |
 | SpatialMarkerPin | Client | - | projects/spatial/SpatialMarkerPin.tsx |
 | SpatialViewer | Client | - | projects/spatial/SpatialViewer.tsx |
+| SpatialViewerMobileControls | Client | - | projects/spatial/SpatialViewerMobileControls.tsx |
+| SpatialViewerOverlays | Client | - | projects/spatial/SpatialViewerOverlays.tsx |
 | SpatialViewerWithFilters | Client | - | projects/spatial/SpatialViewerWithFilters.tsx |
 | SpatialViewerWithOnboarding | Client | - | projects/spatial/SpatialViewerWithOnboarding.tsx |
 | TaskLinker | Client | - | projects/spatial/TaskLinker.tsx |
 | TaskLinkerEnhanced | Client | - | projects/spatial/TaskLinkerEnhanced.tsx |
 | ViewerToolbar | Client | - | projects/spatial/ViewerToolbar.tsx |
 | WebGLFallback | Client | - | projects/spatial/WebGLFallback.tsx |
+
+### providers
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| SessionProviderWrapper | Client | - | providers/SessionProviderWrapper.tsx |
 
 ### pwa
 | Component | Type | Props | Path |
@@ -273,7 +295,18 @@ Last updated: 2026-01-19
 | Component | Type | Props | Path |
 |-----------|------|-------|------|
 | BlueprintBackground | Client | - | shared/BlueprintBackground.tsx |
+| ErrorBanner | Client | - | shared/ErrorBanner.tsx |
 | PortfolioSummary | Client | - | shared/PortfolioSummary.tsx |
+
+### skeletons
+| Component | Type | Props | Path |
+|-----------|------|-------|------|
+| ChatMessageSkeleton | Client | - | skeletons/ChatMessageSkeleton.tsx |
+| DashboardSkeleton | Client | - | skeletons/DashboardSkeleton.tsx |
+| ExpenseTableSkeleton | Client | - | skeletons/ExpenseTableSkeleton.tsx |
+| MaterialCardSkeleton | Client | - | skeletons/MaterialCardSkeleton.tsx |
+| ProjectCardSkeleton | Client | - | skeletons/ProjectCardSkeleton.tsx |
+| TaskListSkeleton | Client | - | skeletons/TaskListSkeleton.tsx |
 
 ### stripe
 | Component | Type | Props | Path |
@@ -322,6 +355,14 @@ Last updated: 2026-01-19
 | TaskTypeSelector | Client | - | tasks/TaskTypeSelector.tsx |
 | TasksPageClient | Client | - | tasks/TasksPageClient.tsx |
 | TopProjectsCard | Client | - | tasks/TopProjectsCard.tsx |
+| TaskApprovalSection | Client | - | tasks/detail/TaskApprovalSection.tsx |
+| TaskDependenciesSection | Client | - | tasks/detail/TaskDependenciesSection.tsx |
+| TaskDetailDeleteModalContent | Client | - | tasks/detail/TaskDetailDeleteModalContent.tsx |
+| TaskDetailHeader | Client | - | tasks/detail/TaskDetailHeader.tsx |
+| TaskDetailStatusBanners | Client | - | tasks/detail/TaskDetailStatusBanners.tsx |
+| TaskDetailTabs | Client | - | tasks/detail/TaskDetailTabs.tsx |
+| TaskDetailsSection | Client | - | tasks/detail/TaskDetailsSection.tsx |
+| TaskMaterialsSection | Client | - | tasks/detail/TaskMaterialsSection.tsx |
 | GanttChart | Client | - | tasks/gantt/GanttChart.tsx |
 | GanttDependencyLines | Client | - | tasks/gantt/GanttDependencyLines.tsx |
 | GanttHeader | Client | - | tasks/gantt/GanttHeader.tsx |
@@ -329,6 +370,12 @@ Last updated: 2026-01-19
 | GanttTaskRow | Client | - | tasks/gantt/GanttTaskRow.tsx |
 | GanttTimeline | Client | - | tasks/gantt/GanttTimeline.tsx |
 | GanttViewToggle | Client | - | tasks/gantt/GanttViewToggle.tsx |
+| TaskAssigneeStep | Client | - | tasks/modal/TaskAssigneeStep.tsx |
+| TaskFormFieldsStep | Client | - | tasks/modal/TaskFormFieldsStep.tsx |
+| TaskMaterialsExtrasStep | Client | - | tasks/modal/TaskMaterialsExtrasStep.tsx |
+| TaskModalDeleteDialog | Client | - | tasks/modal/TaskModalDeleteDialog.tsx |
+| TaskModalStatusAlerts | Client | - | tasks/modal/TaskModalStatusAlerts.tsx |
+| TaskTypeSelectionStep | Client | - | tasks/modal/TaskTypeSelectionStep.tsx |
 
 ### team
 | Component | Type | Props | Path |
@@ -336,6 +383,7 @@ Last updated: 2026-01-19
 | AddSubcontractorModal | Client | - | team/AddSubcontractorModal.tsx |
 | EditSubcontractorModal | Client | - | team/EditSubcontractorModal.tsx |
 | InviteTeamMemberModal | Client | - | team/InviteTeamMemberModal.tsx |
+| StatCard | Client | - | team/StatCard.tsx |
 | SubcontractorCard | Client | - | team/SubcontractorCard.tsx |
 | SubcontractorList | Client | - | team/SubcontractorList.tsx |
 | TeamListSkeleton | Client | - | team/TeamListSkeleton.tsx |
@@ -351,15 +399,20 @@ Last updated: 2026-01-19
 | BaseModalHeader | Client | - | ui/BaseModal/BaseModalHeader.tsx |
 | StepIndicator | Client | - | ui/BaseModal/StepIndicator.tsx |
 | index | Client | - | ui/BaseModal/index.tsx |
+| CardSurface | Client | - | ui/CardSurface.tsx |
 | CreatorBadge | Client | - | ui/CreatorBadge.tsx |
 | DesktopTabs | Client | - | ui/DesktopTabs.tsx |
+| FileUploadPanel | Client | - | ui/FileUploadPanel.tsx |
 | FilterBar | Client | - | ui/FilterBar.tsx |
 | FilterTabs | Client | - | ui/FilterTabs.tsx |
 | Footer | Client | - | ui/Footer.tsx |
 | FooterWrapper | Client | - | ui/FooterWrapper.tsx |
+| FormField | Client | - | ui/FormField.tsx |
 | index | Client | - | ui/ResponsiveModal/index.tsx |
 | StateSelect.example | Client | - | ui/StateSelect.example.tsx |
 | StateSelect | Client | - | ui/StateSelect.tsx |
+| TopAccentBar | Client | - | ui/TopAccentBar.tsx |
+| WidgetCard | Client | - | ui/WidgetCard.tsx |
 | animated-tooltip | Client | - | ui/aceternity/animated-tooltip.tsx |
 | background-boxes | Client | - | ui/aceternity/background-boxes.tsx |
 | floating-navbar | Client | - | ui/aceternity/floating-navbar.tsx |
@@ -381,12 +434,15 @@ Last updated: 2026-01-19
 | dropdown-menu | Client | - | ui/dropdown-menu.tsx |
 | input | Client | - | ui/input.tsx |
 | label | Client | - | ui/label.tsx |
+| offline-indicator | Client | - | ui/offline-indicator.tsx |
 | popover | Client | - | ui/popover.tsx |
+| prefetch-link | Client | - | ui/prefetch-link.tsx |
 | progress | Client | - | ui/progress.tsx |
 | scroll-area | Client | - | ui/scroll-area.tsx |
 | select | Client | - | ui/select.tsx |
 | skeleton | Client | - | ui/skeleton.tsx |
 | switch | Client | - | ui/switch.tsx |
+| sync-status | Client | - | ui/sync-status.tsx |
 | table | Client | - | ui/table.tsx |
 | tabs | Client | - | ui/tabs.tsx |
 | textarea | Client | - | ui/textarea.tsx |

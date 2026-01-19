@@ -26,6 +26,24 @@
 1. Load skills: `.claude/skills/index.md`
 2. Load Serena memories: `genhub-{project-overview|database-schema|server-actions|component-patterns|common-gotchas}`
 3. Use `dispatching-parallel-agents` skill when helpful
+4. **For React/Next.js tasks**: Run `/vercel-react-best-practices` before writing code
+
+---
+
+## TASK EXECUTION
+
+**For any non-trivial task, load and follow `.claude/agents/orchestrator.md`**
+
+| Task Complexity | Action |
+|-----------------|--------|
+| Single domain (backend OR frontend only) | Delegate directly to appropriate agent |
+| Multi-domain (backend + frontend) | Use orchestrator workflow |
+| Multiple independent tasks | Check `dispatching-parallel-agents` skill |
+
+Decision flow:
+1. Analyze task scope
+2. Load orchestrator.md for delegation guidance
+3. Follow orchestrator's Quick Delegation Matrix
 
 ---
 
@@ -49,8 +67,16 @@
 
 ## TOKEN DISCIPLINE
 
-**Strategy**: Grep/search first → Read with offset+limit → Full file only if <200 lines
-**Build logs**: `npm run build 2>&1 | grep -E "error|Error" -A 3`
+| Rule | Implementation |
+|------|----------------|
+| Search first | Grep/Glob before reading full files |
+| Targeted reads | `offset`+`limit` for files >200 lines |
+| Skip verification | Don't re-read after Edit with unique `old_string` |
+| Batch edits | Combine adjacent changes into single Edit call |
+| Serena for code | `find_symbol` + `replace_symbol_body` over full reads |
+| Parallel calls | Group independent reads/searches in one message |
+| No random files | NEVER create `.md` files — edit existing or use Serena memories |
+| Build logs | `npm run build 2>&1 \| grep -E "error\|Error" -A 3` |
 
 ---
 
@@ -71,3 +97,51 @@ Halt and request guidance if:
 - Task violates agent authority boundaries
 - Required context file missing
 - Approaching token cap
+
+---
+
+## POST-TASK CONTEXT/TOKEN REPORTING
+
+**RULE: After completing any non-trivial task, generate a context/token report in `.claude/reports/token/{task-name}-{date}.md`**
+
+### Report Requirements
+
+Each report must include:
+
+1. **Overview**
+   - Task name & description
+   - Completion status
+   - Build/test results
+
+2. **Files Referenced**
+   - Files read (count, total lines)
+   - Files created (count, total lines)
+   - Files modified (count, changes)
+   - Files deleted (count, total lines)
+
+3. **Agents & Skills Used**
+   - Agent name | Purpose | Est. tokens
+   - Skill name | Purpose | Est. tokens
+
+4. **Token Usage Summary**
+   - Category breakdown table
+   - Subtotals by activity
+   - Grand total
+
+5. **Optimizations Applied**
+   - What token-saving techniques were used
+   - Checklist format (✅/❌)
+
+6. **Token Efficiency Metrics**
+   - Files read/created/modified/deleted counts
+   - Build errors/warnings
+   - Token efficiency ratio (tokens per line)
+
+7. **Recommendations**
+   - 3-5 specific suggestions for improving token efficiency
+   - Actionable, context-specific
+
+### Report Location
+- Path: `.claude/reports/token/{task-name}-{date}.md`
+- Example: `.claude/reports/token/slide-menu-redesign-2026-01-19.md`
+- Format: Markdown (for easy reading in Git/IDE)

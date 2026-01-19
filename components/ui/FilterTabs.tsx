@@ -213,7 +213,7 @@ export function FilterTabs({
                 className={cn(
                   "absolute inset-0 rounded-lg",
                   "bg-gradient-to-r shadow-md",
-                  getGradient(tab),
+                  "from-[#001B51] to-[#002868]",
                 )}
                 transition={{
                   type: "spring",

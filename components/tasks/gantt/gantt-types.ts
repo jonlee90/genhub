@@ -96,6 +96,7 @@ export interface GanttChartProps {
   onTaskClick: (task: GanttTask) => void;
   onTaskDateChange: (taskId: string, newStartDate: string, newDueDate: string) => Promise<void>;
   className?: string;
+  taskTypes?: any[];
 }
 
 // Props for GanttTaskBar component

@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { TaskTypeSelector } from '../TaskTypeSelector';
 import { getTaskTypeConfig } from '@/lib/config/task-type-fields';
 import type { TaskType } from '@/types/db/enums';
+import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
 interface TaskTypeSelectionStepProps {
   selectedType: TaskType | null;
@@ -18,7 +19,8 @@ interface TaskTypeSelectionStepProps {
   onPriorityChange?: (priority: string) => void;
   onStartDateChange?: (date: string) => void;
   disabled?: boolean;
-  prefetchedTaskTypes?: any[]; // Prefetched task types from server
+  /** Task types from database - required, no fallback */
+  prefetchedTaskTypes: TaskTypeConfigsRow[];
 }
 
 /**

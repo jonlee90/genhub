@@ -16,8 +16,10 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
   onClick,
   isMobile = false,
 }: GanttTaskBarProps) {
+  // Only enable dragging on desktop
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: task.id,
+    disabled: isMobile,
   });
 
   // Get status-specific styling
@@ -49,6 +51,7 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
     onClick?.(task);
   }, [onClick, task]);
 
+  // Use default priority-based colors
   const barStyle = {
     left: position.left,
     width: Math.max(position.width, minWidth),
@@ -62,16 +65,16 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
   return (
     <div
       ref={setNodeRef}
-      {...attributes}
-      {...listeners}
+      {...(isMobile ? {} : attributes)}
+      {...(isMobile ? {} : listeners)}
       className={cn(
-        "absolute rounded-md cursor-grab active:cursor-grabbing bg-construction-blue",
+        "absolute rounded-md bg-construction-blue",
         // CSS animations replace Framer Motion (bundle-defer-third-party optimization)
         "animate-scale-in origin-left",
         "transition-all duration-200",
         isMobile
-          ? "touch-manipulation active:scale-[0.98]"
-          : "hover:shadow-md hover:scale-[1.01] hover:-translate-y-px",
+          ? "touch-manipulation active:scale-[0.98] cursor-pointer"
+          : "cursor-grab active:cursor-grabbing hover:shadow-md hover:scale-[1.01] hover:-translate-y-px",
         // Clean background based on priority - removed gradients for simplicity
         task.priority === "high" && "bg-red-600 border border-red-700",
         task.priority === "medium" && "border border-amber-600 text-amber-600",
@@ -99,13 +102,22 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         />
       )}
 
-      {/* Task title - clean white text */}
-      <span className={cn(
-        "absolute inset-0 flex items-center font-semibold text-white truncate z-10",
+      {/* Task title and duration badge - clean white text */}
+      <div className={cn(
+        "absolute inset-0 flex items-center gap-1.5 font-semibold text-white z-10",
         isMobile ? "px-1.5 text-[10px]" : "px-2.5 text-xs"
       )}>
-        {task.title}
-      </span>
+        <span className="truncate flex-1 min-w-0">
+          {task.title}
+        </span>
+        {/* Duration days badge */}
+        <span className={cn(
+          "shrink-0 px-1.5 py-0.5 rounded bg-white/20 font-semibold",
+          isMobile ? "text-[9px]" : "text-[10px]"
+        )}>
+          {task.durationDays}d
+        </span>
+      </div>
 
       {/* Resize handles (visual only for now) - hide on mobile, subtle styling */}
       {!isMobile && (

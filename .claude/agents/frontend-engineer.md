@@ -53,6 +53,8 @@ color: purple
 
 | Keywords | Skill Path |
 |----------|------------|
+| (always) | `/vercel-react-best-practices` skill |
+| (always) | `/frontend-design` skill |
 | "mobile", "touch", "swipe", "pwa" | `.claude/skills/frontend/mobile-pwa-design/SKILL.md` |
 | "page", "route", "layout" | `.claude/skills/frontend/page-creation.md` |
 | "form", "input", "validation" | `.claude/skills/frontend/form-patterns.md` |

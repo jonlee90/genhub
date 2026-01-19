@@ -81,7 +81,8 @@ const TaskModalRenderer = memo(function TaskModalRenderer({
   );
 });
 
-export function TasksPageClient({
+// Internal component that consumes TaskModalContext
+function TasksPageContent({
   tasks,
   projects,
   teamMembers,
@@ -97,7 +98,8 @@ export function TasksPageClient({
   const [assignees, setAssignees] = useState<AssigneeOption[]>([]);
   const router = useRouter();
   const isMobileQuery = useIsMobile();
-  const { registerCreateModal, unregisterCreateModal } = useBottomNav();
+  const { registerCreateModal, unregisterCreateModal, openModal, closeCreateModal } = useBottomNav();
+  const { openCreate } = useTaskModal();
 
   // Track if component has mounted to avoid hydration mismatch
   // Server renders desktop layout, client switches to mobile after mount if needed
@@ -155,6 +157,15 @@ export function TasksPageClient({
     registerCreateModal("/app/tasks", modalData);
     return () => unregisterCreateModal("/app/tasks");
   }, [registerCreateModal, unregisterCreateModal, modalData]);
+
+  // Listen to openModal from BottomNavContext and open the local modal
+  useEffect(() => {
+    if (openModal === 'task') {
+      openCreate();
+      // Close the context modal state so it doesn't interfere
+      closeCreateModal();
+    }
+  }, [openModal, openCreate, closeCreateModal]);
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -249,8 +260,7 @@ export function TasksPageClient({
   // Mobile layout
   if (isMobile) {
     return (
-      <TaskModalProvider>
-        <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full">
           {/* Task list with pull-to-refresh */}
           <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
           <div className="p-4 pb-32">
@@ -303,6 +313,7 @@ export function TasksPageClient({
               onMobileFilterClick={() => setShowFilterSheet(true)}
               assignees={assignees}
               userRole={userRole}
+              taskTypes={taskTypes}
             />
 
             {/* Empty state */}
@@ -394,15 +405,13 @@ export function TasksPageClient({
           taskTypes={modalData.taskTypes}
           onSuccess={handleModalSuccess}
         />
-        </div>
-      </TaskModalProvider>
+      </div>
     );
   }
 
   // Desktop layout
   const pageContent = (
-    <TaskModalProvider>
-      <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
+    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
       <BlueprintBackground />
 
       {/* Industrial Header with Blueprint Aesthetic */}
@@ -455,6 +464,7 @@ export function TasksPageClient({
         onExternalProjectFilterChange={setProjectFilter}
         assignees={assignees}
         userRole={userRole}
+        taskTypes={taskTypes}
       />
 
       {/* Decorative bottom border */}
@@ -468,9 +478,17 @@ export function TasksPageClient({
         taskTypes={modalData.taskTypes}
         onSuccess={handleModalSuccess}
       />
-      </div>
-    </TaskModalProvider>
+    </div>
   );
 
   return pageContent;
+}
+
+// External wrapper component that provides TaskModalContext
+export function TasksPageClient(props: TasksPageClientProps) {
+  return (
+    <TaskModalProvider>
+      <TasksPageContent {...props} />
+    </TaskModalProvider>
+  );
 }

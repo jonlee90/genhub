@@ -28,6 +28,10 @@ export interface BottomSheetModalProps {
   // Theming
   /** Theme name from modal-themes.ts (default, low, medium, high, info, success) */
   theme?: string;
+  /** Custom theme object overrides theme name */
+  customTheme?: import('@/lib/config/modal-themes').ModalTheme;
+  /** Custom color for icon background only */
+  iconColor?: string;
 
   // Behavior
   /** Enable drag-to-dismiss gesture. Default: true */
@@ -61,6 +65,7 @@ export interface BottomSheetModalHeaderProps {
   themePrimary: string;
   themeGradientFrom: string;
   themeGradientTo: string;
+  iconColor?: string; // Custom color for icon background only
   className?: string;
 }
 

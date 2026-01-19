@@ -43,7 +43,7 @@ import {
   ProjectTypeSelector,
   FormSubmissionOverlay,
 } from "@/components/projects/form";
-import type { PhaseTemplatesRow } from "@/types/db/tables/projects";
+import type { PhaseTemplatesRow, ProjectTypeConfigsRow } from "@/types/db/tables/projects";
 import type { CreateProjectFormState } from "@/types/components/projects";
 
 type PhaseTemplate = PhaseTemplatesRow;
@@ -71,6 +71,7 @@ interface CreateProjectFormProps {
   onClose: () => void;
   onSuccess?: (projectId: string) => void;
   isModal?: boolean;
+  projectTypes?: ProjectTypeConfigsRow[];
 }
 
 export function CreateProjectForm({
@@ -78,6 +79,7 @@ export function CreateProjectForm({
   onClose,
   onSuccess,
   isModal = false,
+  projectTypes: prefetchedProjectTypes = [],
 }: CreateProjectFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -91,6 +93,9 @@ export function CreateProjectForm({
   // Project type configs (for mapping to phase templates)
   // Use useRef to avoid triggering dependent effects when reference changes
   const projectTypeConfigsRef = useRef<Record<string, string>>({});
+
+  // Fetched project types from database
+  const [projectTypeConfigs, setProjectTypeConfigs] = useState<ProjectTypeConfigsRow[]>([]);
 
   // Phase template preview state
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
@@ -341,17 +346,31 @@ export function CreateProjectForm({
   );
 
   // Fetch project type configs on mount (for mapping to phase templates)
-  // Only fetch when modal is open to avoid duplicate API calls
+  // Performance optimization: Use prefetched data when available, avoid duplicate API calls (async-parallel)
+  // Only fetch when modal is open
   useEffect(() => {
     if (!isOpen) return;
 
-    const fetchProjectTypeConfigs = async () => {
+    const setupProjectTypeConfigs = async () => {
       try {
-        const result = await getProjectTypes();
-        if (result.success && result.projectTypes) {
+        // Use prefetched types if available (from server-side props)
+        let typesToUse = prefetchedProjectTypes;
+
+        // If no prefetch available, fetch on-demand
+        if (!typesToUse || typesToUse.length === 0) {
+          const result = await getProjectTypes();
+          if (result.success && result.projectTypes) {
+            typesToUse = result.projectTypes;
+          }
+        }
+
+        if (typesToUse && typesToUse.length > 0) {
+          // Store the project types for rendering in ProjectTypeSelector
+          setProjectTypeConfigs(typesToUse);
+
           // Create mapping from project type name (lowercase) to config ID
           const mapping: Record<string, string> = {};
-          result.projectTypes.forEach((pt) => {
+          typesToUse.forEach((pt) => {
             // Map both the config name and a lowercase version
             const key = pt.name.toLowerCase().replace(/\s+/g, "_");
             mapping[key] = pt.id;
@@ -365,8 +384,8 @@ export function CreateProjectForm({
         // Silently fail - phase preview is optional
       }
     };
-    fetchProjectTypeConfigs();
-  }, [isOpen]);
+    setupProjectTypeConfigs();
+  }, [isOpen, prefetchedProjectTypes]);
 
   // Fetch phase templates when project type changes
   // Only fetch when modal is open to avoid duplicate API calls
@@ -520,6 +539,7 @@ export function CreateProjectForm({
             phaseTemplates={phaseTemplates}
             phaseTemplatesLoading={phaseTemplatesLoading}
             disabled={isPending}
+            projectTypes={projectTypeConfigs}
           />
         )}
 

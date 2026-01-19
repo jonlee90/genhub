@@ -15,11 +15,8 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MoreMenu } from "./MoreMenu";
+import { SlideMenu } from "./SlideMenu";
 import { useBottomNav } from "@/lib/contexts/BottomNavContext";
-import { CreateProjectModal } from "@/components/projects/CreateProjectModal";
-import { TaskModal } from "@/components/tasks/TaskModal";
-import { CreateExpenseModal } from "@/components/expenses/CreateExpenseModal";
 import type { Session } from "next-auth";
 
 // Navigation item configuration with create modal mapping
@@ -69,11 +66,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
   // Context for create modals
   const {
     hasCreateModal,
-    getCreateModalData,
-    openModal,
     openCreateModal,
-    closeCreateModal,
-    onCreateSuccess,
   } = useBottomNav();
 
   // Check if current path matches nav item
@@ -112,16 +105,6 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
   // Handle More button click
   const handleMoreClick = () => {
     setIsMoreMenuOpen(true);
-  };
-
-  // Get modal data for each type
-  const taskData = getCreateModalData("/app/tasks");
-  const expenseData = getCreateModalData("/app/expenses");
-
-  // Handle modal success
-  const handleModalSuccess = () => {
-    onCreateSuccess();
-    router.refresh();
   };
 
   return (
@@ -300,45 +283,12 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
         </div>
       </nav>
 
-      {/* More Menu Modal */}
-      <MoreMenu
+      {/* Slide Menu Modal */}
+      <SlideMenu
         isOpen={isMoreMenuOpen}
         onClose={() => setIsMoreMenuOpen(false)}
         session={session}
       />
-
-      {/* Create Project Modal */}
-      {openModal === "project" && (
-        <CreateProjectModal
-          isOpen={true}
-          onClose={closeCreateModal}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-
-      {/* Create Task Modal */}
-      {openModal === "task" && taskData && (
-        <TaskModal
-          isOpen={true}
-          onClose={closeCreateModal}
-          mode="create"
-          projects={taskData.projects || []}
-          teamMembers={taskData.teamMembers || []}
-          onSuccess={handleModalSuccess}
-        />
-      )}
-
-      {/* Create Expense Modal */}
-      {openModal === "expense" && expenseData && (
-        <CreateExpenseModal
-          projects={(expenseData.projects || []) as any}
-          tasks={expenseData.tasks || []}
-          onClose={() => {
-            closeCreateModal();
-            router.refresh();
-          }}
-        />
-      )}
     </>
   );
 }

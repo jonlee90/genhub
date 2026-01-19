@@ -209,7 +209,7 @@ export function MobileStatusTabs({
                 className={cn(
                   "absolute inset-0 rounded-lg",
                   "bg-gradient-to-r shadow-md",
-                  getStatusGradient(tab.value),
+                  getStatusGradient('all'),
                 )}
                 transition={{
                   type: "spring",

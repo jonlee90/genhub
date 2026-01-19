@@ -2,10 +2,12 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getDateIndicator } from "@/lib/date-utils";
 import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
-import { getTaskTypeInfo } from "@/components/tasks/TaskTypeSelector";
+import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
 import type { TaskType } from "@/types/db/enums";
 
 interface GanttTaskRowProps {
@@ -17,6 +19,7 @@ interface GanttTaskRowProps {
   onHover: (taskId: string | null) => void;
   onClick: (task: GanttTask) => void;
   isMobile?: boolean;
+  taskTypes?: any[];
 }
 
 export const GanttTaskRow = React.memo(function GanttTaskRow({
@@ -28,6 +31,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
   onHover,
   onClick,
   isMobile = false,
+  taskTypes,
 }: GanttTaskRowProps) {
   const { sidebarWidth, rowHeight } = config;
   const isHovered = hoveredTaskId === task.id;
@@ -43,11 +47,11 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
     }
   }, [onClick, task]);
 
-  // Memoize task type info to avoid recalculating on every render
+  // Memoize task type info - use database config if available
   const taskTypeInfo = useMemo(() => {
     if (!task.task_type) return null;
-    return getTaskTypeInfo(task.task_type as TaskType);
-  }, [task.task_type]);
+    return getTaskTypeInfoWithFallback(task.task_type as TaskType, taskTypes);
+  }, [task.task_type, taskTypes]);
 
   return (
     <div
@@ -85,16 +89,16 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
 
         {/* Task title and phase */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          {/* Title row with icon and duration badge */}
+          {/* Title row with icon and days left */}
           <div className="flex items-center gap-1.5">
             {/* Task type icon - extracted from IIFE for better performance */}
             {taskTypeInfo && (
               <taskTypeInfo.icon
                 className={cn(
                   "shrink-0",
-                  taskTypeInfo.textClass,
                   isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
                 )}
+                style={{ color: taskTypeInfo.color }}
                 strokeWidth={2}
                 aria-label={taskTypeInfo.name}
               />
@@ -106,13 +110,21 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             )}>
               {task.title}
             </span>
-            {/* Duration days badge */}
-            <span className={cn(
-              "shrink-0 px-1.5 py-0.5 rounded bg-construction-blue/10 text-construction-blue font-semibold",
-              isMobile ? "text-[10px]" : "text-xs"
-            )}>
-              {task.durationDays}d
-            </span>
+            {/* Days left indicator */}
+            {(() => {
+              const dateIndicator = getDateIndicator(task.due_date);
+              if (!dateIndicator) return null;
+              return (
+                <span className={cn(
+                  "flex items-center gap-0.5 shrink-0 font-semibold",
+                  dateIndicator.colorClass,
+                  isMobile ? "text-[10px]" : "text-xs"
+                )}>
+                  <Clock className={cn(isMobile ? "w-2.5 h-2.5" : "w-3 h-3")} />
+                  {dateIndicator.display}
+                </span>
+              );
+            })()}
           </div>
           {/* Project name - secondary line */}
           {task.project ? (

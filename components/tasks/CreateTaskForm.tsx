@@ -26,6 +26,7 @@ import { TaskTypeSelector, TaskTypeBadge } from ".//TaskTypeSelector";
 import { TaskMaterialsManager } from "./TaskMaterialsManager";
 import { TaskReceiptUpload } from "./TaskReceiptUpload";
 import type { TaskType, TaskProject, TeamMember } from "@/types/db/task";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface CreateTaskFormProps {
   projects: TaskProject[];
@@ -34,6 +35,8 @@ interface CreateTaskFormProps {
   preselectedPhaseId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
+  /** Task types from database - passed from Server Component parent */
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 // Initial state matching createTask action return type
@@ -68,6 +71,7 @@ export function CreateTaskForm({
   preselectedPhaseId,
   onSuccess,
   onCancel,
+  taskTypes = [],
 }: CreateTaskFormProps) {
   const router = useRouter();
   const [state, formAction, isPending] = useActionState(createTask, initialState);
@@ -207,6 +211,7 @@ export function CreateTaskForm({
                 selectedType={selectedTaskType}
                 onSelect={handleTypeSelect}
                 disabled={isPending}
+                prefetchedTaskTypes={taskTypes}
               />
 
               {/* Navigation for Step 1 */}

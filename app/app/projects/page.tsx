@@ -7,7 +7,7 @@ export const metadata = {
 };
 
 export default async function ProjectsPage() {
-  const { projects, totalCount, role, companyId } = await getProjectsPageData();
+  const { projects, totalCount, role, companyId, projectTypes } = await getProjectsPageData();
 
   return (
     <ProjectsPageClient
@@ -15,6 +15,7 @@ export default async function ProjectsPage() {
       totalCount={totalCount}
       role={role}
       companyId={companyId}
+      projectTypes={projectTypes}
     />
   );
 }

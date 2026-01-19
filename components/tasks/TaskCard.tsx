@@ -18,8 +18,9 @@ import {
 } from "lucide-react";
 import { cn, formatDate, getInitials } from "@/lib/utils";
 import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
-import { getTaskTypeDisplayConfig } from "@/lib/config/task-type-display";
+import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
+import type { TaskType } from "@/types/db/enums";
 
 interface TaskCardProps {
   task: TaskWithRelations;
@@ -34,6 +35,8 @@ interface TaskCardProps {
     count: number;
     totalAmount: number;
   };
+  /** Task type configs from database - for icon/color display */
+  taskTypes?: any[];
 }
 
 // All cards use construction-blue border for consistent branding
@@ -54,6 +57,7 @@ export const TaskCard = React.memo(function TaskCard({
   phases,
   showEditIndicator,
   expenseStats,
+  taskTypes,
 }: TaskCardProps) {
   const {
     attributes,
@@ -105,9 +109,12 @@ export const TaskCard = React.memo(function TaskCard({
   // Check if task has 3D location
   const has3DLocation = !!task.spatial_marker_id;
 
-  // Get task type configuration with fallback to "work"
-  const taskTypeConfig = getTaskTypeDisplayConfig(task.task_type);
-  const TaskTypeIcon = taskTypeConfig.icon;
+  // Get task type info from database configs if available, otherwise use fallback
+  const taskTypeInfo = useMemo(
+    () => getTaskTypeInfoWithFallback(task.task_type as TaskType, taskTypes),
+    [task.task_type, taskTypes]
+  );
+  const TaskTypeIcon = taskTypeInfo.icon;
 
   return (
     <div
@@ -172,17 +179,21 @@ export const TaskCard = React.memo(function TaskCard({
             <div
               className={cn(
                 "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2",
-                taskTypeConfig.color,
+                taskTypeInfo.colorClasses && taskTypeInfo.colorClasses.bgLight,
                 "border-black/10",
               )}
-              title={taskTypeConfig.description}
+              style={!taskTypeInfo.colorClasses ? {
+                backgroundColor: `${taskTypeInfo.color}25`,
+              } : undefined}
+              title={taskTypeInfo.description}
             >
               <TaskTypeIcon
                 className="h-3 w-3 drop-shadow-sm"
                 strokeWidth={2.5}
+                style={{ color: taskTypeInfo.color }}
               />
               <span className="text-[10px] font-black tracking-wide uppercase leading-none">
-                {taskTypeConfig.label}
+                {taskTypeInfo.name}
               </span>
             </div>
           </div>
@@ -375,6 +386,8 @@ export const TaskCard = React.memo(function TaskCard({
     prevProps.showEditIndicator === nextProps.showEditIndicator &&
     // Compare expense stats if present
     prevProps.expenseStats?.count === nextProps.expenseStats?.count &&
-    prevProps.expenseStats?.totalAmount === nextProps.expenseStats?.totalAmount
+    prevProps.expenseStats?.totalAmount === nextProps.expenseStats?.totalAmount &&
+    // Compare taskTypes (check if both undefined or same reference)
+    prevProps.taskTypes === nextProps.taskTypes
   );
 });

@@ -63,6 +63,12 @@ export const getTasksPageData = cache(async function getTasksPageData() {
           id,
           name,
           order_index
+        ),
+        project_type_config:project_type_configs (
+          id,
+          name,
+          color,
+          icon_name
         )
       `,
       )

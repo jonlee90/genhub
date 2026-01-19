@@ -43,6 +43,7 @@ export function BaseModal({
   currentStep = 1,
   theme: themeName = 'default',
   customTheme,
+  iconColor,
   closeOnBackdropClick = true,
   closeOnEscape = true,
   formKey,
@@ -215,6 +216,7 @@ export function BaseModal({
           badges={badges}
           onClose={onClose}
           theme={theme}
+          iconColor={iconColor}
           className={headerClassName}
         />
 

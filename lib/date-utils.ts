@@ -91,3 +91,66 @@ export function getDaysBetween(startDate: string | null, endDate: string | null)
   const diffInMs = end.getTime() - start.getTime();
   return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * Calculate days remaining until the target date
+ * Returns positive number for future dates, negative for past dates, 0 for today
+ */
+export function getDaysUntil(dateString: string): number {
+  const targetDate = new Date(dateString);
+  const today = new Date();
+  // Reset time to compare just dates
+  today.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
+  const diffTime = targetDate.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+/**
+ * Get date indicator with display text and color class for a given date
+ * Used for displaying "days left" indicators with appropriate urgency colors
+ *
+ * @param dateString - The target date string
+ * @param options - Optional configuration
+ * @param options.showPastAsDate - If true, shows formatted date for past dates instead of negative days
+ * @param options.daysLeftForIndicator - For projects/entities, returns daysLeft for sorting
+ * @returns Object with display text, color class, and optionally daysLeft number
+ */
+export function getDateIndicator(
+  dateString: string | null | undefined,
+  options?: {
+    showPastAsDate?: boolean;
+    includeDaysLeft?: boolean;
+  }
+): {
+  display: string;
+  colorClass: string;
+  daysLeft?: number;
+} | null {
+  if (!dateString) return null;
+
+  const daysLeft = getDaysUntil(dateString);
+
+  if (daysLeft > 0) {
+    // Future date - show number of days
+    return {
+      display: String(daysLeft),
+      colorClass: daysLeft <= 7 ? "text-amber-500" : "text-emerald-500",
+      ...(options?.includeDaysLeft && { daysLeft }),
+    };
+  } else if (daysLeft === 0) {
+    // Due today
+    return {
+      display: "0",
+      colorClass: "text-amber-500",
+      ...(options?.includeDaysLeft && { daysLeft }),
+    };
+  } else {
+    // Past date - show formatted date or absolute days
+    return {
+      display: options?.showPastAsDate ? formatDate(dateString) : String(Math.abs(daysLeft)),
+      colorClass: "text-red-500",
+      ...(options?.includeDaysLeft && { daysLeft }),
+    };
+  }
+}

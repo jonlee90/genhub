@@ -31,6 +31,7 @@ import ShieldAlert from 'lucide-react/icons/shield-alert';
 import ChevronLeft from 'lucide-react/icons/chevron-left';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import type { ProjectWithStats } from '@/app/actions/projects';
+import type { ProjectTypeConfigsRow } from '@/types/db/tables/projects';
 import { getProjectsWithStats } from '@/app/actions/projects';
 
 // ============================================
@@ -368,9 +369,10 @@ interface ProjectsPageClientProps {
   totalCount: number;
   role: string | null;
   companyId: string;
+  projectTypes?: ProjectTypeConfigsRow[];
 }
 
-export function ProjectsPageClient({ projects: initialProjects, totalCount, role, companyId }: ProjectsPageClientProps) {
+export function ProjectsPageClient({ projects: initialProjects, totalCount, role, companyId, projectTypes = [] }: ProjectsPageClientProps) {
   // Data states
   const [projects, setProjects] = useState(initialProjects);
   const [currentPage, setCurrentPage] = useState(1);
@@ -391,7 +393,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
 
   const router = useRouter();
   const isMobile = useIsMobile();
-  const { registerCreateModal, unregisterCreateModal } = useBottomNav();
+  const { registerCreateModal, unregisterCreateModal, openModal, closeCreateModal } = useBottomNav();
 
   // Refs
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
@@ -406,6 +408,15 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
       return () => unregisterCreateModal('/app/projects');
     }
   }, [canCreate, role, registerCreateModal, unregisterCreateModal]);
+
+  // Listen to openModal from BottomNavContext and open the local modal
+  useEffect(() => {
+    if (openModal === 'project') {
+      setShowCreateModal(true);
+      // Close the context modal state so it doesn't interfere
+      closeCreateModal();
+    }
+  }, [openModal, closeCreateModal]);
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -575,6 +586,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onSuccess={handleCreateSuccess}
+          projectTypes={projectTypes}
         />
       </>
     );
@@ -746,6 +758,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleCreateSuccess}
+        projectTypes={projectTypes}
       />
     </>
   );

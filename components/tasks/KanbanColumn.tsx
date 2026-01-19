@@ -27,9 +27,11 @@ interface KanbanColumnProps {
   phases?: Phase[];
   /** Mobile mode - full width layout */
   isMobile?: boolean;
+  /** Task type configs from database - pass to TaskCard for icon/color display */
+  taskTypes?: any[];
 }
 
-export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isMobile = false }: KanbanColumnProps) {
+export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isMobile = false, taskTypes }: KanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
@@ -114,6 +116,7 @@ export function KanbanColumn({ id, title, color, tasks, onTaskClick, phases, isM
                   onTaskClick={handleTaskClick}
                   phases={phases}
                   expenseStats={task.expenseStats}
+                  taskTypes={taskTypes}
                 />
               ))
             )}

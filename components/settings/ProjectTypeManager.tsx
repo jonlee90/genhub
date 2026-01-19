@@ -15,6 +15,13 @@ import Pencil from 'lucide-react/icons/pencil';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import Loader2 from 'lucide-react/icons/loader-2';
 import XCircle from 'lucide-react/icons/x-circle';
+import Coffee from 'lucide-react/icons/coffee';
+import HardHat from 'lucide-react/icons/hard-hat';
+import Hammer from 'lucide-react/icons/hammer';
+import Wrench from 'lucide-react/icons/wrench';
+import Zap from 'lucide-react/icons/zap';
+import Droplet from 'lucide-react/icons/droplet';
+import Drill from 'lucide-react/icons/drill';
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
@@ -55,8 +62,15 @@ const AVAILABLE_ICONS = {
   Home: Home,
   Factory: Factory,
   UtensilsCrossed: UtensilsCrossed,
+  Coffee: Coffee,
   Store: Store,
   Warehouse: Warehouse,
+  HardHat: HardHat,
+  Hammer: Hammer,
+  Wrench: Wrench,
+  Zap: Zap,
+  Droplet: Droplet,
+  Drill: Drill,
 };
 
 /**

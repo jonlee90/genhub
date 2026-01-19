@@ -44,6 +44,8 @@ interface TaskListProps {
   onTaskClick?: (task: TaskWithRelations) => void;
   /** When provided, we"re in project context - look up phase from this array */
   phases?: Phase[];
+  /** Task type configs from database - pass to TaskListMobile for icon/color display */
+  taskTypes?: any[];
 }
 
 const PRIORITY_ORDER: Record<string, number> = {
@@ -267,7 +269,7 @@ function areTaskListRowEqual(prev: TaskListRowProps, next: TaskListRowProps) {
   );
 }
 
-export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
+export function TaskList({ tasks, onTaskClick, phases, taskTypes }: TaskListProps) {
   const [sortField, setSortField] = useState<SortField>("due_date");
   const [sortOrder, setSortOrder] = useState<SortOrder>("asc");
 
@@ -395,6 +397,7 @@ export function TaskList({ tasks, onTaskClick, phases }: TaskListProps) {
         phases={phases}
         enableComplete={true}
         enableDelete={true}
+        taskTypes={taskTypes}
       />
     );
   }

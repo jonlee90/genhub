@@ -46,6 +46,7 @@ color: red
 | RLS policy | `.claude/skills/database/rls-patterns.md` |
 | Component | `.claude/skills/frontend/component-patterns.md` |
 | Form | `.claude/skills/frontend/form-patterns.md` |
+| React/Next.js | `/vercel-react-best-practices` skill |
 
 ---
 

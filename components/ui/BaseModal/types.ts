@@ -49,6 +49,7 @@ export interface BaseModalProps {
   // Theming
   theme?: string;
   customTheme?: ModalTheme;
+  iconColor?: string; // Custom color for icon background only
 
   // Behavior
   closeOnBackdropClick?: boolean;
@@ -80,6 +81,7 @@ export interface BaseModalHeaderProps {
   badges?: ReactNode;
   onClose: () => void;
   theme: ModalTheme;
+  iconColor?: string; // Custom color for icon background only
   className?: string;
 }
 

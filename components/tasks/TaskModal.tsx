@@ -23,6 +23,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
+import { getTaskTypeDisplayConfig, getTaskTypeIcon } from "@/lib/config/task-type-display";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -33,10 +34,6 @@ import {
 } from "@/app/actions/tasks";
 import { CreatorBadge } from "@/components/ui/CreatorBadge";
 import { TaskTypeBadge } from "./TaskTypeSelector";
-import {
-  getTaskTypeConfig,
-  isFieldVisible,
-} from "@/lib/config/task-type-fields";
 import { useToast } from "@/hooks/use-toast";
 import { useTaskFormState } from "@/hooks/useTaskFormState";
 import type { AssigneeOption as TaskAssigneeOption } from "@/app/actions/tasks";
@@ -45,8 +42,8 @@ import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { getTaskExpenses, createExpenseFromTask } from "@/app/actions/expenses";
 import type { TaskExpense } from "./TaskExpensesSection";
 import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
-import type { TaskType, ApprovalStatus } from "@/types/db/enums";
-import type { TasksRow } from "@/types/db/tables/tasks";
+import type { ApprovalStatus } from "@/types/db/enums";
+import type { TasksRow, TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 // Step components
 import { TaskTypeSelectionStep } from "./modal/TaskTypeSelectionStep";
@@ -108,6 +105,12 @@ interface Project {
     name: string;
     order_index?: number;
   }>;
+  project_type_config?: {
+    id: string;
+    name: string;
+    color: string | null;
+    icon_name: string | null;
+  } | null;
 }
 
 interface TeamMember {
@@ -129,7 +132,8 @@ interface TaskModalProps {
   onSuccess?: () => void;
   tasks?: Array<{ id: string; title: string; project_id: string }>;
   assignees?: TaskAssigneeOption[];
-  taskTypes?: any[]; // Prefetched task types
+  /** Task types from database - passed from Server Component parent */
+  taskTypes?: TaskTypeConfigsRow[];
   userRole?: string | null;
   isLoadingData?: boolean;
 }
@@ -487,15 +491,27 @@ function TaskModalForm({
           onPriorityChange={formState.setPriority}
           onStartDateChange={formState.setStartDate}
           disabled={isPending}
-          prefetchedTaskTypes={taskTypes}
+          prefetchedTaskTypes={taskTypes || []}
         />
       </ResponsiveModal>
     );
   }
 
   // Render Step 2 (Create mode) or Edit mode
-  const modalIcon = mode === "create" ? Plus : Pencil;
-  const modalTitleText = mode === "create" ? "Add Task" : "Edit Task";
+  // Find task type config from taskTypes array based on task.task_type
+  const taskTypeConfig = mode === "edit" && task?.task_type
+    ? taskTypes?.find((tt) => tt.name === task.task_type)
+    : undefined;
+
+  // Use actual database config icon if available, otherwise fallback
+  const modalIcon = mode === "create"
+    ? Plus
+    : taskTypeConfig?.icon_name
+      ? getTaskTypeIcon(taskTypeConfig.icon_name)
+      : task?.task_type
+        ? getTaskTypeDisplayConfig(task.task_type).icon
+        : Pencil;
+  const modalTitleText = mode === "create" ? "Add Task" : "Edit " + task?.task_type?.replace(/_/g, '').replace(/\b\w/g, c => c.toUpperCase());
 
   const modalTitle = (
     <div className="flex items-center gap-2">
@@ -532,6 +548,11 @@ function TaskModalForm({
     (p) => p.id === formState.selectedProjectId,
   );
 
+  // Use task type config color for icon only (edit mode only)
+  const iconColor = mode === "edit" && taskTypeConfig?.color
+    ? taskTypeConfig.color
+    : undefined;
+
   return (
     <ResponsiveModal
       isOpen={true}
@@ -543,6 +564,7 @@ function TaskModalForm({
       }
       badges={approvalBadge || undefined}
       theme="default"
+      iconColor={iconColor}
       maxWidth="2xl"
       snapPoints={["half", "full"]}
       initialSnapPoint="full"

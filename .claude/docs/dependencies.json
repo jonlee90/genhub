@@ -284,28 +284,32 @@
       "type": "table",
       "affects": [
         "docs/indexes/tables.md",
-        "docs/backend/SCHEMA_CORE.md"
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "database/task_type_configs": {
       "type": "table",
       "affects": [
         "docs/indexes/tables.md",
-        "docs/backend/SCHEMA_CORE.md"
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "database/phase_templates": {
       "type": "table",
       "affects": [
         "docs/indexes/tables.md",
-        "docs/backend/SCHEMA_CORE.md"
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "database/task_templates": {
       "type": "table",
       "affects": [
         "docs/indexes/tables.md",
-        "docs/backend/SCHEMA_CORE.md"
+        "docs/backend/SCHEMA_CORE.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "database/stripe_customers": {
@@ -472,7 +476,8 @@
         "database/phase_templates"
       ],
       "affects": [
-        "docs/indexes/actions.md"
+        "docs/indexes/actions.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "actions/task-types.ts": {
@@ -481,7 +486,8 @@
         "database/task_type_configs"
       ],
       "affects": [
-        "docs/indexes/actions.md"
+        "docs/indexes/actions.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "actions/task-templates.ts": {
@@ -490,7 +496,8 @@
         "database/task_templates"
       ],
       "affects": [
-        "docs/indexes/actions.md"
+        "docs/indexes/actions.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "actions/project-types.ts": {
@@ -499,7 +506,8 @@
         "database/project_type_configs"
       ],
       "affects": [
-        "docs/indexes/actions.md"
+        "docs/indexes/actions.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "actions/project-files.ts": {
@@ -653,9 +661,15 @@
     },
     "components/settings/**": {
       "type": "component",
-      "depends_on": [],
+      "depends_on": [
+        "actions/project-types.ts",
+        "actions/task-types.ts",
+        "actions/phase-templates.ts",
+        "actions/task-templates.ts"
+      ],
       "affects": [
-        "docs/indexes/components.md"
+        "docs/indexes/components.md",
+        "docs/domain/CONFIGURATION.md"
       ]
     },
     "components/auth/**": {
@@ -951,6 +965,87 @@
       ],
       "depends_on": [
         "database/project_deferred"
+      ]
+    },
+    "actions/tasks-activity.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_activity"
+      ]
+    },
+    "actions/tasks-analytics.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_analytics"
+      ]
+    },
+    "actions/tasks-assignments.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_assignments"
+      ]
+    },
+    "actions/tasks-deferred.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_deferred"
+      ]
+    },
+    "actions/tasks-dependencies.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_dependencies"
+      ]
+    },
+    "actions/tasks-spatial.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_spatial"
+      ]
+    },
+    "actions/tasks-status.ts": {
+      "type": "server_action",
+      "affects": [
+        "docs/indexes/actions.md"
+      ],
+      "depends_on": [
+        "database/tasks_status"
+      ]
+    },
+    "components/providers/**": {
+      "type": "component",
+      "affects": [
+        "docs/indexes/components.md"
+      ],
+      "depends_on": [
+        "actions/providers.ts"
+      ]
+    },
+    "components/skeletons/**": {
+      "type": "component",
+      "affects": [
+        "docs/indexes/components.md"
+      ],
+      "depends_on": [
+        "actions/skeletons.ts"
       ]
     }
   },

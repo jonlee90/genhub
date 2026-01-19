@@ -19,12 +19,18 @@ export function BottomSheetModalHeader({
   themePrimary,
   themeGradientFrom,
   themeGradientTo,
+  iconColor,
   className,
 }: BottomSheetModalHeaderProps) {
   // Don't render if no title or icon
   if (!title && !Icon) {
     return null;
   }
+
+  // Use iconColor if provided, otherwise use theme gradient
+  const iconBackground = iconColor
+    ? iconColor
+    : `linear-gradient(135deg, ${themeGradientFrom} 0%, ${themeGradientTo} 100%)`;
 
   return (
     <div
@@ -40,7 +46,7 @@ export function BottomSheetModalHeader({
           <div
             className="flex-shrink-0 h-11 w-11 rounded-xl flex items-center justify-center shadow-md relative overflow-hidden"
             style={{
-              background: `linear-gradient(135deg, ${themeGradientFrom} 0%, ${themeGradientTo} 100%)`,
+              background: iconBackground,
             }}
           >
             {/* Blueprint grid overlay for construction theme */}

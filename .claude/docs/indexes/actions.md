@@ -301,6 +301,55 @@ Last updated: 2026-01-19
 | updateTaskType | update task type | - |
 | deleteTaskType | delete task type | - |
 
+### tasks-activity.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| logTaskActivity | log task activity | - |
+| getTaskActivity | get task activity | - |
+| addTaskComment | add task comment | - |
+
+### tasks-analytics.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| getTaskAnalytics | get task analytics | - |
+
+### tasks-assignments.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| getProjectAssignees | get project assignees | - |
+| insertTaskAssignees | insert task assignees | - |
+| updateTaskAssignees | update task assignees | - |
+| removeTaskAssignee | remove task assignee | - |
+| setPrimaryAssignee | set primary assignee | - |
+
+### tasks-deferred.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| getProjectTasks | get project tasks | - |
+| updateTaskDueDate | update task due date | - |
+| updateTaskDates | update task dates | - |
+| getTaskDetails | get task details | - |
+| getTaskAttachments | get task attachments | - |
+
+### tasks-dependencies.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| addTaskDependency | add task dependency | - |
+| removeTaskDependency | remove task dependency | - |
+| getTaskDependencies | get task dependencies | - |
+
+### tasks-spatial.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| linkTaskToMarker | link task to marker | - |
+| getTasksByMarker | get tasks by marker | - |
+| logTaskCompletionToMarker | log task completion to marker | - |
+
+### tasks-status.ts
+| Action | Purpose | Revalidates |
+|--------|---------|-------------|
+| updateTaskStatus | update task status | - |
+
 ### tasks.ts
 | Action | Purpose | Revalidates |
 |--------|---------|-------------|

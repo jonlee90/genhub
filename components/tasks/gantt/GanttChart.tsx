@@ -49,6 +49,7 @@ export function GanttChart({
   onTaskClick,
   onTaskDateChange,
   className,
+  taskTypes,
 }: GanttChartProps) {
   const [timeScale, setTimeScale] = useState<TimeScale>("week");
   const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
@@ -279,48 +280,25 @@ export function GanttChart({
     );
   }
 
-  return (
-    <div className={cn("bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden", className)}>
-      {/* Header with time scale toggle */}
-      <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-        
-        {isMobile ? null : (
-          <div className="flex items-center gap-2 sm:gap-3">
-            <h3 className="text-sm sm:text-lg font-black text-construction-blue">
-              PROJECT TIMELINE
-            </h3>
-            <span className="text-xs sm:text-sm text-gray-500">
-              {sortedTasks.length} {sortedTasks.length === 1 ? "task" : "tasks"}
-            </span>
-          </div>
-        )}
-        <GanttViewToggle timeScale={timeScale} onTimeScaleChange={setTimeScale} isMobile={isMobile} />
-      </div>
-
-      {/* Gantt Chart */}
-      <DndContext
-        sensors={sensors}
-        modifiers={[restrictToHorizontalAxis]}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <ScrollArea
-          className={cn(
-            "w-full select-none bg-white",
-            // Only show grab cursor on desktop
-            !isMobile && (isDraggingScroll ? "cursor-grabbing" : "cursor-grab")
-          )}
-          style={{
-            height: Math.min(
-              totalHeight + config.headerHeight + (isMobile ? 20 : 40),
-              isMobile ? 400 : 600
-            )
-          }}
-          onMouseDown={!isMobile ? handleMouseDown : undefined}
-          onMouseMove={!isMobile ? handleMouseMove : undefined}
-          onMouseUp={!isMobile ? handleMouseUp : undefined}
-          onMouseLeave={!isMobile ? handleMouseLeave : undefined}
-        >
+  // Conditionally wrap content with DndContext only on desktop
+  const chartContent = (
+    <ScrollArea
+      className={cn(
+        "w-full select-none bg-white",
+        // Only show grab cursor on desktop
+        !isMobile && (isDraggingScroll ? "cursor-grabbing" : "cursor-grab")
+      )}
+      style={{
+        height: Math.min(
+          totalHeight + config.headerHeight + (isMobile ? 20 : 40),
+          isMobile ? 400 : 600
+        )
+      }}
+      onMouseDown={!isMobile ? handleMouseDown : undefined}
+      onMouseMove={!isMobile ? handleMouseMove : undefined}
+      onMouseUp={!isMobile ? handleMouseUp : undefined}
+      onMouseLeave={!isMobile ? handleMouseLeave : undefined}
+    >
           <div className="relative bg-white" style={{ width: totalWidth }}>
             {/* Header */}
             <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
@@ -352,6 +330,7 @@ export function GanttChart({
                       onHover={setHoveredTaskId}
                       onClick={onTaskClick}
                       isMobile={isMobile}
+                      taskTypes={taskTypes}
                     />
                   );
                 })}
@@ -360,19 +339,48 @@ export function GanttChart({
           </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
+      );
 
-        {/* Drag overlay */}
-        <DragOverlay>
-          {activeTaskId && (
-            <div className={cn(
-              "bg-construction-blue text-white rounded-lg shadow-construction-lg font-bold",
-              isMobile ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"
-            )}>
-              {sortedTasks.find((t) => t.id === activeTaskId)?.title}
-            </div>
-          )}
-        </DragOverlay>
-      </DndContext>
+  return (
+    <div className={cn("bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden", className)}>
+      {/* Header with time scale toggle */}
+      <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+
+        {isMobile ? null : (
+          <div className="flex items-center gap-2 sm:gap-3">
+            <h3 className="text-sm sm:text-lg font-black text-construction-blue">
+              PROJECT TIMELINE
+            </h3>
+            <span className="text-xs sm:text-sm text-gray-500">
+              {sortedTasks.length} {sortedTasks.length === 1 ? "task" : "tasks"}
+            </span>
+          </div>
+        )}
+        <GanttViewToggle timeScale={timeScale} onTimeScaleChange={setTimeScale} isMobile={isMobile} />
+      </div>
+
+      {/* Gantt Chart - Wrapped in DndContext only on desktop */}
+      {isMobile ? (
+        chartContent
+      ) : (
+        <DndContext
+          sensors={sensors}
+          modifiers={[restrictToHorizontalAxis]}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {chartContent}
+
+          {/* Drag overlay */}
+          <DragOverlay>
+            {activeTaskId && (
+              <div className="bg-construction-blue text-white rounded-lg shadow-construction-lg font-bold px-4 py-2 text-sm">
+                {sortedTasks.find((t) => t.id === activeTaskId)?.title}
+              </div>
+            )}
+          </DragOverlay>
+        </DndContext>
+      )}
 
       {/* Loading overlay */}
       {isPending && (

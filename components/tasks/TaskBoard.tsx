@@ -113,6 +113,8 @@ interface TaskBoardProps {
   assignees?: AssigneeOption[];
   /** User role for permission checks */
   userRole?: string | null;
+  /** Task type configs from database */
+  taskTypes?: any[];
 }
 
 export function TaskBoard({
@@ -138,6 +140,7 @@ export function TaskBoard({
   mobileActiveFilterCount,
   onMobileFilterClick,
   userRole: _userRole,
+  taskTypes,
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -416,6 +419,7 @@ export function TaskBoard({
             dependencies={taskDependencies}
             onTaskClick={handleTaskClick}
             onTaskDateChange={handleTaskDateChange}
+            taskTypes={taskTypes}
           />
         </div>
       )}
@@ -571,12 +575,14 @@ export function TaskBoard({
           tasks={filteredTasks}
           onTaskClick={handleTaskClick}
           phases={isProjectContext ? phases : undefined}
+          taskTypes={taskTypes}
         />
       ) : (
         <TaskList
           tasks={filteredTasks}
           onTaskClick={handleTaskClick}
           phases={isProjectContext ? phases : undefined}
+          taskTypes={taskTypes}
         />
       )}
 

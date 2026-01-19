@@ -35,13 +35,22 @@ export function ExpensesPageHeader({
   companyId,
 }: ExpensesPageHeaderProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const { registerCreateModal, unregisterCreateModal } = useBottomNav();
+  const { registerCreateModal, unregisterCreateModal, openModal, closeCreateModal } = useBottomNav();
 
   // Register create modal data for bottom nav
   useEffect(() => {
     registerCreateModal("/app/expenses", { projects, tasks, companyId });
     return () => unregisterCreateModal("/app/expenses");
   }, [projects, tasks, companyId, registerCreateModal, unregisterCreateModal]);
+
+  // Listen to openModal from BottomNavContext and open the local modal
+  useEffect(() => {
+    if (openModal === 'expense') {
+      setShowCreateModal(true);
+      // Close the context modal state so it doesn't interfere
+      closeCreateModal();
+    }
+  }, [openModal, closeCreateModal]);
 
   return (
     <>

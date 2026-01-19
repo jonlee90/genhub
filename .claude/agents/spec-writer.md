@@ -38,7 +38,8 @@ ALWAYS READ FIRST (before ANY spec work):
 │    PROJECT_FEATURE  → .claude/docs/domain/PROJECTS.md           │
 │    TASK_FEATURE     → .claude/docs/domain/TASKS.md              │
 │    MATERIAL_FEATURE → .claude/docs/domain/MATERIALS.md          │
-│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md            │
+│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md          │
+│    CONFIGURATION_FEATURE → .claude/docs/domain/CONFIGURATION.md              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

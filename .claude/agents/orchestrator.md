@@ -68,6 +68,15 @@ Task received
 - Multiple read-only reviews
 - Documentation tasks
 
+### Skill Reference
+
+Before dispatching parallel agents, consult: `.claude/skills/dispatching-parallel-agents/SKILL.md`
+
+Key checks from skill:
+- Are tasks truly independent? (no shared state)
+- Can agents work without context from each other?
+- Will they edit different files?
+
 ### Execution
 
 **Parallel:** Multiple Task calls in ONE message

@@ -39,6 +39,11 @@ You create detailed implementation plans that other agents (frontend-builder) wi
 
 ## Workflow
 
+### 0. Load Design Resources
+- Run `/frontend-design` skill for design guidance
+- Load `/vercel-react-best-practices` skill for architecture patterns
+- Reference `.claude/docs/frontend/DESIGN_SYSTEM.md` for visual standards
+
 ### 1. Understand Requirements
 - Clarify the UI/UX goal
 - Identify user flows and interactions

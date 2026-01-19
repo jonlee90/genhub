@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, memo } from "react";
+import { useState, useEffect, useCallback, memo, useTransition } from "react";
 import { motion } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file
 import Plus from 'lucide-react/icons/plus';
@@ -17,6 +17,29 @@ import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import AlertCircle from 'lucide-react/icons/alert-circle';
 import Sparkles from 'lucide-react/icons/sparkles';
 import XCircle from 'lucide-react/icons/x-circle';
+import Loader2 from 'lucide-react/icons/loader-2';
+// Additional construction-related icons
+import Drill from 'lucide-react/icons/drill';
+import PaintBucket from 'lucide-react/icons/paint-bucket';
+import Layers from 'lucide-react/icons/layers';
+import FileText from 'lucide-react/icons/file-text';
+import FolderOpen from 'lucide-react/icons/folder-open';
+import BookOpen from 'lucide-react/icons/book-open';
+import CalendarDays from 'lucide-react/icons/calendar-days';
+import Clock from 'lucide-react/icons/clock';
+import ShoppingCart from 'lucide-react/icons/shopping-cart';
+import DollarSign from 'lucide-react/icons/dollar-sign';
+import Receipt from 'lucide-react/icons/receipt';
+import Truck from 'lucide-react/icons/truck';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
+import CheckCircle from 'lucide-react/icons/check-circle';
+import Shield from 'lucide-react/icons/shield';
+import BadgeCheck from 'lucide-react/icons/badge-check';
+import Flag from 'lucide-react/icons/flag';
+import Info from 'lucide-react/icons/info';
+import Star from 'lucide-react/icons/star';
+import Target from 'lucide-react/icons/target';
+import Zap from 'lucide-react/icons/zap';
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
@@ -59,17 +82,57 @@ interface TaskTypeManagerProps {
 
 /**
  * Icon mapping for task type selection
- * Debug: Construction-themed Lucide icons
+ * Debug: Construction-themed Lucide icons organized by category
+ *
+ * Categories:
+ * - Construction/Work: Tools and equipment icons
+ * - Admin/Documentation: Paperwork and administrative icons
+ * - Purchase/Procurement: Shopping and delivery icons
+ * - Approval/Quality: Verification and approval icons
+ * - General/Planning: Project management and tracking icons
  */
 const AVAILABLE_ICONS = {
+  // Construction & Work Tools
   Hammer: Hammer,
   Wrench: Wrench,
   HardHat: HardHat,
+  Drill: Drill,
   Ruler: Ruler,
-  Package: Package,
+  PaintBucket: PaintBucket,
+  Layers: Layers,
+
+  // Admin & Documentation
+  FileText: FileText,
   Clipboard: Clipboard,
+  ClipboardCheck: ClipboardCheck,
+  FolderOpen: FolderOpen,
+  BookOpen: BookOpen,
   Pencil: Pencil,
+
+  // Scheduling & Time
+  CalendarDays: CalendarDays,
+  Clock: Clock,
+
+  // Purchase & Procurement
+  ShoppingCart: ShoppingCart,
+  Package: Package,
+  DollarSign: DollarSign,
+  Receipt: Receipt,
+  Truck: Truck,
+
+  // Approval & Quality Control
+  CheckCircle: CheckCircle,
   CheckCircle2: CheckCircle2,
+  BadgeCheck: BadgeCheck,
+  Shield: Shield,
+
+  // General & Planning
+  Flag: Flag,
+  AlertCircle: AlertCircle,
+  Info: Info,
+  Star: Star,
+  Target: Target,
+  Zap: Zap,
 };
 
 /**
@@ -91,6 +154,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingType, setEditingType] = useState<TaskTypeConfig | null>(null);
   const [deletingType, setDeletingType] = useState<TaskTypeConfig | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   // Handle create submission
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,15 +162,18 @@ export const TaskTypeManager = memo(function TaskTypeManager({
     // Removed console.log("[TaskTypeManager] Creating task type...");
 
     const formData = new FormData(e.currentTarget);
-    const result = await createTaskType(formData);
 
-    if (result.success) {
-      toast.success("Task type created successfully");
-      setShowCreateModal(false);
-      onRefresh();
-    } else {
-      toast.error(result.error || "Failed to create task type");
-    }
+    startTransition(async () => {
+      const result = await createTaskType(formData);
+
+      if (result.success) {
+        toast.success("Task type created successfully");
+        setShowCreateModal(false);
+        onRefresh();
+      } else {
+        toast.error(result.error || "Failed to create task type");
+      }
+    });
   }, [onRefresh]);
 
   // Handle update submission
@@ -117,15 +184,18 @@ export const TaskTypeManager = memo(function TaskTypeManager({
     // Removed console.log("[TaskTypeManager] Updating task type:", editingType.id);
 
     const formData = new FormData(e.currentTarget);
-    const result = await updateTaskType(editingType.id, formData);
 
-    if (result.success) {
-      toast.success("Task type updated successfully");
-      setEditingType(null);
-      onRefresh();
-    } else {
-      toast.error(result.error || "Failed to update task type");
-    }
+    startTransition(async () => {
+      const result = await updateTaskType(editingType.id, formData);
+
+      if (result.success) {
+        toast.success("Task type updated successfully");
+        setEditingType(null);
+        onRefresh();
+      } else {
+        toast.error(result.error || "Failed to update task type");
+      }
+    });
   }, [editingType, onRefresh]);
 
   // Handle delete confirmation
@@ -340,6 +410,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           <Button
             variant="outline"
             onClick={() => setShowCreateModal(false)}
+            disabled={isPending}
             className="border-2 font-semibold"
           >
             Cancel
@@ -349,10 +420,20 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           <Button
             type="submit"
             form="create-task-type-form"
+            disabled={isPending}
             className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Task Type
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Task Type
+              </>
+            )}
           </Button>
         }
       >
@@ -476,6 +557,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <Button
               variant="outline"
               onClick={() => setEditingType(null)}
+              disabled={isPending}
               className="border-2 font-semibold"
             >
               Cancel
@@ -485,10 +567,20 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <Button
               type="submit"
               form="edit-task-type-form"
+              disabled={isPending}
               className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
             >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Save Changes
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  Save Changes
+                </>
+              )}
             </Button>
           }
         >

@@ -44,14 +44,14 @@ color: blue
 
 | Keywords | Skill Path |
 |----------|------------|
+| "server action", "action" | `/vercel-react-best-practices` skill + `.claude/skills/backend/server-action.md` |
+| "api route", "endpoint" | `/vercel-react-best-practices` skill + `.claude/skills/backend/api-route.md` |
 | "create table", "new table" | `.claude/skills/database/create-migration.md` |
 | "alter", "modify", "drop" | `.claude/skills/database/modify-schema.md` |
 | "rls", "policy", "security" | `.claude/skills/database/rls-patterns.md` |
 | "index", "performance" | `.claude/skills/database/indexes.md` |
 | "enum", "type" | `.claude/skills/database/enums.md` |
 | "trigger", "function" | `.claude/skills/database/triggers.md` |
-| "server action", "action" | `.claude/skills/backend/server-action.md` |
-| "api route", "endpoint" | `.claude/skills/backend/api-route.md` |
 | "validation", "zod" | `.claude/skills/backend/validation.md` |
 
 ---

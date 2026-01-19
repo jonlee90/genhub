@@ -56,6 +56,8 @@ export interface ResponsiveModalProps {
 
   // Theming
   theme?: ModalThemeName;
+  customTheme?: import('@/lib/config/modal-themes').ModalTheme;
+  iconColor?: string; // Custom color for icon background only
 
   // Behavior
   closeOnBackdropClick?: boolean;
@@ -95,6 +97,8 @@ export const ResponsiveModal = memo(function ResponsiveModal({
   steps,
   currentStep,
   theme = "default",
+  customTheme,
+  iconColor,
   closeOnBackdropClick = true,
   closeOnEscape = true,
   enableDragToDismiss = true,
@@ -125,6 +129,8 @@ export const ResponsiveModal = memo(function ResponsiveModal({
         rightActions={rightActions}
         showFooter={showFooter}
         theme={theme}
+        customTheme={customTheme}
+        iconColor={iconColor}
         closeOnBackdropClick={closeOnBackdropClick}
         closeOnEscape={closeOnEscape}
         enableDragToDismiss={enableDragToDismiss}
@@ -157,6 +163,8 @@ export const ResponsiveModal = memo(function ResponsiveModal({
       steps={steps}
       currentStep={currentStep}
       theme={theme}
+      customTheme={customTheme}
+      iconColor={iconColor}
       closeOnBackdropClick={closeOnBackdropClick}
       closeOnEscape={closeOnEscape}
       enableDragToDismiss={enableDragToDismiss}

@@ -52,6 +52,8 @@ export function BottomSheetModal({
   rightActions,
   showFooter = true,
   theme: themeName = 'default',
+  customTheme,
+  iconColor,
   enableDragToDismiss = true,
   closeOnBackdropClick = true,
   closeOnEscape = true,
@@ -64,8 +66,8 @@ export function BottomSheetModal({
   ariaLabel,
   ariaDescribedBy,
 }: BottomSheetModalProps) {
-  // Get theme configuration
-  const theme = getModalTheme(themeName);
+  // Get theme configuration (customTheme overrides themeName)
+  const theme = customTheme || getModalTheme(themeName);
 
   // Snap point state
   const [currentSnapIndex, setCurrentSnapIndex] = useState(0);
@@ -261,6 +263,7 @@ export function BottomSheetModal({
               themePrimary={theme.primary}
               themeGradientFrom={theme.gradientFrom}
               themeGradientTo={theme.gradientTo}
+              iconColor={iconColor}
               className={headerClassName}
             />
 
