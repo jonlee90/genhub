@@ -71,12 +71,6 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 // Debug: Status colors
-const STATUS_COLORS = {
-  active: 'bg-green-500/10 text-green-700 border-green-200',
-  resolved: 'bg-gray-500/10 text-gray-700 border-gray-200',
-  archived: 'bg-gray-400/10 text-gray-600 border-gray-300',
-};
-
 /**
  * ContentDrawer - Marker detail drawer with tabs
  * Features:
@@ -252,7 +246,7 @@ export function ContentDrawer({
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
               <TabsList className="shrink-0 justify-start border-b border-gray-200 rounded-none bg-transparent px-6 pt-4">
                 <TabsTrigger value="photos" className="gap-2">
-                  <Image className="w-4 h-4" />
+                  <Image className="w-4 h-4" aria-hidden="true" />
                   Photos
                   {photos.length > 0 && (
                     <span className="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-bold">

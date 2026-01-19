@@ -103,7 +103,7 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
     try {
       await navigator.clipboard.writeText(text);
       toast.success("Link copied to clipboard");
-    } catch (_err) {
+    } catch {
       toast.error("Failed to copy link");
     }
   };

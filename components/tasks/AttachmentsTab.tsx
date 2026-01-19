@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
 import { Paperclip } from "lucide-react";
 import { FileText } from "lucide-react";
@@ -55,7 +56,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     };
 
     fetchAttachments();
-  }, [taskId]);
+  }, [taskId, setError]);
 
   // Format file size helper
   const formatFileSize = (bytes?: number) => {
@@ -120,11 +121,12 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 )}
                 aria-label={`View ${image.file_name}`}
               >
-                <img
+                <Image
                   src={image.thumbnail_url || image.file_url}
                   alt={image.file_name}
+                  fill
                   className="w-full h-full object-cover"
-                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 {/* Overlay on hover */}
                 <div className={cn(

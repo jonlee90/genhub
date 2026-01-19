@@ -69,7 +69,6 @@ export async function getProjectTypes(): Promise<{
   const { companyId, supabase } = userContext;
 
   // Use optimized RPC function (single query replaces 2 queries + JS aggregation)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.rpc as any)(
     "get_project_types_with_counts",
     { p_company_id: companyId }

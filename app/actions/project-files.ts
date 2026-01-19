@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
 import { getUserContext, verifyProjectAccess } from "@/lib/auth/user-context";
 import type { DocumentCategory } from "@/types/db/enums";
 

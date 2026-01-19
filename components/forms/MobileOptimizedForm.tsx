@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Camera, Calendar, Phone, Mail, MapPin, Upload, X } from 'lucide-react';
+import { Camera, Calendar, Phone, Mail, MapPin, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';
 
@@ -377,9 +378,10 @@ export function MobileOptimizedForm({ onSubmit, className }: MobileOptimizedForm
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <img
+                  <Image
                     src={URL.createObjectURL(photo)}
                     alt={`Photo ${index + 1}`}
+                    fill
                     className="w-full h-full object-cover"
                   />
                   {/* Debug: Remove button - Touch-optimized */}

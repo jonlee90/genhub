@@ -9,8 +9,6 @@ import Clock from 'lucide-react/icons/clock';
 import AlertTriangle from 'lucide-react/icons/alert-triangle';
 import Ban from 'lucide-react/icons/ban';
 import Calendar from 'lucide-react/icons/calendar';
-import Sparkles from 'lucide-react/icons/sparkles';
-import Loader2 from 'lucide-react/icons/loader-2';
 import ListTodo from 'lucide-react/icons/list-todo';
 import Target from 'lucide-react/icons/target';
 import TrendingUp from 'lucide-react/icons/trending-up';

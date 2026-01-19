@@ -432,7 +432,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
         console.error('[ProjectsPageClient] Error fetching page:', error);
       }
     });
-  }, [totalPages, isPending]);
+  }, [totalPages, isPending, companyId]);
 
   // Filter and sort projects - memoized
   const filteredProjects = useMemo(() => {

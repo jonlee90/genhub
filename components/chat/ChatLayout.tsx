@@ -81,7 +81,7 @@ export function ChatLayout({
   }, []);
 
   // Debug: Use real-time chat rooms hook
-  const { rooms, totalUnread, isConnected, connectionError, updateRoomUnread } =
+  const { rooms, totalUnread, connectionError, updateRoomUnread } =
     useChatRooms({
       userId: userContext.userId,
       companyId: userContext.companyId,

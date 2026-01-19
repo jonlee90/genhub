@@ -23,7 +23,7 @@ console.log('[Sync Progress] Module loaded');
 let currentOperation: string | undefined;
 let syncStartTime = 0;
 let itemsSyncedSinceStart = 0;
-let subscribers: Set<(progress: SyncProgress) => void> = new Set();
+const subscribers: Set<(progress: SyncProgress) => void> = new Set();
 
 export interface SyncError {
   entityType: string;

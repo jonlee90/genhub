@@ -7,7 +7,6 @@ import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Maximize2 from 'lucide-react/icons/maximize-2';
-import RotateCw from 'lucide-react/icons/rotate-cw';
 import Home from 'lucide-react/icons/home';
 import Eye from 'lucide-react/icons/eye';
 import Box from 'lucide-react/icons/box';

@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Check from 'lucide-react/icons/check';
 import AlertTriangle from 'lucide-react/icons/alert-triangle';
-import Clock from 'lucide-react/icons/clock';
 import Ban from 'lucide-react/icons/ban';
 import Rocket from 'lucide-react/icons/rocket';
 import FileText from 'lucide-react/icons/file-text';
@@ -139,7 +138,7 @@ export function PhaseStation({
         </div>
       )}
     </div>
-  ), [phase.name, phase.completion_percentage, phase.status, phase.started_at, phase.completed_at, stats, isCompleted, isInProgress]);
+  ), [phase.name, phase.completion_percentage, phase.started_at, phase.completed_at, stats, isCompleted, isInProgress]);
 
   return (
     <AnimatedTooltip content={tooltipContent} side="top" delay={300}>

@@ -19,7 +19,6 @@ import ImageIcon from 'lucide-react/icons/image';
 import FileSpreadsheet from 'lucide-react/icons/file-spreadsheet';
 import FileCode from 'lucide-react/icons/file-code';
 import Archive from 'lucide-react/icons/archive';
-import Pencil from 'lucide-react/icons/pencil';
 import { cn } from '@/lib/utils'
 import { FileUploader } from './FileUploader'
 import { useMarkerMutations } from '@/hooks/use-marker-mutations'

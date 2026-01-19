@@ -86,7 +86,7 @@ export function OnboardingTour({
       console.log('[OnboardingTour] Tour completed');
       handleComplete();
     }
-  }, [currentStepIndex, totalSteps]);
+  }, [currentStepIndex, totalSteps];
 
   const handleBack = useCallback(() => {
     if (currentStepIndex > 0) {

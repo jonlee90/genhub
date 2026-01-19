@@ -294,7 +294,7 @@ export function ThreeDViewerCanvas({
         unloadModel();
       }
     };
-  }, [modelUrl, unloadModel]); // FIX: Add unloadModel to deps
+  }, [modelUrl, unloadModel]);
 
   // Debug: Load model (supports both XKT and IFC formats)
   const loadModel = useCallback(async (url: string) => {

@@ -160,7 +160,7 @@ export async function loadProgressively(
 /**
  * Memory pooling: Reuse vertex buffers
  */
-export function enableMemoryPooling(viewer: Viewer): void {
+export function enableMemoryPooling(_viewer: Viewer): void {
   console.log('[PerformanceOptimizer] Enabling memory pooling');
 
   try {

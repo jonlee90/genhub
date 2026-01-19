@@ -1353,7 +1353,6 @@ async function fetchProjectWithStats(
 
   try {
     // Use optimized RPC function (single query replaces 4 queries + JS aggregation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.rpc as any)(
       "get_project_with_full_stats",
       { p_project_id: projectId, p_company_id: companyId }
@@ -1491,7 +1490,6 @@ async function fetchProjectTeamCostSummary(
     }
 
     // Call optimized RPC function (single query replaces 5+ queries + aggregation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase.rpc as any)(
       "get_project_team_cost_summary",
       { p_project_id: projectId }

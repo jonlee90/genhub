@@ -44,9 +44,7 @@ export async function getProjectExpenseStats(projectId: string) {
     throw new Error('Unauthorized');
   }
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
+  try {    const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
       'get_project_detail_with_stats',
       {
         p_project_id: projectId,

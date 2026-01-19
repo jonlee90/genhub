@@ -16,8 +16,6 @@ import type {
 } from "@/types/db/tables/materials";
 import type { ProcurementStatus, MaterialCategory } from "@/types/db/enums";
 
-type Material = MaterialsRow;
-type MaterialAssignment = MaterialAssignmentsRow;
 
 // ============================================
 // Validation Schemas
@@ -1510,7 +1508,7 @@ export async function toggleTracking(material_id: string, track: boolean) {
       return { success: false, error: "Unauthorized" };
     }
 
-    const validated = toggleTrackingSchema.parse({ material_id, track });
+    toggleTrackingSchema.parse({ material_id, track });
     const supabase = await createClient();
 
     // Get user's company

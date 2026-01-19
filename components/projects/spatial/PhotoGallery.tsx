@@ -52,7 +52,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="w-16 h-16 mb-4 rounded-full bg-blue-500/10 flex items-center justify-center">
-          <Image className="w-8 h-8 text-blue-500" />
+          <Image className="w-8 h-8 text-blue-500" aria-hidden="true" />
         </div>
         <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">
           No Photos Yet

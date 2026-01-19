@@ -11,7 +11,6 @@ import { PhaseDetailPanel } from './PhaseDetailPanel';
 import { ManagePhasesModal } from './ManagePhasesModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 import type { TasksRow } from '@/types/db/tables/tasks';
 

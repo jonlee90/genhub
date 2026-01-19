@@ -68,7 +68,7 @@ export function FloorPlanUploader({
 
       return null;
     },
-    [maxFileSizeMB]
+    [maxFileSizeMB, acceptedTypes]
   );
 
   const handleFileSelect = useCallback(

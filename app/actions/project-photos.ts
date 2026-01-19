@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
 import { getUserContext } from "@/lib/auth/user-context";
 import type { ProjectPhotosRow } from "@/types/db/tables/projects";
 import type { PhotoCategory } from "@/types/db/enums";

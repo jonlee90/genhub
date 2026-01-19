@@ -81,7 +81,7 @@ export function MarkerFilterPanel({
         console.error('[MarkerFilterPanel] Failed to parse stored filters:', err);
       }
     }
-  }, []); // Only run once on mount
+  }, [onFilterChange]); // Re-run if onFilterChange changes
 
   const toggleMarkerType = (type: string) => {
     const markerTypes = activeFilters.markerTypes ?? [];

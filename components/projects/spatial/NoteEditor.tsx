@@ -14,7 +14,6 @@ import Bold from 'lucide-react/icons/bold';
 import Italic from 'lucide-react/icons/italic';
 import List from 'lucide-react/icons/list';
 import ListOrdered from 'lucide-react/icons/list-ordered';
-import X from 'lucide-react/icons/x';
 import Send from 'lucide-react/icons/send';
 import AtSign from 'lucide-react/icons/at-sign';
 import { cn } from '@/lib/utils'
@@ -62,7 +61,7 @@ export function NoteEditor({
   // Performance optimization: Memoize filtered mention suggestions
   const mentionSuggestions = useMemo(() =>
     allUsers.filter((user) => user.name.toLowerCase().includes(mentionSearch.toLowerCase()))
-  , [mentionSearch]);
+  , [mentionSearch, allUsers]);
 
   // Handle text change
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

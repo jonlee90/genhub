@@ -144,10 +144,6 @@ export function ExpenseSummary({
   }
 
   // Calculate remaining metrics (analytics is guaranteed non-null here)
-  const pendingRate =
-    analytics.totalCount > 0
-      ? (analytics.pendingCount / analytics.totalCount) * 100
-      : 0;
 
   return (
     <div

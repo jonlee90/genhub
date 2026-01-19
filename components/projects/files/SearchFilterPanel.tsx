@@ -13,21 +13,12 @@ import { useState, useEffect, useMemo } from 'react';
 import Search from 'lucide-react/icons/search';
 import Filter from 'lucide-react/icons/filter';
 import X from 'lucide-react/icons/x';
-import Calendar from 'lucide-react/icons/calendar';
-import User from 'lucide-react/icons/user';
-import FolderOpen from 'lucide-react/icons/folder-open';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 
 interface SearchFilterPanelProps {
   filters: any;

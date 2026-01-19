@@ -73,7 +73,7 @@ export function ModelLoader({
         cancel();
       }
     };
-  }, [modelUrl]); // Only depend on modelUrl, not loadModel/cancel to prevent infinite loops
+  }, [modelUrl, cancel, loadModel, onLoadSuccess, state]);
 
   // Debug: Notify error callback
   useEffect(() => {

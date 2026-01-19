@@ -5,7 +5,6 @@ import { createClient } from '@/utils/supabase/server';
 import type {
   KakaoConnection,
   AlimTalkTemplate,
-  SendbirdMessage,
   SendbirdTokenResponse,
   AlimTalkSendResult,
 } from '@/types/kakao.types';
