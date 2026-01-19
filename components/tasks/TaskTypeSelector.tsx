@@ -29,7 +29,7 @@ const TAILWIND_COLORS: Record<string, { text: string; bg: string; border: string
 
 // Default fallback task types (used if database fetch fails)
 const DEFAULT_TASK_TYPES: Array<{
-  id: string;
+  id: TaskType;
   name: string;
   description: string;
   icon: typeof Hammer;
