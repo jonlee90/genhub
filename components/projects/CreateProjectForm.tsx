@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { createProject } from "@/app/actions/projects";
 import { getPhaseTemplates } from "@/app/actions/phase-templates";
 import { getProjectTypes } from "@/app/actions/project-types";
@@ -30,15 +30,19 @@ import Check from "lucide-react/icons/check";
 import ArrowRight from "lucide-react/icons/arrow-right";
 import ArrowLeft from "lucide-react/icons/arrow-left";
 import Sparkles from "lucide-react/icons/sparkles";
-import CheckCircle2 from "lucide-react/icons/check-circle-2";
 import Plus from "lucide-react/icons/plus";
 import { cn } from "@/lib/utils";
+import { CreateProjectHiddenFields } from "@/components/projects/create/CreateProjectHiddenFields";
+import { CreateProjectStatusAlerts } from "@/components/projects/create/CreateProjectStatusAlerts";
 import {
   formatPhoneNumber,
   extractPhoneDigits,
 } from "@/lib/hooks/usePhoneMask";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { ProjectTypeSelector, FormSubmissionOverlay } from "@/components/projects/form";
+import {
+  ProjectTypeSelector,
+  FormSubmissionOverlay,
+} from "@/components/projects/form";
 import type { PhaseTemplatesRow } from "@/types/db/tables/projects";
 import type { CreateProjectFormState } from "@/types/components/projects";
 
@@ -180,43 +184,43 @@ export function CreateProjectForm({
     return undefined;
   };
 
-  const validateField = (
-    fieldName: string,
-    value: string,
-  ): string | undefined => {
-    switch (fieldName) {
-      case "name":
-        if (!value || value.trim().length === 0)
-          return "Project name is required";
-        if (value.length > 200) return "Must be less than 200 characters";
-        return undefined;
-      case "client_name":
-        if (!value || value.trim().length === 0)
-          return "Client name is required";
-        if (value.length > 200) return "Must be less than 200 characters";
-        return undefined;
-      case "client_email":
-        return validateEmail(value);
-      case "client_phone":
-        return validatePhone(value);
-      case "address":
-        if (!value || value.trim().length === 0) return "Address is required";
-        return undefined;
-      case "zip_code":
-        return validateZipCode(value);
-      case "start_date":
-        if (!value) return "Start date is required";
-        return undefined;
-      case "end_date":
-        return validateEndDate(formValues.start_date, value);
-      case "budget":
-        return validateBudget(value);
-      default:
-        return undefined;
-    }
-  };
+  const validateField = useCallback(
+    (fieldName: string, value: string): string | undefined => {
+      switch (fieldName) {
+        case "name":
+          if (!value || value.trim().length === 0)
+            return "Project name is required";
+          if (value.length > 200) return "Must be less than 200 characters";
+          return undefined;
+        case "client_name":
+          if (!value || value.trim().length === 0)
+            return "Client name is required";
+          if (value.length > 200) return "Must be less than 200 characters";
+          return undefined;
+        case "client_email":
+          return validateEmail(value);
+        case "client_phone":
+          return validatePhone(value);
+        case "address":
+          if (!value || value.trim().length === 0) return "Address is required";
+          return undefined;
+        case "zip_code":
+          return validateZipCode(value);
+        case "start_date":
+          if (!value) return "Start date is required";
+          return undefined;
+        case "end_date":
+          return validateEndDate(formValues.start_date, value);
+        case "budget":
+          return validateBudget(value);
+        default:
+          return undefined;
+      }
+    },
+    [formValues.start_date],
+  );
 
-  const validateCurrentStep = (): boolean => {
+  const validateCurrentStep = useCallback((): boolean => {
     const errors: ValidationErrors = {};
     let hasErrors = false;
 
@@ -285,14 +289,17 @@ export function CreateProjectForm({
 
     setValidationErrors(errors);
     return !hasErrors;
-  };
+  }, [currentStep, formValues, validateField]);
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
-  const handleFieldBlur = useCallback((fieldName: string, value: string) => {
-    setTouchedFields((prev) => new Set(prev).add(fieldName));
-    const error = validateField(fieldName, value);
-    setValidationErrors((prev) => ({ ...prev, [fieldName]: error }));
-  }, []);
+  const handleFieldBlur = useCallback(
+    (fieldName: string, value: string) => {
+      setTouchedFields((prev) => new Set(prev).add(fieldName));
+      const error = validateField(fieldName, value);
+      setValidationErrors((prev) => ({ ...prev, [fieldName]: error }));
+    },
+    [validateField],
+  );
 
   const handleNext = useCallback(
     (e: React.MouseEvent) => {
@@ -313,7 +320,7 @@ export function CreateProjectForm({
         setCurrentStep(currentStep + 1);
       }
     },
-    [currentStep, formValues],
+    [currentStep, formValues, validateCurrentStep],
   );
 
   const handlePrevious = useCallback(() => {
@@ -323,13 +330,15 @@ export function CreateProjectForm({
     }
   }, [currentStep]);
 
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    const isValid = validateCurrentStep();
-    if (!isValid) {
-      e.preventDefault();
-      return;
-    }
-  }, []);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      const isValid = validateCurrentStep();
+      if (!isValid) {
+        e.preventDefault();
+      }
+    },
+    [validateCurrentStep],
+  );
 
   // Fetch project type configs on mount (for mapping to phase templates)
   // Only fetch when modal is open to avoid duplicate API calls
@@ -491,87 +500,27 @@ export function CreateProjectForm({
     >
       <form id="project-form" action={formAction} onSubmit={handleSubmit}>
         {/* Error/Success Messages */}
-        <AnimatePresence mode="wait">
-          {state.error && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="flex items-center gap-3 p-4 mb-5 bg-red-50 border border-red-200 rounded-xl text-red-700"
-            >
-              <AlertCircle className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-medium">{state.error}</span>
-            </motion.div>
-          )}
-          {success && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              className="flex items-center gap-3 p-4 mb-5 bg-green-50 border border-green-200 rounded-xl text-green-700"
-            >
-              <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-medium">
-                Project created successfully!
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <CreateProjectStatusAlerts
+          error={state.error || null}
+          success={success}
+        />
 
         {/* Hidden inputs to preserve form values across steps */}
-        {currentStep > 0 && (
-          <input
-            type="hidden"
-            name="project_type"
-            value={formValues.project_type}
-          />
-        )}
-        {currentStep > 1 && (
-          <>
-            <input type="hidden" name="name" value={formValues.name} />
-            <input
-              type="hidden"
-              name="description"
-              value={formValues.description}
-            />
-            <input
-              type="hidden"
-              name="client_name"
-              value={formValues.client_name}
-            />
-            <input
-              type="hidden"
-              name="client_email"
-              value={formValues.client_email}
-            />
-            <input
-              type="hidden"
-              name="client_phone"
-              value={formValues.client_phone}
-            />
-          </>
-        )}
-        {currentStep > 2 && (
-          <>
-            <input type="hidden" name="address" value={formValues.address} />
-            <input type="hidden" name="city" value={formValues.city} />
-            <input type="hidden" name="state" value={formValues.state} />
-            <input type="hidden" name="zip_code" value={formValues.zip_code} />
-          </>
-        )}
+        <CreateProjectHiddenFields
+          currentStep={currentStep}
+          projectType={projectType}
+          formValues={formValues}
+        />
 
         {/* Step 0: Project Type Selection */}
         {currentStep === 0 && (
-          <>
-            <input type="hidden" name="project_type" value={projectType} />
-            <ProjectTypeSelector
-              projectType={projectType}
-              onProjectTypeChange={handleProjectTypeChange}
-              phaseTemplates={phaseTemplates}
-              phaseTemplatesLoading={phaseTemplatesLoading}
-              disabled={isPending}
-            />
-          </>
+          <ProjectTypeSelector
+            projectType={projectType}
+            onProjectTypeChange={handleProjectTypeChange}
+            phaseTemplates={phaseTemplates}
+            phaseTemplatesLoading={phaseTemplatesLoading}
+            disabled={isPending}
+          />
         )}
 
         {/* Step 1: Project Details */}

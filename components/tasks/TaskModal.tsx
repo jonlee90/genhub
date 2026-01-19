@@ -9,50 +9,53 @@
  *
  * Uses useTaskFormState hook for centralized state management.
  */
-'use client';
+"use client";
 
-import React, { useState, useTransition, useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AnimatePresence, motion } from 'framer-motion';
+import React, { useState, useTransition, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   ClipboardList,
   Pencil,
   Loader2,
-  AlertCircle,
   CheckCircle2,
   ArrowRight,
   ArrowLeft,
   Plus,
   Trash2,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   createTask,
   updateTask,
   updateApprovalStatus,
   deleteTask,
-} from '@/app/actions/tasks';
-import { CreatorBadge } from '@/components/ui/CreatorBadge';
-import { TaskTypeBadge } from './TaskTypeSelector';
-import { getTaskTypeConfig, isFieldVisible } from '@/lib/config/task-type-fields';
-import { useToast } from '@/hooks/use-toast';
-import { useTaskFormState } from '@/hooks/useTaskFormState';
-import type { AssigneeOption as TaskAssigneeOption } from '@/app/actions/tasks';
-import { addProductToTask } from '@/app/actions/materials';
-import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
-import { getTaskExpenses, createExpenseFromTask } from '@/app/actions/expenses';
-import type { TaskExpense } from './TaskExpensesSection';
-import type { HomeDepotProduct } from '@/lib/services/home-depot-api';
-import type { TaskType, ApprovalStatus } from '@/types/db/enums';
-import type { TasksRow } from '@/types/db/tables/tasks';
+} from "@/app/actions/tasks";
+import { CreatorBadge } from "@/components/ui/CreatorBadge";
+import { TaskTypeBadge } from "./TaskTypeSelector";
+import {
+  getTaskTypeConfig,
+  isFieldVisible,
+} from "@/lib/config/task-type-fields";
+import { useToast } from "@/hooks/use-toast";
+import { useTaskFormState } from "@/hooks/useTaskFormState";
+import type { AssigneeOption as TaskAssigneeOption } from "@/app/actions/tasks";
+import { addProductToTask } from "@/app/actions/materials";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { getTaskExpenses, createExpenseFromTask } from "@/app/actions/expenses";
+import type { TaskExpense } from "./TaskExpensesSection";
+import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
+import type { TaskType, ApprovalStatus } from "@/types/db/enums";
+import type { TasksRow } from "@/types/db/tables/tasks";
 
 // Step components
-import { TaskTypeSelectionStep } from './modal/TaskTypeSelectionStep';
-import { TaskFormFieldsStep } from './modal/TaskFormFieldsStep';
-import { TaskAssigneeStep } from './modal/TaskAssigneeStep';
-import { TaskMaterialsExtrasStep } from './modal/TaskMaterialsExtrasStep';
-import type { AssigneeOption } from './PrimaryAssigneeSelector';
+import { TaskTypeSelectionStep } from "./modal/TaskTypeSelectionStep";
+import { TaskFormFieldsStep } from "./modal/TaskFormFieldsStep";
+import { TaskAssigneeStep } from "./modal/TaskAssigneeStep";
+import { TaskMaterialsExtrasStep } from "./modal/TaskMaterialsExtrasStep";
+import { TaskModalDeleteDialog } from "./modal/TaskModalDeleteDialog";
+import { TaskModalStatusAlerts } from "./modal/TaskModalStatusAlerts";
+import type { AssigneeOption } from "./PrimaryAssigneeSelector";
 
 type Task = TasksRow & {
   assignee?: {
@@ -117,7 +120,7 @@ interface TeamMember {
 interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   task?: Task | null;
   projects: Project[];
   teamMembers: TeamMember[];
@@ -145,7 +148,7 @@ function TaskModalForm({
   tasks = [],
   assignees,
   userRole,
-}: Omit<TaskModalProps, 'isOpen'>) {
+}: Omit<TaskModalProps, "isOpen">) {
   const router = useRouter();
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
@@ -180,14 +183,14 @@ function TaskModalForm({
         if (a.user) {
           return {
             id: a.user.id,
-            type: 'user' as const,
+            type: "user" as const,
             name: a.user.name,
             avatarUrl: a.user.avatar_url,
           };
         }
         return {
           id: a.subcontractor!.id,
-          type: 'subcontractor' as const,
+          type: "subcontractor" as const,
           name: a.subcontractor!.contact_name || a.subcontractor!.company_name,
           companyName: a.subcontractor!.company_name,
         };
@@ -197,7 +200,9 @@ function TaskModalForm({
   // Get primary assignee name for expense vendor_name
   const primaryAssigneeName = useMemo(() => {
     if (formState.primaryAssigneeId) {
-      const assignee = assigneeOptions.find((a) => a.id === formState.primaryAssigneeId);
+      const assignee = assigneeOptions.find(
+        (a) => a.id === formState.primaryAssigneeId,
+      );
       if (assignee?.name) return assignee.name;
     }
     if (assigneeOptions.length > 0) {
@@ -208,15 +213,15 @@ function TaskModalForm({
 
   // Editable expense category state
   const [expenseCategory, setExpenseCategory] = useState(() => {
-    if (!formState.taskType) return 'other';
+    if (!formState.taskType) return "other";
     const categoryMap: Record<string, string> = {
-      purchase: 'materials',
-      labor: 'labor',
-      admin: 'other',
-      approval: 'other',
-      general: 'other',
+      purchase: "materials",
+      labor: "labor",
+      admin: "other",
+      approval: "other",
+      general: "other",
     };
-    return categoryMap[formState.taskType] || 'other';
+    return categoryMap[formState.taskType] || "other";
   });
 
   // Fetch expenses for task
@@ -240,7 +245,7 @@ function TaskModalForm({
 
   // Fetch expenses when modal opens in edit mode
   useEffect(() => {
-    if (task?.id && mode === 'edit') {
+    if (task?.id && mode === "edit") {
       fetchExpenses();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -256,38 +261,41 @@ function TaskModalForm({
     setError(null);
 
     const formData = new FormData();
-    formData.append('title', formState.title);
-    formData.append('description', formState.description);
-    formData.append('project_id', formState.selectedProjectId);
-    formData.append('phase_id', formState.phaseId);
-    formData.append('assignee_id', formState.assigneeId);
-    formData.append('priority', formState.priority);
-    formData.append('start_date', formState.startDate);
-    formData.append('due_date', formState.dueDate);
-    formData.append('planned_cost', formState.plannedCost);
+    formData.append("title", formState.title);
+    formData.append("description", formState.description);
+    formData.append("project_id", formState.selectedProjectId);
+    formData.append("phase_id", formState.phaseId);
+    formData.append("assignee_id", formState.assigneeId);
+    formData.append("priority", formState.priority);
+    formData.append("start_date", formState.startDate);
+    formData.append("due_date", formState.dueDate);
+    formData.append("planned_cost", formState.plannedCost);
 
     if (formState.receiptPreview) {
-      formData.append('receipt_photo_url', formState.receiptPreview);
+      formData.append("receipt_photo_url", formState.receiptPreview);
     }
 
-    if (mode === 'create' && formState.taskType) {
-      formData.append('task_type', formState.taskType);
+    if (mode === "create" && formState.taskType) {
+      formData.append("task_type", formState.taskType);
     }
 
-    if (mode === 'edit' && task) {
-      formData.append('id', task.id);
-      formData.append('actual_cost', formState.actualCost);
-      formData.append('status', formState.status);
+    if (mode === "edit" && task) {
+      formData.append("id", task.id);
+      formData.append("actual_cost", formState.actualCost);
+      formData.append("status", formState.status);
     }
 
     if (formState.selectedAssignees.length > 0) {
-      formData.append('assignee_ids', JSON.stringify(formState.selectedAssignees));
+      formData.append(
+        "assignee_ids",
+        JSON.stringify(formState.selectedAssignees),
+      );
     }
 
     startTransition(async () => {
       try {
         const result =
-          mode === 'create'
+          mode === "create"
             ? await createTask(
                 { error: null, fieldErrors: null, success: false, task: null },
                 formData,
@@ -298,33 +306,40 @@ function TaskModalForm({
           setError(result.error);
         } else {
           // Associate temp materials for create mode
-          if (mode === 'create' && result?.task && formState.tempMaterials.length > 0) {
+          if (
+            mode === "create" &&
+            result?.task &&
+            formState.tempMaterials.length > 0
+          ) {
             try {
-              const materialPromises = formState.tempMaterials.map(async (tempMaterial) => {
-                const product: HomeDepotProduct = {
-                  id: tempMaterial.product_id,
-                  name: tempMaterial.product_name,
-                  sku: tempMaterial.sku,
-                  category: tempMaterial.category,
-                  price: tempMaterial.price,
-                  unitOfMeasure: tempMaterial.unit_of_measure,
-                  imageUrl: tempMaterial.image_url || '',
-                  stockStatus:
-                    (tempMaterial.stock_status as HomeDepotProduct['stockStatus']) || 'in_stock',
-                  description: '',
-                  manufacturer: '',
-                  productUrl: '',
-                  leadTimeDays: 0,
-                  specifications: {},
-                };
+              const materialPromises = formState.tempMaterials.map(
+                async (tempMaterial) => {
+                  const product: HomeDepotProduct = {
+                    id: tempMaterial.product_id,
+                    name: tempMaterial.product_name,
+                    sku: tempMaterial.sku,
+                    category: tempMaterial.category,
+                    price: tempMaterial.price,
+                    unitOfMeasure: tempMaterial.unit_of_measure,
+                    imageUrl: tempMaterial.image_url || "",
+                    stockStatus:
+                      (tempMaterial.stock_status as HomeDepotProduct["stockStatus"]) ||
+                      "in_stock",
+                    description: "",
+                    manufacturer: "",
+                    productUrl: "",
+                    leadTimeDays: 0,
+                    specifications: {},
+                  };
 
-                return addProductToTask(
-                  product,
-                  result.task.id,
-                  result.task.project_id,
-                  tempMaterial.quantity,
-                );
-              });
+                  return addProductToTask(
+                    product,
+                    result.task.id,
+                    result.task.project_id,
+                    tempMaterial.quantity,
+                  );
+                },
+              );
 
               await Promise.all(materialPromises);
             } catch {
@@ -334,7 +349,7 @@ function TaskModalForm({
 
           // Auto-create expense if enabled
           if (
-            mode === 'edit' &&
+            mode === "edit" &&
             formState.autoExpenseEnabled &&
             task?.id &&
             expenses.length === 0 &&
@@ -345,20 +360,20 @@ function TaskModalForm({
               const expenseResult = await createExpenseFromTask(task.id);
               if (expenseResult.data) {
                 toast({
-                  title: 'Expense Created',
+                  title: "Expense Created",
                   description: `Expense for $${parseFloat(formState.actualCost).toFixed(2)} has been created from this task.`,
-                  variant: 'default',
+                  variant: "default",
                 });
                 await fetchExpenses();
               } else if (expenseResult.error) {
                 toast({
-                  title: 'Warning',
-                  description: 'Task saved but expense creation failed.',
-                  variant: 'destructive',
+                  title: "Warning",
+                  description: "Task saved but expense creation failed.",
+                  variant: "destructive",
                 });
               }
             } catch {
-              console.error('Error creating expense from task');
+              console.error("Error creating expense from task");
             }
           }
 
@@ -370,7 +385,7 @@ function TaskModalForm({
           }, 500);
         }
       } catch (err) {
-        setError('An unexpected error occurred');
+        setError("An unexpected error occurred");
       }
     });
   };
@@ -400,7 +415,7 @@ function TaskModalForm({
         }, 500);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError("An unexpected error occurred");
     } finally {
       setIsApprovalPending(false);
     }
@@ -421,9 +436,9 @@ function TaskModalForm({
         setShowDeleteConfirm(false);
       } else {
         toast({
-          title: 'Task Deleted',
-          description: 'The task has been successfully deleted.',
-          variant: 'default',
+          title: "Task Deleted",
+          description: "The task has been successfully deleted.",
+          variant: "default",
         });
         setTimeout(() => {
           onSuccess?.();
@@ -432,7 +447,7 @@ function TaskModalForm({
         }, 500);
       }
     } catch (err) {
-      setError('An unexpected error occurred while deleting the task');
+      setError("An unexpected error occurred while deleting the task");
       setShowDeleteConfirm(false);
     } finally {
       setIsDeleting(false);
@@ -440,7 +455,7 @@ function TaskModalForm({
   };
 
   // Render Step 1: Task Type Selection (Create mode only)
-  if (mode === 'create' && formState.currentStep === 1) {
+  if (mode === "create" && formState.currentStep === 1) {
     return (
       <ResponsiveModal
         isOpen={true}
@@ -450,7 +465,7 @@ function TaskModalForm({
         subtitle="Choose the type of task you want to create"
         theme="default"
         maxWidth="2xl"
-        snapPoints={['half', 'full']}
+        snapPoints={["half", "full"]}
         initialSnapPoint="half"
         rightActions={
           <Button
@@ -476,36 +491,43 @@ function TaskModalForm({
   }
 
   // Render Step 2 (Create mode) or Edit mode
-  const modalIcon = mode === 'create' ? Plus : Pencil;
-  const modalTitleText = mode === 'create' ? 'Add Task' : 'Edit Task';
+  const modalIcon = mode === "create" ? Plus : Pencil;
+  const modalTitleText = mode === "create" ? "Add Task" : "Edit Task";
 
   const modalTitle = (
     <div className="flex items-center gap-2">
       <span>{modalTitleText}</span>
-      {mode === 'edit' && task?.task_type && <TaskTypeBadge type={task.task_type} />}
-      {mode === 'create' && formState.taskType && <TaskTypeBadge type={formState.taskType} />}
+      {mode === "edit" && task?.task_type && (
+        <TaskTypeBadge type={task.task_type} />
+      )}
+      {mode === "create" && formState.taskType && (
+        <TaskTypeBadge type={formState.taskType} />
+      )}
     </div>
   );
 
-  const approvalBadge =
-    mode === 'edit' &&
-    task?.task_type === 'approval' &&
+  const approvalBadge = mode === "edit" &&
+    task?.task_type === "approval" &&
     task.approval_status &&
-    formState.config.styling.headerBadge === 'approval_status' && (
+    formState.config.styling.headerBadge === "approval_status" && (
       <span
         className={cn(
-          'px-2.5 py-1 rounded-full text-xs font-semibold',
-          task.approval_status === 'pending' && 'bg-amber-100 text-amber-800',
-          task.approval_status === 'approved' && 'bg-emerald-100 text-emerald-800',
-          task.approval_status === 'rejected' && 'bg-red-100 text-red-800',
-          task.approval_status === 'revision_requested' && 'bg-orange-100 text-orange-800',
+          "px-2.5 py-1 rounded-full text-xs font-semibold",
+          task.approval_status === "pending" && "bg-amber-100 text-amber-800",
+          task.approval_status === "approved" &&
+            "bg-emerald-100 text-emerald-800",
+          task.approval_status === "rejected" && "bg-red-100 text-red-800",
+          task.approval_status === "revision_requested" &&
+            "bg-orange-100 text-orange-800",
         )}
       >
-        {task.approval_status.replace('_', ' ').toUpperCase()}
+        {task.approval_status.replace("_", " ").toUpperCase()}
       </span>
     );
 
-  const selectedProject = projects.find((p) => p.id === formState.selectedProjectId);
+  const selectedProject = projects.find(
+    (p) => p.id === formState.selectedProjectId,
+  );
 
   return (
     <ResponsiveModal
@@ -513,15 +535,17 @@ function TaskModalForm({
       onClose={onClose}
       icon={modalIcon}
       title={modalTitleText}
-      subtitle={mode === 'edit' && selectedProject ? selectedProject.name : undefined}
+      subtitle={
+        mode === "edit" && selectedProject ? selectedProject.name : undefined
+      }
       badges={approvalBadge || undefined}
       theme="default"
       maxWidth="2xl"
-      snapPoints={['half', 'full']}
+      snapPoints={["half", "full"]}
       initialSnapPoint="full"
-      formKey={mode === 'edit' && task ? `edit-${task.id}` : 'create'}
+      formKey={mode === "edit" && task ? `edit-${task.id}` : "create"}
       leftActions={
-        mode === 'create' ? (
+        mode === "create" ? (
           <Button
             type="button"
             variant="ghost"
@@ -534,7 +558,7 @@ function TaskModalForm({
           </Button>
         ) : (
           <div className="flex items-center gap-2">
-            {(userRole === 'admin' || userRole === 'project_manager') && (
+            {(userRole === "admin" || userRole === "project_manager") && (
               <Button
                 type="button"
                 variant="ghost"
@@ -559,17 +583,19 @@ function TaskModalForm({
         <Button
           type="submit"
           form="task-form"
-          disabled={isPending || !formState.selectedProjectId || !formState.title.trim()}
+          disabled={
+            isPending || !formState.selectedProjectId || !formState.title.trim()
+          }
           className="h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700 active:scale-[0.98] transition-transform"
         >
           {isPending ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {mode === 'create' ? 'Creating...' : 'Saving...'}
+              {mode === "create" ? "Creating..." : "Saving..."}
             </>
           ) : (
             <>
-              {mode === 'create' ? (
+              {mode === "create" ? (
                 <>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Task
@@ -588,32 +614,7 @@ function TaskModalForm({
       <form id="task-form" onSubmit={handleSubmit}>
         <div className="space-y-5">
           {/* Error/Success Messages */}
-          <AnimatePresence mode="wait">
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700"
-              >
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium">{error}</span>
-              </motion.div>
-            )}
-            {success && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700"
-              >
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-                <span className="text-sm font-medium">
-                  Task {mode === 'create' ? 'created' : 'updated'} successfully!
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <TaskModalStatusAlerts error={error} success={success} mode={mode} />
 
           {/* Step 2: Form Fields */}
           <TaskFormFieldsStep
@@ -662,7 +663,9 @@ function TaskModalForm({
             assigneeOptions={assigneeOptions}
             assignees={assignees}
             showPrimarySelector={
-              mode === 'edit' && parseFloat(formState.actualCost) > 0 && assigneeOptions.length > 1
+              mode === "edit" &&
+              parseFloat(formState.actualCost) > 0 &&
+              assigneeOptions.length > 1
             }
             disabled={isPending}
           />
@@ -681,14 +684,14 @@ function TaskModalForm({
               formState.setReceiptFile(file);
               formState.setReceiptPreview(preview);
             }}
-            showAutoExpense={mode === 'edit'}
+            showAutoExpense={mode === "edit"}
             autoExpenseEnabled={formState.autoExpenseEnabled}
             onAutoExpenseToggle={formState.setAutoExpenseEnabled}
             actualCost={parseFloat(formState.actualCost) || 0}
             primaryAssigneeName={primaryAssigneeName}
             expenseCategory={expenseCategory}
             onExpenseCategoryChange={setExpenseCategory}
-            showExpenses={mode === 'edit'}
+            showExpenses={mode === "edit"}
             expenses={expenses}
             expensesLoading={expensesLoading}
             onExpenseAdded={handleExpenseAdded}
@@ -701,66 +704,12 @@ function TaskModalForm({
       </form>
 
       {/* Delete Confirmation Dialog */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50"
-              onClick={() => !isDeleting && setShowDeleteConfirm(false)}
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative bg-white rounded-2xl shadow-xl p-6 max-w-md w-full"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                  <Trash2 className="w-6 h-6 text-red-600" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">Delete Task</h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    Are you sure you want to delete this task? This action cannot be undone.
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setShowDeleteConfirm(false)}
-                      disabled={isDeleting}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={handleDeleteTask}
-                      disabled={isDeleting}
-                      className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-                    >
-                      {isDeleting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Deleting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <TaskModalDeleteDialog
+        isOpen={showDeleteConfirm}
+        isDeleting={isDeleting}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDeleteTask}
+      />
     </ResponsiveModal>
   );
 }

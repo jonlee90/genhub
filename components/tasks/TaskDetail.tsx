@@ -18,8 +18,6 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   Select,
@@ -28,33 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertTriangle,
-  Calendar,
-  User,
-  Clock,
-  FileText,
-  Activity,
-  Package,
-  Trash2,
-  Ban,
-  RotateCcw,
-} from "lucide-react";
+import { Activity, Ban, Calendar, Clock, FileText, Trash2 } from "lucide-react";
 import { TaskDetailsSection } from "./detail/TaskDetailsSection";
 import { TaskApprovalSection } from "./detail/TaskApprovalSection";
 import { TaskDependenciesSection } from "./detail/TaskDependenciesSection";
 import { TaskMaterialsSection } from "./detail/TaskMaterialsSection";
 import { TaskActivityLog } from "./TaskActivityLog";
-import { TaskTypeBadge } from "./TaskTypeSelector";
 import { BlockedReasonModal } from "./BlockedReasonModal";
-import { ErrorBanner, SuccessBanner } from "@/components/shared/ErrorBanner";
+import { TaskDetailDeleteModalContent } from "./detail/TaskDetailDeleteModalContent";
+import { TaskDetailHeader } from "./detail/TaskDetailHeader";
+import { TaskDetailStatusBanners } from "./detail/TaskDetailStatusBanners";
+import { TaskDetailTabs } from "./detail/TaskDetailTabs";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
-import { cn, formatDate } from "@/lib/utils";
-import {
-  TASK_STATUS_CONFIG,
-  TASK_PRIORITY_CONFIG,
-} from "@/lib/config/task-colors";
 import type {
   TaskStatus,
   TaskPriority,
@@ -253,105 +237,25 @@ export function TaskDetail({
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="space-y-4"
-      >
-        {/* Title and Actions */}
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-4xl font-black text-construction-blue leading-tight mb-3 tracking-tight">
-              {task.title}
-            </h1>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                <span>Created by {task.creator?.name || "Unknown"}</span>
-              </div>
-              <span className="text-gray-400">•</span>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{formatDate(task.created_at)}</span>
-              </div>
-            </div>
-          </div>
+      <div className="space-y-4">
+        <TaskDetailHeader
+          title={task.title}
+          creatorName={task.creator?.name || null}
+          createdAt={task.created_at}
+          status={task.status}
+          priority={task.priority}
+          taskType={taskType}
+          isOverdue={Boolean(isOverdue)}
+          canDelete={canDelete}
+          onDelete={handleDeleteClick}
+          statusIcon={StatusIcon}
+        />
 
-          {canDelete && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDeleteClick}
-              className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          )}
-        </div>
-
-        {/* Badges */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <TaskTypeBadge type={taskType} />
-
-          <Badge
-            className={cn(
-              "px-4 py-2 text-sm font-bold border-2 flex items-center gap-2",
-              TASK_STATUS_CONFIG[task.status as TaskStatus].badgeColor,
-            )}
-          >
-            <div
-              className={cn(
-                "h-2 w-2 rounded-full",
-                TASK_STATUS_CONFIG[task.status as TaskStatus].dotColor,
-              )}
-            />
-            <StatusIcon className="h-4 w-4" />
-            {TASK_STATUS_CONFIG[task.status as TaskStatus].label}
-          </Badge>
-
-          <Badge
-            className={cn(
-              "px-4 py-2 text-sm font-bold border-2",
-              TASK_PRIORITY_CONFIG[task.priority as TaskPriority].badgeColor,
-            )}
-          >
-            {TASK_PRIORITY_CONFIG[task.priority as TaskPriority].label} Priority
-          </Badge>
-
-          {isOverdue && (
-            <Badge
-              variant="destructive"
-              className="px-4 py-2 text-sm font-bold border-2 border-red-300 flex items-center gap-2"
-            >
-              <AlertTriangle className="h-4 w-4" />
-              Overdue
-            </Badge>
-          )}
-        </div>
-
-        {/* Error/Success Messages */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <ErrorBanner error={error} onDismiss={clearError} />
-            </motion.div>
-          )}
-          {successMessage && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-            >
-              <SuccessBanner message={successMessage} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <TaskDetailStatusBanners
+          error={error}
+          successMessage={successMessage}
+          onDismiss={clearError}
+        />
 
         {/* Status Selector */}
         {canEdit && (
@@ -373,7 +277,7 @@ export function TaskDetail({
             </Select>
           </div>
         )}
-      </motion.div>
+      </div>
 
       {/* Main Content Grid */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -385,60 +289,14 @@ export function TaskDetail({
           className="lg:col-span-2 space-y-6"
         >
           {/* Tab Navigation */}
-          <div className="flex items-center gap-2 border-b-2 border-gray-200">
-            <button
-              onClick={handleOverviewTab}
-              className={cn(
-                "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
-                activeTab === "overview"
-                  ? "text-construction-blue border-construction-blue"
-                  : "text-gray-500 border-transparent hover:text-gray-700",
-              )}
-            >
-              <FileText className="h-4 w-4" />
-              Overview
-            </button>
-            <button
-              onClick={handleMaterialsTab}
-              className={cn(
-                "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
-                activeTab === "materials"
-                  ? "text-construction-blue border-construction-blue"
-                  : "text-gray-500 border-transparent hover:text-gray-700",
-              )}
-            >
-              <Package className="h-4 w-4" />
-              Materials
-            </button>
-            <button
-              onClick={handleActivityTab}
-              className={cn(
-                "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
-                activeTab === "activity"
-                  ? "text-construction-blue border-construction-blue"
-                  : "text-gray-500 border-transparent hover:text-gray-700",
-              )}
-            >
-              <Activity className="h-4 w-4" />
-              Activity
-              {activity.length > 0 && (
-                <span className="ml-1 px-2 py-0.5 bg-construction-blue text-white rounded-full text-xs font-bold">
-                  {activity.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={handleDependenciesTab}
-              className={cn(
-                "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
-                activeTab === "dependencies"
-                  ? "text-construction-blue border-construction-blue"
-                  : "text-gray-500 border-transparent hover:text-gray-700",
-              )}
-            >
-              Dependencies
-            </button>
-          </div>
+          <TaskDetailTabs
+            activeTab={activeTab}
+            activityCount={activity.length}
+            onOverview={handleOverviewTab}
+            onMaterials={handleMaterialsTab}
+            onActivity={handleActivityTab}
+            onDependencies={handleDependenciesTab}
+          />
 
           {/* Tab Content */}
           <AnimatePresence mode="wait">
@@ -471,9 +329,7 @@ export function TaskDetail({
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <TaskMaterialsSection
-                  taskId={task.id}
-                />
+                <TaskMaterialsSection taskId={task.id} />
               </motion.div>
             )}
 
@@ -538,33 +394,12 @@ export function TaskDetail({
         title="Delete Task"
         icon={Trash2}
       >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            You are about to delete the task{" "}
-            <strong>&quot;{task.title}&quot;</strong>.
-          </p>
-          <p className="text-gray-700">
-            All activity history, dependencies, and associated data will be
-            permanently removed.
-          </p>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={handleDeleteCancel}
-              className="border-2 font-bold"
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting}
-              className="bg-red-600 hover:bg-red-700 font-bold"
-            >
-              {isDeleting ? "Deleting..." : "Delete Task"}
-            </Button>
-          </div>
-        </div>
+        <TaskDetailDeleteModalContent
+          title={task.title}
+          isDeleting={isDeleting}
+          onCancel={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+        />
       </ResponsiveModal>
     </div>
   );
