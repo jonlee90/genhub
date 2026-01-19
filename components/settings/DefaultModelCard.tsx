@@ -1,22 +1,21 @@
 'use client';
 
-import { useState, useTransition, useCallback } from 'react';
+import { useState, useTransition, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Home,
-  Coffee,
-  UtensilsCrossed,
-  Building2,
-  Factory,
-  Upload,
-  Eye,
-  RotateCcw,
-  Check,
-  AlertCircle,
-  Loader2,
-  LucideIcon,
-} from 'lucide-react';
+// Direct Lucide imports for performance
+import Home from 'lucide-react/icons/home';
+import Coffee from 'lucide-react/icons/coffee';
+import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
+import Building2 from 'lucide-react/icons/building-2';
+import Factory from 'lucide-react/icons/factory';
+import Upload from 'lucide-react/icons/upload';
+import Eye from 'lucide-react/icons/eye';
+import RotateCcw from 'lucide-react/icons/rotate-ccw';
+import Check from 'lucide-react/icons/check';
+import AlertCircle from 'lucide-react/icons/alert-circle';
+import Loader2 from 'lucide-react/icons/loader-2';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/format-utils';
 import { ModelUploadModal } from './ModelUploadModal';
@@ -78,21 +77,26 @@ export function DefaultModelCard({
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Determine which icon to use
-  const iconKey = (iconName || projectTypeName).toLowerCase().replace(/\s+/g, '');
-  const Icon = ICON_MAP[iconKey] || Building2;
+  // Determine which icon to use (memoized to prevent recalculation on every render)
+  const Icon = useMemo(() => {
+    const key = (iconName || projectTypeName).toLowerCase().replace(/\s+/g, '');
+    return ICON_MAP[key] || Building2;
+  }, [iconName, projectTypeName]);
 
   // Determine current status
   const isUsingCustom = !!companyCustom;
   const currentModel = isUsingCustom ? companyCustom : systemDefault;
 
-  // Handle preview
+  // Handle preview (fixed dependencies - removed derived state)
   const handlePreview = useCallback(() => {
-    if (currentModel) {
-      setPreviewUrl(isUsingCustom ? companyCustom!.xktUrl : systemDefault!.xkt_file_url);
+    if (isUsingCustom && companyCustom) {
+      setPreviewUrl(companyCustom.xktUrl);
+      setShowPreviewModal(true);
+    } else if (!isUsingCustom && systemDefault) {
+      setPreviewUrl(systemDefault.xkt_file_url);
       setShowPreviewModal(true);
     }
-  }, [currentModel, isUsingCustom, companyCustom, systemDefault]);
+  }, [isUsingCustom, companyCustom, systemDefault]);
 
   return (
     <>

@@ -12,6 +12,7 @@ import {
   Package,
   Receipt,
   Plus,
+  Menu as MenuIcon,
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -114,10 +115,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
         className={cn(
           "fixed bottom-0 left-0 right-0 z-40 md:hidden",
           "bg-white border-t border-gray-200 shadow-construction-lg",
+          "safe-bottom", // Apply safe area bottom padding
         )}
-        style={{
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
       >
         {/* Top accent line - construction blue */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-construction-blue via-construction-accent to-construction-blue" />
@@ -156,13 +155,17 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                       )}
                     >
                       {isLogoItem ? (
-                        <Image
-                          src="/icon-192.png"
-                          alt="GenHub Logo"
-                          width={20}
-                          height={20}
-                          className="object-contain"
-                        />
+                        active ? (
+                          <MenuIcon className="w-5 h-5" />
+                        ) : (
+                          <Image
+                            src="/icon-192.png"
+                            alt="GenHub Logo"
+                            width={20}
+                            height={20}
+                            className="object-contain"
+                          />
+                        )
                       ) : Icon ? (
                         <Icon className="w-5 h-5" />
                       ) : null}

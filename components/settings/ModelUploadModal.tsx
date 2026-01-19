@@ -4,7 +4,10 @@ import { useState, useTransition, useCallback } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { FileUploadPanel } from "@/components/ui/FileUploadPanel";
-import { Upload, AlertCircle, Loader2 } from "lucide-react";
+// Direct Lucide imports for performance
+import Upload from "lucide-react/icons/upload";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import Loader2 from "lucide-react/icons/loader-2";
 import { formatFileSize } from "@/lib/format-utils";
 import { uploadCompanyDefaultModel } from "@/app/actions/default-models";
 import { useToast } from "@/hooks/use-toast";
