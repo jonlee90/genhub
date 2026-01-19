@@ -280,48 +280,6 @@ export function InstallPrompt() {
                   ? "iOS: use Add to Home Screen"
                   : "Chrome and Edge only"}
               </p>
-
-              {/* Action buttons */}
-              <div className="flex flex-col gap-2.5">
-                {/* Primary install button */}
-                <motion.button
-                  onClick={handleInstallClick}
-                  className="w-full flex items-center justify-center gap-2.5 px-5 py-3.5 bg-construction-blue hover:bg-construction-blue/90 text-white rounded-md font-bold text-sm uppercase tracking-wide transition-colors shadow-construction relative overflow-hidden group"
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                >
-                  {/* Animated background shimmer */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                    initial={{ x: "-100%" }}
-                    whileHover={{ x: "100%" }}
-                    transition={{ duration: 0.6 }}
-                  />
-                  <Download className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">Install Now</span>
-                </motion.button>
-
-                {/* Secondary actions */}
-                <div className="flex gap-2.5">
-                  <button
-                    onClick={handleDismiss}
-                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors"
-                  >
-                    Later
-                  </button>
-                  <button
-                    onClick={handleDontShowAgain}
-                    className="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md font-semibold text-xs uppercase tracking-wide transition-colors"
-                  >
-                    Don't Show Again
-                  </button>
-                </div>
-              </div>
-
-              {/* Browser compatibility note */}
-              <p className="text-xs text-gray-400 mt-3 font-medium">
-                Chrome and Edge only
-              </p>
             </div>
 
             {/* Bottom accent bar */}
