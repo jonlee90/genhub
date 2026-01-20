@@ -116,7 +116,7 @@
   - Add "Set as Cover" button for upload photos that are not primary
   - Add "Remove as Cover" button when photo is primary
   - Hide both buttons for receipt photos
-  - Use BaseModal patterns for button styling
+  - Use ResponsiveModal patterns for button styling
 - **Acceptance:**
   - [ ] Current cover indicator shows when viewing primary photo
   - [ ] "Set as Cover" button visible for non-primary upload photos

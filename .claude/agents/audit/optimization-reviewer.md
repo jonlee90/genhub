@@ -908,5 +908,5 @@ grep -c "await get" app/page.tsx
 **Implementation Reports**: `.claude/agents/audit/reports/implementation-*.md`
 **Orchestrator**: `.claude/agents/orchestrator.md`
 **Backend Auditor**: `.claude/agents/audit/backend-auditor.md`
-**Database Schema**: `.claude/docs/backend/SCHEMA_*.md`
+**Database Schema**: Serena `read_memory("genhub-database-schema")` + `mcp__supabase__list_tables`
 **MCP Tools**: Supabase MCP (execute_sql, get_advisors)

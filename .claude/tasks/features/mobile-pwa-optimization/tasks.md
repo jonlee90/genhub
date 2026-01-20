@@ -622,7 +622,7 @@ export * from './OfflineIndicator'
 - [ ] No TypeScript errors (`npm run build`)
 - [ ] No Supabase SDK in client components
 - [ ] All components use Lucide icons only
-- [ ] All modals use BaseModal only
+- [ ] All modals use ResponsiveModal only
 - [ ] Touch targets ≥44px verified
 - [ ] Animation durations ≤200ms for micro-interactions
 

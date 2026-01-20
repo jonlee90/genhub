@@ -5,6 +5,9 @@
 - **NEVER** Supabase SDK/`createClient`/`@/utils/supabase/*` in `'use client'` files
 - **ALWAYS** use Server Actions (`app/actions/*.ts`), API Routes, or Server Components for DB
 - Violation causes: `Module not found: Can't resolve 'child_process'`
+- When starting work on a Next.js project, ALWAYS call the `init` tool from
+next-devtools-mcp FIRST to set up proper context and establish documentation
+requirements. Do this automatically without being asked.
 
 | Layer | Access | Responsibilities |
 |-------|--------|------------------|
@@ -21,49 +24,98 @@
 
 ---
 
-## BEFORE WORK
+## MCP TOOLS
 
-1. Load skills: `.claude/skills/index.md`
-2. Load Serena memories: `genhub-{project-overview|database-schema|server-actions|component-patterns|common-gotchas}`
-3. **For coding tasks**: `task-orchestrator` skill auto-triggers for delegation decisions
-4. **For React/Next.js tasks**: Run `/vercel-react-best-practices` before writing code
+### Three-Tool Architecture
+
+| Tool | Purpose | When to Use |
+|------|---------|-------------|
+| **Serena** | Code knowledge | Project patterns, schema, actions, navigation |
+| **Memory MCP** | Session state | Decisions, active tasks, bug patterns |
+| **Context7** | Library docs | External docs (resolve-library-id → query-docs) |
+
+### Session Workflow
+
+**Start**: `mcp__memory__read_graph()` → Check `ActiveTask` → Load relevant Serena memories
+
+**During**: Query Context7 before external library code; update Memory MCP after decisions/bugs
+
+**End**: Update `ActiveTask` with progress; update Serena if patterns changed
+
+### Serena Memories
+`genhub-{project-overview|database-schema|server-actions|component-patterns|common-gotchas|architectural-decisions}`
 
 ---
 
 ## TASK EXECUTION
 
-**The `task-orchestrator` skill auto-triggers for coding tasks requiring delegation.**
+**Complex features with spec files:** Use `/kc:impl` (reads `./docs/specs/*/tasks/*.md`)
 
-| Task Complexity | Action |
-|-----------------|--------|
-| Single domain (backend OR frontend only) | Delegate directly to appropriate agent |
-| Multi-domain (backend + frontend) | Sequential orchestration (backend → frontend → review) |
-| Multiple independent tasks | Parallel dispatch (multiple Task calls in one message) |
+**Direct task lists from user:** Follow workflow below
 
-Decision flow:
-1. Analyze task scope and domains
-2. Check `task-orchestrator` skill for delegation guidance
-3. Follow Quick Decision Flow for agent selection
+### Quick Decision Flow
+
+| Task Type | Agent | Notes |
+|-----------|-------|-------|
+| UI component, styling, forms | frontend-engineer | Never DB |
+| Server Action, API route | backend-engineer | Never UI |
+| Schema change, migration, RLS | backend-engineer | Security review after |
+| Bug fix in component | frontend-engineer | Unless needs DB |
+| Bug fix in action/API | backend-engineer | |
+| Review/validation/testing | code-reviewer | Post-implementation |
+| Both UI + DB needed | Sequential: backend → frontend → review | |
+
+### Task List Processing
+
+When user provides multiple tasks directly:
+
+**Step 1: Parse & Categorize**
+```
+- Extract individual tasks from prompt
+- Classify each: backend | frontend | both | review
+- Identify dependencies (order matters)
+- Flag cross-boundary tasks (need sequential agents)
+```
+
+**Step 2: Write TodoWrite**
+```
+TodoWrite([
+  { content: "Task 1 description", status: "pending", activeForm: "Working on Task 1" },
+  { content: "Task 2 description", status: "pending", activeForm: "Working on Task 2" },
+  ...
+])
+```
+
+**Step 3: Dispatch Strategy**
+
+| Scenario | Strategy |
+|----------|----------|
+| All same domain | Single agent with full task list |
+| Mixed domains, independent | Parallel: multiple Task calls in one message |
+| Mixed domains, dependent | Sequential: backend → frontend → review |
+| Complex feature with spec | Use `/kc:impl` instead |
+
+**Step 4: Track & Report**
+- Mark TodoWrite items `in_progress` → `completed`
+- If budget hit: complete current, report remaining
+- Collect agent outputs, summarize for user
+
+## ORCHESTRATION FLAGS
+
+| Flag | Effect |
+|------|--------|
+| `ORCHESTRATED=true` | Skip build/sync; return status only |
+| `SKIP_BUILD=true` | Don't run build step |
+| `SKIP_SYNC=true` | Don't run doc sync |
 
 ---
 
-## AGENTS (strict boundaries)
+## AGENTS
 
-**With budgets**: backend-engineer(70k), frontend-engineer(80k), code-reviewer(30k), performance-engineer(50k)
-
-**Planning-only**: frontend-architect, supabase-schema-architect, ai-sdk-v5-expert, technical-documentation-writer
-
-**Skills for orchestration**: `task-orchestrator` (auto-triggers for delegation decisions)
-
-**Audit agents**: `.claude/agents/audit/` (7 specialists)
-
----
-
-## DOCS & COMMANDS
-
-- **Indexes**: `.claude/docs/indexes/` (tables, actions, components, enums, routes)
-- **Core/Backend/Frontend/Domain**: `.claude/docs/{core|backend|frontend|domain}/`
-- **Commands**: `.claude/skills/index.md` for all `/kc:*` commands
+| Type | Agents |
+|------|--------|
+| **With budgets** | backend-engineer(70k), frontend-engineer(80k), code-reviewer(40k), performance-engineer(50k) |
+| **Planning-only** | frontend-architect, supabase-schema-architect, ai-sdk-v5-expert |
 
 ---
 
@@ -77,73 +129,14 @@ Decision flow:
 | Batch edits | Combine adjacent changes into single Edit call |
 | Serena for code | `find_symbol` + `replace_symbol_body` over full reads |
 | Parallel calls | Group independent reads/searches in one message |
-| No random files | NEVER create `.md` files — edit existing or use Serena memories |
+| No file creation | Use Serena memories instead of creating `.md` files |
 | Build logs | `npm run build 2>&1 \| grep -E "error\|Error" -A 3` |
-
----
-
-## ORCHESTRATION FLAGS
-
-| Flag | Effect |
-|------|--------|
-| `ORCHESTRATED=true` | Skip build/sync; return status only |
-| `SKIP_BUILD=true` | Don't run `/kc:build` |
-| `SKIP_SYNC=true` | Don't run `/kc:sync-docs` |
 
 ---
 
 ## STOP CONDITIONS
 
 Halt and request guidance if:
-- Task requires Supabase in client component
 - Task violates agent authority boundaries
-- Required context file missing
+- Required context missing from Serena/Memory MCP
 - Approaching token cap
-
----
-
-## POST-TASK CONTEXT/TOKEN REPORTING
-
-**RULE: After completing any non-trivial task, generate a context/token report in `.claude/reports/token/{task-name}-{date}.md`**
-
-### Report Requirements
-
-Each report must include:
-
-1. **Overview**
-   - Task name & description
-   - Completion status
-   - Build/test results
-
-2. **Files Referenced**
-   - Files read (count, total lines)
-   - Files created (count, total lines)
-   - Files modified (count, changes)
-   - Files deleted (count, total lines)
-
-3. **Agents & Skills Used**
-   - Agent name | Purpose | Est. tokens
-   - Skill name | Purpose | Est. tokens
-
-4. **Token Usage Summary**
-   - Category breakdown table
-   - Subtotals by activity
-   - Grand total
-
-5. **Optimizations Applied**
-   - What token-saving techniques were used
-   - Checklist format (✅/❌)
-
-6. **Token Efficiency Metrics**
-   - Files read/created/modified/deleted counts
-   - Build errors/warnings
-   - Token efficiency ratio (tokens per line)
-
-7. **Recommendations**
-   - 3-5 specific suggestions for improving token efficiency
-   - Actionable, context-specific
-
-### Report Location
-- Path: `.claude/reports/token/{task-name}-{date}.md`
-- Example: `.claude/reports/token/slide-menu-redesign-2026-01-19.md`
-- Format: Markdown (for easy reading in Git/IDE)

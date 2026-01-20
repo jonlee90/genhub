@@ -187,10 +187,10 @@ ls supabase/migrations/*add_index_projects*.sql
 - Estimate ~1000 tokens per step (read file, execute, verify)
 - If estimated > 30k tokens, STOP and request codex split
 
-### 5. Load Required Skills (if specified)
+### 5. Load Context (if specified)
 ```
 # Only if codex specifies
-Load from: .claude/skills/[skill-name].md
+Serena: read_memory("genhub-{relevant-memory}")
 ```
 
 ---
@@ -910,5 +910,5 @@ Request: Provide complete codex with exact code for all steps
 **Codex Location**: `.claude/agents/audit/codexes/[CODEX-ID].md`
 **Report Location**: `.claude/agents/audit/reports/codex-execution-[CODEX-ID].md`
 **Orchestrator**: `.claude/agents/orchestrator.md`
-**Backend Skill**: `.claude/skills/backend-engineer.md` (for patterns if needed)
-**Frontend Skill**: `.claude/skills/frontend-engineer.md` (for patterns if needed)
+**Backend Patterns**: Serena `read_memory("genhub-server-actions")`
+**Frontend Patterns**: Serena `read_memory("genhub-component-patterns")`

@@ -39,7 +39,7 @@ type LegacyPropsB = {
 
 export function LegacyModal({ open, onDismiss, ...props }: LegacyPropsB) {
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={open ?? false}
       onClose={onDismiss ?? (() => {})}
       {...props}
@@ -69,15 +69,15 @@ When migrating from compound components to slot-based.
 
 ```typescript
 // Option A: Convert to slots
-<BaseModal
+<ResponsiveModal
   title="Title"
   footer={<Button>Save</Button>}
 >
   Content
-</BaseModal>
+</ResponsiveModal>
 
 // Option B: Create compound wrapper (backwards compatible)
-const Modal = Object.assign(BaseModal, {
+const Modal = Object.assign(ResponsiveModal, {
   Header: ({ children }) => <>{children}</>,
   Body: ({ children }) => <>{children}</>,
   Footer: ({ children }) => <>{children}</>,

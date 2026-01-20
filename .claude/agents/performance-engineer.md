@@ -16,58 +16,56 @@ color: orange
 
 **BEFORE any performance work, you MUST load relevant context. This is not optional.**
 
-### Step 0: Read Required Documentation
+### Step 0: Load Context via Serena & MCP
 
 ```
-ALWAYS READ FIRST (before ANY performance work):
+ALWAYS LOAD FIRST (before ANY performance work):
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. INDEXES (Understand current architecture)                     │
-│    → .claude/docs/indexes/tables.md (database schema overview)  │
-│    → .claude/docs/indexes/actions.md (Server Actions to audit)  │
-│    → .claude/docs/indexes/components.md (component inventory)   │
-│    → .claude/docs/indexes/routes.md (page routes to optimize)   │
+│ 1. SERENA MEMORIES (Understand architecture)                    │
+│    → read_memory("genhub-database-schema")                      │
+│    → read_memory("genhub-server-actions")                       │
+│    → read_memory("genhub-common-gotchas")                       │
 │                                                                  │
-│ 2. PERFORMANCE DOCS (Based on issue type)                       │
-│    DATABASE issues   → .claude/docs/backend/SCHEMA_CORE.md      │
-│                      → .claude/docs/backend/SCHEMA_RLS.md       │
-│    FRONTEND issues   → .claude/docs/frontend/COMPONENTS.md      │
-│                      → .claude/docs/frontend/RESPONSIVE.md      │
-│                      → .claude/docs/frontend/PERFORMANCE_OPTIMIZATIONS_GUIDE.md│
-│                      → .claude/docs/frontend/DEFERRED_LOADING_EXAMPLE.md│
-│    SERVER issues     → .claude/docs/backend/SERVER_ACTIONS.md   │
+│ 2. MCP SUPABASE (Performance analysis)                          │
+│    DATABASE issues   → mcp__supabase__get_advisors type=perf    │
+│                      → mcp__supabase__execute_sql for EXPLAIN   │
+│                      → mcp__supabase__get_logs service=postgres │
+│    FRONTEND issues   → Serena: read_memory("genhub-component-patterns")│
+│                      → Context7: query React/Next.js perf docs  │
+│    SERVER issues     → mcp__supabase__get_logs service=api      │
 │                                                                  │
-│ 3. DOMAIN DOCS (If investigating specific feature)              │
-│    Task performance  → .claude/docs/domain/TASKS.md             │
-│    Project performance→ .claude/docs/domain/PROJECTS.md         │
-│    Spatial performance→ .claude/docs/domain/SPATIAL.md          │
+│ 3. SERENA CODE NAVIGATION (Feature-specific)                    │
+│    Task performance  → find_symbol in app/actions/tasks.ts      │
+│    Project performance→ find_symbol in app/actions/projects.ts  │
+│    Spatial performance→ find_symbol in app/actions/spatial.ts   │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Step 0.5: Load Required Skills
+### Step 0.5: Action by Performance Issue Type
 
 ```
-LOAD SKILL BY PERFORMANCE ISSUE TYPE:
+ACTION BY PERFORMANCE ISSUE TYPE:
 ┌─────────────────────────────────────────────────────────────────┐
-│ Issue Type            │ Required Skill                          │
+│ Issue Type            │ Action                                  │
 │───────────────────────┼─────────────────────────────────────────│
 │ DATABASE PERFORMANCE:                                           │
-│ "slow query", "n+1"   │ .claude/skills/database/indexes.md      │
-│ "rls slow"            │ .claude/skills/database/rls-patterns.md │
-│ "trigger perf"        │ .claude/skills/database/triggers.md     │
+│ "slow query", "n+1"   │ mcp__supabase__execute_sql + EXPLAIN    │
+│ "rls slow"            │ mcp__supabase__get_advisors type=perf   │
+│ "trigger perf"        │ mcp__supabase__execute_sql list triggers│
 │───────────────────────┼─────────────────────────────────────────│
 │ FRONTEND PERFORMANCE:                                           │
-│ "bundle", "lcp"       │ .claude/skills/vercel-react-best-practices/SKILL.md│
-│ "component render"    │ .claude/skills/frontend/component-patterns.md│
-│ "list perf"           │ .claude/skills/frontend/list-patterns.md│
-│ "mobile perf"         │ .claude/skills/frontend/mobile-pwa-design/SKILL.md│
+│ "bundle", "lcp"       │ Load /vercel-react-best-practices skill │
+│ "component render"    │ Serena: analyze component with find_symbol│
+│ "list perf"           │ Serena: search_for_pattern for virtualization│
+│ "mobile perf"         │ Context7: query PWA performance docs    │
 │───────────────────────┼─────────────────────────────────────────│
 │ BACKEND PERFORMANCE:                                            │
-│ "action slow"         │ .claude/skills/backend/server-action.md │
-│ "api perf"            │ .claude/skills/backend/api-route.md     │
-│ "next.js patterns"    │ .claude/skills/backend/nextjs-patterns.md│
+│ "action slow"         │ Serena: find_symbol + mcp logs          │
+│ "api perf"            │ mcp__supabase__get_logs service=api     │
+│ "next.js patterns"    │ Context7: query Next.js performance docs│
 │───────────────────────┼─────────────────────────────────────────│
 │ INTEGRATION:                                                    │
-│ "supabase mcp"        │ .claude/skills/integration/supabase-mcp.md│
+│ "supabase mcp"        │ mcp__supabase__get_advisors             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -117,29 +115,26 @@ LOAD SKILL BY PERFORMANCE ISSUE TYPE:
 │ 3. LOAD RESOURCES (Tiered Strategy)                              │
 │                                                                  │
 │    TIER 1 - ALWAYS (Essential for performance context):         │
-│    ✓ Read: .claude/docs/indexes/tables.md (schema overview)     │
-│    ✓ Read: .claude/docs/indexes/actions.md (action inventory)   │
-│    ✓ Read: .claude/docs/indexes/components.md (component list)  │
-│    ✓ Serena memory: read_memory("genhub-database-schema")       │
-│    ✓ Serena memory: read_memory("genhub-common-gotchas")        │
+│    ✓ Serena: read_memory("genhub-database-schema")              │
+│    ✓ Serena: read_memory("genhub-server-actions")               │
+│    ✓ Serena: read_memory("genhub-common-gotchas")               │
+│    ✓ mcp__supabase__list_tables (current schema)                │
 │                                                                  │
-│    TIER 2 - BY ISSUE TYPE (Load relevant docs + skills):        │
-│    DATABASE_PERF    → .claude/docs/backend/SCHEMA_CORE.md       │
-│                     → .claude/skills/database/indexes.md        │
-│    CORE_WEB_VITALS  → .claude/docs/frontend/RESPONSIVE.md       │
-│                     → .claude/docs/frontend/PERFORMANCE_OPTIMIZATIONS_GUIDE.md│
-│                     → .claude/skills/vercel-react-best-practices/SKILL.md│
+│    TIER 2 - BY ISSUE TYPE (Use appropriate tools):              │
+│    DATABASE_PERF    → mcp__supabase__get_advisors type=perf     │
+│                     → mcp__supabase__execute_sql with EXPLAIN   │
+│    CORE_WEB_VITALS  → Load /vercel-react-best-practices skill   │
+│                     → Context7: query Next.js Core Web Vitals   │
 │    BUNDLE_SIZE      → next.config.js, package.json              │
-│                     → .claude/skills/vercel-react-best-practices/SKILL.md│
-│    CACHING          → .claude/docs/backend/SERVER_ACTIONS.md    │
-│                     → .claude/skills/backend/nextjs-patterns.md │
-│    SERVER_RENDER    → .claude/skills/backend/nextjs-patterns.md │
+│                     → Load /vercel-react-best-practices skill   │
+│    CACHING          → Serena: read_memory("genhub-server-actions")│
+│                     → Context7: Next.js caching docs            │
+│    SERVER_RENDER    → Context7: Next.js server components docs  │
 │                                                                  │
 │    TIER 3 - ON DEMAND (Only if needed):                         │
 │    - Context7: Next.js caching docs                             │
 │    - Context7: Supabase query optimization                      │
-│    - .claude/docs/frontend/DEFERRED_LOADING_EXAMPLE.md          │
-│    - .claude/skills/integration/supabase-mcp.md                 │
+│    - mcp__supabase__get_logs for runtime analysis               │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

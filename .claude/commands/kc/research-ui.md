@@ -66,7 +66,7 @@ Before designing, review these GenHub components:
 components/mobile/SwipeableCard.tsx    - Touch gestures, haptic feedback
 components/mobile/FloatingActionButton.tsx - Mobile FAB pattern
 components/mobile/SegmentedControl.tsx - iOS-style tabs
-components/ui/BaseModal/index.tsx      - Bottom sheet modal system
+components/ui/ResponsiveModal/index.tsx - Responsive modal system
 components/dashboard/KPICard.tsx       - Variant system, skeletons
 components/ui/button.tsx               - CVA pattern reference
 ```
@@ -176,12 +176,12 @@ import {
 
 ### 2.5 Modal Rules (CRITICAL)
 
-**ALWAYS use `<BaseModal>` - NEVER `<Dialog>` directly**
+**ALWAYS use `<ResponsiveModal>` - NEVER `<Dialog>` directly**
 
 ```tsx
-import { BaseModal } from '@/components/ui/BaseModal';
+import { ResponsiveModal } from '@/components/ui/ResponsiveModal';
 
-<BaseModal
+<ResponsiveModal
   isOpen={isOpen}
   onClose={onClose}
   title="Modal Title"
@@ -189,10 +189,10 @@ import { BaseModal } from '@/components/ui/BaseModal';
   rightActions={<Button>Save</Button>}
 >
   {/* Content */}
-</BaseModal>
+</ResponsiveModal>
 ```
 
-**BaseModal provides:**
+**ResponsiveModal provides:**
 - Bottom sheet on mobile with drag-to-dismiss
 - Centered modal on desktop
 - Construction-themed header with icon
@@ -492,7 +492,7 @@ Before finalizing design:
 
 ### 5.4 GenHub Rules Compliance
 
-- [ ] **Modals**: Uses `<BaseModal>` only, NEVER `<Dialog>`
+- [ ] **Modals**: Uses `<ResponsiveModal>` only, NEVER `<Dialog>`
 - [ ] **Icons**: Lucide React only
 - [ ] **Colors**: Exact hex values (#001B51, #059669, etc.)
 - [ ] **Fonts**: System fonts only (Arial, Helvetica, sans-serif)
@@ -621,7 +621,7 @@ Create a swipeable expense card using SwipeableCard wrapper with construction-th
 None required - custom implementation using existing patterns
 
 ### External Dependencies
-None - uses existing SwipeableCard and BaseModal
+None - uses existing SwipeableCard and ResponsiveModal
 
 ---
 
@@ -695,4 +695,4 @@ const cardAnimation = {
 - `docs/frontend/DESIGN_SYSTEM.md` - Complete design system
 - `skills/frontend/list-patterns.md` - List/card patterns
 - `components/mobile/` - Mobile component reference
-- `components/ui/BaseModal/` - Modal system reference
+- `components/ui/ResponsiveModal/` - Modal system reference

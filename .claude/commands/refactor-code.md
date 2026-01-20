@@ -45,12 +45,12 @@ description: "Intelligently Refactor and Improve Code Quality"
 'use client'
 import { createClient } from '@/utils/supabase/server'  // VIOLATION
 
-// WRONG - Replace BaseModal with Dialog
+// WRONG - Replace ResponsiveModal with Dialog
 import { Dialog } from '@/components/ui/dialog'  // VIOLATION
 
 // CORRECT - Maintain existing patterns
 // If fixing violations, move Supabase to Server Action
-// If standardizing modals, convert TO BaseModal
+// If standardizing modals, convert TO ResponsiveModal
 ```
 
 ### 4. NEVER Refactor Across Agent Boundaries Without Handoff
@@ -209,7 +209,7 @@ Frontend work (Components, UI) -> frontend-engineer
 | Violation | Fix | Agent |
 |-----------|-----|-------|
 | Supabase in client | Move to Server Action | backend-engineer |
-| Dialog usage | Replace with BaseModal | frontend-engineer |
+| Dialog usage | Replace with ResponsiveModal | frontend-engineer |
 | fetch() in client | Use Server Component/Action | backend-engineer |
 | Non-Lucide icons | Replace with Lucide | frontend-engineer |
 | Custom colors | Use design system | frontend-engineer |
@@ -237,7 +237,7 @@ Frontend work (Components, UI) -> frontend-engineer
 - Missing safe-area-inset
 - Hover-only interactions
 
-**Skill Required:** `mobile-pwa-design/SKILL.md`
+**Skill Required:** `mobile-pwa-design/SKILL.md` and  `refactor-code/SKILL.md`
 
 ---
 
@@ -535,13 +535,13 @@ Result:
 /refactor-code expenses --type=architecture
 
 Analysis finds:
-- Dialog component in ExpenseModal.tsx (should be BaseModal)
+- Dialog component in ExpenseModal.tsx (should be ResponsiveModal)
 - Supabase import in ExpenseForm.tsx (client component!)
 - Custom colors in ExpenseCard.tsx
 
 Delegation:
 1. Task(backend-engineer, "Extract Supabase logic to Server Action")
-2. Task(frontend-engineer, "Replace Dialog with BaseModal, fix colors")
+2. Task(frontend-engineer, "Replace Dialog with ResponsiveModal, fix colors")
 
 Result:
 - New Server Action: getExpenseDetails()

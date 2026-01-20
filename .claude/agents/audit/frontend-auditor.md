@@ -171,7 +171,7 @@ Grep(
 
 ### 3. UI/UX Patterns (MEDIUM/HIGH)
 
-**BaseModal Compliance**
+**ResponsiveModal Compliance**
 ```bash
 # Detect: Direct Dialog usage (violation)
 Grep(
@@ -182,7 +182,7 @@ Grep(
 ```
 
 **Severity**: HIGH
-**Fix**: Replace with `<BaseModal>` from `components/ui/BaseModal.tsx`
+**Fix**: Replace with `<ResponsiveModal>` from `components/ui/ResponsiveModal.tsx`
 
 ---
 
@@ -386,7 +386,7 @@ Grep(pattern="useMemo", path="components/tasks/TaskBoard.tsx", output_mode="cont
 - Missing memoization: {count}
 
 ### UI/UX
-- BaseModal violations: {count}
+- ResponsiveModal violations: {count}
 - Touch target issues: {count}
 - Missing active states: {count}
 
@@ -406,7 +406,7 @@ Grep(pattern="useMemo", path="components/tasks/TaskBoard.tsx", output_mode="cont
 
 ### To frontend-engineer
 - [ ] Fix CRITICAL architecture violations (files: {list})
-- [ ] Replace Dialog with BaseModal ({count} instances)
+- [ ] Replace Dialog with ResponsiveModal ({count} instances)
 - [ ] Add memoization ({count} components)
 - [ ] Fix touch targets ({count} elements)
 
@@ -615,9 +615,8 @@ Task(
 - `.claude/agents/frontend-engineer.md` - Implements frontend fixes
 - `.claude/agents/backend-engineer.md` - Implements backend changes from audit
 - `.claude/agents/performance-engineer.md` - Database/API performance audit
-- `.claude/docs/frontend/DESIGN_SYSTEM.md` - Design rules reference
-- `.claude/docs/indexes/components.md` - Component index
-- Serena memories: `genhub-component-patterns`, `genhub-common-gotchas`
+- Serena: `read_memory("genhub-component-patterns")` - Design rules & patterns
+- Serena: `read_memory("genhub-common-gotchas")` - Known issues
 
 ---
 

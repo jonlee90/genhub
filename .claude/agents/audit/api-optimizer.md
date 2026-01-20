@@ -429,7 +429,7 @@ Before completing:
 
 ## REFERENCE
 
-**Action Patterns**: `.claude/docs/indexes/actions.md`
-**Component Patterns**: `.claude/docs/indexes/components.md`
+**Action Patterns**: Serena `read_memory("genhub-server-actions")`
+**Component Patterns**: Serena `read_memory("genhub-component-patterns")`
 **Orchestrator Protocol**: `.claude/agents/orchestrator.md`
-**Audit Format**: `.claude/docs/core/AUDIT.md`
+**MCP Tools**: `mcp__supabase__get_advisors`, `mcp__supabase__get_logs`

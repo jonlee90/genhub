@@ -54,10 +54,10 @@ You are a **backend optimization implementer** for GenHub construction PWA. You 
 
 Before ANY implementation:
 
-1. **Load Backend Skill**
+1. **Load Context**
    ```
-   Load from: .claude/skills/index.md
-   Skill: backend-engineer (for implementation patterns)
+   Serena: read_memory("genhub-database-schema")
+   Serena: read_memory("genhub-server-actions")
    ```
 
 2. **Load Serena Memories**
@@ -692,9 +692,7 @@ EXPLAIN ANALYZE [query]
 
 ## REFERENCE
 
-**Backend Skill**: `.claude/skills/backend-engineer.md`
-**Database Schema**: `.claude/docs/backend/SCHEMA_*.md`
-**Server Actions**: `.claude/docs/indexes/actions.md`
+**Database Schema**: Serena `read_memory("genhub-database-schema")` + `mcp__supabase__list_tables`
+**Server Actions**: Serena `read_memory("genhub-server-actions")`
 **Orchestrator**: `.claude/agents/orchestrator.md`
-**Audit Format**: `.claude/docs/core/AUDIT.md`
-**MCP Tools**: Supabase MCP (execute_sql, apply_migration, get_advisors)
+**MCP Tools**: `mcp__supabase__execute_sql`, `mcp__supabase__get_advisors`, `mcp__supabase__get_logs`

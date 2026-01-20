@@ -155,7 +155,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 | P0 | **TaskList** | Table → Card grid | Foundational pattern, blocks US-1 |
 | P1 | **PullToRefresh** | New wrapper component | Required by AC-5, used by all lists |
 | P1 | **TeamMemberTable** | Table → Card list | Depends on SwipeableCard |
-| P1 | **BaseModal** | Enhance animations, haptic | Core UX improvement |
+| P1 | **ResponsiveModal** | Enhance animations, haptic | Core UX improvement |
 | P2 | **KanbanBoard** | Multi-column → Tab-based single | Complex conversion |
 | P2 | **Dashboard Widgets** | Optimize KPICardsGrid, WidgetsGrid | Polish for mobile |
 | P3 | **GanttChart** | Complex chart → Simplified timeline | Deferred complexity |
@@ -206,7 +206,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 ### Technical Constraints
 - Must use Tailwind CSS (no external CSS frameworks)
 - Must use Lucide icons only
-- Must use BaseModal for all modal/sheet UI
+- Must use ResponsiveModal for all modal/sheet UI
 - Cannot import Supabase SDK in client components
 - Must maintain WCAG 2.1 AA accessibility
 
@@ -229,7 +229,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 ## Dependencies
 
 ### Existing Components (Leverage)
-- `components/ui/BaseModal/` - Already responsive bottom sheet
+- `components/ui/ResponsiveModal/` - Already responsive bottom sheet
 - `components/app/BottomNavigation.tsx` - Already mobile-optimized
 - `components/forms/MobileOptimizedForm.tsx` - Reference implementation
 - `components/tasks/TaskCard.tsx` - Card pattern to extend
@@ -253,7 +253,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 | GanttChart | `components/tasks/gantt/GanttChart.tsx` | Complex horizontal scroll | Simplified timeline or list |
 | KPICardsGrid | `components/dashboard/KPICardsGrid.tsx` | 2-col grid needs polish | Swipeable horizontal cards |
 | WidgetsGrid | `components/dashboard/WidgetsGrid.tsx` | Static layout | Reorderable widget cards |
-| BaseModal | `components/ui/BaseModal/` | Good but can improve | Enhanced animations, haptic |
+| ResponsiveModal | `components/ui/ResponsiveModal/` | Good but can improve | Enhanced animations, haptic |
 
 ### Page Layouts (Full Mobile Optimization)
 
@@ -314,7 +314,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 ### Patterns to Follow
 - Extract `useMobileDetection()` hook for consistent breakpoint detection (SSR-safe)
 - Use `framer-motion` for 60fps animations (already in project dependencies)
-- Leverage existing `BaseModal` bottom-sheet mode - don't recreate
+- Leverage existing `ResponsiveModal` bottom-sheet mode - don't recreate
 - Follow `TaskCard.tsx` pattern for new card components
 - Use `MobileOptimizedForm.tsx` as reference for form conversions
 - Implement swipe gestures with `@use-gesture/react` (add if needed)
@@ -324,7 +324,7 @@ As a **user on a mid-range Android device**, I want **instant response to taps a
 - ❌ Don't create separate mobile/desktop components (use responsive single component)
 - ❌ Don't add new CSS frameworks (Tailwind only per constraints)
 - ❌ Don't import Supabase SDK in client components
-- ❌ Don't use `<Dialog>` - use `<BaseModal>` only
+- ❌ Don't use `<Dialog>` - use `<ResponsiveModal>` only
 - ❌ Don't add icons from libraries other than Lucide
 
 ### Code Organization

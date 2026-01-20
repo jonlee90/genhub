@@ -16,60 +16,56 @@ color: purple
 
 **BEFORE any specification work, you MUST load relevant context. This is not optional.**
 
-### Step 0: Read Required Documentation
+### Step 0: Load Context via Serena & MCP
 
 ```
-ALWAYS READ FIRST (before ANY spec work):
+ALWAYS LOAD FIRST (before ANY spec work):
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. INDEXES (Understand what exists)                              │
-│    → .claude/docs/indexes/tables.md (existing database schema)  │
-│    → .claude/docs/indexes/actions.md (existing Server Actions)  │
-│    → .claude/docs/indexes/components.md (existing components)   │
-│    → .claude/docs/indexes/routes.md (existing pages)            │
-│    → .claude/docs/indexes/enums.md (available enum values)      │
+│ 1. SERENA MEMORIES (Understand project patterns)                │
+│    → read_memory("genhub-database-schema")                      │
+│    → read_memory("genhub-server-actions")                       │
+│    → read_memory("genhub-component-patterns")                   │
 │                                                                  │
-│ 2. ARCHITECTURE DOCS (Understand patterns)                      │
-│    → .claude/docs/backend/SCHEMA_CORE.md (database patterns)    │
-│    → .claude/docs/backend/SERVER_ACTIONS.md (action patterns)   │
-│    → .claude/docs/frontend/COMPONENTS.md (UI patterns)          │
-│    → .claude/docs/frontend/DESIGN_SYSTEM.md (design standards)  │
+│ 2. MCP SUPABASE (Current database state)                        │
+│    → mcp__supabase__list_tables (existing schema)               │
 │                                                                  │
-│ 3. DOMAIN DOCS (Based on feature area - CRITICAL)               │
-│    PROJECT_FEATURE  → .claude/docs/domain/PROJECTS.md           │
-│    TASK_FEATURE     → .claude/docs/domain/TASKS.md              │
-│    MATERIAL_FEATURE → .claude/docs/domain/MATERIALS.md          │
-│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md          │
-│    CONFIGURATION_FEATURE → .claude/docs/domain/CONFIGURATION.md              │
+│ 3. SERENA CODE NAVIGATION (By feature area)                     │
+│    PROJECT_FEATURE  → find_symbol in app/actions/projects.ts    │
+│    TASK_FEATURE     → find_symbol in app/actions/tasks.ts       │
+│    MATERIAL_FEATURE → find_symbol in app/actions/materials.ts   │
+│    SPATIAL_FEATURE  → find_symbol in app/actions/spatial.ts     │
+│                                                                  │
+│ 4. CODEBASE EXPLORATION                                         │
+│    → get_symbols_overview on relevant files                     │
+│    → search_for_pattern for existing implementations            │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Step 0.5: Load Required Skills
+### Step 0.5: Load Required Context by Feature Type
 
 ```
-LOAD SKILL BY SPEC PHASE:
+LOAD BY SPEC PHASE:
 ┌─────────────────────────────────────────────────────────────────┐
-│ Spec Phase            │ Required Skills                         │
+│ Spec Phase            │ Action                                  │
 │───────────────────────┼─────────────────────────────────────────│
-│ WORKFLOW SKILLS (understand implementation patterns):           │
-│ All phases            │ .claude/skills/workflow/feature-lifecycle.md│
-│ Documentation sync    │ .claude/skills/workflow/doc-sync.md     │
+│ WORKFLOW (understand patterns):                                 │
+│ All phases            │ Serena: read_memory("genhub-project-overview")│
 │───────────────────────┼─────────────────────────────────────────│
-│ DOMAIN SKILLS (understand feature domains):                     │
-│ "task" features       │ .claude/skills/domain/task-workflow.md  │
-│ "project" features    │ .claude/skills/domain/project-crud.md   │
-│ "expense" features    │ .claude/skills/domain/expense-workflow.md│
-│ "material" features   │ .claude/skills/domain/material-tracking.md│
-│ "spatial" features    │ .claude/skills/domain/spatial-markers.md│
-│ "chat" features       │ .claude/skills/domain/chat-realtime.md  │
+│ DOMAIN (understand feature areas):                              │
+│ "task" features       │ Serena: find_symbol in app/actions/tasks│
+│ "project" features    │ Serena: find_symbol in app/actions/projects│
+│ "expense" features    │ Serena: find_symbol in app/actions/expenses│
+│ "material" features   │ Serena: find_symbol in app/actions/materials│
+│ "spatial" features    │ Serena: find_symbol in app/actions/spatial│
 │───────────────────────┼─────────────────────────────────────────│
-│ REFERENCE SKILLS (for design phase):                            │
-│ Database design       │ .claude/skills/database/create-migration.md│
-│ RLS patterns          │ .claude/skills/database/rls-patterns.md │
-│ Server Actions        │ .claude/skills/backend/server-action.md │
-│ Component patterns    │ .claude/skills/frontend/component-patterns.md│
-│ Page patterns         │ .claude/skills/frontend/page-creation.md│
-│ Form patterns         │ .claude/skills/frontend/form-patterns.md│
-│ Modal patterns        │ .claude/skills/frontend/modal-patterns.md│
+│ REFERENCE (for design phase):                                   │
+│ Database design       │ mcp__supabase__list_tables + advisors   │
+│ RLS patterns          │ mcp__supabase__execute_sql on pg_policies│
+│ Server Actions        │ Serena: read_memory("genhub-server-actions")│
+│ Component patterns    │ Serena: read_memory("genhub-component-patterns")│
+│ Page patterns         │ Serena: get_symbols_overview on app/app │
+│ Form patterns         │ Serena: search_for_pattern("useForm")   │
+│ Modal patterns        │ Serena: find_symbol("ResponsiveModal")  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -117,29 +113,24 @@ LOAD SKILL BY SPEC PHASE:
 │ 3. LOAD RESOURCES (Tiered Strategy)                              │
 │                                                                  │
 │    TIER 1 - ALWAYS (Essential for understanding architecture):  │
-│    ✓ Read: .claude/docs/indexes/tables.md (database overview)   │
-│    ✓ Read: .claude/docs/indexes/actions.md (existing actions)   │
-│    ✓ Read: .claude/docs/indexes/components.md (UI patterns)     │
-│    ✓ Read: .claude/docs/indexes/routes.md (existing pages)      │
+│    ✓ Serena: read_memory("genhub-database-schema")              │
+│    ✓ Serena: read_memory("genhub-server-actions")               │
+│    ✓ Serena: read_memory("genhub-component-patterns")           │
+│    ✓ mcp__supabase__list_tables (current schema)                │
 │                                                                  │
-│    TIER 2 - BY FEATURE TYPE (Load domain docs + skills):        │
-│    PROJECT_FEATURE  → .claude/docs/domain/PROJECTS.md           │
-│                     → .claude/skills/domain/project-crud.md     │
-│    TASK_FEATURE     → .claude/docs/domain/TASKS.md              │
-│                     → .claude/skills/domain/task-workflow.md    │
-│    MATERIAL_FEATURE → .claude/docs/domain/MATERIALS.md          │
-│                     → .claude/skills/domain/material-tracking.md│
-│    SPATIAL_FEATURE  → .claude/docs/domain/SPATIAL.md            │
-│                     → .claude/skills/domain/spatial-markers.md  │
-│    EXPENSE_FEATURE  → .claude/skills/domain/expense-workflow.md │
-│    CHAT_FEATURE     → .claude/skills/domain/chat-realtime.md    │
+│    TIER 2 - BY FEATURE TYPE (Navigate to existing code):        │
+│    PROJECT_FEATURE  → find_symbol in app/actions/projects.ts    │
+│    TASK_FEATURE     → find_symbol in app/actions/tasks.ts       │
+│    MATERIAL_FEATURE → find_symbol in app/actions/materials.ts   │
+│    SPATIAL_FEATURE  → find_symbol in app/actions/spatial.ts     │
+│    EXPENSE_FEATURE  → find_symbol in app/actions/expenses.ts    │
+│    CHAT_FEATURE     → find_symbol in app/actions/chat.ts        │
 │                                                                  │
 │    TIER 3 - ON DEMAND (Research):                               │
 │    - WebSearch: Industry best practices                         │
 │    - Context7: Library documentation                            │
 │    - Existing codebase patterns via Serena/Grep                 │
-│    - Architecture docs: .claude/docs/backend/SCHEMA_*.md        │
-│    - Component docs: .claude/docs/frontend/COMPONENTS.md        │
+│    - mcp__supabase__execute_sql for schema details              │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -466,7 +457,7 @@ interface {Feature}ModalProps {
   defaultValues?: Partial<{Entity}>
 }
 ```
-**Behavior:** Uses BaseModal, form with validation
+**Behavior:** Uses ResponsiveModal, form with validation
 
 ---
 
@@ -613,12 +604,12 @@ interface {Feature}ModalProps {
 - **Output:** `components/{feature}/{Entity}Modal.tsx`
 - **Dependencies:** Task 1.2, Task 2.2
 - **Requirements:**
-  - Uses BaseModal (NOT Dialog)
+  - Uses ResponsiveModal (NOT Dialog)
   - Form with validation display
   - Loading/error states
   - Calls Server Action on submit
 - **Acceptance:**
-  - [ ] BaseModal wrapper
+  - [ ] ResponsiveModal wrapper
   - [ ] Form handles all fields
   - [ ] isPending state works
 

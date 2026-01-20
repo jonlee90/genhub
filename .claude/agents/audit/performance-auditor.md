@@ -54,11 +54,11 @@ color: purple
 │    Materials domain → read_memory("genhub-domain-materials")    │
 │    Spatial domain   → read_memory("genhub-domain-spatial")      │
 │                                                                  │
-│    TIER 3 - BY SCOPE (Load relevant indexes):                   │
-│    DATABASE_FOCUSED → .claude/docs/indexes/tables.md            │
-│    API_FOCUSED      → .claude/docs/indexes/actions.md           │
-│    CLIENT_FOCUSED   → .claude/docs/indexes/components.md        │
-│    PAGE_FOCUSED     → .claude/docs/indexes/routes.md            │
+│    TIER 3 - BY SCOPE (Use MCP/Serena):                          │
+│    DATABASE_FOCUSED → mcp__supabase__list_tables                │
+│    API_FOCUSED      → Serena read_memory("genhub-server-actions")│
+│    CLIENT_FOCUSED   → Serena read_memory("genhub-component-patterns")│
+│    PAGE_FOCUSED     → Serena get_symbols_overview on app/app    │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -657,9 +657,9 @@ Estimated effort: {hours} hours
 ```
 
 ### References
-- GenHub Schema: .claude/docs/backend/SCHEMA_*.md
-- Server Actions Index: .claude/docs/indexes/actions.md
-- Performance Best Practices: .claude/docs/core/PERFORMANCE.md
+- GenHub Schema: Serena `read_memory("genhub-database-schema")` + `mcp__supabase__list_tables`
+- Server Actions: Serena `read_memory("genhub-server-actions")`
+- Performance: `mcp__supabase__get_advisors type=performance`
 
 ---
 
@@ -854,9 +854,8 @@ Verify: Re-audit after fixes.
 
 - `.claude/agents/performance-engineer.md` - Implements performance fixes
 - `.claude/agents/code-reviewer.md` - Code quality and security review
-- `.claude/docs/backend/SCHEMA_*.md` - Database schema reference
-- `.claude/docs/indexes/actions.md` - Server Actions index
-- Serena memories: `genhub-database-schema`, `genhub-server-actions`
+- Serena: `read_memory("genhub-database-schema")` - Database schema
+- Serena: `read_memory("genhub-server-actions")` - Server Actions
 
 ---
 
