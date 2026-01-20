@@ -442,8 +442,8 @@ export async function createProject(formData: FormData) {
   // Revalidate projects list and related caches
   revalidatePath("/app/projects");
   revalidatePath("/app");
-  revalidateTag("projects");
-  revalidateTag("dashboard");
+  revalidateTag("projects", "max");
+  revalidateTag("dashboard", "max");
 
   return { success: true, project };
 }
@@ -537,8 +537,8 @@ export async function updateProject(formData: FormData) {
   // Revalidate paths and related caches
   revalidatePath("/app/projects");
   revalidatePath(`/app/projects/${id}`);
-  revalidateTag("projects");
-  revalidateTag(`project-${id}`);
+  revalidateTag("projects", "max");
+  revalidateTag(`project-${id}`, "max");
 
   return { success: true, project };
 }
@@ -601,9 +601,9 @@ export async function updateProjectStatus(
   // Revalidate paths and related caches
   revalidatePath("/app/projects");
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag("projects");
-  revalidateTag(`project-${projectId}`);
-  revalidateTag("dashboard");
+  revalidateTag("projects", "max");
+  revalidateTag(`project-${projectId}`, "max");
+  revalidateTag("dashboard", "max");
 
   return { success: true, project };
 }
@@ -751,7 +751,7 @@ export async function addProjectTeamMember(
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag(`project-${projectId}`);
+  revalidateTag(`project-${projectId}`, "max");
 
   return { success: true, teamMember };
 }
@@ -909,7 +909,7 @@ export async function addSubcontractorToProject(
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag(`project-${projectId}`);
+  revalidateTag(`project-${projectId}`, "max");
 
   return { success: true, teamMember };
 }
@@ -964,7 +964,7 @@ export async function removeSubcontractorFromProject(
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag(`project-${projectId}`);
+  revalidateTag(`project-${projectId}`, "max");
 
   return { success: true };
 }
@@ -1015,7 +1015,7 @@ export async function removeProjectTeamMember(
 
   // Revalidate paths and related caches
   revalidatePath(`/app/projects/${projectId}`);
-  revalidateTag(`project-${projectId}`);
+  revalidateTag(`project-${projectId}`, "max");
 
   return { success: true };
 }

@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
   experimental: {
-    useCache: true,
     optimizePackageImports: ['lucide-react'],
   },
   images: {
@@ -35,6 +34,7 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  turbopack: {},
 };
 
 export default nextConfig;

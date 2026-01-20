@@ -483,11 +483,11 @@ export async function invalidateDashboardCache(
   companyId?: string,
 ): Promise<void> {
   console.log("[invalidateDashboardCache] Invalidating dashboard cache tags");
-  revalidateTag("dashboard");
-  revalidateTag("dashboard-kpis");
+  revalidateTag("dashboard", "max");
+  revalidateTag("dashboard-kpis", "max");
 
   if (companyId) {
-    revalidateTag(`dashboard-${companyId}`);
+    revalidateTag(`dashboard-${companyId}`, "max");
     console.log(
       `[invalidateDashboardCache] Invalidated cache for company: ${companyId}`,
     );

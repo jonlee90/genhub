@@ -243,7 +243,7 @@ export async function inviteTeamMember(formData: FormData) {
 
     // Revalidate paths
     revalidatePath("/app/team");
-    revalidateTag(`team-members-${companyId}`);
+    revalidateTag(`team-members-${companyId}`, "max");
 
     return {
       success: true,
@@ -358,7 +358,7 @@ export async function updateTeamMemberRole(userId: string, newRole: UserRole) {
 
     // Revalidate paths with granular cache key
     revalidatePath("/app/team");
-    revalidateTag(`team-members-${companyId}`);
+    revalidateTag(`team-members-${companyId}`, "max");
 
     return {
       success: true,
@@ -480,7 +480,7 @@ export async function deactivateTeamMember(userId: string) {
 
     // Revalidate paths with granular cache key
     revalidatePath("/app/team");
-    revalidateTag(`team-members-${companyId}`);
+    revalidateTag(`team-members-${companyId}`, "max");
 
     return {
       success: true,

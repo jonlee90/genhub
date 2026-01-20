@@ -301,7 +301,7 @@ export async function createSubcontractor(formData: FormData) {
 
     // Revalidate paths
     revalidatePath("/app/team/subcontractors");
-    revalidateTag(`subcontractors-${companyId}`);
+    revalidateTag(`subcontractors-${companyId}`, "max");
 
     return {
       success: true,
@@ -454,8 +454,8 @@ export async function updateSubcontractor(data: {
 
     // Revalidate paths
     revalidatePath("/app/team/subcontractors");
-    revalidateTag(`subcontractors-${companyId}`);
-    revalidateTag(`subcontractor-${id}`);
+    revalidateTag(`subcontractors-${companyId}`, "max");
+    revalidateTag(`subcontractor-${id}`, "max");
 
     return {
       success: true,
@@ -574,8 +574,8 @@ export async function deactivateSubcontractor(id: string) {
 
     // Revalidate paths
     revalidatePath("/app/team/subcontractors");
-    revalidateTag(`subcontractors-${companyId}`);
-    revalidateTag(`subcontractor-${id}`);
+    revalidateTag(`subcontractors-${companyId}`, "max");
+    revalidateTag(`subcontractor-${id}`, "max");
 
     return {
       success: true,
@@ -764,8 +764,8 @@ export async function uploadSubcontractorDocument(formData: FormData) {
 
     // Revalidate paths
     revalidatePath("/app/team/subcontractors");
-    revalidateTag(`subcontractors-${companyId}`);
-    revalidateTag(`subcontractor-${subcontractorId}`);
+    revalidateTag(`subcontractors-${companyId}`, "max");
+    revalidateTag(`subcontractor-${subcontractorId}`, "max");
 
     return {
       success: true,

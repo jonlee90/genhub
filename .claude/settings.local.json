@@ -182,7 +182,8 @@
       "Bash(npm run docs:sync:*)",
       "mcp__next-devtools__init",
       "mcp__memory__create_entities",
-      "mcp__memory__add_observations"
+      "mcp__memory__add_observations",
+      "Bash(npm exec:*)"
     ],
     "deny": [],
     "ask": []
