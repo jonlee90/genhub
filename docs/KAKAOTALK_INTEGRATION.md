@@ -18,7 +18,7 @@ GenHub integrates with KakaoTalk Business Messaging via Sendbird to provide:
 ```
 ┌─────────────────┐
 │   GenHub PWA    │
-│  (Next.js 15)   │
+│  (Next.js 16)   │
 └────────┬────────┘
          │
          │ Server Actions

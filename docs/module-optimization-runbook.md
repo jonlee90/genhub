@@ -17,7 +17,7 @@ This runbook provides a step-by-step process for optimizing GenHub modules follo
 
 ### Required Knowledge
 - GenHub architecture and conventions (`.claude/docs/CLAUDE.md`)
-- Next.js 15 + React 19 patterns
+- Next.js 16 + React 19 patterns
 - Server Actions best practices
 - Performance optimization fundamentals
 
@@ -853,7 +853,7 @@ Record any special cases encountered:
 Solution: Wrap Server Actions with Promise.resolve()
 
 ### Issue: Dynamic import SSR changes
-Solution: Remove { ssr: false } for Next.js 15
+Solution: Remove { ssr: false } for Next.js 16
 
 ### Issue: Custom comparator not preventing re-renders
 Solution: Ensure all used props are compared
@@ -926,7 +926,7 @@ await Promise.allSettled([
 ]);
 ```
 
-### Pitfall 3: Next.js 15 Dynamic Import Changes
+### Pitfall 3: Next.js 16 Dynamic Import Changes
 
 **Error:** Component doesn't render after dynamic import
 

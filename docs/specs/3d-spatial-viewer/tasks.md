@@ -215,7 +215,7 @@
 **Complexity:** L
 
 **Technical Considerations:**
-- Use Next.js 15 route handlers with `export async function POST(request: Request)`
+- Use Next.js 16 route handlers with `export async function POST(request: Request)`
 - Import auth: `import { auth } from '@/lib/auth'`
 - Each chunk max 5MB (configured in client upload component)
 - uploadId generated server-side: `crypto.randomUUID()`

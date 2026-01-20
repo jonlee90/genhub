@@ -17,7 +17,6 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/db';
 
 // Use Node.js runtime (not edge) because we need compatibility with other server modules
-export const dynamic = 'force-dynamic';
 
 // Create admin Supabase client directly (bypasses RLS)
 function createAdminClient() {

@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getProjectWithStats } from "@/app/actions/projects";
 import { getClientPermissions } from "@/app/actions/client";
 import { getActiveModel } from "@/app/actions/spatial";
 import { ClientSpatialViewerWrapper } from "@/components/projects/spatial/ClientSpatialViewerWrapper";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Client Portal Project Detail Page
@@ -14,7 +16,19 @@ import { ClientSpatialViewerWrapper } from "@/components/projects/spatial/Client
  *
  * Budget visibility is controlled by company-level permissions.
  */
-export default async function ClientProjectDetailPage({
+export default function ClientProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<ClientProjectDetailLoading />}>
+      <ClientProjectDetailPageContent params={params} />
+    </Suspense>
+  );
+}
+
+async function ClientProjectDetailPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -120,6 +134,42 @@ export default async function ClientProjectDetailPage({
           modelHighURL={activeModel?.xkt_file_url ?? undefined}
           hasBudgetVisibility={permissions.can_view_budget}
         />
+      </div>
+    </div>
+  );
+}
+
+function ClientProjectDetailLoading() {
+  return (
+    <div className="flex flex-col h-screen bg-white">
+      {/* Fixed Blueprint Grid Background */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Industrial Header */}
+      <div className="relative z-10">
+        <div className="h-1 bg-[#001B51]" />
+        <header className="bg-white border-b-2 border-gray-200 p-4 md:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-64" />
+              <Skeleton className="h-5 w-48" />
+            </div>
+            <Skeleton className="h-10 w-24 rounded-lg" />
+          </div>
+        </header>
+      </div>
+
+      {/* 3D Viewer Skeleton */}
+      <div className="relative z-10 flex-1 flex items-center justify-center overflow-hidden">
+        <div className="text-center space-y-4">
+          <Skeleton className="h-16 w-16 rounded-xl mx-auto" />
+          <Skeleton className="h-6 w-48 mx-auto" />
+        </div>
       </div>
     </div>
   );

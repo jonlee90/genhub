@@ -1,8 +1,6 @@
 import "server-only";
 
-import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
 
 /**
  * Shared logic to fetch expenses data for a company
@@ -69,44 +67,18 @@ async function fetchExpensesDataForCompany(
   };
 }
 
-export async function getExpensesData() {
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    redirect("/");
-  }
+export async function getExpensesData(companyId: string, role: string) {
+  // SECURITY: No auth here - caller must authenticate and provide companyId
+  // This function is cache-safe because it trusts the caller
 
   const supabase = await createClient();
-
-  // Get user's company
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!companyUser) {
-    // Development: return empty data, Production: redirect to onboarding
-    if (process.env.NODE_ENV === "development") {
-      return {
-        expenses: [],
-        projects: [],
-        tasks: [],
-        role: null,
-        companyId: undefined,
-      };
-    }
-    redirect("/app/onboarding");
-  }
 
   // Fetch all data using shared logic
   try {
     return await fetchExpensesDataForCompany(
       supabase,
-      companyUser.company_id,
-      companyUser.role,
+      companyId,
+      role,
     );
   } catch (error) {
     // Development: return empty data on error
@@ -116,8 +88,8 @@ export async function getExpensesData() {
         expenses: [],
         projects: [],
         tasks: [],
-        role: companyUser.role,
-        companyId: companyUser.company_id,
+        role,
+        companyId,
       };
     }
     // Production: re-throw error

@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import config from "@/config";
 import "./globals.css";
 import { GoogleTagManager } from '@next/third-parties/google'
@@ -49,7 +50,10 @@ export default function RootLayout({
         <main className="flex-grow">
           {children}
         </main>
-        <FooterWrapper />
+        {/* Footer uses usePathname() which needs Suspense */}
+        <Suspense fallback={null}>
+          <FooterWrapper />
+        </Suspense>
         {/* Service Worker Registration - PWA Support */}
         <ServiceWorkerRegistration />
       </body>

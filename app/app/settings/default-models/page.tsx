@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { SettingsSectionHeader } from '@/components/settings/SettingsSectionHeader';
 import { DefaultModelCard } from '@/components/settings/DefaultModelCard';
 import { Wrench } from 'lucide-react';
@@ -5,13 +6,22 @@ import { auth } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/server';
 import { getDefaultModelsForCompany } from '@/app/actions/default-models';
 import { redirect } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Default 3D Models Settings Page
  * Admin only - Configure company-specific default models for each project type
  * Server Component - fetches data server-side, passes to client components
  */
-export default async function DefaultModelsPage() {
+export default function DefaultModelsPage() {
+  return (
+    <Suspense fallback={<DefaultModelsLoading />}>
+      <DefaultModelsPageContent />
+    </Suspense>
+  );
+}
+
+async function DefaultModelsPageContent() {
   console.log('[DefaultModelsPage] Rendering default models settings');
 
   // Check authentication and role
@@ -113,6 +123,37 @@ export default async function DefaultModelsPage() {
         {/* Footer Note */}
         <div className="text-sm text-gray-500 text-center pt-4 border-t border-gray-200">
           Changes to default models will only affect new projects. Existing projects will keep their current models.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DefaultModelsLoading() {
+  return (
+    <div className="relative min-h-screen bg-white">
+      {/* Blueprint Grid Background */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Industrial Header */}
+      <div className="relative z-10 border-b-2 border-[#001B51]">
+        <Skeleton className="h-10 w-64 m-4 md:m-8" />
+      </div>
+
+      {/* Page Content */}
+      <div className="relative z-10 flex-1 space-y-4 md:space-y-6 p-4 md:p-8">
+        <Skeleton className="h-24 w-full" />
+        <Skeleton className="h-32 w-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
+          <Skeleton className="h-64" />
         </div>
       </div>
     </div>

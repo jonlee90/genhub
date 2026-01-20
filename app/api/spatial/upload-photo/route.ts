@@ -17,7 +17,8 @@ import {
   applyOrientation,
 } from "@/lib/image-processing";
 
-export const runtime = "nodejs";
+// Note: runtime = "nodejs" removed for cacheComponents compatibility
+// API routes run in Node.js runtime by default with cacheComponents enabled
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {

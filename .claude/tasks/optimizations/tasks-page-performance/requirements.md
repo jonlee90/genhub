@@ -419,7 +419,7 @@ const [assigneesResult, materialStatsResult, expenseStatsResult, dependenciesRes
 
 ## Dependencies
 
-- Next.js 15+ with `optimizePackageImports` support
+- Next.js 16+ with `optimizePackageImports` support
 - React 19+ (already in use)
 - No new dependencies required (CSS transitions, React.cache native)
 

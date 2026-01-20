@@ -4,7 +4,7 @@
 Construction PWA for general contractors - project management, tasks, materials, expenses, team collaboration.
 
 ## Tech Stack
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Database**: Supabase (PostgreSQL + RLS)
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React only

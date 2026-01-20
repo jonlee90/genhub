@@ -9,7 +9,7 @@
 
 ### Overview
 
-Comprehensive performance optimization of the GenHub Tasks module resulting in significant improvements across bundle size, load performance, runtime efficiency, and code quality. All changes follow industry best practices and Next.js 15 + React 19 patterns.
+Comprehensive performance optimization of the GenHub Tasks module resulting in significant improvements across bundle size, load performance, runtime efficiency, and code quality. All changes follow industry best practices and Next.js 16 + React 19 patterns.
 
 ### Key Results
 
@@ -504,7 +504,7 @@ Build completed in 6.1s
 
 1. **Type Compatibility:** Promise.allSettled required `Promise.resolve()` wrapping in some cases
 
-2. **Next.js 15 Dynamic Imports:** Removed `{ ssr: false }` pattern changed behavior
+2. **Next.js 16 Dynamic Imports:** Removed `{ ssr: false }` pattern changed behavior
 
 3. **File Corruption Risk:** Large refactors had potential for corruption (mitigated with git)
 

@@ -12,7 +12,15 @@ import DashboardLoading from "./loading";
  * Passes prefetched project types to modal to avoid client-side fetching.
  * Handles authentication redirects and error states.
  */
-export default async function DashboardPage() {
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardLoading />}>
+      <DashboardPageContent />
+    </Suspense>
+  );
+}
+
+async function DashboardPageContent() {
   // Get user session for name display
   const session = await auth();
 
@@ -76,9 +84,5 @@ export default async function DashboardPage() {
   const userName =
     session.user.name || session.user.email?.split("@")[0] || "User";
 
-  return (
-    <Suspense fallback={<DashboardLoading />}>
-      <DashboardContent data={data} userName={userName} projectTypes={projectTypes} />
-    </Suspense>
-  );
+  return <DashboardContent data={data} userName={userName} projectTypes={projectTypes} />;
 }

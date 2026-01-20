@@ -71,7 +71,7 @@ Created a comprehensive markdown index documenting all server action files in `/
 ## Key Findings
 
 ### Architecture Patterns
-- All actions follow "use server" directive for Next.js 15
+- All actions follow "use server" directive for Next.js 16
 - Consistent error handling with optional fieldErrors for validation
 - Zod validation schemas for all user inputs
 - Role-based access control enforced in all functions

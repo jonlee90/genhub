@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createAdminClient } from "@/utils/supabase/server";
@@ -5,9 +6,18 @@ import { auth } from "@/lib/auth";
 import { CreateTaskForm } from "@/components/tasks/CreateTaskForm";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface NewTaskPageProps {
   searchParams: Promise<{ project?: string; phase?: string }>;
+}
+
+export default function NewTaskPage({ searchParams }: NewTaskPageProps) {
+  return (
+    <Suspense fallback={<NewTaskPageLoading />}>
+      <NewTaskPageContent searchParams={searchParams} />
+    </Suspense>
+  );
 }
 
 async function getData() {
@@ -75,7 +85,7 @@ async function getData() {
   };
 }
 
-export default async function NewTaskPage({ searchParams }: NewTaskPageProps) {
+async function NewTaskPageContent({ searchParams }: NewTaskPageProps) {
   const [params, { projects, teamMembers }] = await Promise.all([
     searchParams,
     getData(),
@@ -110,6 +120,36 @@ export default async function NewTaskPage({ searchParams }: NewTaskPageProps) {
         preselectedProjectId={preselectedProjectId}
         preselectedPhaseId={preselectedPhaseId}
       />
+    </div>
+  );
+}
+
+function NewTaskPageLoading() {
+  return (
+    <div className="space-y-6 max-w-2xl mx-auto">
+      {/* Back Navigation */}
+      <Skeleton className="h-9 w-32" />
+
+      {/* Header */}
+      <div className="space-y-2">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="h-5 w-64" />
+      </div>
+
+      {/* Form Skeleton */}
+      <div className="space-y-6 bg-white p-6 rounded-lg border">
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="flex gap-3">
+          <Skeleton className="h-10 flex-1" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      </div>
     </div>
   );
 }

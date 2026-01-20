@@ -5,6 +5,37 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react'],
   },
+  // Cache Components enabled - all prerequisites complete
+  // Phase A: Security fix (auth before cache pattern)
+  // Phase B: Suspense boundaries added to all 12 pages
+  cacheComponents: true,
+  // Define custom cache profiles
+  cacheLife: {
+    // Short-lived cache for frequently changing data
+    short: {
+      stale: 30,      // Serve stale for 30s
+      revalidate: 60, // Revalidate after 1 min
+      expire: 300,    // Expire after 5 min
+    },
+    // Medium cache for dashboard/list data
+    medium: {
+      stale: 60,
+      revalidate: 300,  // 5 min
+      expire: 900,      // 15 min
+    },
+    // Long cache for relatively static data
+    long: {
+      stale: 300,
+      revalidate: 3600,  // 1 hour
+      expire: 86400,     // 24 hours
+    },
+    // User-scoped cache (shorter due to personalization)
+    userScoped: {
+      stale: 30,
+      revalidate: 120,  // 2 min
+      expire: 600,      // 10 min
+    },
+  },
   images: {
     remotePatterns: [
       {
@@ -34,7 +65,18 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  turbopack: {},
+  turbopack: {
+    // Turbopack configuration for client-side builds
+    resolveAlias: {
+      // Polyfill Node.js modules for xeokit SDK in client bundles
+      // We recommend to fix code imports before using this method
+      fs: { browser: './lib/empty-module.ts' },
+      path: { browser: './lib/empty-module.ts' },
+      crypto: { browser: './lib/empty-module.ts' },
+      net: { browser: './lib/empty-module.ts' },
+      tls: { browser: './lib/empty-module.ts' },
+    },
+  },
 };
 
 export default nextConfig;

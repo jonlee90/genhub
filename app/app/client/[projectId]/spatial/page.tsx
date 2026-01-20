@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { createClient } from "@/utils/supabase/server";
 import { getActiveModel } from "@/app/actions/spatial";
 import { Building2 } from "lucide-react";
 import { ClientSpatialViewerWrapper } from "@/components/projects/spatial/ClientSpatialViewerWrapper";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ClientSpatialPageProps {
   params: Promise<{
@@ -15,8 +17,16 @@ interface ClientSpatialPageProps {
  * Client Portal - Spatial Viewer Page
  * Read-only 3D viewer for clients at /app/client/{projectId}/spatial
  */
-export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
-  const params = await props.params;
+export default function ClientSpatialPage(props: ClientSpatialPageProps) {
+  return (
+    <Suspense fallback={<ClientSpatialLoading />}>
+      <ClientSpatialPageContent params={props.params} />
+    </Suspense>
+  );
+}
+
+async function ClientSpatialPageContent({ params: paramsPromise }: ClientSpatialPageProps) {
+  const params = await paramsPromise;
   const session = await auth();
   if (!session?.user) {
     redirect("/");
@@ -94,6 +104,41 @@ export default async function ClientSpatialPage(props: ClientSpatialPageProps) {
           modelHighURL={activeModel?.xkt_file_url ?? undefined}
           hasBudgetVisibility={company?.client_can_view_budget ?? false}
         />
+      </div>
+    </div>
+  );
+}
+
+function ClientSpatialLoading() {
+  return (
+    <div className="relative min-h-screen bg-white">
+      {/* Blueprint Grid Background */}
+      <div
+        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Industrial Header */}
+      <div className="relative z-10 border-b-2 border-[#001B51]">
+        <div className="p-4 md:p-6">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-lg" />
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3D Viewer Skeleton */}
+      <div className="relative z-10 flex items-center justify-center" style={{ height: "calc(100vh - 120px)" }}>
+        <div className="text-center space-y-4">
+          <Skeleton className="h-16 w-16 rounded-xl mx-auto" />
+          <Skeleton className="h-6 w-48 mx-auto" />
+        </div>
       </div>
     </div>
   );

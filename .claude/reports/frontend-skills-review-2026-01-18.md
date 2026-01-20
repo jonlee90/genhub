@@ -11,7 +11,7 @@
 Reviewed all frontend skills documentation against:
 1. Vercel React Best Practices (45 rules, 8 categories)
 2. Current implementation patterns in `components/projects/`
-3. React 19 and Next.js 15 features
+3. React 19 and Next.js 16 features
 
 **Result:** Identified 4 major gaps and implemented comprehensive updates to bring skills documentation current with modern best practices.
 
@@ -30,7 +30,7 @@ Reviewed all frontend skills documentation against:
 
 **Action Taken:** ✅ Created `frontend/react-19-nextjs-15-patterns.md` (new skill file)
 
-### 2. Missing Next.js 15 Patterns ❌
+### 2. Missing Next.js 16 Patterns ❌
 
 **Gap:**
 - Parallel data loading not documented (despite being implemented in ProjectOverview)
@@ -94,8 +94,8 @@ Reviewed all frontend skills documentation against:
 ### 2. `.claude/skills/frontend/page-creation.md` (UPDATED)
 
 **Changes:**
-- Added "Parallel Data Loading (Next.js 15)" section
-- Added "Streaming with Suspense (Next.js 15)" section
+- Added "Parallel Data Loading (Next.js 16)" section
+- Added "Streaming with Suspense (Next.js 16)" section
 - Updated examples to show Promise.all() pattern
 
 **Before:** 360 lines
@@ -106,7 +106,7 @@ Reviewed all frontend skills documentation against:
 **Created:** Comprehensive new skill file covering:
 - Server vs Client Component decision tree
 - React 19 `use()` hook patterns
-- Next.js 15 parallel routing
+- Next.js 16 parallel routing
 - Server Actions with useActionState
 - Performance patterns (waterfall elimination, defer await, partial dependencies)
 - Deferred loading implementation
@@ -147,7 +147,7 @@ Reviewed all frontend skills documentation against:
 | Improved Server Components | `react-19-nextjs-15-patterns.md` | Direct database access |
 | Suspense boundaries strategy | `react-19-nextjs-15-patterns.md` | Progressive loading |
 
-### Next.js 15 Patterns (NEW)
+### Next.js 16 Patterns (NEW)
 
 | Pattern | File | Description |
 |---------|------|-------------|
@@ -377,7 +377,7 @@ test('expensive operations are memoized', () => {
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
 | React 19 patterns documented | 80% | 95% | ✅ |
-| Next.js 15 patterns documented | 80% | 90% | ✅ |
+| Next.js 16 patterns documented | 80% | 90% | ✅ |
 | Performance patterns documented | 70% | 85% | ✅ |
 | Vercel best practices covered | 80% | 85% | ✅ |
 
@@ -396,13 +396,13 @@ test('expensive operations are memoized', () => {
 
 **Summary:**
 - ✅ All frontend skills updated with modern patterns
-- ✅ New comprehensive skill file for React 19/Next.js 15
+- ✅ New comprehensive skill file for React 19/Next.js 16
 - ✅ Performance patterns standardized and documented
 - ✅ 85% alignment with Vercel best practices
 - ✅ Current implementation patterns now codified
 
 **Impact:**
-- Engineers have clear guidance on React 19/Next.js 15 features
+- Engineers have clear guidance on React 19/Next.js 16 features
 - Performance optimizations are standardized
 - Code reviews can reference specific skill sections
 - New developers can onboard faster with comprehensive docs

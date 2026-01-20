@@ -73,7 +73,7 @@ export default function Component(props) {
 ### Architectural Benefits
 1. **Explicit Dependencies**: Clear which components need session access
 2. **Better Code Splitting**: Session provider code split by route
-3. **Server-First Approach**: Aligns with Next.js 15 App Router patterns
+3. **Server-First Approach**: Aligns with Next.js 16 App Router patterns
 
 ## Verification
 
@@ -117,6 +117,6 @@ If adding new components that need `useSession()`:
 3. Only wrap at page level if multiple components need session
 
 ## Related Documentation
-- Next.js 15 App Router: https://nextjs.org/docs/app
+- Next.js 16 App Router: https://nextjs.org/docs/app
 - NextAuth.js with App Router: https://next-auth.js.org/configuration/nextjs#in-app-router
 - React Server Components: https://react.dev/reference/rsc/server-components

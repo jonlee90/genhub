@@ -50,7 +50,7 @@ This addresses a critical pain point in construction: the disconnect between phy
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   Client (Next.js 15 + React 19)             │
+│                   Client (Next.js 16 + React 19)             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐ │
@@ -2756,7 +2756,7 @@ import { FEATURES } from '@/config';
 
 ### Technology Stack
 
-- **Next.js 15.5.9**: React framework, App Router, Server Components
+- **Next.js 16.5.9**: React framework, App Router, Server Components
 - **xeokit SDK 2.6.100**: BIM viewer engine
 - **Supabase**: PostgreSQL database + Realtime
 - **Vercel Blob**: File storage for models

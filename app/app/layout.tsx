@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Sidebar } from "../../components/app/Sidebar";
 import { BottomNavigation } from "../../components/app/BottomNavigation";
 import { Toaster } from "sonner";
@@ -8,11 +9,7 @@ import { isOwner } from "@/app/actions/owner";
 import { BottomNavProvider } from "@/lib/contexts/BottomNavContext";
 import { auth } from "@/lib/auth";
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+async function LayoutContent({ children }: { children: React.ReactNode }) {
   // Fetch session once at layout level to avoid multiple API calls
   const session = await auth();
 
@@ -52,5 +49,21 @@ export default async function AppLayout({
         <InstallPrompt />
       </div>
     </BottomNavProvider>
+  );
+}
+
+export default function AppLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#001B51]"></div>
+      </div>
+    }>
+      <LayoutContent>{children}</LayoutContent>
+    </Suspense>
   );
 }

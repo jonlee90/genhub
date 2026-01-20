@@ -94,7 +94,7 @@ Modern construction project management for general contractors, combining task m
 
 ## Technical Details
 
-**Stack:** Next.js 15, React 19, Supabase, Tailwind CSS
+**Stack:** Next.js 16, React 19, Supabase, Tailwind CSS
 **Platform:** Progressive Web App (PWA) - works on iOS, Android, desktop
 **Offline:** Full offline capability with automatic sync
 **Security:** Enterprise-grade encryption, role-based access, regular backups

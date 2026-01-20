@@ -183,7 +183,10 @@
       "mcp__next-devtools__init",
       "mcp__memory__create_entities",
       "mcp__memory__add_observations",
-      "Bash(npm exec:*)"
+      "Bash(npm exec:*)",
+      "Bash(npm update:*)",
+      "mcp__memory__read_graph",
+      "mcp__plugin_context7_context7__query-docs"
     ],
     "deny": [],
     "ask": []

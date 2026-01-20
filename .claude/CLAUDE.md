@@ -19,7 +19,7 @@ requirements. Do this automatically without being asked.
 ## PROJECT
 
 **GenHub**: Construction PWA for general contractors
-**Stack**: Next.js 15, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
+**Stack**: Next.js 16, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
 **Priorities**: Correctness > Token efficiency > Consistency > Speed
 
 ---
@@ -114,7 +114,7 @@ TodoWrite([
 
 | Type | Agents |
 |------|--------|
-| **With budgets** | backend-engineer(70k), frontend-engineer(80k), code-reviewer(40k), performance-engineer(50k) |
+| **With budgets** | backend-engineer(90k), frontend-engineer(90k), code-reviewer(60k), performance-engineer(60k) |
 | **Planning-only** | frontend-architect, supabase-schema-architect, ai-sdk-v5-expert |
 
 ---

@@ -8,12 +8,22 @@
  * Debug: Shows invitation-only message
  */
 
+import { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { SignupInfo } from '@/components/auth/SignupInfo';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default async function SignupPage() {
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupPageLoading />}>
+      <SignupPageContent />
+    </Suspense>
+  );
+}
+
+async function SignupPageContent() {
   console.log('[SignupPage] Checking auth status');
 
   // Debug: Check if user is already authenticated
@@ -29,6 +39,24 @@ export default async function SignupPage() {
   return (
     <AuthLayout>
       <SignupInfo />
+    </AuthLayout>
+  );
+}
+
+function SignupPageLoading() {
+  return (
+    <AuthLayout>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
     </AuthLayout>
   );
 }

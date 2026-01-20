@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
 import { stripe } from "@/utils/stripe";
@@ -21,6 +22,7 @@ function getPlanNameFromPriceId(priceId: string): {
 }
 
 export async function GET() {
+  noStore(); // Prevent caching of profile data
   try {
     const session = await auth();
     const supabase = createAdminClient();

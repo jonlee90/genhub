@@ -292,14 +292,27 @@ export function GanttChart({
         height: Math.min(
           totalHeight + config.headerHeight + (isMobile ? 20 : 40),
           isMobile ? 400 : 600
-        )
+        ),
+        // Prevent overscroll and constrain touch behavior on mobile
+        ...(isMobile && {
+          touchAction: 'pan-x',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch'
+        })
       }}
       onMouseDown={!isMobile ? handleMouseDown : undefined}
       onMouseMove={!isMobile ? handleMouseMove : undefined}
       onMouseUp={!isMobile ? handleMouseUp : undefined}
       onMouseLeave={!isMobile ? handleMouseLeave : undefined}
     >
-          <div className="relative bg-white" style={{ width: totalWidth }}>
+          <div
+            className="relative bg-white"
+            style={{
+              width: totalWidth,
+              // Prevent mobile touch dragging on inner content
+              ...(isMobile && { touchAction: 'pan-x' })
+            }}
+          >
             {/* Header */}
             <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
 

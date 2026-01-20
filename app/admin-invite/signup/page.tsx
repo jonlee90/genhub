@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { validateAdminInvitationToken } from '@/app/actions/accept-admin-invite';
 import { AdminSignupForm } from '@/components/admin-invite/AdminSignupForm';
+import { Skeleton } from '@/components/ui/skeleton';
 
 /**
  * Admin Invite Signup Page
@@ -9,7 +11,19 @@ import { AdminSignupForm } from '@/components/admin-invite/AdminSignupForm';
  * Server Component - Displays the signup form for accepted admin invitations.
  * User must be authenticated to access this page.
  */
-export default async function AdminInviteSignupPage({
+export default function AdminInviteSignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  return (
+    <Suspense fallback={<AdminInviteSignupLoading />}>
+      <AdminInviteSignupContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function AdminInviteSignupContent({
   searchParams,
 }: {
   searchParams: Promise<{ token?: string }>;
@@ -59,6 +73,25 @@ export default async function AdminInviteSignupPage({
       userEmail={session.user.email!}
       userName={session.user.name || invitation.name || ''}
     />
+  );
+}
+
+function AdminInviteSignupLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8">
+        <div className="space-y-6">
+          <Skeleton className="h-12 w-48 mx-auto" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4 mx-auto" />
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 

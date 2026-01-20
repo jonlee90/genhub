@@ -1,12 +1,13 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 import { ExpensesList } from "@/components/expenses/ExpensesList";
 import { ExpensesListSkeleton } from "@/components/expenses/ExpensesListSkeleton";
 import { ExpensesPageHeader } from "@/components/expenses/ExpensesPageHeader";
 import { ExpenseSummary } from "@/components/expenses/ExpenseSummary";
 import { getExpenseAnalytics } from "@/app/actions/expenses";
-import { getExpensesData } from "@/lib/expenses";
-
-export const dynamic = "force-dynamic";
+import { getCachedExpensesData } from "@/lib/cache/expenses";
+import { auth } from "@/lib/auth";
+import { createClient } from "@/utils/supabase/server";
 
 const BLUEPRINT_BACKGROUND_STYLE = {
   backgroundImage: `
@@ -27,9 +28,28 @@ export default async function ExpensesPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Auth check (NOT cached - security requirement)
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/");
+  }
+
+  const supabase = await createClient();
+  const { data: companyUser } = await supabase
+    .from("company_users")
+    .select("company_id, role")
+    .eq("user_id", session.user.id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  if (!companyUser) {
+    redirect("/app/onboarding");
+  }
+
+  // Cached data fetch (with company isolation)
   const [params, expensesData, analyticsResult] = await Promise.all([
     searchParams,
-    getExpensesData(),
+    getCachedExpensesData(companyUser.company_id, companyUser.role),
     getExpenseAnalytics(),
   ]);
   const { expenses, projects, tasks, companyId } = expensesData;

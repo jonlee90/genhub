@@ -448,7 +448,7 @@ PROCEED if:
 
 ---
 
-## OPTIMIZATION PATTERNS (Next.js 15 + Supabase)
+## OPTIMIZATION PATTERNS (Next.js 16 + Supabase)
 
 ### Eliminating Waterfalls (CRITICAL - #1 Performance Killer)
 
@@ -539,7 +539,7 @@ CREATE INDEX CONCURRENTLY idx_{table}_tags
   ON public.{table} USING GIN (tags);
 ```
 
-### Caching Patterns (Next.js 15)
+### Caching Patterns (Next.js 16)
 
 ```typescript
 // Pattern 1: Static data with revalidation
@@ -609,7 +609,7 @@ export async function getCachedProject(id: string) {
 ### Non-Blocking Operations with after()
 
 ```typescript
-// Use after() for analytics, logging, audit trails (Next.js 15+)
+// Use after() for analytics, logging, audit trails (Next.js 16+)
 // Response is sent immediately, work happens in background
 import { after } from 'next/server'
 

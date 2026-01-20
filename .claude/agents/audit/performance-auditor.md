@@ -98,7 +98,7 @@ CONTEXT: {relevant code location and metrics}
 
 ## CRITICAL AUDIT PATTERNS FOR GENHUB
 
-### Pattern 1: N+1 Query Detection (Next.js 15 + Supabase)
+### Pattern 1: N+1 Query Detection (Next.js 16 + Supabase)
 
 **Where to Look:**
 ```typescript
@@ -200,7 +200,7 @@ grep -l "'use client'" components/**/*.tsx app/app/**/*.tsx | \
 
 ### Pattern 4: Missing Caching/Memoization
 
-**Next.js 15 Caching (GenHub Stack):**
+**Next.js 16 Caching (GenHub Stack):**
 ```typescript
 // ❌ No caching: Re-fetches on every request
 export async function getProjects() {
@@ -209,7 +209,7 @@ export async function getProjects() {
 
 // ✅ GOOD: Cached with revalidation
 export async function getProjects() {
-  'use cache'  // Next.js 15 directive
+  'use cache'  // Next.js 16 directive
   return await supabase.from('projects').select('*')
 }
 
@@ -420,7 +420,7 @@ grep -l "'use client'" components/**/*.tsx | \
 **D. Page/Route Audit**
 ```bash
 # 1. List all routes
-ls -R app/app/  # Next.js 15 app dir
+ls -R app/app/  # Next.js 16 app dir
 
 # 2. Check for Suspense boundaries
 grep -r "Suspense" app/app/ --include="*.tsx"

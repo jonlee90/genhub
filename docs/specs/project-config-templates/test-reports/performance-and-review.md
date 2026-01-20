@@ -487,7 +487,7 @@ import { useState, useEffect } from 'react';
 - Data fetched in parent, passed to children ✅
 - Server actions called from client components ✅
 
-**Result:** ✅ **PASS** - React patterns follow Next.js 15 best practices.
+**Result:** ✅ **PASS** - React patterns follow Next.js 16 best practices.
 
 ---
 

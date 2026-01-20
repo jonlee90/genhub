@@ -61,7 +61,7 @@ The Slack-like Chat System provides real-time communication capabilities for Gen
 ```
                                     +-------------------+
                                     |   GenHub PWA      |
-                                    |   (Next.js 15)    |
+                                    |   (Next.js 16)    |
                                     +--------+----------+
                                              |
                     +------------------------+------------------------+

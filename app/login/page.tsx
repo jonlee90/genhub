@@ -7,16 +7,26 @@
  * Debug: Handles error and callbackUrl from searchParams
  */
 
+import { Suspense } from 'react';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { LoginForm } from '@/components/auth/LoginForm';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LoginPageProps {
   searchParams: Promise<{ error?: string; callbackUrl?: string }>;
 }
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default function LoginPage({ searchParams }: LoginPageProps) {
+  return (
+    <Suspense fallback={<LoginPageLoading />}>
+      <LoginPageContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function LoginPageContent({ searchParams }: LoginPageProps) {
   console.log('[LoginPage] Checking auth status');
 
   // Debug: Check if user is already authenticated
@@ -37,6 +47,24 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <AuthLayout>
       <LoginForm error={error} callbackUrl={callbackUrl} />
+    </AuthLayout>
+  );
+}
+
+function LoginPageLoading() {
+  return (
+    <AuthLayout>
+      <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <Skeleton className="h-8 w-48 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
     </AuthLayout>
   );
 }

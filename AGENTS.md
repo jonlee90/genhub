@@ -5,7 +5,7 @@ Follow these conventions to keep changes consistent and low-risk.
 
 ## Quick Orientation
 
-- Framework: Next.js 15 (App Router) + React 19 + TypeScript.
+- Framework: Next.js 16 (App Router) + React 19 + TypeScript.
 - Styling: Tailwind CSS with `clsx` + `tailwind-merge` via `cn` helper.
 - Data: Supabase (server utilities in `@/utils/supabase/server`).
 - Tests: Playwright end-to-end tests in `tests/`.

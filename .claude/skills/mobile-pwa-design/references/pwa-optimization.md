@@ -4,7 +4,7 @@
 
 ---
 
-## PWA Setup for Next.js 15
+## PWA Setup for Next.js 16
 
 ### Install Serwist (Recommended for Next.js)
 
