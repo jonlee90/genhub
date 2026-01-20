@@ -299,7 +299,7 @@ export function DocumentCategoryList({
         <FilePreviewModal
           file={previewFile}
           onClose={() => setPreviewFile(null)}
-          onDelete={(fileId) => {
+          onDelete={() => {
             setPreviewFile(null);
             onRefresh();
           }}

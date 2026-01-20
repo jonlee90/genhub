@@ -48,7 +48,6 @@ export function FloorPlanUploader({
   const [floorName, setFloorName] = useState('');
   const [floorIndex, setFloorIndex] = useState(0);
 
-  const acceptedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
   const acceptedExtensions = ['.png', '.jpg', '.jpeg', '.pdf'];
 
   const validateFile = useCallback(
@@ -56,6 +55,7 @@ export function FloorPlanUploader({
       console.log('[FloorPlanUploader] Validating file:', file.name);
 
       // Check file type
+      const acceptedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
       if (!acceptedTypes.includes(file.type)) {
         return 'Only PNG, JPG, and PDF files are supported';
       }
@@ -68,7 +68,7 @@ export function FloorPlanUploader({
 
       return null;
     },
-    [maxFileSizeMB, acceptedTypes]
+    [maxFileSizeMB]
   );
 
   const handleFileSelect = useCallback(

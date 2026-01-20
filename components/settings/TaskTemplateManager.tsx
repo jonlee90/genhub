@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, memo, useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   DndContext,
   closestCenter,
@@ -15,15 +14,12 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 // Performance optimization: Direct imports instead of barrel file
 import Plus from "lucide-react/icons/plus";
 import Edit from "lucide-react/icons/edit";
 import Trash2 from "lucide-react/icons/trash-2";
-import GripVertical from "lucide-react/icons/grip-vertical";
 import Package from "lucide-react/icons/package";
 import Hammer from "lucide-react/icons/hammer";
 import CheckCircle2 from "lucide-react/icons/check-circle-2";
@@ -32,6 +28,7 @@ import AlertCircle from "lucide-react/icons/alert-circle";
 import ListChecks from "lucide-react/icons/list-checks";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { TemplateCard, type TemplateBadge } from "@/components/ui/TemplateCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -73,13 +70,13 @@ import type {
   TaskTypeConfigsRow,
 } from "@/types/db/tables/tasks";
 
-// Debug: Type definitions
+// Type aliases for improved code readability
 type TaskTemplate = TaskTemplatesRow;
 type TaskTypeConfig = TaskTypeConfigsRow;
 
 /**
  * Task type configuration for badge display
- * Debug: Matches task type configs from DB with construction theme
+ * Default task type configurations with display properties (icon, label, color)
  */
 const DEFAULT_TASK_TYPE_CONFIG = {
   work: {
@@ -106,7 +103,7 @@ const DEFAULT_TASK_TYPE_CONFIG = {
 
 /**
  * Priority configuration for badge display
- * Debug: Color-coded priority levels
+ * Priority configuration with color-coded display properties
  */
 const PRIORITY_CONFIG = {
   high: { label: "High", color: "border-red-300 text-red-700 bg-red-50" },
@@ -118,9 +115,89 @@ const PRIORITY_CONFIG = {
 };
 
 /**
- * SortableTaskItem - Individual draggable task template card
- * Debug: Compact horizontal layout with drag handle, badges, and actions
- * Performance: Wrapped in React.memo to prevent unnecessary re-renders
+ * Empty state when no project type is selected
+ * Hoisted outside component to prevent re-creation on every render
+ */
+const NoProjectTypeSelectedTask = memo(() => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
+      <ListChecks className="h-16 w-16 text-construction-blue" />
+    </div>
+    <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+      Select a Project Type
+    </h3>
+    <p className="text-gray-500 max-w-md">
+      Choose a project type and phase from the filters above to view and
+      manage task templates
+    </p>
+  </div>
+));
+NoProjectTypeSelectedTask.displayName = 'NoProjectTypeSelectedTask';
+
+/**
+ * Empty state when no phase is selected
+ * Hoisted outside component to prevent re-creation on every render
+ */
+interface NoPhaseSelectedProps {
+  phasesAvailable: boolean;
+}
+
+const NoPhaseSelected = memo(function NoPhaseSelected({ phasesAvailable }: NoPhaseSelectedProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
+        <ListChecks className="h-16 w-16 text-construction-blue" />
+      </div>
+      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+        Select a Phase
+      </h3>
+      <p className="text-gray-500 max-w-md">
+        {!phasesAvailable
+          ? "No phase templates found for this project type. Create phase templates first."
+          : "Choose a phase template to view its task templates"}
+      </p>
+    </div>
+  );
+});
+
+/**
+ * Empty state when no task templates exist
+ * Hoisted outside component to prevent re-creation on every render
+ */
+interface EmptyTaskStateProps {
+  onCreate: () => void;
+}
+
+const EmptyTaskState = memo(function EmptyTaskState({ onCreate }: EmptyTaskStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
+        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
+          <ListChecks className="h-16 w-16 text-construction-blue" />
+        </div>
+      </div>
+      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+        No Task Templates Defined
+      </h3>
+      <p className="text-gray-500 max-w-md mb-6">
+        Create task templates to define default tasks for this project phase
+      </p>
+      <Button
+        onClick={onCreate}
+        className="bg-construction-blue hover:bg-blue-700 text-white font-bold min-h-[44px]"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Create First Task Template
+      </Button>
+    </div>
+  );
+});
+
+/**
+ * SortableTaskItem - Individual draggable task template card using TemplateCard
+ * Compact draggable task template card with type and priority badges
+ * Performance: Uses reusable TemplateCard component, wrapped in React.memo
  */
 interface SortableTaskItemProps {
   task: TaskTemplate;
@@ -135,20 +212,6 @@ const SortableTaskItem = memo(function SortableTaskItem({
   onEdit,
   onDelete,
 }: SortableTaskItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   // Get task type config from database or fallback to defaults
   const dbTaskType = task.default_task_type
     ? taskTypeConfigs[task.default_task_type]
@@ -171,123 +234,29 @@ const SortableTaskItem = memo(function SortableTaskItem({
     PRIORITY_CONFIG[task.default_priority as keyof typeof PRIORITY_CONFIG] ||
     PRIORITY_CONFIG.medium;
 
+  // Build badges for the card
+  const badges: TemplateBadge[] = [
+    {
+      label: taskTypeLabel,
+      icon: TaskTypeIcon,
+      className: taskTypeColor,
+    },
+    {
+      label: priorityConfig.label,
+      className: `border-2 ${priorityConfig.color}`,
+    },
+  ];
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn("relative group", isDragging && "opacity-50 z-50")}
-    >
-      {/* Debug: Gradient background glow on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      {/* Debug: Main task card container - RESPONSIVE: Stacked on mobile, horizontal on desktop */}
-      <div
-        onClick={onEdit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onEdit();
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        className="relative bg-white border-2 border-gray-200 rounded-lg shadow-sm hover:shadow-construction hover:border-construction-blue/30 transition-all duration-300 cursor-pointer active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
-      >
-        {/*
-          MOBILE LAYOUT (<640px):
-          - Row 1: Drag handle + Task title (truncated)
-          - Row 2: Index badge + Type badge + Priority badge
-          - Row 3: "Click to edit" + Delete button
-
-          DESKTOP LAYOUT (≥640px):
-          - Single row: Drag + Index + Type + Task + Priority + "Click to edit" + Delete button
-        */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 p-3">
-          {/* Row 1 on mobile: Drag handle + Task title */}
-          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-            {/* Drag handle - better touch target on mobile, stops propagation */}
-            <button
-              {...attributes}
-              {...listeners}
-              onClick={(e) => e.stopPropagation()}
-              className="shrink-0 p-3 sm:p-2 hover:bg-gray-100 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
-              aria-label="Drag to reorder"
-            >
-              <GripVertical className="h-5 w-5 text-gray-400" />
-            </button>
-
-            {/* Order index badge - hidden on mobile, shown on desktop */}
-            <div className="hidden sm:flex shrink-0 items-center justify-center w-8 h-8 bg-construction-blue/10 text-construction-blue font-black text-sm rounded-md border-2 border-construction-blue/20">
-              {task.order_index !== null && task.order_index !== undefined
-                ? task.order_index + 1
-                : "?"}
-            </div>
-
-            {/* Task info - flex-1 to take available space */}
-            <div className="flex-1 min-w-0">
-              <h4 className="font-bold text-gray-900 text-sm truncate">
-                {task.title}
-              </h4>
-              {task.description && (
-                <p className="text-xs text-gray-600 line-clamp-1 mt-0.5">
-                  {task.description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Row 2 on mobile: Index (mobile only) + Type badge + Priority badge */}
-          <div className="flex items-center gap-2 pl-11 sm:pl-0 flex-wrap sm:flex-nowrap">
-            {/* Order index badge - shown on mobile, hidden on desktop */}
-            <div className="flex sm:hidden shrink-0 items-center justify-center w-7 h-7 bg-construction-blue/10 text-construction-blue font-black text-xs rounded-md border-2 border-construction-blue/20">
-              {task.order_index !== null && task.order_index !== undefined
-                ? task.order_index + 1
-                : "?"}
-            </div>
-
-            {/* Task type badge with icon */}
-            <div
-              className={cn(
-                "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-bold shrink-0",
-                taskTypeColor,
-              )}
-            >
-              <TaskTypeIcon className="h-3.5 w-3.5" />
-              <span>{taskTypeLabel}</span>
-            </div>
-
-            {/* Priority badge */}
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-xs font-bold shrink-0 border-2",
-                priorityConfig.color,
-              )}
-            >
-              {priorityConfig.label}
-            </Badge>
-          </div>
-
-          {/* Row 3 on mobile: "Click to edit" text + Delete button */}
-          <div className="flex items-center justify-between gap-2 pl-11 sm:pl-0 sm:ml-auto">
-            <span className="text-xs text-gray-500 font-medium">
-              Click to edit
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent edit modal from opening
-                onDelete();
-              }}
-              className="h-11 sm:h-8 px-3 sm:px-2 hover:bg-red-50 hover:text-red-600 font-semibold transition-colors touch-manipulation min-h-[44px] sm:min-h-0"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <TemplateCard
+      id={task.id}
+      title={task.title}
+      description={task.description || undefined}
+      orderIndex={task.order_index !== null && task.order_index !== undefined ? task.order_index : undefined}
+      badges={badges}
+      onEdit={onEdit}
+      onDelete={onDelete}
+    />
   );
 });
 
@@ -310,7 +279,7 @@ interface TaskTemplateManagerProps {
 
 /**
  * TaskTemplateManager - Main component for task template management
- * Debug: Construction-themed CRUD interface with drag-and-drop, filters, and modals
+ * CRUD interface for task template management with drag-and-drop, filtering, and modals
  * Performance:
  * - Wrapped in memo to prevent unnecessary re-renders
  * - Receives shared data via props from parent to eliminate redundant network calls
@@ -333,7 +302,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
   const [editingTask, setEditingTask] = useState<TaskTemplate | null>(null);
   const [deletingTask, setDeletingTask] = useState<TaskTemplate | null>(null);
 
-  // Debug: Drag-and-drop sensors configuration
+  // Configure drag-and-drop sensors for both pointer and keyboard interaction
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -368,7 +337,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
     setIsLoadingTasks(false);
   }, []);
 
-  // Debug: Load task templates when phase changes
+  // Load task templates when phase selection changes
   useEffect(() => {
     if (selectedPhaseTemplateId) {
       loadTaskTemplates(selectedPhaseTemplateId);
@@ -377,23 +346,30 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
     }
   }, [selectedPhaseTemplateId, loadTaskTemplates]);
 
-  // Debug: Handle drag end event
+  // Handle drag-and-drop reordering with optimistic update
+  // Vercel React Best Practice: rerender-functional-setstate
+  // Using functional setState to avoid including taskTemplates in dependencies,
+  // which keeps this callback stable and prevents unnecessary re-renders.
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (!over || active.id === over.id || !selectedPhaseTemplateId) return;
 
-    const oldIndex = taskTemplates.findIndex((t) => t.id === active.id);
-    const newIndex = taskTemplates.findIndex((t) => t.id === over.id);
+    let orderedIds: string[] = [];
 
-    if (oldIndex === -1 || newIndex === -1) return;
+    // Optimistic update using functional setState
+    setTaskTemplates(current => {
+      const oldIndex = current.findIndex((t) => t.id === active.id);
+      const newIndex = current.findIndex((t) => t.id === over.id);
 
-    // Optimistic update
-    const newOrder = arrayMove(taskTemplates, oldIndex, newIndex);
-    setTaskTemplates(newOrder);
+      if (oldIndex === -1 || newIndex === -1) return current;
 
-    // Persist to backend
-    const orderedIds = newOrder.map((t) => t.id);
+      const newOrder = arrayMove(current, oldIndex, newIndex);
+      orderedIds = newOrder.map((t) => t.id);
+      return newOrder;
+    });
+
+    // Persist to backend (async, outside setState)
     const result = await reorderTaskTemplates(
       selectedPhaseTemplateId,
       orderedIds,
@@ -401,14 +377,14 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
 
     if (result.error) {
       toast.error("Failed to reorder tasks");
-      // Revert on error
+      // Revert on error by reloading from server
       loadTaskTemplates(selectedPhaseTemplateId);
     } else {
       toast.success("Task order updated");
     }
-  }, [taskTemplates, selectedPhaseTemplateId, loadTaskTemplates]);
+  }, [selectedPhaseTemplateId, loadTaskTemplates]);
 
-  // Debug: Handle create submission
+  // Handle task template creation - form submission
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -426,7 +402,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
     }
   }, [selectedPhaseTemplateId, loadTaskTemplates]);
 
-  // Debug: Handle update submission
+  // Handle task template update - form submission
   const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingTask) return;
@@ -445,7 +421,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
     }
   }, [editingTask, selectedPhaseTemplateId, loadTaskTemplates]);
 
-  // Debug: Handle delete confirmation
+  // Handle task template deletion
   const handleDelete = useCallback(async () => {
     if (!deletingTask) return;
 
@@ -476,7 +452,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
 
   return (
     <div className="space-y-6">
-      {/* Debug: Header with filters and Add button */}
+      {/* Header with project type and phase filters, create button */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex-1">
@@ -558,38 +534,13 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         </div>
       </div>
 
-      {/* Debug: Task templates sortable list */}
+      {/* Task templates sortable list */}
       {!selectedProjectTypeId ? (
-        // Debug: No project type selected state
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-            <ListChecks className="h-16 w-16 text-construction-blue" />
-          </div>
-          <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
-            Select a Project Type
-          </h3>
-          <p className="text-gray-500 max-w-md">
-            Choose a project type and phase from the filters above to view and
-            manage task templates
-          </p>
-        </div>
+        <NoProjectTypeSelectedTask />
       ) : !selectedPhaseTemplateId ? (
-        // Debug: No phase selected state
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-            <ListChecks className="h-16 w-16 text-construction-blue" />
-          </div>
-          <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
-            Select a Phase
-          </h3>
-          <p className="text-gray-500 max-w-md">
-            {phaseTemplates.length === 0
-              ? "No phase templates found for this project type. Create phase templates first."
-              : "Choose a phase template to view its task templates"}
-          </p>
-        </div>
+        <NoPhaseSelected phasesAvailable={phaseTemplates.length > 0} />
       ) : isLoadingTasks ? (
-        // Debug: Loading skeleton - CSS animate-in for performance
+        // Loading skeleton animation
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -614,30 +565,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           ))}
         </div>
       ) : taskTemplates.length === 0 ? (
-        // Debug: Empty state - matches ProjectsPageClient pattern with CSS animation
-        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-            <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-              <ListChecks className="h-16 w-16 text-construction-blue" />
-            </div>
-          </div>
-          <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
-            No Task Templates Defined
-          </h3>
-          <p className="text-gray-500 max-w-md mb-6">
-            Create task templates to define default tasks for this project phase
-          </p>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-construction-blue hover:bg-blue-700 text-white font-bold min-h-[44px]"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create First Task Template
-          </Button>
-        </div>
+        <EmptyTaskState onCreate={() => setShowCreateModal(true)} />
       ) : (
-        // Debug: Sortable task templates list
+        // Sortable task templates list with drag-and-drop reordering
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -671,7 +601,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         </DndContext>
       )}
 
-      {/* Debug: Create Task Template Modal */}
+      {/* Create Task Template Modal */}
       <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -851,8 +781,8 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         </form>
       </ResponsiveModal>
 
-      {/* Debug: Edit Task Template Modal */}
-      {editingTask && (
+      {/* Edit Task Template Modal */}
+      {editingTask ? (
         <ResponsiveModal
           isOpen={!!editingTask}
           onClose={() => setEditingTask(null)}
@@ -1042,10 +972,10 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             </div>
           </form>
         </ResponsiveModal>
-      )}
+      ) : null}
 
-      {/* Debug: Delete Confirmation */}
-      {deletingTask && (
+      {/* Delete Confirmation */}
+      {deletingTask ? (
         <AlertDialog
           open={!!deletingTask}
           onOpenChange={() => setDeletingTask(null)}
@@ -1056,29 +986,27 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 <AlertCircle className="h-6 w-6" />
                 Delete Task Template
               </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3 text-base">
-                <p className="text-gray-700">
-                  Are you sure you want to delete{" "}
-                  <span className="font-bold text-gray-900">
-                    "{deletingTask.title}"
-                  </span>
-                  ?
-                </p>
-                <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-blue-900 mb-1">
-                        Template Only
-                      </h4>
-                      <p className="text-sm text-blue-800">
-                        This will delete the task template. Existing tasks in
-                        projects will not be affected.
-                      </p>
+              <AlertDialogDescription className="text-base text-gray-700">
+                Are you sure you want to delete{" "}
+                <span className="font-bold text-gray-900">
+                  "{deletingTask.title}"
+                </span>
+                ?
+              </AlertDialogDescription>
+              <div className="mt-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-blue-900 mb-1">
+                      Template Only
+                    </h4>
+                    <div className="text-sm text-blue-800">
+                      This will delete the task template. Existing tasks in
+                      projects will not be affected.
                     </div>
                   </div>
                 </div>
-              </AlertDialogDescription>
+              </div>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="border-2 font-semibold">
@@ -1094,7 +1022,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      )}
+      ) : null}
     </div>
   );
 });

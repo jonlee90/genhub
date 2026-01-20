@@ -155,7 +155,6 @@ export function ProjectFileUploader({
   const [category, setCategory] = useState(defaultCategory || 'general');
   const [clientVisible, setClientVisible] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadingRef = useRef(new Set<string>());
@@ -205,7 +204,6 @@ export function ProjectFileUploader({
    */
   const processQueue = async (items: FileQueueItem[]) => {
     console.log('[ProjectFileUploader] Processing queue, items:', items.length);
-    setIsProcessing(true);
 
     const pending = items.filter(
       (item) => item.status === 'pending' && !uploadingRef.current.has(item.id)
@@ -307,8 +305,6 @@ export function ProjectFileUploader({
           } else if (successCount > 0) {
             toast.warning(`${successCount} uploaded, ${errorCount} failed`);
           }
-
-          setIsProcessing(false);
         }
 
         return prev;

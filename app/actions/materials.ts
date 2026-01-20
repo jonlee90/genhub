@@ -10,10 +10,6 @@ import {
   type HomeDepotProduct,
   type HomeDepotSearchParams,
 } from "@/lib/services/home-depot-api";
-import type {
-  MaterialsRow,
-  MaterialAssignmentsRow,
-} from "@/types/db/tables/materials";
 import type { ProcurementStatus, MaterialCategory } from "@/types/db/enums";
 
 

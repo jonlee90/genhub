@@ -284,7 +284,7 @@ Last updated: 2026-01-19
 | KakaoTalkSettings | Client | - | settings/KakaoTalkSettings.tsx |
 | ModelPreviewModal | Client | - | settings/ModelPreviewModal.tsx |
 | ModelUploadModal | Client | - | settings/ModelUploadModal.tsx |
-| PhaseTemplateManager | Client | - | settings/PhaseTemplateManager.tsx |
+| PhaseTemplateManager | Client | onAddTaskToPhase | settings/PhaseTemplateManager.tsx |
 | ProjectConfigurationSection | Client | - | settings/ProjectConfigurationSection.tsx |
 | ProjectTypeManager | Client | - | settings/ProjectTypeManager.tsx |
 | SettingsSectionHeader | Client | - | settings/SettingsSectionHeader.tsx |
@@ -411,7 +411,9 @@ Last updated: 2026-01-19
 | index | Client | - | ui/ResponsiveModal/index.tsx |
 | StateSelect.example | Client | - | ui/StateSelect.example.tsx |
 | StateSelect | Client | - | ui/StateSelect.tsx |
+| TemplateCard | Client | - | ui/TemplateCard.tsx |
 | TopAccentBar | Client | - | ui/TopAccentBar.tsx |
+| TypesCard | Client | - | ui/TypesCard.tsx |
 | WidgetCard | Client | - | ui/WidgetCard.tsx |
 | animated-tooltip | Client | - | ui/aceternity/animated-tooltip.tsx |
 | background-boxes | Client | - | ui/aceternity/background-boxes.tsx |

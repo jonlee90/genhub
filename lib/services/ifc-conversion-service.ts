@@ -268,9 +268,8 @@ export async function convertIFCtoXKT(
     await convertToXKT(inputPath, outputPath, options);
 
     // Step 4: Generate LOD variants (optional)
-    let lodPaths = {};
     if (options.generateLODs) {
-      lodPaths = await generateLODs(outputPath);
+      await generateLODs(outputPath);
     }
 
     // Step 5: Calculate processing time

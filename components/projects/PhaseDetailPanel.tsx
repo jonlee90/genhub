@@ -16,7 +16,6 @@ import Zap from 'lucide-react/icons/zap';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { applyTaskTemplates } from '@/app/actions/phases';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
 import { TaskModal } from '@/components/tasks/TaskModal';
@@ -98,8 +97,7 @@ export function PhaseDetailPanel({
   onModalOpen,
 }: PhaseDetailPanelProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [applyingTemplates, setApplyingTemplates] = useState(false);
+  const [, startTransition] = useTransition();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Performance optimization: Memoize computed values
@@ -118,30 +116,6 @@ export function PhaseDetailPanel({
     () => stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0,
     [stats.totalTasks, stats.completedTasks]
   );
-
-  // Performance optimization: Memoize event handlers to prevent recreation on every render
-  const handleApplyTemplates = useCallback(async () => {
-    setApplyingTemplates(true);
-
-    startTransition(async () => {
-      try {
-        // applyTaskTemplates now finds the matching phase template by name automatically
-        const result = await applyTaskTemplates(phase.id);
-
-        if (result.success && result.tasksCreated) {
-          toast.success(`${result.tasksCreated} tasks created from templates`);
-          router.refresh();
-        } else if (result.error) {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        console.error('[PhaseDetailPanel] Error applying templates:', error);
-        toast.error('Failed to apply task templates');
-      } finally {
-        setApplyingTemplates(false);
-      }
-    });
-  }, [phase.id, router]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

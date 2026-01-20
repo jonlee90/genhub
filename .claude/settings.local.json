@@ -179,7 +179,8 @@
       "Bash(jq:*)",
       "Bash(npm run deps:update:*)",
       "Bash(npm run sync:docs:*)",
-      "Bash(npm run docs:sync:*)"
+      "Bash(npm run docs:sync:*)",
+      "mcp__next-devtools__init"
     ],
     "deny": [],
     "ask": []

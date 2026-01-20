@@ -29,7 +29,6 @@ import {
   updatePhaseName,
   deletePhase,
 } from "@/app/actions/phases";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 

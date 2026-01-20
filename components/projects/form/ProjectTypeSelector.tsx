@@ -43,18 +43,6 @@ function getColorClasses(hexColor: string | null) {
   return COLOR_CLASSES[hexColor] || null;
 }
 
-// Generate inline styles for custom hex colors
-function getColorInlineStyles(hexColor: string | null) {
-  if (!hexColor) return {};
-
-  // For any custom color, generate CSS custom properties
-  return {
-    '--color-hex': hexColor,
-    '--color-light': `${hexColor}15`, // Add 15% opacity version
-    '--color-dark': `${hexColor}80`, // Add 80% opacity version
-  } as React.CSSProperties;
-}
-
 // Get icon from icon map
 function getIconComponent(iconName: string | null) {
   if (!iconName) return Building2;

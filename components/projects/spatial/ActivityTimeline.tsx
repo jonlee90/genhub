@@ -5,7 +5,6 @@
 
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Activity from 'lucide-react/icons/activity';
-import Circle from 'lucide-react/icons/circle';;
 import { formatDistanceToNow } from 'date-fns';
 import type { MarkerContent } from '@/types/db/spatial';
 

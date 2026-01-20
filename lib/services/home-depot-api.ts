@@ -431,7 +431,7 @@ const MOCK_PRODUCTS: HomeDepotProduct[] = [
 /**
  * Helper: Map SerpAPI category to our category system
  */
-function mapCategoryToEnum(title?: string, brand?: string): string {
+function mapCategoryToEnum(title?: string): string {
   if (!title) return 'other';
 
   const titleLower = title.toLowerCase();
@@ -573,7 +573,7 @@ function mapSerpAPIProduct(product: SerpAPIProduct): HomeDepotProduct {
     sku: product.model_number || product.product_id || '',
     name: product.title || 'Unknown Product',
     description: product.title || '',
-    category: mapCategoryToEnum(product.title, product.brand),
+    category: mapCategoryToEnum(product.title),
     manufacturer: product.brand || 'Unknown',
     price,
     unitOfMeasure,

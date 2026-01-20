@@ -68,6 +68,7 @@ import {
   updateTaskType,
   deleteTaskType,
 } from "@/app/actions/task-types";
+import { TypesCard } from "@/components/ui/TypesCard";
 
 // Debug: Type definitions - Use database types directly to avoid type mismatches
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
@@ -302,97 +303,32 @@ export const TaskTypeManager = memo(function TaskTypeManager({
               Hammer;
             const cardColor = type.color || "#3b82f6";
 
+            // Prepare badges array
+            const badges = [];
+            if (type.is_default ?? false) {
+              badges.push({ label: "Default", icon: Sparkles, variant: "default" as const });
+            }
+            if (!(type.is_active ?? true)) {
+              badges.push({ label: "Inactive", icon: XCircle, variant: "inactive" as const });
+            }
+
             return (
-              <div
+              <TypesCard
                 key={type.id}
-                className="relative group h-full animate-in fade-in slide-in-from-bottom-4"
+                title={type.name}
+                description={type.description || undefined}
+                icon={IconComponent}
+                iconColor={cardColor}
+                badges={badges}
+                onEdit={() => setEditingType(type)}
+                onDelete={() => setDeletingType(type)}
+                className="animate-in fade-in slide-in-from-bottom-4"
                 style={{
                   animationDelay: `${Math.min(index * 50, 300)}ms`,
                   animationDuration: '400ms',
                   animationFillMode: 'both',
                 }}
-              >
-                {/* Debug: Gradient background glow */}
-                <div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${cardColor}15, ${cardColor}05)`,
-                  }}
-                />
-
-                {/* Debug: Clickable card container - Opens edit modal on click */}
-                <div
-                  onClick={() => setEditingType(type)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setEditingType(type);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className="relative w-full bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
-                >
-                  {/* Debug: Card header with icon and badges */}
-                  <div className="flex items-start gap-4 mb-4">
-                    {/* Icon */}
-                    <div
-                      className="p-3 rounded-lg border-2 shrink-0 transition-transform duration-300 group-hover:scale-110"
-                      style={{
-                        backgroundColor: `${cardColor}15`,
-                        borderColor: `${cardColor}30`,
-                      }}
-                    >
-                      <IconComponent
-                        className="h-6 w-6"
-                        style={{ color: cardColor }}
-                      />
-                    </div>
-
-                    {/* Name and badges */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight">
-                          {type.name}
-                        </h4>
-                        {(type.is_default ?? false) && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-md text-xs font-bold shrink-0">
-                            <Sparkles className="h-3 w-3" />
-                            Default
-                          </span>
-                        )}
-                        {!(type.is_active ?? true) && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs font-bold shrink-0">
-                            <XCircle className="h-3 w-3" />
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
-                        {type.description || "No description provided"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Debug: Card footer with delete action only */}
-                  <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t-2 border-gray-100">
-                    <span className="text-xs text-gray-500 font-medium">
-                      Click to edit
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent edit modal from opening
-                        setDeletingType(type);
-                      }}
-                      className="min-h-[44px] min-w-[44px] hover:bg-red-50 hover:text-red-600 active:bg-red-100 font-semibold transition-all duration-150 active:scale-[0.98]"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              />
             );
           })
         )}
@@ -718,22 +654,20 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                 <AlertCircle className="h-6 w-6" />
                 Delete Task Type
               </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3 text-base">
-                <p className="text-gray-700">
-                  Are you sure you want to delete{" "}
-                  <span className="font-bold text-gray-900">
-                    "{deletingType.name}"
-                  </span>
-                  ?
-                </p>
-                <div className="p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
-                  <p className="text-sm text-amber-800">
-                    <strong>Note:</strong> This is a soft delete. Existing tasks
-                    will keep this type, but it won't be available for new
-                    tasks.
-                  </p>
-                </div>
+              <AlertDialogDescription className="text-base text-gray-700">
+                Are you sure you want to delete{" "}
+                <span className="font-bold text-gray-900">
+                  "{deletingType.name}"
+                </span>
+                ?
               </AlertDialogDescription>
+              <div className="mt-3 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
+                <div className="text-sm text-amber-800">
+                  <strong>Note:</strong> This is a soft delete. Existing tasks
+                  will keep this type, but it won't be available for new
+                  tasks.
+                </div>
+              </div>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="border-2 font-semibold">

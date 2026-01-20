@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { cn, getInitials } from "@/lib/utils";
+import { getInitials } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   userSectionVariants,

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Home,
@@ -61,7 +61,6 @@ interface BottomNavigationProps {
 
 export function BottomNavigation({ session }: BottomNavigationProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   // Context for create modals

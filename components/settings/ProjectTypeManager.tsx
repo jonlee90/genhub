@@ -52,6 +52,7 @@ import {
   deleteProjectType,
   type ProjectTypeWithCount,
 } from "@/app/actions/project-types";
+import { TypesCard } from "@/components/ui/TypesCard";
 
 /**
  * Icon mapping for project type selection
@@ -252,99 +253,34 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               ] || Building2;
             const cardColor = type.color || "#001B51";
 
+            // Prepare badges array
+            const badges = !type.is_active
+              ? [{ label: "Inactive", icon: XCircle, variant: "inactive" as const }]
+              : [];
+
             return (
-              <div
+              <TypesCard
                 key={type.id}
-                className="relative group h-full animate-in fade-in slide-in-from-bottom-4"
+                title={type.name}
+                description={type.description || undefined}
+                icon={IconComponent}
+                iconColor={cardColor}
+                badges={badges}
+                countBadge={{
+                  count: type.project_count || 0,
+                  label: "project",
+                  icon: Building2,
+                }}
+                onEdit={() => setEditingType(type)}
+                onDelete={() => setDeletingType(type)}
+                deleteDisabled={(type.project_count || 0) > 0}
+                className="animate-in fade-in slide-in-from-bottom-4"
                 style={{
                   animationDelay: `${Math.min(index * 50, 300)}ms`,
                   animationDuration: '400ms',
                   animationFillMode: 'both',
                 }}
-              >
-                {/* Debug: Gradient background glow */}
-                <div
-                  className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"
-                  style={{
-                    background: `linear-gradient(135deg, ${cardColor}15, ${cardColor}05)`,
-                  }}
-                />
-
-                {/* Debug: Clickable card container - Opens edit modal on click */}
-                <div
-                  onClick={() => setEditingType(type)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      setEditingType(type);
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  className="relative w-full bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
-                >
-                  {/* Debug: Card header with icon and info */}
-                  <div className="flex items-start gap-4 mb-4">
-                    {/* Icon */}
-                    <div
-                      className="p-3 rounded-lg border-2 shrink-0 transition-transform duration-300 group-hover:scale-110"
-                      style={{
-                        backgroundColor: `${cardColor}15`,
-                        borderColor: `${cardColor}30`,
-                      }}
-                    >
-                      <IconComponent
-                        className="h-6 w-6"
-                        style={{ color: cardColor }}
-                      />
-                    </div>
-
-                    {/* Name and status */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight">
-                          {type.name}
-                        </h4>
-                        {!type.is_active && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-xs font-bold shrink-0">
-                            <XCircle className="h-3 w-3" />
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
-                        {type.description || "No description provided"}
-                      </p>
-                      {/* Project count badge */}
-                      <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-md">
-                        <Building2 className="h-3.5 w-3.5 text-gray-600" />
-                        <span className="text-xs font-bold text-gray-900">
-                          {type.project_count || 0} project{type.project_count !== 1 ? 's' : ''}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Debug: Card footer with delete action only */}
-                  <div className="flex items-center justify-between gap-3 pt-3 mt-auto border-t-2 border-gray-100">
-                    <span className="text-xs text-gray-500 font-medium">
-                      Click to edit
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation(); // Prevent edit modal from opening
-                        setDeletingType(type);
-                      }}
-                      disabled={(type.project_count || 0) > 0}
-                      className="min-h-[44px] min-w-[44px] hover:bg-red-50 hover:text-red-600 active:bg-red-100 font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              />
             );
           })
         )}
@@ -684,13 +620,13 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               <AlertDialogTitle className="text-red-600 font-black uppercase tracking-tight">
                 Delete Project Type
               </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3 text-gray-700">
-                {(deletingType.project_count || 0) > 0 ? (
-                  <>
-                    <p className="font-semibold text-red-600">
-                      Cannot delete this project type!
-                    </p>
-                    <p>
+              {(deletingType.project_count || 0) > 0 ? (
+                <>
+                  <AlertDialogDescription className="text-gray-700">
+                    Cannot delete this project type!
+                  </AlertDialogDescription>
+                  <div className="mt-3 space-y-2 text-gray-700">
+                    <div>
                       This project type is assigned to{" "}
                       <span className="font-bold">
                         {deletingType.project_count}
@@ -699,28 +635,28 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                         ? "project"
                         : "projects"}
                       .
-                    </p>
-                    <p className="text-sm text-gray-600">
+                    </div>
+                    <div className="text-sm text-gray-600">
                       To remove this type, first reassign all projects to a
                       different type, or mark the type as inactive instead.
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p>
-                      Are you sure you want to delete{" "}
-                      <span className="font-bold text-gray-900">
-                        "{deletingType.name}"
-                      </span>
-                      ?
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      This will also delete all associated phase and task
-                      templates. This action cannot be undone.
-                    </p>
-                  </>
-                )}
-              </AlertDialogDescription>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <AlertDialogDescription className="text-gray-700">
+                    Are you sure you want to delete{" "}
+                    <span className="font-bold text-gray-900">
+                      "{deletingType.name}"
+                    </span>
+                    ?
+                  </AlertDialogDescription>
+                  <div className="mt-3 text-sm text-gray-600">
+                    This will also delete all associated phase and task
+                    templates. This action cannot be undone.
+                  </div>
+                </>
+              )}
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel

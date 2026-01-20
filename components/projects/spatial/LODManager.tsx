@@ -14,7 +14,6 @@ import {
   selectLOD,
   getDeviceCapabilities,
   calculateCameraDistance,
-  getLODModelURL,
   FPSMonitor,
 } from '@/lib/xeokit/lod-selector';
 import type { LODLevel } from '@/lib/xeokit/lod-selector';
@@ -155,9 +154,6 @@ export function LODManager({
     console.log('[LODManager] Setting manual override', level);
     setManualOverride(level);
   }, []);
-
-  // Debug: Get current model URL
-  const currentURL = getLODModelURL(highURL, mediumURL, lowURL, currentLOD);
 
   // Debug: LOD labels and colors
   const lodConfig = {

@@ -17,11 +17,7 @@ import ClipboardList from 'lucide-react/icons/clipboard-list';
 import Square from 'lucide-react/icons/square';;
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 import type { SpatialMarker, SpatialMarkerType, SpatialMarkerStatus } from '@/types/db/spatial';
 

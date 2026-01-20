@@ -15,17 +15,11 @@ import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 // Direct Lucide imports - avoid barrel file (200-800ms import cost)
 import Plus from "lucide-react/icons/plus";
-import Edit from "lucide-react/icons/edit";
 import Trash2 from "lucide-react/icons/trash-2";
-import GripVertical from "lucide-react/icons/grip-vertical";
-import ChevronDown from "lucide-react/icons/chevron-down";
-import ChevronRight from "lucide-react/icons/chevron-right";
 import Layers from "lucide-react/icons/layers";
 import AlertCircle from "lucide-react/icons/alert-circle";
 import CheckCircle2 from "lucide-react/icons/check-circle-2";
@@ -35,6 +29,7 @@ import Hammer from "lucide-react/icons/hammer";
 import ListChecks from "lucide-react/icons/list-checks";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
+import { TemplateCard, type TemplateBadge } from "@/components/ui/TemplateCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,7 +66,7 @@ import {
 
 /**
  * Task type configuration for badge display
- * Debug: Matches task type configs from DB
+ * Task type configuration with display properties (icon, label, color)
  */
 const TASK_TYPE_CONFIG = {
   work: {
@@ -97,245 +92,199 @@ const TASK_TYPE_CONFIG = {
 };
 
 /**
- * SortablePhaseItem - Individual draggable phase card
- * Debug: Expandable card with nested task templates
+ * Empty state when no project type is selected
+ * Hoisted outside component to prevent re-creation on every render
+ */
+const NoProjectTypeSelected = React.memo(() => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
+      <Layers className="h-16 w-16 text-construction-blue" />
+    </div>
+    <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+      Select a Project Type
+    </h3>
+    <p className="text-gray-500 max-w-md">
+      Choose a project type from the dropdown above to view and manage its
+      phase templates
+    </p>
+  </div>
+));
+NoProjectTypeSelected.displayName = 'NoProjectTypeSelected';
+
+/**
+ * Empty state when no phase templates exist
+ * Hoisted outside component to prevent re-creation on every render
+ */
+interface EmptyPhaseStateProps {
+  onCreate: () => void;
+}
+
+const EmptyPhaseState = React.memo(function EmptyPhaseState({ onCreate }: EmptyPhaseStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
+      <div className="relative mb-6">
+        <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
+        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
+          <Layers className="h-16 w-16 text-construction-blue" />
+        </div>
+      </div>
+      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+        No Phase Templates Defined
+      </h3>
+      <p className="text-gray-500 max-w-md mb-6">
+        Create your first phase template to organize tasks across project
+        stages
+      </p>
+      <Button
+        onClick={onCreate}
+        className="bg-construction-blue hover:bg-blue-700 text-white font-bold"
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Create First Phase
+      </Button>
+    </div>
+  );
+});
+
+/**
+ * SortablePhaseItem - Individual draggable phase card using TemplateCard
+ * Expandable card with nested task templates and add task button
+ * Performance: Uses reusable TemplateCard component
  */
 interface SortablePhaseItemProps {
   phase: PhaseTemplateWithTasks;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onAddTaskToPhase?: (phaseTemplateId: string) => void;
 }
 
 const SortablePhaseItem = React.memo(function SortablePhaseItem({
   phase,
-  isExpanded,
-  onToggleExpand,
   onEdit,
   onDelete,
+  onAddTaskToPhase,
 }: SortablePhaseItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: phase.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const taskCount = phase.task_templates?.length || 0;
 
+  // Build badges for the card
+  const badges: TemplateBadge[] = taskCount > 0
+    ? [{
+        label: `${taskCount} ${taskCount === 1 ? "task" : "tasks"}`,
+        className: "bg-construction-blue/10 text-construction-blue border-construction-blue/20"
+      }]
+    : [];
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn("relative group", isDragging && "opacity-50 z-50")}
+    <TemplateCard
+      id={phase.id}
+      title={phase.name}
+      description={phase.description || undefined}
+      icon={Layers}
+      badges={badges}
+      expandable
+      onEdit={onEdit}
+      onDelete={onDelete}
     >
-      {/* Debug: Gradient background glow on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      {/* Debug: Main card container */}
-      <div className="relative bg-white border-2 border-gray-200 rounded-lg shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300">
-        {/* Debug: Phase header with drag handle */}
-        <div className="flex items-center gap-3 p-4">
-          {/* Drag handle - better touch target on mobile, stops propagation */}
-          <button
-            {...attributes}
-            {...listeners}
-            onClick={(e) => e.stopPropagation()}
-            className="shrink-0 p-3 md:p-2 hover:bg-gray-100 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation"
-            aria-label="Drag to reorder phase"
-          >
-            <GripVertical className="h-5 w-5 text-gray-400" />
-          </button>
-
-          {/* Expand/collapse toggle - stops propagation */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleExpand();
-            }}
-            className="shrink-0 p-2 hover:bg-construction-blue/10 rounded-md transition-colors"
-          >
-            {isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-construction-blue" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-construction-blue" />
-            )}
-          </button>
-
-          {/* Clickable phase info area - opens edit modal */}
-          <div
-            onClick={onEdit}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onEdit();
-              }
-            }}
-            role="button"
-            tabIndex={0}
-            className="flex items-center gap-3 flex-1 min-w-0 text-left cursor-pointer hover:bg-construction-blue/5 -mx-2 px-2 py-1 rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 rounded-lg"
-          >
-            {/* Phase icon */}
-            <div className="p-2.5 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
-              <Layers className="h-5 w-5 text-construction-blue" />
-            </div>
-
-            {/* Phase info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h4 className="font-black text-construction-blue uppercase tracking-tight text-base leading-tight truncate">
-                  {phase.name}
-                </h4>
-                {taskCount > 0 && (
-                  <Badge className="bg-construction-blue/10 text-construction-blue border-construction-blue/20 text-xs font-bold shrink-0">
-                    {taskCount} {taskCount === 1 ? "task" : "tasks"}
-                  </Badge>
-                )}
-              </div>
-              {phase.description && (
-                <p className="text-sm text-gray-600 line-clamp-1">
-                  {phase.description}
-                </p>
-              )}
-            </div>
+      {taskCount === 0 ? (
+        // Empty state when no task templates exist for this phase
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <div className="p-3 bg-gray-100 rounded-lg mb-3">
+            <Package className="h-8 w-8 text-gray-400" />
           </div>
-
-          {/* Delete button only - stops propagation */}
+          <p className="text-sm font-medium text-gray-600 mb-1">
+            No task templates yet
+          </p>
+          <p className="text-xs text-gray-500 mb-3">
+            Add task templates to this phase to get started
+          </p>
           <Button
-            variant="ghost"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            className="hover:bg-red-50 hover:text-red-600 font-semibold transition-colors min-h-[44px] min-w-[44px]"
+            variant="outline"
+            onClick={() => onAddTaskToPhase?.(phase.id)}
+            className="border-2 border-construction-blue text-construction-blue hover:bg-construction-blue hover:text-white font-semibold"
           >
-            <Trash2 className="h-4 w-4" />
+            <Plus className="h-3 w-3 mr-1.5" />
+            Add Task Template
           </Button>
         </div>
-
-        {/* Debug: Expandable task templates section */}
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
+      ) : (
+        // Task templates list with add button
+        <div className="space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Task Templates
+            </p>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onAddTaskToPhase?.(phase.id)}
+              className="h-7 text-xs hover:bg-construction-blue/10 hover:text-construction-blue font-semibold"
             >
-              <div className="px-4 pb-4 pt-2 border-t-2 border-gray-100">
-                {taskCount === 0 ? (
-                  // Debug: Empty state for no task templates
-                  <div className="flex flex-col items-center justify-center py-8 text-center">
-                    <div className="p-3 bg-gray-100 rounded-lg mb-3">
-                      <Package className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">
-                      No task templates yet
+              <Plus className="h-3 w-3 mr-1" />
+              Add Task
+            </Button>
+          </div>
+          {phase.task_templates?.map((task, index) => {
+            const typeConfig =
+              TASK_TYPE_CONFIG[
+                task.default_task_type as keyof typeof TASK_TYPE_CONFIG
+              ] || TASK_TYPE_CONFIG.work;
+            const TypeIcon = typeConfig.icon;
+
+            return (
+              <div
+                key={task.id}
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-construction-blue/30 transition-colors animate-in fade-in slide-in-from-left-2"
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animationDuration: "300ms",
+                  animationFillMode: "both",
+                }}
+              >
+                {/* Task type badge */}
+                <div
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold shrink-0",
+                    typeConfig.color,
+                  )}
+                >
+                  <TypeIcon className="h-3 w-3" />
+                  <span>{typeConfig.label}</span>
+                </div>
+
+                {/* Task info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm truncate">
+                    {task.title}
+                  </p>
+                  {task.description ? (
+                    <p className="text-xs text-gray-600 line-clamp-1">
+                      {task.description}
                     </p>
-                    <p className="text-xs text-gray-500 mb-3">
-                      Add task templates to this phase to get started
-                    </p>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-2 border-construction-blue text-construction-blue hover:bg-construction-blue hover:text-white font-semibold"
-                    >
-                      <Plus className="h-3 w-3 mr-1.5" />
-                      Add Task Template
-                    </Button>
-                  </div>
-                ) : (
-                  // Debug: Task templates list
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Task Templates
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs hover:bg-construction-blue/10 hover:text-construction-blue font-semibold"
-                      >
-                        <Plus className="h-3 w-3 mr-1" />
-                        Add Task
-                      </Button>
-                    </div>
-                    {phase.task_templates?.map((task, index) => {
-                      const typeConfig =
-                        TASK_TYPE_CONFIG[
-                          task.default_task_type as keyof typeof TASK_TYPE_CONFIG
-                        ] || TASK_TYPE_CONFIG.work;
-                      const TypeIcon = typeConfig.icon;
+                  ) : null}
+                </div>
 
-                      return (
-                        <div
-                          key={task.id}
-                          className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-construction-blue/30 transition-colors animate-in fade-in slide-in-from-left-2"
-                          style={{
-                            animationDelay: `${index * 50}ms`,
-                            animationDuration: "300ms",
-                            animationFillMode: "both",
-                          }}
-                        >
-                          {/* Task type badge */}
-                          <div
-                            className={cn(
-                              "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-bold shrink-0",
-                              typeConfig.color,
-                            )}
-                          >
-                            <TypeIcon className="h-3 w-3" />
-                            <span>{typeConfig.label}</span>
-                          </div>
-
-                          {/* Task info */}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-gray-900 text-sm truncate">
-                              {task.title}
-                            </p>
-                            {task.description && (
-                              <p className="text-xs text-gray-600 line-clamp-1">
-                                {task.description}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Priority badge */}
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-xs font-bold shrink-0",
-                              task.default_priority === "high" &&
-                                "border-red-300 text-red-700 bg-red-50",
-                              task.default_priority === "medium" &&
-                                "border-amber-300 text-amber-700 bg-amber-50",
-                              task.default_priority === "low" &&
-                                "border-gray-300 text-gray-700 bg-gray-50",
-                            )}
-                          >
-                            {task.default_priority}
-                          </Badge>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+                {/* Priority badge */}
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-xs font-bold shrink-0",
+                    task.default_priority === "high" &&
+                      "border-red-300 text-red-700 bg-red-50",
+                    task.default_priority === "medium" &&
+                      "border-amber-300 text-amber-700 bg-amber-50",
+                    task.default_priority === "low" &&
+                      "border-gray-300 text-gray-700 bg-gray-50",
+                  )}
+                >
+                  {task.default_priority}
+                </Badge>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </div>
+            );
+          })}
+        </div>
+      )}
+    </TemplateCard>
   );
 });
 
@@ -350,6 +299,7 @@ interface PhaseTemplateManagerProps {
   isLoadingProjectTypes: boolean;
   isLoadingPhases: boolean;
   onRefreshPhases: () => void;
+  onAddTaskToPhase?: (phaseTemplateId: string) => void;
 }
 
 /**
@@ -365,15 +315,15 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
   isLoadingProjectTypes,
   isLoadingPhases,
   onRefreshPhases,
+  onAddTaskToPhase,
 }: PhaseTemplateManagerProps) {
-  const [expandedPhases, setExpandedPhases] = useState<Set<string>>(new Set());
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingPhase, setEditingPhase] =
     useState<PhaseTemplateWithTasks | null>(null);
   const [deletingPhase, setDeletingPhase] =
     useState<PhaseTemplateWithTasks | null>(null);
 
-  // Debug: Drag-and-drop sensors configuration
+  // Configure drag-and-drop sensors for both pointer and keyboard interaction
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -384,7 +334,11 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
   // Filter to only active project types
   const activeProjectTypes = projectTypes.filter((pt) => pt.is_active);
 
-  // Handle drag end event
+  // Handle drag-and-drop reordering
+  // Note: Using functional setState not applicable here since phaseTemplates is a prop (not local state).
+  // This callback is already optimized - it recreates only when its actual dependencies change.
+  // Dependency on phaseTemplates is necessary because we need the current list to determine indices.
+  // The parent component (ProjectConfigurationSection) manages the state, and we refresh via onRefreshPhases.
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -394,9 +348,6 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
     const newIndex = phaseTemplates.findIndex((p) => p.id === over.id);
 
     if (oldIndex === -1 || newIndex === -1) return;
-
-    // Note: Optimistic update removed since phaseTemplates is a prop
-    // The backend will update and parent will refresh
 
     // Persist to backend
     const newOrder = arrayMove(phaseTemplates, oldIndex, newIndex);
@@ -416,19 +367,6 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
     onRefreshPhases();
   }, [phaseTemplates, selectedProjectTypeId, onRefreshPhases]);
 
-  // Toggle phase expansion
-  const togglePhaseExpansion = useCallback((phaseId: string) => {
-    setExpandedPhases((prev) => {
-      const next = new Set(prev);
-      if (next.has(phaseId)) {
-        next.delete(phaseId);
-      } else {
-        next.add(phaseId);
-      }
-      return next;
-    });
-  }, []);
-
   // Handle create submission - memoized
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -445,7 +383,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
     }
   }, [onRefreshPhases]);
 
-  // Debug: Handle update submission - memoized
+  // Handle phase template update - form submission handler
   const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingPhase) return;
@@ -462,7 +400,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
     }
   }, [editingPhase, onRefreshPhases]);
 
-  // Debug: Handle delete confirmation - memoized
+  // Handle phase template deletion with cascade warning
   const handleDelete = useCallback(async () => {
     if (!deletingPhase) return;
 
@@ -479,7 +417,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
 
   return (
     <div className="space-y-6">
-      {/* Debug: Header with project type filter and Add button */}
+      {/* Header with project type filter dropdown and create button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex-1">
           <h3 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight">
@@ -518,23 +456,11 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
         </div>
       </div>
 
-      {/* Debug: Phase templates sortable list */}
+      {/* Phase templates sortable list */}
       {!selectedProjectTypeId ? (
-        // Debug: No project type selected state
-        <div className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-            <Layers className="h-16 w-16 text-construction-blue" />
-          </div>
-          <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
-            Select a Project Type
-          </h3>
-          <p className="text-gray-500 max-w-md">
-            Choose a project type from the dropdown above to view and manage its
-            phase templates
-          </p>
-        </div>
+        <NoProjectTypeSelected />
       ) : isLoadingPhases ? (
-        // Debug: Loading skeleton with CSS animate-in
+        // Loading skeleton animation
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -559,31 +485,9 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           ))}
         </div>
       ) : phaseTemplates.length === 0 ? (
-        // Debug: Empty state - CSS animation only
-        <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
-          <div className="relative mb-6">
-            <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-            <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-              <Layers className="h-16 w-16 text-construction-blue" />
-            </div>
-          </div>
-          <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
-            No Phase Templates Defined
-          </h3>
-          <p className="text-gray-500 max-w-md mb-6">
-            Create your first phase template to organize tasks across project
-            stages
-          </p>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-construction-blue hover:bg-blue-700 text-white font-bold"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Create First Phase
-          </Button>
-        </div>
+        <EmptyPhaseState onCreate={() => setShowCreateModal(true)} />
       ) : (
-        // Debug: Sortable phase templates list with CSS stagger
+        // Sortable phase templates list with drag-and-drop reordering
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -606,10 +510,9 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                 >
                   <SortablePhaseItem
                     phase={phase}
-                    isExpanded={expandedPhases.has(phase.id)}
-                    onToggleExpand={() => togglePhaseExpansion(phase.id)}
                     onEdit={() => setEditingPhase(phase)}
                     onDelete={() => setDeletingPhase(phase)}
+                    onAddTaskToPhase={onAddTaskToPhase}
                   />
                 </div>
               ))}
@@ -618,7 +521,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
         </DndContext>
       )}
 
-      {/* Debug: Create Phase Modal */}
+      {/* Create Phase Modal */}
       <ResponsiveModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
@@ -702,8 +605,8 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
         </form>
       </ResponsiveModal>
 
-      {/* Debug: Edit Phase Modal */}
-      {editingPhase && (
+      {/* Edit Phase Modal */}
+      {editingPhase ? (
         <ResponsiveModal
           isOpen={!!editingPhase}
           onClose={() => setEditingPhase(null)}
@@ -791,10 +694,10 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
             </div>
           </form>
         </ResponsiveModal>
-      )}
+      ) : null}
 
-      {/* Debug: Delete Confirmation */}
-      {deletingPhase && (
+      {/* Delete Confirmation */}
+      {deletingPhase ? (
         <AlertDialog
           open={!!deletingPhase}
           onOpenChange={() => setDeletingPhase(null)}
@@ -805,40 +708,38 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                 <AlertCircle className="h-6 w-6" />
                 Delete Phase Template
               </AlertDialogTitle>
-              <AlertDialogDescription className="space-y-3 text-base">
-                <p className="text-gray-700">
-                  Are you sure you want to delete{" "}
-                  <span className="font-bold text-gray-900">
-                    "{deletingPhase.name}"
-                  </span>
-                  ?
-                </p>
-                <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="font-bold text-amber-900 mb-1">
-                        Cascade Warning
-                      </h4>
-                      <p className="text-sm text-amber-800">
-                        This will delete{" "}
-                        <span className="font-bold">
-                          {deletingPhase.task_templates?.length || 0} task
-                          template
-                          {deletingPhase.task_templates?.length === 1
-                            ? ""
-                            : "s"}
-                        </span>{" "}
-                        associated with this phase.
-                      </p>
-                      <p className="text-sm text-amber-800 mt-2">
-                        Existing projects will keep their data and are not
-                        affected.
-                      </p>
+              <AlertDialogDescription className="text-base text-gray-700">
+                Are you sure you want to delete{" "}
+                <span className="font-bold text-gray-900">
+                  "{deletingPhase.name}"
+                </span>
+                ?
+              </AlertDialogDescription>
+              <div className="mt-3 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-amber-900 mb-1">
+                      Cascade Warning
+                    </h4>
+                    <div className="text-sm text-amber-800">
+                      This will delete{" "}
+                      <span className="font-bold">
+                        {deletingPhase.task_templates?.length || 0} task
+                        template
+                        {deletingPhase.task_templates?.length === 1
+                          ? ""
+                          : "s"}
+                      </span>{" "}
+                      associated with this phase.
+                    </div>
+                    <div className="text-sm text-amber-800 mt-2">
+                      Existing projects will keep their data and are not
+                      affected.
                     </div>
                   </div>
                 </div>
-              </AlertDialogDescription>
+              </div>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel className="border-2 font-semibold">
@@ -854,7 +755,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      )}
+      ) : null}
     </div>
   );
 });

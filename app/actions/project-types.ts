@@ -266,12 +266,12 @@ export async function deleteProjectType(id: string): Promise<{
     return { error: "Project type not found" };
   }
 
-  // Check if any projects use this type
+  // Check if any projects use this type (via the new project_type_config_id FK)
   const { data: projects, error: countError } = await supabase
     .from("projects")
     .select("id")
     .eq("company_id", companyId)
-    .eq("project_type", existing.name as any)
+    .eq("project_type_config_id", id)
     .limit(1);
 
   if (countError) {

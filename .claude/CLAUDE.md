@@ -25,33 +25,35 @@
 
 1. Load skills: `.claude/skills/index.md`
 2. Load Serena memories: `genhub-{project-overview|database-schema|server-actions|component-patterns|common-gotchas}`
-3. Use `dispatching-parallel-agents` skill when helpful
+3. **For coding tasks**: `task-orchestrator` skill auto-triggers for delegation decisions
 4. **For React/Next.js tasks**: Run `/vercel-react-best-practices` before writing code
 
 ---
 
 ## TASK EXECUTION
 
-**For any non-trivial task, load and follow `.claude/agents/orchestrator.md`**
+**The `task-orchestrator` skill auto-triggers for coding tasks requiring delegation.**
 
 | Task Complexity | Action |
 |-----------------|--------|
 | Single domain (backend OR frontend only) | Delegate directly to appropriate agent |
-| Multi-domain (backend + frontend) | Use orchestrator workflow |
-| Multiple independent tasks | Check `dispatching-parallel-agents` skill |
+| Multi-domain (backend + frontend) | Sequential orchestration (backend → frontend → review) |
+| Multiple independent tasks | Parallel dispatch (multiple Task calls in one message) |
 
 Decision flow:
-1. Analyze task scope
-2. Load orchestrator.md for delegation guidance
-3. Follow orchestrator's Quick Delegation Matrix
+1. Analyze task scope and domains
+2. Check `task-orchestrator` skill for delegation guidance
+3. Follow Quick Decision Flow for agent selection
 
 ---
 
 ## AGENTS (strict boundaries)
 
-**With budgets**: backend-engineer(70k), frontend-engineer(80k), code-reviewer(30k), orchestrator(30k), performance-engineer(50k)
+**With budgets**: backend-engineer(70k), frontend-engineer(80k), code-reviewer(30k), performance-engineer(50k)
 
 **Planning-only**: frontend-architect, supabase-schema-architect, ai-sdk-v5-expert, technical-documentation-writer
+
+**Skills for orchestration**: `task-orchestrator` (auto-triggers for delegation decisions)
 
 **Audit agents**: `.claude/agents/audit/` (7 specialists)
 

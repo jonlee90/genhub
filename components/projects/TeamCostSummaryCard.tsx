@@ -5,7 +5,6 @@ import { useMemo } from 'react';
 import Users from 'lucide-react/icons/users';
 import RefreshCw from 'lucide-react/icons/refresh-cw';
 import AlertCircle from 'lucide-react/icons/alert-circle';
-import { InfoCard } from './InfoCard';
 import { TeamCostRow, type TeamCostSummary } from './TeamCostRow';
 import { Button } from '@/components/ui/button';
 import { cn, formatCurrency } from '@/lib/utils';

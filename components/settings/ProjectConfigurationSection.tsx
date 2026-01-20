@@ -50,6 +50,7 @@ export function ProjectConfigurationSection() {
   const [selectedProjectTypeId, setSelectedProjectTypeId] = useState<string>('');
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplateWithTasks[]>([]);
   const [selectedPhaseTemplateId, setSelectedPhaseTemplateId] = useState<string>('');
+  const [selectedPhaseForTask, setSelectedPhaseForTask] = useState<string>('');
   const [taskTypes, setTaskTypes] = useState<TaskTypeConfigsRow[]>([]);
   const [isLoadingProjectTypes, setIsLoadingProjectTypes] = useState(true);
   const [isLoadingPhases, setIsLoadingPhases] = useState(false);
@@ -165,6 +166,14 @@ export function ProjectConfigurationSection() {
     setActiveTab(value as TabId);
   }, []);
 
+  // Handle "Add Task" from PhaseTemplateManager - switch to task templates tab with phase selected
+  const handleAddTaskToPhase = useCallback((phaseId: string) => {
+    setSelectedPhaseForTask(phaseId);
+    setActiveTab('task-templates');
+    // Scroll to top for better UX
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   // Mobile layout
   if (isMobile) {
     return (
@@ -218,6 +227,7 @@ export function ProjectConfigurationSection() {
                   isLoadingProjectTypes={isLoadingProjectTypes}
                   isLoadingPhases={isLoadingPhases}
                   onRefreshPhases={refreshPhaseTemplates}
+                  onAddTaskToPhase={handleAddTaskToPhase}
                 />
               )}
               {activeTab === 'task-templates' && (
@@ -226,7 +236,7 @@ export function ProjectConfigurationSection() {
                   selectedProjectTypeId={selectedProjectTypeId}
                   onProjectTypeChange={setSelectedProjectTypeId}
                   phaseTemplates={phaseTemplates}
-                  selectedPhaseTemplateId={selectedPhaseTemplateId}
+                  selectedPhaseTemplateId={selectedPhaseForTask || selectedPhaseTemplateId}
                   onPhaseTemplateChange={setSelectedPhaseTemplateId}
                   taskTypes={taskTypes}
                   isLoadingProjectTypes={isLoadingProjectTypes}
@@ -294,6 +304,7 @@ export function ProjectConfigurationSection() {
             isLoadingProjectTypes={isLoadingProjectTypes}
             isLoadingPhases={isLoadingPhases}
             onRefreshPhases={refreshPhaseTemplates}
+            onAddTaskToPhase={handleAddTaskToPhase}
           />
         )}
         {activeTab === 'task-templates' && (
@@ -302,7 +313,7 @@ export function ProjectConfigurationSection() {
             selectedProjectTypeId={selectedProjectTypeId}
             onProjectTypeChange={setSelectedProjectTypeId}
             phaseTemplates={phaseTemplates}
-            selectedPhaseTemplateId={selectedPhaseTemplateId}
+            selectedPhaseTemplateId={selectedPhaseForTask || selectedPhaseTemplateId}
             onPhaseTemplateChange={setSelectedPhaseTemplateId}
             taskTypes={taskTypes}
             isLoadingProjectTypes={isLoadingProjectTypes}

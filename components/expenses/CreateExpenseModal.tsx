@@ -62,7 +62,7 @@ export function CreateExpenseModal({
     new Date().toISOString().split("T")[0],
   );
   const [vendorName, setVendorName] = useState("");
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
   const [isPending, startTransition] = useTransition();

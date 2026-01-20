@@ -17,13 +17,12 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Image from 'lucide-react/icons/image';
 import FileText from 'lucide-react/icons/file-text';
 import Folder from 'lucide-react/icons/folder';
-import Upload from 'lucide-react/icons/upload';
 import Loader2 from 'lucide-react/icons/loader-2';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
