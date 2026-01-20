@@ -4,7 +4,7 @@
 // Features: Type icon, metadata, content count, selection state
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import MapPin from 'lucide-react/icons/map-pin';
 import FileText from 'lucide-react/icons/file-text';

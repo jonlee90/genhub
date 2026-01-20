@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import {
   Home,
   FolderKanban,
@@ -141,10 +141,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   )}
                   aria-label="Open more menu"
                 >
-                  <motion.div
-                    className="relative flex flex-col items-center"
-                    whileTap={{ scale: 0.95 }}
-                  >
+                  {/* Vercel: Replace whileTap with CSS active:scale - simpler and more performant */}
+                  <div className="relative flex flex-col items-center transition-transform active:scale-95">
                     <div
                       className={cn(
                         "flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200",
@@ -179,7 +177,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                     >
                       {item.name}
                     </span>
-                    {/* Active indicator dot */}
+                    {/* Active indicator dot - Vercel: Keep layoutId animation for smooth tab switching */}
                     {active && (
                       <motion.div
                         layoutId="bottomNavIndicator"
@@ -191,7 +189,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                         }}
                       />
                     )}
-                  </motion.div>
+                  </div>
                 </button>
               );
             }
@@ -207,10 +205,8 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   "active:bg-gray-100",
                 )}
               >
-                <motion.div
-                  className="relative flex flex-col items-center"
-                  whileTap={{ scale: 0.95 }}
-                >
+                {/* Vercel: Replace whileTap with CSS active:scale - simpler and more performant */}
+                <div className="relative flex flex-col items-center transition-transform active:scale-95">
                   {showPlusIcon ? (
                     /* 3D Plus Button - Elevated with depth effect */
                     <div
@@ -266,7 +262,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   >
                     {active && showPlusIcon ? item.name : item.name}
                   </span>
-                  {/* Active indicator dot */}
+                  {/* Active indicator dot - Vercel: Keep layoutId animation for smooth tab switching */}
                   {active && (
                     <motion.div
                       layoutId="bottomNavIndicator"
@@ -278,7 +274,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                       }}
                     />
                   )}
-                </motion.div>
+                </div>
               </Link>
             );
           })}

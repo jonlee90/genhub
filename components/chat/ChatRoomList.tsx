@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { ChatRoomItem } from './ChatRoomItem';
 import { NewDMModal } from './NewDMModal';
 import { ChatRoomWithUnread } from '@/types/db/chat';

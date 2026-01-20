@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X, Settings, Save, Download, Loader2, Hash, AlertCircle } from 'lucide-react';
 import { ChatMemberList, ChatMember } from './ChatMemberList';

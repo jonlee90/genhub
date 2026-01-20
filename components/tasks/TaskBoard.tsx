@@ -48,18 +48,27 @@ const GanttChart = dynamic(
   },
 );
 
-// Dynamic import KanbanBoard (includes dnd-kit) - only loads when kanban view is selected
+// Dynamic import KanbanBoard (includes dnd-kit ~35KB) - only loads when kanban view is selected
 const KanbanBoard = dynamic(
   () => import("./KanbanBoard").then((mod) => ({ default: mod.KanbanBoard })),
   {
     loading: () => (
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className="flex-shrink-0 w-72 h-96 bg-gray-100 rounded-xl animate-pulse"
-          />
-        ))}
+      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
+        <div className="flex gap-4 overflow-x-auto pb-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="flex-shrink-0 w-72 space-y-3"
+            >
+              <div className="h-10 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="space-y-2">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     ),
     ssr: false,

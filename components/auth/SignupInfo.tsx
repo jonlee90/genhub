@@ -9,7 +9,7 @@
  * Debug: Links back to login page
  */
 
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import Link from 'next/link';
 import { UserPlus, CheckCircle, Mail, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';

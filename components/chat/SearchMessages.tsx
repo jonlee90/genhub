@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { cn, getInitials } from "@/lib/utils";
 import { Search, X, MessageSquare, Hash, Users, Loader2 } from "lucide-react";
 import { searchMessages } from "@/app/actions/chat-search";

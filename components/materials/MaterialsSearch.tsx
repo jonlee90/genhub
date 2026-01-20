@@ -14,7 +14,7 @@ import {
 import { ProductCard } from "./ProductCard";
 import { ProductComparisonModal } from "./ProductComparisonModal";
 import { searchProducts } from "@/app/actions/materials";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 interface Project {

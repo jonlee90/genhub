@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Receipt, X, ShieldAlert, Wrench, DollarSign } from "lucide-react";
 import { ExpenseCard } from "./ExpenseCard";

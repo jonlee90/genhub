@@ -22,7 +22,7 @@ import {
   Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/user/UserMenu";
 import type { Session } from "next-auth";
 

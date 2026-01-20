@@ -12,7 +12,7 @@ import { AlertTriangle } from "lucide-react";
 import { CheckCircle2 } from "lucide-react";
 import { Truck } from "lucide-react";
 import { Wrench } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { cn, formatDate } from "@/lib/utils";
 import { updateMaterialAssignment, getMaterialAssignmentsByTask } from "@/app/actions/materials";
 import { useToast } from "@/hooks/use-toast";

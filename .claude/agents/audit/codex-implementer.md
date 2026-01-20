@@ -750,7 +750,6 @@ If there are deviations, execution was improper.
   flags: {
     ORCHESTRATED: true,
     SKIP_BUILD: false, // Codex may include build verification
-    SKIP_SYNC: true    // No doc sync needed for mechanical execution
   }
 }
 ```

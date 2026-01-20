@@ -8,7 +8,7 @@
  */
 
 import { useMemo, memo } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Check, Loader2, AlertTriangle, Hammer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { TASK_TYPE_ICON_MAP } from "@/lib/config/task-type-display";

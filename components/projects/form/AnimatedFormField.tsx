@@ -9,7 +9,7 @@
  * - Success state with checkmark
  */
 
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
 import { MobileInput } from '@/components/mobile/MobileInput';
 import { cn } from '@/lib/utils';

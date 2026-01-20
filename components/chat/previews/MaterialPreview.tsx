@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Hammer, DollarSign, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

@@ -67,11 +67,13 @@ async function fetchExpensesDataForCompany(
   };
 }
 
-export async function getExpensesData(companyId: string, role: string) {
+export async function getExpensesData(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  companyId: string,
+  role: string,
+) {
   // SECURITY: No auth here - caller must authenticate and provide companyId
-  // This function is cache-safe because it trusts the caller
-
-  const supabase = await createClient();
+  // This function is cache-safe because it accepts client from caller (outside cache scope)
 
   // Fetch all data using shared logic
   try {

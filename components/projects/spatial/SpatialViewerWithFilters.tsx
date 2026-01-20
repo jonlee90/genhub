@@ -4,7 +4,7 @@
 // Complete spatial viewer with clustering and advanced filtering
 
 import { useState, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MarkerClusterer } from './MarkerClusterer';
 import { MarkerSearch } from './MarkerSearch';

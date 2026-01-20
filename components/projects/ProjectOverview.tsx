@@ -1,12 +1,16 @@
 "use client";
 
 import { useMemo } from "react";
+import dynamic from "next/dynamic";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import User from "lucide-react/icons/user";
 import Mail from "lucide-react/icons/mail";
 import Phone from "lucide-react/icons/phone";
-import { motion } from "framer-motion";
-import { MetroJourney } from "./MetroJourney";
+import { m as motion } from "framer-motion";
+// Vercel: bundle-dynamic-imports - Lazy load MetroJourney (369 lines, heavy animations)
+const MetroJourney = dynamic(() => import("./MetroJourney").then(mod => ({ default: mod.MetroJourney })), {
+  loading: () => <div className="h-[400px] animate-pulse bg-gray-100 rounded-xl" />,
+});
 import { ProjectExpenseSummary } from "./ProjectExpenseSummary";
 import { ProjectTaskSummary } from "./ProjectTaskSummary";
 import { InfoCard } from "./InfoCard";

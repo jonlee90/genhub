@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { DollarSign, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

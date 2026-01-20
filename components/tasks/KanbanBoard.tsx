@@ -16,7 +16,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { KanbanColumn } from ".//KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { updateTaskStatus } from "@/app/actions/tasks";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { TaskWithRelations, Phase, TaskStatus } from "@/types/db/task";
 
@@ -80,11 +80,13 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
       completed: [],
     };
 
-    optimisticTasks.forEach((task) => {
-      if (task.status in grouped) {
-        grouped[task.status].push(task);
+    for (let i = 0; i < optimisticTasks.length; i++) {
+      const task = optimisticTasks[i];
+      const statusArray = grouped[task.status];
+      if (statusArray) {
+        statusArray.push(task);
       }
-    });
+    }
 
     return grouped;
   }, [optimisticTasks]);

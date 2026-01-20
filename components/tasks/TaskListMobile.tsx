@@ -6,7 +6,7 @@ import { TaskCard } from ".//TaskCard";
 import { FolderKanban } from "lucide-react";
 import { Check } from "lucide-react";
 import { Trash2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
 

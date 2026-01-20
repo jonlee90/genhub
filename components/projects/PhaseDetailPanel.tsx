@@ -20,7 +20,7 @@ import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
 import { TaskModal } from '@/components/tasks/TaskModal';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';

@@ -1101,6 +1101,99 @@ export async function getVendorOptions(
 }
 
 // ============================================
+// Initial Page Data Fetching
+// ============================================
+
+/**
+ * Fetch all expenses data for the initial page load
+ * Creates supabase client internally to avoid serialization issues with Cache Components
+ * Uses React.cache for request-level deduplication
+ *
+ * @param companyId - Company UUID
+ * @param role - User role for authorization
+ * @returns Combined expenses, projects, and tasks data
+ */
+export const getInitialExpensesPageData = cache(async (
+  companyId: string,
+  role: string,
+) => {
+  try {
+    const supabase = await createClient();
+
+    // Fetch projects, expenses, and tasks in parallel
+    const projectsPromise = supabase
+      .from("projects")
+      .select("id, name, status, end_date")
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .order("name");
+
+    const expensesPromise = supabase
+      .from("expenses")
+      .select(
+        `
+        *,
+        project:projects!expenses_project_id_fkey (
+          id,
+          name
+        ),
+        task:tasks!expenses_task_id_fkey (
+          id,
+          title
+        )
+      `,
+      )
+      .eq("company_id", companyId)
+      .order("created_at", { ascending: false });
+
+    type TaskData = { id: string; title: string; project_id: string; task_type: string };
+    const tasksPromise = (async (): Promise<{ data: TaskData[] }> => {
+      const projectsResult = await projectsPromise;
+      const projectIds = projectsResult.data?.map((p) => p.id) || [];
+      if (!projectIds.length) {
+        return { data: [] };
+      }
+      const result = await supabase
+        .from("tasks")
+        .select("id, title, project_id, task_type")
+        .in("project_id", projectIds)
+        .order("created_at");
+      return { data: (result.data || []) as TaskData[] };
+    })();
+
+    const [projectsResult, expensesResult, tasksResult] = await Promise.all([
+      projectsPromise,
+      expensesPromise,
+      tasksPromise,
+    ]);
+
+    return {
+      success: true,
+      data: {
+        expenses: expensesResult.data || [],
+        projects: (projectsResult.data || []) as any[],
+        tasks: tasksResult.data || [],
+        role,
+        companyId,
+      },
+    };
+  } catch (error) {
+    console.error("[getInitialExpensesPageData] Error:", error);
+    return {
+      success: false,
+      error: "Failed to fetch expenses data",
+      data: {
+        expenses: [],
+        projects: [],
+        tasks: [],
+        role,
+        companyId,
+      },
+    };
+  }
+});
+
+// ============================================
 // Auto-Expense Creation from Task
 // ============================================
 

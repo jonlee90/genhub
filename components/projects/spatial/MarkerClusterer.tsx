@@ -4,7 +4,7 @@
 // Renders cluster markers with count badges, click to expand, toggle on/off
 
 import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Layers from 'lucide-react/icons/layers';
 import Grid3x3 from 'lucide-react/icons/grid3x3';

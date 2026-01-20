@@ -28,7 +28,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, PanInfo } from 'framer-motion';
+import { m as motion, AnimatePresence, useMotionValue, PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { getModalTheme } from '@/lib/config/modal-themes';
 

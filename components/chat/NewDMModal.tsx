@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { Search, MessageCircle, Loader2, Briefcase } from "lucide-react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Input } from "@/components/ui/input";

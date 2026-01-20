@@ -8,7 +8,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { m as motion, AnimatePresence } from 'framer-motion'
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import MessageSquare from 'lucide-react/icons/message-square';
 import Edit from 'lucide-react/icons/edit';

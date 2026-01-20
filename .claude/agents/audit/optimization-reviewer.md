@@ -807,7 +807,6 @@ grep -c "await get" app/page.tsx
   flags: {
     ORCHESTRATED: true,
     SKIP_BUILD: true, // Review only, no builds needed
-    SKIP_SYNC: true
   }
 }
 ```

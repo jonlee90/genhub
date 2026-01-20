@@ -4,7 +4,7 @@
 // P2.6 - Dynamic Level of Detail management
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Gauge from 'lucide-react/icons/gauge';
 import Zap from 'lucide-react/icons/zap';

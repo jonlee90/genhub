@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Building2 from "lucide-react/icons/building-2";

@@ -16,7 +16,7 @@ import {
   Box,
   Receipt,
 } from "lucide-react";
-import { cn, formatDate, getInitials } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
 import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
@@ -42,8 +42,17 @@ interface TaskCardProps {
 // All cards use construction-blue border for consistent branding
 const CARD_BORDER = "border-l-4 border-construction-blue";
 
-// Utility functions extracted outside component to prevent recreation on every render
-function formatCurrency(amount: number) {
+// Utility functions extracted to module scope to prevent recreation on every render
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function formatCompactCurrency(amount: number): string {
   if (amount >= 1000) {
     return `$${(amount / 1000).toFixed(1)}k`;
   }
@@ -208,7 +217,7 @@ export const TaskCard = React.memo(function TaskCard({
               {hasMaterials && (
                 <div
                   className="shrink-0 animate-badge-pop"
-                  title={`${task.materialStats!.count} materials - ${formatCurrency(task.materialStats!.totalCost)}`}
+                  title={`${task.materialStats!.count} materials - ${formatCompactCurrency(task.materialStats!.totalCost)}`}
                 >
                   {/* Stamped Metal Badge Design */}
                   <div className="relative">
@@ -308,7 +317,7 @@ export const TaskCard = React.memo(function TaskCard({
                   >
                     <Package className="h-3 w-3 text-construction-accent" />
                     <span className="text-[11px] font-black text-construction-accent tracking-tight">
-                      {formatCurrency(task.materialStats!.totalCost)}
+                      {formatCompactCurrency(task.materialStats!.totalCost)}
                     </span>
                   </div>
                 )}
@@ -317,11 +326,11 @@ export const TaskCard = React.memo(function TaskCard({
                 {hasExpenses && (
                   <div
                     className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 border border-amber-300/60 rounded-md"
-                    title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? "s" : ""} - ${formatCurrency(expenseStats!.totalAmount)}`}
+                    title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? "s" : ""} - ${formatCompactCurrency(expenseStats!.totalAmount)}`}
                   >
                     <Receipt className="h-3 w-3 text-amber-600" />
                     <span className="text-[11px] font-black text-amber-700 tracking-tight">
-                      {formatCurrency(expenseStats!.totalAmount)}
+                      {formatCompactCurrency(expenseStats!.totalAmount)}
                     </span>
                   </div>
                 )}

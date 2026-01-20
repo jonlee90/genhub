@@ -9,7 +9,7 @@ import {
   useRef,
 } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { createProject } from "@/app/actions/projects";
 import { getPhaseTemplates } from "@/app/actions/phase-templates";
 import { getProjectTypes } from "@/app/actions/project-types";

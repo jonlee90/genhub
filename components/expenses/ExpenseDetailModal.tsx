@@ -21,7 +21,7 @@ import { reviewExpense, deleteExpense } from "@/app/actions/expenses";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 
 interface Expense {
   id: string;

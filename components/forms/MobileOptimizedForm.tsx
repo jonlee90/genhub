@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { Camera, Calendar, Phone, Mail, MapPin, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatPhoneNumber } from '@/lib/hooks/usePhoneMask';

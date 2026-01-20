@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { EntityType } from "@/types/db/chat";
 import { ProjectPreview } from "./previews/ProjectPreview";

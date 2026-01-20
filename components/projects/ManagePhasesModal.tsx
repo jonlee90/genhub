@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Layers from "lucide-react/icons/layers";
 import Plus from "lucide-react/icons/plus";

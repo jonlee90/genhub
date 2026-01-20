@@ -4,8 +4,7 @@ import { ExpensesList } from "@/components/expenses/ExpensesList";
 import { ExpensesListSkeleton } from "@/components/expenses/ExpensesListSkeleton";
 import { ExpensesPageHeader } from "@/components/expenses/ExpensesPageHeader";
 import { ExpenseSummary } from "@/components/expenses/ExpenseSummary";
-import { getExpenseAnalytics } from "@/app/actions/expenses";
-import { getCachedExpensesData } from "@/lib/cache/expenses";
+import { getExpenseAnalytics, getInitialExpensesPageData } from "@/app/actions/expenses";
 import { auth } from "@/lib/auth";
 import { createClient } from "@/utils/supabase/server";
 
@@ -46,13 +45,18 @@ export default async function ExpensesPage({
     redirect("/app/onboarding");
   }
 
-  // Cached data fetch (with company isolation)
-  const [params, expensesData, analyticsResult] = await Promise.all([
+  // Fetch initial page data and analytics in parallel
+  const [params, pageDataResult, analyticsResult] = await Promise.all([
     searchParams,
-    getCachedExpensesData(companyUser.company_id, companyUser.role),
+    getInitialExpensesPageData(companyUser.company_id, companyUser.role),
     getExpenseAnalytics(),
   ]);
-  const { expenses, projects, tasks, companyId } = expensesData;
+
+  if (!pageDataResult.success) {
+    redirect("/app/onboarding");
+  }
+
+  const { expenses, projects, tasks, companyId } = pageDataResult.data;
 
   // Handle analytics error - fallback to null if error occurs
   const analytics = analyticsResult.error ? null : (analyticsResult.data || null);

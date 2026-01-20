@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { getMessages } from "@/app/actions/chat-queries";
 import { markMessagesAsRead } from "@/app/actions/chat";
 import { useMessages, type OptimisticMessage } from "@/lib/hooks/useMessages";

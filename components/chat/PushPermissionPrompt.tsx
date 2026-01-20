@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
 import { Bell, X, HardHat } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 /**

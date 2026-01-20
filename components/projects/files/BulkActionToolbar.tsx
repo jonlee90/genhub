@@ -7,7 +7,7 @@
 
 'use client';
 
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Download from 'lucide-react/icons/download';
 import Trash2 from 'lucide-react/icons/trash-2';

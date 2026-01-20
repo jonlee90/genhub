@@ -10,7 +10,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { Package } from "lucide-react";
 import { Search } from "lucide-react";
 import { Loader2 } from "lucide-react";

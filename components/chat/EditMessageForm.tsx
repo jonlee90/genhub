@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Save, X, Loader2 } from 'lucide-react';
 import { editMessage } from '@/app/actions/chat';

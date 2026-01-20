@@ -4,7 +4,7 @@
 // P2.7 - Click detection, highlighting, tooltips
 
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Box from 'lucide-react/icons/box';
 import MousePointer2 from 'lucide-react/icons/mouse-pointer-2';;

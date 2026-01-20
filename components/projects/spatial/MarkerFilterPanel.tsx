@@ -7,7 +7,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import AlertCircle from 'lucide-react/icons/alert-circle';
 import FileText from 'lucide-react/icons/file-text';

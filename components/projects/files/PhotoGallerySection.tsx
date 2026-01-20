@@ -11,7 +11,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import ImageIcon from "lucide-react/icons/image";
 import Upload from "lucide-react/icons/upload";

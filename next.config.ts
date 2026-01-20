@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
   experimental: {
     optimizePackageImports: ['lucide-react'],
+    // Cache Components and PPR are enabled via cacheComponents: true below
   },
   // Cache Components enabled - all prerequisites complete
   // Phase A: Security fix (auth before cache pattern)

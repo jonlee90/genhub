@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { addTaskComment } from "@/app/actions/tasks";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import type { TaskActivity } from "@/types/db/task";
 
 interface TaskActivityLogProps {

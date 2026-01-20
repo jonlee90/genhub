@@ -30,7 +30,7 @@ import {
   type VendorOption,
 } from "@/app/actions/expenses";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import Image from "next/image";
 import type { CreateExpenseModalProps } from "@/types/db/expense";
 import { VendorCombobox } from "./VendorCombobox";

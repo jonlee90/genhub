@@ -8,7 +8,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Bold from 'lucide-react/icons/bold';
 import Italic from 'lucide-react/icons/italic';

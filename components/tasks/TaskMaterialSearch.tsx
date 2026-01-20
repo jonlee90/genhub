@@ -10,7 +10,7 @@
  */
 
 import { useState, useTransition, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   Loader2,

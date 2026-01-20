@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X, MessageSquare, Loader2 } from 'lucide-react';
 import { MessageItem } from './MessageItem';

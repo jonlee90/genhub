@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package, CheckCircle2, Plus, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STOCK_STATUS_CONFIG } from "@/lib/materials-ui";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { AssignMaterialModal } from "./AssignMaterialModal";
 import Image from "next/image";
 import type { HomeDepotProduct } from "@/lib/services/home-depot-api";

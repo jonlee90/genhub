@@ -17,7 +17,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import {
   Select,

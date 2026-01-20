@@ -4,7 +4,7 @@
 // Features: Placement mode toggle, 3D position preview, quick form, mobile-friendly
 
 import { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import MapPin from 'lucide-react/icons/map-pin';
 import X from 'lucide-react/icons/x';

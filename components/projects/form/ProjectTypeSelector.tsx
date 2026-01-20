@@ -11,7 +11,7 @@
  */
 
 import { useMemo, useState, memo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, Layers, Check, Building2 } from 'lucide-react';
 import { PROJECT_TYPE_ICON_MAP } from '@/lib/config/project-type-display';
 import { cn } from '@/lib/utils';

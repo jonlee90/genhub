@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { sendMessage } from "@/app/actions/chat";
 import { MessageWithSender, EntityReference } from "@/types/db/chat";

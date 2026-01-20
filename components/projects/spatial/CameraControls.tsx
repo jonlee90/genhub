@@ -4,7 +4,7 @@
 // P2.3 - Camera presets, fit-to-view, reset, first-person mode, URL persistence
 
 import { useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Maximize2 from 'lucide-react/icons/maximize-2';
 import Home from 'lucide-react/icons/home';

@@ -5,7 +5,7 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { TaskCard } from "./TaskCard";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { HardHat } from "lucide-react";
 import type { TaskStatus } from "@/types/db/enums";
 import type { TaskWithRelations } from "@/types/db/task";

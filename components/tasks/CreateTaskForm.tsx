@@ -20,7 +20,7 @@ import { ChevronRight } from "lucide-react";
 import { Package } from "lucide-react";
 import { AlertCircle } from "lucide-react";
 import { Plus } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { createTask, type CreateTaskFormState } from "@/app/actions/tasks";
 import { TaskTypeSelector, TaskTypeBadge } from ".//TaskTypeSelector";
 import { TaskMaterialsManager } from "./TaskMaterialsManager";

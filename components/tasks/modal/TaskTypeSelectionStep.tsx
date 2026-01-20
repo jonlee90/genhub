@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useCallback, memo } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { TaskTypeSelector } from '../TaskTypeSelector';
 import { getTaskTypeConfig } from '@/lib/config/task-type-fields';
 import type { TaskType } from '@/types/db/enums';

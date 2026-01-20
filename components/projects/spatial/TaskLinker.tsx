@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Search from "lucide-react/icons/search";
 import MapPin from "lucide-react/icons/map-pin";

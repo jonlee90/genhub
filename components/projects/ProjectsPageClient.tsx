@@ -13,7 +13,7 @@
 
 import { useState, useCallback, useMemo, useEffect, useRef, memo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
 import { BlueprintBackground, PortfolioSummary, type PortfolioSummaryStats } from '@/components/shared';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';

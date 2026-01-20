@@ -4,7 +4,7 @@ import { Bell, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { TopAccentBar } from "@/components/ui/TopAccentBar";
 
 // Routes where the mobile header should be hidden (page has its own header)

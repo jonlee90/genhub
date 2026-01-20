@@ -9,7 +9,7 @@
  * Debug: Uses Framer Motion for entrance animation
  */
 
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import Link from 'next/link';
 import { HardHat } from 'lucide-react';
 

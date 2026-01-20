@@ -584,7 +584,6 @@ EXPLAIN ANALYZE [query]
   },
   flags: {
     ORCHESTRATED: true,
-    SKIP_SYNC: false, // Run doc sync after changes
     SKIP_BUILD: false  // Verify build succeeds
   }
 }

@@ -9,7 +9,7 @@
  * - Reconnecting: Yellow pulsing indicator with retry count
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { Wifi, WifiOff, RefreshCw, AlertCircle } from 'lucide-react';
 import type { ConnectionState } from '@/lib/hooks/useRealtimeConnection';
 import { cn } from '@/lib/utils';

@@ -1,24 +1,25 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, PanInfo } from "framer-motion";
+import { m as motion, PanInfo } from "framer-motion";
 import {
   panelVariants,
   panelTransition,
   GESTURE_CONFIG,
-  prefersReducedMotion,
   reducedMotionVariants,
   reducedMotionTransition,
 } from "./animations";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import type { SlideMenuPanelProps } from "./types";
 
 export function SlideMenuPanel({ children, onClose }: SlideMenuPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
 
-  const variants = prefersReducedMotion
+  const variants = shouldReduceMotion
     ? reducedMotionVariants.panel
     : panelVariants;
-  const transition = prefersReducedMotion
+  const transition = shouldReduceMotion
     ? reducedMotionTransition
     : panelTransition;
 
@@ -53,7 +54,7 @@ export function SlideMenuPanel({ children, onClose }: SlideMenuPanelProps) {
       animate="animate"
       exit="exit"
       transition={transition}
-      drag={prefersReducedMotion ? false : "x"}
+      drag={shouldReduceMotion ? false : "x"}
       dragConstraints={GESTURE_CONFIG.dragConstraints}
       dragElastic={GESTURE_CONFIG.dragElastic}
       onDragEnd={handleDragEnd}

@@ -20,7 +20,7 @@ import UserPlus from "lucide-react/icons/user-plus";
 import Loader2 from "lucide-react/icons/loader-2";
 import AlertCircle from "lucide-react/icons/alert-circle";
 import Mail from "lucide-react/icons/mail";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { addProjectTeamMember } from "@/app/actions/projects";
 import { getInitials } from "@/lib/utils";
 

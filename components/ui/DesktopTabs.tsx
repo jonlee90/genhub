@@ -32,7 +32,7 @@
  */
 
 import { useCallback, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 export interface DesktopTab {

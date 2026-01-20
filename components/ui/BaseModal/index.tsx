@@ -8,9 +8,10 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { motion, useMotionValue, PanInfo } from 'framer-motion';
+import { m as motion, useMotionValue, PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { getModalTheme } from '@/lib/config/modal-themes';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
@@ -78,7 +79,10 @@ export function BaseModal({
   // Detect mobile for bottom sheet behavior
   const isMobile = useMediaQuery('(max-width: 767px)');
 
-  // Drag-to-dismiss state
+  // Detect reduced motion preference (Accessibility)
+  const shouldReduceMotion = useReducedMotion();
+
+  // Drag-to-dismiss state (Vercel: rerender-lazy-state-init - use function for expensive initial state)
   const dragY = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -189,13 +193,13 @@ export function BaseModal({
           <motion.div
             className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none"
             aria-hidden="true"
-            drag="y"
+            drag={shouldReduceMotion ? false : "y"}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.2 }}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             style={{ y: dragY }}
-            transition={{ type: 'spring', ...SPRING_CONFIG }}
+            transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', ...SPRING_CONFIG }}
           >
             <div className={cn(
               'h-1.5 w-12 rounded-full transition-colors',

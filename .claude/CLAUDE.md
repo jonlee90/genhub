@@ -20,7 +20,7 @@ requirements. Do this automatically without being asked.
 
 **GenHub**: Construction PWA for general contractors
 **Stack**: Next.js 16, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
-**Priorities**: Correctness > Token efficiency > Consistency > Speed
+**Priorities**: Correctness > Consistency > Token efficiency > Speed
 
 ---
 
@@ -106,7 +106,6 @@ TodoWrite([
 |------|--------|
 | `ORCHESTRATED=true` | Skip build/sync; return status only |
 | `SKIP_BUILD=true` | Don't run build step |
-| `SKIP_SYNC=true` | Don't run doc sync |
 
 ---
 
@@ -140,3 +139,51 @@ Halt and request guidance if:
 - Task violates agent authority boundaries
 - Required context missing from Serena/Memory MCP
 - Approaching token cap
+
+---
+
+## CONTINUOUS LEARNING
+
+### Trigger Conditions
+
+Run learning check ONLY for significant tasks:
+- Multi-step implementations
+- Error resolution after 2+ attempts
+- User corrections to approach
+- New architectural decisions
+- Performance optimizations
+
+**Skip for:** Typo fixes, single-line changes, simple renames, config tweaks
+
+### Post-Task Checklist
+
+| Question | If Yes → Action |
+|----------|-----------------|
+| New gotcha discovered? | `write_memory('genhub-common-gotchas', ...)` |
+| Reusable pattern found? | `write_memory('genhub-component-patterns', ...)` |
+| Architectural decision made? | `add_observations('key-decisions', [...])` |
+| Bug pattern encountered? | `create_entities` with type `BugPattern` |
+| User corrected my approach? | Document in relevant memory |
+
+### Knowledge Update Targets
+
+| Learning Type | Store | Tool |
+|---------------|-------|------|
+| Bug pattern | Memory MCP | `mcp__memory__create_entities({ entityType: "BugPattern" })` |
+| Session decision | Memory MCP | `mcp__memory__add_observations` to `key-decisions` |
+| Code pattern | Serena | `write_memory('genhub-component-patterns', ...)` |
+| Common gotcha | Serena | `write_memory('genhub-common-gotchas', ...)` |
+| Architecture | Serena | `write_memory('genhub-architectural-decisions', ...)` |
+
+**Note:** CLAUDE.md updates are NEVER automatic. Suggest changes to user for manual review.
+
+### Learning Entry Format
+
+```
+## [Pattern Name] (YYYY-MM-DD)
+**What:** Clear description
+**When:** Trigger conditions
+**Why:** Problem prevented / value provided
+**How:** Solution steps or code
+**Source:** Task name
+```

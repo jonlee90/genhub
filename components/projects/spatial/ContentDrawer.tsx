@@ -4,7 +4,7 @@
 // Features: Tabs (Photos, Files, Notes, Activity), responsive, keyboard accessible
 
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import X from 'lucide-react/icons/x';
 import Edit from 'lucide-react/icons/edit';

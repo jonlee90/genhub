@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { registerServiceWorker, skipWaiting } from "@/lib/service-worker";
 import type { ServiceWorkerStatus } from "@/lib/service-worker";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { RefreshCw, X, Download } from "lucide-react";
 
 /**

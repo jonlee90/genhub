@@ -14,7 +14,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Paperclip, X, Upload, Loader2, AlertCircle, Check } from 'lucide-react';
 import { uploadAttachment } from '@/app/actions/chat';

@@ -367,7 +367,6 @@ LOW Impact, LOW Effort:
   flags: {
     ORCHESTRATED: true,
     SKIP_BUILD: true, // Read-only analysis
-    SKIP_SYNC: true
   }
 }
 ```

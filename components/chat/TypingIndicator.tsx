@@ -11,7 +11,7 @@
  * - Construction-themed industrial design
  */
 
-import { motion } from 'framer-motion';
+import { m as motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import type { TypingUser } from '@/lib/hooks/useTypingIndicator';
 

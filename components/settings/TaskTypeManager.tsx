@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, memo, useTransition } from "react";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file
 import Plus from 'lucide-react/icons/plus';
 import Edit from 'lucide-react/icons/edit';

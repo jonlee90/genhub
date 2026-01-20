@@ -174,6 +174,12 @@ export function ProjectConfigurationSection() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Wrap phase template change handler to clear selectedPhaseForTask when user manually changes phase
+  const handlePhaseTemplateChange = useCallback((id: string) => {
+    setSelectedPhaseTemplateId(id);
+    setSelectedPhaseForTask(''); // Clear the override when user manually selects
+  }, []);
+
   // Mobile layout
   if (isMobile) {
     return (
@@ -237,7 +243,7 @@ export function ProjectConfigurationSection() {
                   onProjectTypeChange={setSelectedProjectTypeId}
                   phaseTemplates={phaseTemplates}
                   selectedPhaseTemplateId={selectedPhaseForTask || selectedPhaseTemplateId}
-                  onPhaseTemplateChange={setSelectedPhaseTemplateId}
+                  onPhaseTemplateChange={handlePhaseTemplateChange}
                   taskTypes={taskTypes}
                   isLoadingProjectTypes={isLoadingProjectTypes}
                   isLoadingPhases={isLoadingPhases}
@@ -314,7 +320,7 @@ export function ProjectConfigurationSection() {
             onProjectTypeChange={setSelectedProjectTypeId}
             phaseTemplates={phaseTemplates}
             selectedPhaseTemplateId={selectedPhaseForTask || selectedPhaseTemplateId}
-            onPhaseTemplateChange={setSelectedPhaseTemplateId}
+            onPhaseTemplateChange={handlePhaseTemplateChange}
             taskTypes={taskTypes}
             isLoadingProjectTypes={isLoadingProjectTypes}
             isLoadingPhases={isLoadingPhases}

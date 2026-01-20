@@ -10,7 +10,7 @@
  * - Industrial design with categories
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { CONSTRUCTION_EMOJIS } from '@/types/db/chat';
 import { X } from 'lucide-react';

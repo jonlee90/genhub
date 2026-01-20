@@ -11,7 +11,7 @@
  * - Construction-themed design
  */
 
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toggleReaction } from "@/app/actions/chat";
 import { toast } from "sonner";

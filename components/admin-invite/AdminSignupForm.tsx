@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { acceptAdminInvitation } from "@/app/actions/accept-admin-invite";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

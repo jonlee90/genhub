@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate, getInitials } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { m as motion } from "framer-motion";
 import { updateTaskStatus } from "@/app/actions/tasks";
 import { useIsMobile } from "@/lib/hooks/useMediaQuery";
 import {
@@ -119,7 +119,7 @@ const TaskListRow = memo(function TaskListRow({
   const taskIsOverdue = isOverdue(task);
 
   return (
-    <TableRow className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100">
+    <TableRow className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100 content-visibility-auto">
       {/* Title */}
       <TableCell>
         <button

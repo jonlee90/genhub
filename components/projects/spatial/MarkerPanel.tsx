@@ -4,7 +4,7 @@
 // Features: Virtualized scrolling, search, filters, sort, responsive
 
 import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { useVirtualizer } from '@tanstack/react-virtual';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Search from 'lucide-react/icons/search';

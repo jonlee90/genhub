@@ -10,7 +10,7 @@
  * - Construction-blue theme
  */
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { m as motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 

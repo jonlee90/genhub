@@ -7,6 +7,7 @@ import { OpenPanelComponent } from '@openpanel/nextjs';
 import { Toaster } from 'react-hot-toast';
 import FooterWrapper from "@/components/ui/FooterWrapper";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
+import { MotionProvider } from "@/components/providers/MotionProvider";
 
 export const metadata: Metadata = {
   ...config.metadata,
@@ -46,16 +47,18 @@ export default function RootLayout({
       <body
         className="antialiased min-h-screen flex flex-col"
       >
-        <Toaster position="top-center" />
-        <main className="flex-grow">
-          {children}
-        </main>
-        {/* Footer uses usePathname() which needs Suspense */}
-        <Suspense fallback={null}>
-          <FooterWrapper />
-        </Suspense>
-        {/* Service Worker Registration - PWA Support */}
-        <ServiceWorkerRegistration />
+        <MotionProvider>
+          <Toaster position="top-center" />
+          <main className="flex-grow">
+            {children}
+          </main>
+          {/* Footer uses usePathname() which needs Suspense */}
+          <Suspense fallback={null}>
+            <FooterWrapper />
+          </Suspense>
+          {/* Service Worker Registration - PWA Support */}
+          <ServiceWorkerRegistration />
+        </MotionProvider>
       </body>
       {/* Google Tag Manager */}
       {process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID && (

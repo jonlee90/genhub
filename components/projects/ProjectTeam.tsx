@@ -12,7 +12,7 @@ import Loader2 from "lucide-react/icons/loader-2";
 import ChevronRight from "lucide-react/icons/chevron-right";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import {
   removeProjectTeamMember,
   removeSubcontractorFromProject,

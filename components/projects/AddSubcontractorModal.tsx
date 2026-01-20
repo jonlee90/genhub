@@ -15,7 +15,7 @@ import Building2 from "lucide-react/icons/building-2";
 import Phone from "lucide-react/icons/phone";
 import Star from "lucide-react/icons/star";
 import Check from "lucide-react/icons/check";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { addSubcontractorToProject } from "@/app/actions/projects";
 import { cn, getInitials } from "@/lib/utils";
 

@@ -8,7 +8,7 @@
 'use client'
 
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { m as motion } from 'framer-motion'
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import File from 'lucide-react/icons/file';
 import Upload from 'lucide-react/icons/upload';
