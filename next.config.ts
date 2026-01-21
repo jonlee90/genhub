@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
+  outputFileTracingRoot: '/var/www/html', // Specify workspace root for monorepo
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -15,6 +16,7 @@ const nextConfig: NextConfig = {
     ],
     // Cache Components and PPR are enabled via cacheComponents: true below
   },
+  // @ts-ignore - Cache Components options (Next.js 16+ features)
   // Cache Components enabled - all prerequisites complete
   // Phase A: Security fix (auth before cache pattern)
   // Phase B: Suspense boundaries added to all 12 pages

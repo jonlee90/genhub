@@ -1,7 +1,6 @@
 'use server';
 
 import { z } from 'zod';
-import { createClient } from '@/utils/supabase/server';
 import { getUserContextWithUserData as getUserContext } from '@/lib/auth-context';
 
 // ============================================
