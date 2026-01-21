@@ -18,7 +18,7 @@ interface TabsProps {
 
 export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
   return (
-    <div className="relative flex items-center gap-2 p-1 bg-gray-100 rounded-lg border-2 border-gray-200 overflow-x-auto flex-nowrap scrollbar-hide scroll-smooth">
+    <div className="relative flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-x-auto flex-nowrap scrollbar-hide scroll-smooth">
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -27,7 +27,7 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
             "relative z-10 px-4 py-2 text-sm font-bold transition-colors duration-200 rounded-md flex-shrink-0",
             activeTab === tab.id
               ? "text-white"
-              : "text-gray-600 hover:text-gray-900"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
           )}
         >
           <div className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export function Tabs({ tabs, activeTab, onChange }: TabsProps) {
                 "ml-1 px-1.5 py-0.5 text-xs font-black rounded-full",
                 activeTab === tab.id
                   ? "bg-white/20"
-                  : "bg-gray-200"
+                  : "bg-gray-200 dark:bg-gray-700"
               )}>
                 {tab.count}
               </span>

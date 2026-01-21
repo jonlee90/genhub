@@ -26,7 +26,7 @@ const createProjectTypeSchema = z.object({
   color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color")
-    .default("#001B51"),
+    .default("var(--construction-blue)"),
 });
 
 const updateProjectTypeSchema = z.object({
@@ -113,7 +113,7 @@ export async function createProjectType(formData: FormData): Promise<{
     name: formData.get("name"),
     description: formData.get("description") || undefined,
     icon_name: formData.get("icon_name") || "Building2",
-    color: formData.get("color") || "#001B51",
+    color: formData.get("color") || "var(--construction-blue)",
   };
 
   const validation = createProjectTypeSchema.safeParse(rawData);

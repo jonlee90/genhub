@@ -29,7 +29,7 @@ interface StatusConfig {
 export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
   admin: {
     label: "Admin",
-    color: "bg-[#001B51] text-white border-[#001B51]",
+    color: "bg-construction-blue text-white border-construction-blue",
     icon: Briefcase,
   },
   project_manager: {

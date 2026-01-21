@@ -67,7 +67,7 @@ export function StickySubmitButton({
       <div
         className={cn(
           'absolute -top-8 left-0 right-0 h-8',
-          'bg-gradient-to-t from-gray-50 to-transparent',
+          'bg-gradient-to-t from-gray-50 dark:from-gray-950 to-transparent',
           'pointer-events-none'
         )}
       />

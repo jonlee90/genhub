@@ -76,7 +76,7 @@ export function UserPreview({ id }: UserPreviewProps) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "w-full max-w-md bg-white dark:bg-gray-800 border-2 border-construction-blue dark:border-construction-blue/60 rounded-xl p-4",
         "shadow-construction",
       )}
     >
@@ -94,8 +94,8 @@ export function UserPreview({ id }: UserPreviewProps) {
           {user.is_online !== undefined && (
             <div
               className={cn(
-                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white",
-                user.is_online ? "bg-construction-green" : "bg-gray-400",
+                "absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-gray-800",
+                user.is_online ? "bg-construction-green" : "bg-gray-400 dark:bg-gray-600",
               )}
               title={user.is_online ? "Online" : "Offline"}
             />
@@ -110,13 +110,13 @@ export function UserPreview({ id }: UserPreviewProps) {
 
           {/* Debug: Email */}
           <div className="flex items-center gap-2 mb-2">
-            <Mail className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-            <span className="text-sm text-gray-600 truncate">{user.email}</span>
+            <Mail className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 shrink-0" />
+            <span className="text-sm text-gray-600 dark:text-gray-300 truncate">{user.email}</span>
           </div>
 
           {/* Debug: Role badge */}
           <div className="flex items-center gap-2">
-            <Briefcase className="h-3.5 w-3.5 text-gray-500 shrink-0" />
+            <Briefcase className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400 shrink-0" />
             <Badge
               className={cn(
                 "text-[10px] font-bold px-2 py-0.5",
@@ -137,13 +137,13 @@ export function UserPreview({ id }: UserPreviewProps) {
                 "h-2 w-2",
                 user.is_online
                   ? "text-construction-green fill-construction-green"
-                  : "text-gray-400 fill-gray-400",
+                  : "text-gray-400 dark:text-gray-500 fill-gray-400 dark:fill-gray-500",
               )}
             />
             <span
               className={cn(
                 "text-xs font-mono font-bold",
-                user.is_online ? "text-construction-green" : "text-gray-400",
+                user.is_online ? "text-construction-green" : "text-gray-400 dark:text-gray-500",
               )}
             >
               {user.is_online ? "ONLINE" : "OFFLINE"}

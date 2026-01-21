@@ -72,13 +72,13 @@ export function NotesList({ markerId, notes, currentUserId }: NotesListProps) {
         <div className="w-16 h-16 mb-4 rounded-full bg-blue-500/10 flex items-center justify-center">
           <MessageSquare className="w-8 h-8 text-blue-500" />
         </div>
-        <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">No Notes Yet</h3>
+        <h3 className="font-bold text-construction-blue mb-2 uppercase tracking-tight">No Notes Yet</h3>
         <p className="text-sm text-gray-600 mb-4">Add notes and comments to discuss this marker.</p>
         <button
           onClick={() => setShowEditor(true)}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >
@@ -97,7 +97,7 @@ export function NotesList({ markerId, notes, currentUserId }: NotesListProps) {
           onClick={() => setShowEditor(true)}
           className={cn(
             'w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >

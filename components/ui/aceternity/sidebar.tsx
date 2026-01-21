@@ -49,7 +49,7 @@ export function Sidebar({
         damping: 30,
       }}
       className={cn(
-        "relative flex flex-col h-full bg-white border-r-2 border-gray-200 shadow-construction-lg",
+        "relative flex flex-col h-full bg-white dark:bg-gray-900 border-r-2 border-gray-200 dark:border-gray-800 shadow-construction-lg",
         className
       )}
     >
@@ -59,7 +59,7 @@ export function Sidebar({
         className={cn(
           "absolute -right-3 top-6 z-50",
           "w-6 h-6 rounded-full",
-          "bg-construction-blue text-white",
+          "bg-construction-blue dark:bg-blue-600 text-white dark:text-white",
           "flex items-center justify-center",
           "shadow-glow hover:shadow-glow-active",
           "transition-all duration-200",
@@ -90,8 +90,8 @@ export function Sidebar({
                   "transition-all cursor-pointer",
                   "group",
                   isActive
-                    ? "bg-construction-blue/10 shadow-glow-active"
-                    : "hover:bg-gray-100"
+                    ? "bg-construction-blue/10 dark:bg-construction-blue/20 shadow-glow-active"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-800"
                 )}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -114,8 +114,8 @@ export function Sidebar({
                   className={cn(
                     "h-5 w-5 flex-shrink-0 transition-colors",
                     isActive
-                      ? "text-construction-blue"
-                      : "text-gray-600 group-hover:text-construction-blue"
+                      ? "text-construction-blue dark:text-blue-400"
+                      : "text-gray-600 dark:text-gray-400 group-hover:text-construction-blue dark:group-hover:text-blue-400"
                   )}
                 />
 
@@ -133,14 +133,14 @@ export function Sidebar({
                         className={cn(
                           "font-bold text-sm truncate",
                           isActive
-                            ? "text-construction-blue"
-                            : "text-gray-700 group-hover:text-construction-blue"
+                            ? "text-construction-blue dark:text-blue-400"
+                            : "text-gray-700 dark:text-gray-300 group-hover:text-construction-blue dark:group-hover:text-blue-400"
                         )}
                       >
                         {link.label}
                       </div>
                       {link.description && (
-                        <div className="text-xs text-gray-500 truncate">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
                           {link.description}
                         </div>
                       )}
@@ -155,7 +155,7 @@ export function Sidebar({
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       exit={{ scale: 0 }}
-                      className="px-2 py-0.5 bg-construction-accent text-white text-xs font-bold rounded-full"
+                      className="px-2 py-0.5 bg-construction-accent dark:bg-amber-600 text-white dark:text-white text-xs font-bold rounded-full"
                     >
                       {link.badge}
                     </motion.div>
@@ -186,8 +186,8 @@ export function SidebarLink({
           "relative flex items-center gap-3 px-4 py-3 rounded-lg",
           "transition-all cursor-pointer group",
           isActive
-            ? "bg-construction-blue/10 shadow-glow-active"
-            : "hover:bg-gray-100"
+            ? "bg-construction-blue/10 dark:bg-construction-blue/20 shadow-glow-active"
+            : "hover:bg-gray-100 dark:hover:bg-gray-800"
         )}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}

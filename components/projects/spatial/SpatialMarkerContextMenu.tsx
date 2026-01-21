@@ -173,7 +173,7 @@ export function SpatialMarkerContextMenu({
         >
           <div className="bg-white rounded-lg shadow-construction-lg border-2 border-gray-900 overflow-hidden min-w-[240px]">
             {/* Header with 3D coordinates */}
-            <div className="px-4 py-3 bg-[#001B51] border-b-2 border-gray-900">
+            <div className="px-4 py-3 bg-construction-blue border-b-2 border-gray-900">
               <div className="text-[10px] font-mono font-bold text-white/60 uppercase tracking-wider mb-1">
                 3D Position
               </div>
@@ -201,11 +201,11 @@ export function SpatialMarkerContextMenu({
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-md',
                   'text-left text-sm font-medium text-gray-900',
-                  'hover:bg-[#001B51]/5 hover:border-[#001B51]/20',
+                  'hover:bg-construction-blue/5 hover:border-construction-blue/20',
                   'border-2 border-transparent transition-all duration-150'
                 )}
               >
-                <Plus className="h-4 w-4 text-[#001B51]" />
+                <Plus className="h-4 w-4 text-construction-blue" />
                 <span>Create New Task Here</span>
               </button>
               <button
@@ -216,11 +216,11 @@ export function SpatialMarkerContextMenu({
                 className={cn(
                   'w-full flex items-center gap-3 px-3 py-2.5 rounded-md',
                   'text-left text-sm font-medium text-gray-900',
-                  'hover:bg-[#001B51]/5 hover:border-[#001B51]/20',
+                  'hover:bg-construction-blue/5 hover:border-construction-blue/20',
                   'border-2 border-transparent transition-all duration-150'
                 )}
               >
-                <Link2 className="h-4 w-4 text-[#001B51]" />
+                <Link2 className="h-4 w-4 text-construction-blue" />
                 <span>Link Existing Task</span>
               </button>
             </div>

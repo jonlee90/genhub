@@ -75,7 +75,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
+        <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
         <p className="text-sm text-gray-500">Loading expenses...</p>
       </div>
     );
@@ -122,7 +122,7 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
               </div>
               <div className="text-right">
                 {hasBudgetVisibility ? (
-                  <div className="text-xl font-black text-[#001B51]">
+                  <div className="text-xl font-black text-construction-blue">
                     ${expense.amount.toFixed(2)}
                   </div>
                 ) : (
@@ -166,15 +166,15 @@ export function ExpensesTab({ taskId, hasBudgetVisibility = true }: ExpensesTabP
 
       {/* Total Summary (conditionally hidden) */}
       {hasBudgetVisibility && (
-        <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
+        <div className="border-2 border-construction-blue rounded-lg p-4 bg-construction-blue/5">
           <div className="flex justify-between items-center mb-2">
-            <span className="font-bold uppercase text-sm text-[#001B51]">Total Expenses:</span>
-            <span className="text-2xl font-black text-[#001B51]">
+            <span className="font-bold uppercase text-sm text-construction-blue">Total Expenses:</span>
+            <span className="text-2xl font-black text-construction-blue">
               ${totalExpenses.toFixed(2)}
             </span>
           </div>
           {approvedExpenses !== totalExpenses && (
-            <div className="flex justify-between items-center text-sm pt-2 border-t border-[#001B51]/20">
+            <div className="flex justify-between items-center text-sm pt-2 border-t border-construction-blue/20">
               <span className="text-gray-600">Approved:</span>
               <span className="font-bold text-green-600">
                 ${approvedExpenses.toFixed(2)}

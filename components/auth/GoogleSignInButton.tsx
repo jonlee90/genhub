@@ -47,7 +47,7 @@ export function GoogleSignInButton({
       onClick={handleGoogleSignIn}
       disabled={disabled || isLoading}
       className={cn(
-        'w-full h-12 text-base font-bold bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 shadow-construction hover:shadow-construction-lg transition-all',
+        'w-full h-12 text-base font-bold bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 shadow-construction hover:shadow-construction-lg transition-all dark:bg-gray-800 dark:hover:bg-gray-750 dark:text-gray-100 dark:border-gray-700',
         className
       )}
     >

@@ -50,7 +50,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
 
       {/* Description */}
       {task.description && (
-        <div className="border-l-4 border-l-[#001B51] pl-4">
+        <div className="border-l-4 border-l-[var(--construction-blue)] pl-4">
           <h3 className="text-xs font-bold uppercase text-gray-500 mb-2">Description</h3>
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{task.description}</p>
         </div>
@@ -73,7 +73,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
                   className="h-8 w-8 rounded-full border-2 border-gray-200"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-[#001B51] flex items-center justify-center text-white text-sm font-bold">
+                <div className="h-8 w-8 rounded-full bg-construction-blue flex items-center justify-center text-white text-sm font-bold">
                   {task.assignee.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -123,8 +123,8 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
 
       {/* 3D Location (if spatial marker exists) */}
       {task.spatial_marker && (
-        <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-[#001B51] mb-3">
+        <div className="border-2 border-construction-blue rounded-lg p-4 bg-construction-blue/5">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-construction-blue mb-3">
             <MapPin className="h-4 w-4" />
             3D Location
           </div>
@@ -160,7 +160,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-xs text-gray-500 block mb-1">Planned</span>
-              <span className="text-lg font-black text-[#001B51]">
+              <span className="text-lg font-black text-construction-blue">
                 ${(task.planned_cost || 0).toFixed(2)}
               </span>
             </div>

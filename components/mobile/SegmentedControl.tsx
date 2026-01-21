@@ -89,7 +89,7 @@ export function SegmentedControl({
       className={cn(
         // Container styles
         "inline-flex items-center",
-        "bg-gray-100 rounded-xl",
+        "bg-gray-100 dark:bg-gray-800 rounded-xl",
         styles.container,
         fullWidth && "w-full",
         className,
@@ -122,11 +122,11 @@ export function SegmentedControl({
 
               // Active/inactive states
               isActive
-                ? cn("bg-white text-[#001B51]", "shadow-sm")
+                ? cn("bg-white dark:bg-gray-700 text-construction-blue dark:text-gray-100", "shadow-sm")
                 : cn(
-                    "bg-transparent text-gray-600",
-                    "hover:text-gray-900",
-                    "active:bg-gray-200/50",
+                    "bg-transparent text-gray-600 dark:text-gray-400",
+                    "hover:text-gray-900 dark:hover:text-gray-200",
+                    "active:bg-gray-200/50 dark:active:bg-gray-700/50",
                   ),
 
               // Disabled
@@ -143,8 +143,8 @@ export function SegmentedControl({
                   "min-w-[20px] h-5 px-1.5",
                   "rounded-full text-xs font-semibold",
                   isActive
-                    ? "bg-[#001B51] text-white"
-                    : "bg-gray-200 text-gray-600",
+                    ? "bg-construction-blue dark:bg-blue-600 text-white"
+                    : "bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300",
                 )}
               >
                 {segment.count > 99 ? "99+" : segment.count}

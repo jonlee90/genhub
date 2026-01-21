@@ -103,7 +103,7 @@ export function PhaseDetailPanel({
   // Performance optimization: Memoize computed values
   const statusConfig = useMemo(() => ({
     not_started: { label: 'Not Started', color: 'text-gray-700' },
-    in_progress: { label: 'In Progress', color: 'text-[#001B51]' },
+    in_progress: { label: 'In Progress', color: 'text-construction-blue' },
     completed: { label: 'Completed', color: 'text-[#059669]' },
   }), []);
 
@@ -129,13 +129,13 @@ export function PhaseDetailPanel({
           transition={{ delay: 0.1 }}
         >
          
-        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200">
+        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
 
-            <div className="p-2 bg-[#001B51] rounded-lg">
+            <div className="p-2 bg-construction-blue rounded-lg">
               <ListTodo className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h4 className="text-lg font-bold text-[#001B51]">{phase.name} Tasks</h4>
+              <h4 className="text-lg font-bold text-construction-blue">{phase.name} Tasks</h4>
              
                 
             {phase.notes && (
@@ -174,9 +174,9 @@ export function PhaseDetailPanel({
           >
             {/* Start Date Card */}
             {phase.started_at && (
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wide">Started</p>
-                <div className="flex items-center gap-2 text-[#001B51]">
+              <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Started</p>
+                <div className="flex items-center gap-2 text-construction-blue">
                   <Calendar className="h-5 w-5" />
                   <span className="text-sm font-bold">
                     {new Date(phase.started_at).toLocaleDateString('en-US', {
@@ -191,8 +191,8 @@ export function PhaseDetailPanel({
 
             {/* Completed Date Card */}
             {phase.completed_at && (
-              <div className="bg-white border-2 border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wide">Completed</p>
+              <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Completed</p>
                 <div className="flex items-center gap-2 text-[#059669]">
                   <CheckCircle2 className="h-5 w-5" />
                   <span className="text-sm font-bold">
@@ -220,7 +220,7 @@ export function PhaseDetailPanel({
             onClick={handleApplyTemplates}
             disabled={applyingTemplates || isPending}
             variant="outline"
-            className="w-full border-2 border-[#001B51]/20 text-[#001B51] hover:bg-[#001B51]/5 font-bold h-11 transition-all"
+            className="w-full border-2 border-construction-blue/20 text-construction-blue hover:bg-construction-blue/5 font-bold h-11 transition-all"
           >
             {applyingTemplates ? (
               <>
@@ -239,13 +239,13 @@ export function PhaseDetailPanel({
 */}
         {/* Progress Card - Creative Phase Progress Dashboard */}
         <motion.div
-          className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm"
+          className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden shadow-sm"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
           {/* Header Strip */}
-          <div className="h-1.5 bg-gradient-to-r from-[#001B51] via-[#001B51]/80 to-[#059669]" />
+          <div className="h-1.5 bg-gradient-to-r from-[var(--construction-blue)] via-[var(--construction-blue)]/80 to-[#059669]" />
 
           <div className="p-4">
             {/* Top Section: Arc Gauge + Stats */}
@@ -265,7 +265,7 @@ export function PhaseDetailPanel({
                   <motion.path
                     d="M 8 44 A 32 32 0 0 1 72 44"
                     fill="none"
-                    stroke="#001B51"
+                    stroke="var(--construction-blue)"
                     strokeWidth="6"
                     strokeLinecap="round"
                     strokeDasharray="100.53"
@@ -287,7 +287,7 @@ export function PhaseDetailPanel({
                         y1={y1}
                         x2={x2}
                         y2={y2}
-                        stroke={tick <= progressPercentageRaw ? '#001B51' : '#D1D5DB'}
+                        stroke={tick <= progressPercentageRaw ? 'var(--construction-blue)' : '#D1D5DB'}
                         strokeWidth="1.5"
                         strokeLinecap="round"
                       />
@@ -297,7 +297,7 @@ export function PhaseDetailPanel({
                 {/* Center percentage */}
                 <div className="absolute inset-0 flex items-end justify-center pb-0.5">
                   <motion.span
-                    className="text-lg font-black text-[#001B51] tabular-nums"
+                    className="text-lg font-black text-construction-blue tabular-nums"
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.4, delay: 0.5 }}
@@ -318,22 +318,22 @@ export function PhaseDetailPanel({
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#059669]" />
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-500 truncate">Completed</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Completed</p>
                     <p className="text-sm font-bold text-[#059669] tabular-nums">{stats.completedTasks}</p>
                   </div>
                 </motion.div>
 
                 {/* Remaining */}
                 <motion.div
-                  className="flex items-center gap-2 p-2 bg-[#001B51]/5 rounded-lg"
+                  className="flex items-center gap-2 p-2 bg-construction-blue/5 rounded-lg"
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 }}
                 >
-                  <Target className="w-4 h-4 text-[#001B51]" />
+                  <Target className="w-4 h-4 text-construction-blue" />
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-500 truncate">Left</p>
-                    <p className="text-sm font-bold text-[#001B51] tabular-nums">{stats.totalTasks - stats.completedTasks}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Left</p>
+                    <p className="text-sm font-bold text-construction-blue tabular-nums">{stats.totalTasks - stats.completedTasks}</p>
                   </div>
                 </motion.div>
               </div>
@@ -429,7 +429,7 @@ export function PhaseDetailPanel({
                 progressPercentageRaw === 100
                   ? "bg-[#059669]/10 border border-[#059669]/20"
                   : progressPercentageRaw >= 75
-                    ? "bg-[#001B51]/5 border border-[#001B51]/10"
+                    ? "bg-construction-blue/5 border border-construction-blue/10"
                     : stats.blockedTasks > 0 || stats.overdueTasks > 0
                       ? "bg-[#F59E0B]/10 border border-[#F59E0B]/20"
                       : "bg-gray-50 border border-gray-100"
@@ -447,10 +447,10 @@ export function PhaseDetailPanel({
                 </>
               ) : progressPercentageRaw >= 75 ? (
                 <>
-                  <div className="p-1 bg-[#001B51]/10 rounded">
-                    <TrendingUp className="w-3.5 h-3.5 text-[#001B51]" />
+                  <div className="p-1 bg-construction-blue/10 rounded">
+                    <TrendingUp className="w-3.5 h-3.5 text-construction-blue" />
                   </div>
-                  <span className="text-xs font-medium text-[#001B51]">Great progress! {stats.totalTasks - stats.completedTasks} tasks to go.</span>
+                  <span className="text-xs font-medium text-construction-blue">Great progress! {stats.totalTasks - stats.completedTasks} tasks to go.</span>
                 </>
               ) : stats.blockedTasks > 0 || stats.overdueTasks > 0 ? (
                 <>
@@ -494,7 +494,7 @@ export function PhaseDetailPanel({
         transition={{ delay: 0.2 }}
       >
         {/* Section Header */}
-        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200">
+        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
 
         <TaskModalTrigger
             projects={projects}
@@ -504,7 +504,7 @@ export function PhaseDetailPanel({
             variant="default"
             size="default"
             label="Add New Task"
-            className="w-full bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold shadow-construction h-11 transition-all"
+            className="w-full bg-construction-blue hover:bg-construction-blue/90 text-white font-bold shadow-construction h-11 transition-all"
             onOpen={onModalOpen}
           />
         </div>
@@ -536,7 +536,7 @@ export function PhaseDetailPanel({
                   key={task.id}
                   role="button"
                   tabIndex={0}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-[#001B51]/40 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                  className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-construction-blue/40 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                   onClick={(e) => {
                     e.stopPropagation();
                     onModalOpen?.();
@@ -565,7 +565,7 @@ export function PhaseDetailPanel({
 
                     {/* Task Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-900 group-hover:text-[#001B51] transition-colors mb-2.5 leading-snug">
+                      <p className="text-sm font-bold text-gray-900 group-hover:text-construction-blue transition-colors mb-2.5 leading-snug">
                         {task.title}
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -590,7 +590,7 @@ export function PhaseDetailPanel({
                               return (
                                 <Avatar key={a.id} className="h-6 w-6 border-2 border-white">
                                   <AvatarImage src={a.user?.avatar_url || undefined} />
-                                  <AvatarFallback className={cn("text-[9px] text-white", isUser ? "bg-[#001B51]" : "bg-orange-600")}>
+                                  <AvatarFallback className={cn("text-[9px] text-white", isUser ? "bg-construction-blue" : "bg-orange-600")}>
                                     {name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
                                   </AvatarFallback>
                                 </Avatar>

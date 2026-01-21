@@ -34,7 +34,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   viewportFit: 'cover',
-  themeColor: '#001B51'
+  themeColor: 'var(--construction-blue)'
 };
 
 export default function RootLayout({
@@ -44,8 +44,59 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* FOUC Prevention Script - Runs BEFORE CSS loads */}
+        {/* Note: dangerouslySetInnerHTML is safe here - contains only hardcoded logic with no user input */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+(function() {
+  try {
+    // Read saved theme preference from localStorage
+    var saved = localStorage.getItem('genhub-theme-preference');
+    var preference = 'system';
+
+    if (saved) {
+      try {
+        var parsed = JSON.parse(saved);
+        if (parsed.preference === 'light' || parsed.preference === 'dark' || parsed.preference === 'system') {
+          preference = parsed.preference;
+        }
+      } catch (e) {
+        console.warn('Failed to parse saved theme preference:', e);
+      }
+    }
+
+    // Resolve theme based on preference
+    var theme = 'light';
+
+    if (preference === 'dark') {
+      theme = 'dark';
+    } else if (preference === 'system') {
+      // Detect system preference
+      try {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          theme = 'dark';
+        }
+      } catch (e) {
+        console.warn('Failed to detect system theme:', e);
+      }
+    }
+
+    // Apply .dark class to <html> if needed
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+  } catch (e) {
+    console.warn('FOUC prevention script failed:', e);
+  }
+})();
+            `.trim()
+          }}
+        />
+      </head>
       <body
-        className="antialiased min-h-screen flex flex-col"
+        className="antialiased min-h-screen flex flex-col bg-white dark:bg-gray-950"
       >
         <MotionProvider>
           <Toaster position="top-center" />

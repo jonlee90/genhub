@@ -119,20 +119,20 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
       className={cn(
         // Base card styling
         "w-full text-left",
-        "bg-white rounded-xl",
-        "border-2 border-gray-200",
+        "bg-white dark:bg-gray-800 rounded-xl",
+        "border-2 border-gray-200 dark:border-gray-700",
         "shadow-sm",
         // Touch-optimized padding
         "p-4",
         // Active state for touch feedback
-        "active:bg-gray-50 active:scale-[0.98]",
+        "active:bg-gray-50 dark:active:bg-gray-700 active:scale-[0.98]",
         "transition-all duration-150",
         // Status-based left border
-        task.status === "blocked" && "border-l-4 border-l-[#DC2626]",
-        task.status === "completed" && "border-l-4 border-l-[#059669]",
-        task.status === "in_progress" && "border-l-4 border-l-[#001B51]",
-        task.status === "todo" && "border-l-4 border-l-gray-400",
-        task.status === "review" && "border-l-4 border-l-[#F59E0B]",
+        task.status === "blocked" && "border-l-4 border-l-[#DC2626] dark:border-l-red-500",
+        task.status === "completed" && "border-l-4 border-l-[#059669] dark:border-l-green-500",
+        task.status === "in_progress" && "border-l-4 border-l-[var(--construction-blue)] dark:border-l-blue-500",
+        task.status === "todo" && "border-l-4 border-l-gray-400 dark:border-l-gray-500",
+        task.status === "review" && "border-l-4 border-l-[#F59E0B] dark:border-l-orange-500",
         className,
       )}
     >
@@ -151,7 +151,7 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
 
         {/* Overdue indicator */}
         {isOverdue && (
-          <div className="flex items-center gap-1 text-[#DC2626] bg-red-50 px-2 py-1 rounded-full">
+          <div className="flex items-center gap-1 text-[#DC2626] dark:text-red-400 bg-red-50 dark:bg-red-950/50 px-2 py-1 rounded-full">
             <AlertTriangle className="w-4 h-4" />
             <span className="text-xs font-bold">Overdue</span>
           </div>
@@ -159,15 +159,15 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
       </div>
 
       {/* Task Title - Large and readable */}
-      <h3 className="text-base font-bold text-gray-900 line-clamp-2 mb-3 leading-snug">
+      <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 line-clamp-2 mb-3 leading-snug">
         {task.title}
       </h3>
 
       {/* Expense Badge */}
       {expenseStats && expenseStats.count > 0 && (
-        <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-lg">
-          <Receipt className="w-4 h-4 text-amber-700 flex-shrink-0" />
-          <span className="text-sm font-semibold text-amber-900">
+        <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <Receipt className="w-4 h-4 text-amber-700 dark:text-amber-400 flex-shrink-0" />
+          <span className="text-sm font-semibold text-amber-900 dark:text-amber-200">
             {expenseStats.count} expense{expenseStats.count !== 1 ? "s" : ""} •{" "}
             {formatCurrency(expenseStats.totalAmount)}
           </span>
@@ -182,10 +182,10 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
             "flex items-center gap-2 px-3 py-2 rounded-lg",
             "min-h-[44px]",
             isOverdue
-              ? "bg-red-50 text-[#DC2626]"
+              ? "bg-red-50 dark:bg-red-950/50 text-[#DC2626] dark:text-red-400"
               : task.due_date
-                ? "bg-gray-100 text-gray-700"
-                : "bg-gray-50 text-gray-400",
+                ? "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                : "bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500",
           )}
         >
           <Calendar className="w-4 h-4 flex-shrink-0" />
@@ -199,25 +199,25 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
           className={cn(
             "flex items-center gap-2 px-3 py-2 rounded-lg",
             "min-h-[44px]",
-            task.assignee ? "bg-[#001B51]/5" : "bg-gray-50",
+            task.assignee ? "bg-construction-blue/5 dark:bg-blue-950/20" : "bg-gray-50 dark:bg-gray-800",
           )}
         >
           {task.assignee ? (
             <>
               <Avatar className="h-7 w-7 border-2 border-white shadow-sm">
                 <AvatarImage src={task.assignee.avatar_url || undefined} />
-                <AvatarFallback className="text-[10px] font-bold bg-[#001B51] text-white">
+                <AvatarFallback className="text-[10px] font-bold bg-construction-blue text-white">
                   {getInitials(task.assignee.name)}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-sm font-semibold text-gray-900 truncate max-w-[100px]">
+              <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[100px]">
                 {task.assignee.name.split(" ")[0]}
               </span>
             </>
           ) : (
             <>
-              <User className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-400">Unassigned</span>
+              <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <span className="text-sm text-gray-400 dark:text-gray-500">Unassigned</span>
             </>
           )}
         </div>

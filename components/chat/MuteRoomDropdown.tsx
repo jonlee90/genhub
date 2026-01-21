@@ -114,7 +114,7 @@ export function MuteRoomDropdown({ chatRoomId, isMuted, mutedUntil }: MuteRoomDr
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#FFB627] rounded-full animate-pulse" />
             </div>
           ) : (
-            <Bell className="h-5 w-5 text-[#001B51] hover:text-[#003080]" />
+            <Bell className="h-5 w-5 text-construction-blue hover:text-[#003080]" />
           )}
         </button>
       </DropdownMenuTrigger>
@@ -123,13 +123,13 @@ export function MuteRoomDropdown({ chatRoomId, isMuted, mutedUntil }: MuteRoomDr
         align="end"
         className={cn(
           "w-64 p-2",
-          "bg-white border-2 border-[#001B51]/20",
+          "bg-white border-2 border-construction-blue/20",
           "shadow-xl rounded-lg",
           "font-['IBM_Plex_Mono']"
         )}
       >
         {/* Header */}
-        <div className="px-3 py-2 mb-2 bg-gradient-to-r from-[#001B51] to-[#003080] rounded-md">
+        <div className="px-3 py-2 mb-2 bg-gradient-to-r from-[var(--construction-blue)] to-[#003080] rounded-md">
           <p className="text-xs font-bold text-white uppercase tracking-wide">
             {isMuted ? 'Mute Active' : 'Mute Room'}
           </p>
@@ -149,7 +149,7 @@ export function MuteRoomDropdown({ chatRoomId, isMuted, mutedUntil }: MuteRoomDr
               <Bell className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-[#001B51]">Unmute Room</p>
+              <p className="text-sm font-bold text-construction-blue">Unmute Room</p>
               <p className="text-xs text-[#7A7A7A]">Resume notifications</p>
             </div>
           </DropdownMenuItem>
@@ -170,10 +170,10 @@ export function MuteRoomDropdown({ chatRoomId, isMuted, mutedUntil }: MuteRoomDr
                     )}
                   >
                     <div className="p-2 bg-[#FFB627]/20 rounded">
-                      <IconComponent className="h-4 w-4 text-[#001B51]" />
+                      <IconComponent className="h-4 w-4 text-construction-blue" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-bold text-[#001B51]">{option.label}</p>
+                      <p className="text-sm font-bold text-construction-blue">{option.label}</p>
                       {option.hours && (
                         <p className="text-xs text-[#7A7A7A]">
                           {option.hours} hour{option.hours > 1 ? 's' : ''}
@@ -185,11 +185,11 @@ export function MuteRoomDropdown({ chatRoomId, isMuted, mutedUntil }: MuteRoomDr
               })}
             </div>
 
-            <DropdownMenuSeparator className="my-2 bg-[#001B51]/10" />
+            <DropdownMenuSeparator className="my-2 bg-construction-blue/10" />
 
             {/* Info */}
             <div className="px-3 py-2 bg-blue-50 rounded-md">
-              <p className="text-xs text-[#001B51] leading-relaxed">
+              <p className="text-xs text-construction-blue leading-relaxed">
                 💡 You'll still receive notifications for @mentions
               </p>
             </div>

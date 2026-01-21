@@ -1,30 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
+import { getUserContext } from '@/lib/auth-context';
 import type { KakaoConnection } from '@/types/kakao.types';
 import { KakaoService } from '@/lib/services/kakao';
 
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext() {
-  console.log('[kakao-actions] Getting user context...');
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    console.error('[kakao-actions] No authenticated user found');
-    return { error: 'Not authenticated' };
-  }
-
-  const supabase = await createClient();
-  return {
-    userId: session.user.id,
-    supabase,
-  };
-}
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
 // ============================================
 // Server Actions

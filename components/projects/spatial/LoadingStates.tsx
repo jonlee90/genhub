@@ -79,7 +79,7 @@ export function LoadingStates({
         className
       )}
     >
-      <div className="bg-white border-2 border-[#001B51] rounded-lg shadow-construction max-w-md w-full mx-4 p-4 md:p-6">
+      <div className="bg-white border-2 border-construction-blue rounded-lg shadow-construction max-w-md w-full mx-4 p-4 md:p-6">
         {/* Header with icon */}
         <div className="flex items-start justify-between mb-3 md:mb-4">
           <div className="flex items-center gap-2 md:gap-3">
@@ -87,7 +87,7 @@ export function LoadingStates({
               <Icon className={cn('w-5 h-5 md:w-6 md:h-6', config.color)} />
             </div>
             <div>
-              <h3 className="text-base md:text-lg font-bold text-[#001B51]">
+              <h3 className="text-base md:text-lg font-bold text-construction-blue">
                 {config.title}
               </h3>
               <p className="text-xs md:text-sm text-gray-600">{config.description}</p>
@@ -123,7 +123,7 @@ export function LoadingStates({
             <div
               className={cn(
                 'h-full transition-all duration-300 rounded-full',
-                'bg-[#001B51]'
+                'bg-construction-blue'
               )}
               style={{ width: `${state.progress}%` }}
             />
@@ -132,7 +132,7 @@ export function LoadingStates({
 
         {/* Loading spinner - responsive size */}
         <div className="flex items-center justify-center">
-          <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-[#001B51] animate-spin" />
+          <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-construction-blue animate-spin" />
         </div>
       </div>
     </div>
@@ -150,7 +150,7 @@ export function LoadingSpinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
   };
 
   return (
-    <Loader2 className={cn('text-[#001B51] animate-spin', sizeClasses[size])} />
+    <Loader2 className={cn('text-construction-blue animate-spin', sizeClasses[size])} />
   );
 }
 
@@ -173,7 +173,7 @@ export function ModelDownloadProgress({
   return (
     <div className="bg-white border-2 border-gray-200 rounded-lg p-3 md:p-4 shadow-construction">
       <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-3">
-        <Download className="w-4 h-4 md:w-5 md:h-5 text-[#001B51] flex-shrink-0" />
+        <Download className="w-4 h-4 md:w-5 md:h-5 text-construction-blue flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs md:text-sm font-medium text-gray-900 truncate">
             {fileName}
@@ -197,7 +197,7 @@ export function ModelDownloadProgress({
 
       <div className="w-full h-1.5 md:h-2 bg-gray-200 rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#001B51] transition-all duration-300"
+          className="h-full bg-construction-blue transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>

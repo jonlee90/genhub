@@ -12,6 +12,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import { formatPercent, formatPercentWhole, formatBudget, cn } from '@/lib/utils';
+import { StatCard } from '@/components/ui/stat-card';
 
 /**
  * PortfolioSummaryStats - Type definition for portfolio-level statistics
@@ -82,35 +83,35 @@ export function PortfolioSummary({
     return (
       <div
         className={cn(
-          'bg-white rounded-xl overflow-hidden',
-          'border-2 border-gray-200 shadow-sm',
+          'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
+          'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
           className
         )}
       >
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 dark:from-gray-800/50 to-white dark:to-gray-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-construction-blue dark:bg-construction-blue flex items-center justify-center shadow-sm">
               <Building2 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+              <h3 className="font-bold text-construction-blue dark:text-construction-blue text-sm uppercase tracking-wide">
                 Portfolio Summary
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">No projects yet</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No projects yet</p>
             </div>
           </div>
         </div>
 
         {/* Empty State */}
         <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <Building2 className="w-8 h-8 text-gray-300" />
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <Building2 className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
-          <p className="text-base font-semibold text-gray-700 mb-1.5">
+          <p className="text-base font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
             No projects created yet
           </p>
-          <p className="text-sm text-gray-500 text-center max-w-[240px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[240px]">
             Create your first project to start tracking portfolio performance
           </p>
         </div>
@@ -141,35 +142,35 @@ export function PortfolioSummary({
   const getBudgetColor = () => {
     if (isOverBudget) return 'bg-[#DC2626]';
     if (isNearBudget) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   const getCompletionColor = () => {
     if (completionRate >= 100) return 'bg-[#059669]';
     if (completionRate >= 50) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   return (
     <div
       className={cn(
-        'bg-white rounded-xl overflow-hidden',
-        'border-2 border-gray-200 shadow-sm',
+        'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
+        'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
         'transition-all duration-200',
         className
       )}
     >
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+      <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 dark:from-gray-800/50 to-white dark:to-gray-900">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-construction-blue dark:bg-construction-blue flex items-center justify-center shadow-sm">
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            <h3 className="font-bold text-construction-blue dark:text-construction-blue text-sm uppercase tracking-wide">
               Portfolio Summary
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {stats.activeProjects} active project{stats.activeProjects !== 1 ? 's' : ''}
             </p>
           </div>
@@ -178,10 +179,10 @@ export function PortfolioSummary({
             className={cn(
               'px-2.5 py-1 rounded-lg text-xs font-bold',
               portfolioHealth === 'behind'
-                ? 'bg-red-100 text-red-700'
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                 : portfolioHealth === 'at-risk'
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
+                  : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
             )}
           >
             {portfolioHealth === 'behind' ? 'Behind' : portfolioHealth === 'at-risk' ? 'At Risk' : 'On Track'}
@@ -197,8 +198,8 @@ export function PortfolioSummary({
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Budget Used
                 </span>
               </div>
@@ -206,16 +207,16 @@ export function PortfolioSummary({
                 className={cn(
                   'text-sm font-bold tabular-nums',
                   isOverBudget
-                    ? 'text-[#DC2626]'
+                    ? 'text-construction-red dark:text-construction-red'
                     : isNearBudget
-                      ? 'text-[#F59E0B]'
-                      : 'text-[#001B51]'
+                      ? 'text-construction-yellow dark:text-construction-yellow'
+                      : 'text-construction-blue dark:text-construction-blue'
                 )}
               >
                 {formatPercent(stats.budgetUtilization)}
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500 ease-out',
@@ -230,16 +231,16 @@ export function PortfolioSummary({
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Tasks Completed
                 </span>
               </div>
-              <span className="text-sm font-bold text-[#001B51] tabular-nums">
+              <span className="text-sm font-bold text-construction-blue dark:text-construction-blue tabular-nums">
                 {stats.completedTasks}/{stats.totalTasks}
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500 ease-out',
@@ -260,74 +261,64 @@ export function PortfolioSummary({
             subtext="Budget"
           />
 
-          {/* Actual Spent */}
+          {/* Actual Expense */}
           <StatCard
             label="Actual"
             value={`$${formatCompactNumber(stats.totalActualSpent)}`}
-            subtext="Spent"
+            subtext="Expense"
             valueClassName="text-gray-900"
           />
 
           {/* Variance - Neutral bg with colored icon/dot indicator */}
-          <div className="flex flex-col p-3 rounded-xl bg-gray-50 border border-gray-200 min-h-[76px]">
-            <div className="flex items-center gap-1 mb-1">
-              {/* Small colored dot indicator - appropriate use of status color */}
-              <span
-                className={cn(
-                  'w-2 h-2 rounded-full flex-shrink-0',
-                  stats.budgetVariance >= 0 ? 'bg-[#059669]' : 'bg-[#DC2626]'
-                )}
-              />
-              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-                Variance
-              </span>
-            </div>
-            <span className="text-base font-bold text-[#001B51] leading-tight">
-              {stats.budgetVariance >= 0 ? '+' : '-'}$
-              {formatCompactNumber(Math.abs(stats.budgetVariance))}
-            </span>
-            <span className="text-[10px] text-gray-500 mt-0.5">
-              {stats.budgetVariance >= 0 ? 'Under' : 'Over'}
-            </span>
-          </div>
+          <StatCard
+            label="Variance"
+            value={`${stats.budgetVariance >= 0 ? '+' : '-'}$${formatCompactNumber(Math.abs(stats.budgetVariance))}`}
+            subtext={stats.budgetVariance >= 0 ? 'Under' : 'Over'}
+            variant={stats.budgetVariance >= 0 ? 'success' : 'danger'}
+            showStatusDot
+          />
         </div>
 
         {/* Status Indicators Grid */}
         <div className="grid grid-cols-2 gap-2.5 mb-4">
           {/* On Time Projects */}
-          <StatusIndicatorCard
+          <StatCard
             icon={CheckCircle}
             label="On Time"
             value={stats.onTimeProjects}
             subtext={`${stats.totalProjects} total`}
             variant="success"
+            showStatusDot
           />
 
           {/* At Risk Projects */}
-          <StatusIndicatorCard
+          <StatCard
             icon={AlertTriangle}
             label="At Risk"
             value={stats.atRiskProjects}
             subtext={stats.atRiskProjects > 0 ? 'Needs attention' : 'All clear'}
             variant={stats.atRiskProjects > 0 ? 'warning' : 'success'}
+            showStatusDot
           />
 
           {/* Overdue Tasks */}
-          <StatusIndicatorCard
+          <StatCard
             icon={Clock}
             label="Overdue Tasks"
             value={stats.overdueTasks}
             subtext={stats.overdueTasks > 0 ? 'Past due' : 'On schedule'}
             variant={stats.overdueTasks > 0 ? 'danger' : 'success'}
+            showStatusDot
           />
 
           {/* Delayed Projects */}
-          <StatusIndicatorCard
+          <StatCard
             icon={AlertCircle}
             label="Delayed"
             value={stats.delayedProjects}
             subtext={stats.delayedProjects > 0 ? 'Behind schedule' : 'On track'}
             variant={stats.delayedProjects > 0 ? 'danger' : 'success'}
+            showStatusDot
           />
         </div>
 
@@ -338,20 +329,20 @@ export function PortfolioSummary({
               'flex items-center gap-3 p-3 rounded-xl mb-4',
               'transition-all duration-200',
               isOverBudget
-                ? 'bg-red-50 border border-red-200'
-                : 'bg-amber-50 border border-amber-200'
+                ? 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900/40'
+                : 'bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-900/40'
             )}
           >
             <div
               className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                isOverBudget ? 'bg-red-100' : 'bg-amber-100'
+                isOverBudget ? 'bg-red-100 dark:bg-red-900/50' : 'bg-amber-100 dark:bg-amber-900/50'
               )}
             >
               <AlertCircle
                 className={cn(
                   'w-4 h-4',
-                  isOverBudget ? 'text-red-600' : 'text-amber-600'
+                  isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                 )}
               />
             </div>
@@ -359,7 +350,7 @@ export function PortfolioSummary({
               <p
                 className={cn(
                   'text-sm font-semibold',
-                  isOverBudget ? 'text-red-800' : 'text-amber-800'
+                  isOverBudget ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'
                 )}
               >
                 {isOverBudget
@@ -369,7 +360,7 @@ export function PortfolioSummary({
               <p
                 className={cn(
                   'text-xs mt-0.5',
-                  isOverBudget ? 'text-red-600' : 'text-amber-600'
+                  isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                 )}
               >
                 {isOverBudget
@@ -382,15 +373,15 @@ export function PortfolioSummary({
 
         {/* Top Projects Section */}
         {stats.topProjects.length > 0 && (
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <TrendingUp className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Top Projects
                 </span>
               </div>
-              <span className="text-[11px] text-gray-400">
+              <span className="text-[11px] text-gray-400 dark:text-gray-500">
                 by completion
               </span>
             </div>
@@ -400,22 +391,22 @@ export function PortfolioSummary({
                   key={project.id}
                   className={cn(
                     'flex items-center gap-2.5 px-3 py-2.5',
-                    'bg-gray-50 border border-gray-100 rounded-xl',
+                    'bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl',
                     'min-h-[44px]', // Touch-friendly
-                    'active:scale-[0.98] active:bg-gray-100',
+                    'active:scale-[0.98] active:bg-gray-100 dark:active:bg-gray-700',
                     'transition-all duration-150'
                   )}
                 >
-                  <div className="w-7 h-7 rounded-full bg-[#001B51] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-construction-blue dark:bg-blue-500 flex items-center justify-center">
                     <span className="text-xs text-white font-bold">
                       {index + 1}
                     </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900 leading-tight truncate max-w-[120px]">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 leading-tight truncate max-w-[120px]">
                       {project.name}
                     </span>
-                    <span className="text-[11px] text-gray-500">
+                    <span className="text-[11px] text-gray-500 dark:text-gray-400">
                       {formatPercentWhole(project.completionPercentage)} complete
                     </span>
                   </div>
@@ -428,80 +419,6 @@ export function PortfolioSummary({
     </div>
   );
 }
-
-/**
- * StatCard - Simple stat display card
- */
-interface StatCardProps {
-  label: string;
-  value: string;
-  subtext: string;
-  valueClassName?: string;
-}
-
-function StatCard({ label, value, subtext, valueClassName }: StatCardProps) {
-  return (
-    <div className="flex flex-col p-3 rounded-xl bg-gray-50 border border-gray-200 min-h-[76px]">
-      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
-        {label}
-      </span>
-      <span className={cn('text-base font-bold leading-tight', valueClassName || 'text-[#001B51]')}>
-        {value}
-      </span>
-      <span className="text-[10px] text-gray-500 mt-0.5">{subtext}</span>
-    </div>
-  );
-}
-
-/**
- * StatusIndicatorCard - Compact status indicator with visual feedback
- * Memoized to prevent unnecessary re-renders
- */
-interface StatusIndicatorCardProps {
-  icon: typeof CheckCircle;
-  label: string;
-  value: number;
-  subtext: string;
-  variant: 'success' | 'danger' | 'warning' | 'neutral';
-}
-
-// Dot color lookup (static)
-const DOT_COLORS = {
-  success: 'bg-[#059669]',
-  danger: 'bg-[#DC2626]',
-  warning: 'bg-[#F59E0B]',
-  neutral: 'bg-gray-400',
-} as const;
-
-const StatusIndicatorCard = memo(function StatusIndicatorCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  variant,
-}: StatusIndicatorCardProps) {
-  // Determine effective dot color based on variant and value
-  const getDotColor = () => {
-    if (variant === 'danger' && value === 0) return DOT_COLORS.success;
-    if (variant === 'warning' && value === 0) return DOT_COLORS.success;
-    if (variant === 'success' && value === 0) return DOT_COLORS.neutral;
-    return DOT_COLORS[variant];
-  };
-
-  return (
-    <div className="flex flex-col p-3 rounded-xl min-h-[76px] bg-gray-50 border border-gray-200">
-      <div className="flex items-center gap-1.5 mb-1">
-        <span className={cn('w-2 h-2 rounded-full flex-shrink-0', getDotColor())} />
-        <Icon className="w-3.5 h-3.5 text-gray-500" />
-        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <span className="text-xl font-bold leading-tight text-[#001B51]">{value}</span>
-      <span className="text-[10px] mt-0.5 text-gray-500">{subtext}</span>
-    </div>
-  );
-});
 
 /**
  * Format large numbers in compact form (uses formatBudget without $ sign)

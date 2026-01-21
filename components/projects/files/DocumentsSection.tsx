@@ -112,8 +112,8 @@ export function DocumentsSection({
       <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gradient-to-b from-gray-50 to-white">
         {/* Icon container with industrial feel */}
         <div className="relative mb-6">
-          <div className="absolute inset-0 bg-[#001B51]/10 rounded-full blur-xl" />
-          <div className="relative p-5 bg-gradient-to-br from-[#001B51] to-[#001B51]/80 rounded-2xl shadow-lg">
+          <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-xl" />
+          <div className="relative p-5 bg-gradient-to-br from-[var(--construction-blue)] to-[var(--construction-blue)]/80 rounded-2xl shadow-lg">
             <FolderOpen className="h-10 w-10 text-white" strokeWidth={1.5} />
           </div>
         </div>
@@ -128,7 +128,7 @@ export function DocumentsSection({
 
         <Button
           onClick={() => setShowUploader(true)}
-          className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold px-6 py-2.5 shadow-md transition-all duration-200 hover:shadow-lg"
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold px-6 py-2.5 shadow-md transition-all duration-200 hover:shadow-lg"
         >
           <Upload className="h-4 w-4 mr-2" />
           UPLOAD DOCUMENTS
@@ -173,7 +173,7 @@ export function DocumentsSection({
             <span className="font-medium text-gray-900">{files.length}</span>{" "}
             {files.length === 1 ? "document" : "documents"}
             {selectedIds.size > 0 && (
-              <span className="ml-2 text-[#001B51]">
+              <span className="ml-2 text-construction-blue">
                 ({selectedIds.size} selected)
               </span>
             )}
@@ -182,7 +182,7 @@ export function DocumentsSection({
 
         <Button
           onClick={() => setShowUploader(true)}
-          className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold shadow-sm"
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold shadow-sm"
         >
           <Upload className="h-4 w-4 mr-2" />
           UPLOAD

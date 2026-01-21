@@ -277,15 +277,15 @@ export function MarkerFilters({
           onClick={() => setIsExpanded(!isExpanded)}
           className={cn(
             'flex items-center gap-2 px-3 py-2',
-            'border-2 border-gray-200 hover:border-[#001B51]',
+            'border-2 border-gray-200 hover:border-construction-blue',
             'transition-all duration-200',
-            isExpanded && 'bg-[#001B51] text-white hover:bg-[#001B51]/90 border-[#001B51]'
+            isExpanded && 'bg-construction-blue text-white hover:bg-construction-blue/90 border-construction-blue'
           )}
         >
           <Filter className="w-4 h-4" />
           <span className="text-xs font-bold uppercase tracking-tight">Filters</span>
           {activeFilterCount > 0 && (
-            <span className="px-2 py-0.5 bg-[#FFB627] text-[#001B51] rounded-full text-[10px] font-black">
+            <span className="px-2 py-0.5 bg-[#FFB627] text-construction-blue rounded-full text-[10px] font-black">
               {activeFilterCount}
             </span>
           )}
@@ -324,8 +324,8 @@ export function MarkerFilters({
               {/* Debug: Type filter */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Layers className="w-4 h-4 text-[#001B51]" />
-                  <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
+                  <Layers className="w-4 h-4 text-construction-blue" />
+                  <label className="text-xs font-bold text-construction-blue uppercase tracking-tight">
                     Type
                   </label>
                   {types.length > 0 && (
@@ -341,9 +341,9 @@ export function MarkerFilters({
                         'flex items-center gap-2 px-3 py-2',
                         'border-2 rounded-lg text-xs font-medium',
                         'transition-all duration-150',
-                        'hover:border-[#001B51]',
+                        'hover:border-construction-blue',
                         types.includes(value)
-                          ? 'bg-[#001B51] text-white border-[#001B51]'
+                          ? 'bg-construction-blue text-white border-construction-blue'
                           : 'bg-white text-gray-700 border-gray-200'
                       )}
                     >
@@ -361,8 +361,8 @@ export function MarkerFilters({
               {/* Debug: Status filter */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <ClipboardList className="w-4 h-4 text-[#001B51]" />
-                  <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
+                  <ClipboardList className="w-4 h-4 text-construction-blue" />
+                  <label className="text-xs font-bold text-construction-blue uppercase tracking-tight">
                     Status
                   </label>
                   {statuses.length > 0 && (
@@ -378,9 +378,9 @@ export function MarkerFilters({
                         'flex items-center gap-2 px-3 py-2',
                         'border-2 rounded-lg text-xs font-medium',
                         'transition-all duration-150',
-                        'hover:border-[#001B51]',
+                        'hover:border-construction-blue',
                         statuses.includes(value)
-                          ? 'bg-[#001B51] text-white border-[#001B51]'
+                          ? 'bg-construction-blue text-white border-construction-blue'
                           : 'bg-white text-gray-700 border-gray-200'
                       )}
                     >
@@ -399,8 +399,8 @@ export function MarkerFilters({
               {floors.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <Layers className="w-4 h-4 text-[#001B51]" />
-                    <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
+                    <Layers className="w-4 h-4 text-construction-blue" />
+                    <label className="text-xs font-bold text-construction-blue uppercase tracking-tight">
                       Floor
                     </label>
                   </div>
@@ -411,9 +411,9 @@ export function MarkerFilters({
                       'w-full px-3 py-2 text-xs font-medium',
                       'border-2 rounded-lg',
                       'bg-white text-gray-700',
-                      'focus:border-[#001B51] focus:ring-2 focus:ring-[#001B51]/20',
+                      'focus:border-construction-blue focus:ring-2 focus:ring-[var(--construction-blue)]/20',
                       'transition-all duration-150',
-                      floorId ? 'border-[#001B51]' : 'border-gray-200'
+                      floorId ? 'border-construction-blue' : 'border-gray-200'
                     )}
                   >
                     <option value="">All Floors</option>
@@ -430,8 +430,8 @@ export function MarkerFilters({
               {creators.length > 1 && (
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-[#001B51]" />
-                    <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
+                    <User className="w-4 h-4 text-construction-blue" />
+                    <label className="text-xs font-bold text-construction-blue uppercase tracking-tight">
                       Creator
                     </label>
                   </div>
@@ -442,9 +442,9 @@ export function MarkerFilters({
                       'w-full px-3 py-2 text-xs font-medium',
                       'border-2 rounded-lg',
                       'bg-white text-gray-700',
-                      'focus:border-[#001B51] focus:ring-2 focus:ring-[#001B51]/20',
+                      'focus:border-construction-blue focus:ring-2 focus:ring-[var(--construction-blue)]/20',
                       'transition-all duration-150',
-                      creatorId ? 'border-[#001B51]' : 'border-gray-200'
+                      creatorId ? 'border-construction-blue' : 'border-gray-200'
                     )}
                   >
                     <option value="">All Creators</option>
@@ -460,8 +460,8 @@ export function MarkerFilters({
               {/* Debug: Date range filter */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="w-4 h-4 text-[#001B51]" />
-                  <label className="text-xs font-bold text-[#001B51] uppercase tracking-tight">
+                  <Calendar className="w-4 h-4 text-construction-blue" />
+                  <label className="text-xs font-bold text-construction-blue uppercase tracking-tight">
                     Date Range
                   </label>
                 </div>
@@ -474,7 +474,7 @@ export function MarkerFilters({
                       onChange={(e) => setDateStart(e.target.value)}
                       className={cn(
                         'text-xs',
-                        dateStart && 'border-[#001B51]'
+                        dateStart && 'border-construction-blue'
                       )}
                     />
                   </div>
@@ -486,7 +486,7 @@ export function MarkerFilters({
                       onChange={(e) => setDateEnd(e.target.value)}
                       className={cn(
                         'text-xs',
-                        dateEnd && 'border-[#001B51]'
+                        dateEnd && 'border-construction-blue'
                       )}
                     />
                   </div>

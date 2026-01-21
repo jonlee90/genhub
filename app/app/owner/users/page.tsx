@@ -52,12 +52,12 @@ export default async function OwnerUsersPage() {
 
   if (result.error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             Error Loading Users
           </h1>
-          <p className="text-gray-600">{result.error}</p>
+          <p className="text-gray-600 dark:text-gray-400">{result.error}</p>
         </div>
       </div>
     );
@@ -85,7 +85,7 @@ export default async function OwnerUsersPage() {
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
             backgroundSize: "40px 40px",
-            color: "#001B51",
+            color: "var(--construction-blue)",
           }}
         />
       </div>
@@ -104,7 +104,7 @@ export default async function OwnerUsersPage() {
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
               USERS
             </h1>
-            <p className="text-sm md:text-base text-gray-500">
+            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
               All users across all companies
             </p>
           </div>
@@ -115,20 +115,20 @@ export default async function OwnerUsersPage() {
       <div className="grid grid-cols-3 gap-3 md:gap-4">
         <div className="relative group h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+          <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-                <Users className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
+              <div className="p-1.5 md:p-2 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-lg border-2 border-construction-blue/20 dark:border-construction-blue/30">
+                <Users className="h-4 w-4 md:h-5 md:w-5 text-construction-blue dark:text-construction-blue" />
               </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60">
+              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-blue/60 dark:text-construction-blue/50">
                 Total
               </div>
             </div>
             <div>
-              <div className="text-2xl md:text-4xl font-black text-construction-blue leading-none mb-1">
+              <div className="text-2xl md:text-4xl font-black text-construction-blue dark:text-construction-blue leading-none mb-1">
                 {users.length}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">
+              <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400">
                 Users
               </div>
             </div>
@@ -137,20 +137,20 @@ export default async function OwnerUsersPage() {
 
         <div className="relative group h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+          <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20">
-                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-construction-green" />
+              <div className="p-1.5 md:p-2 bg-construction-green/10 dark:bg-construction-green/20 rounded-lg border-2 border-construction-green/20 dark:border-construction-green/30">
+                <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-construction-green dark:text-construction-green" />
               </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60">
+              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-construction-green/60 dark:text-construction-green/50">
                 Active
               </div>
             </div>
             <div>
-              <div className="text-2xl md:text-4xl font-black text-construction-green leading-none mb-1">
+              <div className="text-2xl md:text-4xl font-black text-construction-green dark:text-construction-green leading-none mb-1">
                 {activeUsers}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">
+              <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400">
                 Active
               </div>
             </div>
@@ -159,20 +159,20 @@ export default async function OwnerUsersPage() {
 
         <div className="relative group h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+          <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-yellow-500/10 rounded-lg border-2 border-yellow-500/20">
-                <Mail className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
+              <div className="p-1.5 md:p-2 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg border-2 border-yellow-500/20 dark:border-yellow-500/30">
+                <Mail className="h-4 w-4 md:h-5 md:w-5 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-yellow-600/60">
+              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-yellow-600/60 dark:text-yellow-400/50">
                 Pending
               </div>
             </div>
             <div>
-              <div className="text-2xl md:text-4xl font-black text-yellow-600 leading-none mb-1">
+              <div className="text-2xl md:text-4xl font-black text-yellow-600 dark:text-yellow-400 leading-none mb-1">
                 {invitedUsers}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">
+              <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400">
                 Invited
               </div>
             </div>
@@ -184,43 +184,43 @@ export default async function OwnerUsersPage() {
       <div className="relative z-10">
         {users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Users className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <Users className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1">
               No Users Yet
             </h3>
-            <p className="text-sm text-gray-500 mb-4 max-w-sm">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-sm">
               Users will appear here once they join the platform.
             </p>
           </div>
         ) : (
-          <div className="bg-white border-2 border-gray-200 rounded-lg shadow-construction overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-construction overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                  <tr className="bg-gray-50 dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       User
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden md:table-cell">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
                       Email
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Company
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                       Role
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                       Status
                     </th>
-                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 uppercase tracking-wider hidden lg:table-cell">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                       Joined
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {users.map((user) => {
                     const roleInfo = ROLE_DISPLAY[user.role || ""] || {
                       label: user.role || "-",
@@ -234,7 +234,7 @@ export default async function OwnerUsersPage() {
                     return (
                       <tr
                         key={user.id}
-                        className="hover:bg-gray-50/50 transition-colors"
+                        className="hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
                       >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
@@ -244,11 +244,11 @@ export default async function OwnerUsersPage() {
                                 alt={user.name || "User"}
                                 width={32}
                                 height={32}
-                                className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                                className="w-8 h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
                               />
                             ) : (
-                              <div className="w-8 h-8 rounded-full bg-construction-blue/10 flex items-center justify-center border-2 border-construction-blue/20">
-                                <span className="text-sm font-bold text-construction-blue">
+                              <div className="w-8 h-8 rounded-full bg-construction-blue/10 dark:bg-construction-blue/20 flex items-center justify-center border-2 border-construction-blue/20 dark:border-construction-blue/30">
+                                <span className="text-sm font-bold text-construction-blue dark:text-construction-blue">
                                   {(user.name ||
                                     user.email ||
                                     "?")[0].toUpperCase()}
@@ -256,28 +256,28 @@ export default async function OwnerUsersPage() {
                               </div>
                             )}
                             <div>
-                              <div className="font-medium text-gray-900">
+                              <div className="font-medium text-gray-900 dark:text-white">
                                 {user.name || "Unnamed"}
                               </div>
-                              <div className="text-xs text-gray-500 md:hidden">
+                              <div className="text-xs text-gray-500 dark:text-gray-400 md:hidden">
                                 {user.email}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">
+                        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400 hidden md:table-cell">
                           {user.email}
                         </td>
                         <td className="px-4 py-3">
                           {user.company_name ? (
                             <div className="flex items-center gap-1.5">
-                              <Building2 className="w-4 h-4 text-gray-400" />
-                              <span className="text-sm text-gray-700 font-medium truncate max-w-[150px]">
+                              <Building2 className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                              <span className="text-sm text-gray-700 dark:text-gray-300 font-medium truncate max-w-[150px]">
                                 {user.company_name}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-sm text-gray-400">-</span>
+                            <span className="text-sm text-gray-400 dark:text-gray-500">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -301,8 +301,8 @@ export default async function OwnerUsersPage() {
                           </div>
                         </td>
                         <td className="px-4 py-3 hidden lg:table-cell">
-                          <div className="flex items-center gap-1.5 text-sm text-gray-500">
-                            <Clock className="w-4 h-4 text-gray-400" />
+                          <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
+                            <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                             {formatDistanceToNow(new Date(user.created_at), {
                               addSuffix: true,
                             })}
@@ -319,7 +319,7 @@ export default async function OwnerUsersPage() {
       </div>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 ---
 name: spec-writer
-description: Creates requirements, designs, and implementation plans for GenHub features using Kiro-style spec-driven development. Consolidates the full spec workflow into a single agent. Use for any new feature planning.
+description: "Creates requirements, designs, and implementation plans for GenHub features using Kiro-style spec-driven development. Consolidates the full spec workflow into a single agent. Use for any new feature planning."
 tools: Read, Glob, Grep, WebFetch, WebSearch, Write, Edit
-model: opus
+model: inherit
 color: purple
 ---
 

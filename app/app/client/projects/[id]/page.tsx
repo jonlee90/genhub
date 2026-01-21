@@ -97,11 +97,11 @@ async function ClientProjectDetailPageContent({
 
       {/* Industrial Header */}
       <div className="relative z-10">
-        <div className="h-1 bg-[#001B51]" />
+        <div className="h-1 bg-construction-blue" />
         <header className="bg-white border-b-2 border-gray-200 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-[#001B51]">
+              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-construction-blue">
                 {project.name}
               </h1>
               <p className="text-gray-600 mt-1 text-sm md:text-base">
@@ -110,8 +110,8 @@ async function ClientProjectDetailPageContent({
             </div>
 
             {/* Client View Badge */}
-            <div className="px-4 py-2 bg-[#001B51]/10 border-2 border-[#001B51] rounded-lg">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#001B51]">
+            <div className="px-4 py-2 bg-construction-blue/10 border-2 border-construction-blue rounded-lg">
+              <p className="text-xs font-bold uppercase tracking-wide text-construction-blue">
                 Client View
               </p>
             </div>
@@ -152,7 +152,7 @@ function ClientProjectDetailLoading() {
 
       {/* Industrial Header */}
       <div className="relative z-10">
-        <div className="h-1 bg-[#001B51]" />
+        <div className="h-1 bg-construction-blue" />
         <header className="bg-white border-b-2 border-gray-200 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">

@@ -36,7 +36,7 @@ export interface TypesCardProps {
 
   // Visual styling
   icon: LucideIcon;
-  iconColor?: string; // hex color for dynamic theming (e.g., "#001B51", "#3b82f6")
+  iconColor?: string; // hex color for dynamic theming (e.g., "var(--construction-blue)", "#3b82f6")
 
   // Status/info badges
   badges?: TypesBadge[];
@@ -56,9 +56,9 @@ export interface TypesCardProps {
 
 // Badge variant styles matching construction theme
 const badgeVariants = {
-  default: "bg-amber-100 text-amber-700 border-amber-300",
-  warning: "bg-red-100 text-red-700 border-red-300",
-  inactive: "bg-gray-100 text-gray-600 border-gray-300",
+  default: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700",
+  warning: "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-300 dark:border-red-700",
+  inactive: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600",
 } as const;
 
 /**
@@ -86,7 +86,7 @@ const badgeVariants = {
  *   title="Residential"
  *   description="Single-family homes and duplexes"
  *   icon={Home}
- *   iconColor="#001B51"
+ *   iconColor="var(--construction-blue)"
  *   badges={[{ label: "Inactive", icon: XCircle, variant: "inactive" }]}
  *   countBadge={{ count: 5, label: "project", icon: Building2 }}
  *   onEdit={() => setEditingType(type)}
@@ -118,7 +118,7 @@ export const TypesCard = React.memo(function TypesCard({
   title,
   description,
   icon: Icon,
-  iconColor = "#001B51",
+  iconColor = "var(--construction-blue)",
   badges = [],
   countBadge,
   onEdit,
@@ -148,7 +148,7 @@ export const TypesCard = React.memo(function TypesCard({
         }}
         role="button"
         tabIndex={0}
-        className="relative w-full bg-white border-2 border-gray-200 rounded-lg p-4 sm:p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
+        className="relative w-full bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 sm:p-5 shadow-construction hover:shadow-construction-lg hover:border-construction-blue/30 transition-all duration-300 h-full flex flex-col text-left cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
       >
         {/* Card header with icon and content */}
         <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
@@ -170,7 +170,7 @@ export const TypesCard = React.memo(function TypesCard({
           <div className="flex-1 min-w-0">
             {/* Title and status badges */}
             <div className="flex items-start justify-between gap-2 mb-1 sm:mb-2">
-              <h4 className="font-black text-construction-blue uppercase tracking-tight text-sm sm:text-base leading-tight">
+              <h4 className="font-black text-construction-blue dark:text-construction-blue uppercase tracking-tight text-sm sm:text-base leading-tight">
                 {title}
               </h4>
               {/* Status badges (Default, Inactive) */}
@@ -196,17 +196,17 @@ export const TypesCard = React.memo(function TypesCard({
             </div>
 
             {/* Description - single line on mobile, 2 lines on desktop */}
-            <p className="text-xs sm:text-sm text-gray-600 line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2.5rem]">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1 sm:line-clamp-2 min-h-[1rem] sm:min-h-[2.5rem]">
               {description || "No description provided"}
             </p>
 
             {/* Count badge (e.g., "5 projects") */}
             {countBadge && (
-              <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-gray-100 rounded-md">
+              <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-gray-100 dark:bg-gray-800 rounded-md">
                 {countBadge.icon && (
-                  <countBadge.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-600" />
+                  <countBadge.icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-gray-600 dark:text-gray-400" />
                 )}
-                <span className="text-[10px] sm:text-xs font-bold text-gray-900">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-gray-100">
                   {countBadge.count} {countBadge.label}
                   {countBadge.count !== 1 ? 's' : ''}
                 </span>
@@ -216,8 +216,8 @@ export const TypesCard = React.memo(function TypesCard({
         </div>
 
         {/* Card footer with edit hint and delete button */}
-        <div className="flex items-center justify-between gap-3 pt-2 sm:pt-3 mt-auto border-t-2 border-gray-100">
-          <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+        <div className="flex items-center justify-between gap-3 pt-2 sm:pt-3 mt-auto border-t-2 border-gray-100 dark:border-gray-800">
+          <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium">
             Click to edit
           </span>
           <Button
@@ -228,7 +228,7 @@ export const TypesCard = React.memo(function TypesCard({
               onDelete();
             }}
             disabled={deleteDisabled}
-            className="min-h-[44px] min-w-[44px] hover:bg-red-50 hover:text-red-600 active:bg-red-100 font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+            className="min-h-[44px] min-w-[44px] hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 active:bg-red-100 dark:active:bg-red-900/50 font-semibold transition-all duration-150 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="Delete"
           >
             <Trash2 className="h-4 w-4" />

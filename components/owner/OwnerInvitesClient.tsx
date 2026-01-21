@@ -111,14 +111,14 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
   return (
     <div className="relative z-10 space-y-6">
       {/* Invite Form Card */}
-      <div className="bg-white border-2 border-gray-200 rounded-lg shadow-construction p-5">
+      <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-construction p-5">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20">
-            <UserPlus className="w-5 h-5 text-construction-blue" />
+          <div className="p-2 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-lg border-2 border-construction-blue/20 dark:border-construction-blue/30">
+            <UserPlus className="w-5 h-5 text-construction-blue dark:text-construction-blue" />
           </div>
           <div>
-            <h2 className="font-bold text-gray-900">Send New Invitation</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="font-bold text-gray-900 dark:text-gray-100">Send New Invitation</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Invite a company admin to join GenHub
             </p>
           </div>
@@ -177,12 +177,12 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
             <div className="space-y-2">
               <Label
                 htmlFor="email"
-                className="text-sm font-bold text-gray-700"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
               >
                 Email Address *
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="email"
                   type="email"
@@ -196,11 +196,11 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-bold text-gray-700">
+              <Label htmlFor="name" className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 Name (Optional)
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   id="name"
                   type="text"
@@ -236,10 +236,10 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
       </div>
 
       {/* Pending Invitations List */}
-      <div className="bg-white border-2 border-gray-200 rounded-lg shadow-construction overflow-hidden">
-        <div className="px-5 py-4 border-b-2 border-gray-100">
-          <h2 className="font-bold text-gray-900">Pending Invitations</h2>
-          <p className="text-sm text-gray-500">
+      <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg shadow-construction overflow-hidden">
+        <div className="px-5 py-4 border-b-2 border-gray-100 dark:border-gray-800">
+          <h2 className="font-bold text-gray-900 dark:text-gray-100">Pending Invitations</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {invitations.length === 0
               ? "No pending invitations"
               : `${invitations.length} invitation${invitations.length === 1 ? "" : "s"} awaiting response`}
@@ -248,18 +248,18 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
 
         {invitations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <Mail className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-1">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
               No Pending Invitations
             </h3>
-            <p className="text-sm text-gray-500 max-w-sm">
+            <p className="text-sm text-gray-500 dark:text-gray-400 max-w-sm">
               Use the form above to invite new company admins.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {invitations.map((invitation) => {
               const isExpired = !isAfter(
                 new Date(invitation.expires_at),
@@ -271,14 +271,14 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
                 <div
                   key={invitation.id}
                   className={cn(
-                    "px-5 py-4 hover:bg-gray-50/50 transition-colors",
+                    "px-5 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors",
                     isExpired && "opacity-60",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
                           {invitation.email}
                         </span>
                         {isExpired && (
@@ -288,11 +288,11 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
                         )}
                       </div>
                       {invitation.name && (
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           {invitation.name}
                         </p>
                       )}
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
                           Sent{" "}

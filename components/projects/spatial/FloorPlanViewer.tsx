@@ -356,7 +356,7 @@ export function FloorPlanViewer({
       <div className="absolute top-4 left-4 z-20">
         <Card className="border-2 border-gray-200 shadow-construction bg-white">
           <button className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 transition-colors">
-            <Layers className="w-4 h-4 text-[#001B51]" />
+            <Layers className="w-4 h-4 text-construction-blue" />
             <span className="font-semibold text-sm">{currentFloorPlan.name}</span>
             {floorPlans.length > 1 && <ChevronDown className="w-4 h-4 text-gray-400" />}
           </button>
@@ -369,7 +369,7 @@ export function FloorPlanViewer({
                   onClick={() => setCurrentFloorIndex(index)}
                   className={cn(
                     'w-full px-4 py-2 text-left text-sm hover:bg-gray-50 transition-colors',
-                    index === currentFloorIndex ? 'bg-blue-50 text-[#001B51] font-semibold' : ''
+                    index === currentFloorIndex ? 'bg-blue-50 text-construction-blue font-semibold' : ''
                   )}
                 >
                   {plan.name}
@@ -389,28 +389,28 @@ export function FloorPlanViewer({
             className="w-full p-2 hover:bg-gray-100 rounded transition-colors"
             title="Zoom In"
           >
-            <ZoomIn className="w-5 h-5 text-[#001B51] mx-auto" />
+            <ZoomIn className="w-5 h-5 text-construction-blue mx-auto" />
           </button>
           <button
             onClick={handleZoomOut}
             className="w-full p-2 hover:bg-gray-100 rounded transition-colors"
             title="Zoom Out"
           >
-            <ZoomOut className="w-5 h-5 text-[#001B51] mx-auto" />
+            <ZoomOut className="w-5 h-5 text-construction-blue mx-auto" />
           </button>
           <button
             onClick={handleRotate}
             className="w-full p-2 hover:bg-gray-100 rounded transition-colors"
             title="Rotate 90°"
           >
-            <RotateCw className="w-5 h-5 text-[#001B51] mx-auto" />
+            <RotateCw className="w-5 h-5 text-construction-blue mx-auto" />
           </button>
           <button
             onClick={handleResetView}
             className="w-full p-2 hover:bg-gray-100 rounded transition-colors"
             title="Reset View"
           >
-            <Move className="w-5 h-5 text-[#001B51] mx-auto" />
+            <Move className="w-5 h-5 text-construction-blue mx-auto" />
           </button>
         </Card>
 
@@ -424,21 +424,21 @@ export function FloorPlanViewer({
             )}
             title="Measure Distance"
           >
-            <Ruler className={cn('w-5 h-5 mx-auto', isRulerMode ? 'text-white' : 'text-[#001B51]')} />
+            <Ruler className={cn('w-5 h-5 mx-auto', isRulerMode ? 'text-white' : 'text-construction-blue')} />
           </button>
           <button
             onClick={handleExportPDF}
             className="w-full p-2 hover:bg-gray-100 rounded transition-colors"
             title="Export PDF"
           >
-            <Download className="w-5 h-5 text-[#001B51] mx-auto" />
+            <Download className="w-5 h-5 text-construction-blue mx-auto" />
           </button>
         </Card>
       </div>
 
       {/* Status Badge */}
       <div className="absolute bottom-4 left-4 z-20">
-        <Badge className="bg-[#001B51] text-white px-3 py-1.5 text-xs font-mono">
+        <Badge className="bg-construction-blue text-white px-3 py-1.5 text-xs font-mono">
           Zoom: {(zoom * 100).toFixed(0)}% | Rotation: {rotation}° | Markers: {currentFloorMarkers.length}
         </Badge>
       </div>
@@ -446,10 +446,10 @@ export function FloorPlanViewer({
       {/* Placement Mode Hint */}
       {placementMode && (
         <div className="absolute bottom-4 right-4 z-20">
-          <Card className="border-2 border-[#001B51] shadow-construction bg-white px-4 py-2">
+          <Card className="border-2 border-construction-blue shadow-construction bg-white px-4 py-2">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#001B51]" />
-              <span className="text-sm font-semibold text-[#001B51]">Click to place marker</span>
+              <MapPin className="w-4 h-4 text-construction-blue" />
+              <span className="text-sm font-semibold text-construction-blue">Click to place marker</span>
             </div>
           </Card>
         </div>

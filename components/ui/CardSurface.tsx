@@ -20,7 +20,7 @@ export function CardSurface<T extends ElementType = "div">({
   return (
     <Component
       className={cn(
-        "bg-white border-2 border-gray-200 rounded-xl shadow-sm",
+        "bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl shadow-sm",
         interactive &&
           "transition-all duration-200 active:scale-[0.99] active:shadow-md",
         className,

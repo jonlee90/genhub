@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { getTodayPosition } from "./gantt-utils";
 import type { GanttConfig, DateCell } from "./gantt-types";
 
@@ -15,6 +15,28 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
   const totalHeight = taskCount * rowHeight;
   const todayX = getTodayPosition(config);
   const isMobile = sidebarWidth <= 140;
+
+  // Detect dark mode
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  useEffect(() => {
+    // Check if dark mode is enabled
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+
+    // Watch for theme changes
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Define colors based on dark mode
+  const colors = {
+    background: isDarkMode ? '#111827' : '#FFFFFF',
+    weekend: isDarkMode ? '#1f2937' : '#F3F4F6',
+    line: isDarkMode ? '#374151' : '#E5E7EB',
+  };
 
   // Memoize weekend rectangles to prevent recalculation on every render
   const weekendRects = useMemo(() =>
@@ -53,13 +75,13 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
         >
           <polygon
             points={isMobile ? "0 0, 6 3, 0 6" : "0 0, 8 4, 0 8"}
-            fill="#001B51"
+            fill="var(--construction-blue)"
           />
         </marker>
       </defs>
 
-      {/* Solid white background */}
-      <rect width="100%" height="100%" fill="#FFFFFF" />
+      {/* Solid background - themed */}
+      <rect width="100%" height="100%" fill={colors.background} />
 
       {/* Weekend shading */}
       {weekendRects.map((rect, index) => (
@@ -69,7 +91,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           y={0}
           width={rect.width}
           height={totalHeight}
-          fill="#F3F4F6"
+          fill={colors.weekend}
           opacity={0.5}
         />
       ))}
@@ -82,7 +104,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           y1={0}
           x2={cell.x}
           y2={totalHeight}
-          stroke="#E5E7EB"
+          stroke={colors.line}
           strokeWidth={isMobile ? "0.5" : "1"}
         />
       ))}
@@ -95,7 +117,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           y1={y}
           x2="100%"
           y2={y}
-          stroke="#E5E7EB"
+          stroke={colors.line}
           strokeWidth={isMobile ? "0.5" : "1"}
         />
       ))}
@@ -107,7 +129,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           y1={0}
           x2={todayX}
           y2={totalHeight}
-          stroke="#001B51"
+          stroke="var(--construction-blue)"
           strokeWidth={isMobile ? "1.5" : "2"}
           strokeDasharray={isMobile ? "3 2" : "4 2"}
         />
@@ -117,7 +139,7 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
           y1={0}
           x2={todayX}
           y2={0}
-          stroke="#001B51"
+          stroke="var(--construction-blue)"
           strokeWidth={isMobile ? "1.5" : "2"}
           markerStart="url(#today-arrow)"
         />

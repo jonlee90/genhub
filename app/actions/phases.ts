@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { getUserContext } from '@/lib/auth-context';
 import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 import type { PhaseStatus, TaskType, TaskPriority, TaskStatus } from '@/types/db/enums';
 
@@ -26,37 +26,7 @@ const updatePhaseSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext() {
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
-  }
-
-  // Create Supabase client
-  const supabase = await createClient();
-
-  // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
-    .single();
-
-  if (companyError || !companyUser) {
-    return { error: 'No active company found for user' };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
 async function verifyPhaseAccess(supabase: Awaited<ReturnType<typeof createClient>>, phaseId: string, companyId: string) {
   // Get phase with project info
@@ -219,27 +189,12 @@ export async function updatePhase(formData: FormData) {
  * Used for Metro Journey view
  */
 export async function getProjectPhases(projectId: string) {
-  const supabase = await createClient();
-
-  // Get NextAuth session
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: 'Not authenticated' };
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
   }
 
-  // Get user's company and role
-  const { data: companyUser, error: companyError } = await supabase
-    .from('company_users')
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    return { error: 'No active company found for user' };
-  }
-
-  const companyId = companyUser.company_id;
+  const { supabase, companyId } = userContext;
 
   // Verify project access
   const { data: project, error: projectError } = await supabase
@@ -310,7 +265,7 @@ export async function startNextPhase(projectId: string) {
   // Get the next not_started phase
   const { data: nextPhase, error: phaseError } = await supabase
     .from('project_phases')
-    .select('*')
+    .select('id, project_id, name, order_index, completion_percentage, started_at, completed_at, notes, created_at, updated_at, status')
     .eq('project_id', projectId)
     .eq('status', 'not_started')
     .order('order_index', { ascending: true })
@@ -379,7 +334,7 @@ export async function completeCurrentPhase(projectId: string, startNext: boolean
   // Get the current in_progress phase
   const { data: currentPhase, error: phaseError } = await supabase
     .from('project_phases')
-    .select('*')
+    .select('id, project_id, name, order_index, completion_percentage, started_at, completed_at, notes, created_at, updated_at, status')
     .eq('project_id', projectId)
     .eq('status', 'in_progress')
     .order('order_index', { ascending: true })
@@ -846,7 +801,7 @@ export async function applyTaskTemplates(
   // Get task templates for this phase template
   const { data: taskTemplates, error: templatesError } = await supabase
     .from('task_templates')
-    .select('*')
+    .select('id, company_id, phase_template_id, title, description, default_task_type, default_priority, order_index, is_active, created_at, updated_at, days_offset')
     .eq('phase_template_id', bestTemplate.id)
     .eq('is_active', true)
     .order('order_index', { ascending: true });

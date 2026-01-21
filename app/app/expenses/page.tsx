@@ -14,7 +14,7 @@ const BLUEPRINT_BACKGROUND_STYLE = {
     linear-gradient(to bottom, currentColor 1px, transparent 1px)
   `,
   backgroundSize: "40px 40px",
-  color: "#001B51",
+  color: "var(--construction-blue)",
 } as const;
 
 export const metadata = {
@@ -105,7 +105,7 @@ export default async function ExpensesPage({
       </Suspense>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

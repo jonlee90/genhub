@@ -186,9 +186,9 @@ export function OnboardingTour({
             }),
         }}
       >
-        <Card className="border-2 border-[#001B51] shadow-2xl bg-white w-full max-w-md">
+        <Card className="border-2 border-construction-blue shadow-2xl bg-white w-full max-w-md">
           {/* Header */}
-          <div className="border-b-2 border-[#001B51] bg-gradient-to-r from-[#001B51] to-[#002666] p-4">
+          <div className="border-b-2 border-construction-blue bg-gradient-to-r from-[var(--construction-blue)] to-[#002666] p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -241,7 +241,7 @@ export function OnboardingTour({
               </div>
               <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-[#001B51] transition-all duration-300"
+                  className="h-full bg-construction-blue transition-all duration-300"
                   style={{ width: `${((currentStepIndex + 1) / totalSteps) * 100}%` }}
                 />
               </div>
@@ -258,7 +258,7 @@ export function OnboardingTour({
                   'disabled:opacity-30 disabled:cursor-not-allowed',
                   currentStepIndex === 0
                     ? 'border-gray-200 text-gray-400'
-                    : 'border-[#001B51] text-[#001B51] hover:bg-blue-50'
+                    : 'border-construction-blue text-construction-blue hover:bg-blue-50'
                 )}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -279,7 +279,7 @@ export function OnboardingTour({
                 onClick={handleNext}
                 className={cn(
                   'px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                  'bg-[#001B51] text-white hover:bg-[#002666] transition-colors',
+                  'bg-construction-blue text-white hover:bg-[#002666] transition-colors',
                   'flex items-center gap-2'
                 )}
               >

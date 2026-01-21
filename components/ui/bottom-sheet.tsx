@@ -88,7 +88,7 @@ export function BottomSheet({
             >
               <div
                 className={cn(
-                  'relative bg-white rounded-t-3xl shadow-2xl overflow-hidden flex flex-col',
+                  'relative bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl overflow-hidden flex flex-col',
                   className
                 )}
                 style={{ maxHeight }}
@@ -100,28 +100,28 @@ export function BottomSheet({
                 {/* Debug: Drag handle indicator */}
                 {showHandle && (
                   <div className="flex justify-center pt-3 pb-2">
-                    <div className="w-10 h-1 rounded-full bg-gray-300" />
+                    <div className="w-10 h-1 rounded-full bg-gray-300 dark:bg-gray-600" />
                   </div>
                 )}
 
                 {/* Debug: Header with title and close button */}
                 {(title || description) && (
-                  <div className="flex items-start justify-between px-5 py-3 border-b border-gray-100">
+                  <div className="flex items-start justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700">
                     <div>
                       {title && (
-                        <h2 className="text-lg font-bold text-gray-900">{title}</h2>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h2>
                       )}
                       {description && (
-                        <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
                       )}
                     </div>
                     <motion.button
                       onClick={onClose}
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors -mr-2"
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors -mr-2"
                       whileTap={{ scale: 0.95 }}
                       aria-label="Close"
                     >
-                      <X className="w-5 h-5 text-gray-500" />
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </motion.button>
                   </div>
                 )}
@@ -135,7 +135,7 @@ export function BottomSheet({
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
               <motion.div
                 className={cn(
-                  'relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden pointer-events-auto',
+                  'relative w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden pointer-events-auto',
                   className
                 )}
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -150,22 +150,22 @@ export function BottomSheet({
 
                 {/* Debug: Header with title and close button */}
                 {(title || description) && (
-                  <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100">
+                  <div className="flex items-start justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
                     <div>
                       {title && (
-                        <h2 className="text-xl font-bold text-gray-900">{title}</h2>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">{title}</h2>
                       )}
                       {description && (
-                        <p className="text-sm text-gray-500 mt-0.5">{description}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{description}</p>
                       )}
                     </div>
                     <motion.button
                       onClick={onClose}
-                      className="p-2 rounded-lg hover:bg-gray-100 transition-colors -mr-2"
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors -mr-2"
                       whileTap={{ scale: 0.95 }}
                       aria-label="Close"
                     >
-                      <X className="w-5 h-5 text-gray-500" />
+                      <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </motion.button>
                   </div>
                 )}

@@ -41,7 +41,7 @@ export async function getProjectFiles(
   // User details must be fetched separately if needed
   let query = supabase
     .from("project_files")
-    .select("*")
+    .select("id, company_id, project_id, uploaded_by, filename, original_filename, file_url, file_size, file_type, category, tags, client_visible, version_number, parent_file_id, metadata, deleted_at, created_at, updated_at")
     .eq("project_id", projectId)
     .is("deleted_at", null)
     .order("created_at", { ascending: false });
@@ -115,7 +115,7 @@ export async function deleteProjectFile(fileId: string) {
   // Get file to verify ownership and log audit
   const { data: file, error: fetchError } = await supabase
     .from("project_files")
-    .select("*")
+    .select("id, company_id, project_id, uploaded_by, filename, original_filename, file_url, file_size, file_type, category, tags, client_visible, version_number, parent_file_id, metadata, deleted_at, created_at, updated_at")
     .eq("id", fileId)
     .eq("company_id", companyId)
     .single();
@@ -177,7 +177,7 @@ export async function updateFileCategory(
   // Get current file state
   const { data: file, error: fetchError } = await supabase
     .from("project_files")
-    .select("*")
+    .select("id, company_id, project_id, uploaded_by, filename, original_filename, file_url, file_size, file_type, category, tags, client_visible, version_number, parent_file_id, metadata, deleted_at, created_at, updated_at")
     .eq("id", fileId)
     .eq("company_id", companyId)
     .single();
@@ -247,7 +247,7 @@ export async function getFileVersionHistory(fileId: string) {
   // Note: uploaded_by references next_auth.users - can't auto-join
   const { data: versions, error } = await supabase
     .from("project_files")
-    .select("*")
+    .select("id, company_id, project_id, uploaded_by, filename, original_filename, file_url, file_size, file_type, category, tags, client_visible, version_number, parent_file_id, metadata, deleted_at, created_at, updated_at")
     .or(`id.eq.${rootFileId},parent_file_id.eq.${rootFileId}`)
     .eq("company_id", companyId)
     .is("deleted_at", null)
@@ -281,7 +281,7 @@ export async function bulkDeleteFiles(fileIds: string[], projectId: string) {
 
   const { data: files, error: fetchError } = await supabase
     .from("project_files")
-    .select("*")
+    .select("id, company_id, project_id, uploaded_by, filename, original_filename, file_url, file_size, file_type, category, tags, client_visible, version_number, parent_file_id, metadata, deleted_at, created_at, updated_at")
     .in("id", fileIds)
     .eq("company_id", companyId);
 

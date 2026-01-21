@@ -111,7 +111,7 @@ export function FilterTabs({
     // Use status-specific gradients if enabled
     if (useStatusGradients) {
       const statusGradients: Record<string, string> = {
-        all: "from-[#001B51] to-[#002868]", // Navy gradient
+        all: "from-[var(--construction-blue)] to-[#002868]", // Navy gradient
         todo: "from-gray-500 to-gray-600",
         in_progress: "from-blue-600 to-blue-700",
         review: "from-yellow-500 to-yellow-600",
@@ -123,11 +123,11 @@ export function FilterTabs({
         on_hold: "from-orange-500 to-orange-600",
       };
 
-      return statusGradients[tab.value] || "from-[#001B51] to-[#002868]";
+      return statusGradients[tab.value] || "from-[var(--construction-blue)] to-[#002868]";
     }
 
     // Default GenHub navy gradient
-    return "from-[#001B51] to-[#002868]";
+    return "from-[var(--construction-blue)] to-[#002868]";
   };
 
   return (
@@ -136,8 +136,8 @@ export function FilterTabs({
       className={cn(
         // Container with Aceternity-inspired styling
         "relative flex items-center gap-2",
-        "p-1.5 bg-gray-100 rounded-xl",
-        "border-2 border-gray-200",
+        "p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl",
+        "border-2 border-gray-200 dark:border-gray-700",
         // Mobile: Scrollable with hidden scrollbar
         "overflow-x-auto scrollbar-hide",
         "snap-x snap-mandatory",
@@ -181,7 +181,7 @@ export function FilterTabs({
               // Touch feedback
               "active:scale-[0.97]",
               // Text color based on active state
-              isActive ? "text-white" : "text-gray-600 hover:text-gray-900",
+              isActive ? "text-white" : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100",
               // Desktop: Full width in grid
               "lg:w-full",
             )}
@@ -199,7 +199,7 @@ export function FilterTabs({
                   "rounded-full text-xs font-black",
                   isActive
                     ? "bg-white/20 text-white"
-                    : "bg-gray-200 text-gray-700",
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
                 )}
               >
                 {tab.count}
@@ -213,7 +213,7 @@ export function FilterTabs({
                 className={cn(
                   "absolute inset-0 rounded-lg",
                   "bg-gradient-to-r shadow-md",
-                  "from-[#001B51] to-[#002868]",
+                  "from-[var(--construction-blue)] to-[#002868]",
                 )}
                 transition={{
                   type: "spring",

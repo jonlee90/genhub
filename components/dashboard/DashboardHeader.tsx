@@ -28,21 +28,21 @@ export function DashboardHeader({ userName, className }: DashboardHeaderProps) {
   return (
     <header className={cn("relative", className)}>
       {/* Navy accent bar - construction theme */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-[#001B51] rounded-full" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue dark:bg-blue-500 rounded-full" />
 
       <div className="pt-4">
         {/* Greeting - smaller on mobile, larger on desktop */}
-        <p className="text-sm md:text-base text-gray-500 font-medium mb-1">
+        <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 font-medium mb-1">
           {greeting},
         </p>
 
         {/* User name - bold, high contrast */}
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-[#001B51]">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tight text-construction-blue dark:text-blue-400">
           {userName}
         </h1>
 
         {/* Subtitle */}
-        <p className="mt-1 text-sm md:text-base text-gray-500 font-medium">
+        <p className="mt-1 text-sm md:text-base text-gray-500 dark:text-gray-400 font-medium">
           Your construction command center
         </p>
       </div>

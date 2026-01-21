@@ -66,7 +66,7 @@ export function ModelManagementPanel({
         )}
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="p-2 bg-[#001B51] rounded-lg flex-shrink-0">
+          <div className="p-2 bg-construction-blue rounded-lg flex-shrink-0">
             <Box className="w-5 h-5 text-white" />
           </div>
 
@@ -168,8 +168,8 @@ export function ModelManagementPanel({
                     'border-2 transition-all',
                     'disabled:opacity-40 disabled:cursor-not-allowed',
                     selectedQuality === quality
-                      ? 'bg-[#001B51] text-white border-[#001B51]'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#001B51]'
+                      ? 'bg-construction-blue text-white border-construction-blue'
+                      : 'bg-white text-gray-700 border-gray-200 hover:border-construction-blue'
                   )}
                 >
                   {quality}
@@ -190,8 +190,8 @@ export function ModelManagementPanel({
               onClick={onReplace}
               className={cn(
                 'flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                'bg-white text-[#001B51] border-2 border-[#001B51]',
-                'hover:bg-[#001B51] hover:text-white transition-all',
+                'bg-white text-construction-blue border-2 border-construction-blue',
+                'hover:bg-construction-blue hover:text-white transition-all',
                 'flex items-center justify-center gap-2'
               )}
             >

@@ -315,10 +315,11 @@ export async function getMaterialsByCompany() {
 
     const { data: materials, error } = await supabase
       .from("materials")
-      .select("*")
+      .select("id, company_id, product_name, product_description, sku, category, manufacturer, unit_price, unit_of_measure, home_depot_product_id, home_depot_url, product_image_url, stock_status, lead_time_days, specifications, is_active, created_by, created_at, updated_at")
       .eq("company_id", companyUser.company_id)
       .eq("is_active", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(0, 99);
 
     if (error) {
       console.error("Error fetching materials:", error);
@@ -367,7 +368,7 @@ export async function assignMaterialToTask(
         assigned_by: session.user.id,
         procurement_status: validated.procurement_status || "needed",
       })
-      .select("*")
+      .select("id, material_id, task_id, project_id, quantity, unit_cost, total_cost, procurement_status, purchaser_type, purchaser_id, subcontractor_id, ordered_date, estimated_delivery_date, delivered_date, installed_date, notes, assigned_by, created_at, updated_at, spatial_marker_id")
       .single();
 
     if (error) {
@@ -1437,26 +1438,40 @@ export async function getTrackedMaterials() {
       return { success: false, error: "Failed to fetch tracked materials" };
     }
 
-    // Calculate price changes
-    const materialsWithPriceChange: TrackedMaterial[] = await Promise.all(
-      (tracked || []).map(async (item: any) => {
+    // HIGH-1 FIX: Fetch ALL price histories in single query to avoid N+1
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    if (!tracked || tracked.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    const materialIds = tracked.map((item: any) => item.material_id);
+
+    // Single query for ALL price histories
+    const { data: priceHistories } = await supabase
+      .from("material_price_history")
+      .select("material_id, price, recorded_at")
+      .in("material_id", materialIds)
+      .lte("recorded_at", sevenDaysAgo.toISOString())
+      .order("recorded_at", { ascending: false });
+
+    // Build price map: material_id -> oldest price within 7 days
+    const priceMap = new Map<string, number>();
+    if (priceHistories) {
+      for (const history of priceHistories) {
+        if (!priceMap.has(history.material_id)) {
+          priceMap.set(history.material_id, history.price);
+        }
+      }
+    }
+
+    // Calculate price changes in memory
+    const materialsWithPriceChange: TrackedMaterial[] = tracked.map(
+      (item: any) => {
         const material = item.material;
         const currentPrice = material.unit_price;
-
-        // Get price from 7 days ago
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-        const { data: priceHistory } = await supabase
-          .from("material_price_history")
-          .select("price")
-          .eq("material_id", item.material_id)
-          .lte("recorded_at", sevenDaysAgo.toISOString())
-          .order("recorded_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        const previousPrice = priceHistory?.price || null;
+        const previousPrice = priceMap.get(item.material_id) || null;
         let priceChangePercent = null;
 
         if (previousPrice && previousPrice > 0) {
@@ -1475,7 +1490,7 @@ export async function getTrackedMaterials() {
           stock_status: material.stock_status,
           tracked_at: item.tracked_at,
         };
-      }),
+      },
     );
 
     console.log(

@@ -17,7 +17,7 @@ export default function MaterialsLoading() {
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px',
-          color: '#001B51'
+          color: 'var(--construction-blue)'
         }} />
       </div>
 
@@ -25,26 +25,26 @@ export default function MaterialsLoading() {
       <div className="relative">
         <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
         <div className="pt-2 md:pt-4 space-y-2">
-          <div className="h-10 md:h-14 w-64 bg-gray-200 animate-pulse rounded" />
-          <div className="h-5 md:h-6 w-96 bg-gray-200 animate-pulse rounded" />
+          <div className="h-10 md:h-14 w-64 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
+          <div className="h-5 md:h-6 w-96 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
         </div>
       </div>
 
       {/* Summary skeleton (5 cards on desktop, 2x3 on mobile) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg border-2 border-gray-300" />
+          <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg border-2 border-gray-300 dark:border-gray-600" />
         ))}
       </div>
 
       {/* Carousel skeleton */}
       <div className="space-y-3">
-        <div className="h-6 w-48 bg-gray-200 animate-pulse rounded" />
+        <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 animate-pulse rounded" />
         <div className="flex gap-4 overflow-x-auto">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="w-64 h-48 bg-gray-200 animate-pulse rounded-lg flex-shrink-0 border-2 border-gray-300"
+              className="w-64 h-48 bg-gray-200 dark:bg-gray-700 animate-pulse rounded-lg flex-shrink-0 border-2 border-gray-300 dark:border-gray-600"
             />
           ))}
         </div>

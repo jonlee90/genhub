@@ -68,8 +68,8 @@ export function FilterButton({
 
         // Color based on active state
         hasActiveFilters
-          ? "bg-[#001B51] text-white"
-          : "bg-gray-100 text-gray-700",
+          ? "bg-construction-blue dark:bg-blue-700 text-white"
+          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300",
 
         // Touch feedback
         "active:scale-95",
@@ -93,7 +93,7 @@ export function FilterButton({
             "rounded-full",
             "text-xs font-bold",
             "bg-[#DC2626] text-white",
-            "border-2 border-white",
+            "border-2 border-white dark:border-gray-800",
           )}
         >
           {count > 9 ? "9+" : count}

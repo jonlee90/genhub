@@ -71,15 +71,15 @@ export const MaterialCard = memo(function MaterialCard({
   return (
     <div
       className={cn(
-        "bg-white rounded-xl overflow-hidden",
-        "border-2 border-gray-200 shadow-sm",
+        "bg-white dark:bg-gray-800 rounded-xl overflow-hidden",
+        "border-2 border-gray-200 dark:border-gray-700 shadow-sm",
         "transition-all duration-200",
         "active:scale-[0.99] active:shadow-md",
         className,
       )}
     >
       {/* Image Header */}
-      <div className="relative h-36 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+      <div className="relative h-36 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
         {material.product_image_url ? (
           <Image
             src={material.product_image_url}
@@ -89,12 +89,12 @@ export const MaterialCard = memo(function MaterialCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <Package className="w-14 h-14 text-gray-300" />
+          <Package className="w-14 h-14 text-gray-300 dark:text-gray-600" />
         )}
 
         {/* Tracked Badge */}
         {isTracked && (
-          <div className="absolute top-2 left-2 px-2 py-1 bg-[#001B51] text-white text-xs font-bold rounded-lg flex items-center gap-1">
+          <div className="absolute top-2 left-2 px-2 py-1 bg-construction-blue dark:bg-blue-600 text-white text-xs font-bold rounded-lg flex items-center gap-1">
             <Eye className="w-3 h-3" />
             Tracked
           </div>
@@ -114,40 +114,40 @@ export const MaterialCard = memo(function MaterialCard({
       {/* Content */}
       <div className="p-4 space-y-3">
         {/* Product Name */}
-        <h3 className="font-bold text-[#001B51] line-clamp-2 min-h-[2.75rem] text-base leading-snug">
+        <h3 className="font-bold text-construction-blue dark:text-gray-100 line-clamp-2 min-h-[2.75rem] text-base leading-snug">
           {material.product_name}
         </h3>
 
         {/* SKU */}
         {material.sku && (
-          <p className="text-xs text-gray-500 font-mono">SKU: {material.sku}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">SKU: {material.sku}</p>
         )}
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-0.5">
+          <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-0.5">
               Quantity
             </span>
-            <span className="text-lg font-bold text-[#001B51]">
+            <span className="text-lg font-bold text-construction-blue dark:text-gray-100">
               {material.total_quantity}
             </span>
           </div>
-          <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider block mb-0.5">
+          <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-700">
+            <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider block mb-0.5">
               Tasks
             </span>
-            <span className="text-lg font-bold text-[#001B51]">
+            <span className="text-lg font-bold text-construction-blue dark:text-gray-100">
               {material.task_count}
             </span>
           </div>
         </div>
 
         {/* Price & Change */}
-        <div className="flex items-center justify-between py-2 border-t border-gray-100">
+        <div className="flex items-center justify-between py-2 border-t border-gray-100 dark:border-gray-700">
           <div>
-            <span className="text-xs text-gray-500 block">Unit Price</span>
-            <span className="text-xl font-black text-[#001B51]">
+            <span className="text-xs text-gray-500 dark:text-gray-400 block">Unit Price</span>
+            <span className="text-xl font-black text-construction-blue dark:text-gray-100">
               ${material.unit_price.toFixed(2)}
             </span>
           </div>
@@ -167,8 +167,8 @@ export const MaterialCard = memo(function MaterialCard({
             "active:scale-[0.98]",
             "disabled:opacity-50 disabled:pointer-events-none",
             isTracked
-              ? "bg-gray-100 text-gray-700 border-2 border-gray-200 active:bg-gray-200"
-              : "bg-[#001B51] text-white active:bg-[#001B51]/90",
+              ? "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-600 active:bg-gray-200 dark:active:bg-gray-600"
+              : "bg-construction-blue dark:bg-blue-600 text-white active:bg-construction-blue/90 dark:active:bg-blue-700",
           )}
         >
           {isLoading ? (
@@ -188,9 +188,9 @@ export const MaterialCard = memo(function MaterialCard({
 
         {/* Error/Success Feedback */}
         {error && (
-          <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-            <p className="text-xs text-red-700">{error}</p>
+          <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <p className="text-xs text-red-700 dark:text-red-300">{error}</p>
           </div>
         )}
       </div>

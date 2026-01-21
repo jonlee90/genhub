@@ -38,12 +38,12 @@ export const SettingsSectionHeader = React.memo(function SettingsSectionHeader({
         'min-w-[44px] min-h-[44px] flex items-center justify-center',
         'border-2 transition-all duration-300',
         disabled
-          ? 'bg-gray-100 border-gray-200'
-          : 'bg-construction-blue/10 border-construction-blue/20'
+          ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
+          : 'bg-construction-blue/10 dark:bg-construction-blue/20 border-construction-blue/20 dark:border-construction-blue/40'
       )}>
         <Icon className={cn(
           'h-5 w-5 md:h-6 md:w-6',
-          disabled ? 'text-gray-400' : 'text-construction-blue'
+          disabled ? 'text-gray-400 dark:text-gray-500' : 'text-construction-blue dark:text-blue-400'
         )} />
       </div>
 
@@ -53,14 +53,14 @@ export const SettingsSectionHeader = React.memo(function SettingsSectionHeader({
           id={sectionId}
           className={cn(
             'text-lg md:text-xl font-black uppercase tracking-tighter leading-tight',
-            disabled ? 'text-gray-400' : 'text-construction-blue'
+            disabled ? 'text-gray-400 dark:text-gray-500' : 'text-construction-blue dark:text-blue-400'
           )}
         >
           {title}
         </h2>
         <p className={cn(
           'text-sm leading-snug mt-0.5',
-          disabled ? 'text-gray-400' : 'text-gray-500'
+          disabled ? 'text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'
         )}>
           {description}
         </p>

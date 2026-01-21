@@ -54,7 +54,7 @@ export function SpatialViewerMobileControls({
           aria-label="Open filter options"
         >
           <svg
-            className="w-5 h-5 text-[#001B51]"
+            className="w-5 h-5 text-construction-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -82,7 +82,7 @@ export function SpatialViewerMobileControls({
           aria-label="Open markers list"
         >
           <svg
-            className="w-5 h-5 text-[#001B51]"
+            className="w-5 h-5 text-construction-blue"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -101,7 +101,7 @@ export function SpatialViewerMobileControls({
             />
           </svg>
           {visibleMarkersCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-[#001B51] text-white text-xs font-bold flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-construction-blue text-white text-xs font-bold flex items-center justify-center">
               {visibleMarkersCount > 99 ? "99+" : visibleMarkersCount}
             </span>
           )}

@@ -53,8 +53,8 @@ export function SeedDemoDataButton() {
         <div
           className={`p-4 rounded-lg border ${
             result.success
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
           }`}
         >
           {result.success ? (
@@ -77,7 +77,7 @@ export function SeedDemoDataButton() {
         </div>
       )}
 
-      <div className="text-sm text-gray-600 space-y-2">
+      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
         <p className="font-semibold">This will:</p>
         <ul className="list-disc list-inside space-y-1 ml-2">
           <li>Delete all existing projects and related data (cascades)</li>

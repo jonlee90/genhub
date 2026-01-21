@@ -6,7 +6,7 @@
  * Main wrapper component for managing materials within a task modal.
  * Provides tabbed interface for searching Home Depot products and viewing/editing assigned materials.
  *
- * Construction-themed design with #001B51 primary color
+ * Construction-themed design with var(--construction-blue) primary color
  */
 
 import { useState, useEffect, useCallback } from "react";

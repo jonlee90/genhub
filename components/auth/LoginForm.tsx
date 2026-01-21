@@ -50,8 +50,8 @@ export function LoginForm({ error, callbackUrl = '/app' }: LoginFormProps) {
           <HardHat className="w-8 h-8 text-white" />
         </motion.div>
         <div>
-          <h1 className="text-3xl font-black text-gray-900">Sign in to GenHub</h1>
-          <p className="text-gray-600 mt-1">Access your construction projects</p>
+          <h1 className="text-3xl font-black text-gray-900 dark:text-gray-100">Sign in to GenHub</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">Access your construction projects</p>
         </div>
       </div>
 
@@ -74,10 +74,10 @@ export function LoginForm({ error, callbackUrl = '/app' }: LoginFormProps) {
       {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t-2 border-gray-200" />
+          <div className="w-full border-t-2 border-gray-200 dark:border-gray-700" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-4 text-gray-500 font-medium">or continue with email</span>
+          <span className="bg-white dark:bg-gray-900 px-4 text-gray-500 dark:text-gray-400 font-medium">or continue with email</span>
         </div>
       </div>
 
@@ -85,12 +85,12 @@ export function LoginForm({ error, callbackUrl = '/app' }: LoginFormProps) {
       <EmailSignInForm callbackUrl={callbackUrl} />
 
       {/* Footer Link */}
-      <div className="text-center pt-4 border-t border-gray-200">
-        <p className="text-sm text-gray-600">
+      <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Don't have an account?{' '}
           <Link
             href="/signup"
-            className="font-bold text-construction-blue hover:underline"
+            className="font-bold text-construction-blue dark:text-blue-400 hover:underline"
           >
             Create Account
           </Link>

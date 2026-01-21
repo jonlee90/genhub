@@ -102,7 +102,7 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
       <article
         className={cn(
           'group relative h-full rounded-xl overflow-hidden',
-          'bg-white border border-gray-200',
+          'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800',
           'shadow-sm hover:shadow-xl active:shadow-md',
           'transition-all duration-300',
           'cursor-pointer',
@@ -208,31 +208,31 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
           {/* Client & Budget Row */}
           <div className="flex items-start justify-between gap-3 md:gap-4">
             <div className="flex-1 min-w-0">
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold mb-0.5">
                 Client
               </p>
-              <p className="text-sm font-semibold text-gray-900 truncate">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                 {project.client_name}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-semibold mb-0.5">
                 Budget
               </p>
-              <p className="text-sm font-bold text-construction-blue">
+              <p className="text-sm font-bold text-construction-blue dark:text-blue-400">
                 {formatBudget(project.budget)}
               </p>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* Stats Grid - 2x2 */}
           <div className="grid grid-cols-2 gap-x-3 md:gap-x-4 gap-y-1.5 md:gap-y-2">
             {/* Status */}
             <div>
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
                 Status
               </p>
               <div className="flex items-center gap-1 md:gap-1.5 mt-0.5">
@@ -255,17 +255,17 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
 
             {/* Progress */}
             <div>
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
                 Progress
               </p>
               <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
-                <div className="flex-1 h-1 md:h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex-1 h-1 md:h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-construction-blue rounded-full transition-all duration-700 ease-out"
+                    className="h-full bg-construction-blue dark:bg-blue-400 rounded-full transition-all duration-700 ease-out"
                     style={{ width: `${completionPercentage}%` }}
                   />
                 </div>
-                <span className="text-xs md:text-sm font-bold text-construction-blue shrink-0 tabular-nums">
+                <span className="text-xs md:text-sm font-bold text-construction-blue dark:text-blue-400 shrink-0 tabular-nums">
                   {formatPercentWhole(completionPercentage)}
                 </span>
               </div>
@@ -273,35 +273,35 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
 
             {/* Schedule */}
             <div>
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
                 Schedule
               </p>
               <div className="flex items-center gap-1 mt-0.5">
-                <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400" />
-                <span className="text-xs md:text-sm font-semibold text-gray-700">
+                <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 dark:text-gray-500" />
+                <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {daysRemaining ?? '--'}
-                  <span className="text-gray-400 font-normal ml-0.5">days</span>
+                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">days</span>
                 </span>
               </div>
             </div>
 
             {/* Members */}
             <div>
-              <p className="text-[9px] md:text-[10px] text-gray-400 uppercase tracking-wider font-medium">
+              <p className="text-[9px] md:text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
                 Team
               </p>
               <div className="flex items-center gap-1 mt-0.5">
-                <Users className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400" />
-                <span className="text-xs md:text-sm font-semibold text-gray-700">
+                <Users className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 dark:text-gray-500" />
+                <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {stats?.teamSize ?? 0}
-                  <span className="text-gray-400 font-normal ml-0.5">members</span>
+                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">members</span>
                 </span>
               </div>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-gray-100 dark:bg-gray-800" />
 
           {/* Footer - Address & Date */}
           <div className="flex items-center justify-between">
@@ -311,7 +311,7 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
                 onClick={handleAddressClick}
                 className={cn(
                   'flex items-center gap-1 md:gap-1.5 group/link',
-                  'text-construction-blue hover:text-construction-blue/80',
+                  'text-construction-blue dark:text-blue-400 hover:text-construction-blue/80 dark:hover:text-blue-300',
                   'transition-colors duration-200',
                   'bg-transparent border-none cursor-pointer p-0 min-w-0'
                 )}
@@ -323,13 +323,13 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
                 </span>
               </button>
             ) : (
-              <div className="flex items-center gap-1 md:gap-1.5 text-gray-300">
+              <div className="flex items-center gap-1 md:gap-1.5 text-gray-300 dark:text-gray-700">
                 <MapPin className="h-3 w-3 md:h-3.5 md:w-3.5" />
                 <span className="text-[10px] md:text-xs">No address</span>
               </div>
             )}
 
-            <span className="text-[10px] md:text-[11px] text-gray-400 font-medium shrink-0">
+            <span className="text-[10px] md:text-[11px] text-gray-400 dark:text-gray-500 font-medium shrink-0">
               {project.start_date
                 ? new Date(project.start_date).toLocaleDateString('en-US', {
                     month: 'short',
@@ -362,50 +362,50 @@ export const ProjectCard = memo(ProjectCardComponent);
  */
 export function ProjectCardSkeleton() {
   return (
-    <div className="w-full bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+    <div className="w-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden animate-pulse">
       {/* Header skeleton */}
-      <div className="bg-gray-200 px-3 md:px-4 py-2.5 md:py-3">
+      <div className="bg-gray-200 dark:bg-gray-800 px-3 md:px-4 py-2.5 md:py-3">
         <div className="flex items-start justify-between gap-2 md:gap-3">
           <div className="flex-1">
-            <div className="h-2 w-16 bg-gray-300 rounded mb-1" />
-            <div className="h-4 md:h-5 w-32 bg-gray-300 rounded" />
+            <div className="h-2 w-16 bg-gray-300 dark:bg-gray-700 rounded mb-1" />
+            <div className="h-4 md:h-5 w-32 bg-gray-300 dark:bg-gray-700 rounded" />
           </div>
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-lg" />
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-300 dark:bg-gray-700 rounded-lg" />
         </div>
       </div>
 
       {/* Image skeleton */}
-      <div className="h-28 md:h-36 bg-gray-100" />
+      <div className="h-28 md:h-36 bg-gray-100 dark:bg-gray-800" />
 
       {/* Content skeleton */}
       <div className="p-3 md:p-4 space-y-2.5 md:space-y-3">
         <div className="flex justify-between">
           <div>
-            <div className="h-2 w-10 bg-gray-200 rounded mb-1" />
-            <div className="h-4 w-24 bg-gray-200 rounded" />
+            <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+            <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
           <div className="text-right">
-            <div className="h-2 w-10 bg-gray-200 rounded mb-1" />
-            <div className="h-4 w-16 bg-gray-200 rounded" />
+            <div className="h-2 w-10 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+            <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
         </div>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-gray-100 dark:bg-gray-800" />
 
         <div className="grid grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i}>
-              <div className="h-2 w-12 bg-gray-200 rounded mb-1" />
-              <div className="h-3 w-16 bg-gray-200 rounded" />
+              <div className="h-2 w-12 bg-gray-200 dark:bg-gray-700 rounded mb-1" />
+              <div className="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
           ))}
         </div>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-gray-100 dark:bg-gray-800" />
 
         <div className="flex justify-between">
-          <div className="h-3 w-32 bg-gray-200 rounded" />
-          <div className="h-3 w-12 bg-gray-200 rounded" />
+          <div className="h-3 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
+          <div className="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
       </div>
     </div>

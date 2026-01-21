@@ -92,18 +92,18 @@ export function EmailSignInForm({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: "spring", stiffness: 200 }}
-          className="mx-auto w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center"
+          className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
         >
-          <Mail className="w-8 h-8 text-construction-blue" />
+          <Mail className="w-8 h-8 text-construction-blue dark:text-blue-400" />
         </motion.div>
         <div>
-          <h3 className="text-xl font-black text-gray-900">Check Your Email</h3>
-          <p className="text-gray-600 mt-2">
+          <h3 className="text-xl font-black text-gray-900 dark:text-gray-100">Check Your Email</h3>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
             We've sent a magic link to{" "}
-            <strong className="text-construction-blue">{email}</strong>
+            <strong className="text-construction-blue dark:text-blue-400">{email}</strong>
           </p>
         </div>
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-sm text-gray-600">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400">
           <p className="font-medium">Didn't receive the email?</p>
           <p className="mt-1">Check your spam folder or try again.</p>
         </div>
@@ -140,7 +140,7 @@ export function EmailSignInForm({
 
       {/* Email Input */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-900 font-medium">
+        <Label htmlFor="email" className="text-gray-900 dark:text-gray-100 font-medium">
           Email Address
         </Label>
         <Input
@@ -150,7 +150,7 @@ export function EmailSignInForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           disabled={formState === "loading"}
-          className="h-12 text-base border-2 focus:border-construction-blue focus:ring-construction-blue/20"
+          className="h-12 text-base border-2 focus:border-construction-blue focus:ring-construction-blue/20 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
           required
         />
       </div>

@@ -155,9 +155,9 @@ export function MarkerSearch({
           className={cn(
             'pl-10 pr-10',
             'bg-white border-2 border-gray-200',
-            'focus:border-[#001B51] focus:ring-2 focus:ring-[#001B51]/20',
+            'focus:border-construction-blue focus:ring-2 focus:ring-[var(--construction-blue)]/20',
             'transition-all duration-200',
-            hasActiveSearch && 'border-[#001B51]'
+            hasActiveSearch && 'border-construction-blue'
           )}
         />
 
@@ -171,7 +171,7 @@ export function MarkerSearch({
               exit={{ opacity: 0, scale: 0.8 }}
               className="absolute right-3 top-1/2 -translate-y-1/2"
             >
-              <Loader2 className="w-4 h-4 text-[#001B51] animate-spin" />
+              <Loader2 className="w-4 h-4 text-construction-blue animate-spin" />
             </motion.div>
           ) : hasActiveSearch ? (
             <motion.div
@@ -187,7 +187,7 @@ export function MarkerSearch({
                 onClick={handleClear}
                 className="h-6 w-6 p-0 hover:bg-gray-100 rounded-full"
               >
-                <X className="w-3 h-3 text-gray-400 hover:text-[#001B51]" />
+                <X className="w-3 h-3 text-gray-400 hover:text-construction-blue" />
               </Button>
             </motion.div>
           ) : null}

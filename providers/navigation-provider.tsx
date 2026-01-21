@@ -155,7 +155,7 @@ export function NavigationLoadingBar() {
     <div
       role="progressbar"
       aria-label="Loading page"
-      className="fixed top-0 left-0 right-0 z-[200] h-1 bg-[#001B51]"
+      className="fixed top-0 left-0 right-0 z-[200] h-1 bg-construction-blue"
       style={{
         animation: 'loading-bar 1s ease-in-out infinite',
       }}

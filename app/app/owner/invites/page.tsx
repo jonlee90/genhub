@@ -16,10 +16,10 @@ export default async function OwnerInvitesPage() {
 
   if (result.error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Invitations</h1>
-          <p className="text-gray-600">{result.error}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Error Loading Invitations</h1>
+          <p className="text-gray-600 dark:text-gray-400">{result.error}</p>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export default async function OwnerInvitesPage() {
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
             backgroundSize: '40px 40px',
-            color: '#001B51',
+            color: 'var(--construction-blue)',
           }}
         />
       </div>
@@ -58,7 +58,7 @@ export default async function OwnerInvitesPage() {
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
               INVITATIONS
             </h1>
-            <p className="text-sm md:text-base text-gray-500">
+            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
               Invite new company admins to join GenHub
             </p>
           </div>
@@ -69,20 +69,20 @@ export default async function OwnerInvitesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
         <div className="relative group h-full">
           <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-yellow-500/10 rounded-lg transform group-hover:scale-105 transition-transform" />
-          <div className="relative bg-white border-2 border-gray-200 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
+          <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-5 shadow-construction hover:shadow-construction-lg transition-all h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2 md:mb-3">
-              <div className="p-1.5 md:p-2 bg-yellow-500/10 rounded-lg border-2 border-yellow-500/20">
-                <Mail className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
+              <div className="p-1.5 md:p-2 bg-yellow-500/10 dark:bg-yellow-500/20 rounded-lg border-2 border-yellow-500/20 dark:border-yellow-500/30">
+                <Mail className="h-4 w-4 md:h-5 md:w-5 text-yellow-600 dark:text-yellow-400" />
               </div>
-              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-yellow-600/60">
+              <div className="text-[10px] md:text-xs font-mono uppercase tracking-wider text-yellow-600/60 dark:text-yellow-400/50">
                 Pending
               </div>
             </div>
             <div>
-              <div className="text-2xl md:text-4xl font-black text-yellow-600 leading-none mb-1">
+              <div className="text-2xl md:text-4xl font-black text-yellow-600 dark:text-yellow-400 leading-none mb-1">
                 {invitations.length}
               </div>
-              <div className="text-xs md:text-sm font-bold text-gray-600">Pending Invitations</div>
+              <div className="text-xs md:text-sm font-bold text-gray-600 dark:text-gray-400">Pending Invitations</div>
             </div>
           </div>
         </div>
@@ -92,7 +92,7 @@ export default async function OwnerInvitesPage() {
       <OwnerInvitesClient invitations={invitations} />
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

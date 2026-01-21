@@ -9,6 +9,7 @@ import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
 import type { TaskType } from "@/types/db/enums";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface GanttTaskRowProps {
   task: GanttTask;
@@ -19,7 +20,7 @@ interface GanttTaskRowProps {
   onHover: (taskId: string | null) => void;
   onClick: (task: GanttTask) => void;
   isMobile?: boolean;
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 export const GanttTaskRow = React.memo(function GanttTaskRow({

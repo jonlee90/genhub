@@ -93,7 +93,7 @@ export interface StateSelectProps {
  * US States Dropdown Select Component
  *
  * A reusable dropdown for selecting US states with full state names and abbreviations.
- * Integrates with the construction theme using #001B51 primary color.
+ * Integrates with the construction theme using var(--construction-blue) primary color.
  *
  * @example
  * // Controlled
@@ -148,7 +148,7 @@ export function StateSelect({
         <SelectTrigger
           id={id}
           className={cn(
-            'h-11 border-gray-200',
+            'h-11 border-gray-200 dark:border-gray-700',
             error && 'border-red-500 focus:ring-red-500/20 focus:border-red-500',
             className
           )}

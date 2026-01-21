@@ -43,11 +43,11 @@ async function DashboardPageContent() {
 
     // Show error UI for other errors
     return (
-      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+      <div className="min-h-screen p-4 md:p-8 flex items-center justify-center bg-white dark:bg-gray-950">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
             <svg
-              className="w-8 h-8 text-red-600"
+              className="w-8 h-8 text-red-600 dark:text-red-400"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -60,13 +60,13 @@ async function DashboardPageContent() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             Unable to Load Dashboard
           </h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <a
             href="/app"
-            className="inline-flex items-center px-4 py-2 bg-[#001B51] text-white rounded-lg hover:bg-[#001B51]/90 transition-colors"
+            className="inline-flex items-center px-4 py-2 bg-construction-blue text-white rounded-lg hover:bg-construction-blue/90 transition-colors"
           >
             Try Again
           </a>

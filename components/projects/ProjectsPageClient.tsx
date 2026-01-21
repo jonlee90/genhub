@@ -49,15 +49,15 @@ const ResultsCount = memo(function ResultsCount({
   total: number;
 }) {
   return (
-    <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 to-transparent rounded-lg border-l-4 border-construction-blue">
+    <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 dark:from-construction-blue/10 to-transparent rounded-lg border-l-4 border-construction-blue dark:border-construction-blue">
       <div className="flex items-center gap-1.5 md:gap-2">
-        <div className="w-2 h-2 bg-construction-blue rounded-full animate-pulse" />
-        <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue">
+        <div className="w-2 h-2 bg-construction-blue dark:bg-construction-blue rounded-full animate-pulse" />
+        <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue dark:text-construction-blue">
           Status
         </span>
       </div>
-      <div className="h-4 w-px bg-construction-blue/30" />
-      <span className="text-xs md:text-sm font-bold text-gray-700">
+      <div className="h-4 w-px bg-construction-blue/30 dark:bg-construction-blue/50" />
+      <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300">
         {filtered} of {total} projects
       </span>
     </div>
@@ -80,7 +80,7 @@ const EmptyState = memo(function EmptyState({
         <div className="hidden md:block absolute inset-0 border-4 border-construction-blue/10 rounded-2xl transform rotate-1" />
         <div className="hidden md:block absolute inset-0 border-4 border-construction-accent/10 rounded-2xl transform -rotate-1" />
 
-        <div className="relative flex flex-col items-center justify-center py-12 md:py-24 px-4 md:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-xl md:rounded-2xl border-2 border-gray-200 shadow-construction-lg">
+        <div className="relative flex flex-col items-center justify-center py-12 md:py-24 px-4 md:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-xl md:rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-construction-lg">
           <motion.div
             className="relative z-10"
             initial={{ y: -20, opacity: 0 }}
@@ -89,12 +89,12 @@ const EmptyState = memo(function EmptyState({
           >
             <div className="relative p-5 md:p-8 bg-gradient-to-br from-construction-blue to-blue-700 rounded-2xl md:rounded-3xl shadow-construction-xl">
               <FolderKanban className="h-12 w-12 md:h-20 md:w-20 text-white" />
-              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent rounded-full animate-pulse" />
+              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent dark:bg-construction-accent rounded-full animate-pulse" />
             </div>
           </motion.div>
 
           <motion.h2
-            className="text-2xl sm:text-3xl md:text-5xl font-black text-center mb-3 md:mb-4 mt-6 bg-gradient-to-r from-construction-blue via-construction-blue to-blue-700 bg-clip-text text-transparent leading-tight"
+            className="text-2xl sm:text-3xl md:text-5xl font-black text-center mb-3 md:mb-4 mt-6 bg-gradient-to-r from-construction-blue via-construction-blue to-blue-700 dark:from-construction-blue dark:via-construction-blue dark:to-construction-blue bg-clip-text text-transparent leading-tight"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
@@ -105,7 +105,7 @@ const EmptyState = memo(function EmptyState({
           </motion.h2>
 
           <motion.p
-            className="text-sm md:text-lg text-gray-600 font-medium mb-6 md:mb-10 max-w-xl text-center leading-relaxed px-4"
+            className="text-sm md:text-lg text-gray-600 dark:text-gray-400 font-medium mb-6 md:mb-10 max-w-xl text-center leading-relaxed px-4"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
@@ -147,26 +147,26 @@ const NoResultsState = memo(function NoResultsState({
 }) {
   return (
     <div className="relative">
-      <div className="absolute inset-0 border-2 border-dashed border-construction-red/20 rounded-xl transform rotate-1" />
-      <div className="relative flex flex-col items-center justify-center py-16 md:py-20 px-4 md:px-8 bg-gradient-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-300">
+      <div className="absolute inset-0 border-2 border-dashed border-construction-red/20 dark:border-construction-red/30 rounded-xl transform rotate-1" />
+      <div className="relative flex flex-col items-center justify-center py-16 md:py-20 px-4 md:px-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
         <motion.div
-          className="mb-4 md:mb-6 p-4 md:p-6 bg-gradient-to-br from-construction-red/10 to-construction-red/5 rounded-2xl border-2 border-construction-red/20"
+          className="mb-4 md:mb-6 p-4 md:p-6 bg-gradient-to-br from-construction-red/10 to-construction-red/5 dark:from-construction-red/20 dark:to-construction-red/10 rounded-2xl border-2 border-construction-red/20 dark:border-construction-red/40"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, type: 'spring' }}
         >
           <ShieldAlert className="h-12 w-12 md:h-16 md:w-16 text-construction-red" />
         </motion.div>
-        <h3 className="text-xl md:text-3xl font-black text-construction-red mb-2 md:mb-3">
+        <h3 className="text-xl md:text-3xl font-black text-construction-red dark:text-construction-red mb-2 md:mb-3">
           NO SITES FOUND
         </h3>
-        <p className="text-gray-600 font-medium mb-4 md:mb-8 max-w-md text-center text-sm md:text-lg">
+        <p className="text-gray-600 dark:text-gray-400 font-medium mb-4 md:mb-8 max-w-md text-center text-sm md:text-lg">
           No projects match your current filters. Adjust search criteria or clear all filters.
         </p>
         <Button
           size="lg"
           onClick={onClearFilters}
-          className="h-11 md:h-12 px-6 md:px-8 bg-white border-2 border-construction-red hover:bg-construction-red hover:text-white transition-all shadow-construction font-black group"
+          className="h-11 md:h-12 px-6 md:px-8 bg-white dark:bg-gray-900 border-2 border-construction-red hover:bg-construction-red hover:text-white dark:hover:bg-construction-red dark:hover:text-white transition-all shadow-construction font-black group"
         >
           <X className="mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
           CLEAR ALL FILTERS
@@ -186,15 +186,15 @@ const MobileNoResultsState = memo(function MobileNoResultsState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <Building2 className="w-8 h-8 text-gray-400" />
+      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+        <Building2 className="w-8 h-8 text-gray-400 dark:text-gray-600" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 mb-1">No projects found</h3>
-      <p className="text-sm text-gray-500 mb-4 max-w-xs">Try adjusting your filters</p>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No projects found</h3>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">Try adjusting your filters</p>
       <button
         type="button"
         onClick={onClearFilters}
-        className="h-11 px-6 rounded-xl font-semibold text-[#DC2626] bg-red-50 active:bg-red-100 transition-colors"
+        className="h-11 px-6 rounded-xl font-semibold text-construction-red dark:text-construction-red bg-red-50 dark:bg-construction-red/10 active:bg-red-100 dark:active:bg-construction-red/20 transition-colors"
       >
         Clear Filters
       </button>
@@ -285,9 +285,9 @@ const Pagination = memo(function Pagination({
         disabled={currentPage === 1 || isPending}
         className={`
           h-11 md:h-12 px-3 md:px-4
-          bg-white border-2 border-[#001B51]
-          text-[#001B51] font-bold
-          hover:bg-[#001B51] hover:text-white
+          bg-white dark:bg-gray-900 border-2 border-construction-blue dark:border-construction-blue
+          text-construction-blue dark:text-construction-blue font-bold
+          hover:bg-construction-blue hover:text-white dark:hover:bg-construction-blue dark:hover:text-white
           disabled:opacity-30 disabled:cursor-not-allowed
           transition-all duration-150
           active:scale-[0.98]
@@ -305,7 +305,7 @@ const Pagination = memo(function Pagination({
             return (
               <span
                 key={`ellipsis-${idx}`}
-                className="px-2 text-gray-400 text-sm md:text-base font-bold"
+                className="px-2 text-gray-400 dark:text-gray-600 text-sm md:text-base font-bold"
               >
                 ...
               </span>
@@ -326,8 +326,8 @@ const Pagination = memo(function Pagination({
                 active:scale-[0.98]
                 ${
                   isActive
-                    ? 'bg-[#001B51] border-[#001B51] text-white'
-                    : 'bg-white border-gray-300 text-gray-700 hover:border-[#001B51] hover:text-[#001B51]'
+                    ? 'bg-construction-blue dark:bg-construction-blue border-construction-blue dark:border-construction-blue text-white'
+                    : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-construction-blue dark:hover:border-construction-blue hover:text-construction-blue dark:hover:text-construction-blue'
                 }
                 disabled:opacity-30 disabled:cursor-not-allowed
               `}
@@ -344,9 +344,9 @@ const Pagination = memo(function Pagination({
         disabled={currentPage === totalPages || isPending}
         className={`
           h-11 md:h-12 px-3 md:px-4
-          bg-white border-2 border-[#001B51]
-          text-[#001B51] font-bold
-          hover:bg-[#001B51] hover:text-white
+          bg-white dark:bg-gray-900 border-2 border-construction-blue dark:border-construction-blue
+          text-construction-blue dark:text-construction-blue font-bold
+          hover:bg-construction-blue hover:text-white dark:hover:bg-construction-blue dark:hover:text-white
           disabled:opacity-30 disabled:cursor-not-allowed
           transition-all duration-150
           active:scale-[0.98]
@@ -604,7 +604,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
               <div className="relative mb-4">
                 <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
                   <div className="flex items-start pt-2 justify-between gap-3">
-                    <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
+                    <h1 className="text-3xl font-black tracking-tighter text-construction-blue dark:text-construction-blue leading-none">
                       PROJECTS
                     </h1>
                     {canCreate && (
@@ -663,7 +663,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
 
                   {/* Loading indicator */}
                   {isPending && (
-                    <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+                    <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4 font-medium">
                       Loading projects...
                     </div>
                   )}
@@ -681,7 +681,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
             <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
             <div className="flex flex-col gap-4 pt-2 md:pt-4">
               <div className="flex items-start justify-between gap-3">
-                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue dark:text-construction-blue leading-none">
                   PROJECTS
                 </h1>
                 {canCreate && (
@@ -742,14 +742,14 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
 
               {/* Loading indicator */}
               {isPending && (
-                <div className="text-center text-sm text-gray-500 mt-4 font-medium">
+                <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-4 font-medium">
                   Loading projects...
                 </div>
               )}
             </>
           )}
 
-          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+          <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
         </div>
       )}
 

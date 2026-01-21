@@ -206,7 +206,7 @@ export function FloorPlanUploader({
     <Card className={cn('border-2 border-gray-200 shadow-construction bg-white', className)}>
       <div className="border-b-2 border-gray-200 bg-gray-50 p-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#001B51] rounded-lg">
+          <div className="p-2 bg-construction-blue rounded-lg">
             <Upload className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -228,8 +228,8 @@ export function FloorPlanUploader({
             className={cn(
               'border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer',
               isDragging
-                ? 'border-[#001B51] bg-blue-50'
-                : 'border-gray-300 hover:border-[#001B51] hover:bg-gray-50'
+                ? 'border-construction-blue bg-blue-50'
+                : 'border-gray-300 hover:border-construction-blue hover:bg-gray-50'
             )}
           >
             <input
@@ -283,7 +283,7 @@ export function FloorPlanUploader({
               <div className="mt-4">
                 <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#001B51] transition-all duration-300"
+                    className="h-full bg-construction-blue transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
@@ -327,7 +327,7 @@ export function FloorPlanUploader({
                 placeholder="e.g., Ground Floor, Level 1"
                 className={cn(
                   'w-full px-3 py-2 rounded-lg',
-                  'border-2 border-gray-200 focus:border-[#001B51] focus:outline-none',
+                  'border-2 border-gray-200 focus:border-construction-blue focus:outline-none',
                   'text-sm'
                 )}
               />
@@ -344,7 +344,7 @@ export function FloorPlanUploader({
                 min={0}
                 className={cn(
                   'w-full px-3 py-2 rounded-lg',
-                  'border-2 border-gray-200 focus:border-[#001B51] focus:outline-none',
+                  'border-2 border-gray-200 focus:border-construction-blue focus:outline-none',
                   'text-sm'
                 )}
               />
@@ -355,7 +355,7 @@ export function FloorPlanUploader({
               disabled={!floorName.trim()}
               className={cn(
                 'w-full px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                'bg-[#001B51] text-white hover:bg-[#002666] transition-colors',
+                'bg-construction-blue text-white hover:bg-[#002666] transition-colors',
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 'flex items-center justify-center gap-2'
               )}

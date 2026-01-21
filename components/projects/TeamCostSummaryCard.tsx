@@ -60,9 +60,9 @@ export function TeamCostSummaryCard({
   // Loading state
   if (loading) {
     return (
-      <div className={cn('bg-white border-2 border-gray-200 rounded-xl shadow-sm', className)}>
+      <div className={cn('bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl shadow-sm', className)}>
         {/* Header Skeleton */}
-        <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gray-200 animate-pulse" />
             <div className="flex-1">
@@ -76,10 +76,10 @@ export function TeamCostSummaryCard({
         <div className="p-4 space-y-3">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 py-2">
-              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+              <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
               <div className="flex-1">
-                <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-                <div className="h-3 w-48 bg-gray-100 rounded animate-pulse mt-1" />
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div className="h-3 w-48 bg-gray-100 dark:bg-gray-800 rounded animate-pulse mt-1" />
               </div>
             </div>
           ))}
@@ -91,28 +91,28 @@ export function TeamCostSummaryCard({
   // Error state
   if (error) {
     return (
-      <div className={cn('bg-white border-2 border-gray-200 rounded-xl shadow-sm', className)}>
+      <div className={cn('bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl shadow-sm', className)}>
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#001B51]">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-construction-blue">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-construction-blue dark:text-blue-400 uppercase tracking-wide">
                 Team Costs
               </h3>
-              <p className="text-xs text-gray-500">Cost breakdown by team member</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Cost breakdown by team member</p>
             </div>
           </div>
         </div>
 
         {/* Error Content */}
         <div className="p-6 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-50 flex items-center justify-center">
-            <AlertCircle className="w-6 h-6 text-red-500" />
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
+            <AlertCircle className="w-6 h-6 text-red-500 dark:text-red-400" />
           </div>
-          <p className="text-sm text-gray-600 mb-4">{error}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">{error}</p>
           {onRetry && (
             <Button
               variant="outline"
@@ -132,29 +132,29 @@ export function TeamCostSummaryCard({
   // Empty state
   if (summaries.length === 0) {
     return (
-      <div className={cn('bg-white border-2 border-gray-200 rounded-xl shadow-sm', className)}>
+      <div className={cn('bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl shadow-sm', className)}>
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#001B51]">
+            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-construction-blue">
               <Users className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+              <h3 className="text-sm font-bold text-construction-blue dark:text-blue-400 uppercase tracking-wide">
                 Team Costs
               </h3>
-              <p className="text-xs text-gray-500">Cost breakdown by team member</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Cost breakdown by team member</p>
             </div>
           </div>
         </div>
 
         {/* Empty Content */}
         <div className="py-8 px-4 text-center">
-          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-            <Users className="w-6 h-6 text-gray-400" />
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <Users className="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-700">No team members assigned</p>
-          <p className="text-xs text-gray-500 mt-1">Assign team members to see cost breakdown</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">No team members assigned</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Assign team members to see cost breakdown</p>
         </div>
       </div>
     );
@@ -162,18 +162,18 @@ export function TeamCostSummaryCard({
 
   // Normal state with data
   return (
-    <div className={cn('bg-white border-2 border-gray-200 rounded-xl shadow-sm overflow-hidden', className)}>
+    <div className={cn('bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden', className)}>
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+      <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#001B51] shadow-sm">
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-construction-blue shadow-sm">
             <Users className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+            <h3 className="text-sm font-bold text-construction-blue dark:text-blue-400 uppercase tracking-wide">
               Team Costs
             </h3>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {summaries.length} member{summaries.length !== 1 ? 's' : ''} with costs
             </p>
           </div>
@@ -181,7 +181,7 @@ export function TeamCostSummaryCard({
       </div>
 
       {/* Team Member Rows */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-gray-100 dark:divide-gray-800">
         {summaries.map((summary) => (
           <TeamCostRow key={summary.id} summary={summary} />
         ))}
@@ -189,14 +189,14 @@ export function TeamCostSummaryCard({
 
       {/* Totals Row */}
       {summaries.length > 0 && (
-        <div className="px-4 py-3 bg-gray-50 border-t-2 border-gray-200">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t-2 border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-gray-700">Total</span>
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Total</span>
             <div className="text-right">
-              <span className="text-sm font-bold text-[#001B51]">
+              <span className="text-sm font-bold text-construction-blue dark:text-blue-400">
                 {formatCurrency(totals.taskCosts + totals.expenseCosts)}
               </span>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {totals.taskCount} task{totals.taskCount !== 1 ? 's' : ''} |{' '}
                 {formatCurrency(totals.taskCosts)} tasks |{' '}
                 {formatCurrency(totals.expenseCosts)} expenses

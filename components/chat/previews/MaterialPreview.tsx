@@ -77,7 +77,7 @@ export function MaterialPreview({ id }: MaterialPreviewProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "w-full max-w-md bg-white dark:bg-gray-800 border-2 border-construction-blue dark:border-construction-blue/60 rounded-xl p-4",
         "hover:shadow-construction-lg transition-all duration-200 cursor-pointer",
         "group",
       )}
@@ -86,7 +86,7 @@ export function MaterialPreview({ id }: MaterialPreviewProps) {
         {/* Debug: Product image or icon */}
         <div className="shrink-0">
           {material.product_image_url ? (
-            <div className="w-16 h-16 rounded-lg border-2 border-gray-200 overflow-hidden bg-gray-50">
+            <div className="w-16 h-16 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900">
               <Image
                 src={material.product_image_url}
                 alt={material.product_name}
@@ -96,7 +96,7 @@ export function MaterialPreview({ id }: MaterialPreviewProps) {
               />
             </div>
           ) : (
-            <div className="w-16 h-16 flex items-center justify-center bg-construction-accent/10 rounded-lg border-2 border-construction-accent/20">
+            <div className="w-16 h-16 flex items-center justify-center bg-construction-accent/10 dark:bg-construction-accent/20 rounded-lg border-2 border-construction-accent/20 dark:border-construction-accent/40">
               <Hammer className="h-8 w-8 text-construction-accent" />
             </div>
           )}
@@ -114,13 +114,13 @@ export function MaterialPreview({ id }: MaterialPreviewProps) {
             <span className="text-xl font-black text-construction-green">
               ${material.unit_price.toFixed(2)}
             </span>
-            <span className="text-xs text-gray-500">per unit</span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">per unit</span>
           </div>
 
           {/* Debug: Stock status */}
           {material.stock_status && (
             <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-gray-500" />
+              <Package className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <Badge
                 className={cn(
                   "text-[10px] font-bold px-2 py-0.5",
@@ -136,8 +136,8 @@ export function MaterialPreview({ id }: MaterialPreviewProps) {
       </div>
 
       {/* Debug: Footer hint */}
-      <div className="mt-3 pt-3 border-t-2 border-gray-100">
-        <p className="text-[10px] font-mono text-gray-500">
+      <div className="mt-3 pt-3 border-t-2 border-gray-100 dark:border-gray-700">
+        <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
           Click to view material details
         </p>
       </div>

@@ -221,10 +221,10 @@ export function GanttChart({
     return positions;
   }, [sortedTasks, config]);
 
-  // Calculate dependency lines
+  // Calculate dependency lines (optimized - remove hoveredTaskId from deps)
   const dependencyLines = useMemo(
     () => calculateDependencyLines(dependencies, taskPositions, hoveredTaskId),
-    [dependencies, taskPositions, hoveredTaskId]
+    [dependencies, taskPositions]
   );
 
   const totalWidth = calculateTotalWidth(config);
@@ -273,9 +273,9 @@ export function GanttChart({
   // Empty state
   if (sortedTasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-        <p className="text-gray-600 font-medium">No tasks to display in timeline view</p>
-        <p className="text-sm text-gray-500 mt-2">Create tasks to see them on the Gantt chart</p>
+      <div className="flex flex-col items-center justify-center p-12 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+        <p className="text-gray-600 dark:text-gray-300 font-medium">No tasks to display in timeline view</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Create tasks to see them on the Gantt chart</p>
       </div>
     );
   }
@@ -284,7 +284,7 @@ export function GanttChart({
   const chartContent = (
     <ScrollArea
       className={cn(
-        "w-full select-none bg-white",
+        "w-full select-none bg-white dark:bg-gray-900",
         // Only show grab cursor on desktop
         !isMobile && (isDraggingScroll ? "cursor-grabbing" : "cursor-grab")
       )}
@@ -306,7 +306,7 @@ export function GanttChart({
       onMouseLeave={!isMobile ? handleMouseLeave : undefined}
     >
           <div
-            className="relative bg-white"
+            className="relative bg-white dark:bg-gray-900"
             style={{
               width: totalWidth,
               // Prevent mobile touch dragging on inner content
@@ -317,7 +317,7 @@ export function GanttChart({
             <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
 
             {/* Timeline grid and task rows */}
-            <div className="relative bg-white" style={{ height: totalHeight }}>
+            <div className="relative bg-white dark:bg-gray-900" style={{ height: totalHeight }}>
               {/* Grid background */}
               <GanttTimeline config={config} dateCells={dateCells} taskCount={sortedTasks.length} />
 
@@ -355,16 +355,16 @@ export function GanttChart({
       );
 
   return (
-    <div className={cn("bg-white rounded-xl border-2 border-gray-200 shadow-construction overflow-hidden", className)}>
+    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden", className)}>
       {/* Header with time scale toggle */}
-      <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+      <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-white dark:to-gray-900">
 
         {isMobile ? null : (
           <div className="flex items-center gap-2 sm:gap-3">
             <h3 className="text-sm sm:text-lg font-black text-construction-blue">
               PROJECT TIMELINE
             </h3>
-            <span className="text-xs sm:text-sm text-gray-500">
+            <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               {sortedTasks.length} {sortedTasks.length === 1 ? "task" : "tasks"}
             </span>
           </div>
@@ -397,8 +397,8 @@ export function GanttChart({
 
       {/* Loading overlay */}
       {isPending && (
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white px-6 py-4 rounded-lg shadow-construction-lg">
+        <div className="absolute inset-0 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 px-6 py-4 rounded-lg shadow-construction-lg">
             <p className="text-construction-blue font-bold">Updating task date...</p>
           </div>
         </div>

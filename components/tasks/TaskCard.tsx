@@ -21,6 +21,7 @@ import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
 import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
 import type { TaskType } from "@/types/db/enums";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface TaskCardProps {
   task: TaskWithRelations;
@@ -36,7 +37,7 @@ interface TaskCardProps {
     totalAmount: number;
   };
   /** Task type configs from database - for icon/color display */
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 // All cards use construction-blue border for consistent branding
@@ -131,8 +132,10 @@ export const TaskCard = React.memo(function TaskCard({
       style={style}
       {...attributes}
       {...listeners}
+      tabIndex={0}
       className={cn(
         "touch-manipulation transition-all duration-200 ease-out",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2",
         isSortableDragging && "opacity-50 scale-95",
         !isSortableDragging && !isDragging && "shadow-md hover:shadow-lg",
       )}
@@ -149,11 +152,11 @@ export const TaskCard = React.memo(function TaskCard({
       >
         <Card
           className={cn(
-            "p-3 bg-white hover:shadow-md transition-shadow cursor-pointer relative border-2 group",
+            "p-3 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow cursor-pointer relative border-2 group",
             // Apply construction blue border by default
             CARD_BORDER,
             // Blocked state - keep red background
-            isBlocked && "bg-red-50",
+            isBlocked && "bg-red-50 dark:bg-red-950/50",
           )}
         >
           {/* Edit indicator on hover */}
@@ -210,7 +213,7 @@ export const TaskCard = React.memo(function TaskCard({
           {/* Title and Material Badge */}
           <div className="space-y-2">
             <div className="flex items-start justify-between gap-2">
-              <h4 className="font-bold text-sm line-clamp-2 text-gray-900">
+              <h4 className="font-bold text-sm line-clamp-2 text-gray-900 dark:text-gray-100">
                 {task.title}
               </h4>
               {/* Material Badge - Industrial Stamped Metal Style */}
@@ -257,7 +260,7 @@ export const TaskCard = React.memo(function TaskCard({
 
             {/* Project/Phase - show project name in tasks context, only phase in project context */}
             {(task.project || phase) && (
-              <p className="text-xs text-muted-foreground truncate">
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                 {phases ? (
                   // Project context - show only phase name
                   phase?.name
@@ -279,7 +282,7 @@ export const TaskCard = React.memo(function TaskCard({
                   <div
                     className={cn(
                       "flex items-center gap-1 text-xs",
-                      isOverdue ? "text-red-600" : "text-muted-foreground",
+                      isOverdue ? "text-red-600 dark:text-red-400" : "text-gray-500 dark:text-gray-400",
                     )}
                   >
                     <Calendar className="h-3 w-3" />
@@ -290,7 +293,7 @@ export const TaskCard = React.memo(function TaskCard({
                 {/* Blocked Indicator */}
                 {isBlocked && (
                   <div
-                    className="flex items-center gap-1 text-xs text-red-600"
+                    className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400"
                     title={task.blocked_reason || "Blocked"}
                   >
                     <Ban className="h-3 w-3" />
@@ -301,7 +304,7 @@ export const TaskCard = React.memo(function TaskCard({
                 {/* Overdue Indicator */}
                 {isOverdue && !isBlocked && (
                   <div
-                    className="flex items-center gap-1 text-xs text-orange-600"
+                    className="flex items-center gap-1 text-xs text-orange-600 dark:text-orange-400"
                     title="Overdue"
                   >
                     <AlertTriangle className="h-3 w-3" />
@@ -312,11 +315,11 @@ export const TaskCard = React.memo(function TaskCard({
                 {/* Material Cost Display - Industrial Style */}
                 {hasMaterials && (
                   <div
-                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-construction-accent/10 to-construction-accent/5 border border-construction-accent/20 rounded-md"
+                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-construction-accent/10 to-construction-accent/5 dark:from-construction-accent/20 dark:to-construction-accent/10 border border-construction-accent/20 dark:border-construction-accent/40 rounded-md"
                     title={`Total materials cost: $${task.materialStats!.totalCost.toFixed(2)}`}
                   >
-                    <Package className="h-3 w-3 text-construction-accent" />
-                    <span className="text-[11px] font-black text-construction-accent tracking-tight">
+                    <Package className="h-3 w-3 text-construction-accent dark:text-construction-accent" />
+                    <span className="text-[11px] font-black text-construction-accent dark:text-construction-accent tracking-tight">
                       {formatCompactCurrency(task.materialStats!.totalCost)}
                     </span>
                   </div>
@@ -325,11 +328,11 @@ export const TaskCard = React.memo(function TaskCard({
                 {/* Expense Display */}
                 {hasExpenses && (
                   <div
-                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 border border-amber-300/60 rounded-md"
+                    className="flex items-center gap-1.5 px-2 py-1 bg-gradient-to-r from-amber-100/50 to-amber-50/50 dark:from-amber-900/30 dark:to-amber-800/20 border border-amber-300/60 dark:border-amber-700/40 rounded-md"
                     title={`${expenseStats!.count} expense${expenseStats!.count !== 1 ? "s" : ""} - ${formatCompactCurrency(expenseStats!.totalAmount)}`}
                   >
-                    <Receipt className="h-3 w-3 text-amber-600" />
-                    <span className="text-[11px] font-black text-amber-700 tracking-tight">
+                    <Receipt className="h-3 w-3 text-amber-600 dark:text-amber-500" />
+                    <span className="text-[11px] font-black text-amber-700 dark:text-amber-400 tracking-tight">
                       {formatCompactCurrency(expenseStats!.totalAmount)}
                     </span>
                   </div>
@@ -344,17 +347,17 @@ export const TaskCard = React.memo(function TaskCard({
                     }}
                     className={cn(
                       "flex items-center gap-1.5 px-2 py-1",
-                      "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5",
-                      "border border-construction-blue/30",
+                      "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 dark:from-construction-blue/20 dark:to-construction-blue/10",
+                      "border border-construction-blue/30 dark:border-construction-blue/40",
                       "rounded-md",
-                      "hover:bg-construction-blue/20 hover:border-construction-blue/50",
+                      "hover:bg-construction-blue/20 dark:hover:bg-construction-blue/30 hover:border-construction-blue/50 dark:hover:border-construction-blue/60",
                       "transition-all duration-200",
                       "group/location",
                     )}
                     title="View in 3D"
                   >
                     <Box className="h-3 w-3 text-construction-blue group-hover/location:scale-110 transition-transform" />
-                    <span className="hidden sm:inline text-[11px] font-black text-construction-blue tracking-tight">
+                    <span className="hidden sm:inline text-[11px] font-black text-construction-blue dark:text-construction-blue tracking-tight">
                       3D
                     </span>
                   </a>
@@ -374,7 +377,7 @@ export const TaskCard = React.memo(function TaskCard({
 
             {/* Blocked Reason */}
             {isBlocked && task.blocked_reason && (
-              <p className="text-xs text-red-600 bg-red-100 p-1.5 rounded truncate">
+              <p className="text-xs text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 p-1.5 rounded truncate">
                 {task.blocked_reason}
               </p>
             )}

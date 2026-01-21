@@ -15,7 +15,7 @@ const BLUEPRINT_BACKGROUND_STYLE = {
     linear-gradient(to bottom, currentColor 1px, transparent 1px)
   `,
   backgroundSize: "40px 40px",
-  color: "#001B51",
+  color: "var(--construction-blue)",
 } as const;
 
 export default async function TaskPage({ params }: TaskPageProps) {

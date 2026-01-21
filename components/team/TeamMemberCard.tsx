@@ -46,11 +46,11 @@ export function TeamMemberCard({
       className={cn(
         // Base styles
         "w-full text-left",
-        "p-4 bg-white",
+        "p-4 bg-white dark:bg-gray-800",
         "flex items-center gap-4",
 
         // Touch feedback
-        "active:bg-gray-50",
+        "active:bg-gray-50 dark:active:bg-gray-750",
         "transition-colors duration-100",
 
         // Touch optimization
@@ -60,9 +60,9 @@ export function TeamMemberCard({
       )}
     >
       {/* Avatar */}
-      <Avatar className="h-12 w-12 border-2 border-gray-200 flex-shrink-0">
+      <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700 flex-shrink-0">
         <AvatarImage src={avatarUrl || undefined} alt={name} />
-        <AvatarFallback className="bg-[#001B51] text-white font-semibold text-sm">
+        <AvatarFallback className="bg-construction-blue text-white font-semibold text-sm">
           {getInitials(name)}
         </AvatarFallback>
       </Avatar>
@@ -71,7 +71,7 @@ export function TeamMemberCard({
       <div className="flex-1 min-w-0">
         {/* Name and status */}
         <div className="flex items-center gap-2 mb-1">
-          <h3 className="font-semibold text-gray-900 truncate text-base">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate text-base">
             {name}
           </h3>
           {/* Status dot */}
@@ -85,7 +85,7 @@ export function TeamMemberCard({
         </div>
 
         {/* Email */}
-        <p className="text-sm text-gray-500 truncate mb-2">{email}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 truncate mb-2">{email}</p>
 
         {/* Role badge and project count */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -101,7 +101,7 @@ export function TeamMemberCard({
           </Badge>
 
           {member.project_count > 0 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {member.project_count} project
               {member.project_count !== 1 ? "s" : ""}
             </span>

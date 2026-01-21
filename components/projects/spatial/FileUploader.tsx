@@ -195,17 +195,17 @@ export function FileUploader({ markerId, onUploadComplete, onCancel }: FileUploa
           onDragOver={handleDragOver}
           className={cn(
             'border-2 border-dashed border-gray-300 rounded-lg p-8',
-            'hover:border-[#001B51] hover:bg-gray-50 transition-colors',
+            'hover:border-construction-blue hover:bg-gray-50 transition-colors',
             'cursor-pointer'
           )}
           onClick={() => fileInputRef.current?.click()}
         >
           <div className="flex flex-col items-center gap-4">
-            <div className="p-3 rounded-lg bg-[#001B51]/10">
-              <Upload className="w-6 h-6 text-[#001B51]" />
+            <div className="p-3 rounded-lg bg-construction-blue/10">
+              <Upload className="w-6 h-6 text-construction-blue" />
             </div>
             <div className="text-center">
-              <p className="font-bold text-[#001B51] mb-1">UPLOAD FILES</p>
+              <p className="font-bold text-construction-blue mb-1">UPLOAD FILES</p>
               <p className="text-sm text-gray-500">Click or drag files here</p>
             </div>
             <p className="text-xs text-gray-400 text-center">
@@ -237,7 +237,7 @@ export function FileUploader({ markerId, onUploadComplete, onCancel }: FileUploa
                 {/* Icon */}
                 <div className="flex-shrink-0">
                   {fileItem.status === 'uploading' && (
-                    <Loader2 className="w-5 h-5 text-[#001B51] animate-spin" />
+                    <Loader2 className="w-5 h-5 text-construction-blue animate-spin" />
                   )}
                   {fileItem.status === 'success' && (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -257,7 +257,7 @@ export function FileUploader({ markerId, onUploadComplete, onCancel }: FileUploa
                   {fileItem.status === 'uploading' && (
                     <div className="mt-1 w-full bg-gray-200 rounded-full h-1 overflow-hidden">
                       <motion.div
-                        className="h-full bg-[#001B51]"
+                        className="h-full bg-construction-blue"
                         initial={{ width: 0 }}
                         animate={{ width: `${fileItem.progress}%` }}
                         transition={{ duration: 0.3 }}
@@ -293,7 +293,7 @@ export function FileUploader({ markerId, onUploadComplete, onCancel }: FileUploa
           className={cn(
             'w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg',
             'border-2 border-dashed border-gray-300 text-gray-700 font-medium',
-            'hover:border-[#001B51] hover:bg-gray-50 transition-colors'
+            'hover:border-construction-blue hover:bg-gray-50 transition-colors'
           )}
         >
           <Upload className="w-4 h-4" />

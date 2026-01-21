@@ -150,7 +150,7 @@ export function FileVersionHistory({
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 text-[#001B51] animate-spin" />
+              <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
               <p className="text-sm text-gray-500">
                 Loading version history...
               </p>
@@ -201,7 +201,7 @@ export function FileVersionHistory({
                   className={cn(
                     "border-2 rounded-lg p-4 transition-all duration-200",
                     isCurrent
-                      ? "border-[#001B51]/30 bg-[#001B51]/5"
+                      ? "border-construction-blue/30 bg-construction-blue/5"
                       : "border-gray-200 bg-white hover:border-gray-300",
                   )}
                 >
@@ -214,7 +214,7 @@ export function FileVersionHistory({
                           className={cn(
                             "inline-flex items-center px-2 py-1 rounded text-xs font-bold",
                             isCurrent
-                              ? "bg-[#001B51] text-white"
+                              ? "bg-construction-blue text-white"
                               : "bg-gray-200 text-gray-700",
                           )}
                         >

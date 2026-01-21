@@ -127,7 +127,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
         className={cn(
           'relative inline-flex items-center gap-2',
           'px-3 py-2 rounded-lg',
-          'bg-[#001B51] text-white',
+          'bg-construction-blue dark:bg-construction-blue text-white dark:text-white',
           'text-sm font-semibold',
           'transition-all duration-200',
           'active:scale-95',
@@ -149,9 +149,9 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
               'absolute -top-1 -right-1',
               'flex items-center justify-center',
               'min-w-[20px] h-5 px-1',
-              'bg-[#DC2626] text-white',
+              'bg-[#DC2626] dark:bg-red-600 text-white dark:text-white',
               'text-xs font-bold rounded-full',
-              'border-2 border-white'
+              'border-2 border-white dark:border-gray-900'
             )}
           >
             {totalPending > 99 ? '99+' : totalPending}
@@ -165,7 +165,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
   return (
     <div
       className={cn(
-        'bg-white rounded-xl border-2 border-gray-200 shadow-sm p-4',
+        'bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-sm p-4',
         className
       )}
       role="status"
@@ -176,15 +176,15 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
         <div className="flex items-center gap-2">
           <RefreshCw
             className={cn(
-              'w-5 h-5 text-[#001B51]',
+              'w-5 h-5 text-construction-blue dark:text-construction-blue',
               isSyncing && 'animate-spin'
             )}
           />
-          <h3 className="font-semibold text-gray-900">Sync Status</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">Sync Status</h3>
         </div>
 
         {totalPending > 0 && (
-          <span className="px-2 py-1 bg-[#001B51] text-white text-xs font-bold rounded-lg">
+          <span className="px-2 py-1 bg-construction-blue dark:bg-construction-blue text-white dark:text-white text-xs font-bold rounded-lg">
             {totalPending} pending
           </span>
         )}
@@ -193,13 +193,13 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
       {/* Progress bar */}
       {isSyncing && (
         <div className="mb-3">
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#001B51] rounded-full transition-all duration-300"
+              className="h-full bg-construction-blue dark:bg-construction-blue rounded-full transition-all duration-300"
               style={{ width: `${syncProgress}%` }}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Syncing {Math.round(syncProgress)}%
           </p>
         </div>
@@ -207,7 +207,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
 
       {/* Success message */}
       {syncSuccess && (
-        <div className="flex items-center gap-2 p-3 bg-[#059669] text-white rounded-lg mb-3">
+        <div className="flex items-center gap-2 p-3 bg-[#059669] dark:bg-green-700 text-white dark:text-white rounded-lg mb-3">
           <CheckCircle className="w-5 h-5" />
           <p className="text-sm font-semibold">Sync completed</p>
         </div>
@@ -215,11 +215,11 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
 
       {/* Error message */}
       {syncError && (
-        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-3">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg mb-3">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-red-900">Sync failed</p>
-            <p className="text-xs text-red-700 mt-0.5">{syncError}</p>
+            <p className="text-sm font-semibold text-red-900 dark:text-red-300">Sync failed</p>
+            <p className="text-xs text-red-700 dark:text-red-400 mt-0.5">{syncError}</p>
           </div>
         </div>
       )}
@@ -227,7 +227,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
       {/* Queue details */}
       {totalPending > 0 && (
         <div className="space-y-2 mb-3">
-          <p className="text-sm text-gray-600">Pending changes:</p>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Pending changes:</p>
           <div className="space-y-1">
             {Object.entries(
               queue.reduce(
@@ -242,8 +242,8 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
                 key={entityType}
                 className="flex items-center justify-between text-xs"
               >
-                <span className="text-gray-600 capitalize">{entityType}</span>
-                <span className="font-semibold text-gray-900">{count}</span>
+                <span className="text-gray-600 dark:text-gray-400 capitalize">{entityType}</span>
+                <span className="font-semibold text-gray-900 dark:text-gray-100">{count}</span>
               </div>
             ))}
           </div>
@@ -257,7 +257,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
           disabled={isSyncing || !isOnline}
           className={cn(
             'w-full h-12 px-4',
-            'bg-[#001B51] text-white',
+            'bg-construction-blue dark:bg-construction-blue text-white dark:text-white',
             'font-semibold text-sm rounded-xl',
             'flex items-center justify-center gap-2',
             'transition-all duration-200',
@@ -274,7 +274,7 @@ export function SyncStatus({ className, detailed = false }: SyncStatusProps) {
 
       {/* Offline notice */}
       {!isOnline && totalPending > 0 && (
-        <p className="text-xs text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
           Changes will sync when you're back online
         </p>
       )}

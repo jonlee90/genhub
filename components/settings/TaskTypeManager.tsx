@@ -221,10 +221,10 @@ export const TaskTypeManager = memo(function TaskTypeManager({
       {/* Debug: Header with Add button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight">
+          <h3 className="text-xl md:text-2xl font-black text-construction-blue dark:text-construction-blue uppercase tracking-tight">
             Task Types
           </h3>
-          <p className="text-sm md:text-base text-gray-600 mt-1">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
             Define the types of tasks your team handles on projects
           </p>
         </div>
@@ -251,18 +251,18 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                 animationFillMode: 'both',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg animate-pulse" />
-              <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg animate-pulse" />
+              <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-construction">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg animate-pulse" />
+                  <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                    <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                   </div>
                 </div>
-                <div className="flex items-center justify-end gap-2 pt-3 border-t-2 border-gray-100">
-                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                <div className="flex items-center justify-end gap-2 pt-3 border-t-2 border-gray-100 dark:border-gray-800">
+                  <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                 </div>
               </div>
             </div>
@@ -280,10 +280,10 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                 <Hammer className="h-16 w-16 text-construction-blue" />
               </div>
             </div>
-            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+            <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
               No Task Types Defined
             </h3>
-            <p className="text-gray-500 max-w-md mb-6">
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
               Create your first task type to start organizing work across your
               projects
             </p>
@@ -382,7 +382,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-name"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Task Type Name *
             </Label>
@@ -392,9 +392,9 @@ export const TaskTypeManager = memo(function TaskTypeManager({
               placeholder="e.g., Material Purchase, Site Inspection"
               required
               maxLength={50}
-              className="border-2 border-gray-200 focus:border-construction-blue"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Give this task type a clear, descriptive name
             </p>
           </div>
@@ -403,7 +403,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-description"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Description
             </Label>
@@ -413,9 +413,9 @@ export const TaskTypeManager = memo(function TaskTypeManager({
               placeholder="Brief description of when to use this task type"
               rows={3}
               maxLength={200}
-              className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue resize-none"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Help your team understand when to use this type
             </p>
           </div>
@@ -425,12 +425,12 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <div className="space-y-2">
               <Label
                 htmlFor="create-icon"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Icon
               </Label>
               <Select name="icon_name" defaultValue="Hammer">
-                <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -453,7 +453,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <div className="space-y-2">
               <Label
                 htmlFor="create-color"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Color
               </Label>
@@ -462,11 +462,11 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                   id="create-color"
                   name="color"
                   type="color"
-                  defaultValue="#001B51"
-                  className="h-11 border-2 border-gray-200 focus:border-construction-blue cursor-pointer"
+                  defaultValue="var(--construction-blue)"
+                  className="h-11 border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue cursor-pointer"
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <div className="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded">
+                  <div className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">
                     HEX
                   </div>
                 </div>
@@ -530,7 +530,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-name"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Task Type Name *
               </Label>
@@ -540,7 +540,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                 defaultValue={editingType.name}
                 required
                 maxLength={50}
-                className="border-2 border-gray-200 focus:border-construction-blue"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue"
               />
             </div>
 
@@ -548,7 +548,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-description"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Description
               </Label>
@@ -558,7 +558,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                 defaultValue={editingType.description || ""}
                 rows={3}
                 maxLength={200}
-                className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue resize-none"
               />
             </div>
 
@@ -567,7 +567,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-icon"
-                  className="text-sm font-bold text-gray-900"
+                  className="text-sm font-bold text-gray-900 dark:text-gray-100"
                 >
                   Icon
                 </Label>
@@ -575,7 +575,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                   name="icon_name"
                   defaultValue={editingType.icon_name || "Hammer"}
                 >
-                  <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                  <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -600,7 +600,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-color"
-                  className="text-sm font-bold text-gray-900"
+                  className="text-sm font-bold text-gray-900 dark:text-gray-100"
                 >
                   Color
                 </Label>
@@ -610,10 +610,10 @@ export const TaskTypeManager = memo(function TaskTypeManager({
                     name="color"
                     type="color"
                     defaultValue={editingType.color || "#3b82f6"}
-                    className="h-11 border-2 border-gray-200 focus:border-construction-blue cursor-pointer"
+                    className="h-11 border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue cursor-pointer"
                   />
                   <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <div className="text-xs font-mono text-gray-500 bg-white px-2 py-1 rounded">
+                    <div className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded">
                       HEX
                     </div>
                   </div>
@@ -622,18 +622,18 @@ export const TaskTypeManager = memo(function TaskTypeManager({
             </div>
 
             {/* Active toggle */}
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
               <input
                 type="checkbox"
                 id="edit-is-active"
                 name="is_active"
                 value="true"
                 defaultChecked={editingType.is_active ?? true}
-                className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
+                className="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 text-construction-blue focus:ring-construction-blue focus:ring-2"
               />
               <Label
                 htmlFor="edit-is-active"
-                className="cursor-pointer font-bold text-gray-900 flex-1"
+                className="cursor-pointer font-bold text-gray-900 dark:text-gray-100 flex-1"
               >
                 Active (visible when creating tasks)
               </Label>
@@ -648,21 +648,21 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           open={!!deletingType}
           onOpenChange={() => setDeletingType(null)}
         >
-          <AlertDialogContent className="border-2 border-red-200">
+          <AlertDialogContent className="border-2 border-red-200 dark:border-red-800 dark:bg-gray-900">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-black text-red-600 uppercase tracking-tight flex items-center gap-2">
+              <AlertDialogTitle className="text-xl font-black text-red-600 dark:text-red-400 uppercase tracking-tight flex items-center gap-2">
                 <AlertCircle className="h-6 w-6" />
                 Delete Task Type
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-base text-gray-700">
+              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
                 Are you sure you want to delete{" "}
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 dark:text-gray-100">
                   "{deletingType.name}"
                 </span>
                 ?
               </AlertDialogDescription>
-              <div className="mt-3 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg">
-                <div className="text-sm text-amber-800">
+              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="text-sm text-amber-800 dark:text-amber-200">
                   <strong>Note:</strong> This is a soft delete. Existing tasks
                   will keep this type, but it won't be available for new
                   tasks.

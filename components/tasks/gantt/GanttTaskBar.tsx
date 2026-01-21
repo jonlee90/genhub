@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type { GanttTaskBarProps } from "./gantt-types";
 import { STATUS_STYLES } from "./gantt-types";
 
@@ -51,6 +51,13 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
     onClick?.(task);
   }, [onClick, task]);
 
+  // Accessibility: Create comprehensive ARIA label for screen readers
+  const ariaLabel = useMemo(() => {
+    const startStr = task.start_date ? formatDate(task.start_date) : 'No start date';
+    const dueStr = task.due_date ? formatDate(task.due_date) : 'No due date';
+    return `${task.title}. Start: ${startStr}. Due: ${dueStr}. Status: ${task.status}. Priority: ${task.priority}.`;
+  }, [task]);
+
   // Use default priority-based colors
   const barStyle = {
     left: position.left,
@@ -67,6 +74,9 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
       ref={setNodeRef}
       {...(isMobile ? {} : attributes)}
       {...(isMobile ? {} : listeners)}
+      aria-label={ariaLabel}
+      role="button"
+      tabIndex={0}
       className={cn(
         "absolute rounded-md bg-construction-blue",
         // CSS animations replace Framer Motion (bundle-defer-third-party optimization)

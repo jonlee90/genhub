@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { cache } from "react";
+import { getUserContext } from "@/lib/auth-context";
 import { revalidateTag } from "next/cache";
+import type { createClient } from "@/utils/supabase/server";
 import type {
   DashboardData,
   DashboardDataResult,
@@ -21,36 +22,7 @@ import type {
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext(
-  supabaseClient?: Awaited<ReturnType<typeof createClient>>,
-) {
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = supabaseClient ?? (await createClient());
-
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    return { error: "No active company found for user" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
 // ============================================
 // Quick Action Data Fetcher
@@ -153,6 +125,7 @@ async function getQuickActionData(
 
 /**
  * Get top assignees by task count (for team activity widget)
+ * HIGH-3 FIX: Use SQL aggregation instead of in-memory JavaScript
  */
 async function getTopAssignees(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -160,103 +133,49 @@ async function getTopAssignees(
 ): Promise<
   { id: string; name: string; avatarUrl: string | null; taskCount: number }[]
 > {
-  // Get task assignees with user profiles
-  const { data: tasks, error } = await supabase
-    .from("tasks")
-    .select(
-      `
-      id,
-      projects!inner (company_id),
-      task_assignees (
-        user_id,
-        user_profiles!task_assignees_user_id_fkey (
-          id,
-          name,
-          avatar_url
-        )
-      )
-    `,
-    )
-    .eq("projects.company_id", companyId);
+  // Type assertion: RPC function exists in DB but types not yet generated locally
+  // Migration: 20260120000001_dashboard_sql_aggregation_optimizations.sql
+  const { data, error } = await supabase.rpc("get_top_assignees" as any, {
+    p_company_id: companyId,
+    p_limit: 5,
+  });
 
-  if (error || !tasks) {
-    console.error("[getTopAssignees] Error:", error);
+  if (error) {
+    console.error("[getTopAssignees] RPC Error:", error);
     return [];
   }
 
-  const assigneeCounts = new Map<
-    string,
-    { id: string; name: string; avatarUrl: string | null; count: number }
-  >();
-
-  for (const task of tasks) {
-    const taskAssignees = task.task_assignees as Array<{
-      user_id: string | null;
-      user_profiles: {
-        id: string;
-        name: string | null;
-        avatar_url: string | null;
-      } | null;
-    }> | null;
-
-    if (taskAssignees) {
-      for (const assignee of taskAssignees) {
-        if (assignee.user_id && assignee.user_profiles) {
-          const existing = assigneeCounts.get(assignee.user_id);
-          if (existing) {
-            existing.count++;
-          } else {
-            assigneeCounts.set(assignee.user_id, {
-              id: assignee.user_id,
-              name: assignee.user_profiles.name || "Unknown",
-              avatarUrl: assignee.user_profiles.avatar_url,
-              count: 1,
-            });
-          }
-        }
-      }
-    }
-  }
-
-  return Array.from(assigneeCounts.values())
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5)
-    .map((a) => ({
-      id: a.id,
-      name: a.name,
-      avatarUrl: a.avatarUrl,
-      taskCount: a.count,
-    }));
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name || "Unknown",
+    avatarUrl: row.avatar_url,
+    taskCount: Number(row.task_count) || 0,
+  }));
 }
 
 /**
  * Get expenses by category (for budget summary widget)
+ * HIGH-3 FIX: Use SQL aggregation instead of in-memory JavaScript
  */
 async function getExpensesByCategory(
   supabase: Awaited<ReturnType<typeof createClient>>,
   companyId: string,
 ): Promise<{ category: string; amount: number }[]> {
-  const { data: expenses, error } = await supabase
-    .from("expenses")
-    .select("category, amount, projects!inner (company_id)")
-    .eq("projects.company_id", companyId);
+  // Type assertion: RPC function exists in DB but types not yet generated locally
+  // Migration: 20260120000001_dashboard_sql_aggregation_optimizations.sql
+  const { data, error } = await supabase.rpc("get_expenses_by_category" as any, {
+    p_company_id: companyId,
+  });
 
-  if (error || !expenses) {
-    console.error("[getExpensesByCategory] Error:", error);
+  if (error) {
+    console.error("[getExpensesByCategory] RPC Error:", error);
     return [];
   }
 
-  const categoryMap = new Map<string, number>();
-
-  for (const expense of expenses) {
-    const category = expense.category || "other";
-    const amount = Number(expense.amount) || 0;
-    categoryMap.set(category, (categoryMap.get(category) || 0) + amount);
-  }
-
-  return Array.from(categoryMap.entries())
-    .map(([category, amount]) => ({ category, amount }))
-    .sort((a, b) => b.amount - a.amount);
+  return (data || []).map((row: any) => ({
+    category: row.category || "other",
+    amount: Number(row.amount) || 0,
+  }));
 }
 
 // ============================================
@@ -443,23 +362,22 @@ async function getDashboardDataImpl(
  *
  * @returns Dashboard data aggregated from multiple tables
  */
-export async function getDashboardData(): Promise<DashboardDataResult> {
-  // Get user context and supabase client (not cached - session/headers are per-request)
-  const supabase = await createClient();
-  const userContext = await getUserContext(supabase);
+export const getDashboardData = cache(async (): Promise<DashboardDataResult> => {
+  // Get user context (includes supabase client, cached via React.cache)
+  const userContext = await getUserContext();
   if ("error" in userContext) {
     console.error("[getDashboardData] User context error:", userContext.error);
     return { error: userContext.error };
   }
 
-  const { companyId } = userContext;
+  const { companyId, supabase } = userContext;
   console.log("[getDashboardData] Fetching for company:", companyId);
 
   // NOTE: unstable_cache removed due to circular structure error when passing Supabase client
   // Performance is already optimized via mv_dashboard_kpis materialized view
   // Server Components provide default caching; use revalidateTag for cache invalidation
   return getDashboardDataImpl(companyId, supabase);
-}
+});
 
 // ============================================
 // Cache Invalidation Helper

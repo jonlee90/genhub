@@ -77,8 +77,8 @@ export function PushPermissionPrompt() {
                   -45deg,
                   #FFB627,
                   #FFB627 10px,
-                  #001B51 10px,
-                  #001B51 20px
+                  var(--construction-blue) 10px,
+                  var(--construction-blue) 20px
                 )`,
                 WebkitMask: 'linear-gradient(white 0 0) content-box, linear-gradient(white 0 0)',
                 WebkitMaskComposite: 'xor',
@@ -112,7 +112,7 @@ export function PushPermissionPrompt() {
                   />
 
                   <div className="relative p-4 bg-gradient-to-br from-[#FFB627] to-[#FF8C00] rounded-full shadow-lg">
-                    <Bell className="h-8 w-8 text-[#001B51]" />
+                    <Bell className="h-8 w-8 text-construction-blue" />
                     {/* Pulsing indicator */}
                     <motion.div
                       animate={{ scale: [1, 1.2, 1], opacity: [0.7, 0, 0.7] }}
@@ -126,8 +126,8 @@ export function PushPermissionPrompt() {
                 <div className="flex-1 min-w-0">
                   {/* Header with construction badge */}
                   <div className="flex items-center gap-2 mb-2">
-                    <HardHat className="h-5 w-5 text-[#001B51]" />
-                    <h3 className="text-xl font-black text-[#001B51] uppercase tracking-wide font-['Work_Sans']">
+                    <HardHat className="h-5 w-5 text-construction-blue" />
+                    <h3 className="text-xl font-black text-construction-blue uppercase tracking-wide font-['Work_Sans']">
                       Stay Connected On-Site
                     </h3>
                   </div>
@@ -144,7 +144,7 @@ export function PushPermissionPrompt() {
                       onClick={handleAllow}
                       className={cn(
                         "flex-1 px-4 py-3 rounded-lg font-bold uppercase text-sm tracking-wide",
-                        "bg-gradient-to-r from-[#001B51] to-[#003080]",
+                        "bg-gradient-to-r from-[var(--construction-blue)] to-[#003080]",
                         "text-white shadow-lg",
                         "hover:shadow-xl hover:scale-105",
                         "active:scale-95",
@@ -179,7 +179,7 @@ export function PushPermissionPrompt() {
                   </div>
 
                   {/* Additional info */}
-                  <div className="mt-3 pt-3 border-t-2 border-[#001B51]/10">
+                  <div className="mt-3 pt-3 border-t-2 border-construction-blue/10">
                     <p className="text-xs text-[#7A7A7A] font-['IBM_Plex_Mono']">
                       ✓ Works offline • ✓ Secure & encrypted • ✓ Control in settings
                     </p>
@@ -196,8 +196,8 @@ export function PushPermissionPrompt() {
                   90deg,
                   #FFB627 0px,
                   #FFB627 20px,
-                  #001B51 20px,
-                  #001B51 40px
+                  var(--construction-blue) 20px,
+                  var(--construction-blue) 40px
                 )`
               }}
             />

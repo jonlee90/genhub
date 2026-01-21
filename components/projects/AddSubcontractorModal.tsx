@@ -214,9 +214,9 @@ export function AddSubcontractorModal({
           onClick={handleSubmit}
           disabled={submitting || !selectedId || loading || success}
           className={cn(
-            "bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold gap-2",
+            "bg-construction-blue hover:bg-construction-blue/90 text-white font-bold gap-2",
             "h-12 px-6 text-base",
-            "active:scale-[0.98] active:bg-[#001B51]/80",
+            "active:scale-[0.98] active:bg-construction-blue/80",
             "transition-all duration-150",
           )}
         >
@@ -258,7 +258,7 @@ export function AddSubcontractorModal({
               className={cn(
                 "pl-12 h-14 text-base",
                 "border-2 border-gray-200",
-                "focus:border-[#001B51] focus:ring-1 focus:ring-[#001B51]",
+                "focus:border-construction-blue focus:ring-1 focus:ring-[var(--construction-blue)]",
                 "rounded-xl",
               )}
               disabled={loading}
@@ -274,7 +274,7 @@ export function AddSubcontractorModal({
           <div className="border-2 border-gray-200 rounded-xl max-h-[320px] overflow-y-auto bg-gray-50">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
+                <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
                 <span className="mt-3 text-base text-gray-600">
                   Loading subcontractors...
                 </span>
@@ -321,7 +321,7 @@ export function AddSubcontractorModal({
                           "active:scale-[0.99]",
                           "min-h-[72px]",
                           selectedId === sub.id
-                            ? "bg-[#001B51]/10 border-l-4 border-l-[#001B51]"
+                            ? "bg-construction-blue/10 border-l-4 border-l-[var(--construction-blue)]"
                             : "bg-gray-50 hover:bg-white active:bg-gray-100",
                         )}
                       >
@@ -331,8 +331,8 @@ export function AddSubcontractorModal({
                             "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0",
                             "font-bold text-sm",
                             selectedId === sub.id
-                              ? "bg-[#001B51] text-white"
-                              : "bg-[#001B51]/10 text-[#001B51]",
+                              ? "bg-construction-blue text-white"
+                              : "bg-construction-blue/10 text-construction-blue",
                           )}
                         >
                           {getInitials(sub.company_name)}
@@ -345,7 +345,7 @@ export function AddSubcontractorModal({
                               {sub.company_name}
                             </p>
                             {selectedId === sub.id && (
-                              <Badge className="bg-[#001B51] text-white font-bold text-xs flex-shrink-0">
+                              <Badge className="bg-construction-blue text-white font-bold text-xs flex-shrink-0">
                                 Selected
                               </Badge>
                             )}

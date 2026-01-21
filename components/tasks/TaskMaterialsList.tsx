@@ -6,7 +6,7 @@
  * Displays assigned materials for a task with editable quantity and remove functionality.
  * Shows total cost summary at the bottom.
  *
- * Construction-themed with #001B51 primary, editable quantities
+ * Construction-themed with var(--construction-blue) primary, editable quantities
  */
 
 import { useState, useTransition, useEffect } from "react";

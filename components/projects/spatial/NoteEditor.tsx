@@ -197,7 +197,7 @@ export function NoteEditor({
   }
 
   return (
-    <div className="relative border-2 border-gray-200 rounded-lg bg-white focus-within:border-[#001B51] transition-colors">
+    <div className="relative border-2 border-gray-200 rounded-lg bg-white focus-within:border-construction-blue transition-colors">
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-gray-200">
         <button
@@ -269,7 +269,7 @@ export function NoteEditor({
                 index === selectedMentionIndex && 'bg-blue-50'
               )}
             >
-              <div className="w-6 h-6 rounded-full bg-[#001B51] flex items-center justify-center text-xs text-white font-bold">
+              <div className="w-6 h-6 rounded-full bg-construction-blue flex items-center justify-center text-xs text-white font-bold">
                 {suggestion.name[0]}
               </div>
               <span className="text-sm text-gray-900">{suggestion.name}</span>
@@ -303,7 +303,7 @@ export function NoteEditor({
             disabled={!content.trim() || saving}
             className={cn(
               'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold',
-              'bg-[#001B51] text-white',
+              'bg-construction-blue text-white',
               'hover:bg-[#002B71] transition-colors',
               'disabled:opacity-50 disabled:cursor-not-allowed'
             )}

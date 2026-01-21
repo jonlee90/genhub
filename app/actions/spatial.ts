@@ -2,8 +2,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext } from "@/lib/auth-context";
+import type { createClient } from "@/utils/supabase/server";
 import { processIFCFile } from "@/lib/ifc-converter";
 import type {
   SpatialMarkerInsert,
@@ -13,32 +13,7 @@ import type {
   SpatialProcessingStatus,
 } from "@/types/db/spatial";
 
-// Debug: Helper to get user context
-async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
 // Debug: Verify project access
 async function verifyProjectAccess(
@@ -245,7 +220,7 @@ export async function getProjectModels(projectId: string) {
   // Debug: Fetch all models
   const { data: models, error } = await supabase
     .from("projects_3d_models")
-    .select("*")
+    .select("id, project_id, version, file_name, original_file_url, xkt_file_url, lod_medium_url, lod_low_url, thumbnail_url, file_size_bytes, element_count, bounds, floors, metadata, is_active, processing_status, processing_error, created_at, updated_at, is_default, default_model_id")
     .eq("project_id", projectId)
     .order("version", { ascending: false });
 
@@ -279,7 +254,7 @@ export async function getActiveModel(projectId: string) {
   // Debug: Fetch active model
   const { data: model, error } = await supabase
     .from("projects_3d_models")
-    .select("*")
+    .select("id, project_id, version, file_name, original_file_url, xkt_file_url, lod_medium_url, lod_low_url, thumbnail_url, file_size_bytes, element_count, bounds, floors, metadata, is_active, processing_status, processing_error, created_at, updated_at, is_default, default_model_id")
     .eq("project_id", projectId)
     .eq("is_active", true)
     .single();
@@ -657,7 +632,7 @@ export async function getProjectMarkers(
   // Debug: Build query
   let query = supabase
     .from("spatial_markers")
-    .select("*")
+    .select("id, project_id, model_id, type, status, position_x, position_y, position_z, normal_x, normal_y, normal_z, element_id, element_type, element_name, floor_id, floor_name, room_id, room_name, title, description, task_id, phase_id, cluster_id, content_count, last_activity_at, created_by, created_at, updated_at, marker_config_id, is_client_visible")
     .eq("project_id", projectId);
 
   // Debug: Apply filters
@@ -696,7 +671,7 @@ export async function getMarkerById(markerId: string) {
   // Debug: Fetch marker
   const { data: marker, error } = await supabase
     .from("spatial_markers")
-    .select("*")
+    .select("id, project_id, model_id, type, status, position_x, position_y, position_z, normal_x, normal_y, normal_z, element_id, element_type, element_name, floor_id, floor_name, room_id, room_name, title, description, task_id, phase_id, cluster_id, content_count, last_activity_at, created_by, created_at, updated_at, marker_config_id, is_client_visible")
     .eq("id", markerId)
     .single();
 
@@ -870,7 +845,7 @@ export async function getMarkerContent(markerId: string) {
   // Debug: Fetch content
   const { data: content, error } = await supabase
     .from("marker_content")
-    .select("*")
+    .select("id, marker_id, type, photo_url, photo_thumbnail_url, photo_width, photo_height, photo_exif, file_url, file_name, file_size_bytes, file_mime_type, note_text, note_format, activity_type, activity_data, created_by, created_at, updated_at")
     .eq("marker_id", markerId)
     .order("created_at", { ascending: true });
 
@@ -956,7 +931,7 @@ export async function getMarkersByPhase(projectId: string, phaseId: string) {
   // Debug: Fetch markers filtered by phase
   const { data: markers, error } = await supabase
     .from("spatial_markers")
-    .select("*")
+    .select("id, project_id, model_id, type, status, position_x, position_y, position_z, normal_x, normal_y, normal_z, element_id, element_type, element_name, floor_id, floor_name, room_id, room_name, title, description, task_id, phase_id, cluster_id, content_count, last_activity_at, created_by, created_at, updated_at, marker_config_id, is_client_visible")
     .eq("project_id", projectId)
     .eq("phase_id", phaseId)
     .order("created_at", { ascending: false });
@@ -1267,7 +1242,7 @@ export async function getMarkersByProject(
   if (markerIds.length > 0) {
     const { data: contents } = await supabase
       .from("marker_content")
-      .select("*")
+      .select("id, marker_id, type, photo_url, photo_thumbnail_url, photo_width, photo_height, photo_exif, file_url, file_name, file_size_bytes, file_mime_type, note_text, note_format, activity_type, activity_data, created_by, created_at, updated_at")
       .in("marker_id", markerIds);
 
     if (contents) {

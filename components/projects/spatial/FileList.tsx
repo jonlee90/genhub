@@ -113,7 +113,7 @@ export function FileList({ markerId, files }: FileListProps) {
         <div className="w-16 h-16 mb-4 rounded-full bg-purple-500/10 flex items-center justify-center">
           <File className="w-8 h-8 text-purple-500" />
         </div>
-        <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">No Files Yet</h3>
+        <h3 className="font-bold text-construction-blue mb-2 uppercase tracking-tight">No Files Yet</h3>
         <p className="text-sm text-gray-600 mb-4">
           Attach documents, drawings, or other files to this marker.
         </p>
@@ -121,7 +121,7 @@ export function FileList({ markerId, files }: FileListProps) {
           onClick={() => setShowUploader(true)}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >
@@ -140,7 +140,7 @@ export function FileList({ markerId, files }: FileListProps) {
           onClick={() => setShowUploader(true)}
           className={cn(
             'w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >
@@ -173,7 +173,7 @@ export function FileList({ markerId, files }: FileListProps) {
                 layout
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="group flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg hover:border-[#001B51] transition-colors"
+                className="group flex items-center gap-3 p-3 border-2 border-gray-200 rounded-lg hover:border-construction-blue transition-colors"
               >
                 {/* File icon */}
                 <div className={cn('flex-shrink-0 p-2 rounded-lg', colorClass)}>
@@ -182,7 +182,7 @@ export function FileList({ markerId, files }: FileListProps) {
 
                 {/* File info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-[#001B51] truncate">
+                  <p className="text-sm font-bold text-construction-blue truncate">
                     {file.file_name || 'Untitled File'}
                   </p>
                   <div className="flex items-center gap-2 text-xs text-gray-500">
@@ -203,7 +203,7 @@ export function FileList({ markerId, files }: FileListProps) {
                     className={cn(
                       'p-2 rounded-lg',
                       'hover:bg-gray-100 transition-colors',
-                      'text-gray-600 hover:text-[#001B51]'
+                      'text-gray-600 hover:text-construction-blue'
                     )}
                     title="Download"
                   >

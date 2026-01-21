@@ -100,21 +100,21 @@ export function DefaultModelCard({
 
   return (
     <>
-      <div className="border-2 border-gray-200 rounded-lg p-4 md:p-6 shadow-construction hover:shadow-construction-lg transition-all duration-200 bg-white">
+      <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 md:p-6 shadow-construction hover:shadow-construction-lg transition-all duration-200 bg-white dark:bg-gray-800">
         {/* Header with Icon and Title */}
         <div className="flex items-start gap-4 mb-4">
           {/* Icon */}
-          <div className="p-3 bg-[#001B51] rounded-lg shrink-0">
+          <div className="p-3 bg-construction-blue dark:bg-blue-600 rounded-lg shrink-0">
             <Icon className="w-6 h-6 md:w-7 md:h-7 text-white" />
           </div>
 
           {/* Title and Description */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg md:text-xl font-bold text-[#001B51] uppercase tracking-tight">
+            <h3 className="text-lg md:text-xl font-bold text-construction-blue dark:text-blue-400 uppercase tracking-tight">
               {projectTypeName}
             </h3>
             {projectTypeDescription && (
-              <p className="text-sm text-gray-600 mt-1">{projectTypeDescription}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{projectTypeDescription}</p>
             )}
           </div>
 
@@ -125,7 +125,7 @@ export function DefaultModelCard({
               Custom
             </Badge>
           ) : (
-            <Badge className="bg-gray-100 text-gray-700 border-gray-300 shrink-0">
+            <Badge className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 shrink-0">
               System Default
             </Badge>
           )}
@@ -137,24 +137,24 @@ export function DefaultModelCard({
             {/* Model Name (for system defaults) */}
             {!isUsingCustom && systemDefault && (
               <div>
-                <p className="text-sm font-semibold text-gray-700">{systemDefault.name}</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{systemDefault.name}</p>
                 {systemDefault.description && (
-                  <p className="text-xs text-gray-500 mt-1">{systemDefault.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{systemDefault.description}</p>
                 )}
               </div>
             )}
 
             {/* Metadata Grid */}
-            <div className="grid grid-cols-2 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200">
+            <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">File Size</p>
-                <p className="text-sm font-bold text-[#001B51] font-mono">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">File Size</p>
+                <p className="text-sm font-bold text-construction-blue dark:text-blue-400 font-mono">
                   {formatFileSize('fileSize' in currentModel ? currentModel.fileSize : (currentModel as { file_size_bytes: number }).file_size_bytes)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-mono">Elements</p>
-                <p className="text-sm font-bold text-[#001B51] font-mono">
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">Elements</p>
+                <p className="text-sm font-bold text-construction-blue dark:text-blue-400 font-mono">
                   {('elementCount' in currentModel
                     ? currentModel.elementCount
                     : (currentModel as { element_count?: number }).element_count)?.toLocaleString() || 'N/A'}
@@ -164,14 +164,14 @@ export function DefaultModelCard({
 
             {/* Upload Date (for custom models) */}
             {isUsingCustom && companyCustom && (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 Uploaded: {new Date(companyCustom.uploadedAt).toLocaleDateString()}
               </div>
             )}
           </div>
         ) : (
-          <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <div className="flex items-center gap-2 text-yellow-700">
+          <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
               <AlertCircle className="w-4 h-4" />
               <p className="text-sm font-semibold">No default model available</p>
             </div>
@@ -189,7 +189,7 @@ export function DefaultModelCard({
               'flex-1 min-w-[140px] border-2 transition-colors',
               isUsingCustom
                 ? 'border-[#059669] text-[#059669] hover:bg-[#059669]/10'
-                : 'border-[#001B51] text-[#001B51] hover:bg-[#001B51]/10'
+                : 'border-construction-blue text-construction-blue hover:bg-construction-blue/10'
             )}
           >
             <Upload className="w-4 h-4 mr-2" />
@@ -202,7 +202,7 @@ export function DefaultModelCard({
               onClick={handlePreview}
               variant="outline"
               size="sm"
-              className="flex-1 min-w-[120px] border-2 border-gray-300 text-gray-700 hover:bg-gray-100"
+              className="flex-1 min-w-[120px] border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <Eye className="w-4 h-4 mr-2" />
               Preview
@@ -240,7 +240,7 @@ export function DefaultModelCard({
               variant="outline"
               size="sm"
               disabled={isPending}
-              className="border-2 border-[#DC2626] text-[#DC2626] hover:bg-[#DC2626]/10 disabled:opacity-50"
+              className="border-2 border-[#DC2626] dark:border-red-600 text-[#DC2626] dark:text-red-400 hover:bg-[#DC2626]/10 dark:hover:bg-red-900/20 disabled:opacity-50"
             >
               {isPending ? (
                 <>

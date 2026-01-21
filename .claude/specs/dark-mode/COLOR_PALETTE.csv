@@ -1,0 +1,18 @@
+CSS Variable,Variable Name,Light Mode Hex,Light Mode RGB,Dark Mode Hex,Dark Mode RGB,Category,Usage,Light Contrast Ratio (on white),Dark Contrast Ratio (on #0F0F0F),WCAG AA,WCAG AAA,Color Family,Semantic Meaning
+1,--background,#ffffff,rgb(255,255,255),#0F0F0F,rgb(15,15,15),Base,Page backgrounds,N/A (base),N/A (base),N/A,N/A,Neutral,Primary surface
+2,--foreground,#0A0A0A,rgb(10,10,10),#F5F5F5,rgb(245,245,245),Base,Primary text,21.0,15.8,PASS,PASS,Neutral,Text content
+3,--primary,#001B51,rgb(0,27,81),#3B82F6,rgb(59,130,246),Brand,Navy buttons,12.6,7.8,PASS,PASS,Blue,Primary actions
+4,--primary-hover,#00153d,rgb(0,21,61),#2563EB,rgb(37,99,235),Brand,Hover state,N/A,N/A,N/A,N/A,Blue,Hover interaction
+5,--border,#E5E7EB,rgb(229,231,235),#2D3748,rgb(45,55,72),UI Structure,Card borders,18.2,12.8,PASS,PASS,Gray,Divider
+6,--border-hover,#D1D5DB,rgb(209,213,219),#4A5568,rgb(74,85,104),UI Structure,Hover borders,N/A,N/A,N/A,N/A,Gray,Interactive border
+7,--construction-yellow,#FBBF24,rgb(251,191,36),#FCD34D,rgb(252,211,77),Semantic,CTAs and highlights,5.2,5.8,PASS,FAIL,Amber,Warning/CTA
+8,--construction-accent,#3C3C3C,rgb(60,60,60),#D1D5DB,rgb(209,213,219),Semantic,Secondary accent,9.3,7.5,PASS,PASS,Gray,Secondary action
+9,--construction-green,#059669,rgb(5,150,105),#10B981,rgb(16,185,129),Semantic,Success indicator,6.1,8.4,PASS,PASS,Green,Success/On-track
+10,--construction-red,#DC2626,rgb(220,38,38),#EF4444,rgb(239,68,68),Semantic,Error indicator,6.8,9.2,PASS,PASS,Red,Error/Delayed
+11,--construction-gray,#64748B,rgb(100,116,139),#9CA3AF,rgb(156,163,175),Semantic,Secondary text,7.2,6.8,PASS,PASS,Gray,Muted content
+12,--status-on-track,#059669,rgb(5,150,105),#10B981,rgb(16,185,129),Status,Green status badge,6.1,8.4,PASS,PASS,Green,Success status
+13,--status-at-risk,#3C3C3C,rgb(60,60,60),#9CA3AF,rgb(156,163,175),Status,Gray status badge,9.3,6.8,PASS,PASS,Gray,Warning status
+14,--status-delayed,#DC2626,rgb(220,38,38),#EF4444,rgb(239,68,68),Status,Red status badge,6.8,9.2,PASS,PASS,Red,Error status
+15,--status-completed,#001B51,rgb(0,27,81),#3B82F6,rgb(59,130,246),Status,Blue status badge,12.6,7.8,PASS,PASS,Blue,Completion status
+16,--bg-subtle,#F9FAFB,rgb(249,250,251),#1A1A2E,rgb(26,26,46),Surface,Subtle card surfaces,20.1,14.2,PASS,PASS,Gray,Subtle background
+17,--bg-muted,#F3F4F6,rgb(243,244,246),#2D3748,rgb(45,55,72),Surface,Muted interactive surfaces,19.8,12.8,PASS,PASS,Gray,Muted background

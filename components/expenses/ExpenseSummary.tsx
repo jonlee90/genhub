@@ -12,6 +12,7 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StatCard } from "@/components/ui/stat-card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpenseSummaryProps {
@@ -106,8 +107,8 @@ export function ExpenseSummary({
   // Loading state
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
-        <div className="px-4 py-3.5 border-b border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-sm">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             <Skeleton className="w-10 h-10 rounded-xl" />
             <div className="flex-1">
@@ -132,11 +133,11 @@ export function ExpenseSummary({
   // Error state
   if (!analytics) {
     return (
-      <div className="bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm p-6 text-center">
-        <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center mx-auto mb-3">
-          <Receipt className="w-6 h-6 text-gray-400" />
+      <div className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-sm p-6 text-center">
+        <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-3">
+          <Receipt className="w-6 h-6 text-gray-400 dark:text-gray-500" />
         </div>
-        <p className="text-sm font-medium text-gray-600">
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
           Unable to load expense summary
         </p>
       </div>
@@ -148,22 +149,22 @@ export function ExpenseSummary({
   return (
     <div
       className={cn(
-        "bg-white rounded-xl overflow-hidden",
-        "border-2 border-gray-200 shadow-sm",
+        "bg-white dark:bg-gray-800 rounded-xl overflow-hidden",
+        "border-2 border-gray-200 dark:border-gray-700 shadow-sm",
         "transition-all duration-200",
       )}
     >
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+      <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-900/80 dark:to-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-construction-blue dark:bg-blue-600 flex items-center justify-center shadow-sm">
             <Receipt className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            <h3 className="font-bold text-construction-blue dark:text-gray-100 text-sm uppercase tracking-wide">
               Expense Summary
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {analytics.totalCount} expense
               {analytics.totalCount !== 1 ? "s" : ""} recorded
             </p>
@@ -172,7 +173,11 @@ export function ExpenseSummary({
           <div
             className={cn(
               "px-2.5 py-1 rounded-lg text-xs font-bold",
-              statusBadge.className,
+              hasPendingExpenses
+                ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                : hasRejectedExpenses
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
             )}
           >
             {statusBadge.label}
@@ -188,32 +193,32 @@ export function ExpenseSummary({
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Approval Rate
                 </span>
               </div>
-              <span className="text-sm font-bold text-[#001B51] tabular-nums">
+              <span className="text-sm font-bold text-construction-blue dark:text-gray-100 tabular-nums">
                 {approvalRate.toFixed(0)}%
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-500 ease-out bg-[#059669]"
+                className="h-full rounded-full transition-all duration-500 ease-out bg-[#059669] dark:bg-emerald-500"
                 style={{ width: `${approvalRate}%` }}
               />
             </div>
           </div>
 
           {/* Total Spend */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-[#001B51]" />
-              <span className="text-sm font-semibold text-gray-700">
+              <DollarSign className="w-5 h-5 text-construction-blue dark:text-blue-400" />
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Total Spend
               </span>
             </div>
-            <span className="text-xl font-black text-[#001B51]">
+            <span className="text-xl font-black text-construction-blue dark:text-gray-100">
               {formatCurrency(analytics.totalAmount)}
             </span>
           </div>
@@ -228,6 +233,7 @@ export function ExpenseSummary({
             value={analytics.approvedCount}
             subtext={formatCurrency(analytics.approvedAmount)}
             variant="success"
+            showStatusDot
           />
 
           {/* Pending */}
@@ -237,6 +243,7 @@ export function ExpenseSummary({
             value={analytics.pendingCount}
             subtext={formatCurrency(analytics.pendingAmount)}
             variant={hasPendingExpenses ? "warning" : "neutral"}
+            showStatusDot
           />
 
           {/* Rejected */}
@@ -246,15 +253,16 @@ export function ExpenseSummary({
             value={analytics.rejectedCount}
             subtext={formatCurrency(analytics.rejectedAmount)}
             variant={hasRejectedExpenses ? "danger" : "success"}
+            showStatusDot
           />
         </div>
 
         {/* Top Categories */}
         {topCategories.length > 0 && (
-          <div className="pt-4 border-t border-gray-100">
+          <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4 text-gray-500" />
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Top Categories
               </span>
             </div>
@@ -267,32 +275,32 @@ export function ExpenseSummary({
                 return (
                   <div
                     key={cat.category}
-                    className="flex items-center gap-3 p-2.5 bg-gray-50 rounded-lg border border-gray-100"
+                    className="flex items-center gap-3 p-2.5 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-700"
                   >
-                    <span className="w-6 h-6 rounded-lg bg-[#001B51] flex items-center justify-center text-xs font-bold text-white">
+                    <span className="w-6 h-6 rounded-lg bg-construction-blue dark:bg-blue-600 flex items-center justify-center text-xs font-bold text-white">
                       {index + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
                         {formatCategory(cat.category)}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
-                        <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-[#001B51] rounded-full"
+                            className="h-full bg-construction-blue dark:bg-blue-600 rounded-full"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-500 tabular-nums">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 tabular-nums">
                           {percentage.toFixed(0)}%
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-bold text-[#001B51]">
+                      <p className="text-sm font-bold text-construction-blue dark:text-gray-100">
                         {formatCurrency(cat.amount)}
                       </p>
-                      <p className="text-xs text-gray-500">{cat.count} items</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{cat.count} items</p>
                     </div>
                   </div>
                 );
@@ -307,75 +315,24 @@ export function ExpenseSummary({
             className={cn(
               "flex items-center gap-3 p-3 rounded-xl mt-4",
               "transition-all duration-200",
-              "bg-amber-50 border border-amber-200",
+              "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800",
             )}
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-amber-100">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-amber-100 dark:bg-amber-900/40">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-amber-800">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
                 {analytics.pendingCount} expense
                 {analytics.pendingCount !== 1 ? "s" : ""} awaiting review
               </p>
-              <p className="text-xs mt-0.5 text-amber-600">
+              <p className="text-xs mt-0.5 text-amber-600 dark:text-amber-400">
                 {formatCurrency(analytics.pendingAmount)} pending approval
               </p>
             </div>
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/**
- * StatCard - Compact status indicator with color-coded dot
- */
-interface StatCardProps {
-  icon: typeof Receipt;
-  label: string;
-  value: number;
-  subtext: string;
-  variant: "success" | "danger" | "warning" | "neutral";
-}
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  variant,
-}: StatCardProps) {
-  const dotColors = {
-    success: "bg-[#059669]",
-    danger: "bg-[#DC2626]",
-    warning: "bg-[#F59E0B]",
-    neutral: "bg-gray-400",
-  };
-
-  const getDotColor = () => {
-    if (variant === "danger" && value === 0) return dotColors.success;
-    if (variant === "success" && value === 0) return dotColors.neutral;
-    if (variant === "warning" && value === 0) return dotColors.success;
-    return dotColors[variant];
-  };
-
-  return (
-    <div className="flex flex-col p-3 rounded-xl min-h-[76px] bg-gray-50 border border-gray-200">
-      <div className="flex items-center gap-1.5 mb-1">
-        <span
-          className={cn("w-2 h-2 rounded-full flex-shrink-0", getDotColor())}
-        />
-        <Icon className="w-3.5 h-3.5 text-gray-500" />
-        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider truncate">
-          {label}
-        </span>
-      </div>
-      <span className="text-xl font-bold leading-tight text-[#001B51]">
-        {value}
-      </span>
-      <span className="text-[10px] mt-0.5 text-gray-500">{subtext}</span>
     </div>
   );
 }

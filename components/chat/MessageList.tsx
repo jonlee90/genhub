@@ -250,7 +250,7 @@ export function MessageList({
 
   if (isLoading) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white">
+      <div className="flex-1 flex items-center justify-center bg-white dark:bg-gray-900">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -258,14 +258,14 @@ export function MessageList({
           className="text-center"
         >
           <Loader2 className="h-8 w-8 animate-spin text-construction-blue mx-auto mb-3" />
-          <p className="text-sm font-mono text-gray-500">LOADING_MESSAGES...</p>
+          <p className="text-sm font-mono text-gray-500 dark:text-gray-400">LOADING_MESSAGES...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-hidden relative bg-white min-h-0">
+    <div className="flex-1 overflow-hidden relative bg-white dark:bg-gray-900 min-h-0">
       {/* Debug: Connection status indicator - only show errors */}
       <AnimatePresence>
         {connectionError && (
@@ -289,7 +289,7 @@ export function MessageList({
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-4 left-1/2 -translate-x-1/2 z-20"
           >
-            <div className="flex items-center gap-2 bg-white border-2 border-construction-blue/20 rounded-lg px-4 py-2 shadow-lg">
+            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 border-2 border-construction-blue/20 dark:border-construction-blue/40 rounded-lg px-4 py-2 shadow-lg">
               <Loader2 className="h-4 w-4 animate-spin text-construction-blue" />
               <span className="text-xs font-mono font-bold text-construction-blue">
                 LOADING...
@@ -316,13 +316,13 @@ export function MessageList({
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center h-full text-center"
           >
-            <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center mb-4">
               <span className="text-2xl">💬</span>
             </div>
-            <h3 className="text-sm font-bold text-gray-900 mb-1">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
               No Messages Yet
             </h3>
-            <p className="text-xs text-gray-500 max-w-[250px]">
+            <p className="text-xs text-gray-500 dark:text-gray-400 max-w-[250px]">
               Start the conversation by sending the first message.
             </p>
           </motion.div>

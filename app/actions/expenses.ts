@@ -3,8 +3,8 @@
 import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getUserContext } from "@/lib/auth-context";
 import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
 import type { ExpensesRow, ExpensesInsert } from "@/types/db/tables/expenses";
 import type { ExpenseCategory } from "@/types/db/enums";
 import type { Database } from "@/types/db/helpers";
@@ -13,36 +13,7 @@ type Expense = ExpensesRow;
 type ExpenseInsert = ExpensesInsert;
 
 // ============================================
-// Cached User Context
-// ============================================
-
-/**
- * Get user context with caching to avoid repeated auth + DB lookups
- * Uses React.cache() to deduplicate auth calls within a single request
- */
-export const getUserContext = cache(async () => {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-
-  const supabase = await createClient();
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (!companyUser) return null;
-
-  return {
-    userId: session.user.id,
-    userName: session.user.name,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-});
-
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 // ============================================
 // Validation Schemas
 // ============================================
@@ -114,7 +85,7 @@ const addLineItemSchema = z.object({
 export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -139,6 +110,15 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
 
     // Notify project managers about new expense
     if (validated.project_id) {
+      // Fetch submitter's name for notification
+      const { data: userProfile } = await userContext.supabase
+        .from("user_profiles")
+        .select("name")
+        .eq("id", userContext.userId)
+        .single();
+
+      const submitterName = userProfile?.name || "A user";
+
       const { data: projectManagers } = await userContext.supabase
         .from("project_team")
         .select("user_id")
@@ -152,7 +132,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
             user_id: pm.user_id as string,
             type: "expense_submitted" as const,
             title: "New Expense Submitted",
-            message: `${userContext.userName || "A user"} submitted an expense for review: ${validated.description}`,
+            message: `${submitterName} submitted an expense for review: ${validated.description}`,
             link: `/app/expenses/${expense.id}`,
           }));
 
@@ -180,7 +160,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
 export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -217,7 +197,7 @@ export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
 export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -297,7 +277,7 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
 export async function deleteExpense(expenseId: string) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -333,7 +313,7 @@ export async function deleteExpense(expenseId: string) {
 export async function getExpensesByProject(projectId: string) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -366,7 +346,7 @@ export async function getExpensesByProject(projectId: string) {
 export async function getExpensesByCompany() {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -399,7 +379,7 @@ export async function getExpensesByCompany() {
 export async function getExpenseById(expenseId: string) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -443,7 +423,7 @@ export async function addExpenseLineItem(
 ) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -480,7 +460,7 @@ export async function addExpenseLineItem(
 export async function deleteExpenseLineItem(lineItemId: string) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -537,7 +517,7 @@ export async function processReceiptOCR(
 ) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -614,7 +594,7 @@ export async function matchLineItemToMaterial(
 ) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -668,7 +648,7 @@ export async function getTaskExpenses(taskId: string) {
     }
 
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -710,7 +690,7 @@ export async function getBatchTaskExpenses(taskIds: string[]) {
     }
 
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -764,7 +744,7 @@ export async function createExpenseFromMaterial(data: {
 }) {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -898,8 +878,8 @@ export async function getExpenseAnalytics(filters?: {
 }): Promise<{ data?: ExpenseAnalytics; error?: string }> {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
-      return { error: "Unauthorized" };
+    if ("error" in userContext) {
+      return { error: userContext.error };
     }
 
     // Build query with company filter and optional filters
@@ -1016,8 +996,8 @@ export async function getVendorOptions(
 ): Promise<{ data?: VendorOption[]; error?: string }> {
   try {
     const userContext = await getUserContext();
-    if (!userContext) {
-      return { error: "Unauthorized" };
+    if ("error" in userContext) {
+      return { error: userContext.error };
     }
 
     // Verify user belongs to this company
@@ -1120,52 +1100,46 @@ export const getInitialExpensesPageData = cache(async (
   try {
     const supabase = await createClient();
 
-    // Fetch projects, expenses, and tasks in parallel
-    const projectsPromise = supabase
-      .from("projects")
-      .select("id, name, status, end_date")
-      .eq("company_id", companyId)
-      .eq("status", "active")
-      .order("name");
-
-    const expensesPromise = supabase
-      .from("expenses")
-      .select(
-        `
-        *,
-        project:projects!expenses_project_id_fkey (
-          id,
-          name
-        ),
-        task:tasks!expenses_task_id_fkey (
-          id,
-          title
+    // Fetch projects and expenses in parallel, then fetch tasks for those projects
+    const [projectsResult, expensesResult] = await Promise.all([
+      supabase
+        .from("projects")
+        .select("id, name, status, end_date")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("name"),
+      supabase
+        .from("expenses")
+        .select(
+          `
+          *,
+          project:projects!expenses_project_id_fkey (
+            id,
+            name
+          ),
+          task:tasks!expenses_task_id_fkey (
+            id,
+            title
+          )
+        `,
         )
-      `,
-      )
-      .eq("company_id", companyId)
-      .order("created_at", { ascending: false });
+        .eq("company_id", companyId)
+        .order("created_at", { ascending: false }),
+    ]);
 
+    // Fetch tasks for active projects (no waterfall now)
+    const projectIds = projectsResult.data?.map((p) => p.id) || [];
     type TaskData = { id: string; title: string; project_id: string; task_type: string };
-    const tasksPromise = (async (): Promise<{ data: TaskData[] }> => {
-      const projectsResult = await projectsPromise;
-      const projectIds = projectsResult.data?.map((p) => p.id) || [];
-      if (!projectIds.length) {
-        return { data: [] };
-      }
+    let tasksResult: { data: TaskData[] } = { data: [] };
+
+    if (projectIds.length > 0) {
       const result = await supabase
         .from("tasks")
         .select("id, title, project_id, task_type")
         .in("project_id", projectIds)
         .order("created_at");
-      return { data: (result.data || []) as TaskData[] };
-    })();
-
-    const [projectsResult, expensesResult, tasksResult] = await Promise.all([
-      projectsPromise,
-      expensesPromise,
-      tasksPromise,
-    ]);
+      tasksResult = { data: (result.data || []) as TaskData[] };
+    }
 
     return {
       success: true,
@@ -1239,7 +1213,7 @@ export async function createExpenseFromTask(
     }
 
     const userContext = await getUserContext();
-    if (!userContext) {
+    if ("error" in userContext) {
       return { success: false, error: "Unauthorized" };
     }
 

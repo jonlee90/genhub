@@ -254,7 +254,7 @@ export function PhotoLightbox({
                 {/* Current Cover Photo indicator */}
                 {isPrimary && photo.source === 'upload' && (
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="px-3 py-1.5 bg-[#001B51] text-white rounded text-xs font-bold flex items-center gap-1.5 shadow-lg">
+                    <div className="px-3 py-1.5 bg-construction-blue text-white rounded text-xs font-bold flex items-center gap-1.5 shadow-lg">
                       <Star className="h-3.5 w-3.5 fill-current" />
                       Current Cover Photo
                     </div>
@@ -314,7 +314,7 @@ export function PhotoLightbox({
                       className={cn(
                         'px-2 py-0.5 rounded text-xs font-bold',
                         photo.source === 'task_receipt'
-                          ? 'bg-[#001B51] text-white'
+                          ? 'bg-construction-blue text-white'
                           : 'bg-[#059669] text-white'
                       )}
                     >
@@ -342,7 +342,7 @@ export function PhotoLightbox({
                     size="sm"
                     onClick={handleSetPrimary}
                     disabled={isSettingPrimary}
-                    className="bg-[#001B51] hover:bg-[#001B51]/90 text-white min-h-[44px]"
+                    className="bg-construction-blue hover:bg-construction-blue/90 text-white min-h-[44px]"
                   >
                     {isSettingPrimary ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />

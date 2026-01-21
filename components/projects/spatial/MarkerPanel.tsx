@@ -182,7 +182,7 @@ export function MarkerPanel({
       )}
     >
       {/* Debug: Header */}
-      <div className="shrink-0 border-b-2 border-[#001B51] bg-gradient-to-r from-[#001B51] to-[#3C3C3C] px-4 py-4">
+      <div className="shrink-0 border-b-2 border-construction-blue bg-gradient-to-r from-[var(--construction-blue)] to-[#3C3C3C] px-4 py-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <MapPin className="w-5 h-5 text-white" />
@@ -219,7 +219,7 @@ export function MarkerPanel({
             <Filter className="w-3 h-3 mr-1" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="ml-1 px-1.5 bg-[#001B51] text-white rounded-full text-[10px] font-bold">
+              <span className="ml-1 px-1.5 bg-construction-blue text-white rounded-full text-[10px] font-bold">
                 {activeFilterCount}
               </span>
             )}
@@ -316,7 +316,7 @@ export function MarkerPanel({
       <div className="shrink-0 px-4 py-3 border-b border-gray-200">
         <Button
           onClick={onCreateMarker}
-          className="w-full bg-[#001B51] hover:bg-[#001B51]/90"
+          className="w-full bg-construction-blue hover:bg-construction-blue/90"
           size="sm"
         >
           <Plus className="w-4 h-4 mr-2" />
@@ -337,7 +337,7 @@ export function MarkerPanel({
             <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
               <MapPin className="w-8 h-8 text-gray-400" />
             </div>
-            <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">
+            <h3 className="font-bold text-construction-blue mb-2 uppercase tracking-tight">
               No Markers
             </h3>
             <p className="text-sm text-gray-600 mb-4">

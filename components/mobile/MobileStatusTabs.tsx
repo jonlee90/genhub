@@ -120,7 +120,7 @@ export function MobileStatusTabs({
   // Get status-specific gradient for animated background
   const getStatusGradient = (status: string) => {
     if (status === "all") {
-      return "from-[#001B51] to-[#002868]"; // Navy gradient
+      return "from-[var(--construction-blue)] to-[#002868]"; // Navy gradient
     }
 
     const gradients: Record<string, string> = {
@@ -131,7 +131,7 @@ export function MobileStatusTabs({
       completed: "from-green-600 to-green-700",
     };
 
-    return gradients[status] || "from-[#001B51] to-[#002868]";
+    return gradients[status] || "from-[var(--construction-blue)] to-[#002868]";
   };
 
   return (
@@ -140,8 +140,8 @@ export function MobileStatusTabs({
       className={cn(
         // Container with Aceternity-inspired styling
         "relative flex items-center gap-2",
-        "p-1.5 bg-gray-100 rounded-xl",
-        "border-2 border-gray-200",
+        "p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl",
+        "border-2 border-gray-200 dark:border-gray-700",
         // Scrollable with hidden scrollbar
         "overflow-x-auto scrollbar-hide",
         // Snap scrolling
@@ -179,7 +179,7 @@ export function MobileStatusTabs({
               // Touch feedback
               "active:scale-[0.97]",
               // Text color based on active state
-              isActive ? "text-white" : "text-gray-600 hover:text-gray-900",
+              isActive ? "text-white" : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200",
             )}
           >
             {/* Content layer */}
@@ -195,7 +195,7 @@ export function MobileStatusTabs({
                   "rounded-full text-xs font-black",
                   isActive
                     ? "bg-white/20 text-white"
-                    : "bg-gray-200 text-gray-700",
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300",
                 )}
               >
                 {tab.count}

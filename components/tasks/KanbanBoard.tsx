@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useOptimistic, useTransition, useId, useMemo } from "react";
+import { useState, useOptimistic, useTransition, useId, useMemo, useCallback } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -19,6 +19,7 @@ import { updateTaskStatus } from "@/app/actions/tasks";
 import { m as motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { TaskWithRelations, Phase, TaskStatus } from "@/types/db/task";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface KanbanBoardProps {
   tasks: TaskWithRelations[];
@@ -26,7 +27,7 @@ interface KanbanBoardProps {
   /** When provided, we"re in project context - pass to KanbanColumn for phase lookup */
   phases?: Phase[];
   /** Task type configs from database - pass to KanbanColumn for TaskCard icon/color display */
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 const COLUMNS: { id: TaskStatus; title: string; color: string; shortTitle: string }[] = [
@@ -58,11 +59,11 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
       )
   );
 
-  // Configure sensors with larger distance threshold for mobile
+  // DND-05: Configure touch + pointer sensors with larger distance threshold for mobile
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Larger distance to prevent accidental drags
+        distance: 8, // Larger distance to prevent accidental drags on touch devices
       },
     }),
     useSensor(KeyboardSensor, {
@@ -91,12 +92,12 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
     return grouped;
   }, [optimisticTasks]);
 
-  const handleDragStart = (event: DragStartEvent) => {
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     const task = optimisticTasks.find((t) => t.id === event.active.id);
     setActiveTask(task || null);
-  };
+  }, [optimisticTasks]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
 
@@ -137,16 +138,40 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
         await updateTaskStatus(taskId, newStatus);
       });
     }
-  };
+  }, [optimisticTasks, setOptimisticTasks, startTransition]);
 
   // Get task count for each status (for mobile tabs)
   const getStatusCount = (status: TaskStatus) => {
     return tasksByStatus[status]?.length || 0;
   };
 
+  // Accessibility announcements for screen readers
+  const announcements = {
+    onDragStart: ({ active }: { active: { id: string | number } }) => {
+      const task = optimisticTasks.find(t => t.id === active.id);
+      return `Picked up task: ${task?.title || 'Unknown task'}`;
+    },
+    onDragOver: ({ over }: { over: { id: string | number } | null }) => {
+      if (!over) return '';
+      const column = COLUMNS.find(c => c.id === over.id);
+      return column ? `Over ${column.title} column` : '';
+    },
+    onDragEnd: ({ active, over }: { active: { id: string | number }, over: { id: string | number } | null }) => {
+      const task = optimisticTasks.find(t => t.id === active.id);
+      if (!over) return `Dropped task: ${task?.title}. Drag cancelled.`;
+      const column = COLUMNS.find(c => c.id === over.id);
+      return `Dropped task: ${task?.title} in ${column?.title} column`;
+    },
+    onDragCancel: ({ active }: { active: { id: string | number } }) => {
+      const task = optimisticTasks.find(t => t.id === active.id);
+      return `Dragging was cancelled. Task ${task?.title} returned to start`;
+    },
+  };
+
   return (
     <div className="relative">
 
+      {/* DND-06: closestCorners collision detection for virtualized lists */}
       <DndContext
         id={dndContextId}
         sensors={sensors}
@@ -155,7 +180,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
         onDragEnd={handleDragEnd}
       >
         {/* Mobile Status Tabs - Sticky at top, scrollable */}
-        <div className="md:hidden sticky top-0 z-20 bg-white border-b-2 border-gray-200 mb-4 -mx-4 px-4 shadow-construction">
+        <div className="md:hidden sticky top-0 z-20 bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700 mb-4 -mx-4 px-4 shadow-construction">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 py-3 min-w-max">
               {COLUMNS.map((column) => {
@@ -170,7 +195,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
                       "relative flex items-center gap-2 px-4 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 min-h-[44px]",
                       isActive
                         ? "bg-construction-blue text-white shadow-construction-lg"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 active:bg-gray-300"
+                        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600"
                     )}
                     whileTap={{ scale: 0.95 }}
                   >
@@ -191,7 +216,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
                         "relative z-10 flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-black",
                         isActive
                           ? "bg-white/20 text-white"
-                          : "bg-gray-200 text-gray-600"
+                          : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                       )}
                     >
                       {count}
@@ -251,6 +276,7 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
           })}
         </div>
 
+        {/* DND-03: DragOverlay outside virtualizer for proper rendering */}
         <DragOverlay>
           {activeTask ? (
             <TaskCard task={activeTask} isDragging phases={phases} taskTypes={taskTypes} />

@@ -84,7 +84,7 @@ export function NoteItem({
       >
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className="w-8 h-8 rounded-full bg-[#001B51] flex items-center justify-center text-xs text-white font-bold">
+          <div className="w-8 h-8 rounded-full bg-construction-blue flex items-center justify-center text-xs text-white font-bold">
             {note.created_by?.[0]?.toUpperCase() || 'U'}
           </div>
         </div>
@@ -157,7 +157,7 @@ export function NoteItem({
               <textarea
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
-                className="w-full p-2 border-2 border-gray-200 rounded-lg focus:border-[#001B51] focus:outline-none resize-none"
+                className="w-full p-2 border-2 border-gray-200 rounded-lg focus:border-construction-blue focus:outline-none resize-none"
                 rows={3}
               />
               <div className="flex gap-2">
@@ -165,7 +165,7 @@ export function NoteItem({
                   onClick={handleEdit}
                   className={cn(
                     'px-3 py-1 rounded-lg text-sm font-bold',
-                    'bg-[#001B51] text-white',
+                    'bg-construction-blue text-white',
                     'hover:bg-[#002B71] transition-colors'
                   )}
                 >
@@ -199,7 +199,7 @@ export function NoteItem({
                   onClick={() => onReply(note.id)}
                   className={cn(
                     'flex items-center gap-1.5 mt-2 px-2 py-1 rounded-lg text-xs font-medium',
-                    'text-gray-600 hover:text-[#001B51] hover:bg-gray-100 transition-colors',
+                    'text-gray-600 hover:text-construction-blue hover:bg-gray-100 transition-colors',
                     'opacity-0 group-hover:opacity-100'
                   )}
                 >

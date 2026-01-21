@@ -41,7 +41,7 @@ const getPhaseColor = (phaseName: string, index: number): string => {
 
   // Fallback: Cycle through construction theme colors
   const colors = [
-    'bg-[#001B51]', // Navy
+    'bg-construction-blue', // Navy
     'bg-[#3C3C3C]', // Dark gray
     'bg-[#059669]', // Green
     'bg-[#FFB627]', // Amber

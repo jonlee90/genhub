@@ -43,7 +43,7 @@ export function ReceiptPhotoBadge({ source, sourceTitle, sourceId }: ReceiptPhot
           <div
             className={cn(
               'px-2 py-1 rounded-md text-xs font-bold flex items-center gap-1 shadow-md cursor-default',
-              isTask ? 'bg-[#001B51] text-white' : 'bg-[#059669] text-white'
+              isTask ? 'bg-construction-blue text-white' : 'bg-[#059669] text-white'
             )}
           >
             {isTask ? <FileText className="h-3 w-3" /> : <Receipt className="h-3 w-3" />}

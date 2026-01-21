@@ -68,12 +68,12 @@ export function TrackedMaterialsCarousel({
   // Price change icon and color
   const getPriceChangeDisplay = (percent: number | null | undefined) => {
     if (percent === null || percent === undefined || percent === 0) {
-      return { Icon: Minus, color: 'text-gray-500', bg: 'bg-gray-100', label: '0%' };
+      return { Icon: Minus, color: 'text-gray-500 dark:text-gray-400', bg: 'bg-gray-100 dark:bg-gray-700', label: '0%' };
     }
     if (percent > 0) {
-      return { Icon: TrendingUp, color: 'text-red-600', bg: 'bg-red-50', label: `+${percent.toFixed(1)}%` };
+      return { Icon: TrendingUp, color: 'text-red-600 dark:text-red-400', bg: 'bg-red-50 dark:bg-red-900/30', label: `+${percent.toFixed(1)}%` };
     }
-    return { Icon: TrendingDown, color: 'text-emerald-600', bg: 'bg-emerald-50', label: `${percent.toFixed(1)}%` };
+    return { Icon: TrendingDown, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/30', label: `${percent.toFixed(1)}%` };
   };
 
   // Empty state
@@ -81,19 +81,19 @@ export function TrackedMaterialsCarousel({
     return (
       <div
         className={cn(
-          'bg-white rounded-xl overflow-hidden',
-          'border-2 border-gray-200 shadow-sm p-6',
+          'bg-white dark:bg-gray-800 rounded-xl overflow-hidden',
+          'border-2 border-gray-200 dark:border-gray-700 shadow-sm p-6',
           className
         )}
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center mb-3">
-            <Eye className="w-7 h-7 text-gray-300" />
+          <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+            <Eye className="w-7 h-7 text-gray-300 dark:text-gray-500" />
           </div>
-          <h3 className="text-base font-bold text-[#001B51] mb-1.5">
+          <h3 className="text-base font-bold text-construction-blue dark:text-gray-100 mb-1.5">
             No Tracked Materials
           </h3>
-          <p className="text-sm text-gray-600 max-w-xs">
+          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-xs">
             Track materials to monitor price changes and stock status
           </p>
         </div>
@@ -106,14 +106,14 @@ export function TrackedMaterialsCarousel({
       {/* Section Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#001B51] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-construction-blue dark:bg-blue-600 flex items-center justify-center">
             <Eye className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            <h3 className="font-bold text-construction-blue dark:text-gray-100 text-sm uppercase tracking-wide">
               Watchlist
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               {materials.length}/10 tracked
             </p>
           </div>
@@ -125,26 +125,26 @@ export function TrackedMaterialsCarousel({
             <button
               onClick={() => scroll('left')}
               className={cn(
-                'w-10 h-10 rounded-lg bg-white border-2 border-gray-200',
+                'w-10 h-10 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700',
                 'flex items-center justify-center',
                 'transition-all duration-150',
-                'active:scale-95 active:bg-gray-50'
+                'active:scale-95 active:bg-gray-50 dark:active:bg-gray-700'
               )}
               aria-label="Scroll left"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
+              <ChevronLeft className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
             <button
               onClick={() => scroll('right')}
               className={cn(
-                'w-10 h-10 rounded-lg bg-white border-2 border-gray-200',
+                'w-10 h-10 rounded-lg bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700',
                 'flex items-center justify-center',
                 'transition-all duration-150',
-                'active:scale-95 active:bg-gray-50'
+                'active:scale-95 active:bg-gray-50 dark:active:bg-gray-700'
               )}
               aria-label="Scroll right"
             >
-              <ChevronRight className="w-5 h-5 text-gray-700" />
+              <ChevronRight className="w-5 h-5 text-gray-700 dark:text-gray-300" />
             </button>
           </div>
         )}
@@ -173,14 +173,14 @@ export function TrackedMaterialsCarousel({
               key={material.material_id}
               className={cn(
                 'flex-shrink-0 w-[280px] snap-start',
-                'bg-white rounded-xl overflow-hidden',
-                'border-2 border-gray-200 shadow-sm',
+                'bg-white dark:bg-gray-800 rounded-xl overflow-hidden',
+                'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
                 'transition-all duration-200',
                 'active:scale-[0.99]'
               )}
             >
               {/* Image */}
-              <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+              <div className="relative h-32 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center">
                 {material.product_image_url ? (
                   <Image
                     src={material.product_image_url}
@@ -190,7 +190,7 @@ export function TrackedMaterialsCarousel({
                     sizes="280px"
                   />
                 ) : (
-                  <Package className="w-12 h-12 text-gray-300" />
+                  <Package className="w-12 h-12 text-gray-300 dark:text-gray-600" />
                 )}
 
                 {/* Price Change Badge */}
@@ -211,26 +211,26 @@ export function TrackedMaterialsCarousel({
               {/* Content */}
               <div className="p-4 space-y-3">
                 {/* Product Name */}
-                <h4 className="font-bold text-[#001B51] line-clamp-2 min-h-[2.5rem] text-sm leading-snug">
+                <h4 className="font-bold text-construction-blue dark:text-gray-100 line-clamp-2 min-h-[2.5rem] text-sm leading-snug">
                   {material.product_name}
                 </h4>
 
                 {/* SKU */}
                 {material.sku && (
-                  <p className="text-xs text-gray-500 font-mono">SKU: {material.sku}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">SKU: {material.sku}</p>
                 )}
 
                 {/* Current Price & Stock */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-700">
                   <div>
-                    <span className="text-xs text-gray-500 block">Current Price</span>
-                    <span className="text-lg font-black text-[#001B51]">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block">Current Price</span>
+                    <span className="text-lg font-black text-construction-blue dark:text-gray-100">
                       ${material.current_price.toFixed(2)}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-gray-500 block">Stock</span>
-                    <span className="text-sm font-semibold text-gray-700">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 block">Stock</span>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       {material.stock_status || 'Unknown'}
                     </span>
                   </div>
@@ -243,9 +243,9 @@ export function TrackedMaterialsCarousel({
                   className={cn(
                     'w-full h-11 px-4 rounded-xl font-semibold text-sm',
                     'flex items-center justify-center gap-2',
-                    'bg-gray-100 text-gray-700 border-2 border-gray-200',
+                    'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-600',
                     'transition-all duration-150',
-                    'active:scale-[0.98] active:bg-gray-200',
+                    'active:scale-[0.98] active:bg-gray-200 dark:active:bg-gray-600',
                     'disabled:opacity-50 disabled:pointer-events-none'
                   )}
                 >

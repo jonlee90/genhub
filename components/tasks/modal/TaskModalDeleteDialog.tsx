@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
 import Loader2 from "lucide-react/icons/loader-2";
 import Trash2 from "lucide-react/icons/trash-2";
 import { Button } from "@/components/ui/button";

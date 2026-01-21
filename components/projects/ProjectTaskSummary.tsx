@@ -13,6 +13,7 @@ import Target from 'lucide-react/icons/target';
 import type { TaskStats } from '@/app/actions/projects';
 import { formatPercent, formatPercentWhole } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface ProjectTaskSummaryProps {
   taskStats: TaskStats;
@@ -79,35 +80,35 @@ export function ProjectTaskSummary({
     return (
       <div
         className={cn(
-          'bg-white rounded-xl overflow-hidden',
-          'border-2 border-gray-200 shadow-sm',
+          'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
+          'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
           className
         )}
       >
         {/* Header */}
-        <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+        <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/80 dark:from-gray-800/80 to-white dark:to-gray-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-construction-blue flex items-center justify-center shadow-sm">
               <ClipboardList className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+              <h3 className="font-bold text-construction-blue text-sm uppercase tracking-wide">
                 Task Summary
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">No tasks yet</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No tasks yet</p>
             </div>
           </div>
         </div>
 
         {/* Empty State */}
         <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <ClipboardList className="w-8 h-8 text-gray-300" />
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+            <ClipboardList className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
-          <p className="text-base font-semibold text-gray-700 mb-1.5">
+          <p className="text-base font-semibold text-gray-700 dark:text-gray-100 mb-1.5">
             No tasks created yet
           </p>
-          <p className="text-sm text-gray-500 text-center max-w-[240px]">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-[240px]">
             Create your first task to start tracking progress and budget
           </p>
         </div>
@@ -119,35 +120,35 @@ export function ProjectTaskSummary({
   const getBudgetColor = () => {
     if (isOverBudget) return 'bg-[#DC2626]';
     if (isNearBudget) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   const getCompletionColor = () => {
     if (completionRate >= 100) return 'bg-[#DC2626]';
     if (completionRate >= 50) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   return (
     <div
       className={cn(
-        'bg-white rounded-xl overflow-hidden',
-        'border-2 border-gray-200 shadow-sm',
+        'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
+        'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
         'transition-all duration-200',
         className
       )}
     >
       {/* Header */}
-      <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
+      <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/80 dark:from-gray-800/80 to-white dark:to-gray-900">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-construction-blue flex items-center justify-center shadow-sm">
             <ClipboardList className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            <h3 className="font-bold text-construction-blue text-sm uppercase tracking-wide">
               Task Summary
             </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               {activeTasksCount} active task{activeTasksCount !== 1 ? 's' : ''}
             </p>
           </div>
@@ -156,10 +157,10 @@ export function ProjectTaskSummary({
             className={cn(
               'px-2.5 py-1 rounded-lg text-xs font-bold',
               isOverBudget
-                ? 'bg-red-100 text-red-700'
+                ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
                 : isNearBudget
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-emerald-100 text-emerald-700'
+                  ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300'
+                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
             )}
           >
             {isOverBudget ? 'Over Budget' : isNearBudget ? 'Near Limit' : 'On Track'}
@@ -175,8 +176,8 @@ export function ProjectTaskSummary({
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Budget Used
                 </span>
               </div>
@@ -187,13 +188,13 @@ export function ProjectTaskSummary({
                     ? 'text-[#DC2626]'
                     : isNearBudget
                       ? 'text-[#F59E0B]'
-                      : 'text-[#001B51]'
+                      : 'text-construction-blue'
                 )}
               >
                 {formatPercent(budgetUtilization)}
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500 ease-out',
@@ -208,16 +209,16 @@ export function ProjectTaskSummary({
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-gray-500" />
-                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <Target className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Completed
                 </span>
               </div>
-              <span className="text-sm font-bold text-[#001B51] tabular-nums">
+              <span className="text-sm font-bold text-construction-blue tabular-nums">
                 {taskStats.completed}/{taskStats.total}
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500 ease-out',
@@ -232,87 +233,70 @@ export function ProjectTaskSummary({
         {/* Budget Stats Grid - Neutral backgrounds with small color accents */}
         <div className="grid grid-cols-3 gap-2.5 mb-4">
           {/* Planned Cost */}
-          <div className="flex flex-col p-3 rounded-xl bg-gray-50 border border-gray-200 min-h-[76px]">
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
-              Planned
-            </span>
-            <span className="text-base font-bold text-[#001B51] leading-tight">
-              ${formatCompactNumber(budgetTotal)}
-            </span>
-            <span className="text-[10px] text-gray-500 mt-0.5">Budget</span>
-          </div>
+          <StatCard
+            label="Planned"
+            value={`$${formatCompactNumber(budgetTotal)}`}
+            subtext="Budget"
+          />
 
           {/* Actual Cost */}
-          <div className="flex flex-col p-3 rounded-xl bg-gray-50 border border-gray-200 min-h-[76px]">
-            <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
-              Actual
-            </span>
-            <span className="text-base font-bold text-gray-900 leading-tight">
-              ${formatCompactNumber(taskStats.totalActualCost)}
-            </span>
-            <span className="text-[10px] text-gray-500 mt-0.5">Spent</span>
-          </div>
+          <StatCard
+            label="Actual"
+            value={`$${formatCompactNumber(taskStats.totalActualCost)}`}
+            subtext="Spent"
+            valueColor="text-gray-900 dark:text-gray-100"
+          />
 
-          {/* Variance - Neutral bg with colored icon/dot indicator */}
-          <div className="flex flex-col p-3 rounded-xl bg-gray-50 border border-gray-200 min-h-[76px]">
-            <div className="flex items-center gap-1 mb-1">
-              {/* Small colored dot indicator - appropriate use of status color */}
-              <span
-                className={cn(
-                  'w-2 h-2 rounded-full flex-shrink-0',
-                  budgetVariance >= 0 ? 'bg-[#059669]' : 'bg-[#DC2626]'
-                )}
-              />
-              <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-                Variance
-              </span>
-            </div>
-            <span className="text-base font-bold text-[#001B51] leading-tight">
-              {budgetVariance >= 0 ? '+' : '-'}$
-              {formatCompactNumber(Math.abs(budgetVariance))}
-            </span>
-            <span className="text-[10px] text-gray-500 mt-0.5">
-              {budgetVariance >= 0 ? 'Under' : 'Over'}
-            </span>
-          </div>
+          {/* Variance - with status dot */}
+          <StatCard
+            label="Variance"
+            value={`${budgetVariance >= 0 ? '+' : '-'}$${formatCompactNumber(Math.abs(budgetVariance))}`}
+            subtext={budgetVariance >= 0 ? 'Under' : 'Over'}
+            variant={budgetVariance >= 0 ? 'success' : 'danger'}
+            showStatusDot
+          />
         </div>
 
         {/* Status Indicators Grid */}
         <div className="grid grid-cols-2 gap-2.5 mb-4">
           {/* Completed Tasks */}
-          <StatusCard
+          <StatCard
             icon={CheckCircle}
             label="Completed"
             value={taskStats.completed}
             subtext={formatPercentWhole(completionRate)}
             variant="success"
+            showStatusDot
           />
 
           {/* Blocked Tasks */}
-          <StatusCard
+          <StatCard
             icon={AlertTriangle}
             label="Blocked"
             value={taskStats.blocked}
             subtext={taskStats.blocked > 0 ? 'Needs attention' : 'All clear'}
             variant={taskStats.blocked > 0 ? 'danger' : 'success'}
+            showStatusDot
           />
 
           {/* Overdue Tasks */}
-          <StatusCard
+          <StatCard
             icon={Clock}
             label="Overdue"
             value={taskStats.overdue}
             subtext={taskStats.overdue > 0 ? 'Past due' : 'On schedule'}
             variant={taskStats.overdue > 0 ? 'danger' : 'success'}
+            showStatusDot
           />
 
           {/* Materials */}
-          <StatusCard
+          <StatCard
             icon={Package}
             label="Materials"
             value={taskStats.tasksWithMaterials}
             subtext={`$${formatCompactNumber(taskStats.totalMaterialCost)}`}
             variant="neutral"
+            showStatusDot
           />
         </div>
 
@@ -323,20 +307,20 @@ export function ProjectTaskSummary({
               'flex items-center gap-3 p-3 rounded-xl',
               'transition-all duration-200',
               isOverBudget
-                ? 'bg-red-50 border border-red-200'
-                : 'bg-amber-50 border border-amber-200'
+                ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40'
+                : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-900/40'
             )}
           >
             <div
               className={cn(
                 'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                isOverBudget ? 'bg-red-100' : 'bg-amber-100'
+                isOverBudget ? 'bg-red-100 dark:bg-red-900/40' : 'bg-amber-100 dark:bg-amber-900/40'
               )}
             >
               <AlertCircle
                 className={cn(
                   'w-4 h-4',
-                  isOverBudget ? 'text-red-600' : 'text-amber-600'
+                  isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                 )}
               />
             </div>
@@ -344,7 +328,7 @@ export function ProjectTaskSummary({
               <p
                 className={cn(
                   'text-sm font-semibold',
-                  isOverBudget ? 'text-red-800' : 'text-amber-800'
+                  isOverBudget ? 'text-red-800 dark:text-red-300' : 'text-amber-800 dark:text-amber-300'
                 )}
               >
                 {isOverBudget
@@ -354,7 +338,7 @@ export function ProjectTaskSummary({
               <p
                 className={cn(
                   'text-xs mt-0.5',
-                  isOverBudget ? 'text-red-600' : 'text-amber-600'
+                  isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
                 )}
               >
                 {isOverBudget
@@ -365,51 +349,6 @@ export function ProjectTaskSummary({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/**
- * StatusCard - Compact status indicator with visual feedback
- */
-interface StatusCardProps {
-  icon: typeof CheckCircle;
-  label: string;
-  value: number;
-  subtext: string;
-  variant: 'success' | 'danger' | 'warning' | 'neutral';
-}
-
-function StatusCard({ icon: Icon, label, value, subtext, variant }: StatusCardProps) {
-  // Small dot color based on status - only element with color
-  const dotColors = {
-    success: 'bg-[#059669]',
-    danger: 'bg-[#DC2626]',
-    warning: 'bg-[#F59E0B]',
-    neutral: 'bg-gray-400',
-  };
-
-  // Determine effective dot color based on variant and value
-  const getDotColor = () => {
-    if (variant === 'danger' && value === 0) return dotColors.success; // No blocked = good
-    if (variant === 'success' && value === 0) return dotColors.neutral; // No completed = muted
-    return dotColors[variant];
-  };
-
-  return (
-    <div className="flex flex-col p-3 rounded-xl min-h-[76px] bg-gray-50 border border-gray-200">
-      <div className="flex items-center gap-1.5 mb-1">
-        {/* Small colored dot indicator - appropriate use of status color */}
-        <span className={cn('w-2 h-2 rounded-full flex-shrink-0', getDotColor())} />
-        <Icon className="w-3.5 h-3.5 text-gray-500" />
-        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <span className="text-xl font-bold leading-tight text-[#001B51]">
-        {value}
-      </span>
-      <span className="text-[10px] mt-0.5 text-gray-500">{subtext}</span>
     </div>
   );
 }

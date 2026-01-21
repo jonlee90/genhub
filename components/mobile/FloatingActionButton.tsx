@@ -78,7 +78,7 @@ export function FloatingActionButton({
 
         // Base styles
         "inline-flex items-center justify-center",
-        "bg-[#001B51] text-white",
+        "bg-construction-blue dark:bg-blue-700 text-white",
         "font-semibold",
         "select-none touch-manipulation",
 
@@ -86,7 +86,7 @@ export function FloatingActionButton({
         isExtended ? "h-14 px-6 gap-2 rounded-full" : "w-14 h-14 rounded-full",
 
         // Elevation shadow
-        "shadow-lg shadow-[#001B51]/30",
+        "shadow-lg shadow-[var(--construction-blue)]/30 dark:shadow-blue-700/30",
 
         // Touch feedback
         "active:scale-95 active:shadow-md",

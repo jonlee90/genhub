@@ -2,7 +2,7 @@
 
 import { z } from 'zod';
 import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
+import { getUserContext } from '@/lib/auth-context';
 
 // ============================================
 // Validation Schemas
@@ -94,63 +94,6 @@ export interface MessageSearchResult {
 // ============================================
 // Helper Functions
 // ============================================
-
-type UserContextSuccess = {
-  userId: string;
-  companyId: string;
-  role: string;
-  supabase: Awaited<ReturnType<typeof createClient>>;
-};
-
-type UserContextError = {
-  error: string;
-};
-
-async function getUserContext(): Promise<UserContextSuccess | UserContextError> {
-  console.log('[getUserContext] Getting user session...');
-
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    console.error('[getUserContext] No authenticated user found');
-    return { error: 'Not authenticated' };
-  }
-
-  console.log('[getUserContext] User authenticated:', session.user.id);
-
-  // Create Supabase client
-  const supabase = await createClient();
-
-  // Get user's company and role using NextAuth user ID
-  const companyUserResult = await (supabase
-    .from('company_users') as any)
-    .select('company_id, role, status')
-    .eq('user_id', session.user.id)
-    .eq('status', 'active')
-    .single();
-
-  if (companyUserResult.error || !companyUserResult.data) {
-    console.error('[getUserContext] No active company found:', companyUserResult.error);
-    return { error: 'No active company found for user' };
-  }
-
-  type CompanyUserData = { company_id: string; role: string; status: string };
-  const companyUser = companyUserResult.data as CompanyUserData;
-
-  console.log('[getUserContext] User context loaded:', {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-  });
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
 
 // ============================================
 // Search Functions

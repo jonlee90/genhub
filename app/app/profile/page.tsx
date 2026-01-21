@@ -9,8 +9,8 @@ export default async function ProfilePage() {
 	const session = await auth();
 
 	return (
-		<div className="max-w-4xl mx-auto p-4">
-			<h1 className="text-2xl font-bold mb-6">Profile & Billing</h1>
+		<div className="max-w-4xl mx-auto p-4 bg-white dark:bg-gray-950 rounded-lg">
+			<h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Profile & Billing</h1>
 			<Suspense fallback={<Loading />}>
 				<SessionProviderWrapper session={session}>
 					<ProfileAndBillingContent />

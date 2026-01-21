@@ -168,18 +168,18 @@ export const PullToRefresh = forwardRef<PullToRefreshHandle, PullToRefreshProps>
             {pullState === 'refreshing' ? (
               // Spinner during refresh
               <Loader2
-                className="w-6 h-6 text-[#001B51] animate-spin"
+                className="w-6 h-6 text-construction-blue dark:text-blue-500 animate-spin"
               />
             ) : (
               // Arrow during pull
               <ArrowDown
-                className="w-6 h-6 text-[#001B51] transition-transform duration-150"
+                className="w-6 h-6 text-construction-blue dark:text-blue-500 transition-transform duration-150"
                 style={{ transform: `rotate(${arrowRotation}deg)` }}
               />
             )}
 
             {/* Status text */}
-            <span className="text-xs font-medium text-gray-500">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
               {pullState === 'refreshing' && 'Refreshing...'}
               {pullState === 'ready' && 'Release to refresh'}
               {pullState === 'pulling' && 'Pull to refresh'}

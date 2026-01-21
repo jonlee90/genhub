@@ -68,7 +68,7 @@ export function FullFeaturedExample() {
         rightActions={
           <button
             onClick={() => setIsOpen(false)}
-            className="h-12 px-6 bg-[#001B51] text-white font-semibold rounded-xl active:scale-[0.98] active:bg-[#001B51]/90 transition-all"
+            className="h-12 px-6 bg-construction-blue text-white font-semibold rounded-xl active:scale-[0.98] active:bg-construction-blue/90 transition-all"
           >
             Save Changes
           </button>
@@ -80,13 +80,13 @@ export function FullFeaturedExample() {
             <input
               type="text"
               defaultValue="Install kitchen cabinets"
-              className="w-full h-14 px-4 text-base border border-gray-200 rounded-xl focus:border-[#001B51] focus:ring-1 focus:ring-[#001B51]"
+              className="w-full h-14 px-4 text-base border border-gray-200 rounded-xl focus:border-construction-blue focus:ring-1 focus:ring-[var(--construction-blue)]"
             />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Notes</label>
             <textarea
-              className="w-full h-32 px-4 py-3 text-base border border-gray-200 rounded-xl focus:border-[#001B51] focus:ring-1 focus:ring-[#001B51] resize-none"
+              className="w-full h-32 px-4 py-3 text-base border border-gray-200 rounded-xl focus:border-construction-blue focus:ring-1 focus:ring-[var(--construction-blue)] resize-none"
               placeholder="Add notes..."
             />
           </div>
@@ -126,7 +126,7 @@ export function FilterSheetExample() {
         rightActions={
           <button
             onClick={() => setIsOpen(false)}
-            className="h-12 px-6 bg-[#001B51] text-white font-semibold rounded-xl active:scale-[0.98] transition-all"
+            className="h-12 px-6 bg-construction-blue text-white font-semibold rounded-xl active:scale-[0.98] transition-all"
           >
             Apply
           </button>
@@ -142,7 +142,7 @@ export function FilterSheetExample() {
                 w-full text-left p-4 rounded-xl border-2 transition-all
                 active:scale-[0.99]
                 ${selectedProject === project.id
-                  ? 'border-[#001B51] bg-[#001B51]/5'
+                  ? 'border-construction-blue bg-construction-blue/5'
                   : 'border-gray-200 bg-white'
                 }
               `}
@@ -303,11 +303,11 @@ export function ProjectDetailsExample() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 bg-gray-50 rounded-xl">
               <p className="text-sm text-gray-500">Progress</p>
-              <p className="text-2xl font-bold text-[#001B51]">67%</p>
+              <p className="text-2xl font-bold text-construction-blue">67%</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-xl">
               <p className="text-sm text-gray-500">Tasks</p>
-              <p className="text-2xl font-bold text-[#001B51]">24/36</p>
+              <p className="text-2xl font-bold text-construction-blue">24/36</p>
             </div>
           </div>
           <div className="p-4 bg-gray-50 rounded-xl">

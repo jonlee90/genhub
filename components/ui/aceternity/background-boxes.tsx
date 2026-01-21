@@ -72,7 +72,7 @@ export function BackgroundBoxesCore({
       {rows.map((_, i) => (
         <motion.div
           key={`row-${i}`}
-          className="w-16 h-8 border-l border-slate-700 relative"
+          className="w-16 h-8 border-l border-slate-700 dark:border-slate-600 relative"
         >
           {cols.map((_, j) => (
             <motion.div
@@ -84,7 +84,7 @@ export function BackgroundBoxesCore({
               animate={{
                 transition: { duration: 2 },
               }}
-              className="w-16 h-8 border-r border-t border-slate-700 relative"
+              className="w-16 h-8 border-r border-t border-slate-700 dark:border-slate-600 relative"
             >
               {j % 2 === 0 && i % 2 === 0 ? (
                 <svg
@@ -93,7 +93,7 @@ export function BackgroundBoxesCore({
                   viewBox="0 0 24 24"
                   strokeWidth="1.5"
                   stroke="currentColor"
-                  className="absolute h-6 w-10 -top-[14px] -left-[22px] text-slate-700 stroke-[1px] pointer-events-none"
+                  className="absolute h-6 w-10 -top-[14px] -left-[22px] text-slate-700 dark:text-slate-600 stroke-[1px] pointer-events-none"
                 >
                   <path
                     strokeLinecap="round"

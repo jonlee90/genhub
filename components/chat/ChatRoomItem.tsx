@@ -46,11 +46,11 @@ export const ChatRoomItem = memo(function ChatRoomItem({
       whileTap={{ scale: 0.98 }}
       className={cn(
         "w-full flex items-start gap-3 p-3 transition-all relative group",
-        "hover:bg-gradient-to-r hover:from-construction-blue/5 hover:to-transparent",
+        "hover:bg-gradient-to-r hover:from-construction-blue/5 dark:hover:from-construction-blue/10 hover:to-transparent",
         // Industrial stamped metal badge style for active state
         "border-l-4",
         isActive
-          ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 border-l-construction-blue shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)]"
+          ? "bg-gradient-to-r from-construction-blue/10 dark:from-construction-blue/20 to-construction-blue/5 dark:to-construction-blue/10 border-l-construction-blue shadow-[inset_0_1px_0_0_rgba(255,255,255,0.5)]"
           : "border-l-transparent",
       )}
     >
@@ -58,13 +58,13 @@ export const ChatRoomItem = memo(function ChatRoomItem({
       {isActive && (
         <motion.div
           layoutId="activeRoom"
-          className="absolute inset-0 border-2 border-construction-blue/20 pointer-events-none"
+          className="absolute inset-0 border-2 border-construction-blue/20 dark:border-construction-blue/40 pointer-events-none"
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         />
       )}
 
       {/* Debug: Avatar with construction-themed fallback */}
-      <Avatar className="h-12 w-12 shrink-0 border-2 border-gray-200 shadow-sm">
+      <Avatar className="h-12 w-12 shrink-0 border-2 border-gray-200 dark:border-gray-700 shadow-sm">
         <AvatarImage src={getAvatarUrl(room)} />
         <AvatarFallback className="bg-gradient-to-br from-construction-blue to-construction-blue/80 text-white font-black text-sm">
           {getInitials(room.name || "Chat")}
@@ -80,12 +80,12 @@ export const ChatRoomItem = memo(function ChatRoomItem({
               "text-sm truncate transition-colors",
               room.unread_count > 0
                 ? "font-black text-construction-blue"
-                : "font-semibold text-gray-700",
+                : "font-semibold text-gray-700 dark:text-gray-300",
             )}
           >
             {room.name || "Unnamed Chat"}
           </h3>
-          <span className="text-[10px] font-mono text-gray-500 shrink-0 tracking-tight">
+          <span className="text-[10px] font-mono text-gray-500 dark:text-gray-400 shrink-0 tracking-tight">
             {formatRelativeTime(
               room.last_message?.created_at || room.created_at,
             )}
@@ -98,8 +98,8 @@ export const ChatRoomItem = memo(function ChatRoomItem({
             className={cn(
               "text-xs truncate transition-colors",
               room.unread_count > 0
-                ? "text-gray-700 font-medium"
-                : "text-gray-500",
+                ? "text-gray-700 dark:text-gray-300 font-medium"
+                : "text-gray-500 dark:text-gray-400",
             )}
           >
             {getMessagePreview(room.last_message)}
@@ -107,7 +107,7 @@ export const ChatRoomItem = memo(function ChatRoomItem({
 
           {/* Debug: Unread Badge + Muted Icon with stamped metal style */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {isMuted && <BellOff className="h-3 w-3 text-gray-400" />}
+            {isMuted && <BellOff className="h-3 w-3 text-gray-400 dark:text-gray-500" />}
             {room.unread_count > 0 && (
               <motion.div
                 initial={{ scale: 0 }}

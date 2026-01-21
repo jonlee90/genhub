@@ -2,7 +2,7 @@
 name: code-reviewer
 description: "Code review, validation, testing, and bug fixes for GenHub construction PWA. Reviews quality, security, and GenHub patterns. NEVER implements new features."
 tools: Read, Glob, Grep, Bash, Edit, mcp__next-devtools__nextjs_index, mcp__next-devtools__nextjs_call, mcp__next-devtools__browser_snapshot, mcp__next-devtools__nextjs_docs, mcp__plugin_context7_context7__resolve-library-id, mcp__plugin_context7_context7__query-docs, mcp__plugin_serena_serena__read_memory, mcp__plugin_serena_serena__find_symbol, mcp__plugin_serena_serena__search_for_pattern, mcp__memory__read_graph, mcp__memory__search_nodes
-model: sonnet
+model: haiku
 color: red
 ---
 

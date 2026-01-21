@@ -77,7 +77,7 @@ export function PhaseStation({
           <span className={cn(
             "text-sm font-bold tabular-nums",
             isCompleted && "text-[#059669]",
-            isInProgress && "text-[#001B51]",
+            isInProgress && "text-construction-blue",
             !isCompleted && !isInProgress && "text-gray-400"
           )}>
             {formatPercentWhole(phase.completion_percentage)}
@@ -144,7 +144,7 @@ export function PhaseStation({
     <AnimatedTooltip content={tooltipContent} side="top" delay={300}>
       <motion.button
         onClick={onClick}
-        className="flex flex-col items-center gap-2.5 w-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001B51] focus-visible:ring-offset-2 rounded-lg"
+        className="flex flex-col items-center gap-2.5 w-full group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--construction-blue)] focus-visible:ring-offset-2 rounded-lg"
         whileHover={{ y: -2 }}
         whileTap={{ scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -153,7 +153,7 @@ export function PhaseStation({
         <div className="relative">
           {/* Subtle glow for active phase */}
           {isCurrent && !isCompleted && (
-            <div className="absolute inset-0 rounded-full bg-[#001B51]/20 blur-xl -z-10" />
+            <div className="absolute inset-0 rounded-full bg-construction-blue/20 blur-xl -z-10" />
           )}
 
           <motion.div
@@ -162,9 +162,9 @@ export function PhaseStation({
               // Touch target: 56x56px minimum on mobile
               'w-14 h-14 md:w-16 md:h-16',
               isCompleted && 'bg-[#059669] border-[#059669] text-white shadow-lg shadow-[#059669]/20',
-              isInProgress && 'bg-[#001B51] border-[#001B51] text-white shadow-lg shadow-[#001B51]/20',
+              isInProgress && 'bg-construction-blue border-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/20',
               !isCompleted && !isInProgress && 'bg-white border-gray-300 text-gray-500 shadow-md',
-              isSelected && 'ring-3 ring-[#001B51]/30 ring-offset-2'
+              isSelected && 'ring-3 ring-[var(--construction-blue)]/30 ring-offset-2'
             )}
             animate={isCurrent && !isCompleted ? {
               boxShadow: [
@@ -206,9 +206,9 @@ export function PhaseStation({
           <p className={cn(
             'text-xs font-semibold line-clamp-2 mb-1 leading-tight',
             isCompleted && 'text-[#059669]',
-            isInProgress && 'text-[#001B51]',
+            isInProgress && 'text-construction-blue',
             !isCompleted && !isInProgress && 'text-gray-600',
-            'group-hover:text-[#001B51] transition-colors'
+            'group-hover:text-construction-blue transition-colors'
           )}>
             {phase.name}
           </p>

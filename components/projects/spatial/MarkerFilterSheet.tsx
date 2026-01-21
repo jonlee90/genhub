@@ -130,10 +130,10 @@ export function MarkerFilterSheet({
       onClick={handleApply}
       className={cn(
         "min-h-[44px] px-6 rounded-xl",
-        "bg-[#001B51] text-white",
+        "bg-construction-blue text-white",
         "text-sm font-semibold",
         "transition-all duration-150",
-        "active:scale-[0.98] active:bg-[#001B51]/90",
+        "active:scale-[0.98] active:bg-construction-blue/90",
         "disabled:opacity-50 disabled:cursor-not-allowed",
       )}
       aria-label="Apply selected filters"
@@ -173,7 +173,7 @@ export function MarkerFilterSheet({
                 "border-2 transition-all duration-150",
                 "active:scale-[0.99]",
                 isSelected
-                  ? "border-[#001B51] bg-[#001B51]/5"
+                  ? "border-construction-blue bg-construction-blue/5"
                   : "border-gray-200 hover:border-gray-300 active:bg-gray-50",
               )}
               role="checkbox"
@@ -187,7 +187,7 @@ export function MarkerFilterSheet({
                   "flex items-center justify-center",
                   "transition-all duration-150",
                   isSelected
-                    ? "border-[#001B51] bg-[#001B51]"
+                    ? "border-construction-blue bg-construction-blue"
                     : "border-gray-300 bg-white",
                 )}
               >
@@ -236,9 +236,9 @@ export function MarkerFilterSheet({
             }}
             className={cn(
               "w-full min-h-[44px] py-3",
-              "text-sm font-medium text-[#001B51]",
+              "text-sm font-medium text-construction-blue",
               "rounded-xl border-2 border-dashed border-gray-200",
-              "hover:border-[#001B51]/30 hover:bg-[#001B51]/5",
+              "hover:border-construction-blue/30 hover:bg-construction-blue/5",
               "transition-all duration-150",
               "active:scale-[0.99]",
             )}

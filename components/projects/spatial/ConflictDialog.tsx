@@ -135,8 +135,8 @@ export function ConflictDialog({
             onClick={handleResolveAll}
             disabled={conflicts.some((c) => !resolutions.has(c.conflictType))}
             className={cn(
-              "px-4 py-2 bg-[#001B51] text-white rounded-lg",
-              "hover:bg-[#001B51]/90 transition-colors font-medium text-sm",
+              "px-4 py-2 bg-construction-blue text-white rounded-lg",
+              "hover:bg-construction-blue/90 transition-colors font-medium text-sm",
               "disabled:opacity-50 disabled:cursor-not-allowed",
             )}
           >

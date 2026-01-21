@@ -54,25 +54,25 @@ type QuickActionId = (typeof quickActionConfig)[number]["id"];
 
 const colorStyles = {
   navy: {
-    bg: "bg-[#001B51]/5",
-    activeBg: "active:bg-[#001B51]/15",
-    iconBg: "bg-[#001B51]/10",
-    iconColor: "text-[#001B51]",
-    border: "border-[#001B51]/10",
+    bg: "bg-construction-blue/5 dark:bg-construction-blue/20",
+    activeBg: "active:bg-construction-blue/15 dark:active:bg-construction-blue/30",
+    iconBg: "bg-construction-blue/10 dark:bg-construction-blue/30",
+    iconColor: "text-construction-blue dark:text-blue-400",
+    border: "border-construction-blue/10 dark:border-construction-blue/30",
   },
   green: {
-    bg: "bg-[#059669]/5",
-    activeBg: "active:bg-[#059669]/15",
-    iconBg: "bg-[#059669]/10",
-    iconColor: "text-[#059669]",
-    border: "border-[#059669]/10",
+    bg: "bg-[#059669]/5 dark:bg-[#059669]/20",
+    activeBg: "active:bg-[#059669]/15 dark:active:bg-[#059669]/30",
+    iconBg: "bg-[#059669]/10 dark:bg-[#059669]/30",
+    iconColor: "text-[#059669] dark:text-green-400",
+    border: "border-[#059669]/10 dark:border-[#059669]/30",
   },
   gray: {
-    bg: "bg-gray-50",
-    activeBg: "active:bg-gray-100",
-    iconBg: "bg-gray-100",
-    iconColor: "text-gray-600",
-    border: "border-gray-100",
+    bg: "bg-gray-50 dark:bg-gray-800",
+    activeBg: "active:bg-gray-100 dark:active:bg-gray-700",
+    iconBg: "bg-gray-100 dark:bg-gray-700",
+    iconColor: "text-gray-600 dark:text-gray-400",
+    border: "border-gray-100 dark:border-gray-700",
   },
 };
 
@@ -110,7 +110,7 @@ const QuickActionsSection = memo(function QuickActionsSection({
   onActionClick: (action: QuickActionId) => void;
 }) {
   return (
-    <section className="bg-white rounded-xl border-2 border-gray-200 p-4">
+    <section className="bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 p-4">
       {/* Section header - hidden on mobile for cleaner look */}
       <h2 className="sr-only">Quick Actions</h2>
 
@@ -146,16 +146,16 @@ const QuickActionsSection = memo(function QuickActionsSection({
 
               {/* Text */}
               <div className="flex-1 text-left min-w-0">
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-sm font-bold text-gray-900 dark:text-gray-100">
                   {action.title}
                 </p>
-                <p className="text-xs text-gray-500 truncate">
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                   {action.description}
                 </p>
               </div>
 
               {/* Arrow indicator */}
-              <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
             </button>
           );
         })}
@@ -222,10 +222,10 @@ export function DashboardContent({
   );
 
   return (
-    <div className="relative min-h-[100dvh] bg-gray-50">
+    <div className="relative min-h-[100dvh] bg-gray-50 dark:bg-gray-950">
       {/* Subtle Blueprint Grid Background */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.02] z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.05] z-0"
         style={BLUEPRINT_BACKGROUND_STYLE}
       />
 

@@ -225,7 +225,7 @@ export function InviteTeamMemberModal({
             htmlFor="email"
             className="text-gray-900 font-semibold flex items-center gap-2"
           >
-            <Mail className="h-4 w-4 text-[#001B51]" />
+            <Mail className="h-4 w-4 text-construction-blue" />
             Email Address
           </Label>
           <Input
@@ -235,7 +235,7 @@ export function InviteTeamMemberModal({
             placeholder="john.doe@example.com"
             required
             disabled={isPending || state?.success}
-            className="border-2 border-gray-300 focus:border-[#001B51] focus:ring-[#001B51] transition-colors"
+            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-[var(--construction-blue)] transition-colors"
           />
           {state?.fieldErrors?.email && (
             <p className="text-sm text-red-600 font-medium">
@@ -250,7 +250,7 @@ export function InviteTeamMemberModal({
             htmlFor="name"
             className="text-gray-900 font-semibold flex items-center gap-2"
           >
-            <User className="h-4 w-4 text-[#001B51]" />
+            <User className="h-4 w-4 text-construction-blue" />
             Full Name
           </Label>
           <Input
@@ -260,7 +260,7 @@ export function InviteTeamMemberModal({
             placeholder="John Doe"
             required
             disabled={isPending || state?.success}
-            className="border-2 border-gray-300 focus:border-[#001B51] focus:ring-[#001B51] transition-colors"
+            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-[var(--construction-blue)] transition-colors"
           />
           {state?.fieldErrors?.name && (
             <p className="text-sm text-red-600 font-medium">
@@ -275,7 +275,7 @@ export function InviteTeamMemberModal({
             htmlFor="role"
             className="text-gray-900 font-semibold flex items-center gap-2"
           >
-            <Shield className="h-4 w-4 text-[#001B51]" />
+            <Shield className="h-4 w-4 text-construction-blue" />
             Role
           </Label>
           <Select
@@ -284,7 +284,7 @@ export function InviteTeamMemberModal({
             onValueChange={(value) => setSelectedRole(value as UserRole)}
             disabled={isPending || state?.success}
           >
-            <SelectTrigger className="border-2 border-gray-300 focus:border-[#001B51] focus:ring-[#001B51]">
+            <SelectTrigger className="border-2 border-gray-300 focus:border-construction-blue focus:ring-[var(--construction-blue)]">
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
             <SelectContent>
@@ -310,10 +310,10 @@ export function InviteTeamMemberModal({
         </div>
 
         {/* Info Box */}
-        <div className="bg-blue-50 border-l-4 border-[#001B51] p-4 rounded">
+        <div className="bg-blue-50 border-l-4 border-construction-blue p-4 rounded">
           <div className="flex">
             <div className="flex-shrink-0">
-              <Shield className="h-5 w-5 text-[#001B51]" />
+              <Shield className="h-5 w-5 text-construction-blue" />
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-semibold text-gray-900">

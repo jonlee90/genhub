@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { m as motion } from "framer-motion";
 import { TopAccentBar } from "@/components/ui/TopAccentBar";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 // Routes where the mobile header should be hidden (page has its own header)
 const HIDE_HEADER_ROUTES = ["/app/tasks"];
@@ -35,7 +36,7 @@ export function Header() {
 
   return (
     <motion.header
-      className="relative bg-white border-b border-gray-200 shadow-sm"
+      className="relative bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-sm"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -47,23 +48,19 @@ export function Header() {
         {/* Left Side - Back Button or Empty Space */}
         <div className="w-10 h-10 flex items-center justify-center">
           {!isDashboard && (
-            <motion.button
+            <button
               onClick={handleBack}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 active:scale-95 transition-all"
               aria-label="Go back"
-              whileTap={{ scale: 0.95 }}
             >
-              <ArrowLeft size={20} className="text-gray-700" />
-            </motion.button>
+              <ArrowLeft size={20} className="text-gray-700 dark:text-gray-300" />
+            </button>
           )}
         </div>
 
         {/* Center Logo */}
-        <Link href="/app/" className="flex items-center gap-2 group">
-          <motion.div
-            className="flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden"
-            whileTap={{ scale: 0.95 }}
-          >
+        <Link href="/app/" className="flex items-center gap-2 group active:scale-95 transition-transform">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg overflow-hidden">
             <Image
               src="/icon-192.png"
               alt="GenHub Logo"
@@ -71,33 +68,37 @@ export function Header() {
               height={32}
               className="object-contain"
             />
-          </motion.div>
+          </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">GenHub</h1>
+            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">GenHub</h1>
           </div>
         </Link>
 
-        {/* Right Side - Notifications Bell */}
-        <motion.div whileTap={{ scale: 0.95 }}>
-          <Link
-            href="/app/notifications"
-            className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label={`Notifications (${notificationCount} unread)`}
-          >
-            <Bell size={20} className="text-gray-700" />
+        {/* Right Side - Theme Toggle & Notifications Bell */}
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
 
-            {notificationCount > 0 && (
-              <motion.span
-                className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-construction-accent rounded-full"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 500, damping: 15 }}
-              >
-                {notificationCount}
-              </motion.span>
-            )}
-          </Link>
-        </motion.div>
+          <div className="active:scale-95 transition-transform">
+            <Link
+              href="/app/notifications"
+              className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label={`Notifications (${notificationCount} unread)`}
+            >
+              <Bell size={20} className="text-gray-700 dark:text-gray-300" />
+
+              {notificationCount > 0 && (
+                <motion.span
+                  className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold text-white bg-construction-accent rounded-full"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                >
+                  {notificationCount}
+                </motion.span>
+              )}
+            </Link>
+          </div>
+        </div>
       </div>
     </motion.header>
   );

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContextWithUserData as getUserContext } from "@/lib/auth-context";
 
 // ============================================
 // Validation Schemas
@@ -83,54 +83,6 @@ const getChatRoomParticipantsSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext() {
-  console.log("[getUserContext] Getting user session...");
-
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    console.error("[getUserContext] No authenticated user found");
-    return { error: "Not authenticated" };
-  }
-
-  console.log("[getUserContext] User authenticated:", session.user.id);
-
-  // Create Supabase client
-  const supabase = await createClient();
-
-  // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = (await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single()) as { data: any; error: any };
-
-  if (companyError || !companyUser) {
-    console.error("[getUserContext] No active company found:", companyError);
-    return { error: "No active company found for user" };
-  }
-
-  console.log("[getUserContext] User context loaded:", {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-  });
-
-  return {
-    user: {
-      id: session.user.id,
-      name: session.user.name || "Unknown User",
-      email: session.user.email || "",
-    },
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
 
 async function verifyChatRoomAccess(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -2496,6 +2448,6 @@ export async function isUserGcAdmin() {
   return {
     success: true,
     isGcAdmin: role === "admin",
-    isPm: role === "pm",
+    isPm: role === "project_manager",
   };
 }

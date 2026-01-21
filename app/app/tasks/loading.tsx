@@ -12,7 +12,7 @@ export default function TasksLoading() {
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px',
-          color: '#001B51'
+          color: 'var(--construction-blue)'
         }} />
       </div>
 
@@ -40,13 +40,13 @@ export default function TasksLoading() {
       {/* Stats Grid Skeleton - Hidden on mobile */}
       <div className="hidden md:grid grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
+          <div key={i} className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-construction">
             <div className="flex items-center justify-between mb-3">
               <Skeleton className="h-9 w-9 rounded-lg bg-construction-blue/10" />
-              <Skeleton className="h-3 w-14 bg-gray-200" />
+              <Skeleton className="h-3 w-14 bg-gray-200 dark:bg-gray-700" />
             </div>
             <Skeleton className="h-10 w-12 mb-1 bg-construction-blue/10" />
-            <Skeleton className="h-4 w-20 bg-gray-200" />
+            <Skeleton className="h-4 w-20 bg-gray-200 dark:bg-gray-700" />
           </div>
         ))}
       </div>
@@ -57,16 +57,16 @@ export default function TasksLoading() {
       </div>
 
       {/* Desktop: Kanban Board Skeleton */}
-      <div className="hidden md:block bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
+      <div className="hidden md:block bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden">
         {/* View Toggle & Filters */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-24 rounded-lg bg-gray-100" />
-            <Skeleton className="h-10 w-24 rounded-lg bg-gray-100" />
+            <Skeleton className="h-10 w-24 rounded-lg bg-gray-100 dark:bg-gray-800" />
+            <Skeleton className="h-10 w-24 rounded-lg bg-gray-100 dark:bg-gray-800" />
           </div>
           <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-48 bg-gray-100" />
-            <Skeleton className="h-10 w-32 bg-gray-100" />
+            <Skeleton className="h-10 w-48 bg-gray-100 dark:bg-gray-800" />
+            <Skeleton className="h-10 w-32 bg-gray-100 dark:bg-gray-800" />
           </div>
         </div>
 
@@ -74,22 +74,22 @@ export default function TasksLoading() {
         <div className="p-4">
           <div className="grid grid-cols-4 gap-4">
             {['Backlog', 'In Progress', 'Review', 'Completed'].map((column, colIdx) => (
-              <div key={column} className="bg-gray-50 rounded-lg p-3 min-h-[400px]">
+              <div key={column} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 min-h-[400px]">
                 {/* Column Header */}
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
-                  <Skeleton className="h-5 w-24 bg-gray-200" />
-                  <Skeleton className="h-5 w-6 rounded-full bg-gray-200" />
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-700">
+                  <Skeleton className="h-5 w-24 bg-gray-200 dark:bg-gray-700" />
+                  <Skeleton className="h-5 w-6 rounded-full bg-gray-200 dark:bg-gray-700" />
                 </div>
 
                 {/* Task Cards */}
                 <div className="space-y-3">
                   {[...Array(colIdx === 1 ? 3 : colIdx === 0 ? 4 : 2)].map((_, cardIdx) => (
-                    <div key={cardIdx} className="p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
-                      <Skeleton className="h-4 w-full mb-2 bg-gray-200" />
-                      <Skeleton className="h-3 w-3/4 mb-3 bg-gray-100" />
+                    <div key={cardIdx} className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                      <Skeleton className="h-4 w-full mb-2 bg-gray-200 dark:bg-gray-700" />
+                      <Skeleton className="h-3 w-3/4 mb-3 bg-gray-100 dark:bg-gray-800" />
                       <div className="flex items-center justify-between">
                         <Skeleton className="h-5 w-16 rounded-full bg-construction-blue/10" />
-                        <Skeleton className="h-6 w-6 rounded-full bg-gray-200" />
+                        <Skeleton className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700" />
                       </div>
                     </div>
                   ))}

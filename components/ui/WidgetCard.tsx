@@ -18,9 +18,9 @@ export function WidgetCard({
   return (
     <div
       className={cn(
-        "bg-white border-2 border-gray-200 rounded-xl p-4 h-full",
+        "bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl p-4 h-full",
         interactive &&
-          "transition-all duration-150 active:scale-[0.99] active:bg-gray-50/50",
+          "transition-all duration-150 active:scale-[0.99] active:bg-gray-50/50 dark:active:bg-gray-800/50",
         className,
       )}
     >
@@ -52,13 +52,13 @@ export function WidgetHeader({
     <div className={cn("flex items-center justify-between", className)}>
       <div className="flex items-center gap-3">
         <div
-          className={cn("p-2 bg-[#001B51]/10 rounded-lg", iconWrapperClassName)}
+          className={cn("p-2 bg-construction-blue/10 rounded-lg", iconWrapperClassName)}
         >
-          <Icon className={cn("w-5 h-5 text-[#001B51]", iconClassName)} />
+          <Icon className={cn("w-5 h-5 text-construction-blue", iconClassName)} />
         </div>
         <h3
           className={cn(
-            "text-sm font-bold text-gray-900 uppercase tracking-wide",
+            "text-sm font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide",
             titleClassName,
           )}
         >
@@ -79,7 +79,7 @@ export function WidgetSkeleton({ children, className }: WidgetSkeletonProps) {
   return (
     <div
       className={cn(
-        "bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse h-full",
+        "bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-xl p-4 animate-pulse h-full",
         className,
       )}
     >

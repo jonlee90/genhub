@@ -102,14 +102,14 @@ export const MarkerListItem = memo(function MarkerListItem({
       className={cn(
         'group relative cursor-pointer rounded-lg border-2 bg-white p-3 transition-all hover:shadow-md',
         isSelected
-          ? 'border-[#001B51] shadow-md'
-          : 'border-gray-200 hover:border-[#001B51]/30',
+          ? 'border-construction-blue shadow-md'
+          : 'border-gray-200 hover:border-construction-blue/30',
         className
       )}
     >
       {/* Debug: Selection indicator */}
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#001B51] rounded-l-lg" />
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-construction-blue rounded-l-lg" />
       )}
 
       <div className="flex items-start gap-3">
@@ -126,7 +126,7 @@ export const MarkerListItem = memo(function MarkerListItem({
         {/* Debug: Content */}
         <div className="flex-1 min-w-0">
           {/* Debug: Title */}
-          <h4 className="font-bold text-sm text-[#001B51] truncate mb-1 uppercase tracking-tight">
+          <h4 className="font-bold text-sm text-construction-blue truncate mb-1 uppercase tracking-tight">
             {marker.title}
           </h4>
 
@@ -172,7 +172,7 @@ export const MarkerListItem = memo(function MarkerListItem({
       {/* Debug: Hover indicator */}
       <div
         className={cn(
-          'absolute inset-0 rounded-lg border-2 border-[#001B51] opacity-0 pointer-events-none transition-opacity',
+          'absolute inset-0 rounded-lg border-2 border-construction-blue opacity-0 pointer-events-none transition-opacity',
           'group-hover:opacity-20'
         )}
       />

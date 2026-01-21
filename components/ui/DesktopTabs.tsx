@@ -150,7 +150,7 @@ export function DesktopTabs({
     // Use status-specific gradients if enabled
     if (useStatusGradients) {
       const statusGradients: Record<string, string> = {
-        all: 'from-[#001B51] to-[#002868]', // Navy gradient
+        all: 'from-[var(--construction-blue)] to-[#002868]', // Navy gradient
         // Task statuses
         todo: 'from-gray-500 to-gray-600',
         in_progress: 'from-blue-600 to-blue-700',
@@ -163,11 +163,11 @@ export function DesktopTabs({
         on_hold: 'from-orange-500 to-orange-600',
       };
 
-      return statusGradients[tab.value] || 'from-[#001B51] to-[#002868]';
+      return statusGradients[tab.value] || 'from-[var(--construction-blue)] to-[#002868]';
     }
 
     // Default GenHub navy gradient
-    return 'from-[#001B51] to-[#002868]';
+    return 'from-[var(--construction-blue)] to-[#002868]';
   };
 
   return (
@@ -178,8 +178,8 @@ export function DesktopTabs({
       className={cn(
         // Container with Aceternity-inspired styling
         'relative grid gap-2',
-        'p-1.5 bg-gray-100 rounded-xl',
-        'border-2 border-gray-200',
+        'p-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl',
+        'border-2 border-gray-200 dark:border-gray-700',
         // Shadow for depth
         'shadow-sm',
         className
@@ -216,13 +216,13 @@ export function DesktopTabs({
               // Transitions for non-background properties
               'transition-all duration-200',
               // Focus styles for keyboard navigation
-              'focus:outline-none focus:ring-2 focus:ring-[#001B51] focus:ring-offset-2 focus:ring-offset-gray-100',
+              'focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)] focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800',
               // Hover and active states
               isActive
                 ? 'text-white'
                 : cn(
-                    'text-gray-600',
-                    'hover:text-gray-900 hover:bg-gray-200/50',
+                    'text-gray-600 dark:text-gray-400',
+                    'hover:text-gray-900 hover:bg-gray-200/50 dark:hover:text-gray-100 dark:hover:bg-gray-700/50',
                     'active:scale-[0.98]'
                   ),
               // Cursor
@@ -250,7 +250,7 @@ export function DesktopTabs({
                   'transition-colors duration-200',
                   isActive
                     ? 'bg-white/20 text-white'
-                    : 'bg-gray-200 text-gray-700 group-hover:bg-gray-300'
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:bg-gray-300 dark:group-hover:bg-gray-600'
                 )}
               >
                 {tab.count}

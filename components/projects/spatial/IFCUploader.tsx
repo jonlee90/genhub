@@ -152,10 +152,10 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
       )}
     >
       {/* Blueprint corner markers */}
-      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#001B51]" />
-      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-[#001B51]" />
-      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-[#001B51]" />
-      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#001B51]" />
+      <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-construction-blue" />
+      <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-construction-blue" />
+      <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-construction-blue" />
+      <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-construction-blue" />
 
       <div className="p-6 md:p-8">
         {/* Header */}
@@ -177,9 +177,9 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
             className={cn(
               'relative border-2 border-dashed rounded-lg transition-all',
               'p-8 md:p-12 text-center cursor-pointer',
-              'hover:border-[#001B51] hover:bg-blue-50/30',
+              'hover:border-construction-blue hover:bg-blue-50/30',
               isDragging
-                ? 'border-[#001B51] bg-blue-50/50 scale-[1.02]'
+                ? 'border-construction-blue bg-blue-50/50 scale-[1.02]'
                 : 'border-gray-300 bg-gray-50/50'
             )}
           >
@@ -188,8 +188,8 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
               className="absolute inset-0 opacity-[0.02] pointer-events-none"
               style={{
                 backgroundImage: `
-                  linear-gradient(to right, #001B51 1px, transparent 1px),
-                  linear-gradient(to bottom, #001B51 1px, transparent 1px)
+                  linear-gradient(to right, var(--construction-blue) 1px, transparent 1px),
+                  linear-gradient(to bottom, var(--construction-blue) 1px, transparent 1px)
                 `,
                 backgroundSize: '20px 20px',
               }}
@@ -208,7 +208,7 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
                   'w-16 h-16 rounded-lg flex items-center justify-center transition-all',
                   'border-2',
                   isDragging
-                    ? 'bg-[#001B51] border-[#001B51] scale-110'
+                    ? 'bg-construction-blue border-construction-blue scale-110'
                     : 'bg-white border-gray-200'
                 )}
               >
@@ -225,7 +225,7 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
                   {isDragging ? 'Drop IFC file here' : 'Drag & drop IFC file'}
                 </p>
                 <p className="text-sm text-gray-500">
-                  or <span className="text-[#001B51] font-medium">browse files</span>
+                  or <span className="text-construction-blue font-medium">browse files</span>
                 </p>
               </div>
 
@@ -241,8 +241,8 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
           <div className="space-y-4">
             {/* File Info */}
             <div className="flex items-start gap-4 p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
-              <div className="p-2 bg-white border-2 border-[#001B51] rounded">
-                <FileCheck className="w-5 h-5 text-[#001B51]" />
+              <div className="p-2 bg-white border-2 border-construction-blue rounded">
+                <FileCheck className="w-5 h-5 text-construction-blue" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -268,12 +268,12 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600 font-medium">Processing...</span>
-                  <span className="text-[#001B51] font-bold font-mono">{uploadProgress}%</span>
+                  <span className="text-construction-blue font-bold font-mono">{uploadProgress}%</span>
                 </div>
 
                 <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#001B51] transition-all duration-300 relative"
+                    className="h-full bg-construction-blue transition-all duration-300 relative"
                     style={{ width: `${uploadProgress}%` }}
                   >
                     {/* Animated scan line */}
@@ -297,9 +297,9 @@ export function IFCUploader({ projectId, onUploadComplete, className }: IFCUploa
                 onClick={handleUpload}
                 className={cn(
                   'w-full py-3 px-6 rounded-lg font-semibold uppercase tracking-wide',
-                  'bg-[#001B51] text-white',
+                  'bg-construction-blue text-white',
                   'hover:bg-[#002666] transition-colors',
-                  'border-2 border-[#001B51]',
+                  'border-2 border-construction-blue',
                   'flex items-center justify-center gap-2'
                 )}
               >

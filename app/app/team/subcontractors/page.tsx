@@ -17,7 +17,7 @@ const BLUEPRINT_BACKGROUND_STYLE = {
     linear-gradient(to bottom, currentColor 1px, transparent 1px)
   `,
   backgroundSize: "40px 40px",
-  color: "#001B51",
+  color: "var(--construction-blue)",
 } as const;
 
 export default async function SubcontractorsPage() {
@@ -38,10 +38,10 @@ export default async function SubcontractorsPage() {
           : "Failed to load subcontractors. Please try again.";
 
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-          <p className="text-gray-600">{message}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{title}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{message}</p>
         </div>
       </div>
     );
@@ -115,7 +115,7 @@ export default async function SubcontractorsPage() {
       </div>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 ---
 name: performance-engineer
-description: Performance optimization for GenHub PWA. Database query tuning, Core Web Vitals, bundle analysis, caching strategies, load testing. Use PROACTIVELY when investigating slow pages, optimizing queries, or improving LCP/FID/CLS metrics.
+description: "Performance optimization for GenHub PWA. Database query tuning, Core Web Vitals, bundle analysis, caching strategies, load testing. Use PROACTIVELY when investigating slow pages, optimizing queries, or improving LCP/FID/CLS metrics."
 tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__execute_sql, mcp__supabase__get_logs, mcp__supabase__get_advisors, mcp__supabase__apply_migration
-model: opus
+model: inherit
 color: orange
 ---
 

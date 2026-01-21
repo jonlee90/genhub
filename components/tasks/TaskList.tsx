@@ -38,6 +38,7 @@ import {
 } from "@/lib/config/task-colors";
 import { TaskListMobile } from ".//TaskListMobile";
 import type { TaskWithRelations, Phase, TaskStatus } from "@/types/db/task";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface TaskListProps {
   tasks: TaskWithRelations[];
@@ -45,7 +46,7 @@ interface TaskListProps {
   /** When provided, we"re in project context - look up phase from this array */
   phases?: Phase[];
   /** Task type configs from database - pass to TaskListMobile for icon/color display */
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 const PRIORITY_ORDER: Record<string, number> = {
@@ -119,22 +120,22 @@ const TaskListRow = memo(function TaskListRow({
   const taskIsOverdue = isOverdue(task);
 
   return (
-    <TableRow className="bg-white group hover:bg-[#001B51]/5 transition-colors duration-200 cursor-pointer border-b border-gray-100 content-visibility-auto">
+    <TableRow className="bg-white dark:bg-gray-900 group hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10 transition-colors duration-200 cursor-pointer border-b border-gray-100 dark:border-gray-800 content-visibility-auto">
       {/* Title */}
       <TableCell>
         <button
           onClick={() => onTaskClick?.(task)}
-          className="font-bold text-sm hover:text-[#001B51] transition-colors flex items-center gap-2 relative group text-left"
+          className="font-bold text-sm text-gray-900 dark:text-gray-100 hover:text-construction-blue dark:hover:text-blue-400 transition-colors flex items-center gap-2 relative group text-left"
         >
           {task.status === "blocked" && (
-            <Ban className="h-4 w-4 text-red-500 flex-shrink-0" />
+            <Ban className="h-4 w-4 text-red-500 dark:text-red-400 flex-shrink-0" />
           )}
           {taskIsOverdue && task.status !== "blocked" && (
-            <AlertTriangle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+            <AlertTriangle className="h-4 w-4 text-orange-500 dark:text-orange-400 flex-shrink-0" />
           )}
           <span className="line-clamp-1 relative">
             {task.title}
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#001B51] group-hover:w-full transition-all duration-300" />
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-construction-blue dark:bg-blue-400 group-hover:w-full transition-all duration-300" />
           </span>
         </button>
       </TableCell>
@@ -144,18 +145,18 @@ const TaskListRow = memo(function TaskListRow({
         {task.project ? (
           <Link
             href={`/app/projects/${task.project.id}`}
-            className="hover:underline text-sm"
+            className="hover:underline text-sm text-gray-900 dark:text-gray-100"
           >
             {task.project.name}
           </Link>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground dark:text-gray-500">-</span>
         )}
       </TableCell>
 
       {/* Phase */}
       <TableCell>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-muted-foreground dark:text-gray-400">
           {getPhaseName(task)}
         </span>
       </TableCell>
@@ -170,10 +171,10 @@ const TaskListRow = memo(function TaskListRow({
                 {getInitials(task.assignee.name)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-sm">{task.assignee.name}</span>
+            <span className="text-sm text-gray-900 dark:text-gray-100">{task.assignee.name}</span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm">Unassigned</span>
+          <span className="text-muted-foreground dark:text-gray-500 text-sm">Unassigned</span>
         )}
       </TableCell>
 
@@ -183,14 +184,14 @@ const TaskListRow = memo(function TaskListRow({
           <div
             className={cn(
               "flex items-center gap-1 text-sm",
-              taskIsOverdue && "text-red-600",
+              taskIsOverdue && "text-red-600 dark:text-red-400",
             )}
           >
             <Calendar className="h-3 w-3" />
             {formatDate(task.due_date)}
           </div>
         ) : (
-          <span className="text-muted-foreground text-sm">-</span>
+          <span className="text-muted-foreground dark:text-gray-500 text-sm">-</span>
         )}
       </TableCell>
 
@@ -206,10 +207,7 @@ const TaskListRow = memo(function TaskListRow({
 
       {/* Status (Inline Edit) */}
       <TableCell>
-        <motion.div
-          animate={STATUS_ANIMATE[task.status] ? { scale: [1, 1.05, 1] } : {}}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
+        <div className={STATUS_ANIMATE[task.status] ? 'animate-pulse-scale' : ''}>
           <Select
             value={task.status}
             onValueChange={(value) =>
@@ -243,7 +241,7 @@ const TaskListRow = memo(function TaskListRow({
               ))}
             </SelectContent>
           </Select>
-        </motion.div>
+        </div>
       </TableCell>
     </TableRow>
   );
@@ -360,7 +358,7 @@ export function TaskList({ tasks, onTaskClick, phases, taskTypes }: TaskListProp
   if (tasks.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">No tasks found</p>
+        <p className="text-muted-foreground dark:text-gray-400">No tasks found</p>
       </div>
     );
   }
@@ -404,10 +402,10 @@ export function TaskList({ tasks, onTaskClick, phases, taskTypes }: TaskListProp
 
   // Desktop Table View
   return (
-    <div className="bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden">
       <Table>
-        <TableHeader className="sticky top-0 bg-[#001B51] text-white shadow-construction z-10">
-          <TableRow className="border-none hover:bg-[#001B51]">
+        <TableHeader className="sticky top-0 bg-construction-blue dark:bg-construction-blue text-white shadow-construction z-10">
+          <TableRow className="border-none hover:bg-construction-blue dark:hover:bg-construction-blue">
             <TableHead className="w-[300px] text-white">
               <SortButton field="title" label="Title" />
             </TableHead>

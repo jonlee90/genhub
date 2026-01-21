@@ -158,8 +158,8 @@ function ErrorCrashRecoveryUI({
             onClick={onReset}
             className={cn(
               'flex-1 flex items-center justify-center gap-2 px-4 py-2',
-              'bg-[#001B51] text-white rounded-lg',
-              'hover:bg-[#001B51]/90 transition-colors',
+              'bg-construction-blue text-white rounded-lg',
+              'hover:bg-construction-blue/90 transition-colors',
               'font-medium text-sm'
             )}
           >
@@ -185,7 +185,7 @@ function ErrorCrashRecoveryUI({
         <div className="mt-4 pt-4 border-t border-gray-200">
           <a
             href="mailto:support@genhub.com?subject=3D Viewer Error"
-            className="text-sm text-[#001B51] hover:underline flex items-center gap-1"
+            className="text-sm text-construction-blue hover:underline flex items-center gap-1"
           >
             <Mail className="w-4 h-4" />
             Contact Support
@@ -235,8 +235,8 @@ export function ErrorState({
           <button
             onClick={action.onClick}
             className={cn(
-              'px-6 py-2 bg-[#001B51] text-white rounded-lg',
-              'hover:bg-[#001B51]/90 transition-colors',
+              'px-6 py-2 bg-construction-blue text-white rounded-lg',
+              'hover:bg-construction-blue/90 transition-colors',
               'font-medium text-sm'
             )}
           >
@@ -301,7 +301,7 @@ export function WebGLNotSupportedState() {
             href="https://get.webgl.org/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-[#001B51] hover:underline"
+            className="text-sm text-construction-blue hover:underline"
           >
             Learn more about WebGL →
           </a>
@@ -396,8 +396,8 @@ export function NoModelUploadedState({ onUpload }: { onUpload: () => void }) {
         <button
           onClick={onUpload}
           className={cn(
-            'px-6 py-2 bg-[#001B51] text-white rounded-lg',
-            'hover:bg-[#001B51]/90 transition-colors',
+            'px-6 py-2 bg-construction-blue text-white rounded-lg',
+            'hover:bg-construction-blue/90 transition-colors',
             'font-medium text-sm'
           )}
         >

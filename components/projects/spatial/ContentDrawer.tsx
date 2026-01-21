@@ -151,12 +151,12 @@ export function ContentDrawer({
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             className={cn(
               'fixed right-0 top-0 bottom-0 w-full md:w-[600px] bg-white shadow-2xl z-50 flex flex-col',
-              'md:border-l-2 md:border-[#001B51]',
+              'md:border-l-2 md:border-construction-blue',
               className
             )}
           >
             {/* Debug: Header */}
-            <div className="shrink-0 border-b-2 border-[#001B51] bg-gradient-to-r from-[#001B51] to-[#3C3C3C] px-6 py-4">
+            <div className="shrink-0 border-b-2 border-construction-blue bg-gradient-to-r from-[var(--construction-blue)] to-[#3C3C3C] px-6 py-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   {/* Debug: Type icon */}

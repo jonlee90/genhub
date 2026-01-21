@@ -65,7 +65,7 @@ export function SpatialViewerWithOnboarding({
           className={cn(
             'absolute bottom-4 right-4 z-20',
             'px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wide',
-            'bg-[#001B51] text-white hover:bg-[#002666] transition-colors shadow-construction',
+            'bg-construction-blue text-white hover:bg-[#002666] transition-colors shadow-construction',
             'flex items-center gap-2'
           )}
         >
@@ -77,13 +77,13 @@ export function SpatialViewerWithOnboarding({
       {/* Filter Buttons (with tour data attribute) */}
       <div className="absolute bottom-4 left-4 z-20" data-tour="marker-filter">
         <div className="flex gap-2">
-          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-[#001B51] transition-colors">
+          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-construction-blue transition-colors">
             Issues
           </button>
-          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-[#001B51] transition-colors">
+          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-construction-blue transition-colors">
             Tasks
           </button>
-          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-[#001B51] transition-colors">
+          <button className="px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-construction-blue transition-colors">
             Notes
           </button>
         </div>
@@ -93,7 +93,7 @@ export function SpatialViewerWithOnboarding({
       {showTourRestart && (
         <button
           onClick={handleRestartTour}
-          className="absolute top-4 left-4 z-20 px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-[#001B51] transition-colors flex items-center gap-2"
+          className="absolute top-4 left-4 z-20 px-3 py-2 bg-white border-2 border-gray-200 rounded-lg text-xs font-semibold hover:border-construction-blue transition-colors flex items-center gap-2"
           title="Restart Tour"
         >
           <RotateCcw className="w-4 h-4" />

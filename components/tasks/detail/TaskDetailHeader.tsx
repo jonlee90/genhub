@@ -48,15 +48,15 @@ export function TaskDetailHeader({
     >
       <div className="flex items-start justify-between gap-6">
         <div className="flex-1 min-w-0">
-          <h1 className="text-4xl font-black text-construction-blue leading-tight mb-3 tracking-tight">
+          <h1 className="text-4xl font-black text-construction-blue dark:text-blue-400 leading-tight mb-3 tracking-tight">
             {title}
           </h1>
-          <div className="flex items-center gap-3 text-sm text-gray-600">
+          <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4" />
               <span>Created by {creatorName || "Unknown"}</span>
             </div>
-            <span className="text-gray-400">•</span>
+            <span className="text-gray-400 dark:text-gray-500">•</span>
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>{formatDate(createdAt)}</span>
@@ -69,7 +69,7 @@ export function TaskDetailHeader({
             variant="outline"
             size="sm"
             onClick={onDelete}
-            className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
+            className="gap-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
           >
             <Trash2 className="h-4 w-4" />
             Delete

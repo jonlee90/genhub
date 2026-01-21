@@ -54,7 +54,7 @@ export function WebGLFallback({ onRetry, className }: WebGLFallbackProps) {
         {/* Heading */}
         <h2
           className={cn(
-            'text-xl font-bold text-center text-[#001B51] mb-2',
+            'text-xl font-bold text-center text-construction-blue mb-2',
             'uppercase tracking-tight'
           )}
         >
@@ -70,13 +70,13 @@ export function WebGLFallback({ onRetry, className }: WebGLFallbackProps) {
         {/* Suggestions */}
         <div className="space-y-3 mb-6">
           <div className="flex items-start gap-3 text-sm text-gray-700">
-            <Monitor className="w-5 h-5 text-[#001B51] flex-shrink-0 mt-0.5" />
+            <Monitor className="w-5 h-5 text-construction-blue flex-shrink-0 mt-0.5" />
             <span>
               Try using a modern browser like Chrome, Firefox, or Edge
             </span>
           </div>
           <div className="flex items-start gap-3 text-sm text-gray-700">
-            <Smartphone className="w-5 h-5 text-[#001B51] flex-shrink-0 mt-0.5" />
+            <Smartphone className="w-5 h-5 text-construction-blue flex-shrink-0 mt-0.5" />
             <span>
               Update your browser to the latest version
             </span>
@@ -90,11 +90,11 @@ export function WebGLFallback({ onRetry, className }: WebGLFallbackProps) {
             className={cn(
               'w-full min-h-[44px] px-6 py-3',
               'flex items-center justify-center gap-2',
-              'bg-[#001B51] text-white',
+              'bg-construction-blue text-white',
               'font-semibold text-base rounded-xl',
-              'active:scale-[0.98] active:bg-[#001B51]/90',
+              'active:scale-[0.98] active:bg-construction-blue/90',
               'transition-all duration-150',
-              'focus:outline-none focus:ring-2 focus:ring-[#001B51] focus:ring-offset-2'
+              'focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)] focus:ring-offset-2'
             )}
             aria-label="Retry loading the 3D viewer"
           >

@@ -18,34 +18,34 @@ export interface ProjectStatusWidgetProps {
 const STATUS_CONFIG = {
   active: {
     label: "Active",
-    color: "#001B51",
-    bgClass: "bg-[#001B51]",
-    textClass: "text-[#001B51]",
-    lightBg: "bg-[#001B51]/5",
+    color: "var(--construction-blue)",
+    bgClass: "bg-construction-blue dark:bg-blue-500",
+    textClass: "text-construction-blue dark:text-blue-400",
+    lightBg: "bg-construction-blue/5 dark:bg-blue-500/20",
     filter: "active",
   },
   onHold: {
     label: "On Hold",
     color: "#F59E0B",
-    bgClass: "bg-[#F59E0B]",
-    textClass: "text-[#F59E0B]",
-    lightBg: "bg-[#F59E0B]/5",
+    bgClass: "bg-[#F59E0B] dark:bg-yellow-500",
+    textClass: "text-[#F59E0B] dark:text-yellow-400",
+    lightBg: "bg-[#F59E0B]/5 dark:bg-yellow-500/20",
     filter: "on_hold",
   },
   completed: {
     label: "Completed",
     color: "#059669",
-    bgClass: "bg-[#059669]",
-    textClass: "text-[#059669]",
-    lightBg: "bg-[#059669]/5",
+    bgClass: "bg-[#059669] dark:bg-green-500",
+    textClass: "text-[#059669] dark:text-green-400",
+    lightBg: "bg-[#059669]/5 dark:bg-green-500/20",
     filter: "completed",
   },
   archived: {
     label: "Archived",
     color: "#9CA3AF",
-    bgClass: "bg-gray-400",
-    textClass: "text-gray-400",
-    lightBg: "bg-gray-100",
+    bgClass: "bg-gray-400 dark:bg-gray-600",
+    textClass: "text-gray-400 dark:text-gray-500",
+    lightBg: "bg-gray-100 dark:bg-gray-800",
     filter: "archived",
   },
 } as const;
@@ -56,13 +56,13 @@ function ProjectStatusWidgetSkeleton() {
   return (
     <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-        <div className="h-5 w-32 bg-gray-200 rounded" />
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
       </div>
-      <div className="h-3 w-full bg-gray-200 rounded-full mb-4" />
+      <div className="h-3 w-full bg-gray-200 dark:bg-gray-700 rounded-full mb-4" />
       <div className="grid grid-cols-2 gap-2">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-12 bg-gray-100 rounded-lg" />
+          <div key={i} className="h-12 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         ))}
       </div>
     </WidgetSkeleton>
@@ -72,22 +72,22 @@ function ProjectStatusWidgetSkeleton() {
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-8 text-center">
-      <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <FolderKanban className="w-7 h-7 text-gray-400" />
+      <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+        <FolderKanban className="w-7 h-7 text-gray-400 dark:text-gray-500" />
       </div>
-      <h3 className="text-base font-semibold text-gray-900 mb-1">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
         No Projects Yet
       </h3>
-      <p className="text-sm text-gray-500 mb-4 max-w-[200px]">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-[200px]">
         Create your first project to start tracking progress.
       </p>
       <Link
         href="/app/projects/new"
         className={cn(
           "inline-flex items-center gap-2 px-4 h-11",
-          "bg-[#001B51] text-white rounded-lg",
+          "bg-construction-blue dark:bg-blue-600 text-white rounded-lg",
           "font-semibold text-sm",
-          "active:scale-[0.98] active:bg-[#001B51]/90",
+          "active:scale-[0.98] active:bg-construction-blue/90 dark:active:bg-blue-700",
           "transition-all duration-150",
         )}
       >
@@ -107,7 +107,7 @@ function StatusBar({ status, total }: StatusBarProps) {
   const statusKeys: StatusKey[] = ["active", "onHold", "completed", "archived"];
 
   return (
-    <div className="h-3 w-full bg-gray-100 rounded-full overflow-hidden flex">
+    <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden flex">
       {statusKeys.map((key) => {
         const count = status[key];
         const percentage = total > 0 ? (count / total) * 100 : 0;
@@ -161,7 +161,7 @@ function LegendItem({
             config.bgClass,
           )}
         />
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {config.label}
         </span>
       </div>
@@ -169,7 +169,7 @@ function LegendItem({
         <span className={cn("text-base font-bold", config.textClass)}>
           {count}
         </span>
-        <ChevronRight className="w-4 h-4 text-gray-400" />
+        <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
       </div>
     </Link>
   );
@@ -195,7 +195,7 @@ export function ProjectStatusWidget({
         icon={FolderKanban}
         title="Projects"
         right={
-          <span className="text-sm font-semibold text-gray-500">
+          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">
             {total} total
           </span>
         }

@@ -92,14 +92,14 @@ export function ProjectPreview({ id }: ProjectPreviewProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "w-full max-w-md bg-white dark:bg-gray-800 border-2 border-construction-blue dark:border-construction-blue/60 rounded-xl p-4",
         "hover:shadow-construction-lg transition-all duration-200 cursor-pointer",
         "group",
       )}
     >
       {/* Debug: Header with icon and title */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
+        <div className="p-2 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-lg border-2 border-construction-blue/20 dark:border-construction-blue/40 shrink-0">
           <Building2 className="h-5 w-5 text-construction-blue" />
         </div>
 
@@ -137,7 +137,7 @@ export function ProjectPreview({ id }: ProjectPreviewProps) {
       {/* Debug: Completion progress bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-mono font-bold text-gray-600 uppercase">
+          <span className="text-xs font-mono font-bold text-gray-600 dark:text-gray-400 uppercase">
             Progress
           </span>
           <span className="text-xs font-black text-construction-blue">
@@ -148,8 +148,8 @@ export function ProjectPreview({ id }: ProjectPreviewProps) {
       </div>
 
       {/* Debug: Footer hint */}
-      <div className="mt-3 pt-3 border-t-2 border-gray-100">
-        <p className="text-[10px] font-mono text-gray-500">
+      <div className="mt-3 pt-3 border-t-2 border-gray-100 dark:border-gray-700">
+        <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
           Click to view project details
         </p>
       </div>

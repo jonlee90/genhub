@@ -9,7 +9,7 @@
  * - Task detail pages
  *
  * Design System Colors:
- * - Primary: #001B51 (construction-blue)
+ * - Primary: var(--construction-blue) (construction-blue)
  * - Accent: #3C3C3C
  * - Success: #059669
  * - Error: #DC2626
@@ -45,7 +45,7 @@ export const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
   in_progress: {
     label: 'In Progress',
     badgeColor: 'bg-blue-100 text-blue-700 border-blue-300',
-    solidColor: 'bg-[#001B51] text-white',
+    solidColor: 'bg-construction-blue text-white',
     dotColor: 'bg-blue-500',
     iconColor: 'text-blue-600',
   },

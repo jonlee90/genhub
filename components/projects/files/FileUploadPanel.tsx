@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, m as motion } from "framer-motion";
 import Image from "next/image";
 import AlertCircle from "lucide-react/icons/alert-circle";
 import Loader2 from "lucide-react/icons/loader-2";
@@ -54,7 +54,7 @@ export function FileUploadPanel({
                 <Loader2 className="w-8 h-8 text-white animate-spin mb-4" />
                 <div className="w-3/4 bg-gray-700 rounded-full h-2 overflow-hidden">
                   <motion.div
-                    className="h-full bg-[#001B51]"
+                    className="h-full bg-construction-blue"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.3 }}

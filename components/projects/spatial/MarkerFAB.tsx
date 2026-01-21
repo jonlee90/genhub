@@ -41,13 +41,13 @@ export function MarkerFAB({ onClick, disabled = false }: MarkerFABProps) {
         // Safe area: add padding for devices with home indicators
         'mb-[env(safe-area-inset-bottom)]',
         // Primary color scheme
-        'bg-[#001B51] text-white',
+        'bg-construction-blue text-white',
         // Flexbox centering for icon
         'flex items-center justify-center',
         // Shadow for elevation
         'shadow-lg',
         // Touch feedback
-        'active:scale-[0.98] active:bg-[#001B51]/90',
+        'active:scale-[0.98] active:bg-construction-blue/90',
         // Smooth transitions
         'transition-all duration-150',
         // Disabled state

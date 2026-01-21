@@ -21,7 +21,7 @@ const createTaskTypeSchema = z.object({
   color: z
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Invalid hex color")
-    .default("#001B51"),
+    .default("var(--construction-blue)"),
   icon_name: z.string().default("Hammer"),
 });
 
@@ -153,7 +153,7 @@ export async function createTaskType(formData: FormData): Promise<{
   const rawData = {
     name: formData.get("name"),
     description: formData.get("description") || undefined,
-    color: formData.get("color") || "#001B51",
+    color: formData.get("color") || "var(--construction-blue)",
     icon_name: formData.get("icon_name") || "Hammer",
   };
 

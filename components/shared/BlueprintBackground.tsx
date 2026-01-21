@@ -16,7 +16,7 @@ interface BlueprintBackgroundProps {
   gridSize?: number;
   /**
    * Grid line color
-   * @default '#001B51' (construction-blue)
+   * @default 'var(--construction-blue)' (construction-blue)
    */
   color?: string;
   /**
@@ -53,7 +53,7 @@ interface BlueprintBackgroundProps {
 export const BlueprintBackground = memo(function BlueprintBackground({
   opacity = 0.03,
   gridSize = 40,
-  color = '#001B51',
+  color = 'var(--construction-blue)',
   className,
 }: BlueprintBackgroundProps) {
   return (

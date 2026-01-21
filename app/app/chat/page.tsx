@@ -53,17 +53,17 @@ export default async function ChatPage() {
 // Loading skeleton with construction theme
 function ChatLoadingSkeleton() {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950">
       {/* Sidebar skeleton */}
-      <div className="w-full md:w-[300px] border-r border-gray-200 bg-white p-4 space-y-4">
-        <div className="h-8 bg-gray-200 rounded animate-pulse" />
-        <div className="h-12 bg-gray-200 rounded animate-pulse" />
+      <div className="w-full md:w-[300px] border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 space-y-4">
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
         {[...Array(5)].map((_, i) => (
           <div key={i} className="flex gap-3 p-3">
-            <div className="w-12 h-12 rounded-full bg-gray-200 animate-pulse" />
+            <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700 animate-pulse" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-gray-200 rounded animate-pulse" />
-              <div className="h-3 bg-gray-200 rounded w-2/3 animate-pulse" />
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3 animate-pulse" />
             </div>
           </div>
         ))}
@@ -71,8 +71,8 @@ function ChatLoadingSkeleton() {
 
       {/* Main area skeleton */}
       <div className="flex-1 flex flex-col">
-        <div className="h-16 border-b border-gray-200 bg-white flex items-center px-6">
-          <div className="h-6 bg-gray-200 rounded w-48 animate-pulse" />
+        <div className="h-16 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center px-6">
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-48 animate-pulse" />
         </div>
         <div className="flex-1 flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />

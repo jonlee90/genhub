@@ -117,10 +117,17 @@ export async function getCurrentUserContext(): Promise<{
     return { error: userContext.error };
   }
 
+  // Fetch user's name from profile
+  const { data: userProfile } = await userContext.supabase
+    .from('user_profiles')
+    .select('name')
+    .eq('id', userContext.userId)
+    .single();
+
   return {
     success: true,
     userId: userContext.userId,
-    userName: userContext.userName,
+    userName: userProfile?.name || 'Unknown User',
     companyId: userContext.companyId,
   };
 }

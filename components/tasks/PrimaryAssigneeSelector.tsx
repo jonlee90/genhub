@@ -87,7 +87,7 @@ export function PrimaryAssigneeSelector({
                 "min-h-[48px] py-2.5",
                 "transition-all duration-150",
                 !isLast && "border-b border-gray-100",
-                isPrimary ? "bg-[#001B51]/5" : "bg-white hover:bg-gray-50",
+                isPrimary ? "bg-construction-blue/5" : "bg-white hover:bg-gray-50",
                 disabled
                   ? "cursor-not-allowed"
                   : "cursor-pointer active:bg-gray-100",
@@ -118,7 +118,7 @@ export function PrimaryAssigneeSelector({
                 <AvatarFallback
                   className={cn(
                     "text-[10px] font-semibold text-white",
-                    assignee.type === "user" ? "bg-[#001B51]" : "bg-orange-600",
+                    assignee.type === "user" ? "bg-construction-blue" : "bg-orange-600",
                   )}
                 >
                   {getInitials(assignee.name)}
@@ -130,7 +130,7 @@ export function PrimaryAssigneeSelector({
                 <div
                   className={cn(
                     "font-medium text-sm truncate",
-                    isPrimary ? "text-[#001B51]" : "text-gray-900",
+                    isPrimary ? "text-construction-blue" : "text-gray-900",
                   )}
                 >
                   {assignee.name}
@@ -153,7 +153,7 @@ export function PrimaryAssigneeSelector({
                   "w-5 h-5 rounded-full border-2",
                   "transition-all duration-150",
                   isPrimary
-                    ? "border-[#001B51] bg-[#001B51]"
+                    ? "border-construction-blue bg-construction-blue"
                     : "border-gray-300 bg-white",
                 )}
               >

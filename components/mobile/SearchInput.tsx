@@ -106,7 +106,7 @@ export function SearchInput({
     <div className={cn('relative', className)}>
       {/* Search icon */}
       <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
-        <Search className="w-5 h-5 text-gray-400" />
+        <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" />
       </div>
 
       {/* Input */}
@@ -128,13 +128,13 @@ export function SearchInput({
           // Base styles
           'block w-full h-12 pl-12 pr-10',
           'text-base', // 16px - prevents iOS zoom
-          'bg-gray-100 text-gray-900',
-          'placeholder:text-gray-500',
+          'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+          'placeholder:text-gray-500 dark:placeholder:text-gray-400',
           'border-0 rounded-xl',
 
           // Focus
-          'focus:outline-none focus:ring-2 focus:ring-[#001B51]/20',
-          'focus:bg-white',
+          'focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20 dark:focus:ring-blue-500/20',
+          'focus:bg-white dark:focus:bg-gray-700',
 
           // Transition
           'transition-all duration-150',
@@ -159,8 +159,8 @@ export function SearchInput({
           className={cn(
             'absolute right-3 top-1/2 -translate-y-1/2',
             'w-6 h-6 flex items-center justify-center',
-            'rounded-full bg-gray-300 hover:bg-gray-400',
-            'text-gray-600 hover:text-gray-700',
+            'rounded-full bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500',
+            'text-gray-600 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-200',
             'transition-colors duration-100',
             'active:scale-95'
           )}

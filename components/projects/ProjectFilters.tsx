@@ -138,7 +138,7 @@ export function ProjectFilters({
         <div className='grid grid-cols-2'>
           {/* Project type dropdown with construction styling */}
           <Select value={typeFilter} onValueChange={onTypeChange}>
-            <SelectTrigger className="w-full md:w-[200px] h-11 border-2 border-gray-200 font-bold hover:border-construction-blue/50 transition-colors">
+            <SelectTrigger className="w-full md:w-[200px] h-11 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
               <SelectValue placeholder="Project Type" />
             </SelectTrigger>
             <SelectContent>
@@ -180,7 +180,7 @@ export function ProjectFilters({
 
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={onSortChange}>
-            <SelectTrigger className="w-full md:w-[170px] h-11 border-2 border-gray-200 font-bold hover:border-construction-blue/50 transition-colors">
+            <SelectTrigger className="w-full md:w-[170px] h-11 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>

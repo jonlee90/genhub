@@ -30,6 +30,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { m as motion, AnimatePresence, useMotionValue, PanInfo } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { getModalTheme } from '@/lib/config/modal-themes';
 
 import { BottomSheetModalHeader } from './BottomSheetModalHeader';
@@ -68,6 +69,9 @@ export function BottomSheetModal({
 }: BottomSheetModalProps) {
   // Get theme configuration (customTheme overrides themeName)
   const theme = customTheme || getModalTheme(themeName);
+
+  // Detect reduced motion preference (Accessibility)
+  const shouldReduceMotion = useReducedMotion();
 
   // Snap point state
   const [currentSnapIndex, setCurrentSnapIndex] = useState(0);
@@ -185,7 +189,7 @@ export function BottomSheetModal({
           {/* Backdrop */}
           <motion.div
             key="bottom-sheet-backdrop"
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -201,7 +205,7 @@ export function BottomSheetModal({
             className={cn(
               'fixed inset-x-0 bottom-0 z-50',
               'flex flex-col',
-              'bg-white rounded-t-3xl shadow-2xl',
+              'bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl',
               'overflow-hidden',
               className
             )}
@@ -232,7 +236,7 @@ export function BottomSheetModal({
             {enableDragToDismiss ? (
               <motion.div
                 className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
-                drag="y"
+                drag={shouldReduceMotion ? false : "y"}
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.3 }}
                 onDragStart={handleDragStart}
@@ -243,13 +247,13 @@ export function BottomSheetModal({
                 <div
                   className={cn(
                     'h-1.5 w-12 rounded-full transition-colors duration-150',
-                    isDragging ? 'bg-gray-400' : 'bg-gray-300'
+                    isDragging ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-300 dark:bg-gray-700'
                   )}
                 />
               </motion.div>
             ) : (
               <div className="flex justify-center pt-3 pb-2 flex-shrink-0" aria-hidden="true">
-                <div className="h-1.5 w-12 bg-gray-300 rounded-full" />
+                <div className="h-1.5 w-12 bg-gray-300 dark:bg-gray-700 rounded-full" />
               </div>
             )}
 

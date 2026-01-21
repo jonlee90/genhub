@@ -108,7 +108,7 @@ export function KakaoSyncIndicator({
                     className={`${sizeClasses[size]} text-[#FFB627]`}
                   />
                   <ArrowDownToLine
-                    className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-[#001B51]"
+                    className="absolute -bottom-0.5 -right-0.5 h-2 w-2 text-construction-blue"
                     strokeWidth={3}
                   />
                 </div>
@@ -119,7 +119,7 @@ export function KakaoSyncIndicator({
 
         <TooltipContent
           side="top"
-          className="bg-[#001B51] text-white border-2 border-[#FFB627] font-['IBM_Plex_Mono'] text-xs font-bold"
+          className="bg-construction-blue text-white border-2 border-[#FFB627] font-['IBM_Plex_Mono'] text-xs font-bold"
         >
           {isSynced && (
             <div className="flex items-center gap-2">

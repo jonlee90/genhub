@@ -35,11 +35,11 @@ export function FileUploadPanel({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <label className="block text-sm font-semibold text-gray-700">
+      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">
         {label}
       </label>
       {description ? (
-        <div className="text-sm text-gray-500">{description}</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">{description}</div>
       ) : null}
       <div className="relative">
         <input
@@ -64,8 +64,8 @@ export function FileUploadPanel({
           className={cn(
             "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all",
             file
-              ? "border-[#059669] bg-[#059669]/5"
-              : "border-gray-300 hover:border-[#001B51] hover:bg-gray-50",
+              ? "border-[#059669] bg-[#059669]/5 dark:bg-[#059669]/10"
+              : "border-gray-300 dark:border-gray-700 hover:border-construction-blue hover:bg-gray-50 dark:hover:bg-gray-800",
             disabled && "opacity-50 cursor-not-allowed",
           )}
         >
@@ -75,9 +75,9 @@ export function FileUploadPanel({
                 <FileIcon className="w-8 h-8 text-[#059669]" />
               </div>
               <div>
-                <p className="font-semibold text-[#001B51]">{file.name}</p>
+                <p className="font-semibold text-construction-blue dark:text-blue-400">{file.name}</p>
                 {formatFileSize && (
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {formatFileSize(file.size)}
                   </p>
                 )}
@@ -89,7 +89,7 @@ export function FileUploadPanel({
                     event.stopPropagation();
                     onClear();
                   }}
-                  className="mt-2 inline-flex items-center justify-center rounded-md border-2 border-gray-300 px-3 py-1 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  className="mt-2 inline-flex items-center justify-center rounded-md border-2 border-gray-300 dark:border-gray-600 px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   {clearLabel}
                 </button>
@@ -97,14 +97,14 @@ export function FileUploadPanel({
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="p-3 bg-gray-100 rounded-lg inline-block">
-                <Upload className="w-8 h-8 text-gray-400" />
+              <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg inline-block">
+                <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500" />
               </div>
               <div>
-                <p className="font-semibold text-gray-700">
+                <p className="font-semibold text-gray-700 dark:text-gray-300">
                   Click to select file
                 </p>
-                <p className="text-sm text-gray-500 mt-1">or drag and drop</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">or drag and drop</p>
               </div>
             </div>
           )}

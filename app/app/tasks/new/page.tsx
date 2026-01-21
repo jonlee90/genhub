@@ -107,8 +107,8 @@ async function NewTaskPageContent({ searchParams }: NewTaskPageProps) {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Create Task</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Create Task</h1>
+        <p className="text-muted-foreground dark:text-gray-400">
           Add a new task to track work on your projects
         </p>
       </div>
@@ -137,7 +137,7 @@ function NewTaskPageLoading() {
       </div>
 
       {/* Form Skeleton */}
-      <div className="space-y-6 bg-white p-6 rounded-lg border">
+      <div className="space-y-6 bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
         <div className="space-y-4">
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-32 w-full" />

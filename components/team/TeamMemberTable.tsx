@@ -208,10 +208,10 @@ export function TeamMemberTable({
       {/* Action Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-10 w-1 bg-[#001B51] rounded-full" />
+          <div className="h-10 w-1 bg-construction-blue rounded-full" />
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
-            <p className="text-sm text-gray-600">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Team Members</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {members.length} total members
             </p>
           </div>
@@ -220,7 +220,7 @@ export function TeamMemberTable({
         {isGCAdmin && (
           <Button
             onClick={() => setIsInviteModalOpen(true)}
-            className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg"
+            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Invite Team Member
@@ -229,52 +229,52 @@ export function TeamMemberTable({
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-gray-50 border-b-2 border-[#001B51]/10">
-                <TableHead className="font-bold text-gray-900">
+              <TableRow className="bg-gray-50 dark:bg-gray-900/50 border-b-2 border-construction-blue/10 dark:border-gray-700">
+                <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                   <button
                     onClick={() => handleSort("name")}
-                    className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
+                    className="flex items-center gap-1 hover:text-construction-blue transition-colors"
                   >
                     Member
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="font-bold text-gray-900">
+                <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                   <button
                     onClick={() => handleSort("email")}
-                    className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
+                    className="flex items-center gap-1 hover:text-construction-blue dark:hover:text-blue-400 transition-colors"
                   >
                     Email
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="font-bold text-gray-900">
+                <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                   <button
                     onClick={() => handleSort("role")}
-                    className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
+                    className="flex items-center gap-1 hover:text-construction-blue dark:hover:text-blue-400 transition-colors"
                   >
                     Role
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="font-bold text-gray-900">
+                <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                   <button
                     onClick={() => handleSort("status")}
-                    className="flex items-center gap-1 hover:text-[#001B51] transition-colors"
+                    className="flex items-center gap-1 hover:text-construction-blue dark:hover:text-blue-400 transition-colors"
                   >
                     Status
                     <ArrowUpDown className="h-3 w-3" />
                   </button>
                 </TableHead>
-                <TableHead className="font-bold text-gray-900">
+                <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                   Projects
                 </TableHead>
                 {isGCAdmin && (
-                  <TableHead className="font-bold text-gray-900">
+                  <TableHead className="font-bold text-gray-900 dark:text-gray-100">
                     Actions
                   </TableHead>
                 )}
@@ -288,11 +288,11 @@ export function TeamMemberTable({
                     className="text-center py-12"
                   >
                     <div className="flex flex-col items-center gap-2">
-                      <Users className="h-12 w-12 text-gray-300" />
-                      <p className="text-gray-500 font-medium">
+                      <Users className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">
                         No team members found
                       </p>
-                      <p className="text-sm text-gray-400">
+                      <p className="text-sm text-gray-400 dark:text-gray-500">
                         {isGCAdmin
                           ? 'Click "Invite Team Member" to get started'
                           : "Contact your Admin to invite members"}
@@ -309,7 +309,7 @@ export function TeamMemberTable({
                   return (
                     <TableRow
                       key={member.id}
-                      className="team-member-row hover:bg-gray-50/50 transition-colors border-b border-gray-100"
+                      className="team-member-row hover:bg-gray-50/50 dark:hover:bg-gray-750/50 transition-colors border-b border-gray-100 dark:border-gray-700"
                       style={{
                         contentVisibility: "auto",
                         containIntrinsicSize: "0 60px",
@@ -317,22 +317,22 @@ export function TeamMemberTable({
                     >
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10 border-2 border-gray-200">
+                          <Avatar className="h-10 w-10 border-2 border-gray-200 dark:border-gray-700">
                             <AvatarImage
                               src={
                                 member.user_profiles?.avatar_url || undefined
                               }
                             />
-                            <AvatarFallback className="bg-[#001B51] text-white font-semibold">
+                            <AvatarFallback className="bg-construction-blue text-white font-semibold">
                               {getInitials(member.user_profiles?.name || "U")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-semibold text-gray-900">
+                            <p className="font-semibold text-gray-900 dark:text-gray-100">
                               {member.user_profiles?.name || "Unknown"}
                             </p>
                             {member.activated_at && (
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Joined{" "}
                                 {new Date(
                                   member.activated_at,
@@ -342,7 +342,7 @@ export function TeamMemberTable({
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-700">
+                      <TableCell className="text-gray-700 dark:text-gray-300">
                         {member.user_profiles?.email || "No email"}
                       </TableCell>
                       <TableCell>
@@ -363,7 +363,7 @@ export function TeamMemberTable({
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <span className="text-gray-700 font-medium">
+                        <span className="text-gray-700 dark:text-gray-300 font-medium">
                           {member.project_count}
                         </span>
                       </TableCell>
@@ -439,8 +439,8 @@ export function TeamMemberTable({
 
         {/* Pagination */}
         {sortedMembers.length > ITEMS_PER_PAGE && (
-          <div className="flex items-center justify-between px-4 py-4 border-t">
-            <div className="text-sm text-gray-600">
+          <div className="flex items-center justify-between px-4 py-4 border-t dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
               Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
               {Math.min(currentPage * ITEMS_PER_PAGE, sortedMembers.length)} of{" "}
               {sortedMembers.length} members
@@ -456,7 +456,7 @@ export function TeamMemberTable({
                 <ChevronLeft className="h-4 w-4 mr-1" />
                 Previous
               </Button>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 Page {currentPage} of {totalPages}
               </span>
               <Button

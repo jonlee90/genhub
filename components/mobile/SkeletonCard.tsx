@@ -22,7 +22,7 @@ interface SkeletonCardProps {
 export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps) {
   // Shimmer bar component
   const Shimmer = ({ className: shimmerClass }: { className?: string }) => (
-    <div className={cn('bg-gray-200 rounded animate-pulse', shimmerClass)} />
+    <div className={cn('bg-gray-200 dark:bg-gray-700 rounded animate-pulse', shimmerClass)} />
   );
 
   // Task skeleton - matches TaskCard dimensions
@@ -30,7 +30,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
     return (
       <div
         className={cn(
-          'bg-white rounded-xl p-4 border-l-4 border-gray-200',
+          'bg-white dark:bg-gray-800 rounded-xl p-4 border-l-4 border-gray-200 dark:border-gray-700',
           className
         )}
       >
@@ -71,7 +71,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
     return (
       <div
         className={cn(
-          'bg-white rounded-xl p-4 border-2 border-gray-200',
+          'bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700',
           className
         )}
       >
@@ -86,7 +86,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
 
         {/* Progress bar */}
         <div className="flex items-center gap-2">
-          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
             <Shimmer className="h-full w-1/2" />
           </div>
           <Shimmer className="h-4 w-8" />
@@ -100,7 +100,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
     return (
       <div
         className={cn(
-          'bg-white rounded-xl p-4 border-2 border-gray-200',
+          'bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700',
           className
         )}
       >
@@ -127,7 +127,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
     return (
       <div
         className={cn(
-          'bg-white rounded-xl p-4 border-2 border-gray-200',
+          'bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700',
           className
         )}
       >
@@ -151,7 +151,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
     return (
       <div
         className={cn(
-          'bg-white rounded-xl p-4 border-2 border-gray-200',
+          'bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700',
           className
         )}
       >
@@ -178,7 +178,7 @@ export function SkeletonCard({ variant = 'task', className }: SkeletonCardProps)
   return (
     <div
       className={cn(
-        'bg-white rounded-xl p-4 border-2 border-gray-200',
+        'bg-white dark:bg-gray-800 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700',
         className
       )}
     >

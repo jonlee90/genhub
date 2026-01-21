@@ -76,7 +76,7 @@ export const StepIndicator = memo(function StepIndicator({
                     'relative overflow-hidden',
                     isCompleted && 'shadow-md',
                     isActive && 'shadow-lg ring-4 ring-opacity-20',
-                    !isActive && !isCompleted && 'border-2 border-gray-300 bg-white text-gray-400'
+                    !isActive && !isCompleted && 'border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500'
                   )}
                   style={
                     isActive || isCompleted
@@ -119,7 +119,7 @@ export const StepIndicator = memo(function StepIndicator({
                     'text-xs font-medium text-center max-w-[80px] leading-tight',
                     'transition-colors duration-300',
                     isActive && 'font-semibold',
-                    !isActive && !isCompleted && 'text-gray-400'
+                    !isActive && !isCompleted && 'text-gray-400 dark:text-gray-500'
                   )}
                   style={
                     isActive || isCompleted

@@ -58,7 +58,7 @@ export async function sendTeamInvitationEmail(
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .header { 
-      background-color: #001B51; 
+      background-color: var(--construction-blue); 
       color: white; 
       padding: 40px 30px; 
       text-align: center; 
@@ -72,7 +72,7 @@ export async function sendTeamInvitationEmail(
       padding: 40px 30px; 
     }
     .content h2 {
-      color: #001B51;
+      color: var(--construction-blue);
       margin-top: 0;
       font-size: 24px;
     }
@@ -86,7 +86,7 @@ export async function sendTeamInvitationEmail(
     }
     .button { 
       display: inline-block; 
-      background-color: #001B51; 
+      background-color: var(--construction-blue); 
       color: white !important; 
       padding: 16px 40px; 
       text-decoration: none; 

@@ -70,7 +70,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
+        <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
         <p className="text-sm text-gray-500">Loading attachments...</p>
       </div>
     );
@@ -102,8 +102,8 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
       {images.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <ImageIcon className="h-5 w-5 text-[#001B51]" />
-            <h3 className="font-bold uppercase text-sm text-[#001B51]">
+            <ImageIcon className="h-5 w-5 text-construction-blue" />
+            <h3 className="font-bold uppercase text-sm text-construction-blue">
               Images ({images.length})
             </h3>
           </div>
@@ -115,7 +115,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 onClick={() => window.open(image.file_url, "_blank")}
                 className={cn(
                   "aspect-square rounded-lg overflow-hidden",
-                  "border-2 border-gray-200 hover:border-[#001B51]",
+                  "border-2 border-gray-200 hover:border-construction-blue",
                   "transition-all duration-200 hover:shadow-lg",
                   "relative group"
                 )}
@@ -153,8 +153,8 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
       {files.length > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <FileText className="h-5 w-5 text-[#001B51]" />
-            <h3 className="font-bold uppercase text-sm text-[#001B51]">
+            <FileText className="h-5 w-5 text-construction-blue" />
+            <h3 className="font-bold uppercase text-sm text-construction-blue">
               Files ({files.length})
             </h3>
           </div>
@@ -170,13 +170,13 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 className={cn(
                   "flex items-center gap-3 p-3",
                   "border-2 border-gray-200 rounded-lg",
-                  "hover:border-[#001B51] hover:bg-gray-50",
+                  "hover:border-construction-blue hover:bg-gray-50",
                   "transition-all duration-200",
                   "group"
                 )}
               >
                 {/* File icon */}
-                <div className="p-2 bg-gray-100 rounded group-hover:bg-[#001B51] transition-colors">
+                <div className="p-2 bg-gray-100 rounded group-hover:bg-construction-blue transition-colors">
                   <FileText className="h-6 w-6 text-gray-600 group-hover:text-white transition-colors" />
                 </div>
 
@@ -192,7 +192,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 </div>
 
                 {/* Download icon */}
-                <Download className="h-5 w-5 text-gray-400 group-hover:text-[#001B51] transition-colors shrink-0" />
+                <Download className="h-5 w-5 text-gray-400 group-hover:text-construction-blue transition-colors shrink-0" />
               </a>
             ))}
           </div>

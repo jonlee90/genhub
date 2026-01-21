@@ -235,8 +235,8 @@ export function MarkerCreationModal({
             onClick={handleSubmit}
             disabled={isPending || !title.trim()}
             className={cn(
-              "px-4 py-2 bg-[#001B51] text-white rounded-lg",
-              "hover:bg-[#001B51]/90 transition-colors font-medium text-sm",
+              "px-4 py-2 bg-construction-blue text-white rounded-lg",
+              "hover:bg-construction-blue/90 transition-colors font-medium text-sm",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               "flex items-center gap-2",
             )}
@@ -283,7 +283,7 @@ export function MarkerCreationModal({
             className={cn(
               "w-full px-4 py-3 rounded-lg",
               "border-2 border-gray-200",
-              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
               "placeholder:text-gray-400 text-sm font-medium",
               "transition-all duration-200",
             )}
@@ -303,7 +303,7 @@ export function MarkerCreationModal({
             className={cn(
               "w-full px-4 py-3 rounded-lg",
               "border-2 border-gray-200",
-              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
               "placeholder:text-gray-400 text-sm",
               "resize-none transition-all duration-200",
             )}
@@ -325,7 +325,7 @@ export function MarkerCreationModal({
                     "flex-1 px-4 py-2.5 rounded-lg font-bold text-sm uppercase",
                     "border-2 transition-all duration-200",
                     priority === level
-                      ? "border-[#001B51] bg-[#001B51] text-white"
+                      ? "border-construction-blue bg-construction-blue text-white"
                       : "border-gray-200 text-gray-700 hover:border-gray-300",
                   )}
                 >
@@ -348,7 +348,7 @@ export function MarkerCreationModal({
               className={cn(
                 "w-full px-4 py-3 rounded-lg",
                 "border-2 border-gray-200",
-                "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+                "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
                 "text-sm font-medium",
                 "transition-all duration-200",
               )}
@@ -374,7 +374,7 @@ export function MarkerCreationModal({
                 key={idx}
                 className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-2 border-gray-200"
               >
-                <Camera className="h-4 w-4 text-[#001B51]" />
+                <Camera className="h-4 w-4 text-construction-blue" />
                 <span className="text-sm font-medium flex-1 truncate">
                   {photo.name}
                 </span>
@@ -403,11 +403,11 @@ export function MarkerCreationModal({
               className={cn(
                 "flex items-center justify-center gap-2 px-4 py-3 rounded-lg",
                 "border-2 border-dashed border-gray-300",
-                "hover:border-[#001B51] hover:bg-gray-50",
+                "hover:border-construction-blue hover:bg-gray-50",
                 "cursor-pointer transition-all duration-200",
               )}
             >
-              <Camera className="h-4 w-4 text-[#001B51]" />
+              <Camera className="h-4 w-4 text-construction-blue" />
               <span className="text-sm font-medium text-gray-700">
                 Add Photos
               </span>
@@ -426,7 +426,7 @@ export function MarkerCreationModal({
                 key={idx}
                 className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-2 border-gray-200"
               >
-                <Upload className="h-4 w-4 text-[#001B51]" />
+                <Upload className="h-4 w-4 text-construction-blue" />
                 <span className="text-sm font-medium flex-1 truncate">
                   {file.name}
                 </span>
@@ -452,11 +452,11 @@ export function MarkerCreationModal({
               className={cn(
                 "flex items-center justify-center gap-2 px-4 py-3 rounded-lg",
                 "border-2 border-dashed border-gray-300",
-                "hover:border-[#001B51] hover:bg-gray-50",
+                "hover:border-construction-blue hover:bg-gray-50",
                 "cursor-pointer transition-all duration-200",
               )}
             >
-              <Upload className="h-4 w-4 text-[#001B51]" />
+              <Upload className="h-4 w-4 text-construction-blue" />
               <span className="text-sm font-medium text-gray-700">
                 Add Files
               </span>

@@ -1,5 +1,6 @@
 import type { TasksRow } from "@/types/db/tables/tasks";
 import type { TaskDependenciesRow } from "@/types/db/tables/tasks";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 // Base types from database
 type TaskRow = TasksRow;
@@ -96,7 +97,7 @@ export interface GanttChartProps {
   onTaskClick: (task: GanttTask) => void;
   onTaskDateChange: (taskId: string, newStartDate: string, newDueDate: string) => Promise<void>;
   className?: string;
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 // Props for GanttTaskBar component

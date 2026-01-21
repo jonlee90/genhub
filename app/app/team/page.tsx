@@ -14,7 +14,7 @@ const BLUEPRINT_BACKGROUND_STYLE = {
     linear-gradient(to bottom, currentColor 1px, transparent 1px)
   `,
   backgroundSize: "40px 40px",
-  color: "#001B51",
+  color: "var(--construction-blue)",
 } as const;
 
 export default async function TeamPage() {
@@ -22,14 +22,14 @@ export default async function TeamPage() {
 
   if (data.status !== "ok") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             {data.status === "no_company"
               ? "No Company Found"
               : "Error Loading Team"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             {data.status === "no_company"
               ? "You are not associated with any active company."
               : "Failed to load team members. Please try again."}
@@ -122,7 +122,7 @@ export default async function TeamPage() {
       </div>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

@@ -113,11 +113,11 @@ export function FilterBar({
 
   return (
     <div className={cn(
-      "relative sticky top-0 md:relative z-40 md:z-auto bg-white md:bg-transparent",
+      "relative sticky top-0 md:relative z-40 md:z-auto bg-white dark:bg-gray-900 md:bg-transparent md:dark:bg-transparent",
       className
     )}>
 
-      <div className="bg-white border-2 border-gray-200 rounded-lg md:rounded-xl shadow-construction p-3 md:p-5">
+      <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 rounded-lg md:rounded-xl shadow-construction p-3 md:p-5">
         <div className="flex items-center gap-2 mb-3 md:mb-4">
           <SlidersHorizontal className="h-4 w-4 md:h-5 md:w-5 text-construction-blue" />
           <h3 className="text-sm md:text-base font-black text-construction-blue uppercase tracking-wider">
@@ -153,13 +153,13 @@ export function FilterBar({
                 "relative",
                 getColSpanClass(searchConfig.colSpan || (filters.length > 0 ? 'half' : 'full'))
               )}>
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <Input
                   type="text"
                   placeholder={searchConfig.placeholder}
                   value={searchConfig.value}
                   onChange={(e) => searchConfig.onChange(e.target.value)}
-                  className="pl-10 border-2 border-gray-200 focus:border-construction-blue transition-colors h-10 md:h-11 font-medium"
+                  className="pl-10 border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue transition-colors h-10 md:h-11 font-medium"
                 />
               </div>
             )}
@@ -174,7 +174,7 @@ export function FilterBar({
                   value={filter.value}
                   onValueChange={filter.onChange}
                 >
-                  <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue h-10 md:h-11 font-medium">
+                  <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue h-10 md:h-11 font-medium">
                     <SelectValue placeholder={filter.placeholder || `Select ${filter.name}`} />
                   </SelectTrigger>
                   <SelectContent>

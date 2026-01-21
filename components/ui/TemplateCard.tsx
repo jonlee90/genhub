@@ -150,9 +150,9 @@ export const TemplateCard = React.memo(function TemplateCard({
 
       {/* Main card container */}
       <div className={cn(
-        "relative bg-white rounded-lg shadow-sm",
-        "border-2 border-gray-200",
-        "hover:shadow-construction hover:border-construction-blue/30",
+        "relative bg-white dark:bg-gray-900 rounded-lg shadow-sm",
+        "border-2 border-gray-200 dark:border-gray-800",
+        "hover:shadow-construction hover:border-construction-blue/30 dark:hover:border-construction-blue/40",
         "transition-all duration-300",
         "border-l-4",
         borderColor
@@ -165,10 +165,10 @@ export const TemplateCard = React.memo(function TemplateCard({
               {...attributes}
               {...listeners}
               onClick={(e) => e.stopPropagation()}
-              className="p-2 hover:bg-gray-100 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md cursor-grab active:cursor-grabbing transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Drag to reorder"
             >
-              <GripVertical className="h-5 w-5 text-gray-400" />
+              <GripVertical className="h-5 w-5 text-gray-400 dark:text-gray-500" />
             </button>
           </div>
 
@@ -251,7 +251,7 @@ export const TemplateCard = React.memo(function TemplateCard({
             )}
             {/* Description - hidden on mobile for compact height, visible on desktop */}
             {description && (
-              <p className="hidden sm:block text-sm text-gray-600 line-clamp-1 mt-1">
+              <p className="hidden sm:block text-sm text-gray-600 dark:text-gray-400 line-clamp-1 mt-1">
                 {description}
               </p>
             )}
@@ -285,7 +285,7 @@ export const TemplateCard = React.memo(function TemplateCard({
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-2 border-t-2 border-gray-100">
+                <div className="px-3 sm:px-4 pb-3 sm:pb-4 pt-2 border-t-2 border-gray-100 dark:border-gray-800">
                   {children}
                 </div>
               </motion.div>

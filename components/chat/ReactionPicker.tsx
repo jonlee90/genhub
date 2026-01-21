@@ -54,7 +54,7 @@ export function ReactionPicker({ messageId, onSelect, onClose, isOpen }: Reactio
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className={cn(
               'absolute z-50 mt-2',
-              'bg-white border-2 border-gray-200 rounded-xl shadow-construction-lg',
+              'bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction-lg',
               'p-4 min-w-[280px]'
             )}
             style={{
@@ -63,16 +63,16 @@ export function ReactionPicker({ messageId, onSelect, onClose, isOpen }: Reactio
             }}
           >
             {/* Debug: Header */}
-            <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-gray-100">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-gray-100 dark:border-gray-700">
               <h3 className="text-xs font-black uppercase tracking-wide text-construction-blue">
                 React with Emoji
               </h3>
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                 aria-label="Close picker"
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
 
@@ -88,8 +88,8 @@ export function ReactionPicker({ messageId, onSelect, onClose, isOpen }: Reactio
                     'group relative aspect-square',
                     'flex items-center justify-center',
                     'text-2xl',
-                    'bg-gray-50 hover:bg-construction-blue/10',
-                    'border-2 border-transparent hover:border-construction-blue/40',
+                    'bg-gray-50 dark:bg-gray-900 hover:bg-construction-blue/10 dark:hover:bg-construction-blue/20',
+                    'border-2 border-transparent hover:border-construction-blue/40 dark:hover:border-construction-blue/60',
                     'rounded-lg',
                     'transition-all duration-200',
                     'focus:outline-none focus:ring-2 focus:ring-construction-blue/50'
@@ -118,7 +118,7 @@ export function ReactionPicker({ messageId, onSelect, onClose, isOpen }: Reactio
             </div>
 
             {/* Debug: Helper text */}
-            <p className="text-[10px] font-mono text-gray-500 mt-3 text-center">
+            <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400 mt-3 text-center">
               Construction-themed reactions
             </p>
           </motion.div>

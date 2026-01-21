@@ -60,10 +60,10 @@ export function FloatingNavbar({
         }}
         className={cn(
           "fixed top-0 inset-x-0 z-50",
-          "backdrop-blur-construction bg-white/80",
+          "backdrop-blur-construction bg-white/80 dark:bg-gray-900/80",
           "border-b-2 transition-all duration-300",
           isScrolled
-            ? "border-construction-blue/20 shadow-construction-lg"
+            ? "border-construction-blue/20 dark:border-construction-blue/30 shadow-construction-lg"
             : "border-transparent",
           className
         )}
@@ -106,7 +106,7 @@ export function FloatingNav({
             href={navItem.link}
             className={cn(
               "relative flex items-center gap-2",
-              "text-neutral-600 hover:text-construction-blue",
+              "text-neutral-600 dark:text-neutral-400 hover:text-construction-blue dark:hover:text-construction-blue",
               "text-sm font-bold transition-colors"
             )}
           >

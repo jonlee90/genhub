@@ -164,7 +164,7 @@ export function PhotoUploader({
           onDragOver={handleDragOver}
           className={cn(
             "border-2 border-dashed border-gray-300 rounded-lg p-8",
-            "hover:border-[#001B51] hover:bg-gray-50 transition-colors",
+            "hover:border-construction-blue hover:bg-gray-50 transition-colors",
             "cursor-pointer",
           )}
         >
@@ -176,7 +176,7 @@ export function PhotoUploader({
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg",
-                  "bg-[#001B51] text-white font-bold",
+                  "bg-construction-blue text-white font-bold",
                   "hover:bg-[#002B71] transition-colors",
                 )}
               >

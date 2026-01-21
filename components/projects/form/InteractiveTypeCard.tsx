@@ -68,8 +68,8 @@ export function InteractiveTypeCard({
 
         // Selected state
         isSelected
-          ? 'border-[#001B51] bg-[#001B51]/5 shadow-md'
-          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50',
+          ? 'border-construction-blue dark:border-blue-500 bg-construction-blue/5 dark:bg-blue-500/10 shadow-md'
+          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50',
 
         // Disabled state
         disabled && 'opacity-50 cursor-not-allowed'
@@ -83,14 +83,14 @@ export function InteractiveTypeCard({
           className={cn(
             'shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-all',
             isSelected
-              ? 'bg-[#001B51] shadow-sm'
-              : 'bg-gray-100'
+              ? 'bg-construction-blue dark:bg-blue-500 shadow-sm'
+              : 'bg-gray-100 dark:bg-gray-800'
           )}
         >
           <Icon
             className={cn(
               'w-5 h-5 transition-colors',
-              isSelected ? 'text-white' : 'text-gray-600'
+              isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400'
             )}
           />
         </div>
@@ -99,13 +99,13 @@ export function InteractiveTypeCard({
             className={cn(
               'font-semibold text-sm leading-tight',
               isSelected
-                ? 'text-[#001B51]'
-                : 'text-gray-900'
+                ? 'text-construction-blue dark:text-blue-400'
+                : 'text-gray-900 dark:text-gray-100'
             )}
           >
             {label}
           </h3>
-          <p className="text-xs text-gray-500 mt-0.5 leading-snug">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
             {description}
           </p>
         </div>
@@ -114,7 +114,7 @@ export function InteractiveTypeCard({
       {/* Selection indicator with animation */}
       {isSelected && (
         <motion.div
-          className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-[#001B51] rounded-full flex items-center justify-center shadow-md"
+          className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-construction-blue rounded-full flex items-center justify-center shadow-md"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{

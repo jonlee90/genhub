@@ -6,7 +6,7 @@
  * Compact search interface for finding Home Depot products within the task modal.
  * Uses debounced search and displays results as compact cards with quick-add functionality.
  *
- * Construction-themed with #001B51 primary, debounced 500ms search
+ * Construction-themed with var(--construction-blue) primary, debounced 500ms search
  */
 
 import { useState, useTransition, useCallback, useEffect } from "react";

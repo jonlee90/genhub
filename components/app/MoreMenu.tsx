@@ -194,18 +194,18 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
-            <div className="relative bg-white rounded-t-[28px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+            <div className="relative bg-white dark:bg-gray-900 rounded-t-[28px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
               {/* Industrial top edge - thick bar */}
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-construction-blue via-[#0a3a8a] to-construction-blue" />
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-12 h-1.5 rounded-full bg-gray-300" />
+                <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700" />
               </div>
 
               {/* Header - User Dashboard Card */}
               <div className="px-5 pt-2 pb-4">
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#001B51] via-[#002d7a] to-[#001545]">
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--construction-blue)] via-[#002d7a] to-[#001545]">
                   {/* Subtle grid pattern overlay */}
                   <div
                     className="absolute inset-0 opacity-[0.03]"
@@ -217,14 +217,13 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                   />
 
                   {/* Close button */}
-                  <motion.button
+                  <button
                     onClick={onClose}
-                    className="absolute top-3 right-3 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition-colors z-10"
-                    whileTap={{ scale: 0.92 }}
+                    className="absolute top-3 right-3 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-[0.92] transition-all z-10"
                     aria-label="Close menu"
                   >
                     <X className="w-5 h-5 text-white" />
-                  </motion.button>
+                  </button>
 
                   <div className="relative p-4">
                     {/* Logo and status row */}
@@ -240,7 +239,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           />
                         </div>
                         {/* Status indicator */}
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#001B51] flex items-center justify-center">
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-construction-blue flex items-center justify-center">
                           <Zap className="w-2 h-2 text-white" />
                         </div>
                       </div>
@@ -331,7 +330,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                             "active:scale-[0.96]",
                             active
                               ? "bg-construction-blue shadow-lg shadow-construction-blue/25"
-                              : "bg-gray-100 hover:bg-gray-200 active:bg-gray-300",
+                              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600",
                           )}
                         >
                           {/* Active indicator glow */}
@@ -346,7 +345,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                               "transition-all duration-150",
                               active
                                 ? "bg-white/20 text-white"
-                                : `${item.iconBg} text-gray-700`,
+                                : `${item.iconBg} text-gray-700 dark:text-gray-300`,
                             )}
                           >
                             <Icon
@@ -362,7 +361,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           <span
                             className={cn(
                               "text-[11px] font-bold tracking-wide",
-                              active ? "text-white" : "text-gray-700",
+                              active ? "text-white" : "text-gray-700 dark:text-gray-300",
                             )}
                           >
                             {item.name}
@@ -385,23 +384,22 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
               </nav>
 
               {/* Footer - Sign Out */}
-              <div className="px-5 pt-3 pb-5 border-t border-gray-100">
-                <motion.button
+              <div className="px-5 pt-3 pb-5 border-t border-gray-100 dark:border-gray-800">
+                <button
                   onClick={handleSignOut}
                   className={cn(
                     "flex items-center justify-center gap-2.5 w-full",
                     "h-14 rounded-xl",
-                    "bg-gray-100 hover:bg-gray-200 active:bg-gray-300",
-                    "text-gray-700 font-bold",
-                    "transition-colors duration-150",
+                    "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600",
+                    "text-gray-700 dark:text-gray-300 font-bold",
+                    "active:scale-[0.98] transition-all duration-150",
                   )}
-                  whileTap={{ scale: 0.98 }}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-700">
                     <LogOut className="w-5 h-5" />
                   </div>
                   <span>Sign Out</span>
-                </motion.button>
+                </button>
               </div>
             </div>
           </motion.div>

@@ -54,7 +54,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
         <div className="w-16 h-16 mb-4 rounded-full bg-blue-500/10 flex items-center justify-center">
           <Image className="w-8 h-8 text-blue-500" aria-hidden="true" />
         </div>
-        <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">
+        <h3 className="font-bold text-construction-blue mb-2 uppercase tracking-tight">
           No Photos Yet
         </h3>
         <p className="text-sm text-gray-600 mb-4">
@@ -64,7 +64,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
           onClick={() => setShowUploader(true)}
           className={cn(
             'flex items-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >
@@ -83,7 +83,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
           onClick={() => setShowUploader(true)}
           className={cn(
             'w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg',
-            'bg-[#001B51] text-white font-bold',
+            'bg-construction-blue text-white font-bold',
             'hover:bg-[#002B71] transition-colors'
           )}
         >
@@ -113,7 +113,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-[#001B51] transition-colors cursor-pointer"
+              className="group relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-construction-blue transition-colors cursor-pointer"
               onClick={() => setLightboxPhoto(photo)}
             >
               {/* Thumbnail */}
@@ -178,7 +178,7 @@ export function PhotoGallery({ markerId, photos }: PhotoGalleryProps) {
               </div>
 
               {/* Photo metadata */}
-              <div className="bg-[#001B51] rounded-lg p-4 space-y-3">
+              <div className="bg-construction-blue rounded-lg p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white uppercase tracking-tight">
                     {lightboxPhoto.file_name || 'Untitled Photo'}

@@ -33,12 +33,12 @@ export function useToast() {
         duration,
         style: {
           background: '#FFFFFF',
-          color: '#001B51',
+          color: 'var(--construction-blue)',
           fontWeight: '600',
-          border: '2px solid #001B51',
+          border: '2px solid var(--construction-blue)',
         },
         iconTheme: {
-          primary: '#001B51',
+          primary: 'var(--construction-blue)',
           secondary: '#FFFFFF',
         },
       });

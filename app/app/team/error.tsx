@@ -31,7 +31,7 @@ export default function TeamError({
         </p>
         <Button
           onClick={reset}
-          className="bg-[#001B51] hover:bg-[#001B51]/90 text-white"
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white"
         >
           Try Again
         </Button>

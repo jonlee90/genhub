@@ -30,8 +30,8 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                 className={cn(
                   "relative flex items-center justify-center w-12 h-12 rounded-full border-4 transition-colors duration-300",
                   isCompleted && "bg-construction-blue border-construction-blue",
-                  isCurrent && "bg-white border-construction-blue",
-                  !isCompleted && !isCurrent && "bg-white border-gray-300"
+                  isCurrent && "bg-white dark:bg-gray-900 border-construction-blue",
+                  !isCompleted && !isCurrent && "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
                 )}
                 whileHover={{ scale: 1.05 }}
               >
@@ -46,7 +46,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
                 ) : (
                   <div className={cn(
                     "transition-colors",
-                    isCurrent ? "text-construction-blue" : "text-gray-400"
+                    isCurrent ? "text-construction-blue" : "text-gray-400 dark:text-gray-600"
                   )}>
                     {step.icon}
                   </div>
@@ -72,7 +72,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
               {/* Step label */}
               <span className={cn(
                 "mt-2 text-xs font-bold transition-colors text-center max-w-[80px]",
-                isCurrent ? "text-construction-blue" : "text-gray-500"
+                isCurrent ? "text-construction-blue" : "text-gray-500 dark:text-gray-400"
               )}>
                 {step.label}
               </span>
@@ -81,7 +81,7 @@ export function Stepper({ steps, currentStep }: StepperProps) {
             {/* Connecting line */}
             {index < steps.length - 1 && (
               <div className="flex-1 h-1 mx-4 relative">
-                <div className="absolute inset-0 bg-gray-200 rounded-full" />
+                <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full" />
                 {isCompleted && (
                   <motion.div
                     className="absolute inset-0 bg-gradient-to-r from-construction-blue to-construction-accent rounded-full"

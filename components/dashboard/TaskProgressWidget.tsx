@@ -25,26 +25,26 @@ const STATUS_CONFIG = [
   {
     key: "completed",
     label: "Completed",
-    color: "bg-[#059669]",
-    textColor: "text-[#059669]",
+    color: "bg-[#059669] dark:bg-green-500",
+    textColor: "text-[#059669] dark:text-green-400",
   },
   {
     key: "inProgress",
     label: "In Progress",
-    color: "bg-[#3B82F6]",
-    textColor: "text-[#3B82F6]",
+    color: "bg-[#3B82F6] dark:bg-blue-500",
+    textColor: "text-[#3B82F6] dark:text-blue-400",
   },
   {
     key: "blocked",
     label: "Blocked",
-    color: "bg-[#F59E0B]",
-    textColor: "text-[#F59E0B]",
+    color: "bg-[#F59E0B] dark:bg-yellow-500",
+    textColor: "text-[#F59E0B] dark:text-yellow-400",
   },
   {
     key: "overdue",
     label: "Overdue",
-    color: "bg-[#DC2626]",
-    textColor: "text-[#DC2626]",
+    color: "bg-[#DC2626] dark:bg-red-500",
+    textColor: "text-[#DC2626] dark:text-red-400",
   },
 ] as const;
 
@@ -52,15 +52,15 @@ function TaskProgressWidgetSkeleton() {
   return (
     <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-        <div className="h-5 w-28 bg-gray-200 rounded" />
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-5 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
       </div>
       <div className="flex flex-col items-center mb-4">
-        <div className="w-28 h-28 bg-gray-200 rounded-full" />
+        <div className="w-28 h-28 bg-gray-200 dark:bg-gray-700 rounded-full" />
       </div>
       <div className="space-y-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-10 bg-gray-100 rounded-lg" />
+          <div key={i} className="h-10 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         ))}
       </div>
     </WidgetSkeleton>
@@ -96,8 +96,9 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#E5E7EB"
+          stroke="currentColor"
           strokeWidth={strokeWidth}
+          className="text-gray-200 dark:text-gray-700"
         />
         {/* Progress circle */}
         <circle
@@ -105,20 +106,20 @@ function ProgressRing({
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#001B51"
+          stroke="currentColor"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-700 ease-out"
+          className="text-construction-blue dark:text-blue-500 transition-all duration-700 ease-out"
         />
       </svg>
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-black text-[#001B51]">
+        <span className="text-2xl font-black text-construction-blue dark:text-blue-400">
           {formatPercentWhole(percentage)}
         </span>
-        <span className="text-xs text-gray-500 font-medium">Complete</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Complete</span>
       </div>
     </div>
   );
@@ -134,10 +135,10 @@ function VelocityTrend({ trend }: { trend: number }) {
         : Minus;
   const trendColor =
     direction === "up"
-      ? "text-[#059669]"
+      ? "text-[#059669] dark:text-green-400"
       : direction === "down"
-        ? "text-[#DC2626]"
-        : "text-gray-500";
+        ? "text-[#DC2626] dark:text-red-400"
+        : "text-gray-500 dark:text-gray-400";
 
   return (
     <div
@@ -174,7 +175,7 @@ export function TaskProgressWidget({
               {progress.velocityTrend !== 0 && (
                 <VelocityTrend trend={progress.velocityTrend} />
               )}
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
             </div>
           }
           className="mb-4"
@@ -183,7 +184,7 @@ export function TaskProgressWidget({
         {/* Progress Ring */}
         <div className="flex flex-col items-center mb-4">
           <ProgressRing percentage={progress.completionRate} />
-          <p className="mt-2 text-sm text-gray-500 font-medium">
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
             {progress.completed} of {progress.total} tasks
           </p>
         </div>
@@ -195,11 +196,11 @@ export function TaskProgressWidget({
             return (
               <div
                 key={key}
-                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
               >
                 <div className="flex items-center gap-2">
                   <span className={cn("w-2.5 h-2.5 rounded-full", color)} />
-                  <span className="text-sm text-gray-600 font-medium">
+                  <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
                     {label}
                   </span>
                 </div>

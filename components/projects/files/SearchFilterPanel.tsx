@@ -108,12 +108,12 @@ export function SearchFilterPanel({
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
-          className={cn(showFilters && 'bg-[#001B51]/10 border-[#001B51]')}
+          className={cn(showFilters && 'bg-construction-blue/10 border-construction-blue')}
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters
           {activeFilterCount > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-[#001B51] text-white rounded-full text-xs">
+            <span className="ml-2 px-2 py-0.5 bg-construction-blue text-white rounded-full text-xs">
               {activeFilterCount}
             </span>
           )}

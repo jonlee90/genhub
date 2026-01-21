@@ -21,7 +21,7 @@ const VIEW_OPTIONS = [
 export const GanttViewToggle = React.memo(function GanttViewToggle({ timeScale, onTimeScaleChange, isMobile = false }: GanttViewToggleProps) {
   return (
     <div className={cn(
-      "flex items-center rounded-lg border-2 border-gray-200 bg-white shadow-sm",
+      "flex items-center rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm",
       isMobile ? "gap-0.5 p-0.5 w-full" : "gap-1 p-1"
     )}>
       {VIEW_OPTIONS.map((option) => {

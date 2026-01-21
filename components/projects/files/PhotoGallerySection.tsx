@@ -157,8 +157,8 @@ export function PhotoGallerySection({
     return (
       <>
         <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
-          <div className="p-4 bg-[#001B51]/10 rounded-full mb-4">
-            <ImageIcon className="h-12 w-12 text-[#001B51]" />
+          <div className="p-4 bg-construction-blue/10 rounded-full mb-4">
+            <ImageIcon className="h-12 w-12 text-construction-blue" />
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-2">
             No Photos Yet
@@ -169,7 +169,7 @@ export function PhotoGallerySection({
           </p>
           <Button
             onClick={() => setShowUploader(true)}
-            className="bg-[#001B51] text-white hover:bg-[#001B51]/90"
+            className="bg-construction-blue text-white hover:bg-construction-blue/90"
           >
             <Upload className="h-4 w-4 mr-2" />
             Upload Photo
@@ -218,7 +218,7 @@ export function PhotoGallerySection({
 
         <Button
           onClick={() => setShowUploader(true)}
-          className="bg-[#001B51] text-white hover:bg-[#001B51]/90"
+          className="bg-construction-blue text-white hover:bg-construction-blue/90"
         >
           <Upload className="h-4 w-4 mr-2" />
           Upload Photo
@@ -239,7 +239,7 @@ export function PhotoGallerySection({
               className={cn(
                 "relative group rounded-lg overflow-hidden border-2 aspect-square bg-gray-100",
                 selectedIds.has(photo.id)
-                  ? "border-[#001B51] ring-2 ring-[#001B51]/30"
+                  ? "border-construction-blue ring-2 ring-[var(--construction-blue)]/30"
                   : "border-gray-200 hover:border-gray-300",
               )}
             >
@@ -261,7 +261,7 @@ export function PhotoGallerySection({
                 <Checkbox
                   checked={selectedIds.has(photo.id)}
                   onCheckedChange={() => onSelectToggle(photo.id)}
-                  className="bg-white shadow-md border-gray-300 data-[state=checked]:bg-[#001B51]"
+                  className="bg-white shadow-md border-gray-300 data-[state=checked]:bg-construction-blue"
                 />
               </div>
 
@@ -280,7 +280,7 @@ export function PhotoGallerySection({
               {/* Cover photo badge (top-right, for uploads only - below receipt badge position) */}
               {photo.source === "upload" && isPrimaryPhoto(photo) && (
                 <div className="absolute top-2 right-2 z-10">
-                  <div className="px-2 py-1 bg-[#001B51] text-white rounded text-xs font-bold flex items-center gap-1 shadow-lg">
+                  <div className="px-2 py-1 bg-construction-blue text-white rounded text-xs font-bold flex items-center gap-1 shadow-lg">
                     <Star className="h-3 w-3 fill-current" />
                     Cover
                   </div>
@@ -328,7 +328,7 @@ export function PhotoGallerySection({
                       className={cn(
                         "flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full transition-colors",
                         isPrimaryPhoto(photo)
-                          ? "bg-[#001B51] text-white"
+                          ? "bg-construction-blue text-white"
                           : "bg-white/20 hover:bg-white/30 text-white",
                       )}
                       aria-label={

@@ -27,7 +27,7 @@ export type ModalThemeName = 'default' | 'low' | 'medium' | 'high' | 'danger' | 
 export const MODAL_THEMES: Record<string, ModalTheme> = {
   // Default: Construction Navy Blue - Professional, trustworthy
   default: {
-    primary: '#001B51',
+    primary: 'var(--construction-blue)',
     primaryHover: '#002163',
     primaryLight: '#003087',
     accent: '#3C3C3C',
@@ -35,11 +35,11 @@ export const MODAL_THEMES: Record<string, ModalTheme> = {
     accentLight: '#7A7A7A',
     ring: 'rgba(0, 27, 81, 0.5)',
     badge: '#E8EEF7',
-    badgeText: '#001B51',
-    gradientFrom: '#001B51',
+    badgeText: 'var(--construction-blue)',
+    gradientFrom: 'var(--construction-blue)',
     gradientTo: '#003087',
     iconBg: '#F0F4FC',
-    iconGradientFrom: '#001B51',
+    iconGradientFrom: 'var(--construction-blue)',
     iconGradientTo: '#003D99',
   },
 

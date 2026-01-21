@@ -138,7 +138,7 @@ export function FilePreview({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
-              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-100"
+              className="relative group aspect-square rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800"
             >
               {/* Debug: Image thumbnail */}
               <Image
@@ -213,8 +213,8 @@ export function FilePreview({
               animate={{ opacity: 1, x: 0 }}
               className={cn(
                 "flex items-center gap-3 p-3",
-                "bg-gray-50 hover:bg-gray-100",
-                "border-2 border-gray-200 rounded-lg",
+                "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700",
+                "border-2 border-gray-200 dark:border-gray-700 rounded-lg",
                 "transition-all duration-200",
                 "group",
               )}
@@ -226,10 +226,10 @@ export function FilePreview({
 
               {/* Debug: File info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-800 truncate">
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
                   {doc.file_name}
                 </p>
-                <p className="text-xs font-mono text-gray-500">
+                <p className="text-xs font-mono text-gray-500 dark:text-gray-400">
                   {formatFileSize(doc.file_size)}
                 </p>
               </div>
@@ -238,22 +238,22 @@ export function FilePreview({
               <div className="shrink-0 flex items-center gap-1">
                 <button
                   onClick={() => handleDownload(doc)}
-                  className="p-2 hover:bg-construction-blue/10 rounded-lg transition-colors"
+                  className="p-2 hover:bg-construction-blue/10 dark:hover:bg-construction-blue/20 rounded-lg transition-colors"
                   title="Download"
                 >
-                  <Download className="h-4 w-4 text-gray-600 group-hover:text-construction-blue" />
+                  <Download className="h-4 w-4 text-gray-600 dark:text-gray-400 group-hover:text-construction-blue" />
                 </button>
                 {canDelete && (
                   <button
                     onClick={() => handleDelete(doc.id)}
                     disabled={deletingId === doc.id}
-                    className="p-2 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
                     title="Delete"
                   >
                     {deletingId === doc.id ? (
-                      <div className="h-4 w-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
+                      <div className="h-4 w-4 border-2 border-red-600 dark:border-red-400 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Trash2 className="h-4 w-4 text-gray-600 hover:text-red-600" />
+                      <Trash2 className="h-4 w-4 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400" />
                     )}
                   </button>
                 )}

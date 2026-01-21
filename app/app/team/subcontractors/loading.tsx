@@ -11,7 +11,7 @@ export default function SubcontractorsLoading() {
             linear-gradient(to bottom, currentColor 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px',
-          color: '#001B51'
+          color: 'var(--construction-blue)'
         }} />
       </div>
 
@@ -32,41 +32,41 @@ export default function SubcontractorsLoading() {
       {/* Stats Grid Skeleton */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
+          <div key={i} className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-construction">
             <div className="flex items-center justify-between mb-3">
               <Skeleton className="h-9 w-9 rounded-lg bg-construction-blue/10" />
-              <Skeleton className="h-3 w-16 bg-gray-200" />
+              <Skeleton className="h-3 w-16 bg-gray-200 dark:bg-gray-700" />
             </div>
             <Skeleton className="h-10 w-16 mb-1 bg-construction-blue/10" />
-            <Skeleton className="h-4 w-28 bg-gray-200" />
+            <Skeleton className="h-4 w-28 bg-gray-200 dark:bg-gray-700" />
           </div>
         ))}
       </div>
 
       {/* Subcontractors List Skeleton */}
-      <div className="bg-white rounded-lg border-2 border-gray-200 shadow-construction overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden">
         {/* Search & Filters */}
-        <div className="p-4 border-b border-gray-200 flex items-center gap-4">
-          <Skeleton className="h-10 w-64 bg-gray-100" />
-          <Skeleton className="h-10 w-32 bg-gray-100" />
-          <Skeleton className="h-10 w-32 bg-gray-100" />
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4">
+          <Skeleton className="h-10 w-64 bg-gray-100 dark:bg-gray-800" />
+          <Skeleton className="h-10 w-32 bg-gray-100 dark:bg-gray-800" />
+          <Skeleton className="h-10 w-32 bg-gray-100 dark:bg-gray-800" />
         </div>
 
         {/* Subcontractor Cards */}
         <div className="p-4 space-y-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="p-4 border-2 border-gray-200 rounded-lg bg-white">
+            <div key={i} className="p-4 border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
               <div className="flex items-center gap-4">
                 {/* Company Logo */}
                 <Skeleton className="h-16 w-16 rounded-lg bg-construction-blue/10" />
 
                 {/* Company Info */}
                 <div className="flex-1 space-y-2">
-                  <Skeleton className="h-6 w-48 bg-gray-200" />
-                  <Skeleton className="h-4 w-64 bg-gray-100" />
+                  <Skeleton className="h-6 w-48 bg-gray-200 dark:bg-gray-700" />
+                  <Skeleton className="h-4 w-64 bg-gray-100 dark:bg-gray-800" />
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-5 w-28 rounded-full bg-construction-green/20" />
-                    <Skeleton className="h-5 w-24 rounded-full bg-gray-200" />
+                    <Skeleton className="h-5 w-24 rounded-full bg-gray-200 dark:bg-gray-700" />
                   </div>
                 </div>
 
@@ -74,16 +74,16 @@ export default function SubcontractorsLoading() {
                 <div className="hidden md:flex items-center gap-6">
                   <div className="text-center">
                     <Skeleton className="h-6 w-12 mx-auto mb-1 bg-construction-blue/10" />
-                    <Skeleton className="h-3 w-16 bg-gray-200" />
+                    <Skeleton className="h-3 w-16 bg-gray-200 dark:bg-gray-700" />
                   </div>
                   <div className="text-center">
                     <Skeleton className="h-6 w-12 mx-auto mb-1 bg-construction-blue/10" />
-                    <Skeleton className="h-3 w-20 bg-gray-200" />
+                    <Skeleton className="h-3 w-20 bg-gray-200 dark:bg-gray-700" />
                   </div>
                 </div>
 
                 {/* Action Button */}
-                <Skeleton className="h-10 w-10 rounded bg-gray-100" />
+                <Skeleton className="h-10 w-10 rounded bg-gray-100 dark:bg-gray-800" />
               </div>
             </div>
           ))}

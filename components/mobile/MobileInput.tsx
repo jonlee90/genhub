@@ -74,7 +74,7 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
             htmlFor={inputId}
             className={cn(
               'block text-sm font-medium',
-              hasError ? 'text-[#DC2626]' : 'text-gray-700',
+              hasError ? 'text-[#DC2626]' : 'text-gray-700 dark:text-gray-300',
               disabled && 'opacity-50'
             )}
           >
@@ -97,24 +97,24 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
             // Base styles
             'block h-14 px-4',
             'text-base', // 16px - prevents iOS zoom
-            'bg-white text-gray-900',
-            'placeholder:text-gray-400',
+            'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+            'placeholder:text-gray-400 dark:placeholder:text-gray-500',
             'select-text',
 
             // Border
             'border rounded-xl',
             hasError
               ? 'border-[#DC2626] border-2'
-              : 'border-gray-200',
+              : 'border-gray-200 dark:border-gray-700',
 
             // Focus
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             hasError
               ? 'focus:ring-[#DC2626]/30 focus:border-[#DC2626]'
-              : 'focus:ring-[#001B51]/20 focus:border-[#001B51]',
+              : 'focus:ring-[var(--construction-blue)]/20 dark:focus:ring-blue-500/30 focus:border-construction-blue dark:focus:border-blue-500',
 
             // Disabled
-            'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
+            'disabled:bg-gray-50 dark:disabled:bg-gray-700 disabled:text-gray-500 dark:disabled:text-gray-400 disabled:cursor-not-allowed',
 
             // Width
             fullWidth && 'w-full',
@@ -142,7 +142,7 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
         {hint && !hasError && (
           <p
             id={hintId}
-            className="text-sm text-gray-500"
+            className="text-sm text-gray-500 dark:text-gray-400"
           >
             {hint}
           </p>

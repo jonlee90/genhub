@@ -86,7 +86,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
+        <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
         <p className="text-sm text-gray-500">Loading materials...</p>
       </div>
     );
@@ -181,10 +181,10 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
 
       {/* Total Cost Summary (conditionally hidden) */}
       {hasBudgetVisibility && (
-        <div className="border-2 border-[#001B51] rounded-lg p-4 bg-[#001B51]/5">
+        <div className="border-2 border-construction-blue rounded-lg p-4 bg-construction-blue/5">
           <div className="flex justify-between items-center">
-            <span className="font-bold uppercase text-sm text-[#001B51]">Total Material Cost:</span>
-            <span className="text-2xl font-black text-[#001B51]">
+            <span className="font-bold uppercase text-sm text-construction-blue">Total Material Cost:</span>
+            <span className="text-2xl font-black text-construction-blue">
               ${totalCost.toFixed(2)}
             </span>
           </div>

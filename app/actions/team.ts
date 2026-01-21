@@ -2,10 +2,9 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
-import { createUserClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
 import { randomUUID } from "crypto";
 import { sendTeamInvitationEmail } from "./team-email-helper";
+import { getUserContextWithUserClient as getUserContext } from "@/lib/auth-context";
 import type { UserRole } from "@/types/db/enums";
 
 // ============================================
@@ -51,37 +50,6 @@ const deactivateTeamMemberSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
-
-async function getUserContext() {
-  // Get NextAuth session
-  const session = await auth();
-
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  // Create user-scoped Supabase client
-  const supabase = await createUserClient();
-
-  // Get user's company and role using NextAuth user ID
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    return { error: "No active company found for user" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
 
 // ============================================
 // Server Actions

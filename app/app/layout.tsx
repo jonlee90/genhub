@@ -7,6 +7,7 @@ import { OfflineBanner } from "../../components/pwa/OfflineBanner";
 import { InstallPrompt } from "../../components/pwa/InstallPrompt";
 import { isOwner } from "@/app/actions/owner";
 import { BottomNavProvider } from "@/lib/contexts/BottomNavContext";
+import { ThemeProvider } from "@/lib/context/ThemeContext";
 import { auth } from "@/lib/auth";
 
 async function LayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,38 +18,40 @@ async function LayoutContent({ children }: { children: React.ReactNode }) {
   const ownerStatus = await isOwner();
 
   return (
-    <BottomNavProvider>
-      <div className="flex h-screen bg-gray-50">
-        {/* PWA: Offline Status Banner - z-50 (highest priority) */}
-        <OfflineBanner />
+    <ThemeProvider>
+      <BottomNavProvider>
+        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+          {/* PWA: Offline Status Banner - z-50 (highest priority) */}
+          <OfflineBanner />
 
-        {/* Sidebar - Desktop Only */}
-        <Sidebar isOwner={ownerStatus} session={session} />
+          {/* Sidebar - Desktop Only */}
+          <Sidebar isOwner={ownerStatus} session={session} />
 
-        {/* Main Content Area */}
-        <div className="flex flex-col flex-1 overflow-hidden">
-          {/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 pb-20 md:pb-0 md:p-0"
-                style={{
-                  paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))'
-                }}>
-            {children}
-          </main>
+          {/* Main Content Area */}
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Page Content - Added pb-20 for bottom nav clearance on mobile */}
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-20 md:pb-0 md:p-0"
+                  style={{
+                    paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))'
+                  }}>
+              {children}
+            </main>
+          </div>
+
+          {/* Bottom Navigation - Mobile Only */}
+          <BottomNavigation session={session} />
+
+          {/* Toast Notifications */}
+          <Toaster position="top-right" richColors />
+
+          {/* PWA: Service Worker Update Notification - z-50 (bottom-right toast) */}
+          <ServiceWorkerRegistration />
+
+          {/* PWA: Install Prompt - z-40 (medium priority, bottom banner) */}
+          <InstallPrompt />
         </div>
-
-        {/* Bottom Navigation - Mobile Only */}
-        <BottomNavigation session={session} />
-
-        {/* Toast Notifications */}
-        <Toaster position="top-right" richColors />
-
-        {/* PWA: Service Worker Update Notification - z-50 (bottom-right toast) */}
-        <ServiceWorkerRegistration />
-
-        {/* PWA: Install Prompt - z-40 (medium priority, bottom banner) */}
-        <InstallPrompt />
-      </div>
-    </BottomNavProvider>
+      </BottomNavProvider>
+    </ThemeProvider>
   );
 }
 
@@ -59,8 +62,8 @@ export default function AppLayout({
 }) {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#001B51]"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-construction-blue dark:border-[#6FA1FF]"></div>
       </div>
     }>
       <LayoutContent>{children}</LayoutContent>

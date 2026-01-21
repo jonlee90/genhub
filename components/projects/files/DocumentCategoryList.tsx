@@ -124,7 +124,7 @@ export function DocumentCategoryList({
           'bg-gradient-to-r from-gray-50 to-white',
           'hover:from-gray-100 hover:to-gray-50',
           'transition-colors duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-[#001B51]/20 focus:ring-inset'
+          'focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20 focus:ring-inset'
         )}
         aria-expanded={isExpanded}
         aria-controls={`category-${category.key}-content`}
@@ -145,7 +145,7 @@ export function DocumentCategoryList({
           </h3>
 
           {/* File count badge */}
-          <span className="px-2 py-0.5 bg-[#001B51]/10 text-[#001B51] rounded-full text-xs font-bold">
+          <span className="px-2 py-0.5 bg-construction-blue/10 text-construction-blue rounded-full text-xs font-bold">
             {files.length}
           </span>
         </div>
@@ -179,7 +179,7 @@ export function DocumentCategoryList({
                     className={cn(
                       'flex items-center gap-3 p-3',
                       'transition-colors duration-150',
-                      isSelected && 'bg-[#001B51]/5',
+                      isSelected && 'bg-construction-blue/5',
                       !isSelected && 'hover:bg-gray-50',
                       isDeleting && 'opacity-50 pointer-events-none'
                     )}
@@ -213,7 +213,7 @@ export function DocumentCategoryList({
                         onClick={() => setPreviewFile(file)}
                         className="text-left w-full group"
                       >
-                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-[#001B51] transition-colors">
+                        <p className="text-sm font-medium text-gray-900 truncate group-hover:text-construction-blue transition-colors">
                           {file.filename}
                         </p>
                       </button>
@@ -238,8 +238,8 @@ export function DocumentCategoryList({
                               }}
                               className={cn(
                                 'inline-flex items-center gap-1 px-1.5 py-0.5 rounded',
-                                'bg-[#001B51]/10 text-[#001B51] font-bold',
-                                'hover:bg-[#001B51]/20 transition-colors'
+                                'bg-construction-blue/10 text-construction-blue font-bold',
+                                'hover:bg-construction-blue/20 transition-colors'
                               )}
                             >
                               <History className="h-3 w-3" />
@@ -257,7 +257,7 @@ export function DocumentCategoryList({
                         size="sm"
                         variant="ghost"
                         onClick={() => setPreviewFile(file)}
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-[#001B51] hover:bg-[#001B51]/10"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-construction-blue hover:bg-construction-blue/10"
                         title="Preview"
                       >
                         <Eye className="h-4 w-4" />
@@ -268,7 +268,7 @@ export function DocumentCategoryList({
                         size="sm"
                         variant="ghost"
                         onClick={(e) => handleDownload(file, e)}
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-[#001B51] hover:bg-[#001B51]/10"
+                        className="h-8 w-8 p-0 text-gray-500 hover:text-construction-blue hover:bg-construction-blue/10"
                         title="Download"
                       >
                         <Download className="h-4 w-4" />

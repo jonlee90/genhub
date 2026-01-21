@@ -124,7 +124,7 @@ export function ViewerToolbar({
                 'transition-all duration-150',
                 'active:scale-[0.98]',
                 activeMode === mode
-                  ? 'bg-[#001B51] text-white active:bg-[#001B51]/90'
+                  ? 'bg-construction-blue text-white active:bg-construction-blue/90'
                   : 'bg-gray-50 text-gray-700 active:bg-gray-100'
               )}
               title={label}
@@ -146,7 +146,7 @@ export function ViewerToolbar({
                 'min-w-[44px] min-h-[44px]',
                 'flex items-center justify-center',
                 'rounded-lg',
-                'bg-gray-50 text-[#001B51]',
+                'bg-gray-50 text-construction-blue',
                 'transition-all duration-150',
                 'active:scale-[0.98] active:bg-gray-100'
               )}
@@ -161,7 +161,7 @@ export function ViewerToolbar({
             {/* Camera Preset Menu - positioned above on mobile */}
             {showCameraMenu && (
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 min-w-[160px] bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden">
-                <div className="h-1 bg-[#001B51]" />
+                <div className="h-1 bg-construction-blue" />
                 <div className="p-2">
                   {cameraPresets.map(({ preset, icon: Icon, label }) => (
                     <button
@@ -218,7 +218,7 @@ export function ViewerToolbar({
       {/* Interaction Mode Toolbar */}
       <div className="bg-white border-2 border-gray-200 rounded-lg shadow-construction overflow-hidden">
         {/* Technical header strip */}
-        <div className="h-1 bg-[#001B51]" />
+        <div className="h-1 bg-construction-blue" />
 
         <div className="p-2 flex flex-col gap-1">
           {toolbarButtons.map(({ mode, icon: Icon, label, shortcut }) => (
@@ -231,8 +231,8 @@ export function ViewerToolbar({
                 'hover:bg-gray-50',
                 'active:scale-[0.98]',
                 activeMode === mode
-                  ? 'bg-[#001B51] text-white active:bg-[#001B51]/90'
-                  : 'bg-white text-gray-700 hover:text-[#001B51]'
+                  ? 'bg-construction-blue text-white active:bg-construction-blue/90'
+                  : 'bg-white text-gray-700 hover:text-construction-blue'
               )}
               title={label}
               aria-label={label}
@@ -277,7 +277,7 @@ export function ViewerToolbar({
           aria-expanded={showCameraMenu}
           aria-haspopup="menu"
         >
-          <Maximize2 className="w-5 h-5 text-[#001B51]" />
+          <Maximize2 className="w-5 h-5 text-construction-blue" />
           <span className="font-semibold text-sm uppercase tracking-wide text-gray-900 hidden lg:block">
             Camera
           </span>
@@ -286,7 +286,7 @@ export function ViewerToolbar({
         {/* Camera Preset Menu */}
         {showCameraMenu && (
           <div className="absolute top-full right-0 mt-2 min-w-[180px] bg-white border-2 border-gray-200 rounded-lg shadow-construction overflow-hidden">
-            <div className="h-1 bg-[#001B51]" />
+            <div className="h-1 bg-construction-blue" />
 
             <div className="p-2">
               {cameraPresets.map(({ preset, icon: Icon, label }) => (
@@ -297,7 +297,7 @@ export function ViewerToolbar({
                     'w-full flex items-center gap-3 px-3 py-2 rounded',
                     'hover:bg-gray-50 transition-colors',
                     'active:scale-[0.98]',
-                    'text-gray-700 hover:text-[#001B51]'
+                    'text-gray-700 hover:text-construction-blue'
                   )}
                   aria-label={label}
                 >
@@ -316,7 +316,7 @@ export function ViewerToolbar({
         className={cn(
           'bg-white border-2 border-gray-200 rounded-lg shadow-construction',
           'px-4 py-3 flex items-center gap-3',
-          'hover:bg-[#001B51] hover:text-white hover:border-[#001B51]',
+          'hover:bg-construction-blue hover:text-white hover:border-construction-blue',
           'transition-all duration-200',
           'active:scale-[0.98]',
           'group'

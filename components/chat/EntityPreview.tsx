@@ -37,7 +37,7 @@ export function EntityPreview({ type, id }: EntityPreviewProps) {
 // Debug: Loading skeleton for entity previews
 export function EntityPreviewSkeleton() {
   return (
-    <div className="w-full max-w-md bg-white border-2 border-gray-200 rounded-xl p-4 space-y-3">
+    <div className="w-full max-w-md bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 space-y-3">
       <div className="flex items-center gap-3">
         <Skeleton className="h-10 w-10 rounded-full" />
         <div className="flex-1 space-y-2">
@@ -53,9 +53,9 @@ export function EntityPreviewSkeleton() {
 // Debug: Error state for failed entity fetches
 export function EntityPreviewError({ error }: { error: string }) {
   return (
-    <div className="w-full max-w-md bg-red-50 border-2 border-red-200 rounded-xl p-4">
-      <p className="text-sm font-mono text-red-700">Failed to load preview</p>
-      <p className="text-xs text-red-600 mt-1">{error}</p>
+    <div className="w-full max-w-md bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-4">
+      <p className="text-sm font-mono text-red-700 dark:text-red-400">Failed to load preview</p>
+      <p className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</p>
     </div>
   );
 }

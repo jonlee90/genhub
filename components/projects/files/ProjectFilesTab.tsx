@@ -222,8 +222,8 @@ export function ProjectFilesTab({
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'photos'
-              ? 'border-[#001B51] text-[#001B51]'
-              : 'border-transparent text-gray-600 hover:text-[#001B51]'
+              ? 'border-construction-blue text-construction-blue'
+              : 'border-transparent text-gray-600 hover:text-construction-blue'
           )}
         >
           <Image className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -241,8 +241,8 @@ export function ProjectFilesTab({
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'documents'
-              ? 'border-[#001B51] text-[#001B51]'
-              : 'border-transparent text-gray-600 hover:text-[#001B51]'
+              ? 'border-construction-blue text-construction-blue'
+              : 'border-transparent text-gray-600 hover:text-construction-blue'
           )}
         >
           <FileText className="h-4 w-4 mr-2" />
@@ -260,8 +260,8 @@ export function ProjectFilesTab({
           className={cn(
             'relative px-4 py-2 rounded-none border-b-2 transition-colors',
             activeView === 'all'
-              ? 'border-[#001B51] text-[#001B51]'
-              : 'border-transparent text-gray-600 hover:text-[#001B51]'
+              ? 'border-construction-blue text-construction-blue'
+              : 'border-transparent text-gray-600 hover:text-construction-blue'
           )}
         >
           <Folder className="h-4 w-4 mr-2" />
@@ -299,7 +299,7 @@ export function ProjectFilesTab({
       <div className="relative">
         {loading && (
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
-            <Loader2 className="h-6 w-6 text-[#001B51] animate-spin" />
+            <Loader2 className="h-6 w-6 text-construction-blue animate-spin" />
           </div>
         )}
 

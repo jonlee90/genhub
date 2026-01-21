@@ -260,22 +260,22 @@ export function ProjectDetailContent({
           className="space-y-4"
         >
           {/* Hero Card with Project Identity */}
-          <div className="bg-white rounded-2xl border-2 border-gray-200 shadow-construction-lg overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-construction-lg overflow-hidden">
             {/* Top Section: Project Identity */}
             <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
               {/* Row 1: Icon + Name + Status */}
               <div className="flex items-start gap-3 sm:gap-4">
                 {/* Project Type Icon */}
                 <div className="relative flex-shrink-0">
-                  <div className="absolute inset-0 bg-[#001B51]/10 rounded-xl transform rotate-2" />
-                  <div className="relative p-2.5 bg-gradient-to-br from-[#001B51] to-[#001B51]/90 rounded-xl shadow-lg sm:p-3.5">
+                  <div className="absolute inset-0 bg-construction-blue/10 rounded-xl transform rotate-2" />
+                  <div className="relative p-2.5 bg-gradient-to-br from-[var(--construction-blue)] to-[var(--construction-blue)]/90 rounded-xl shadow-lg sm:p-3.5">
                     {getProjectTypeIcon}
                   </div>
                 </div>
 
                 {/* Project Name */}
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-lg font-black text-[#001B51] tracking-tight leading-tight break-words uppercase sm:text-xl md:text-2xl lg:text-3xl">
+                  <h1 className="text-lg font-black text-construction-blue tracking-tight leading-tight break-words uppercase sm:text-xl md:text-2xl lg:text-3xl">
                     {project.name}
                   </h1>
                   <div className="flex items-center gap-2 mt-1.5">
@@ -307,7 +307,7 @@ export function ProjectDetailContent({
 
               {/* Description (if exists) */}
               {displayDescription && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 sm:line-clamp-none">
                     {displayDescription}
                   </p>
@@ -316,7 +316,7 @@ export function ProjectDetailContent({
                       onClick={() =>
                         setIsDescriptionExpanded(!isDescriptionExpanded)
                       }
-                      className="mt-2 text-xs font-bold text-[#001B51] flex items-center gap-1 min-h-[44px] active:opacity-70"
+                      className="mt-2 text-xs font-bold text-construction-blue flex items-center gap-1 min-h-[44px] active:opacity-70"
                     >
                       {isDescriptionExpanded ? (
                         <>
@@ -342,8 +342,8 @@ export function ProjectDetailContent({
                       rel="noopener noreferrer"
                       className={cn(
                         "inline-flex items-center gap-2 px-3 py-2 -mx-1 rounded-lg",
-                        "text-xs font-semibold text-[#001B51]",
-                        "bg-[#001B51]/5 hover:bg-[#001B51]/10",
+                        "text-xs font-semibold text-construction-blue",
+                        "bg-construction-blue/5 hover:bg-construction-blue/10",
                         "active:scale-[0.98] transition-all duration-150",
                         "min-h-[44px] sm:text-sm",
                       )}
@@ -373,9 +373,9 @@ export function ProjectDetailContent({
             {/* Bottom Section: Quick Stats Grid */}
             <div className="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-3 lg:grid-cols-6">
               {/* Progress */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <TrendingUp className="h-3.5 w-3.5 text-[#001B51]" />
+                  <TrendingUp className="h-3.5 w-3.5 text-construction-blue" />
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                     Progress
                   </span>
@@ -383,20 +383,20 @@ export function ProjectDetailContent({
                 <div className="flex items-center gap-2">
                   <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#001B51] rounded-full transition-all duration-500"
+                      className="h-full bg-construction-blue rounded-full transition-all duration-500"
                       style={{
                         width: `${project.completion_percentage || 0}%`,
                       }}
                     />
                   </div>
-                  <span className="text-sm font-black text-[#001B51] tabular-nums min-w-[3ch]">
+                  <span className="text-sm font-black text-construction-blue tabular-nums min-w-[3ch]">
                     {formatPercentWhole(project.completion_percentage || 0)}
                   </span>
                 </div>
               </div>
 
               {/* Health Score */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Activity
                     className={cn(
@@ -436,7 +436,7 @@ export function ProjectDetailContent({
               </div>
 
               {/* Start Date */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Calendar className="h-3.5 w-3.5 text-gray-400" />
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -454,7 +454,7 @@ export function ProjectDetailContent({
               </div>
 
               {/* End Date */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Target className="h-3.5 w-3.5 text-gray-400" />
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -472,7 +472,7 @@ export function ProjectDetailContent({
               </div>
 
               {/* Days Remaining */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <Clock
                     className={cn(
@@ -501,7 +501,7 @@ export function ProjectDetailContent({
               </div>
 
               {/* Budget */}
-              <div className="bg-white p-3 sm:p-4">
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <DollarSign className="h-3.5 w-3.5 text-construction-green" />
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
@@ -570,7 +570,7 @@ export function ProjectDetailContent({
                 "active:scale-[0.97]",
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "overview"
-                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
               )}
             >
@@ -588,7 +588,7 @@ export function ProjectDetailContent({
                 "active:scale-[0.97]",
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "team"
-                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
               )}
             >
@@ -600,7 +600,7 @@ export function ProjectDetailContent({
                     "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
                     activeTab === "team"
                       ? "bg-white/20 text-white"
-                      : "bg-[#001B51]/10 text-[#001B51]",
+                      : "bg-construction-blue/10 text-construction-blue",
                   )}
                 >
                   {teamSize}
@@ -618,7 +618,7 @@ export function ProjectDetailContent({
                 "active:scale-[0.97]",
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "tasks"
-                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
               )}
             >
@@ -630,7 +630,7 @@ export function ProjectDetailContent({
                     "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
                     activeTab === "tasks"
                       ? "bg-white/20 text-white"
-                      : "bg-[#001B51]/10 text-[#001B51]",
+                      : "bg-construction-blue/10 text-construction-blue",
                   )}
                 >
                   {totalTasks}
@@ -648,7 +648,7 @@ export function ProjectDetailContent({
                 "active:scale-[0.97]",
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "files"
-                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
               )}
             >
@@ -662,7 +662,7 @@ export function ProjectDetailContent({
                     "ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-black tabular-nums",
                     activeTab === "files"
                       ? "bg-white/20 text-white"
-                      : "bg-[#001B51]/10 text-[#001B51]",
+                      : "bg-construction-blue/10 text-construction-blue",
                   )}
                 >
                   {(projectFiles?.length || 0) + (projectPhotos?.length || 0)}
@@ -680,7 +680,7 @@ export function ProjectDetailContent({
                 "active:scale-[0.97]",
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "settings"
-                  ? "bg-[#001B51] text-white shadow-lg shadow-[#001B51]/25"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
               )}
             >

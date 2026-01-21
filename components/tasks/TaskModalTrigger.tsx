@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Wrench } from "lucide-react";
 import type { TaskProject, TeamMember } from "@/types/db/task";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 // Dynamic import TaskModal to reduce initial bundle
 const TaskModal = dynamic(
@@ -16,7 +17,7 @@ const TaskModal = dynamic(
 interface TaskModalTriggerProps {
   projects: TaskProject[];
   teamMembers: TeamMember[];
-  taskTypes?: any[]; // Prefetched task types
+  taskTypes?: TaskTypeConfigsRow[]; // Prefetched task types
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   variant?: "default" | "outline" | "ghost";

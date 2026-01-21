@@ -66,7 +66,7 @@ export function SlideMenuPanel({ children, onClose }: SlideMenuPanelProps) {
       aria-modal="true"
       aria-label="Navigation menu"
     >
-      <div className="h-full bg-white shadow-2xl overflow-hidden flex flex-col">
+      <div className="h-full bg-white dark:bg-gray-950 shadow-2xl overflow-hidden flex flex-col">
         {children}
       </div>
     </motion.div>

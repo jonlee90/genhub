@@ -222,7 +222,7 @@ export function SwipeableCard({
       {/* Main content */}
       <div
         className={cn(
-          "relative bg-white",
+          "relative bg-white dark:bg-gray-900",
           isAnimating && "transition-transform duration-200 ease-out",
         )}
         style={{

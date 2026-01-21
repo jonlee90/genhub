@@ -3,8 +3,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext } from "@/lib/auth-context";
+import type { createClient } from "@/utils/supabase/server";
 
 // Type imports - use database types instead of local types
 import { Project3DModel, SpatialMarker } from "@/types/db/spatial";
@@ -15,32 +15,7 @@ type Task = {
   phase_id: string | null;
 };
 
-// Debug: Helper to get user context
-async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "NOT_AUTHENTICATED", details: "User session not found" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .single();
-
-  if (!companyUser) {
-    return { error: "NO_COMPANY", details: "User has no active company" };
-  }
-
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
-}
+// HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
 /**
  * Get system default model by project type

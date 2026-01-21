@@ -113,7 +113,7 @@ export function OfflineIndicator({
     syncing: {
       icon: RefreshCw,
       text: 'Syncing...',
-      bgColor: 'bg-[#001B51]',
+      bgColor: 'bg-construction-blue',
       textColor: 'text-white',
       iconColor: 'text-white',
       ariaLabel: 'Syncing data',

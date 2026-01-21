@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
+import { cache } from "react";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
 import { getUserContext } from "@/lib/auth/user-context";
@@ -1661,13 +1662,13 @@ export async function getTeamMembersForModal(): Promise<{
  *
  * @returns Promise with both projects and team members
  */
-export async function getModalData(): Promise<{
+export const getModalData = cache(async (): Promise<{
   data?: {
     projects: ProjectForModal[];
     teamMembers: TeamMemberForModal[];
   };
   error?: string;
-}> {
+}> => {
   const [projectsResult, teamResult] = await Promise.all([
     getProjectsForModal(),
     getTeamMembersForModal(),
@@ -1686,4 +1687,4 @@ export async function getModalData(): Promise<{
       teamMembers: teamResult.data || [],
     },
   };
-}
+});

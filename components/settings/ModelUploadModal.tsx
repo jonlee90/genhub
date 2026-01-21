@@ -144,7 +144,7 @@ export function ModelUploadModal({
           key="upload"
           onClick={handleUpload}
           disabled={!selectedFile || isPending}
-          className="bg-[#001B51] hover:bg-[#001B51]/90 text-white"
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white"
         >
           {isPending ? (
             <>
@@ -162,8 +162,8 @@ export function ModelUploadModal({
     >
       <div className="space-y-6">
         {/* Instructions */}
-        <div className="bg-blue-50 border-l-4 border-[#001B51] p-4 rounded-lg">
-          <h4 className="font-bold text-[#001B51] mb-2">Upload Requirements</h4>
+        <div className="bg-blue-50 border-l-4 border-construction-blue p-4 rounded-lg">
+          <h4 className="font-bold text-construction-blue mb-2">Upload Requirements</h4>
           <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
             <li>File format: IFC (.ifc)</li>
             <li>Maximum file size: {MAX_FILE_SIZE_MB}MB</li>
@@ -190,13 +190,13 @@ export function ModelUploadModal({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="font-semibold text-gray-700">Uploading...</span>
-              <span className="font-mono text-[#001B51]">
+              <span className="font-mono text-construction-blue">
                 {uploadProgress}%
               </span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#001B51] transition-all duration-300 ease-out"
+                className="h-full bg-construction-blue transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

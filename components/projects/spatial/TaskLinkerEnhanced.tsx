@@ -187,8 +187,8 @@ function CreateTaskMode({
       <div className="space-y-5">
         {/* 3D Position */}
         {position && (
-          <div className="p-4 bg-[#001B51]/5 rounded-lg border-2 border-[#001B51]/20">
-            <div className="text-[10px] font-mono font-bold text-[#001B51]/70 uppercase tracking-wider mb-2">
+          <div className="p-4 bg-construction-blue/5 rounded-lg border-2 border-construction-blue/20">
+            <div className="text-[10px] font-mono font-bold text-construction-blue/70 uppercase tracking-wider mb-2">
               3D Position
             </div>
             <div className="font-mono text-sm text-gray-900">
@@ -211,7 +211,7 @@ function CreateTaskMode({
             className={cn(
               "w-full px-4 py-3 rounded-lg",
               "border-2 border-gray-200",
-              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
               "placeholder:text-gray-400 text-sm font-medium",
             )}
           />
@@ -230,7 +230,7 @@ function CreateTaskMode({
             className={cn(
               "w-full px-4 py-3 rounded-lg",
               "border-2 border-gray-200",
-              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
               "placeholder:text-gray-400 text-sm resize-none",
             )}
           />
@@ -248,7 +248,7 @@ function CreateTaskMode({
               className={cn(
                 "w-full px-4 py-3 rounded-lg",
                 "border-2 border-gray-200",
-                "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+                "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
                 "text-sm font-medium",
               )}
             >
@@ -276,7 +276,7 @@ function CreateTaskMode({
                   "flex-1 px-4 py-2.5 rounded-lg font-bold text-sm uppercase",
                   "border-2 transition-all duration-200",
                   priority === level
-                    ? "border-[#001B51] bg-[#001B51] text-white"
+                    ? "border-construction-blue bg-construction-blue text-white"
                     : "border-gray-200 text-gray-700 hover:border-gray-300",
                 )}
               >
@@ -298,7 +298,7 @@ function CreateTaskMode({
               className={cn(
                 "w-full px-4 py-3 rounded-lg",
                 "border-2 border-gray-200",
-                "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+                "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
                 "text-sm font-medium",
               )}
             >
@@ -324,7 +324,7 @@ function CreateTaskMode({
             className={cn(
               "w-full px-4 py-3 rounded-lg",
               "border-2 border-gray-200",
-              "focus:border-[#001B51] focus:outline-none focus:ring-2 focus:ring-[#001B51]/20",
+              "focus:border-construction-blue focus:outline-none focus:ring-2 focus:ring-[var(--construction-blue)]/20",
               "text-sm font-medium",
             )}
           />

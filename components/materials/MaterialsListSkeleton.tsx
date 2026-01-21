@@ -35,10 +35,10 @@ export function MaterialsListSkeleton({
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className="bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm"
+          className="bg-white dark:bg-gray-900 rounded-xl overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-sm"
         >
           {/* Image Header Placeholder */}
-          <Skeleton className="h-36 bg-gradient-to-br from-gray-100 to-gray-50" />
+          <Skeleton className="h-36 bg-gradient-to-br from-gray-100 dark:from-gray-800 to-gray-50 dark:to-gray-900" />
 
           {/* Content */}
           <div className="p-4 space-y-3">
@@ -53,18 +53,18 @@ export function MaterialsListSkeleton({
 
             {/* Stats Row Placeholder */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
                 <Skeleton className="h-2 w-12 mb-1.5" />
                 <Skeleton className="h-5 w-8" />
               </div>
-              <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100">
+              <div className="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
                 <Skeleton className="h-2 w-12 mb-1.5" />
                 <Skeleton className="h-5 w-8" />
               </div>
             </div>
 
             {/* Price Placeholder */}
-            <div className="flex items-center justify-between py-2 border-t border-gray-100">
+            <div className="flex items-center justify-between py-2 border-t border-gray-100 dark:border-gray-800">
               <div>
                 <Skeleton className="h-3 w-14 mb-1" />
                 <Skeleton className="h-6 w-20" />

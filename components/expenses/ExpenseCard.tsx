@@ -36,22 +36,22 @@ export const ExpenseCard = React.memo(
     return (
       <div className="group relative h-full cursor-pointer">
         {/* Decorative background - construction theme */}
-        <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-transparent rounded-xl transform group-hover:scale-105 transition-transform" />
+        <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 dark:from-blue-600/10 to-transparent rounded-xl transform group-hover:scale-105 transition-transform" />
 
-        <div className="relative h-full bg-white border-2 border-gray-200 rounded-xl shadow-construction hover:shadow-construction-lg transition-all overflow-hidden flex flex-col">
+        <div className="relative h-full bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction hover:shadow-construction-lg transition-all overflow-hidden flex flex-col">
           {/* Receipt/Image header */}
           <div
             className={cn(
               "relative h-32 md:h-40 border-b-2 flex items-center justify-center",
               expense.receipt_url
-                ? "bg-gradient-to-br from-construction-blue/10 to-construction-blue/5 border-construction-blue/20"
-                : "bg-gradient-to-br from-gray-100 to-gray-50 border-gray-200",
+                ? "bg-gradient-to-br from-construction-blue/10 to-construction-blue/5 dark:from-blue-600/20 dark:to-blue-600/10 border-construction-blue/20 dark:border-blue-600/30"
+                : "bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-700 dark:to-gray-800 border-gray-200 dark:border-gray-700",
             )}
           >
             {expense.receipt_url ? (
-              <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-construction-blue opacity-40" />
+              <ImageIcon className="h-12 w-12 md:h-16 md:w-16 text-construction-blue dark:text-blue-400 opacity-40" />
             ) : (
-              <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-400 opacity-40" />
+              <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-400 dark:text-gray-500 opacity-40" />
             )}
 
             {/* Status badge - top right */}
@@ -65,8 +65,8 @@ export const ExpenseCard = React.memo(
 
             {/* Receipt indicator - top left */}
             {expense.receipt_url && (
-              <div className="absolute top-2 left-2 p-1.5 bg-white rounded-lg border-2 border-construction-blue/20 shadow-sm">
-                <Receipt className="h-3 w-3 text-construction-blue" />
+              <div className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 rounded-lg border-2 border-construction-blue/20 dark:border-blue-600/30 shadow-sm">
+                <Receipt className="h-3 w-3 text-construction-blue dark:text-blue-400" />
               </div>
             )}
           </div>
@@ -75,14 +75,14 @@ export const ExpenseCard = React.memo(
           <div className="flex-1 p-4 md:p-5 space-y-3 flex flex-col">
             {/* Amount - prominent display */}
             <div className="flex items-baseline gap-2">
-              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-construction-blue shrink-0" />
-              <div className="text-2xl md:text-3xl font-black text-construction-blue leading-none">
+              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-construction-blue dark:text-blue-400 shrink-0" />
+              <div className="text-2xl md:text-3xl font-black text-construction-blue dark:text-blue-400 leading-none">
                 {formatCurrency(expense.amount)}
               </div>
             </div>
 
             {/* Description */}
-            <h3 className="font-bold text-gray-900 line-clamp-2 text-sm md:text-base leading-tight min-h-[2.5rem]">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm md:text-base leading-tight min-h-[2.5rem]">
               {expense.description}
             </h3>
 
@@ -93,8 +93,8 @@ export const ExpenseCard = React.memo(
               </Badge>
               {expense.vendor_name && (
                 <>
-                  <span className="text-gray-400">•</span>
-                  <span className="text-gray-600 font-medium truncate">
+                  <span className="text-gray-400 dark:text-gray-600">•</span>
+                  <span className="text-gray-600 dark:text-gray-400 font-medium truncate">
                     {expense.vendor_name}
                   </span>
                 </>
@@ -105,26 +105,26 @@ export const ExpenseCard = React.memo(
             <div className="flex-1" />
 
             {/* Footer - Project and Date */}
-            <div className="space-y-2 pt-3 border-t-2 border-gray-100">
+            <div className="space-y-2 pt-3 border-t-2 border-gray-100 dark:border-gray-700">
               {/* Project */}
               <div className="flex items-center gap-2 text-xs md:text-sm">
-                <Building2 className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span className="text-gray-600 truncate">
+                <Building2 className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
+                <span className="text-gray-600 dark:text-gray-400 truncate">
                   {expense.project?.name || "No project"}
                 </span>
               </div>
 
               {/* Date */}
               <div className="flex items-center gap-2 text-xs md:text-sm">
-                <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-                <span className="text-gray-600">
+                <Calendar className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
+                <span className="text-gray-600 dark:text-gray-400">
                   {formatDate(expense.expense_date)}
                 </span>
               </div>
             </div>
 
             {/* Hover indicator */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-construction-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-construction-blue dark:bg-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
           </div>
         </div>
       </div>

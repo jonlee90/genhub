@@ -76,14 +76,14 @@ export function ExpensePreview({ id }: ExpensePreviewProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "w-full max-w-md bg-white dark:bg-gray-800 border-2 border-construction-blue dark:border-construction-blue/60 rounded-xl p-4",
         "hover:shadow-construction-lg transition-all duration-200 cursor-pointer",
         "group",
       )}
     >
       {/* Debug: Header with icon and description */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="p-2 bg-construction-green/10 rounded-lg border-2 border-construction-green/20 shrink-0">
+        <div className="p-2 bg-construction-green/10 dark:bg-construction-green/20 rounded-lg border-2 border-construction-green/20 dark:border-construction-green/40 shrink-0">
           <DollarSign className="h-5 w-5 text-construction-green" />
         </div>
 
@@ -107,7 +107,7 @@ export function ExpensePreview({ id }: ExpensePreviewProps) {
       </div>
 
       {/* Debug: Amount (large, prominent) */}
-      <div className="bg-gradient-to-br from-construction-green/5 to-construction-green/10 rounded-lg border-2 border-construction-green/20 p-4 mb-3">
+      <div className="bg-gradient-to-br from-construction-green/5 dark:from-construction-green/10 to-construction-green/10 dark:to-construction-green/20 rounded-lg border-2 border-construction-green/20 dark:border-construction-green/40 p-4 mb-3">
         <div className="flex items-center justify-center gap-2">
           <DollarSign className="h-6 w-6 text-construction-green" />
           <span className="text-3xl font-black text-construction-green">
@@ -118,15 +118,15 @@ export function ExpensePreview({ id }: ExpensePreviewProps) {
 
       {/* Debug: Vendor name */}
       {expense.vendor_name && (
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
           <Building2 className="h-4 w-4" />
           <span className="text-sm">{expense.vendor_name}</span>
         </div>
       )}
 
       {/* Debug: Footer hint */}
-      <div className="mt-3 pt-3 border-t-2 border-gray-100">
-        <p className="text-[10px] font-mono text-gray-500">
+      <div className="mt-3 pt-3 border-t-2 border-gray-100 dark:border-gray-700">
+        <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
           Click to view expense details
         </p>
       </div>

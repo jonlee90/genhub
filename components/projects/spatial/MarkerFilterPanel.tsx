@@ -178,7 +178,7 @@ export function MarkerFilterPanel({
                   'flex items-center gap-3 p-3 rounded-lg cursor-pointer',
                   'border-2 transition-all duration-150',
                   isActive
-                    ? 'border-[#001B51] bg-[#001B51]/5'
+                    ? 'border-construction-blue bg-construction-blue/5'
                     : 'border-gray-200 hover:border-gray-300'
                 )}
               >
@@ -192,7 +192,7 @@ export function MarkerFilterPanel({
                   className={cn(
                     'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center',
                     'transition-all duration-150',
-                    isActive ? 'border-[#001B51] bg-[#001B51]' : 'border-gray-300'
+                    isActive ? 'border-construction-blue bg-construction-blue' : 'border-gray-300'
                   )}
                 >
                   {isActive && (
@@ -233,7 +233,7 @@ export function MarkerFilterPanel({
                   'px-3 py-2 rounded-lg text-xs font-bold uppercase',
                   'border-2 transition-all duration-150',
                   isActive
-                    ? 'border-[#001B51] bg-[#001B51] text-white'
+                    ? 'border-construction-blue bg-construction-blue text-white'
                     : 'border-gray-200 text-gray-700 hover:border-gray-300'
                 )}
               >
@@ -256,21 +256,21 @@ export function MarkerFilterPanel({
               'w-full flex items-center gap-3 p-3 rounded-lg',
               'border-2 transition-all duration-150 text-left',
               activeFilters.hasTask !== undefined
-                ? 'border-[#001B51] bg-[#001B51]/5'
+                ? 'border-construction-blue bg-construction-blue/5'
                 : 'border-gray-200 hover:border-gray-300'
             )}
           >
             <ClipboardList
               className={cn(
                 'h-4 w-4 flex-shrink-0',
-                activeFilters.hasTask !== undefined ? 'text-[#001B51]' : 'text-gray-400'
+                activeFilters.hasTask !== undefined ? 'text-construction-blue' : 'text-gray-400'
               )}
             />
             <span className="text-sm font-medium text-gray-900 flex-1">
               Tasks with Locations
             </span>
             {activeFilters.hasTask !== undefined && (
-              <span className="text-xs font-mono font-bold text-[#001B51]">
+              <span className="text-xs font-mono font-bold text-construction-blue">
                 {activeFilters.hasTask ? 'YES' : 'NO'}
               </span>
             )}
@@ -282,7 +282,7 @@ export function MarkerFilterPanel({
               'w-full flex items-center gap-3 p-3 rounded-lg',
               'border-2 transition-all duration-150 text-left',
               activeFilters.hasMaterials !== undefined
-                ? 'border-[#001B51] bg-[#001B51]/5'
+                ? 'border-construction-blue bg-construction-blue/5'
                 : 'border-gray-200 hover:border-gray-300'
             )}
           >
@@ -290,7 +290,7 @@ export function MarkerFilterPanel({
               className={cn(
                 'h-4 w-4 flex-shrink-0',
                 activeFilters.hasMaterials !== undefined
-                  ? 'text-[#001B51]'
+                  ? 'text-construction-blue'
                   : 'text-gray-400'
               )}
             />
@@ -298,7 +298,7 @@ export function MarkerFilterPanel({
               Tasks with Materials
             </span>
             {activeFilters.hasMaterials !== undefined && (
-              <span className="text-xs font-mono font-bold text-[#001B51]">
+              <span className="text-xs font-mono font-bold text-construction-blue">
                 {activeFilters.hasMaterials ? 'YES' : 'NO'}
               </span>
             )}

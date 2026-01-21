@@ -2,7 +2,7 @@ import { SeedDemoDataButton } from '@/components/admin/SeedDemoDataButton';
 
 export default function SeedDataPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none"
@@ -21,25 +21,25 @@ export default function SeedDataPage() {
       <div className="relative max-w-4xl mx-auto p-4 md:p-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900 mb-2">
+          <h1 className="text-3xl font-black uppercase tracking-tight text-gray-900 dark:text-white mb-2">
             Admin: Seed Demo Data
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Reset and populate the database with realistic demo construction projects
           </p>
         </div>
 
         {/* Main Card */}
-        <div className="bg-white border-2 border-gray-200 shadow-construction rounded-lg p-6 md:p-8">
+        <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 shadow-construction rounded-lg p-6 md:p-8">
           <SeedDemoDataButton />
         </div>
 
         {/* Warning Notice */}
-        <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+        <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 dark:border-yellow-500 rounded">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-yellow-400"
+                className="h-5 w-5 text-yellow-400 dark:text-yellow-500"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -52,7 +52,7 @@ export default function SeedDataPage() {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-yellow-700">
+              <p className="text-sm text-yellow-700 dark:text-yellow-300">
                 <strong>Warning:</strong> This action is irreversible. All existing projects, tasks,
                 phases, expenses, and related data will be permanently deleted. Only use this for
                 testing or demo purposes.
@@ -62,11 +62,11 @@ export default function SeedDataPage() {
         </div>
 
         {/* Info Panel */}
-        <div className="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 rounded">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg
-                className="h-5 w-5 text-blue-400"
+                className="h-5 w-5 text-blue-400 dark:text-blue-500"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -79,7 +79,7 @@ export default function SeedDataPage() {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 <strong>Tip:</strong> After seeding, navigate to the Projects page to see the new demo
                 projects. Each project will have phases, tasks, and a linked 3D model.
               </p>

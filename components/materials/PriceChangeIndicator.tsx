@@ -25,7 +25,7 @@ export function PriceChangeIndicator({
   // Handle no change or null/undefined
   if (percent === null || percent === undefined || percent === 0) {
     return (
-      <div className={`flex items-center gap-1 text-gray-500 ${className}`}>
+      <div className={`flex items-center gap-1 text-gray-500 dark:text-gray-400 ${className}`}>
         <Minus className="w-4 h-4" />
         <span className="text-sm">No change</span>
       </div>
@@ -33,7 +33,7 @@ export function PriceChangeIndicator({
   }
 
   const isPositive = percent > 0;
-  const color = isPositive ? "text-red-600" : "text-green-600";
+  const color = isPositive ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400";
   const Icon = isPositive ? TrendingUp : TrendingDown;
 
   return (

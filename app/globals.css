@@ -6,7 +6,7 @@
   /* --background: #F9F8F6; */
   --background: #ffffff;
   --foreground: #0A0A0A;
-  --primary: #001B51;
+  --primary: var(--construction-blue);
   --primary-hover: #00153d;
   --border: #E5E7EB;
   --border-hover: #D1D5DB;
@@ -24,17 +24,47 @@
   --status-on-track: #059669;
   --status-at-risk: #3C3C3C;
   --status-delayed: #DC2626;
-  --status-completed: #001B51;
+  --status-completed: var(--construction-blue);
 
   /* Background variants */
   --bg-subtle: #F9FAFB;
   --bg-muted: #F3F4F6;
 }
 
+/* Dark mode color overrides */
+:root.dark {
+  --background: #0F0F0F;
+  --foreground: #F5F5F5;
+  --primary: #6FA1FF;
+  --primary-hover: #5890FF;
+  --border: #2D3748;
+  --border-hover: #3F4A63;
+
+  /* Construction-themed colors - Dark mode variants (researched for construction industry aesthetic) */
+  --construction-accent: #E2E8F0;
+  --construction-accent-light: #A0AEC0;
+  --construction-yellow: #FCD34D;
+  --construction-blue: #6FA1FF;
+  --construction-green: #34D399;
+  --construction-red: #EF4444;
+  --construction-gray: #94A3B8;
+
+  /* Status colors - Dark mode */
+  --status-on-track: #34D399;
+  --status-at-risk: #A0AEC0;
+  --status-delayed: #EF4444;
+  --status-completed: #6FA1FF;
+
+  /* Background variants - Dark mode */
+  --bg-subtle: #1A1A2E;
+  --bg-muted: #2D3748;
+}
+
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 150ms ease, color 150ms ease;
 }
 
 
@@ -190,6 +220,11 @@ textarea:focus {
   }
 }
 
+/* Dark mode SVG pattern backgrounds */
+:root.dark [style*="svg+xml,%3Csvg"] {
+  filter: brightness(0) invert(1) brightness(0.8);
+}
+
 /* View Transitions API Support */
 @supports (view-transition-name: auto) {
   /* Root transition configuration */
@@ -270,8 +305,23 @@ textarea:focus {
   }
 }
 
+/* Dark mode shadow overrides for better visibility */
+:root.dark {
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.6), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   ::view-transition-old(root),
   ::view-transition-new(root),
   ::view-transition-old(card),
@@ -279,6 +329,10 @@ textarea:focus {
   ::view-transition-old(modal),
   ::view-transition-new(modal) {
     animation: none !important;
+  }
+
+  body {
+    transition: none !important;
   }
 }
 
@@ -398,6 +452,20 @@ textarea:focus {
 
 .animate-badge-pop {
   animation: badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Pulse scale animation for task status badge - replaces Framer Motion */
+@keyframes pulse-scale {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-scale {
+  animation: pulse-scale 2s ease-in-out infinite;
 }
 
 /* Content visibility for rendering performance */

@@ -19,11 +19,11 @@ export default function DashboardLoading() {
         {/* Header skeleton */}
         <div className="animate-pulse">
           {/* Industrial accent bar */}
-          <div className="h-1 w-16 md:w-24 bg-gray-200 rounded-full mb-4 md:mb-6" />
+          <div className="h-1 w-16 md:w-24 bg-gray-200 dark:bg-gray-700 rounded-full mb-4 md:mb-6" />
           {/* Title */}
-          <div className="h-10 md:h-14 w-64 md:w-96 bg-gray-200 rounded mb-2 md:mb-3" />
+          <div className="h-10 md:h-14 w-64 md:w-96 bg-gray-200 dark:bg-gray-700 rounded mb-2 md:mb-3" />
           {/* Subtitle */}
-          <div className="h-4 md:h-5 w-48 md:w-80 bg-gray-200 rounded" />
+          <div className="h-4 md:h-5 w-48 md:w-80 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
 
         {/* KPI cards skeleton - 6 cards in responsive grid */}
@@ -31,15 +31,15 @@ export default function DashboardLoading() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-lg border-2 border-gray-100 p-3 md:p-4 animate-pulse"
+              className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-3 md:p-4 animate-pulse"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               {/* Icon placeholder */}
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-200 rounded-lg mb-3" />
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-200 dark:bg-gray-700 rounded-lg mb-3" />
               {/* Value placeholder */}
-              <div className="h-6 md:h-8 w-12 md:w-16 bg-gray-200 rounded mb-2" />
+              <div className="h-6 md:h-8 w-12 md:w-16 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
               {/* Label placeholder */}
-              <div className="h-3 md:h-4 w-full bg-gray-100 rounded" />
+              <div className="h-3 md:h-4 w-full bg-gray-100 dark:bg-gray-800 rounded" />
             </div>
           ))}
         </div>
@@ -48,18 +48,18 @@ export default function DashboardLoading() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Project Status Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '200ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-32 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             <div className="space-y-3">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex justify-between items-center">
-                  <div className="h-4 w-20 bg-gray-100 rounded" />
-                  <div className="h-4 w-8 bg-gray-100 rounded" />
+                  <div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded" />
+                  <div className="h-4 w-8 bg-gray-100 dark:bg-gray-800 rounded" />
                 </div>
               ))}
             </div>
@@ -67,74 +67,74 @@ export default function DashboardLoading() {
 
           {/* Task Progress Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '300ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-28 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             {/* Progress bar placeholder */}
-            <div className="h-3 w-full bg-gray-100 rounded-full mb-4" />
+            <div className="h-3 w-full bg-gray-100 dark:bg-gray-800 rounded-full mb-4" />
             <div className="grid grid-cols-2 gap-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-12 bg-gray-50 rounded" />
+                <div key={i} className="h-12 bg-gray-50 dark:bg-gray-800 rounded" />
               ))}
             </div>
           </div>
 
           {/* Budget Summary Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '400ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-32 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             <div className="space-y-3">
-              <div className="h-8 w-full bg-gray-100 rounded" />
-              <div className="h-4 w-3/4 bg-gray-50 rounded" />
-              <div className="h-4 w-2/3 bg-gray-50 rounded" />
+              <div className="h-8 w-full bg-gray-100 dark:bg-gray-800 rounded" />
+              <div className="h-4 w-3/4 bg-gray-50 dark:bg-gray-800 rounded" />
+              <div className="h-4 w-2/3 bg-gray-50 dark:bg-gray-800 rounded" />
             </div>
           </div>
 
           {/* Schedule Health Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '500ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-32 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             {/* Donut chart placeholder */}
             <div className="flex items-center justify-center mb-4">
-              <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-full" />
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 dark:bg-gray-800 rounded-full" />
             </div>
             <div className="flex justify-center gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-4 w-16 bg-gray-50 rounded" />
+                <div key={i} className="h-4 w-16 bg-gray-50 dark:bg-gray-800 rounded" />
               ))}
             </div>
           </div>
 
           {/* Team Activity Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '600ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-28 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-28 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full" />
+                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-full" />
                   <div className="flex-1">
-                    <div className="h-4 w-24 bg-gray-100 rounded mb-1" />
-                    <div className="h-3 w-16 bg-gray-50 rounded" />
+                    <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded mb-1" />
+                    <div className="h-3 w-16 bg-gray-50 dark:bg-gray-800 rounded" />
                   </div>
                 </div>
               ))}
@@ -143,18 +143,18 @@ export default function DashboardLoading() {
 
           {/* Materials Status Widget skeleton */}
           <div
-            className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-6 animate-pulse"
+            className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-6 animate-pulse"
             style={{ animationDelay: '700ms' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-5 h-5 bg-gray-200 rounded" />
-              <div className="h-5 w-32 bg-gray-200 rounded" />
+              <div className="w-5 h-5 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex justify-between items-center">
-                  <div className="h-4 w-20 bg-gray-100 rounded" />
-                  <div className="h-6 w-12 bg-gray-100 rounded-full" />
+                  <div className="h-4 w-20 bg-gray-100 dark:bg-gray-800 rounded" />
+                  <div className="h-6 w-12 bg-gray-100 dark:bg-gray-800 rounded-full" />
                 </div>
               ))}
             </div>
@@ -163,23 +163,23 @@ export default function DashboardLoading() {
 
         {/* Quick Actions skeleton */}
         <div
-          className="bg-white rounded-lg border-2 border-gray-100 p-4 md:p-8 animate-pulse"
+          className="bg-white dark:bg-gray-900 rounded-lg border-2 border-gray-100 dark:border-gray-800 p-4 md:p-8 animate-pulse"
           style={{ animationDelay: '800ms' }}
         >
           <div className="flex items-center gap-3 mb-4 md:mb-6">
-            <div className="w-2 h-2 bg-gray-200 rounded-full" />
-            <div className="h-6 w-32 bg-gray-200 rounded" />
+            <div className="w-2 h-2 bg-gray-200 dark:bg-gray-700 rounded-full" />
+            <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 md:gap-4 p-3 md:p-5 rounded-lg border-2 border-gray-100"
+                className="flex items-center gap-3 md:gap-4 p-3 md:p-5 rounded-lg border-2 border-gray-100 dark:border-gray-800"
               >
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg" />
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 dark:bg-gray-800 rounded-lg" />
                 <div className="flex-1">
-                  <div className="h-4 w-24 bg-gray-100 rounded mb-2" />
-                  <div className="h-3 w-32 bg-gray-50 rounded" />
+                  <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded mb-2" />
+                  <div className="h-3 w-32 bg-gray-50 dark:bg-gray-800 rounded" />
                 </div>
               </div>
             ))}

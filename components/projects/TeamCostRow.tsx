@@ -66,12 +66,12 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
       className={cn(
         "w-full flex flex-col gap-2",
         "min-h-[48px] px-4 py-3",
-        "bg-white border-b border-gray-100 last:border-b-0",
+        "bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 last:border-b-0",
         "transition-all duration-150",
         isInteractive && [
           "cursor-pointer",
-          "active:bg-gray-50",
-          "hover:bg-gray-50/50",
+          "active:bg-gray-50 dark:active:bg-gray-800",
+          "hover:bg-gray-50/50 dark:hover:bg-gray-800/50",
         ],
       )}
     >
@@ -83,15 +83,15 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
             className={cn(
               "flex items-center justify-center",
               "w-9 h-9 rounded-full",
-              "bg-orange-100",
+              "bg-orange-100 dark:bg-orange-900/30",
             )}
           >
-            <Building2 className="w-5 h-5 text-orange-600" />
+            <Building2 className="w-5 h-5 text-orange-600 dark:text-orange-400" />
           </div>
         ) : (
           <Avatar className="h-9 w-9 flex-shrink-0">
             <AvatarImage src={avatarUrl || undefined} />
-            <AvatarFallback className="text-xs font-semibold text-white bg-[#001B51]">
+            <AvatarFallback className="text-xs font-semibold text-white bg-construction-blue">
               {getInitials(name)}
             </AvatarFallback>
           </Avatar>
@@ -99,7 +99,7 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
 
         {/* Name & Role */}
         <div className="flex-1 min-w-0">
-          <div className="font-semibold text-sm text-gray-900 truncate">
+          <div className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
             {name}
           </div>
         </div>
@@ -112,8 +112,8 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
               "text-[10px] font-semibold uppercase tracking-wider",
               "px-2 py-0.5",
               type === "subcontractor"
-                ? "bg-orange-100 text-orange-700 border-orange-200"
-                : "bg-gray-100 text-gray-600 border-gray-200",
+                ? "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-800"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700",
             )}
           >
             {formatRole(role)}
@@ -122,7 +122,7 @@ export function TeamCostRow({ summary, onClick }: TeamCostRowProps) {
 
         {/* Chevron for interactive rows */}
         {isInteractive && (
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0" />
         )}
       </div>
 
@@ -168,13 +168,13 @@ function CostColumn({
 }: CostColumnProps) {
   return (
     <div className={cn("flex-1", className)}>
-      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+      <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
         {label}
       </div>
       <div
         className={cn(
           "text-sm tabular-nums",
-          isTotal ? "font-bold text-[#001B51]" : "font-medium text-gray-700",
+          isTotal ? "font-bold text-construction-blue dark:text-blue-400" : "font-medium text-gray-700 dark:text-gray-300",
         )}
       >
         {formatBudget(value)}

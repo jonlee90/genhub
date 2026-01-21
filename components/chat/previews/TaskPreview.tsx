@@ -85,14 +85,14 @@ export function TaskPreview({ id }: TaskPreviewProps) {
       whileHover={{ scale: 1.02 }}
       transition={{ duration: 0.2 }}
       className={cn(
-        "w-full max-w-md bg-white border-2 border-construction-blue rounded-xl p-4",
+        "w-full max-w-md bg-white dark:bg-gray-800 border-2 border-construction-blue dark:border-construction-blue/60 rounded-xl p-4",
         "hover:shadow-construction-lg transition-all duration-200 cursor-pointer",
         "group",
       )}
     >
       {/* Debug: Header with icon and title */}
       <div className="flex items-start gap-3 mb-3">
-        <div className="p-2 bg-construction-blue/10 rounded-lg border-2 border-construction-blue/20 shrink-0">
+        <div className="p-2 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-lg border-2 border-construction-blue/20 dark:border-construction-blue/40 shrink-0">
           <ClipboardCheck className="h-5 w-5 text-construction-blue" />
         </div>
 
@@ -127,18 +127,18 @@ export function TaskPreview({ id }: TaskPreviewProps) {
         {/* Assignee */}
         {task.assignee ? (
           <div className="flex items-center gap-2">
-            <Avatar className="h-6 w-6 border-2 border-gray-200">
+            <Avatar className="h-6 w-6 border-2 border-gray-200 dark:border-gray-700">
               <AvatarImage src={task.assignee.avatar_url || undefined} />
               <AvatarFallback className="bg-construction-blue text-white text-[10px] font-black">
                 {getInitials(task.assignee.name)}
               </AvatarFallback>
             </Avatar>
-            <span className="text-xs text-gray-700 truncate">
+            <span className="text-xs text-gray-700 dark:text-gray-300 truncate">
               {task.assignee.name}
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-gray-400">
+          <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
             <UserIcon className="h-4 w-4" />
             <span className="text-xs">Unassigned</span>
           </div>
@@ -148,12 +148,12 @@ export function TaskPreview({ id }: TaskPreviewProps) {
         {task.due_date ? (
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-construction-blue" />
-            <span className="text-xs text-gray-700">
+            <span className="text-xs text-gray-700 dark:text-gray-300">
               {formatDate(task.due_date)}
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-gray-400">
+          <div className="flex items-center gap-2 text-gray-400 dark:text-gray-500">
             <Calendar className="h-4 w-4" />
             <span className="text-xs">No due date</span>
           </div>
@@ -161,8 +161,8 @@ export function TaskPreview({ id }: TaskPreviewProps) {
       </div>
 
       {/* Debug: Footer hint */}
-      <div className="mt-3 pt-3 border-t-2 border-gray-100">
-        <p className="text-[10px] font-mono text-gray-500">
+      <div className="mt-3 pt-3 border-t-2 border-gray-100 dark:border-gray-700">
+        <p className="text-[10px] font-mono text-gray-500 dark:text-gray-400">
           Click to view task details
         </p>
       </div>

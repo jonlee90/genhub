@@ -154,7 +154,7 @@ function MarkerItem({
 
       {/* Title and category */}
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-[#001B51] text-base truncate">
+        <h4 className="font-semibold text-construction-blue text-base truncate">
           {marker.title}
         </h4>
         <div className="flex items-center gap-2 mt-0.5">
@@ -193,7 +193,7 @@ function EmptyState() {
       <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
         <MapPin className="w-8 h-8 text-gray-400" />
       </div>
-      <h3 className="font-bold text-[#001B51] mb-2 text-lg">
+      <h3 className="font-bold text-construction-blue mb-2 text-lg">
         No Markers Found
       </h3>
       <p className="text-sm text-gray-600 max-w-[240px]">

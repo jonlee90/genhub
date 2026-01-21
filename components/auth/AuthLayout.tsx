@@ -21,7 +21,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   console.log('[AuthLayout] Rendering auth layout');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 flex flex-col items-center justify-center p-4">
       {/* Logo Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -33,7 +33,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
           <div className="p-2 bg-construction-blue rounded-lg group-hover:scale-105 transition-transform">
             <HardHat className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-black text-construction-blue">GenHub</span>
+          <span className="text-2xl font-black text-construction-blue dark:text-blue-400">GenHub</span>
         </Link>
       </motion.div>
 
@@ -42,7 +42,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
+        className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
       >
         {children}
       </motion.div>
@@ -52,7 +52,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mt-8 text-sm text-gray-500 text-center"
+        className="mt-8 text-sm text-gray-500 dark:text-gray-400 text-center"
       >
         Construction project management made simple
       </motion.p>

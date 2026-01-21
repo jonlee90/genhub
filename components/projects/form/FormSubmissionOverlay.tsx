@@ -85,7 +85,7 @@ export function FormSubmissionOverlay({
                       ease: 'linear',
                     }}
                   >
-                    <Loader2 className="w-16 h-16 text-[#001B51]" />
+                    <Loader2 className="w-16 h-16 text-construction-blue" />
                   </motion.div>
                 </div>
 
@@ -112,7 +112,7 @@ export function FormSubmissionOverlay({
                       animate={{
                         scale: index <= currentStateIndex ? 1 : 0.8,
                         backgroundColor:
-                          index <= currentStateIndex ? '#001B51' : '#E5E7EB',
+                          index <= currentStateIndex ? 'var(--construction-blue)' : '#E5E7EB',
                       }}
                       transition={{ duration: 0.2 }}
                       className="w-2 h-2 rounded-full"

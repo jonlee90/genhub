@@ -157,7 +157,7 @@ export function SpatialViewerWithFilters({
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-gray-600">Total:</span>{' '}
-              <span className="font-bold text-[#001B51]">{markers.length}</span>
+              <span className="font-bold text-construction-blue">{markers.length}</span>
             </div>
             <div>
               <span className="text-gray-600">Filtered:</span>{' '}

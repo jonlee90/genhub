@@ -31,27 +31,27 @@ function getPlanBadgeStyle(planName: string): {
   switch (planName.toLowerCase()) {
     case "free":
       return {
-        bgColor: "bg-gray-100",
-        textColor: "text-gray-700",
-        borderColor: "border-gray-200",
+        bgColor: "bg-gray-100 dark:bg-gray-800",
+        textColor: "text-gray-700 dark:text-gray-300",
+        borderColor: "border-gray-200 dark:border-gray-700",
       };
     case "basic":
       return {
-        bgColor: "bg-blue-100",
-        textColor: "text-blue-700",
-        borderColor: "border-blue-200",
+        bgColor: "bg-blue-100 dark:bg-blue-900",
+        textColor: "text-blue-700 dark:text-blue-300",
+        borderColor: "border-blue-200 dark:border-blue-800",
       };
     case "pro":
       return {
-        bgColor: "bg-purple-100",
-        textColor: "text-purple-700",
-        borderColor: "border-purple-200",
+        bgColor: "bg-purple-100 dark:bg-purple-900",
+        textColor: "text-purple-700 dark:text-purple-300",
+        borderColor: "border-purple-200 dark:border-purple-800",
       };
     default:
       return {
-        bgColor: "bg-gray-100",
-        textColor: "text-gray-700",
-        borderColor: "border-gray-200",
+        bgColor: "bg-gray-100 dark:bg-gray-800",
+        textColor: "text-gray-700 dark:text-gray-300",
+        borderColor: "border-gray-200 dark:border-gray-700",
       };
   }
 }
@@ -65,27 +65,27 @@ function getIntervalBadgeStyle(planName: string): {
   switch (planName.toLowerCase()) {
     case "free":
       return {
-        bgColor: "bg-gray-50",
-        textColor: "text-gray-600",
-        borderColor: "border-gray-200",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+        textColor: "text-gray-600 dark:text-gray-400",
+        borderColor: "border-gray-200 dark:border-gray-700",
       };
     case "basic":
       return {
-        bgColor: "bg-blue-50",
-        textColor: "text-blue-600",
-        borderColor: "border-blue-100",
+        bgColor: "bg-blue-50 dark:bg-blue-950",
+        textColor: "text-blue-600 dark:text-blue-400",
+        borderColor: "border-blue-100 dark:border-blue-800",
       };
     case "pro":
       return {
-        bgColor: "bg-purple-50",
-        textColor: "text-purple-600",
-        borderColor: "border-purple-100",
+        bgColor: "bg-purple-50 dark:bg-purple-950",
+        textColor: "text-purple-600 dark:text-purple-400",
+        borderColor: "border-purple-100 dark:border-purple-800",
       };
     default:
       return {
-        bgColor: "bg-gray-50",
-        textColor: "text-gray-600",
-        borderColor: "border-gray-200",
+        bgColor: "bg-gray-50 dark:bg-gray-900",
+        textColor: "text-gray-600 dark:text-gray-400",
+        borderColor: "border-gray-200 dark:border-gray-700",
       };
   }
 }
@@ -146,7 +146,7 @@ export async function BillingInfo() {
         <div className="bg-[var(--background)] p-4 rounded-lg">
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-gray-600">Current Plan</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400">Current Plan</label>
               {(() => {
                 const style = getPlanBadgeStyle(planName);
                 const intervalStyle = getIntervalBadgeStyle(planName);
@@ -178,21 +178,21 @@ export async function BillingInfo() {
             {subscriptionData ? (
               <>
                 <div>
-                  <label className="text-sm text-gray-600">
+                  <label className="text-sm text-gray-600 dark:text-gray-400">
                     Subscription Status
                   </label>
                   <div className="mt-1">
                     {subscriptionData.plan_active ? (
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span className="font-medium text-green-700">
+                        <span className="font-medium text-green-700 dark:text-green-400">
                           Active
                         </span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                        <span className="font-medium text-red-700">
+                        <span className="font-medium text-red-700 dark:text-red-400">
                           Inactive
                         </span>
                       </div>
@@ -201,13 +201,13 @@ export async function BillingInfo() {
                 </div>
                 {subscriptionData.plan_expires && (
                   <div>
-                    <label className="text-sm text-gray-600">
+                    <label className="text-sm text-gray-600 dark:text-gray-400">
                       Plan Expires
                     </label>
                     <div className="mt-1 flex flex-col gap-1">
                       <div className="flex items-center gap-2">
                         <svg
-                          className="w-4 h-4 text-gray-500"
+                          className="w-4 h-4 text-gray-500 dark:text-gray-400"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -223,7 +223,7 @@ export async function BillingInfo() {
                           dateTime={new Date(
                             subscriptionData.plan_expires,
                           ).toISOString()}
-                          className="font-medium text-gray-900"
+                          className="font-medium text-gray-900 dark:text-gray-100"
                         >
                           {new Date(
                             subscriptionData.plan_expires,

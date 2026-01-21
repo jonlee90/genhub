@@ -5,6 +5,7 @@ import { ReactNode, useMemo } from 'react';
 import ChevronRight from 'lucide-react/icons/chevron-right';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StatCard } from '@/components/ui/stat-card';
 
 /**
  * InfoCard field configuration
@@ -105,9 +106,9 @@ export function InfoCard({
     <div
       className={cn(
         // Base card styling - rounded-xl for mobile native feel
-        'bg-white rounded-xl overflow-hidden',
+        'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
         // Border with subtle navy accent
-        'border-2 border-gray-200',
+        'border-2 border-gray-200 dark:border-gray-800',
         // Shadow for depth - premium feel
         'shadow-sm',
         // Transition for any state changes
@@ -119,7 +120,7 @@ export function InfoCard({
       {customHeader ? (
         <div
           className={cn(
-            'border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white',
+            'border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900',
             isHeroCard ? 'p-4 md:p-5' : compact ? 'px-3.5 py-3' : 'px-4 py-3.5'
           )}
         >
@@ -128,7 +129,7 @@ export function InfoCard({
       ) : (
         <div
           className={cn(
-            'border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white',
+            'border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900',
             isHeroCard ? 'p-4 md:p-5' : compact ? 'px-3.5 py-3' : 'px-4 py-3.5'
           )}
         >
@@ -137,7 +138,7 @@ export function InfoCard({
               <div
                 className={cn(
                   // Icon container with navy background
-                  'flex items-center justify-center rounded-xl bg-[#001B51]',
+                  'flex items-center justify-center rounded-xl bg-construction-blue',
                   // Touch-friendly sizing
                   isHeroCard ? 'w-11 h-11' : compact ? 'w-9 h-9' : 'w-10 h-10',
                   // Subtle shadow for depth
@@ -155,7 +156,7 @@ export function InfoCard({
             <div className="flex-1 min-w-0">
               <h3
                 className={cn(
-                  'font-bold text-[#001B51] truncate',
+                  'font-bold text-construction-blue dark:text-blue-400 truncate',
                   isHeroCard
                     ? 'text-lg md:text-xl'
                     : compact
@@ -167,7 +168,7 @@ export function InfoCard({
               </h3>
               <p
                 className={cn(
-                  'text-gray-500 truncate',
+                  'text-gray-500 dark:text-gray-400 truncate',
                   isHeroCard ? 'text-sm mt-0.5' : 'text-xs mt-0.5'
                 )}
               >
@@ -202,7 +203,7 @@ export function InfoCard({
             {/* Field Label - Clear uppercase for easy scanning */}
             <div
               className={cn(
-                'font-semibold text-gray-400 uppercase tracking-wider',
+                'font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider',
                 isHeroCard ? 'text-xs mb-1.5' : compact ? 'text-[10px] mb-0.5' : 'text-[10px] mb-1'
               )}
             >
@@ -214,21 +215,21 @@ export function InfoCard({
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
-                    'flex-1 bg-gray-100 rounded-full overflow-hidden',
+                    'flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden',
                     isHeroCard ? 'h-2.5' : 'h-2'
                   )}
                 >
                   <div
                     className={cn(
                       'h-full rounded-full transition-all duration-500 ease-out',
-                      field.progressColor || 'bg-[#001B51]'
+                      field.progressColor || 'bg-construction-blue'
                     )}
                     style={{ width: `${Math.min(100, field.progressValue)}%` }}
                   />
                 </div>
                 <span
                   className={cn(
-                    'font-bold text-[#001B51] min-w-[3ch] text-right tabular-nums',
+                    'font-bold text-construction-blue dark:text-blue-400 min-w-[3ch] text-right tabular-nums',
                     isHeroCard ? 'text-base' : 'text-sm'
                   )}
                 >
@@ -242,7 +243,7 @@ export function InfoCard({
               <div
                 className={cn(
                   'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg',
-                  'bg-gray-100 border border-gray-200',
+                  'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
                   // Minimum touch target on interactive badges
                   'min-h-[32px]',
                   field.badgeColor
@@ -251,7 +252,7 @@ export function InfoCard({
                 {field.icon && (
                   <field.icon className="w-4 h-4 flex-shrink-0" />
                 )}
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {field.value}
                 </span>
               </div>
@@ -273,7 +274,7 @@ export function InfoCard({
                   // Touch-friendly sizing - 44px minimum
                   'min-h-[44px] -my-1.5 py-1.5',
                   // Typography
-                  'font-semibold text-[#001B51]',
+                  'font-semibold text-construction-blue dark:text-blue-400',
                   isHeroCard ? 'text-base' : 'text-sm',
                   // Touch feedback states
                   'active:opacity-70 active:scale-[0.99]',
@@ -287,14 +288,14 @@ export function InfoCard({
                     className={cn(
                       'flex items-center justify-center',
                       'w-8 h-8 rounded-lg',
-                      'bg-[#001B51]/5',
-                      'group-active/link:bg-[#001B51]/10',
+                      'bg-construction-blue/5',
+                      'group-active/link:bg-construction-blue/10',
                       'transition-colors duration-100'
                     )}
                   >
                     <field.icon
                       className={cn(
-                        'text-[#001B51]',
+                        'text-construction-blue',
                         isHeroCard ? 'w-4 h-4' : 'w-4 h-4'
                       )}
                     />
@@ -323,7 +324,7 @@ export function InfoCard({
             {!field.href && !field.isProgressBar && !field.isBadge && (
               <div
                 className={cn(
-                  'font-semibold text-gray-900',
+                  'font-semibold text-gray-900 dark:text-gray-100',
                   isHeroCard ? 'text-base' : compact ? 'text-sm' : 'text-sm',
                   field.icon && 'flex items-center gap-2'
                 )}
@@ -338,7 +339,7 @@ export function InfoCard({
                   >
                     <field.icon
                       className={cn(
-                        'text-[#001B51]',
+                        'text-construction-blue',
                         isHeroCard ? 'w-4 h-4' : 'w-3.5 h-3.5'
                       )}
                     />
@@ -354,52 +355,5 @@ export function InfoCard({
         {footerContent}
       </div>
     </div>
-  );
-}
-
-/**
- * StatCard - Compact stat display for mobile dashboards
- * Touch-optimized with clear visual hierarchy
- */
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  iconColor = 'text-[#001B51]',
-  valueColor = 'text-gray-900',
-  subtext,
-  onClick,
-}: StatItem) {
-  const Component = onClick ? 'button' : 'div';
-
-  return (
-    <Component
-      onClick={onClick}
-      className={cn(
-        'flex flex-col p-3 rounded-xl',
-        'bg-gray-50/80 border border-gray-100',
-        // Minimum touch target
-        'min-h-[76px]',
-        // Touch feedback for interactive items
-        onClick && [
-          'active:scale-[0.98] active:bg-gray-100',
-          'transition-all duration-150',
-          'cursor-pointer'
-        ]
-      )}
-    >
-      <div className="flex items-center gap-2 mb-1.5">
-        {Icon && <Icon className={cn('w-4 h-4 flex-shrink-0', iconColor)} />}
-        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider truncate">
-          {label}
-        </span>
-      </div>
-      <span className={cn('text-lg font-bold leading-tight', valueColor)}>
-        {value}
-      </span>
-      {subtext && (
-        <span className="text-[11px] text-gray-500 mt-0.5">{subtext}</span>
-      )}
-    </Component>
   );
 }

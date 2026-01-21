@@ -159,7 +159,7 @@ export function MarkerClusterer({
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-4 left-4 z-50 bg-white border-2 border-[#001B51] rounded-lg shadow-lg overflow-hidden"
+        className="absolute top-4 left-4 z-50 bg-white border-2 border-construction-blue rounded-lg shadow-lg overflow-hidden"
       >
         {/* Debug: Toggle button */}
         <Button
@@ -168,7 +168,7 @@ export function MarkerClusterer({
           onClick={handleToggleClustering}
           className={cn(
             'flex items-center gap-2 px-3 py-2 hover:bg-gray-50 border-b border-gray-200',
-            clusteringEnabled && 'bg-[#001B51] text-white hover:bg-[#001B51]/90'
+            clusteringEnabled && 'bg-construction-blue text-white hover:bg-construction-blue/90'
           )}
         >
           {clusteringEnabled ? (
@@ -185,7 +185,7 @@ export function MarkerClusterer({
         <div className="px-3 py-2 bg-gray-50 text-[10px] text-gray-600 space-y-1">
           <div className="flex justify-between gap-4">
             <span className="font-medium">Markers:</span>
-            <span className="font-bold text-[#001B51]">{markers.length}</span>
+            <span className="font-bold text-construction-blue">{markers.length}</span>
           </div>
           {clusteringEnabled && (
             <>
@@ -202,7 +202,7 @@ export function MarkerClusterer({
           {manualClusteringEnabled !== null && (
             <button
               onClick={handleResetManual}
-              className="text-[#001B51] hover:underline mt-1 font-medium"
+              className="text-construction-blue hover:underline mt-1 font-medium"
             >
               Reset Auto
             </button>
@@ -265,7 +265,7 @@ function ClusterMarker({ cluster, isSelected, onClick }: ClusterMarkerProps) {
           className={cn(
             'relative flex items-center justify-center',
             'w-12 h-12 rounded-full',
-            'bg-gradient-to-br from-[#001B51] to-[#3C3C3C]',
+            'bg-gradient-to-br from-[var(--construction-blue)] to-[#3C3C3C]',
             'border-4 border-white shadow-lg',
             isSelected && 'ring-4 ring-[#FFB627] ring-offset-2'
           )}
@@ -279,7 +279,7 @@ function ClusterMarker({ cluster, isSelected, onClick }: ClusterMarkerProps) {
             transition={{ duration: 2, repeat: Infinity }}
             className="absolute -top-1 -right-1 w-6 h-6 bg-[#FFB627] rounded-full flex items-center justify-center shadow-md"
           >
-            <ZoomIn className="w-3 h-3 text-[#001B51]" />
+            <ZoomIn className="w-3 h-3 text-construction-blue" />
           </motion.div>
         </div>
       ) : (
@@ -288,11 +288,11 @@ function ClusterMarker({ cluster, isSelected, onClick }: ClusterMarkerProps) {
           className={cn(
             'relative flex items-center justify-center',
             'w-8 h-8 rounded-full',
-            'bg-white border-3 border-[#001B51] shadow-md',
+            'bg-white border-3 border-construction-blue shadow-md',
             isSelected && 'ring-4 ring-[#FFB627] ring-offset-2'
           )}
         >
-          <MapPin className="w-4 h-4 text-[#001B51]" />
+          <MapPin className="w-4 h-4 text-construction-blue" />
         </div>
       )}
     </motion.div>

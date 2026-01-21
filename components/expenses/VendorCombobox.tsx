@@ -61,18 +61,18 @@ const OptionRow = memo(function OptionRow({
         "w-full flex items-center gap-3 px-3",
         "min-h-[48px] py-2",
         "text-left transition-all duration-150",
-        isSelected ? "bg-[#001B51]/5" : "bg-white hover:bg-gray-50",
+        isSelected ? "bg-construction-blue/5" : "bg-white hover:bg-gray-50",
         "active:bg-gray-100 active:scale-[0.99]",
       )}
     >
       <div
         className={cn(
           "flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0",
-          option.type === "member" ? "bg-[#001B51]/10" : "bg-orange-100",
+          option.type === "member" ? "bg-construction-blue/10" : "bg-orange-100",
         )}
       >
         {option.type === "member" ? (
-          <Users className="w-4 h-4 text-[#001B51]" />
+          <Users className="w-4 h-4 text-construction-blue" />
         ) : (
           <Building2 className="w-4 h-4 text-orange-600" />
         )}
@@ -85,7 +85,7 @@ const OptionRow = memo(function OptionRow({
           {option.type === "member" ? "Team Member" : "Subcontractor"}
         </div>
       </div>
-      {isSelected && <Check className="w-4 h-4 text-[#001B51] flex-shrink-0" />}
+      {isSelected && <Check className="w-4 h-4 text-construction-blue flex-shrink-0" />}
     </button>
   );
 });

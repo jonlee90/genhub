@@ -77,11 +77,11 @@ export function ProjectExpenseSummary({
         {/* Header */}
         <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-construction-blue flex items-center justify-center shadow-sm">
               <DollarSign className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+              <h3 className="font-bold text-construction-blue text-sm uppercase tracking-wide">
                 Expense Summary
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">No expenses yet</p>
@@ -109,13 +109,13 @@ export function ProjectExpenseSummary({
   const getBudgetColor = () => {
     if (isOverBudget) return 'bg-[#DC2626]';
     if (isNearBudget) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   const getApprovalColor = () => {
     if (approvalRate >= 80) return 'bg-[#059669]';
     if (approvalRate >= 50) return 'bg-[#F59E0B]';
-    return 'bg-[#001B51]';
+    return 'bg-construction-blue';
   };
 
   return (
@@ -130,11 +130,11 @@ export function ProjectExpenseSummary({
       {/* Header */}
       <div className="px-4 py-3.5 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#001B51] flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-construction-blue flex items-center justify-center shadow-sm">
             <DollarSign className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+            <h3 className="font-bold text-construction-blue text-sm uppercase tracking-wide">
               Expense Summary
             </h3>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -177,7 +177,7 @@ export function ProjectExpenseSummary({
                     ? 'text-[#DC2626]'
                     : isNearBudget
                       ? 'text-[#F59E0B]'
-                      : 'text-[#001B51]'
+                      : 'text-construction-blue'
                 )}
               >
                 {formatPercent(budgetUtilization)}
@@ -203,7 +203,7 @@ export function ProjectExpenseSummary({
                   Approval Rate
                 </span>
               </div>
-              <span className="text-sm font-bold text-[#001B51] tabular-nums">
+              <span className="text-sm font-bold text-construction-blue tabular-nums">
                 {expenseStats.approved}/{expenseStats.total}
               </span>
             </div>
@@ -226,7 +226,7 @@ export function ProjectExpenseSummary({
             <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
               Budget
             </span>
-            <span className="text-base font-bold text-[#001B51] leading-tight">
+            <span className="text-base font-bold text-construction-blue leading-tight">
               ${formatCompactNumber(budget)}
             </span>
             <span className="text-[10px] text-gray-500 mt-0.5">Planned</span>
@@ -257,7 +257,7 @@ export function ProjectExpenseSummary({
                 Variance
               </span>
             </div>
-            <span className="text-base font-bold text-[#001B51] leading-tight">
+            <span className="text-base font-bold text-construction-blue leading-tight">
               {budgetVariance >= 0 ? '+' : '-'}$
               {formatCompactNumber(Math.abs(budgetVariance))}
             </span>
@@ -405,7 +405,7 @@ function StatusCard({ icon: Icon, label, value, subtext, variant }: StatusCardPr
           {label}
         </span>
       </div>
-      <span className="text-xl font-bold leading-tight text-[#001B51]">
+      <span className="text-xl font-bold leading-tight text-construction-blue">
         {value}
       </span>
       <span className="text-[10px] mt-0.5 text-gray-500">{subtext}</span>

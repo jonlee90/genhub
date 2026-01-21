@@ -35,8 +35,8 @@ export function SlideMenuListItem({
         className={cn(
           "flex items-center h-16 px-5 gap-4",
           "transition-colors duration-150",
-          "hover:bg-gray-50 active:bg-gray-100",
-          isActive && "bg-gray-50"
+          "hover:bg-gray-50 dark:hover:bg-gray-900 active:bg-gray-100 dark:active:bg-gray-800",
+          isActive && "bg-gray-50 dark:bg-gray-900"
         )}
         aria-current={isActive ? "page" : undefined}
       >
@@ -51,12 +51,12 @@ export function SlideMenuListItem({
         </div>
 
         {/* Label */}
-        <span className="flex-1 text-base font-semibold text-gray-900">
+        <span className="flex-1 text-base font-semibold text-gray-900 dark:text-gray-100">
           {item.name}
         </span>
 
         {/* Chevron */}
-        <ChevronRight className="w-5 h-5 text-gray-400 shrink-0" />
+        <ChevronRight className="w-5 h-5 text-gray-400 dark:text-gray-600 shrink-0" />
       </Link>
     </motion.div>
   );

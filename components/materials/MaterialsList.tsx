@@ -78,19 +78,19 @@ export function MaterialsList({
     return (
       <div
         className={cn(
-          'bg-white rounded-xl overflow-hidden',
-          'border-2 border-gray-200 shadow-sm p-8 md:p-12',
+          'bg-white dark:bg-gray-800 rounded-xl overflow-hidden',
+          'border-2 border-gray-200 dark:border-gray-700 shadow-sm p-8 md:p-12',
           className
         )}
       >
         <div className="flex flex-col items-center justify-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-            <Package className="w-8 h-8 text-gray-300" />
+          <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-4">
+            <Package className="w-8 h-8 text-gray-300 dark:text-gray-500" />
           </div>
-          <h3 className="text-lg font-bold text-[#001B51] mb-2">
+          <h3 className="text-lg font-bold text-construction-blue dark:text-gray-100 mb-2">
             No Materials Linked
           </h3>
-          <p className="text-sm text-gray-600 max-w-md">
+          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-md">
             Start by adding materials to your tasks. Materials linked to tasks will appear here
             for tracking and analysis.
           </p>
@@ -103,14 +103,14 @@ export function MaterialsList({
     <div className={className}>
       {/* Section Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-8 h-8 rounded-lg bg-[#001B51] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-construction-blue dark:bg-blue-600 flex items-center justify-center">
           <Package className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-[#001B51] text-sm uppercase tracking-wide">
+          <h3 className="font-bold text-construction-blue dark:text-gray-100 text-sm uppercase tracking-wide">
             Linked Materials
           </h3>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             {materials.length} of {totalPages * 12}+ materials
           </p>
         </div>
@@ -143,10 +143,10 @@ export function MaterialsList({
               'flex items-center gap-2',
               'transition-all duration-150',
               'active:scale-[0.98]',
-              'border-2 border-gray-200',
+              'border-2 border-gray-200 dark:border-gray-700',
               page === 1 || isLoading
-                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 active:bg-gray-50'
+                ? 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:bg-gray-50 dark:active:bg-gray-700'
             )}
           >
             <ChevronLeft className="w-5 h-5" />
@@ -154,12 +154,12 @@ export function MaterialsList({
           </button>
 
           {/* Page Indicator */}
-          <div className="flex items-center gap-2 px-4 h-12 bg-gray-50 rounded-xl border-2 border-gray-200">
-            <span className="text-sm font-bold text-[#001B51]">
+          <div className="flex items-center gap-2 px-4 h-12 bg-gray-50 dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700">
+            <span className="text-sm font-bold text-construction-blue dark:text-gray-100">
               {page}
             </span>
-            <span className="text-sm text-gray-400">/</span>
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-sm text-gray-400 dark:text-gray-600">/</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
               {totalPages}
             </span>
           </div>
@@ -173,10 +173,10 @@ export function MaterialsList({
               'flex items-center gap-2',
               'transition-all duration-150',
               'active:scale-[0.98]',
-              'border-2 border-gray-200',
+              'border-2 border-gray-200 dark:border-gray-700',
               page === totalPages || isLoading
-                ? 'bg-gray-50 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 active:bg-gray-50'
+                ? 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 active:bg-gray-50 dark:active:bg-gray-700'
             )}
           >
             <span className="hidden sm:inline">Next</span>

@@ -115,7 +115,7 @@ export function FilePreviewModal({
         <div className="flex items-center gap-2">
           <Button
             onClick={handleDownload}
-            className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold"
+            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
           >
             <Download className="h-4 w-4 mr-2" />
             DOWNLOAD
@@ -146,7 +146,7 @@ export function FilePreviewModal({
             <div className="relative">
               {previewLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                  <Loader2 className="h-8 w-8 text-[#001B51] animate-spin" />
+                  <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
                 </div>
               )}
               <iframe
@@ -163,7 +163,7 @@ export function FilePreviewModal({
             <div className="relative flex items-center justify-center p-4 min-h-[200px]">
               {previewLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
-                  <Loader2 className="h-8 w-8 text-[#001B51] animate-spin" />
+                  <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
                 </div>
               )}
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -244,7 +244,7 @@ export function FilePreviewModal({
         {/* Additional info row */}
         <div className="flex items-center gap-4 text-sm text-gray-500">
           {file.version_number && file.version_number > 1 && (
-            <span className="px-2 py-1 bg-[#001B51]/10 text-[#001B51] rounded font-bold text-xs">
+            <span className="px-2 py-1 bg-construction-blue/10 text-construction-blue rounded font-bold text-xs">
               Version {file.version_number}
             </span>
           )}

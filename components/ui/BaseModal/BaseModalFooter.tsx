@@ -66,7 +66,7 @@ export const BaseModalFooter = memo(function BaseModalFooter({
   return (
     <div
       className={cn(
-        'border-t border-gray-200 bg-gray-50/80 backdrop-blur-sm',
+        'border-t border-gray-200 dark:border-gray-700 bg-gray-50/80 dark:bg-gray-800/80 backdrop-blur-sm',
         'px-6 py-4',
         'flex items-center justify-between gap-4',
         'relative',
@@ -75,7 +75,7 @@ export const BaseModalFooter = memo(function BaseModalFooter({
     >
       {/* Construction accent line - subtle industrial detail */}
       <div
-        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent opacity-60"
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent opacity-60"
         aria-hidden="true"
       />
 

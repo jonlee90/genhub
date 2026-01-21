@@ -239,7 +239,7 @@ export function CreateExpenseModal({
             variant="ghost"
             onClick={onClose}
             disabled={isPending}
-            className="h-10 px-4 font-medium text-[#001B51] hover:bg-[#001B51]/10 hover:text-[#001B51] transition-colors"
+            className="h-10 px-4 font-medium text-construction-blue hover:bg-construction-blue/10 hover:text-construction-blue transition-colors"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Task
@@ -268,11 +268,11 @@ export function CreateExpenseModal({
       <div className="space-y-6">
         {/* Task Context Info Banner - Positioned at top of form */}
         {taskContext && (
-          <div className="bg-[#001B51]/10 border-l-4 border-[#001B51] p-4 rounded-r">
+          <div className="bg-construction-blue/10 border-l-4 border-construction-blue p-4 rounded-r">
             <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-[#001B51] mt-0.5 flex-shrink-0" />
+              <Info className="w-5 h-5 text-construction-blue mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-[#001B51]">
+                <p className="font-medium text-construction-blue">
                   Adding expense for task: {taskContext.taskTitle}
                 </p>
                 {taskContext.projectName && (

@@ -26,7 +26,7 @@ export function ActivityTimeline({ markerId, activities }: ActivityTimelineProps
         <div className="w-16 h-16 mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center">
           <Activity className="w-8 h-8 text-yellow-500" />
         </div>
-        <h3 className="font-bold text-[#001B51] mb-2 uppercase tracking-tight">
+        <h3 className="font-bold text-construction-blue mb-2 uppercase tracking-tight">
           No Activity Yet
         </h3>
         <p className="text-sm text-gray-600">
@@ -52,11 +52,11 @@ export function ActivityTimeline({ markerId, activities }: ActivityTimelineProps
             )}
 
             {/* Debug: Timeline dot */}
-            <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-[#001B51] border-2 border-white shadow" />
+            <div className="absolute left-0 top-1 w-4 h-4 rounded-full bg-construction-blue border-2 border-white shadow" />
 
             {/* Debug: Activity content */}
             <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-3">
-              <p className="text-sm font-bold text-[#001B51] mb-1">
+              <p className="text-sm font-bold text-construction-blue mb-1">
                 Activity Event
               </p>
               <p className="text-xs text-gray-500">{timeAgo}</p>

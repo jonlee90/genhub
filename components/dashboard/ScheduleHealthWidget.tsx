@@ -18,23 +18,23 @@ const statusConfig = {
   onTime: {
     label: "On Time",
     icon: CheckCircle,
-    bgColor: "bg-[#059669]/10",
-    iconColor: "text-[#059669]",
-    textColor: "text-[#059669]",
+    bgColor: "bg-[#059669]/10 dark:bg-green-500/20",
+    iconColor: "text-[#059669] dark:text-green-400",
+    textColor: "text-[#059669] dark:text-green-400",
   },
   atRisk: {
     label: "At Risk",
     icon: AlertTriangle,
-    bgColor: "bg-[#F59E0B]/10",
-    iconColor: "text-[#F59E0B]",
-    textColor: "text-[#F59E0B]",
+    bgColor: "bg-[#F59E0B]/10 dark:bg-yellow-500/20",
+    iconColor: "text-[#F59E0B] dark:text-yellow-400",
+    textColor: "text-[#F59E0B] dark:text-yellow-400",
   },
   overdue: {
     label: "Overdue",
     icon: XCircle,
-    bgColor: "bg-[#DC2626]/10",
-    iconColor: "text-[#DC2626]",
-    textColor: "text-[#DC2626]",
+    bgColor: "bg-[#DC2626]/10 dark:bg-red-500/20",
+    iconColor: "text-[#DC2626] dark:text-red-400",
+    textColor: "text-[#DC2626] dark:text-red-400",
   },
 } as const;
 
@@ -42,16 +42,16 @@ function ScheduleHealthSkeleton() {
   return (
     <WidgetSkeleton>
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-gray-200 rounded-lg" />
-        <div className="h-5 w-32 bg-gray-200 rounded" />
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded" />
       </div>
-      <div className="mb-4 p-4 bg-gray-100 rounded-lg">
-        <div className="h-10 w-20 bg-gray-200 rounded mx-auto mb-1" />
-        <div className="h-4 w-24 bg-gray-200 rounded mx-auto" />
+      <div className="mb-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <div className="h-10 w-20 bg-gray-200 dark:bg-gray-700 rounded mx-auto mb-1" />
+        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded mx-auto" />
       </div>
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-14 bg-gray-100 rounded-lg" />
+          <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         ))}
       </div>
     </WidgetSkeleton>
@@ -78,7 +78,7 @@ function StatusRow({ status, count, percentage }: StatusRowProps) {
     >
       <div className="flex items-center gap-3">
         <Icon className={cn("w-5 h-5", config.iconColor)} />
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           {config.label}
         </span>
       </div>
@@ -86,7 +86,7 @@ function StatusRow({ status, count, percentage }: StatusRowProps) {
         <span className={cn("text-lg font-bold", config.textColor)}>
           {count}
         </span>
-        <span className="text-xs text-gray-500 w-12 text-right">
+        <span className="text-xs text-gray-500 dark:text-gray-400 w-12 text-right">
           ({formatPercentWhole(percentage)})
         </span>
       </div>
@@ -121,19 +121,19 @@ export function ScheduleHealthWidget({
   const healthStatus = getHealthStatus();
   const healthColors = {
     good: {
-      bg: "bg-[#059669]/10",
-      border: "border-[#059669]/30",
-      text: "text-[#059669]",
+      bg: "bg-[#059669]/10 dark:bg-green-500/20",
+      border: "border-[#059669]/30 dark:border-green-500/30",
+      text: "text-[#059669] dark:text-green-400",
     },
     warning: {
-      bg: "bg-[#F59E0B]/10",
-      border: "border-[#F59E0B]/30",
-      text: "text-[#F59E0B]",
+      bg: "bg-[#F59E0B]/10 dark:bg-yellow-500/20",
+      border: "border-[#F59E0B]/30 dark:border-yellow-500/30",
+      text: "text-[#F59E0B] dark:text-yellow-400",
     },
     danger: {
-      bg: "bg-[#DC2626]/10",
-      border: "border-[#DC2626]/30",
-      text: "text-[#DC2626]",
+      bg: "bg-[#DC2626]/10 dark:bg-red-500/20",
+      border: "border-[#DC2626]/30 dark:border-red-500/30",
+      text: "text-[#DC2626] dark:text-red-400",
     },
   };
 
@@ -154,7 +154,7 @@ export function ScheduleHealthWidget({
         >
           {formatPercentWhole(displayOnTimePercent)}
         </div>
-        <div className="text-sm text-gray-600 font-medium">On-Time Rate</div>
+        <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">On-Time Rate</div>
       </div>
 
       {/* Status rows */}
@@ -177,10 +177,10 @@ export function ScheduleHealthWidget({
       </div>
 
       {/* Total count footer */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
+      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500 font-medium">Total Tasks</span>
-          <span className="font-bold text-gray-900">{total}</span>
+          <span className="text-gray-500 dark:text-gray-400 font-medium">Total Tasks</span>
+          <span className="font-bold text-gray-900 dark:text-gray-100">{total}</span>
         </div>
       </div>
     </WidgetCard>

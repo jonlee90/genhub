@@ -30,11 +30,11 @@ const COLOR_CLASSES: Record<string, { text: string; bg: string; border: string; 
   '#64748b': { text: 'text-slate-600', bg: 'bg-slate-50 hover:bg-slate-100', border: 'border-slate-200 data-[selected=true]:border-slate-500', ring: '#64748b', bgLight: 'bg-slate-100' },
   '#8b5cf6': { text: 'text-violet-600', bg: 'bg-violet-50 hover:bg-violet-100', border: 'border-violet-200 data-[selected=true]:border-violet-500', ring: '#8b5cf6', bgLight: 'bg-violet-100' },
   '#ec4899': { text: 'text-pink-600', bg: 'bg-pink-50 hover:bg-pink-100', border: 'border-pink-200 data-[selected=true]:border-pink-500', ring: '#ec4899', bgLight: 'bg-pink-100' },
-  '#001B51': { text: 'text-blue-900', bg: 'bg-blue-900/5 hover:bg-blue-900/10', border: 'border-blue-200 data-[selected=true]:border-blue-600', ring: '#001B51', bgLight: 'bg-blue-900/10' },
+  'var(--construction-blue)': { text: 'text-blue-900', bg: 'bg-blue-900/5 hover:bg-blue-900/10', border: 'border-blue-200 data-[selected=true]:border-blue-600', ring: 'var(--construction-blue)', bgLight: 'bg-blue-900/10' },
 };
 
 // Default color when hex color not found
-const DEFAULT_COLOR = '#001B51';
+const DEFAULT_COLOR = 'var(--construction-blue)';
 const DEFAULT_COLOR_CLASS = COLOR_CLASSES[DEFAULT_COLOR];
 
 // Get Tailwind classes for a hex color, or mark as custom if not found
@@ -199,9 +199,9 @@ function ProjectTypeSelectorInner({
             className="w-full flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors active:scale-[0.99]"
           >
             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-              <Layers className="w-4 h-4 text-[#001B51]" />
+              <Layers className="w-4 h-4 text-construction-blue" />
               <span>Project Phases</span>
-              <span className="px-2 py-0.5 bg-[#001B51]/10 text-[#001B51] text-xs font-semibold rounded-full">
+              <span className="px-2 py-0.5 bg-construction-blue/10 text-construction-blue text-xs font-semibold rounded-full">
                 {phaseTemplates.length}
               </span>
             </div>
@@ -229,7 +229,7 @@ function ProjectTypeSelectorInner({
                       transition={{ delay: index * 0.03 }}
                       className="flex items-center gap-2.5 p-2.5 bg-white border border-gray-100 rounded-lg"
                     >
-                      <div className="w-6 h-6 rounded bg-[#001B51]/10 text-[#001B51] flex items-center justify-center text-xs font-bold">
+                      <div className="w-6 h-6 rounded bg-construction-blue/10 text-construction-blue flex items-center justify-center text-xs font-bold">
                         {index + 1}
                       </div>
                       <span className="text-sm font-medium text-gray-800 flex-1">

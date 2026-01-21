@@ -133,7 +133,7 @@ export function AssigneeMultiSelect({
                     </div>
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={option.avatar_url || undefined} />
-                      <AvatarFallback className="text-[10px] bg-[#001B51] text-white">
+                      <AvatarFallback className="text-[10px] bg-construction-blue text-white">
                         {getInitials(option.name)}
                       </AvatarFallback>
                     </Avatar>
@@ -204,7 +204,7 @@ export function AssigneeMultiSelect({
                 <AvatarFallback
                   className={cn(
                     "text-[8px] text-white",
-                    option.type === "user" ? "bg-[#001B51]" : "bg-orange-600",
+                    option.type === "user" ? "bg-construction-blue" : "bg-orange-600",
                   )}
                 >
                   {getInitials(option.name)}

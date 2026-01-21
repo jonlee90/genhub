@@ -2,8 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/utils/supabase/server";
-import { auth } from "@/lib/auth";
+import { getUserContext as getBaseUserContext } from "@/lib/auth-context";
 import type { PhaseTemplatesRow } from "@/types/db/tables/projects";
 import type { TaskTemplatesRow } from "@/types/db/tables/tasks";
 
@@ -37,42 +36,22 @@ const updatePhaseTemplateSchema = z.object({
 // ============================================
 // Helper Functions
 // ============================================
+// HIGH-2 FIX: Using shared cached getUserContext with role check wrapper
 
 async function getUserContext() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
-  }
-
-  const supabase = await createClient();
-  const { data: companyUser, error: companyError } = await supabase
-    .from("company_users")
-    .select("company_id, role, status")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (companyError || !companyUser) {
-    console.error(
-      "[getUserContext] Error fetching company user:",
-      companyError,
-    );
-    return { error: "No active company found for user" };
+  const ctx = await getBaseUserContext();
+  if ("error" in ctx) {
+    return ctx;
   }
 
   // Only Admin can manage phase templates
-  if (companyUser.role !== "admin") {
+  if (ctx.role !== "admin") {
     return {
       error: "Insufficient permissions. Only Admin can manage phase templates.",
     };
   }
 
-  return {
-    userId: session.user.id,
-    companyId: companyUser.company_id,
-    role: companyUser.role,
-    supabase,
-  };
+  return ctx;
 }
 
 // ============================================
@@ -90,23 +69,12 @@ export async function getPhaseTemplates(projectTypeConfigId?: string): Promise<{
 }> {
   console.log("[getPhaseTemplates] Fetching phase templates...");
 
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Not authenticated" };
+  const userContext = await getBaseUserContext();
+  if ("error" in userContext) {
+    return { error: userContext.error };
   }
 
-  const supabase = await createClient();
-
-  const { data: companyUser } = await supabase
-    .from("company_users")
-    .select("company_id")
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
-
-  if (!companyUser) {
-    return { error: "No active company found" };
-  }
+  const { supabase, companyId } = userContext;
 
   // Build query with nested task templates
   let query = supabase
@@ -117,7 +85,7 @@ export async function getPhaseTemplates(projectTypeConfigId?: string): Promise<{
       task_templates (*)
     `,
     )
-    .eq("company_id", companyUser.company_id)
+    .eq("company_id", companyId)
     .eq("is_active", true)
     .order("order_index", { ascending: true });
 

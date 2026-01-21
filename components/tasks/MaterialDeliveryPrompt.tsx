@@ -56,7 +56,7 @@ interface MaterialDeliveryPromptProps {
  * - Auto-creates expense with material data
  * - Shows loading state during creation
  * - Error handling with retry
- * - Construction-themed design (#001B51)
+ * - Construction-themed design (var(--construction-blue))
  *
  * Integrated with TaskMaterialsList for auto-prompt on delivery
  *

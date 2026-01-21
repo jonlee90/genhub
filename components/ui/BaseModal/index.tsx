@@ -125,7 +125,7 @@ export function BaseModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          'bg-white shadow-2xl flex flex-col p-0 gap-0 border-0 z-50',
+          'bg-white dark:bg-gray-900 shadow-2xl flex flex-col p-0 gap-0 border-0 z-50',
           // Mobile: Bottom sheet styles
           isMobile && [
             'rounded-t-3xl',
@@ -203,12 +203,12 @@ export function BaseModal({
           >
             <div className={cn(
               'h-1.5 w-12 rounded-full transition-colors',
-              isDragging ? 'bg-gray-400' : 'bg-gray-300'
+              isDragging ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-300 dark:bg-gray-700'
             )} />
           </motion.div>
         ) : isMobile ? (
           <div className="flex justify-center pt-3 pb-2" aria-hidden="true">
-            <div className="h-1.5 w-12 bg-gray-300 rounded-full" />
+            <div className="h-1.5 w-12 bg-gray-300 dark:bg-gray-700 rounded-full" />
           </div>
         ) : null}
 

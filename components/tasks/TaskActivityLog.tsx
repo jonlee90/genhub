@@ -28,14 +28,14 @@ interface TaskActivityLogProps {
 const ACTION_CONFIG = {
   created: {
     icon: HardHat,
-    color: "bg-[#001B51]",
-    textColor: "text-[#001B51]",
+    color: "bg-construction-blue",
+    textColor: "text-construction-blue",
     label: "created task",
   },
   updated: {
     icon: Wrench,
-    color: "bg-[#001B51]",
-    textColor: "text-[#001B51]",
+    color: "bg-construction-blue",
+    textColor: "text-construction-blue",
     label: "updated",
   },
   status_changed: {
@@ -157,8 +157,8 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
 
   return (
     <Card className="border-2 border-gray-200">
-      <CardHeader className="bg-gradient-to-r from-[#001B51]/10 to-transparent border-b border-gray-200">
-        <CardTitle className="font-black text-[#001B51] flex items-center gap-2">
+      <CardHeader className="bg-gradient-to-r from-[var(--construction-blue)]/10 to-transparent border-b border-gray-200">
+        <CardTitle className="font-black text-construction-blue flex items-center gap-2">
           <Wrench className="w-5 h-5" />
           Activity
         </CardTitle>
@@ -189,7 +189,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
           {/* Timeline Connector Line */}
           {activity.length > 0 && (
             <div
-              className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#001B51] via-[#001B51] to-transparent"
+              className="absolute left-5 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[var(--construction-blue)] via-[var(--construction-blue)] to-transparent"
               style={{ height: "calc(100% - 40px)" }}
             />
           )}
@@ -210,8 +210,8 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
                     item.action as keyof typeof ACTION_CONFIG
                   ] || {
                     icon: Wrench,
-                    color: "bg-[#001B51]",
-                    textColor: "text-[#001B51]",
+                    color: "bg-construction-blue",
+                    textColor: "text-construction-blue",
                   };
                   const Icon = config.icon;
 

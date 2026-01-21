@@ -25,7 +25,7 @@ export function FormField({
           htmlFor={htmlFor}
           className={cn(
             "block text-sm font-semibold",
-            error ? "text-red-600" : "text-gray-700",
+            error ? "text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300",
           )}
         >
           {label}
@@ -33,11 +33,11 @@ export function FormField({
       )}
       {children}
       {error ? (
-        <p className="text-sm text-red-600 font-medium" role="alert">
+        <p className="text-sm text-red-600 dark:text-red-400 font-medium" role="alert">
           {error}
         </p>
       ) : hint ? (
-        <p className="text-sm text-gray-500">{hint}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{hint}</p>
       ) : null}
     </div>
   );

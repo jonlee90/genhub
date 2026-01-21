@@ -115,11 +115,11 @@ export function MetroJourney({
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-[#001B51] rounded-lg shadow-lg shadow-[#001B51]/20">
+              <div className="flex items-center justify-center w-10 h-10 bg-construction-blue rounded-lg shadow-lg shadow-[var(--construction-blue)]/20">
                 <Map className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-[#001B51]">Project Journey</h3>
+                <h3 className="text-xl font-bold text-construction-blue">Project Journey</h3>
                 <p className="text-xs text-gray-500 font-medium">Track progress through each phase</p>
               </div>
             </div>
@@ -128,7 +128,7 @@ export function MetroJourney({
               onClick={() => setShowManagePhasesModal(true)}
               variant="outline"
               size="sm"
-              className="border-2 border-[#001B51]/20 text-[#001B51] hover:bg-[#001B51]/5 font-semibold"
+              className="border-2 border-construction-blue/20 text-construction-blue hover:bg-construction-blue/5 font-semibold"
             >
               <Settings className="h-4 w-4" />
             </Button>
@@ -160,7 +160,7 @@ export function MetroJourney({
                           {/* Progress fill */}
                           {isCompleted && (
                             <motion.div
-                              className="absolute inset-0 bg-[#001B51] rounded-full"
+                              className="absolute inset-0 bg-construction-blue rounded-full"
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 1 }}
                               transition={{
@@ -174,7 +174,7 @@ export function MetroJourney({
 
                           {isInProgress && (
                             <motion.div
-                              className="absolute inset-0 bg-[#001B51] rounded-full"
+                              className="absolute inset-0 bg-construction-blue rounded-full"
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 0.5 }}
                               transition={{
@@ -268,7 +268,7 @@ export function MetroJourney({
 
                           {isCompleted && (
                             <motion.div
-                              className="absolute inset-0 bg-[#001B51] rounded-full"
+                              className="absolute inset-0 bg-construction-blue rounded-full"
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 1 }}
                               transition={{ delay: index * 0.1, duration: 0.5 }}
@@ -278,7 +278,7 @@ export function MetroJourney({
 
                           {isInProgress && (
                             <motion.div
-                              className="absolute inset-0 bg-[#001B51] rounded-full"
+                              className="absolute inset-0 bg-construction-blue rounded-full"
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 0.5 }}
                               transition={{ delay: index * 0.1, duration: 0.5 }}

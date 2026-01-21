@@ -60,18 +60,18 @@ async function DefaultModelsPageContent() {
   const defaultModels = result.data;
 
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white dark:bg-gray-950">
       {/* Blueprint Grid Background */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
         }}
       />
 
       {/* Industrial Header */}
-      <div className="relative z-10 border-b-2 border-[#001B51]">
-        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight p-4 md:p-8 text-[#001B51]">
+      <div className="relative z-10 border-b-2 border-construction-blue dark:border-gray-700">
+        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight p-4 md:p-8 text-construction-blue dark:text-white">
           Default 3D Models
         </h1>
       </div>
@@ -86,18 +86,18 @@ async function DefaultModelsPageContent() {
         />
 
         {/* Info Banner */}
-        <div className="bg-blue-50 border-l-4 border-[#001B51] p-4 rounded-lg">
+        <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-construction-blue dark:border-blue-400 p-4 rounded-lg">
           <div className="flex items-start gap-3">
-            <div className="p-2 bg-[#001B51] rounded-lg">
+            <div className="p-2 bg-construction-blue rounded-lg">
               <Wrench className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-[#001B51]">How Default Models Work</h3>
-              <p className="text-sm text-gray-600 mt-1">
+              <h3 className="font-bold text-construction-blue dark:text-white">How Default Models Work</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 When creating a new project, GenHub will automatically load the default model for that project type.
                 You can use the system defaults provided by GenHub, or upload your own custom IFC files to replace them.
               </p>
-              <ul className="mt-2 text-sm text-gray-600 space-y-1 list-disc list-inside">
+              <ul className="mt-2 text-sm text-gray-600 dark:text-gray-300 space-y-1 list-disc list-inside">
                 <li><span className="font-semibold">System Default:</span> GenHub-provided template model</li>
                 <li><span className="font-semibold">Custom Model:</span> Your own uploaded IFC file (replaces system default)</li>
               </ul>
@@ -121,7 +121,7 @@ async function DefaultModelsPageContent() {
         </div>
 
         {/* Footer Note */}
-        <div className="text-sm text-gray-500 text-center pt-4 border-t border-gray-200">
+        <div className="text-sm text-gray-500 dark:text-gray-400 text-center pt-4 border-t border-gray-200 dark:border-gray-700">
           Changes to default models will only affect new projects. Existing projects will keep their current models.
         </div>
       </div>
@@ -131,17 +131,17 @@ async function DefaultModelsPageContent() {
 
 function DefaultModelsLoading() {
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white dark:bg-gray-950">
       {/* Blueprint Grid Background */}
       <div
-        className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
+        className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M 40 0 L 0 0 0 40' fill='none' stroke='%23001B51' stroke-width='1'/%3E%3C/svg%3E")`,
         }}
       />
 
       {/* Industrial Header */}
-      <div className="relative z-10 border-b-2 border-[#001B51]">
+      <div className="relative z-10 border-b-2 border-construction-blue dark:border-gray-700">
         <Skeleton className="h-10 w-64 m-4 md:m-8" />
       </div>
 

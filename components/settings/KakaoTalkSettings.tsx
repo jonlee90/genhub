@@ -151,11 +151,11 @@ export function KakaoTalkSettings() {
 
   if (isLoading) {
     return (
-      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction">
         <div className="p-6 md:p-8">
           <div className="flex items-center justify-center gap-3 py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
-            <p className="text-base font-semibold text-gray-500">
+            <Loader2 className="h-6 w-6 animate-spin text-construction-blue dark:text-blue-400" />
+            <p className="text-base font-semibold text-gray-500 dark:text-gray-400">
               Loading connection status...
             </p>
           </div>
@@ -176,7 +176,7 @@ export function KakaoTalkSettings() {
       className="space-y-3 md:space-y-4"
     >
       {/* Connection Status Card */}
-      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction overflow-hidden">
         <div className="p-4 md:p-5 space-y-4">
           {/* Status Badge */}
           <AnimatePresence mode="wait">
@@ -214,16 +214,16 @@ export function KakaoTalkSettings() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="inline-flex items-center gap-3 px-4 py-3 bg-gray-100 border border-gray-300 rounded-xl"
+                className="inline-flex items-center gap-3 px-4 py-3 bg-gray-100 dark:bg-gray-750 border border-gray-300 dark:border-gray-600 rounded-xl"
               >
-                <div className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-200 rounded-lg">
-                  <XCircle className="h-6 w-6 text-gray-500" />
+                <div className="min-w-[44px] min-h-[44px] flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-lg">
+                  <XCircle className="h-6 w-6 text-gray-500 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-base font-bold text-gray-600">
+                  <p className="text-base font-bold text-gray-600 dark:text-gray-300">
                     Not Connected
                   </p>
-                  <p className="text-sm text-gray-500">No active integration</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No active integration</p>
                 </div>
               </motion.div>
             )}
@@ -239,26 +239,26 @@ export function KakaoTalkSettings() {
             >
               {/* Connection Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 border border-gray-200 rounded-xl min-h-[56px]">
+                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl min-h-[56px]">
                   <div className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4 text-construction-blue" />
-                    <span className="text-xs font-bold text-gray-600 uppercase">
+                    <MessageCircle className="h-4 w-4 text-construction-blue dark:text-blue-400" />
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase">
                       KakaoTalk ID
                     </span>
                   </div>
-                  <span className="text-sm font-mono font-bold text-construction-blue">
+                  <span className="text-sm font-mono font-bold text-construction-blue dark:text-blue-400">
                     {connectionState.kakaoUserId}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 border border-gray-200 rounded-xl min-h-[56px]">
+                <div className="flex items-center justify-between p-3 md:p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl min-h-[56px]">
                   <div className="flex items-center gap-2">
-                    <Link2 className="h-4 w-4 text-gray-500" />
-                    <span className="text-xs font-bold text-gray-600 uppercase">
+                    <Link2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase">
                       Sendbird ID
                     </span>
                   </div>
-                  <span className="text-sm font-mono font-bold text-gray-700">
+                  <span className="text-sm font-mono font-bold text-gray-700 dark:text-gray-200">
                     {connectionState.sendbirdUserId}
                   </span>
                 </div>
@@ -271,10 +271,10 @@ export function KakaoTalkSettings() {
                     <Zap className="h-5 w-5 text-[#F59E0B]" />
                   </div>
                   <div>
-                    <p className="text-base font-bold text-construction-blue">
+                    <p className="text-base font-bold text-construction-blue dark:text-blue-400">
                       Two-Way Sync
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {connectionState.twoWaySync
                         ? "Messages sync bidirectionally"
                         : "One-way sync only"}
@@ -294,7 +294,7 @@ export function KakaoTalkSettings() {
                     onCheckedChange={handleSyncToggle}
                     disabled={isTogglingSync}
                     className={cn(
-                      "data-[state=checked]:bg-[#059669] data-[state=unchecked]:bg-gray-300",
+                      "data-[state=checked]:bg-[#059669] dark:data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600",
                       "scale-110",
                       isTogglingSync && "cursor-wait",
                     )}
@@ -316,21 +316,21 @@ export function KakaoTalkSettings() {
               className="space-y-4 pt-2"
             >
               {/* Benefits List */}
-              <div className="p-4 bg-construction-blue/5 border-l-4 border-construction-blue rounded-r-xl">
-                <p className="text-sm font-bold text-construction-blue mb-2">
+              <div className="p-4 bg-construction-blue/5 dark:bg-construction-blue/10 border-l-4 border-construction-blue dark:border-blue-400 rounded-r-xl">
+                <p className="text-sm font-bold text-construction-blue dark:text-blue-400 mb-2">
                   Connect to enable:
                 </p>
-                <ul className="space-y-2 text-sm text-gray-600">
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-construction-blue dark:text-blue-400 shrink-0" />
                     <span>Sync messages between GenHub and KakaoTalk</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-construction-blue dark:text-blue-400 shrink-0" />
                     <span>Receive notifications via KakaoTalk</span>
                   </li>
                   <li className="flex items-center gap-2">
-                    <ChevronRight className="h-4 w-4 text-construction-blue shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-construction-blue dark:text-blue-400 shrink-0" />
                     <span>Enable two-way team communication</span>
                   </li>
                 </ul>
@@ -376,10 +376,10 @@ export function KakaoTalkSettings() {
                       <AlertTriangle className="h-5 w-5 text-[#DC2626]" />
                     </div>
                     <div className="pt-1">
-                      <p className="text-base font-bold text-[#DC2626]">
+                      <p className="text-base font-bold text-[#DC2626] dark:text-red-400">
                         Confirm Disconnection
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                         This will disconnect your KakaoTalk account and disable
                         all message sync.
                       </p>
@@ -419,12 +419,12 @@ export function KakaoTalkSettings() {
                       disabled={isDisconnecting}
                       className={cn(
                         "flex-1 h-12 px-4",
-                        "bg-white text-gray-700",
+                        "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300",
                         "font-bold text-sm",
                         "rounded-xl",
-                        "border-2 border-gray-300",
+                        "border-2 border-gray-300 dark:border-gray-600",
                         "flex items-center justify-center",
-                        "active:scale-[0.98] active:bg-gray-50",
+                        "active:scale-[0.98] active:bg-gray-50 dark:active:bg-gray-700",
                         "transition-all duration-150",
                       )}
                     >
@@ -445,12 +445,12 @@ export function KakaoTalkSettings() {
                 onClick={() => setShowDisconnectConfirm(true)}
                 className={cn(
                   "w-full h-12 px-4",
-                  "bg-white text-[#DC2626]",
+                  "bg-white dark:bg-gray-800 text-[#DC2626] dark:text-red-400",
                   "font-semibold text-sm",
                   "rounded-xl",
-                  "border-2 border-[#DC2626]/30",
+                  "border-2 border-[#DC2626]/30 dark:border-red-600/30",
                   "flex items-center justify-center gap-2",
-                  "active:scale-[0.98] active:bg-[#DC2626]/5",
+                  "active:scale-[0.98] active:bg-[#DC2626]/5 dark:active:bg-red-900/10",
                   "transition-all duration-150",
                 )}
               >

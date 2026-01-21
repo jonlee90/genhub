@@ -77,11 +77,11 @@ export function ProjectFilterHeader({
         <SelectTrigger
           className={cn(
             "min-w-[200px] sm:min-w-[280px] h-11 px-4",
-            "bg-white border-2 border-construction-blue/20 rounded-lg",
-            "hover:border-construction-blue/40 transition-colors",
-            "focus:ring-2 focus:ring-construction-blue/20 focus:border-construction-blue",
+            "bg-white dark:bg-gray-800 border-2 border-construction-blue/20 dark:border-construction-blue/30 rounded-lg",
+            "hover:border-construction-blue/40 dark:hover:border-construction-blue/50 transition-colors",
+            "focus:ring-2 focus:ring-construction-blue/20 focus:border-construction-blue dark:focus:ring-construction-blue/30",
             "font-semibold text-construction-blue",
-            selectedProjectId !== "all" && "bg-construction-blue/5"
+            selectedProjectId !== "all" && "bg-construction-blue/5 dark:bg-construction-blue/10"
           )}
         >
           <div className="flex items-center gap-2 truncate">
@@ -92,7 +92,7 @@ export function ProjectFilterHeader({
               <span className="flex items-center gap-1">
                 {projectName}
                 {taskCount !== undefined && (
-                  <span className="inline-flex items-center gap-0.5 text-gray-500">
+                  <span className="inline-flex items-center gap-0.5 text-gray-500 dark:text-gray-400">
                     (<ClipboardList className="w-3 h-3" />
                     <span>{taskCount}</span>)
                   </span>
@@ -110,15 +110,15 @@ export function ProjectFilterHeader({
             className="font-medium [&>span]:flex-1 [&>span]:w-full"
           >
             <div className="flex items-center gap-2 w-full" style={{ width: "100%" }}>
-              <FolderKanban className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              <FolderKanban className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
               <span className="flex-1">All Projects</span>
-              <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
+              <span className="ml-auto text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
                 ({projects.length})
               </span>
             </div>
           </SelectItem>
 
-          <div className="my-1 h-px bg-gray-200" />
+          <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
 
           {sortProjectsByDaysLeft(projects).map((project) => {
             const dateIndicator = getDateIndicator(project.end_date, { showPastAsDate: true, includeDaysLeft: true });
@@ -138,11 +138,11 @@ export function ProjectFilterHeader({
                         project.status === "active" && "bg-green-500",
                         project.status === "on_hold" && "bg-yellow-500",
                         project.status === "completed" && "bg-blue-500",
-                        !project.status && "bg-gray-400"
+                        !project.status && "bg-gray-400 dark:bg-gray-600"
                       )}
                     />
                     <span className="truncate">{project.name}</span>
-                    <span className="flex items-center gap-0.5 text-xs text-gray-500 flex-shrink-0">
+                    <span className="flex items-center gap-0.5 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0">
                       <ClipboardList className="w-3 h-3" />
                       <span>{projectTaskCount}</span>
                     </span>

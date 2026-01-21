@@ -248,8 +248,8 @@ export function ProjectPhotoUploader({
           className={cn(
             "border-2 border-dashed rounded-lg p-8 transition-colors",
             isDragOver
-              ? "border-[#001B51] bg-[#001B51]/5"
-              : "border-gray-300 hover:border-[#001B51] hover:bg-gray-50",
+              ? "border-construction-blue bg-construction-blue/5"
+              : "border-gray-300 hover:border-construction-blue hover:bg-gray-50",
             "cursor-pointer",
           )}
         >
@@ -265,7 +265,7 @@ export function ProjectPhotoUploader({
               <Button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-[#001B51] hover:bg-[#001B51]/90 text-white font-bold"
+                className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 CHOOSE FILE

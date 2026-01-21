@@ -2,7 +2,7 @@
 
 import { cache } from "react";
 import { auth } from "@/lib/auth";
-import { createClient } from "@/utils/supabase/server";
+import { createClient, createUserClient } from "@/utils/supabase/server";
 
 /**
  * CRITICAL OPTIMIZATION (CRIT-001): Cached user context helper
@@ -41,3 +41,88 @@ export const getUserContext = cache(async function getUserContext() {
     supabase,
   };
 });
+
+/**
+ * OPTIMIZATION: Cached user context with user-scoped Supabase client
+ * Used by team.ts and subcontractors.ts which require createUserClient()
+ * Wrapped with React.cache to prevent redundant auth + DB queries
+ *
+ * @returns User context with userId, companyId, role, and user-scoped supabase client
+ */
+export const getUserContextWithUserClient = cache(
+  async function getUserContextWithUserClient() {
+    // Get NextAuth session
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { error: "Not authenticated" };
+    }
+
+    // Create user-scoped Supabase client
+    const supabase = await createUserClient();
+
+    // Get user's company and role using NextAuth user ID
+    const { data: companyUser, error: companyError } = await supabase
+      .from("company_users")
+      .select("company_id, role, status")
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (companyError || !companyUser) {
+      return { error: "No active company found for user" };
+    }
+
+    return {
+      userId: session.user.id,
+      companyId: companyUser.company_id,
+      role: companyUser.role,
+      supabase,
+    };
+  }
+);
+
+/**
+ * OPTIMIZATION: Cached user context with user object
+ * Used by chat.ts and push.ts which need user name/email from auth session
+ * Wrapped with React.cache to prevent redundant auth + DB queries
+ *
+ * @returns User context with user object { id, name, email }, plus userId, companyId, role, supabase
+ */
+export const getUserContextWithUserData = cache(
+  async function getUserContextWithUserData() {
+    // Get NextAuth session
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { error: "Not authenticated" };
+    }
+
+    // Create Supabase client
+    const supabase = await createClient();
+
+    // Get user's company and role using NextAuth user ID
+    const { data: companyUser, error: companyError } = await supabase
+      .from("company_users")
+      .select("company_id, role, status")
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .single();
+
+    if (companyError || !companyUser) {
+      return { error: "No active company found for user" };
+    }
+
+    return {
+      user: {
+        id: session.user.id,
+        name: session.user.name || "Unknown User",
+        email: session.user.email || "",
+      },
+      userId: session.user.id,
+      companyId: companyUser.company_id,
+      role: companyUser.role,
+      supabase,
+    };
+  }
+);

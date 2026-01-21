@@ -12,6 +12,7 @@
 
 'use server';
 
+import { cache } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { getProjectTeamCostSummary } from './projects';
@@ -241,7 +242,7 @@ export async function getProjectTaskDependencies(projectId: string) {
  * Load all deferred data in one call
  * Use this if you want to load everything at once after initial render
  */
-export async function getProjectDeferredData(projectId: string) {
+export const getProjectDeferredData = cache(async (projectId: string) => {
   const [expenseData, teamData, dependencyData] = await Promise.allSettled([
     getProjectExpenseStats(projectId),
     getProjectTeamCosts(projectId),
@@ -266,4 +267,4 @@ export async function getProjectDeferredData(projectId: string) {
         ? dependencyData.value.taskDependencies
         : [],
   };
-}
+});

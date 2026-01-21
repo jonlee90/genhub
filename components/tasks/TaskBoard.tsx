@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTaskModal } from "./TaskModalContext";
 import { TaskList } from "./TaskList";
 import { TaskFilters } from "./TaskFilters";
-import { ProjectTaskSummary } from "@/components/projects/ProjectTaskSummary";
 import { TopProjectsCard } from "./TopProjectsCard";
 import { transformTasksForGantt } from "./gantt/gantt-utils";
 import { updateTaskDates } from "@/app/actions/tasks";
@@ -30,6 +29,7 @@ import type {
   TeamMember,
   TaskDependencyRow,
 } from "@/types/db/task";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 // Dynamic import GanttChart to reduce initial bundle
 const GanttChart = dynamic(
@@ -37,8 +37,8 @@ const GanttChart = dynamic(
     import("./gantt/GanttChart").then((mod) => ({ default: mod.GanttChart })),
   {
     loading: () => (
-      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
-        <div className="flex items-center justify-center gap-3 text-gray-500">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction p-8">
+        <div className="flex items-center justify-center gap-3 text-gray-500 dark:text-gray-400">
           <Loader2 className="h-5 w-5 animate-spin" />
           <span className="text-sm font-medium">Loading timeline...</span>
         </div>
@@ -53,17 +53,17 @@ const KanbanBoard = dynamic(
   () => import("./KanbanBoard").then((mod) => ({ default: mod.KanbanBoard })),
   {
     loading: () => (
-      <div className="bg-white rounded-xl border-2 border-gray-200 shadow-construction p-8">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction p-8">
         <div className="flex gap-4 overflow-x-auto pb-4">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
               className="flex-shrink-0 w-72 space-y-3"
             >
-              <div className="h-10 bg-gray-200 rounded-lg animate-pulse" />
+              <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
               <div className="space-y-2">
                 {[1, 2, 3].map((j) => (
-                  <div key={j} className="h-32 bg-gray-100 rounded-lg animate-pulse" />
+                  <div key={j} className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />
                 ))}
               </div>
             </div>
@@ -123,7 +123,7 @@ interface TaskBoardProps {
   /** User role for permission checks */
   userRole?: string | null;
   /** Task type configs from database */
-  taskTypes?: any[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 export function TaskBoard({
@@ -471,19 +471,19 @@ export function TaskBoard({
       {/* Toolbar - hidden when hideFilters is true */}
       {!hideFilters && isProjectContext ? (
         // Project context toolbar - Phase filter + View toggle
-        <Card className="border-2 border-gray-200 shadow-construction">
+        <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-construction">
           <CardContent className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               {/* Phase Filter */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-bold text-gray-700">Phase:</span>
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Phase:</span>
                 <button
                   onClick={() => setPhaseFilter("all")}
                   className={cn(
                     "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                     phaseFilter === "all"
                       ? "bg-construction-blue text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600",
                   )}
                 >
                   All Phases
@@ -496,7 +496,7 @@ export function TaskBoard({
                       "px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                       phaseFilter === phase.id
                         ? "bg-construction-blue text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600",
                     )}
                   >
                     {phase.name}
@@ -505,7 +505,7 @@ export function TaskBoard({
               </div>
 
               {/* View Toggle */}
-              <div className="flex items-center gap-1 rounded-lg border-2 border-gray-200 p-1 bg-white">
+              <div className="flex items-center gap-1 rounded-lg border-2 border-gray-200 dark:border-gray-700 p-1 bg-white dark:bg-gray-800">
                 <Button
                   variant={view === "kanban" ? "secondary" : "ghost"}
                   size="sm"
@@ -555,7 +555,7 @@ export function TaskBoard({
           />
 
           {/* View Toggle */}
-          <div className="flex items-center gap-1 rounded-lg border p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-gray-200 dark:border-gray-700 p-1 bg-white dark:bg-gray-800">
             <Button
               variant={view === "kanban" ? "secondary" : "ghost"}
               size="sm"
@@ -593,16 +593,6 @@ export function TaskBoard({
           phases={isProjectContext ? phases : undefined}
           taskTypes={taskTypes}
         />
-      )}
-
-      {/* Task Summary - Only show on Tasks page (not in project context) */}
-      {!isProjectContext && computedTaskStats && (
-        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-          <ProjectTaskSummary
-            taskStats={computedTaskStats}
-            projectBudget={projectBudget}
-          />
-        </div>
       )}
 
       {/* Top Projects - Only show on Tasks page (not in project context) */}

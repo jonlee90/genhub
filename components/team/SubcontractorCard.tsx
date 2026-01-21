@@ -71,7 +71,7 @@ const TRADE_COLORS: Record<TradeType, string> = {
   glass_glazing: 'bg-cyan-600 text-white border-cyan-600',
   fire_protection: 'bg-red-600 text-white border-red-600',
   insulation: 'bg-yellow-700 text-white border-yellow-700',
-  general: 'bg-[#001B51] text-white border-[#001B51]',
+  general: 'bg-construction-blue text-white border-construction-blue',
   other: 'bg-gray-400 text-white border-gray-400',
 };
 
@@ -143,7 +143,7 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
             }`}
           />
         ))}
-        <span className="text-sm font-medium text-gray-700 ml-1">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">
           {stars > 0 ? stars.toFixed(1) : 'N/A'}
         </span>
       </div>
@@ -153,8 +153,8 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
   return (
     <>
       <div
-        className={`relative bg-white border-2 rounded-lg p-6 shadow-construction hover:shadow-construction-lg transition-all ${
-          subcontractor.is_active ? 'border-gray-200' : 'border-gray-300 opacity-60'
+        className={`relative bg-white dark:bg-gray-800 border-2 rounded-lg p-6 shadow-construction hover:shadow-construction-lg transition-all ${
+          subcontractor.is_active ? 'border-gray-200 dark:border-gray-700' : 'border-gray-300 dark:border-gray-600 opacity-60'
         }`}
       >
         {/* Inactive overlay */}
@@ -169,7 +169,7 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-xl font-black text-construction-blue mb-2 leading-tight">
+            <h3 className="text-xl font-black text-construction-blue dark:text-blue-400 mb-2 leading-tight">
               {subcontractor.company_name}
             </h3>
             <Badge
@@ -227,32 +227,32 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
 
         {/* Contact Information */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-700">
-            <div className="p-1 bg-construction-blue/10 rounded">
-              <Mail className="h-4 w-4 text-construction-blue" />
+          <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <div className="p-1 bg-construction-blue/10 dark:bg-blue-900/30 rounded">
+              <Mail className="h-4 w-4 text-construction-blue dark:text-blue-400" />
             </div>
             <span className="font-medium">{subcontractor.contact_name}</span>
           </div>
           {subcontractor.email && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="p-1 bg-gray-100 rounded">
-                <Mail className="h-3.5 w-3.5 text-gray-500" />
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="p-1 bg-gray-100 dark:bg-gray-750 rounded">
+                <Mail className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
               </div>
               <span className="truncate">{subcontractor.email}</span>
             </div>
           )}
           {subcontractor.phone && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="p-1 bg-gray-100 rounded">
-                <Phone className="h-3.5 w-3.5 text-gray-500" />
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="p-1 bg-gray-100 dark:bg-gray-750 rounded">
+                <Phone className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
               </div>
               <span>{subcontractor.phone}</span>
             </div>
           )}
           {subcontractor.address && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="p-1 bg-gray-100 rounded">
-                <MapPin className="h-3.5 w-3.5 text-gray-500" />
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <div className="p-1 bg-gray-100 dark:bg-gray-750 rounded">
+                <MapPin className="h-3.5 w-3.5 text-gray-500 dark:text-gray-400" />
               </div>
               <span className="truncate">{subcontractor.address}</span>
             </div>
@@ -260,8 +260,8 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
         </div>
 
         {/* Performance Rating */}
-        <div className="mb-4 pb-4 border-b border-gray-200">
-          <div className="text-xs font-semibold text-gray-500 uppercase mb-2">Performance</div>
+        <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">Performance</div>
           {renderStars(subcontractor.performance_rating)}
         </div>
 
@@ -270,8 +270,8 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
           {/* License Status */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">License</span>
+              <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">License</span>
             </div>
             {licenseStatus === 'valid' && subcontractor.license_number ? (
               <div className="flex items-center gap-1 text-construction-green">
@@ -296,8 +296,8 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
           {/* Insurance Status */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">Insurance</span>
+              <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Insurance</span>
             </div>
             {insuranceStatus === 'valid' && subcontractor.insurance_provider ? (
               <div className="flex items-center gap-1 text-construction-green">
@@ -322,9 +322,9 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
 
         {/* Notes Preview */}
         {subcontractor.notes && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="text-xs font-semibold text-gray-500 uppercase mb-1">Notes</div>
-            <p className="text-sm text-gray-600 line-clamp-2">{subcontractor.notes}</p>
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1">Notes</div>
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{subcontractor.notes}</p>
           </div>
         )}
       </div>

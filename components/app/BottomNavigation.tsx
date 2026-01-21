@@ -113,7 +113,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       <nav
         className={cn(
           "fixed bottom-0 left-0 right-0 z-40 md:hidden",
-          "bg-white border-t border-gray-200 shadow-construction-lg",
+          "bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 shadow-construction-lg",
           "safe-bottom", // Apply safe area bottom padding
         )}
       >
@@ -137,7 +137,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                   onClick={handleMoreClick}
                   className={cn(
                     "flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors",
-                    "active:bg-gray-100",
+                    "active:bg-gray-100 dark:active:bg-gray-800",
                   )}
                   aria-label="Open more menu"
                 >
@@ -172,7 +172,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                         "text-[10px] font-bold transition-colors",
                         active
                           ? "mt-0.5 text-construction-blue"
-                          : "-mt-1.5 text-gray-500",
+                          : "-mt-1.5 text-gray-500 dark:text-gray-400",
                       )}
                     >
                       {item.name}
@@ -202,7 +202,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                 onClick={(e) => handleNavClick(item, active, e)}
                 className={cn(
                   "flex flex-col items-center justify-center flex-1 h-full min-w-[64px] transition-colors",
-                  "active:bg-gray-100",
+                  "active:bg-gray-100 dark:active:bg-gray-800",
                 )}
               >
                 {/* Vercel: Replace whileTap with CSS active:scale - simpler and more performant */}
@@ -212,7 +212,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                     <div
                       className={cn(
                         "flex items-center justify-center w-11 h-11 rounded-xl",
-                        "bg-gradient-to-b from-[#0a2d6e] to-[#001B51]",
+                        "bg-gradient-to-b from-[#0a2d6e] to-[var(--construction-blue)]",
                         "text-white",
                         /* 3D depth effect - layered shadows */
                         "shadow-[0_4px_0_0_#000d2a,0_6px_8px_-2px_rgba(0,27,81,0.4),0_2px_4px_-1px_rgba(0,0,0,0.2)]",
@@ -221,7 +221,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                         /* Pressed state - moves down, shadow shrinks */
                         "active:translate-y-[2px]",
                         "active:shadow-[0_2px_0_0_#000d2a,0_3px_4px_-2px_rgba(0,27,81,0.3)]",
-                        "active:from-[#001B51] active:to-[#00132e]",
+                        "active:from-[var(--construction-blue)] active:to-[#00132e]",
                         "transition-all duration-100",
                       )}
                     >
@@ -257,7 +257,7 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
                       "text-[10px] font-bold transition-colors",
                       active
                         ? "mt-0.5 text-construction-blue"
-                        : "-mt-1.5 text-gray-500",
+                        : "-mt-1.5 text-gray-500 dark:text-gray-400",
                     )}
                   >
                     {active && showPlusIcon ? item.name : item.name}

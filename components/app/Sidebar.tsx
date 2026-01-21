@@ -24,6 +24,7 @@ import {
 import { cn } from "@/lib/utils";
 import { m as motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/user/UserMenu";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import type { Session } from "next-auth";
 
 // Debug: Aceternity UI enhanced sidebar with construction theme
@@ -142,28 +143,28 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
 
             {/* Debug: Sliding drawer from left with construction theme */}
             <motion.aside
-              className="md:hidden fixed top-0 left-0 bottom-0 w-[280px] bg-white z-50 shadow-construction-xl overflow-hidden"
+              className="md:hidden fixed top-0 left-0 bottom-0 w-[280px] bg-white dark:bg-gray-950 z-50 shadow-construction-xl overflow-hidden"
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
             >
               {/* Debug: Drawer content - same as desktop sidebar */}
-              <div className="relative flex flex-col h-full bg-white/95 backdrop-blur-construction">
+              <div className="relative flex flex-col h-full bg-white/95 dark:bg-gray-950/95 backdrop-blur-construction">
                 {/* Construction border accent */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
                 {/* Debug: Top Section - Close button, Logo, Notifications, User Menu */}
-                <div className="px-4 py-4 border-b border-gray-200">
+                <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
                   {/* Debug: Close button - Touch-optimized */}
                   <div className="flex items-center justify-between mb-4">
                     <motion.button
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-center w-11 h-11 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                      className="flex items-center justify-center w-11 h-11 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 active:bg-gray-200 dark:active:bg-gray-700 transition-colors"
                       whileTap={{ scale: 0.95 }}
                       aria-label="Close navigation menu"
                     >
-                      <X className="w-6 h-6 text-gray-700" />
+                      <X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                     </motion.button>
                   </div>
 
@@ -188,10 +189,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                       <div className="absolute inset-0 rounded-lg bg-construction-blue/10 animate-glow-pulse" />
                     </motion.div>
                     <div>
-                      <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                      <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                         GenHub
                       </h1>
-                      <p className="text-xs text-gray-500 font-medium">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                         Construction Management
                       </p>
                     </div>
@@ -237,7 +238,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300 w-full",
                               isActive || isChildActive
                                 ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 active:bg-gray-200 dark:active:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                             )}
                           >
                             {/* Debug: Active indicator with glow */}
@@ -304,7 +305,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300",
                               isActive
                                 ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 active:bg-gray-200 dark:active:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                             )}
                           >
                             {/* Debug: Active indicator with glow */}
@@ -392,7 +393,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                             "group relative flex items-center gap-3 px-3 py-3 rounded-lg text-base font-medium transition-all duration-300",
                                             isChildItemActive
                                               ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                              : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
+                                              : "text-gray-600 dark:text-gray-400 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 active:bg-gray-200 dark:active:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                                           )}
                                         >
                                           {/* Child active indicator - smaller */}
@@ -458,10 +459,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                   {/* Owner Navigation Section */}
                   {isOwner && (
                     <>
-                      <div className="pt-4 mt-4 border-t border-gray-200">
+                      <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
                         <div className="flex items-center gap-2 px-3 py-2">
-                          <Crown className="w-4 h-4 text-yellow-600" />
-                          <span className="text-xs font-bold text-yellow-700 uppercase tracking-wider">
+                          <Crown className="w-4 h-4 text-yellow-600 dark:text-yellow-500" />
+                          <span className="text-xs font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider">
                             Platform Admin
                           </span>
                         </div>
@@ -486,8 +487,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                               className={cn(
                                 "group relative flex items-center gap-3 px-3 py-3.5 rounded-lg text-base font-medium transition-all duration-300",
                                 isActive
-                                  ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
-                                  : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 active:bg-gray-200 hover:text-gray-900 hover:shadow-construction",
+                                  ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 dark:text-yellow-500 shadow-inner-glow"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 active:bg-gray-200 dark:active:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                               )}
                             >
                               {isActive && (
@@ -538,10 +539,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                   )}
                 </nav>
 
-                {/* Modern Footer - Glass Morphism with Notifications & User Menu */}
+                {/* Modern Footer - Glass Morphism with Notifications, Theme Toggle & User Menu */}
                 <div className="p-3">
                   <motion.div
-                    className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 backdrop-blur-xl border border-gray-200/50 shadow-lg overflow-hidden"
+                    className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/40 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
@@ -557,7 +558,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
 
                     {/* Content */}
                     <div className="relative p-3 space-y-3">
-                      {/* Notifications & User Menu Row */}
+                      {/* Notifications, Theme Toggle & User Menu Row */}
                       <div className="flex items-center gap-2.5">
                         {/* Notification Bell - Modern floating button */}
                         <motion.div
@@ -613,6 +614,15 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           )}
                         </motion.div>
 
+                        {/* Theme Toggle Button */}
+                        <motion.div
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="relative"
+                        >
+                          <ThemeToggle />
+                        </motion.div>
+
                         {/* User Menu - Modern glass card */}
                         <motion.div
                           className="flex-1 min-w-0 relative group"
@@ -623,7 +633,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                             damping: 25,
                           }}
                         >
-                          <div className="relative rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300 px-2.5 py-1.5">
+                          <div className="relative rounded-xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 px-2.5 py-1.5">
                             {/* Subtle glow on hover */}
                             <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-construction-blue/0 via-construction-blue/5 to-construction-blue/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -655,12 +665,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
       {/* Debug: Desktop sidebar - hidden on mobile */}
       <aside className="hidden md:flex md:flex-shrink-0">
         {/* Debug: Aceternity UI Sidebar with glass morphism and construction theme */}
-        <div className="relative flex flex-col w-64 bg-white/95 backdrop-blur-construction border-r border-gray-200 shadow-construction">
+        <div className="relative flex flex-col w-64 bg-white/95 dark:bg-gray-950/95 backdrop-blur-construction border-r border-gray-200 dark:border-gray-800 shadow-construction">
           {/* Construction border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
 
           {/* Debug: Top Section - Logo Only */}
-          <div className="px-4 py-4 border-b border-gray-200">
+          <div className="px-4 py-4 border-b border-gray-200 dark:border-gray-800">
             {/* Logo/Brand */}
             <div className="flex items-center gap-3">
               <motion.div
@@ -678,10 +688,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                 <div className="absolute inset-0 rounded-lg bg-construction-blue/10 animate-glow-pulse" />
               </motion.div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent">
                   GenHub
                 </h1>
-                <p className="text-xs text-gray-500 font-medium">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                   Construction Management
                 </p>
               </div>
@@ -726,7 +736,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 w-full",
                         isActive || isChildActive
                           ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                       )}
                     >
                       {/* Debug: Active indicator with glow */}
@@ -793,7 +803,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
                         isActive
                           ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                          : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                       )}
                     >
                       {/* Debug: Active indicator with glow */}
@@ -875,7 +885,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                                       "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
                                       isChildItemActive
                                         ? "bg-gradient-to-r from-construction-blue/10 to-construction-blue/5 text-construction-blue shadow-inner-glow"
-                                        : "text-gray-600 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
+                                        : "text-gray-600 dark:text-gray-400 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                                     )}
                                   >
                                     {/* Child active indicator - smaller */}
@@ -941,10 +951,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
             {/* Owner Navigation Section */}
             {isOwner && (
               <>
-                <div className="pt-4 mt-4 border-t border-gray-200">
+                <div className="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800">
                   <div className="flex items-center gap-2 px-3 py-2">
-                    <Crown className="w-4 h-4 text-yellow-600" />
-                    <span className="text-xs font-bold text-yellow-700 uppercase tracking-wider">
+                    <Crown className="w-4 h-4 text-yellow-600 dark:text-yellow-500" />
+                    <span className="text-xs font-bold text-yellow-700 dark:text-yellow-500 uppercase tracking-wider">
                       Platform Admin
                     </span>
                   </div>
@@ -969,8 +979,8 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                         className={cn(
                           "group relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-300",
                           isActive
-                            ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 shadow-inner-glow"
-                            : "text-gray-700 hover:bg-gradient-to-r hover:to-gray-100 hover:text-gray-900 hover:shadow-construction",
+                            ? "bg-gradient-to-r from-yellow-500/10 to-yellow-500/5 text-yellow-700 dark:text-yellow-500 shadow-inner-glow"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:to-gray-100 dark:hover:to-gray-800 hover:text-gray-900 dark:hover:text-gray-100 hover:shadow-construction",
                         )}
                       >
                         {isActive && (
@@ -1018,10 +1028,10 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
             )}
           </nav>
 
-          {/* Modern Footer - Glass Morphism with Notifications & User Menu */}
+          {/* Modern Footer - Glass Morphism with Notifications, Theme Toggle & User Menu */}
           <div className="p-3">
             <motion.div
-              className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 backdrop-blur-xl border border-gray-200/50 shadow-lg overflow-hidden"
+              className="relative rounded-2xl bg-gradient-to-br from-white/80 via-gray-50/60 to-white/40 dark:from-gray-900/80 dark:via-gray-800/60 dark:to-gray-900/40 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 shadow-lg overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
@@ -1037,7 +1047,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
 
               {/* Content */}
               <div className="relative p-3 space-y-3">
-                {/* Notifications & User Menu Row */}
+                {/* Notifications, Theme Toggle & User Menu Row */}
                 <div className="flex items-center gap-2.5">
                   {/* Notification Bell - Modern floating button */}
                   <motion.div
@@ -1093,13 +1103,22 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                     )}
                   </motion.div>
 
+                  {/* Theme Toggle Button */}
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="relative"
+                  >
+                    <ThemeToggle />
+                  </motion.div>
+
                   {/* User Menu - Modern glass card */}
                   <motion.div
                     className="flex-1 min-w-0 relative group"
                     whileHover={{ scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 400, damping: 25 }}
                   >
-                    <div className="relative rounded-xl bg-white/60 backdrop-blur-sm border border-gray-200/60 shadow-sm hover:shadow-md hover:bg-white/80 transition-all duration-300 px-2.5 py-1.5">
+                    <div className="relative rounded-xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 shadow-sm hover:shadow-md hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 px-2.5 py-1.5">
                       {/* Subtle glow on hover */}
                       <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-construction-blue/0 via-construction-blue/5 to-construction-blue/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 

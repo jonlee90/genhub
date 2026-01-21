@@ -49,14 +49,14 @@ export function ProductCard({
       <>
         <Card
           className={cn(
-            "p-4 bg-white hover:shadow-md transition-all cursor-pointer border-2",
+            "p-4 bg-white dark:bg-gray-800 hover:shadow-md transition-all cursor-pointer border-2",
             isSelectedForComparison &&
-              "border-construction-blue bg-construction-blue/5",
+              "border-construction-blue bg-construction-blue/5 dark:bg-construction-blue/10",
           )}
         >
           <div className="flex items-center gap-4">
             {/* Product Image */}
-            <div className="relative w-24 h-24 bg-gray-100 rounded-lg overflow-hidden shrink-0 border-2 border-gray-200">
+            <div className="relative w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden shrink-0 border-2 border-gray-200 dark:border-gray-600">
               {product.imageUrl ? (
                 <Image
                   src={product.imageUrl}
@@ -66,7 +66,7 @@ export function ProductCard({
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <Package className="h-12 w-12 text-gray-400" />
+                  <Package className="h-12 w-12 text-gray-400 dark:text-gray-500" />
                 </div>
               )}
             </div>
@@ -75,10 +75,10 @@ export function ProductCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-lg text-construction-blue line-clamp-1">
+                  <h3 className="font-bold text-lg text-construction-blue dark:text-blue-400 line-clamp-1">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     SKU: {product.sku}
                   </p>
                   <div className="flex items-center gap-3 mt-2">
@@ -102,10 +102,10 @@ export function ProductCard({
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="text-3xl font-black text-construction-blue">
+                  <div className="text-3xl font-black text-construction-blue dark:text-blue-400">
                     {formatPrice(product.price)}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">per unit</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">per unit</div>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ export function ProductCard({
                 size="sm"
                 onClick={() => onToggleComparison(product)}
                 className={
-                  isSelectedForComparison ? "bg-construction-blue" : ""
+                  isSelectedForComparison ? "bg-construction-blue dark:bg-blue-600" : ""
                 }
               >
                 {isSelectedForComparison ? "Selected" : "Compare"}
@@ -125,7 +125,7 @@ export function ProductCard({
               <Button
                 onClick={() => setShowAssignModal(true)}
                 size="sm"
-                className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+                className="bg-construction-green dark:bg-green-600 hover:bg-construction-green/90 dark:hover:bg-green-700 text-white font-bold"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 Assign to Task
@@ -151,13 +151,13 @@ export function ProductCard({
       <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
         <Card
           className={cn(
-            "overflow-hidden bg-white hover:shadow-lg transition-all cursor-pointer border-2 group",
+            "overflow-hidden bg-white dark:bg-gray-800 hover:shadow-lg transition-all cursor-pointer border-2 group",
             isSelectedForComparison &&
-              "border-construction-blue bg-construction-blue/5",
+              "border-construction-blue bg-construction-blue/5 dark:bg-construction-blue/10",
           )}
         >
           {/* Product Image */}
-          <div className="relative w-full aspect-square bg-gray-100 border-b-2 border-gray-200">
+          <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-700 border-b-2 border-gray-200 dark:border-gray-600">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
@@ -167,7 +167,7 @@ export function ProductCard({
               />
             ) : (
               <div className="flex items-center justify-center h-full">
-                <Package className="h-20 w-20 text-gray-400" />
+                <Package className="h-20 w-20 text-gray-400 dark:text-gray-500" />
               </div>
             )}
 
@@ -187,7 +187,7 @@ export function ProductCard({
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="absolute top-2 left-2 bg-construction-blue text-white p-2 rounded-lg shadow-lg"
+                className="absolute top-2 left-2 bg-construction-blue dark:bg-blue-600 text-white p-2 rounded-lg shadow-lg"
               >
                 <CheckCircle2 className="h-5 w-5" />
               </motion.div>
@@ -205,19 +205,19 @@ export function ProductCard({
             </Badge>
 
             {/* Product Name */}
-            <h3 className="font-bold text-base text-construction-blue line-clamp-2 min-h-[3rem]">
+            <h3 className="font-bold text-base text-construction-blue dark:text-blue-400 line-clamp-2 min-h-[3rem]">
               {product.name}
             </h3>
 
             {/* SKU */}
-            <p className="text-xs text-gray-600">SKU: {product.sku}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">SKU: {product.sku}</p>
 
             {/* Price */}
-            <div className="pt-2 border-t-2 border-gray-100">
-              <div className="text-2xl font-black text-construction-blue">
+            <div className="pt-2 border-t-2 border-gray-100 dark:border-gray-700">
+              <div className="text-2xl font-black text-construction-blue dark:text-blue-400">
                 {formatPrice(product.price)}
               </div>
-              <div className="text-xs text-gray-600">per unit</div>
+              <div className="text-xs text-gray-600 dark:text-gray-400">per unit</div>
             </div>
 
             {/* Actions */}
@@ -229,7 +229,7 @@ export function ProductCard({
                 className={cn(
                   "flex-1 font-semibold",
                   isSelectedForComparison &&
-                    "bg-construction-blue text-white border-construction-blue hover:bg-construction-blue/90",
+                    "bg-construction-blue dark:bg-blue-600 text-white border-construction-blue hover:bg-construction-blue/90 dark:hover:bg-blue-700",
                 )}
               >
                 {isSelectedForComparison ? (
@@ -244,7 +244,7 @@ export function ProductCard({
               <Button
                 onClick={() => setShowAssignModal(true)}
                 size="sm"
-                className="flex-1 bg-construction-green hover:bg-construction-green/90 text-white font-bold"
+                className="flex-1 bg-construction-green dark:bg-green-600 hover:bg-construction-green/90 dark:hover:bg-green-700 text-white font-bold"
               >
                 <ArrowRight className="h-3 w-3 mr-1" />
                 Assign

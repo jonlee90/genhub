@@ -33,7 +33,7 @@ const DependencyPath = React.memo(function DependencyPath({
   return (
     <path
       d={pathD}
-      stroke={isHighlighted ? "#001B51" : "#7A7A7A"}
+      stroke={isHighlighted ? "var(--construction-blue)" : "#7A7A7A"}
       strokeWidth={isHighlighted ? 3 : 2}
       fill="none"
       markerEnd={isHighlighted ? "url(#arrow-head-highlight)" : "url(#arrow-head)"}
@@ -75,7 +75,7 @@ export const GanttDependencyLines = React.memo(function GanttDependencyLines({ l
           refY="3.5"
           orient="auto"
         >
-          <polygon points="0 0, 10 3.5, 0 7" fill="#001B51" />
+          <polygon points="0 0, 10 3.5, 0 7" fill="var(--construction-blue)" />
         </marker>
       </defs>
 

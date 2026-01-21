@@ -44,8 +44,8 @@ const ROLE_CONFIG = {
   },
   project_manager: {
     label: "Project Manager",
-    color: "bg-[#001B51]/10 text-[#001B51] border-[#001B51]/20",
-    borderColor: "border-l-[#001B51]",
+    color: "bg-construction-blue/10 text-construction-blue border-construction-blue/20",
+    borderColor: "border-l-[var(--construction-blue)]",
   },
   foreman: {
     label: "Foreman",
@@ -141,7 +141,7 @@ export function ProjectTeam({
             "active:scale-[0.98]",
             "text-left",
             activeTab === "members"
-              ? "border-[#001B51] bg-[#001B51]/5 shadow-sm"
+              ? "border-construction-blue bg-construction-blue/5 shadow-sm"
               : "border-gray-200 bg-white",
           )}
         >
@@ -149,14 +149,14 @@ export function ProjectTeam({
             <Users
               className={cn(
                 "h-5 w-5",
-                activeTab === "members" ? "text-[#001B51]" : "text-gray-400",
+                activeTab === "members" ? "text-construction-blue" : "text-gray-400",
               )}
             />
             <ChevronRight
               className={cn(
                 "h-4 w-4 transition-transform",
                 activeTab === "members"
-                  ? "text-[#001B51] rotate-90"
+                  ? "text-construction-blue rotate-90"
                   : "text-gray-300",
               )}
             />
@@ -164,7 +164,7 @@ export function ProjectTeam({
           <div
             className={cn(
               "text-2xl font-black",
-              activeTab === "members" ? "text-[#001B51]" : "text-gray-700",
+              activeTab === "members" ? "text-construction-blue" : "text-gray-700",
             )}
           >
             {teamMembers.length}
@@ -218,14 +218,14 @@ export function ProjectTeam({
       </div>
 
       {/* Content Card */}
-      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
         {/* Header */}
         <div className="p-4 border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               {activeTab === "members" ? (
-                <div className="w-10 h-10 rounded-xl bg-[#001B51]/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="h-5 w-5 text-[#001B51]" />
+                <div className="w-10 h-10 rounded-xl bg-construction-blue/10 flex items-center justify-center flex-shrink-0">
+                  <Users className="h-5 w-5 text-construction-blue" />
                 </div>
               ) : (
                 <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
@@ -233,7 +233,7 @@ export function ProjectTeam({
                 </div>
               )}
               <div className="min-w-0">
-                <h3 className="font-bold text-[#001B51] text-lg">
+                <h3 className="font-bold text-construction-blue text-lg">
                   {activeTab === "members" ? "Team Members" : "Subcontractors"}
                 </h3>
                 <p className="text-sm text-gray-600">
@@ -257,7 +257,7 @@ export function ProjectTeam({
                 "transition-all duration-150",
                 "active:scale-[0.98]",
                 activeTab === "members"
-                  ? "bg-[#001B51] text-white active:bg-[#001B51]/90"
+                  ? "bg-construction-blue text-white active:bg-construction-blue/90"
                   : "bg-amber-500 text-white active:bg-amber-600",
               )}
             >
@@ -302,8 +302,8 @@ export function ProjectTeam({
                     onClick={() => setMemberModalOpen(true)}
                     className={cn(
                       "inline-flex items-center gap-2 px-6 h-12",
-                      "bg-[#001B51] text-white font-bold rounded-xl",
-                      "active:scale-[0.98] active:bg-[#001B51]/90",
+                      "bg-construction-blue text-white font-bold rounded-xl",
+                      "active:scale-[0.98] active:bg-construction-blue/90",
                       "transition-all duration-150",
                     )}
                   >
@@ -341,15 +341,15 @@ export function ProjectTeam({
                         "active:bg-gray-50 transition-colors",
                       )}
                     >
-                      <Avatar className="h-12 w-12 border-2 border-gray-200 flex-shrink-0">
+                      <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700 flex-shrink-0">
                         <AvatarImage src={avatar || undefined} />
-                        <AvatarFallback className="bg-[#001B51] text-white font-bold text-sm">
+                        <AvatarFallback className="bg-construction-blue text-white font-bold text-sm">
                           {getInitials(name)}
                         </AvatarFallback>
                       </Avatar>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900 truncate text-base">
+                        <p className="font-bold text-gray-900 dark:text-gray-100 truncate text-base">
                           {name}
                         </p>
                         {email && (
@@ -468,7 +468,7 @@ export function ProjectTeam({
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900 truncate text-base">
+                        <p className="font-bold text-gray-900 dark:text-gray-100 truncate text-base">
                           {companyName}
                         </p>
                         {contactName && (

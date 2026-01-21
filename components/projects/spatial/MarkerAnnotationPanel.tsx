@@ -133,7 +133,7 @@ export function MarkerAnnotationPanel({
           className="w-full flex items-center justify-between gap-4 p-4 hover:bg-gray-100 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#001B51] rounded-lg">
+            <div className="p-2 bg-construction-blue rounded-lg">
               <MapPin className="h-4 w-4 text-white" />
             </div>
 
@@ -167,7 +167,7 @@ export function MarkerAnnotationPanel({
                 placeholder="Search markers..."
                 className={cn(
                   'w-full pl-10 pr-8 py-2 rounded-lg',
-                  'border-2 border-gray-200 focus:border-[#001B51] focus:outline-none',
+                  'border-2 border-gray-200 focus:border-construction-blue focus:outline-none',
                   'text-sm placeholder:text-gray-400'
                 )}
               />
@@ -185,7 +185,7 @@ export function MarkerAnnotationPanel({
               onClick={onAddMarker}
               className={cn(
                 'px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                'bg-[#001B51] text-white border-2 border-[#001B51]',
+                'bg-construction-blue text-white border-2 border-construction-blue',
                 'hover:bg-[#002666] transition-colors',
                 'flex items-center gap-2 flex-shrink-0'
               )}
@@ -212,8 +212,8 @@ export function MarkerAnnotationPanel({
                   'border-2 transition-all',
                   'flex items-center gap-1.5',
                   selectedCategory === id
-                    ? 'bg-[#001B51] text-white border-[#001B51]'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-[#001B51]'
+                    ? 'bg-construction-blue text-white border-construction-blue'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-construction-blue'
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -244,7 +244,7 @@ export function MarkerAnnotationPanel({
                     onClick={() => onMarkerClick?.(marker.id)}
                     className={cn(
                       'w-full p-3 rounded-lg border-2 text-left',
-                      'hover:border-[#001B51] hover:bg-blue-50/30 transition-all',
+                      'hover:border-construction-blue hover:bg-blue-50/30 transition-all',
                       'group'
                     )}
                   >
@@ -260,7 +260,7 @@ export function MarkerAnnotationPanel({
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-semibold text-sm text-gray-900 group-hover:text-[#001B51] transition-colors">
+                          <h4 className="font-semibold text-sm text-gray-900 group-hover:text-construction-blue transition-colors">
                             {marker.title}
                           </h4>
                           <Badge className={cn('text-xs px-2 py-0.5', getStatusColor(marker.status))}>

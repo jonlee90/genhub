@@ -51,7 +51,7 @@ export function CreatorBadge({
       <div
         className={cn(
           "inline-flex items-center gap-1.5",
-          "text-xs text-gray-600",
+          "text-xs text-gray-600 dark:text-gray-400",
           className
         )}
         role="status"
@@ -59,8 +59,8 @@ export function CreatorBadge({
       >
         <User className="h-3.5 w-3.5 text-construction-blue" aria-hidden="true" />
         <span className="font-medium">{creatorName}</span>
-        <span className="text-gray-400">•</span>
-        <span className="text-gray-500">{formattedDate}</span>
+        <span className="text-gray-400 dark:text-gray-600">•</span>
+        <span className="text-gray-500 dark:text-gray-400">{formattedDate}</span>
       </div>
     );
   }
@@ -70,17 +70,17 @@ export function CreatorBadge({
     <div
       className={cn(
         "inline-flex items-start gap-2.5",
-        "bg-gray-50 border border-gray-200 rounded-md px-3 py-2",
+        "bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2",
         className
       )}
       role="status"
       aria-label={`Created by ${creatorName} on ${formattedDate}`}
     >
       <div className="flex flex-col min-w-0">
-        <span className="text-xs font-semibold text-gray-900">
+        <span className="text-xs font-semibold text-gray-900 dark:text-gray-100">
           By {creatorName}
         </span>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 dark:text-gray-400">
           {formattedDate}
         </span>
       </div>

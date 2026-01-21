@@ -35,7 +35,7 @@ export function PlaceholdersVanishInput({
   return (
     <div className="relative">
       <div className="relative flex items-center">
-        <Search className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
+        <Search className="absolute left-3 w-5 h-5 text-gray-400 dark:text-gray-500 pointer-events-none" />
 
         <input
           type="text"
@@ -43,7 +43,7 @@ export function PlaceholdersVanishInput({
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          className="w-full pl-10 pr-10 py-2.5 text-sm font-medium border-2 border-gray-200 rounded-lg focus:border-construction-blue focus:outline-none transition-colors bg-white"
+          className="w-full pl-10 pr-10 py-2.5 text-sm font-medium border-2 border-gray-200 dark:border-gray-700 rounded-lg focus:border-construction-blue focus:outline-none transition-colors bg-white dark:bg-gray-800 dark:text-white"
         />
 
         {/* Animated placeholder */}
@@ -52,7 +52,7 @@ export function PlaceholdersVanishInput({
             <AnimatePresence mode="wait">
               <motion.span
                 key={placeholderIndex}
-                className="text-gray-400 text-sm"
+                className="text-gray-400 dark:text-gray-500 text-sm"
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -10, opacity: 0 }}
@@ -69,14 +69,14 @@ export function PlaceholdersVanishInput({
           {value && (
             <motion.button
               type="button"
-              className="absolute right-3 p-1 hover:bg-gray-100 rounded-full transition-colors"
+              className="absolute right-3 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
               onClick={onClear}
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 180 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-gray-500 dark:text-gray-400" />
             </motion.button>
           )}
         </AnimatePresence>

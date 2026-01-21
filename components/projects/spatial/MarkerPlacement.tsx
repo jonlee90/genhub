@@ -167,7 +167,7 @@ export function MarkerPlacement({
       {!isPlacementMode && (
         <Button
           onClick={startPlacement}
-          className="bg-[#001B51] hover:bg-[#001B51]/90 text-white shadow-lg"
+          className="bg-construction-blue hover:bg-construction-blue/90 text-white shadow-lg"
           size="lg"
         >
           <MapPin className="w-5 h-5 mr-2" />
@@ -184,7 +184,7 @@ export function MarkerPlacement({
             exit={{ opacity: 0, y: -10 }}
             className="absolute top-0 left-0 right-0 md:relative"
           >
-            <div className="bg-[#001B51] text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
+            <div className="bg-construction-blue text-white px-4 py-3 rounded-lg shadow-lg flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <MapPin className="w-5 h-5 animate-pulse" />
@@ -218,9 +218,9 @@ export function MarkerPlacement({
             exit={{ opacity: 0, scale: 0.95 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm md:absolute md:inset-auto md:top-20 md:left-1/2 md:-translate-x-1/2"
           >
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md border-2 border-[#001B51]">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md border-2 border-construction-blue">
               {/* Debug: Header */}
-              <div className="bg-gradient-to-r from-[#001B51] to-[#3C3C3C] px-6 py-4 rounded-t-lg">
+              <div className="bg-gradient-to-r from-[var(--construction-blue)] to-[#3C3C3C] px-6 py-4 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-white/10 rounded-lg">
@@ -242,14 +242,14 @@ export function MarkerPlacement({
               <div className="p-6 space-y-4">
                 {/* Debug: Type selector */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+                  <label className="text-sm font-bold text-construction-blue uppercase tracking-wide">
                     Marker Type
                   </label>
                   <Select
                     value={formData.type}
                     onValueChange={(value) => setFormData({ type: value as SpatialMarkerType })}
                   >
-                    <SelectTrigger className="border-2 border-gray-200 focus:border-[#001B51]">
+                    <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -270,7 +270,7 @@ export function MarkerPlacement({
 
                 {/* Debug: Title input */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+                  <label className="text-sm font-bold text-construction-blue uppercase tracking-wide">
                     Title <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -278,7 +278,7 @@ export function MarkerPlacement({
                     onChange={(e) => setFormData({ title: e.target.value })}
                     placeholder="Enter marker title..."
                     maxLength={100}
-                    className="border-2 border-gray-200 focus:border-[#001B51]"
+                    className="border-2 border-gray-200 focus:border-construction-blue"
                     autoFocus
                   />
                   <p className="text-xs text-gray-500">
@@ -288,7 +288,7 @@ export function MarkerPlacement({
 
                 {/* Debug: Description textarea */}
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-[#001B51] uppercase tracking-wide">
+                  <label className="text-sm font-bold text-construction-blue uppercase tracking-wide">
                     Description
                   </label>
                   <Textarea
@@ -296,7 +296,7 @@ export function MarkerPlacement({
                     onChange={(e) => setFormData({ description: e.target.value })}
                     placeholder="Add optional description..."
                     rows={3}
-                    className="border-2 border-gray-200 focus:border-[#001B51] resize-none"
+                    className="border-2 border-gray-200 focus:border-construction-blue resize-none"
                   />
                 </div>
               </div>
@@ -315,7 +315,7 @@ export function MarkerPlacement({
                 <Button
                   onClick={handleConfirm}
                   disabled={!formData.title.trim() || isCreating}
-                  className="flex-1 bg-[#001B51] hover:bg-[#001B51]/90"
+                  className="flex-1 bg-construction-blue hover:bg-construction-blue/90"
                 >
                   {isCreating ? (
                     <>

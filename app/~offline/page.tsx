@@ -82,7 +82,7 @@ export default function OfflinePage() {
               linear-gradient(to bottom, currentColor 1px, transparent 1px)
             `,
             backgroundSize: "40px 40px",
-            color: "#001B51",
+            color: "var(--construction-blue)",
           }}
         />
       </div>

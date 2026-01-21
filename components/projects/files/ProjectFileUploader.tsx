@@ -404,7 +404,7 @@ export function ProjectFileUploader({
                     item.status === 'success' && 'border-green-200 bg-green-50',
                     item.status === 'error' && 'border-red-200 bg-red-50',
                     item.status === 'pending' && 'border-gray-200 bg-gray-50',
-                    item.status === 'uploading' && 'border-[#001B51]/30 bg-[#001B51]/5'
+                    item.status === 'uploading' && 'border-construction-blue/30 bg-construction-blue/5'
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -415,7 +415,7 @@ export function ProjectFileUploader({
                         item.status === 'success' && 'bg-green-100 text-green-600',
                         item.status === 'error' && 'bg-red-100 text-red-600',
                         item.status === 'pending' && 'bg-gray-200 text-gray-500',
-                        item.status === 'uploading' && 'bg-[#001B51]/10 text-[#001B51]'
+                        item.status === 'uploading' && 'bg-construction-blue/10 text-construction-blue'
                       )}
                     >
                       <FileIcon className="h-5 w-5" />
@@ -436,7 +436,7 @@ export function ProjectFileUploader({
                         <AlertCircle className="h-5 w-5 text-red-600" />
                       )}
                       {item.status === 'uploading' && (
-                        <Loader2 className="h-5 w-5 text-[#001B51] animate-spin" />
+                        <Loader2 className="h-5 w-5 text-construction-blue animate-spin" />
                       )}
                       {item.status === 'pending' && (
                         <button
@@ -454,7 +454,7 @@ export function ProjectFileUploader({
                     <div className="mt-2">
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <motion.div
-                          className="h-full bg-[#001B51]"
+                          className="h-full bg-construction-blue"
                           initial={{ width: 0 }}
                           animate={{ width: `${item.progress}%` }}
                           transition={{ duration: 0.3 }}
@@ -485,8 +485,8 @@ export function ProjectFileUploader({
           className={cn(
             'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer',
             isDragOver
-              ? 'border-[#001B51] bg-[#001B51]/5 scale-[1.01]'
-              : 'border-gray-300 hover:border-[#001B51] hover:bg-gray-50',
+              ? 'border-construction-blue bg-construction-blue/5 scale-[1.01]'
+              : 'border-gray-300 hover:border-construction-blue hover:bg-gray-50',
             hasQueueItems && 'p-4'
           )}
         >
@@ -495,13 +495,13 @@ export function ProjectFileUploader({
             <div
               className={cn(
                 'p-3 rounded-full transition-colors',
-                isDragOver ? 'bg-[#001B51]/10' : 'bg-gray-100'
+                isDragOver ? 'bg-construction-blue/10' : 'bg-gray-100'
               )}
             >
               <Upload
                 className={cn(
                   'w-6 h-6 transition-colors',
-                  isDragOver ? 'text-[#001B51]' : 'text-gray-400'
+                  isDragOver ? 'text-construction-blue' : 'text-gray-400'
                 )}
               />
             </div>

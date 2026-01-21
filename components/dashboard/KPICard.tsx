@@ -28,58 +28,58 @@ export interface KPICardProps {
 
 const variantStyles = {
   default: {
-    border: "border-gray-200",
-    activeBorder: "active:border-[#001B51]/40",
-    iconBg: "bg-[#001B51]/10",
-    iconColor: "text-[#001B51]",
-    valueColor: "text-[#001B51]",
-    trendUp: "text-[#059669]",
-    trendDown: "text-[#DC2626]",
-    trendNeutral: "text-gray-500",
+    border: "border-gray-200 dark:border-gray-700",
+    activeBorder: "active:border-construction-blue/40 dark:active:border-blue-500/40",
+    iconBg: "bg-construction-blue/10 dark:bg-construction-blue/30",
+    iconColor: "text-construction-blue dark:text-blue-400",
+    valueColor: "text-construction-blue dark:text-blue-400",
+    trendUp: "text-[#059669] dark:text-green-400",
+    trendDown: "text-[#DC2626] dark:text-red-400",
+    trendNeutral: "text-gray-500 dark:text-gray-400",
   },
   success: {
-    border: "border-[#059669]/30 bg-[#059669]/5",
-    activeBorder: "active:border-[#059669]/60",
-    iconBg: "bg-[#059669]/15",
-    iconColor: "text-[#059669]",
-    valueColor: "text-[#059669]",
-    trendUp: "text-[#059669]",
-    trendDown: "text-[#DC2626]",
-    trendNeutral: "text-gray-500",
+    border: "border-[#059669]/30 bg-[#059669]/5 dark:border-green-500/30 dark:bg-green-500/10",
+    activeBorder: "active:border-[#059669]/60 dark:active:border-green-500/60",
+    iconBg: "bg-[#059669]/15 dark:bg-green-500/20",
+    iconColor: "text-[#059669] dark:text-green-400",
+    valueColor: "text-[#059669] dark:text-green-400",
+    trendUp: "text-[#059669] dark:text-green-400",
+    trendDown: "text-[#DC2626] dark:text-red-400",
+    trendNeutral: "text-gray-500 dark:text-gray-400",
   },
   warning: {
-    border: "border-[#F59E0B]/30 bg-[#F59E0B]/5",
-    activeBorder: "active:border-[#F59E0B]/60",
-    iconBg: "bg-[#F59E0B]/15",
-    iconColor: "text-[#F59E0B]",
-    valueColor: "text-[#F59E0B]",
-    trendUp: "text-[#059669]",
-    trendDown: "text-[#DC2626]",
-    trendNeutral: "text-gray-500",
+    border: "border-[#F59E0B]/30 bg-[#F59E0B]/5 dark:border-yellow-500/30 dark:bg-yellow-500/10",
+    activeBorder: "active:border-[#F59E0B]/60 dark:active:border-yellow-500/60",
+    iconBg: "bg-[#F59E0B]/15 dark:bg-yellow-500/20",
+    iconColor: "text-[#F59E0B] dark:text-yellow-400",
+    valueColor: "text-[#F59E0B] dark:text-yellow-400",
+    trendUp: "text-[#059669] dark:text-green-400",
+    trendDown: "text-[#DC2626] dark:text-red-400",
+    trendNeutral: "text-gray-500 dark:text-gray-400",
   },
   danger: {
-    border: "border-[#DC2626]/30 bg-[#DC2626]/5",
-    activeBorder: "active:border-[#DC2626]/60",
-    iconBg: "bg-[#DC2626]/15",
-    iconColor: "text-[#DC2626]",
-    valueColor: "text-[#DC2626]",
-    trendUp: "text-[#059669]",
-    trendDown: "text-[#DC2626]",
-    trendNeutral: "text-gray-500",
+    border: "border-[#DC2626]/30 bg-[#DC2626]/5 dark:border-red-500/30 dark:bg-red-500/10",
+    activeBorder: "active:border-[#DC2626]/60 dark:active:border-red-500/60",
+    iconBg: "bg-[#DC2626]/15 dark:bg-red-500/20",
+    iconColor: "text-[#DC2626] dark:text-red-400",
+    valueColor: "text-[#DC2626] dark:text-red-400",
+    trendUp: "text-[#059669] dark:text-green-400",
+    trendDown: "text-[#DC2626] dark:text-red-400",
+    trendNeutral: "text-gray-500 dark:text-gray-400",
   },
 } as const;
 
 function KPICardSkeleton() {
   return (
-    <div className="bg-white border-2 border-gray-200 rounded-xl p-4 animate-pulse min-h-[120px]">
+    <div className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 animate-pulse min-h-[120px]">
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0" />
+        <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
-          <div className="h-7 w-16 bg-gray-200 rounded" />
+          <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+          <div className="h-7 w-16 bg-gray-200 dark:bg-gray-700 rounded" />
         </div>
       </div>
-      <div className="h-4 w-24 bg-gray-200 rounded" />
+      <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
     </div>
   );
 }
@@ -145,7 +145,7 @@ export function KPICard({
       className={cn(
         "relative p-4 h-full min-h-[120px]",
         styles.border,
-        href && ["cursor-pointer", styles.activeBorder, "active:bg-gray-50/50"],
+        href && ["cursor-pointer", styles.activeBorder, "active:bg-gray-50/50 dark:active:bg-gray-800/50"],
       )}
     >
       {/* Icon + Title Row */}
@@ -159,7 +159,7 @@ export function KPICard({
           <Icon className={cn("w-5 h-5", styles.iconColor)} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide truncate">
             {title}
           </p>
           {/* Value */}
@@ -183,10 +183,10 @@ export function KPICard({
       {/* Subtitle + Link indicator */}
       <div className="flex items-center justify-between">
         {subtitle && (
-          <p className="text-sm text-gray-500 truncate">{subtitle}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{subtitle}</p>
         )}
         {href && (
-          <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+          <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2" />
         )}
       </div>
     </CardSurface>

@@ -88,7 +88,7 @@ export const BaseModalHeader = memo(function BaseModalHeader({
 
           {/* Row 2: Subtitle */}
           {subtitle && (
-            <p className="text-sm text-gray-600 leading-snug">
+            <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
               {subtitle}
             </p>
           )}
@@ -100,11 +100,11 @@ export const BaseModalHeader = memo(function BaseModalHeader({
         onClick={onClose}
         className={cn(
           'flex-shrink-0 h-10 w-10 rounded-full',
-          'bg-gray-100 hover:bg-gray-200',
+          'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600',
           'flex items-center justify-center',
           'transition-all duration-200',
           'hover:scale-105 active:scale-95',
-          'focus:outline-none focus:ring-2 focus:ring-offset-2',
+          'focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900',
           'group relative overflow-hidden'
         )}
         style={{
@@ -121,7 +121,7 @@ export const BaseModalHeader = memo(function BaseModalHeader({
           }}
         />
 
-        <X className="h-5 w-5 text-gray-500 group-hover:text-gray-700 transition-colors relative z-10" />
+        <X className="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors relative z-10" />
       </button>
     </div>
   );

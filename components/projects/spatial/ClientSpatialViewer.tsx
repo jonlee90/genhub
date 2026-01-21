@@ -269,10 +269,10 @@ export function ClientSpatialViewer({
       {/* Debug: Loading State */}
       {!isModelReady && !error && (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30">
-          <div className="bg-white/90 backdrop-blur-sm border-2 border-[#001B51] rounded-lg p-8 shadow-construction">
+          <div className="bg-white/90 backdrop-blur-sm border-2 border-construction-blue rounded-lg p-8 shadow-construction">
             <div className="flex flex-col items-center gap-4">
-              <div className="w-12 h-12 border-4 border-[#001B51] border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm font-semibold text-[#001B51] uppercase tracking-wide">
+              <div className="w-12 h-12 border-4 border-construction-blue border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm font-semibold text-construction-blue uppercase tracking-wide">
                 Loading 3D Model...
               </p>
             </div>

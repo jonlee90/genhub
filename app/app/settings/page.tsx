@@ -11,7 +11,7 @@ const BLUEPRINT_BACKGROUND_STYLE = {
     linear-gradient(to bottom, currentColor 1px, transparent 1px)
   `,
   backgroundSize: "40px 40px",
-  color: "#001B51",
+  color: "var(--construction-blue)",
 } as const;
 
 /**
@@ -42,7 +42,7 @@ export default async function SettingsPage() {
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
                 SETTINGS
               </h1>
-              <p className="text-sm md:text-base text-gray-500">
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
                 Configure preferences & integrations
               </p>
             </div>
@@ -115,20 +115,20 @@ export default async function SettingsPage() {
 
         {/* Mobile: Collapsed Coming Soon Banner */}
         <div className="md:hidden">
-          <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-xl border-2 border-gray-200">
+          <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700">
             <div className="flex -space-x-2">
-              <div className="p-2 bg-gray-200 rounded-lg border-2 border-gray-300">
-                <User className="h-4 w-4 text-gray-400" />
+              <div className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg border-2 border-gray-300 dark:border-gray-600">
+                <User className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               </div>
-              <div className="p-2 bg-gray-200 rounded-lg border-2 border-gray-300">
-                <Building2 className="h-4 w-4 text-gray-400" />
+              <div className="p-2 bg-gray-200 dark:bg-gray-700 rounded-lg border-2 border-gray-300 dark:border-gray-600">
+                <Building2 className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-500">
+              <p className="text-sm font-semibold text-gray-500 dark:text-gray-300">
                 More settings coming soon
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
                 Profile & Company settings
               </p>
             </div>
@@ -137,7 +137,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Decorative bottom border - matching Projects/Tasks */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
 
       {/* Safe area bottom padding for iPhone */}
       <div className="h-[env(safe-area-inset-bottom)]" />

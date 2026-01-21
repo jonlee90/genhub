@@ -27,60 +27,60 @@ export const PROJECT_TYPE_THEMES: Record<string, ProjectTypeTheme> = {
     icon: Home,
     label: 'Residential',
     labelFull: 'Residential Home',
-    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
     headerText: 'text-white',            // White text (consistent)
-    iconBg: 'bg-[#001B51]/10',          // Blue tint background
-    iconColor: 'text-[#001B51]',         // Blue icon
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-[#001B51]',
+    borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
   industrial: {
     icon: Factory,
     label: 'Industrial',
     labelFull: 'Industrial Warehouse',
-    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
     headerText: 'text-white',            // White text (consistent)
-    iconBg: 'bg-[#001B51]/10',          // Blue tint background
-    iconColor: 'text-[#001B51]',         // Blue icon
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-[#001B51]',
+    borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
   restaurant: {
     icon: UtensilsCrossed,
     label: 'Restaurant',
     labelFull: 'Restaurant',
-    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
     headerText: 'text-white',            // White text (consistent)
-    iconBg: 'bg-[#001B51]/10',          // Blue tint background
-    iconColor: 'text-[#001B51]',         // Blue icon
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-[#001B51]',
+    borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
   cafe: {
     icon: Coffee,
     label: 'Cafe',
     labelFull: 'Cafe',
-    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
     headerText: 'text-white',            // White text (consistent)
-    iconBg: 'bg-[#001B51]/10',          // Blue tint background
-    iconColor: 'text-[#001B51]',         // Blue icon
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-[#001B51]',
+    borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
   commercial_office: {
     icon: Building2,
     label: 'Commercial',
     labelFull: 'Commercial Office',
-    headerBg: 'bg-[#001B51]',           // Construction blue (consistent)
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
     headerText: 'text-white',            // White text (consistent)
-    iconBg: 'bg-[#001B51]/10',          // Blue tint background
-    iconColor: 'text-[#001B51]',         // Blue icon
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
     accentColor: 'text-blue-200',
-    borderAccent: 'border-t-[#001B51]',
+    borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
 } as const;

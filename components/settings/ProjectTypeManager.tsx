@@ -176,8 +176,8 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
       {/* Debug: Header with Add button */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Project Types</h3>
-          <p className="text-sm text-gray-600" id="project-types-description">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Project Types</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400" id="project-types-description">
             Define the types of construction projects your company handles
           </p>
         </div>
@@ -205,18 +205,18 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 animationFillMode: 'both',
               }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 rounded-lg animate-pulse" />
-              <div className="relative bg-white border-2 border-gray-200 rounded-lg p-5 shadow-construction">
+              <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg animate-pulse" />
+              <div className="relative bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-5 shadow-construction">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg animate-pulse" />
+                  <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
                   <div className="flex-1 space-y-2">
-                    <div className="h-5 w-24 bg-gray-200 rounded animate-pulse" />
-                    <div className="h-4 w-full bg-gray-200 rounded animate-pulse" />
+                    <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100">
-                  <div className="h-6 w-20 bg-gray-200 rounded animate-pulse" />
-                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+                <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100 dark:border-gray-800">
+                  <div className="h-6 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                 </div>
               </div>
             </div>
@@ -230,10 +230,10 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 <Building2 className="h-16 w-16 text-construction-blue" />
               </div>
             </div>
-            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+            <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
               No Project Types Defined
             </h3>
-            <p className="text-gray-500 max-w-md mb-6">
+            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
               Create your first project type to start organizing construction projects
             </p>
             <Button
@@ -251,7 +251,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               AVAILABLE_ICONS[
                 type.icon_name as keyof typeof AVAILABLE_ICONS
               ] || Building2;
-            const cardColor = type.color || "#001B51";
+            const cardColor = type.color || "var(--construction-blue)";
 
             // Prepare badges array
             const badges = !type.is_active
@@ -336,7 +336,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="create-name" className="font-bold text-gray-900">
+            <Label htmlFor="create-name" className="font-bold text-gray-900 dark:text-gray-100">
               Name *
             </Label>
             <Input
@@ -345,10 +345,10 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               placeholder="e.g., Retail Store"
               required
               disabled={isSubmitting}
-              className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+              className="border-2 border-gray-200 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
               aria-describedby="create-name-hint"
             />
-            <p id="create-name-hint" className="text-xs text-gray-600">
+            <p id="create-name-hint" className="text-xs text-gray-600 dark:text-gray-400">
               A clear, descriptive name for this project type
             </p>
           </div>
@@ -356,7 +356,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-description"
-              className="font-bold text-gray-900"
+              className="font-bold text-gray-900 dark:text-gray-100"
             >
               Description
             </Label>
@@ -366,17 +366,17 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               placeholder="Brief description of this project type"
               rows={2}
               disabled={isSubmitting}
-              className="border-2 resize-none focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+              className="border-2 border-gray-200 dark:border-gray-700 resize-none focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
               aria-describedby="create-description-hint"
             />
-            <p id="create-description-hint" className="text-xs text-gray-600">
+            <p id="create-description-hint" className="text-xs text-gray-600 dark:text-gray-400">
               Optional description to help identify this type
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="create-icon" className="font-bold text-gray-900">
+              <Label htmlFor="create-icon" className="font-bold text-gray-900 dark:text-gray-100">
                 Icon
               </Label>
               <Select
@@ -386,7 +386,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
               >
                 <SelectTrigger
                   id="create-icon"
-                  className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                  className="border-2 border-gray-200 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                   aria-describedby="create-icon-hint"
                 >
                   <SelectValue />
@@ -406,25 +406,25 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                   })}
                 </SelectContent>
               </Select>
-              <p id="create-icon-hint" className="text-xs text-gray-600">
+              <p id="create-icon-hint" className="text-xs text-gray-600 dark:text-gray-400">
                 Visual identifier for this type
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="create-color" className="font-bold text-gray-900">
+              <Label htmlFor="create-color" className="font-bold text-gray-900 dark:text-gray-100">
                 Color
               </Label>
               <Input
                 id="create-color"
                 name="color"
                 type="color"
-                defaultValue="#001B51"
+                defaultValue="var(--construction-blue)"
                 disabled={isSubmitting}
-                className="h-10 border-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                className="h-10 border-2 border-gray-200 dark:border-gray-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                 aria-describedby="create-color-hint"
               />
-              <p id="create-color-hint" className="text-xs text-gray-600">
+              <p id="create-color-hint" className="text-xs text-gray-600 dark:text-gray-400">
                 Theme color for this project type
               </p>
             </div>
@@ -483,7 +483,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="edit-name" className="font-bold text-gray-900">
+              <Label htmlFor="edit-name" className="font-bold text-gray-900 dark:text-gray-100">
                 Name *
               </Label>
               <Input
@@ -492,10 +492,10 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 defaultValue={editingType.name}
                 required
                 disabled={isSubmitting}
-                className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                className="border-2 border-gray-200 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                 aria-describedby="edit-name-hint"
               />
-              <p id="edit-name-hint" className="text-xs text-gray-600">
+              <p id="edit-name-hint" className="text-xs text-gray-600 dark:text-gray-400">
                 A clear, descriptive name for this project type
               </p>
             </div>
@@ -503,7 +503,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-description"
-                className="font-bold text-gray-900"
+                className="font-bold text-gray-900 dark:text-gray-100"
               >
                 Description
               </Label>
@@ -513,17 +513,17 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 defaultValue={editingType.description || ""}
                 rows={2}
                 disabled={isSubmitting}
-                className="border-2 resize-none focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                className="border-2 border-gray-200 dark:border-gray-700 resize-none focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                 aria-describedby="edit-description-hint"
               />
-              <p id="edit-description-hint" className="text-xs text-gray-600">
+              <p id="edit-description-hint" className="text-xs text-gray-600 dark:text-gray-400">
                 Optional description to help identify this type
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="edit-icon" className="font-bold text-gray-900">
+                <Label htmlFor="edit-icon" className="font-bold text-gray-900 dark:text-gray-100">
                   Icon
                 </Label>
                 <Select
@@ -533,7 +533,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 >
                   <SelectTrigger
                     id="edit-icon"
-                    className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                    className="border-2 border-gray-200 dark:border-gray-700 focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                     aria-describedby="edit-icon-hint"
                   >
                     <SelectValue />
@@ -555,31 +555,31 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                     })}
                   </SelectContent>
                 </Select>
-                <p id="edit-icon-hint" className="text-xs text-gray-600">
+                <p id="edit-icon-hint" className="text-xs text-gray-600 dark:text-gray-400">
                   Visual identifier for this type
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="edit-color" className="font-bold text-gray-900">
+                <Label htmlFor="edit-color" className="font-bold text-gray-900 dark:text-gray-100">
                   Color
                 </Label>
                 <Input
                   id="edit-color"
                   name="color"
                   type="color"
-                  defaultValue={editingType.color || "#001B51"}
+                  defaultValue={editingType.color || "var(--construction-blue)"}
                   disabled={isSubmitting}
-                  className="h-10 border-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
+                  className="h-10 border-2 border-gray-200 dark:border-gray-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-construction-blue transition-all duration-200"
                   aria-describedby="edit-color-hint"
                 />
-                <p id="edit-color-hint" className="text-xs text-gray-600">
+                <p id="edit-color-hint" className="text-xs text-gray-600 dark:text-gray-400">
                   Theme color for this project type
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <div className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-gray-200 dark:border-gray-700">
               <input
                 type="checkbox"
                 id="edit-is-active"
@@ -587,19 +587,19 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 value="true"
                 defaultChecked={editingType.is_active ?? true}
                 disabled={isSubmitting}
-                className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-2 focus:ring-construction-blue focus:ring-offset-2 transition-all duration-200"
+                className="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 text-construction-blue focus:ring-2 focus:ring-construction-blue focus:ring-offset-2 dark:focus:ring-blue-400 dark:focus:ring-offset-gray-900 transition-all duration-200"
                 aria-describedby="edit-is-active-hint"
               />
               <div className="flex-1">
                 <Label
                   htmlFor="edit-is-active"
-                  className="cursor-pointer font-bold text-gray-900"
+                  className="cursor-pointer font-bold text-gray-900 dark:text-gray-100"
                 >
                   Active
                 </Label>
                 <p
                   id="edit-is-active-hint"
-                  className="text-xs text-gray-600 mt-0.5"
+                  className="text-xs text-gray-600 dark:text-gray-400 mt-0.5"
                 >
                   Visible when creating new projects
                 </p>
@@ -615,17 +615,17 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           open={!!deletingType}
           onOpenChange={() => setDeletingType(null)}
         >
-          <AlertDialogContent className="border-2 border-red-200">
+          <AlertDialogContent className="border-2 border-red-200 dark:border-red-800 dark:bg-gray-900">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-red-600 font-black uppercase tracking-tight">
+              <AlertDialogTitle className="text-red-600 dark:text-red-400 font-black uppercase tracking-tight">
                 Delete Project Type
               </AlertDialogTitle>
               {(deletingType.project_count || 0) > 0 ? (
                 <>
-                  <AlertDialogDescription className="text-gray-700">
+                  <AlertDialogDescription className="text-gray-700 dark:text-gray-300">
                     Cannot delete this project type!
                   </AlertDialogDescription>
-                  <div className="mt-3 space-y-2 text-gray-700">
+                  <div className="mt-3 space-y-2 text-gray-700 dark:text-gray-300">
                     <div>
                       This project type is assigned to{" "}
                       <span className="font-bold">
@@ -636,7 +636,7 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                         : "projects"}
                       .
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
                       To remove this type, first reassign all projects to a
                       different type, or mark the type as inactive instead.
                     </div>
@@ -644,14 +644,14 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
                 </>
               ) : (
                 <>
-                  <AlertDialogDescription className="text-gray-700">
+                  <AlertDialogDescription className="text-gray-700 dark:text-gray-300">
                     Are you sure you want to delete{" "}
-                    <span className="font-bold text-gray-900">
+                    <span className="font-bold text-gray-900 dark:text-gray-100">
                       "{deletingType.name}"
                     </span>
                     ?
                   </AlertDialogDescription>
-                  <div className="mt-3 text-sm text-gray-600">
+                  <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
                     This will also delete all associated phase and task
                     templates. This action cannot be undone.
                   </div>

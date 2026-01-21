@@ -80,10 +80,10 @@ async function ClientSpatialPageContent({ params: paramsPromise }: ClientSpatial
       />
 
       {/* Industrial Header */}
-      <div className="relative z-10 border-b-2 border-[#001B51]">
+      <div className="relative z-10 border-b-2 border-construction-blue">
         <div className="p-4 md:p-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#001B51] rounded-lg">
+            <div className="p-2 bg-construction-blue rounded-lg">
               <Building2 className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -121,7 +121,7 @@ function ClientSpatialLoading() {
       />
 
       {/* Industrial Header */}
-      <div className="relative z-10 border-b-2 border-[#001B51]">
+      <div className="relative z-10 border-b-2 border-construction-blue">
         <div className="p-4 md:p-6">
           <div className="flex items-center gap-3">
             <Skeleton className="h-10 w-10 rounded-lg" />

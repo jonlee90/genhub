@@ -59,19 +59,19 @@ const iconSizes: Record<ButtonSize, string> = {
 // Variant styles
 const variantStyles: Record<ButtonVariant, string> = {
   primary: cn(
-    "bg-[#001B51] text-white",
-    "active:bg-[#001B51]/80",
+    "bg-construction-blue text-white",
+    "active:bg-construction-blue/80",
     "disabled:bg-gray-300 disabled:text-gray-500",
   ),
   secondary: cn(
-    "bg-white text-[#001B51] border-2 border-[#001B51]",
-    "active:bg-gray-100",
-    "disabled:border-gray-300 disabled:text-gray-400",
+    "bg-white dark:bg-gray-800 text-construction-blue dark:text-gray-100 border-2 border-construction-blue dark:border-gray-600",
+    "active:bg-gray-100 dark:active:bg-gray-700",
+    "disabled:border-gray-300 dark:disabled:border-gray-600 disabled:text-gray-400 dark:disabled:text-gray-500",
   ),
   ghost: cn(
-    "bg-transparent text-[#001B51]",
-    "active:bg-gray-100",
-    "disabled:text-gray-400",
+    "bg-transparent text-construction-blue dark:text-gray-100",
+    "active:bg-gray-100 dark:active:bg-gray-800",
+    "disabled:text-gray-400 dark:disabled:text-gray-600",
   ),
   danger: cn(
     "bg-[#DC2626] text-white",

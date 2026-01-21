@@ -128,12 +128,12 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
       {/* Panel Container - Bottom sheet on mobile, side drawer on desktop */}
       <div
         className={cn(
-          "fixed bg-white shadow-2xl z-50 transition-transform duration-300 ease-out",
+          "fixed bg-white dark:bg-gray-900 shadow-2xl z-50 transition-transform duration-300 ease-out",
           // Desktop: slide from right, 500px width, full height
-          "md:top-0 md:right-0 md:w-[500px] md:h-full md:border-l-4 md:border-l-[#001B51]",
+          "md:top-0 md:right-0 md:w-[500px] md:h-full md:border-l-4 md:border-l-[var(--construction-blue)] dark:md:border-l-blue-500",
           isOpen ? "md:translate-x-0" : "md:translate-x-full",
           // Mobile: slide from bottom (bottom sheet), full width, 70vh height
-          "bottom-0 left-0 right-0 rounded-t-2xl border-t-4 border-t-[#001B51]",
+          "bottom-0 left-0 right-0 rounded-t-2xl border-t-4 border-t-[var(--construction-blue)] dark:border-t-blue-500",
           isOpen ? "translate-y-0" : "translate-y-full"
         )}
         style={{
@@ -145,14 +145,14 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
       >
         {/* Mobile Drag Handle (visual affordance) */}
         <div className="md:hidden flex justify-center pt-2 pb-1">
-          <div className="w-12 h-1 bg-gray-300 rounded-full" />
+          <div className="w-12 h-1 bg-gray-300 dark:bg-gray-600 rounded-full" />
         </div>
 
         {/* Header with title and close button */}
-        <div className="border-b-2 border-gray-200 p-4 flex items-center justify-between bg-gradient-to-r from-[#001B51]/5 to-transparent">
+        <div className="border-b-2 border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between bg-gradient-to-r from-[var(--construction-blue)]/5 dark:from-[var(--construction-blue)]/10 to-transparent">
           <h2
             id="task-panel-title"
-            className="font-black uppercase text-lg tracking-tight text-[#001B51] truncate pr-4"
+            className="font-black uppercase text-lg tracking-tight text-construction-blue dark:text-blue-400 truncate pr-4"
           >
             {loading ? (
               <span className="flex items-center gap-2">
@@ -169,15 +169,15 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors shrink-0"
             aria-label="Close panel"
           >
-            <X className="h-5 w-5 text-gray-600" />
+            <X className="h-5 w-5 text-gray-600 dark:text-gray-400" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="border-b border-gray-200 flex overflow-x-auto bg-gray-50">
+        <div className="border-b border-gray-200 dark:border-gray-700 flex overflow-x-auto bg-gray-50 dark:bg-gray-800">
           {(["details", "materials", "expenses", "attachments", "activity"] as TabType[]).map(tab => {
             // Get badge count for tab
             const getBadgeCount = () => {
@@ -204,8 +204,8 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                   "px-4 py-3 font-bold uppercase text-xs whitespace-nowrap relative transition-all",
                   "flex items-center gap-2",
                   activeTab === tab
-                    ? "text-[#001B51] bg-white"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                    ? "text-construction-blue dark:text-blue-400 bg-white dark:bg-gray-900"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 )}
                 aria-selected={activeTab === tab}
                 role="tab"
@@ -214,14 +214,14 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
                 {badgeCount !== null && badgeCount > 0 && (
                   <span className={cn(
                     "px-1.5 py-0.5 rounded text-xs font-bold",
-                    activeTab === tab ? "bg-[#001B51] text-white" : "bg-gray-300 text-gray-700"
+                    activeTab === tab ? "bg-construction-blue dark:bg-blue-500 text-white" : "bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                   )}>
                     {badgeCount}
                   </span>
                 )}
                 {/* Active tab indicator */}
                 {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#001B51]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-construction-blue dark:bg-blue-400" />
                 )}
               </button>
             );
@@ -232,7 +232,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
         <div className="overflow-y-auto" style={{ height: "calc(100% - 120px)" }}>
           {loading ? (
             <div className="flex flex-col items-center justify-center h-32 gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-[#001B51]" />
+              <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
               <p className="text-sm text-gray-500">Loading task details...</p>
             </div>
           ) : error ? (
