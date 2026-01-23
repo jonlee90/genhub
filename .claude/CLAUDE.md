@@ -131,13 +131,21 @@ WITHOUT SPEC (direct task list):
 
 ## AGENT SYSTEM
 
-### Core Agents
+### Core Agents (Implementation)
 
 | Agent | Authority | Budget | Never |
 |-------|-----------|--------|-------|
 | `backend-engineer` | DB, Server Actions, API, RLS | 90k | UI components |
 | `frontend-engineer` | Components, styling, forms | 90k | DB access |
 | `code-reviewer` | Review, testing, bug fixes | 60k | New features |
+
+### Orchestration Agents
+
+| Agent | Purpose | Budget |
+|-------|---------|--------|
+| `kiro-orchestrator` | Multi-agent workflow coordination from specs | 50k |
+| `qa-auditor` | Post-implementation validation, acceptance testing | 30k |
+| `learning-extractor` | Extract patterns/gotchas, update memories | 20k |
 
 ### Planning Agents (No Implementation)
 
@@ -405,7 +413,13 @@ import { ResponsiveModal } from '@/components/ui/ResponsiveModal'
 | Skill | Trigger |
 |-------|---------|
 | `task-orchestrator` | Multi-agent coordination |
+| `feature-implementation-kiro` | Implement from spec files |
+| `preflight-repo-check` | Pre-implementation validation |
+| `post-task-learning` | Extract learnings after tasks |
 | `refactor-code` | Component consolidation |
+| `refactor-to-shared-ui-component` | Extract shared UI patterns |
+| `supabase-table-rls-policy-generator` | Generate RLS policies |
+| `a11y-pass` | Accessibility audit and fixes |
 | `vercel-react-best-practices` | React/Next.js patterns |
 | `mobile-pwa-design` | Mobile-first patterns |
 
