@@ -207,7 +207,7 @@ export function PhaseStation({
             'text-xs font-semibold line-clamp-2 mb-1 leading-tight',
             isCompleted && 'text-[#059669]',
             isInProgress && 'text-construction-blue',
-            !isCompleted && !isInProgress && 'text-gray-600',
+            !isCompleted && !isInProgress && 'text-gray-600 dark:text-gray-400',
             'group-hover:text-construction-blue transition-colors'
           )}>
             {phase.name}
@@ -215,7 +215,7 @@ export function PhaseStation({
 
           {/* Task count */}
           {stats && stats.totalTasks > 0 && (
-            <div className="flex items-center justify-center gap-1 text-[10px] text-gray-500 font-medium">
+            <div className="flex items-center justify-center gap-1 text-[10px] text-gray-500 dark:text-gray-400 font-medium">
               <span className="tabular-nums">{stats.completedTasks}/{stats.totalTasks}</span>
               <span>tasks</span>
             </div>

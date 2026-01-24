@@ -90,26 +90,26 @@ export function PhaseFilter({
           'w-full sm:w-auto min-w-[240px]',
           'flex items-center justify-between gap-3',
           'px-4 py-2.5 rounded-lg',
-          'bg-white border-2 border-gray-200',
-          'hover:border-construction-blue hover:shadow-construction',
+          'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700',
+          'hover:border-construction-blue hover:shadow-construction dark:hover:border-construction-blue',
           'transition-all duration-200',
           'group'
         )}
       >
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="p-1.5 bg-construction-blue/10 rounded border border-construction-blue/20">
+          <div className="p-1.5 bg-construction-blue/10 dark:bg-construction-blue/20 rounded border border-construction-blue/20 dark:border-construction-blue/40">
             <Layers className="h-4 w-4 text-construction-blue" />
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-gray-500 dark:text-gray-400">
               Filter by Phase
             </div>
-            <div className="text-sm font-bold text-gray-900 truncate">
+            <div className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">
               {selectedPhase ? selectedPhase.name : 'All Phases'}
             </div>
           </div>
           {selectedPhaseId && (
-            <div className="px-2 py-0.5 bg-construction-blue/10 rounded text-xs font-mono font-bold text-construction-blue">
+            <div className="px-2 py-0.5 bg-construction-blue/10 dark:bg-construction-blue/20 rounded text-xs font-mono font-bold text-construction-blue">
               {markerCountsByPhase[selectedPhaseId] || 0}
             </div>
           )}
@@ -141,18 +141,18 @@ export function PhaseFilter({
               className={cn(
                 'absolute top-full left-0 right-0 mt-2 z-50',
                 'w-full sm:min-w-[320px]',
-                'bg-white rounded-lg shadow-2xl',
-                'border-2 border-gray-200',
+                'bg-white dark:bg-gray-900 rounded-lg shadow-2xl',
+                'border-2 border-gray-200 dark:border-gray-700',
                 'overflow-hidden'
               )}
             >
               {/* Header */}
-              <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b-2 border-gray-100">
+              <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-b-2 border-gray-100 dark:border-gray-700">
                 <div className="flex items-center justify-between">
-                  <div className="text-xs font-mono uppercase tracking-wider text-gray-600">
+                  <div className="text-xs font-mono uppercase tracking-wider text-gray-600 dark:text-gray-400">
                     Phase Filter
                   </div>
-                  <div className="text-xs font-mono text-gray-500">
+                  <div className="text-xs font-mono text-gray-500 dark:text-gray-400">
                     {totalMarkers} markers
                   </div>
                 </div>
@@ -165,8 +165,8 @@ export function PhaseFilter({
                   onClick={() => handleSelect(null)}
                   className={cn(
                     'w-full px-4 py-3 flex items-center gap-3',
-                    'hover:bg-construction-blue/5 transition-colors',
-                    'border-b border-gray-100',
+                    'hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10 transition-colors',
+                    'border-b border-gray-100 dark:border-gray-700',
                     'group'
                   )}
                 >
@@ -176,16 +176,16 @@ export function PhaseFilter({
                       'bg-gradient-to-b from-construction-blue to-construction-blue/60'
                     )} />
                     <div className="flex-1 text-left">
-                      <div className="text-sm font-bold text-gray-900">
+                      <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
                         All Phases
                       </div>
-                      <div className="text-xs text-gray-500 font-mono">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                         Show all markers
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono font-bold text-gray-600">
+                    <div className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono font-bold text-gray-600 dark:text-gray-400">
                       {totalMarkers}
                     </div>
                     {selectedPhaseId === null && (
@@ -202,24 +202,24 @@ export function PhaseFilter({
                     onClick={() => handleSelect('unassigned')}
                     className={cn(
                       'w-full px-4 py-3 flex items-center gap-3',
-                      'hover:bg-construction-blue/5 transition-colors',
-                      'border-b border-gray-100',
+                      'hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10 transition-colors',
+                      'border-b border-gray-100 dark:border-gray-700',
                       'group'
                     )}
                   >
                     <div className="flex-1 flex items-center gap-3">
-                      <div className="w-1 h-8 rounded-full bg-gray-300" />
+                      <div className="w-1 h-8 rounded-full bg-gray-300 dark:bg-gray-600" />
                       <div className="flex-1 text-left">
-                        <div className="text-sm font-bold text-gray-900">
+                        <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
                           Unassigned
                         </div>
-                        <div className="text-xs text-gray-500 font-mono">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                           No phase assigned
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono font-bold text-gray-600">
+                      <div className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono font-bold text-gray-600 dark:text-gray-400">
                         {unassignedMarkers}
                       </div>
                       {selectedPhaseId === 'unassigned' && (
@@ -243,8 +243,8 @@ export function PhaseFilter({
                       onClick={() => handleSelect(phase.id)}
                       className={cn(
                         'w-full px-4 py-3 flex items-center gap-3',
-                        'hover:bg-construction-blue/5 transition-colors',
-                        'border-b border-gray-100 last:border-b-0',
+                        'hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10 transition-colors',
+                        'border-b border-gray-100 dark:border-gray-700 last:border-b-0',
                         'group'
                       )}
                     >
@@ -254,10 +254,10 @@ export function PhaseFilter({
 
                         {/* Phase info */}
                         <div className="flex-1 text-left">
-                          <div className="text-sm font-bold text-gray-900">
+                          <div className="text-sm font-bold text-gray-900 dark:text-gray-100">
                             {phase.name}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
                             Phase {(phase.order_index || 0) + 1}
                             {phase.status && ` • ${phase.status}`}
                           </div>
@@ -266,7 +266,7 @@ export function PhaseFilter({
 
                       {/* Marker count and selected indicator */}
                       <div className="flex items-center gap-2">
-                        <div className="px-2 py-0.5 bg-gray-100 rounded text-xs font-mono font-bold text-gray-600">
+                        <div className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs font-mono font-bold text-gray-600 dark:text-gray-400">
                           {markerCount}
                         </div>
                         {isSelected && (
@@ -281,7 +281,7 @@ export function PhaseFilter({
 
                 {/* Empty state */}
                 {sortedPhases.length === 0 && (
-                  <div className="px-4 py-8 text-center text-sm text-gray-500">
+                  <div className="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                     No phases defined for this project
                   </div>
                 )}

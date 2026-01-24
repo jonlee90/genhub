@@ -145,7 +145,7 @@ export function PhaseDetailPanel({
              
                 
             {phase.notes && (
-               <p className="text-xs text-gray-600 font-medium">{phase.notes}</p>
+               <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{phase.notes}</p>
             )}
               
             </div>
@@ -317,7 +317,7 @@ export function PhaseDetailPanel({
               <div className="flex-1 grid grid-cols-2 gap-2">
                 {/* Completed */}
                 <motion.div
-                  className="flex items-center gap-2 p-2 bg-[#059669]/10 rounded-lg"
+                  className="flex items-center gap-2 p-2 bg-[#059669]/10 dark:bg-[#059669]/20 rounded-lg"
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 }}
@@ -331,7 +331,7 @@ export function PhaseDetailPanel({
 
                 {/* Remaining */}
                 <motion.div
-                  className="flex items-center gap-2 p-2 bg-construction-blue/5 rounded-lg"
+                  className="flex items-center gap-2 p-2 bg-construction-blue/5 dark:bg-construction-blue/20 rounded-lg"
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 }}
@@ -353,8 +353,8 @@ export function PhaseDetailPanel({
               transition={{ delay: 0.7 }}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Task Distribution</span>
-                <span className="text-xs font-bold text-gray-700 tabular-nums">{stats.totalTasks} total</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Task Distribution</span>
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tabular-nums">{stats.totalTasks} total</span>
               </div>
 
               {stats.totalTasks > 0 ? (
@@ -407,22 +407,22 @@ export function PhaseDetailPanel({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#059669] rounded-full" />
-                  <span className="text-[10px] text-gray-500">Completed</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Completed</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#3B82F6] rounded-full" />
-                  <span className="text-[10px] text-gray-500">Active</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Active</span>
                 </div>
                 {stats.overdueTasks > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-[#F59E0B] rounded-full" />
-                    <span className="text-[10px] text-gray-500">Overdue</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Overdue</span>
                   </div>
                 )}
                 {stats.blockedTasks > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-[#DC2626] rounded-full" />
-                    <span className="text-[10px] text-gray-500">Blocked</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Blocked</span>
                   </div>
                 )}
               </div>
@@ -473,17 +473,17 @@ export function PhaseDetailPanel({
                 </>
               ) : stats.totalTasks === 0 ? (
                 <>
-                  <div className="p-1 bg-gray-100 rounded">
-                    <Zap className="w-3.5 h-3.5 text-gray-500" />
+                  <div className="p-1 bg-gray-100 dark:bg-gray-800 rounded">
+                    <Zap className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600">No tasks yet. Add tasks to track progress.</span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">No tasks yet. Add tasks to track progress.</span>
                 </>
               ) : (
                 <>
-                  <div className="p-1 bg-gray-100 rounded">
-                    <Zap className="w-3.5 h-3.5 text-gray-500" />
+                  <div className="p-1 bg-gray-100 dark:bg-gray-800 rounded">
+                    <Zap className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600">Keep going! {stats.totalTasks - stats.completedTasks} tasks remaining.</span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Keep going! {stats.totalTasks - stats.completedTasks} tasks remaining.</span>
                 </>
               )}
             </motion.div>
@@ -518,16 +518,16 @@ export function PhaseDetailPanel({
         {/* Task List with Fixed Height and Scroll */}
         {tasks.length === 0 ? (
           <motion.div
-            className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-2xl border-2 border-dashed border-gray-300"
+            className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-900/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 rounded-2xl flex items-center justify-center">
-              <ListTodo className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center">
+              <ListTodo className="h-8 w-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <p className="text-sm text-gray-600 font-bold mb-1">No Tasks Yet</p>
-            <p className="text-xs text-gray-500">Click "Add New Task" to get started</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-bold mb-1">No Tasks Yet</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Click "Add New Task" to get started</p>
           </motion.div>
         ) : (
           <div className="space-y-2.5 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
@@ -542,7 +542,7 @@ export function PhaseDetailPanel({
                   key={task.id}
                   role="button"
                   tabIndex={0}
-                  className="bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-construction-blue/40 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
+                  className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-construction-blue/40 dark:hover:border-construction-blue/30 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
                   onClick={(e) => {
                     e.stopPropagation();
                     onModalOpen?.();
@@ -560,18 +560,18 @@ export function PhaseDetailPanel({
                     {/* Status Icon */}
                     <div className={cn(
                       "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                      task.status === 'completed' && 'bg-emerald-50 group-hover:bg-emerald-100',
-                      task.status === 'blocked' && 'bg-red-50 group-hover:bg-red-100',
-                      task.status === 'in_progress' && 'bg-blue-50 group-hover:bg-blue-100',
-                      task.status === 'todo' && 'bg-gray-50 group-hover:bg-gray-100',
-                      task.status === 'review' && 'bg-amber-50 group-hover:bg-amber-100'
+                      task.status === 'completed' && 'bg-emerald-50 dark:bg-emerald-950 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900',
+                      task.status === 'blocked' && 'bg-red-50 dark:bg-red-950 group-hover:bg-red-100 dark:group-hover:bg-red-900',
+                      task.status === 'in_progress' && 'bg-blue-50 dark:bg-blue-950 group-hover:bg-blue-100 dark:group-hover:bg-blue-900',
+                      task.status === 'todo' && 'bg-gray-50 dark:bg-gray-950 group-hover:bg-gray-100 dark:group-hover:bg-gray-900',
+                      task.status === 'review' && 'bg-amber-50 dark:bg-amber-950 group-hover:bg-amber-100 dark:group-hover:bg-amber-900'
                     )}>
                       <StatusIcon className={cn("h-5 w-5", statusConfig.iconColor)} />
                     </div>
 
                     {/* Task Content */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-900 group-hover:text-construction-blue transition-colors mb-2.5 leading-snug">
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-construction-blue transition-colors mb-2.5 leading-snug">
                         {task.title}
                       </p>
                       <div className="flex flex-wrap items-center gap-2">
@@ -603,8 +603,8 @@ export function PhaseDetailPanel({
                               );
                             })}
                             {task.assignees.length > 3 && (
-                              <div className="h-6 w-6 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center">
-                                <span className="text-[9px] font-bold text-gray-600">+{task.assignees.length - 3}</span>
+                              <div className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                                <span className="text-[9px] font-bold text-gray-600 dark:text-gray-400">+{task.assignees.length - 3}</span>
                               </div>
                             )}
                           </div>
@@ -616,7 +616,7 @@ export function PhaseDetailPanel({
                     {task.due_date && (
                       <div className={cn(
                         "flex-shrink-0 flex flex-col items-end gap-1",
-                        isOverdue ? 'text-red-600' : 'text-gray-600'
+                        isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
                       )}>
                         <Calendar className="h-4 w-4" />
                         <span className="text-xs font-bold tabular-nums leading-none">
@@ -663,6 +663,21 @@ export function PhaseDetailPanel({
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #94a3b8;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1f2937;
+            border-radius: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 8px;
+            transition: background 0.2s;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #6b7684;
+          }
         }
       `}</style>
     </div>
