@@ -24,10 +24,12 @@ import Image from 'next/image';
 import Users from 'lucide-react/icons/users';
 import Calendar from 'lucide-react/icons/calendar';
 import MapPin from 'lucide-react/icons/map-pin';
-import type { ProjectsRow } from '@/types/db/tables/projects';
+import Building2 from 'lucide-react/icons/building-2';
+import type { ProjectsRow, ProjectTypeConfigsRow } from '@/types/db/tables/projects';
 import { cn, formatBudget, formatPercentWhole } from '@/lib/utils';
 import type { ProjectWithStats } from '@/app/actions/projects';
-import { getProjectTheme, PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
+import { PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
+import { PROJECT_TYPE_ICON_MAP } from '@/lib/config/project-type-display';
 
 type Project = ProjectsRow & {
   project_phases?: Array<{
@@ -44,6 +46,7 @@ type Project = ProjectsRow & {
 interface ProjectCardProps {
   project: Project | ProjectWithStats;
   className?: string;
+  projectTypes?: ProjectTypeConfigsRow[];
 }
 
 /**
@@ -59,10 +62,38 @@ function calculateDaysRemaining(endDate: string | null | undefined): number | nu
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function ProjectCardComponent({ project, className }: ProjectCardProps) {
-  // Performance optimization: Memoize theme configuration lookups
-  const theme = useMemo(() => getProjectTheme(project.project_type), [project.project_type]);
-  const TypeIcon = theme.icon;
+function ProjectCardComponent({ project, className, projectTypes = [] }: ProjectCardProps) {
+  // Look up the actual project type config from database
+  const projectTypeConfig = useMemo(() => {
+    // First try to match by project_type_config_id (most accurate)
+    if (project.project_type_config_id && projectTypes.length > 0) {
+      const configById = projectTypes.find(pt => pt.id === project.project_type_config_id);
+      if (configById) return configById;
+    }
+
+    // Fallback: match by normalized project_type string
+    if (projectTypes.length > 0) {
+      const normalizedType = project.project_type.toLowerCase().replace(/\s+/g, '_');
+      const configByName = projectTypes.find(pt =>
+        pt.name.toLowerCase().replace(/\s+/g, '_') === normalizedType
+      );
+      if (configByName) return configByName;
+    }
+
+    return null;
+  }, [project.project_type_config_id, project.project_type, projectTypes]);
+
+  // Get icon component from database or use default
+  const TypeIcon = useMemo(() => {
+    if (projectTypeConfig?.icon_name && PROJECT_TYPE_ICON_MAP[projectTypeConfig.icon_name]) {
+      return PROJECT_TYPE_ICON_MAP[projectTypeConfig.icon_name];
+    }
+    return Building2; // Default fallback icon
+  }, [projectTypeConfig]);
+
+  // Get display name from database or use project_type field
+  const projectTypeName = projectTypeConfig?.name || project.project_type;
+
   const statusConfig = useMemo(
     () => PROJECT_STATUS_CONFIG[project.status as keyof typeof PROJECT_STATUS_CONFIG],
     [project.status]
@@ -113,22 +144,13 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
       >
         {/* Header Section - Construction Blue */}
         <header
-          className={cn(
-            'relative px-3 md:px-4 py-2.5 md:py-3',
-            theme.headerBg,
-            theme.headerText
-          )}
+          className="relative px-3 md:px-4 py-2.5 md:py-3 bg-construction-blue text-white"
         >
           <div className="flex items-start justify-between gap-2 md:gap-3">
             {/* Project Type Label & Name */}
             <div className="flex-1 min-w-0">
-              <p
-                className={cn(
-                  'text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] mb-0.5',
-                  theme.accentColor
-                )}
-              >
-                {theme.labelFull}
+              <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] mb-0.5 text-blue-200">
+                {projectTypeName}
               </p>
               <h3 className="text-base md:text-lg font-bold leading-tight line-clamp-1 tracking-tight">
                 {project.name}
@@ -143,7 +165,7 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
               )}
             >
               <TypeIcon
-                className={cn('h-4 w-4 md:h-5 md:w-5', theme.iconColor)}
+                className="h-4 w-4 md:h-5 md:w-5 text-construction-blue"
                 strokeWidth={2.5}
               />
             </div>
@@ -164,7 +186,7 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
           ) : (
-            <div className={cn('absolute inset-0 bg-gradient-to-br', theme.placeholderGradient)}>
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200">
               {/* Blueprint grid pattern overlay */}
               <div
                 className="absolute inset-0 opacity-30"
@@ -179,9 +201,9 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
 
               {/* Centered icon */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className={cn('p-3 md:p-4 rounded-xl', theme.iconBg)}>
+                <div className="p-3 md:p-4 rounded-xl bg-construction-blue/10">
                   <TypeIcon
-                    className={cn('h-8 w-8 md:h-12 md:w-12', theme.iconColor, 'opacity-40')}
+                    className="h-8 w-8 md:h-12 md:w-12 text-construction-blue opacity-40"
                     strokeWidth={1.5}
                   />
                 </div>
@@ -346,7 +368,7 @@ function ProjectCardComponent({ project, className }: ProjectCardProps) {
             'absolute bottom-0 left-0 right-0 h-1',
             'opacity-0 group-hover:opacity-100 group-active:opacity-100',
             'transition-opacity duration-300',
-            theme.borderAccent.replace('border-t-', 'bg-')
+            'bg-construction-blue'
           )}
         />
       </article>

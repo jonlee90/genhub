@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { searchProducts, addProductToTask } from "@/app/actions/materials";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 // Interface definitions
@@ -77,7 +77,6 @@ export function TaskMaterialSearch({
   const [addingProductId, setAddingProductId] = useState<string | null>(null);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [hasSearched, setHasSearched] = useState(false);
-  const { toast } = useToast();
 
   // Search handler - defined before useEffect to avoid hoisting issues
   const handleSearch = useCallback(() => {
@@ -92,15 +91,11 @@ export function TaskMaterialSearch({
       if (result.success && result.data) {
         setProducts(result.data.products);
       } else {
-        toast({
-          title: "Search Failed",
-          description: result.error || "Failed to search products",
-          variant: "destructive",
-        });
+        toast.error(result.error || "Failed to search products");
       }
       setHasSearched(true);
     });
-  }, [searchQuery, toast]);
+  }, [searchQuery]);
 
   // Debounced search
   useEffect(() => {
@@ -115,7 +110,8 @@ export function TaskMaterialSearch({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, handleSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   // Get quantity for a product
   const getQuantity = (productId: string) => quantities[productId] || 1;
@@ -144,11 +140,7 @@ export function TaskMaterialSearch({
       // Check if product already in temp list
       const existing = tempMaterials.find((m) => m.product_id === product.id);
       if (existing) {
-        toast({
-          title: "Material Already Added",
-          description: `${product.name} is already in your selection`,
-          variant: "destructive",
-        });
+        toast.error(`${product.name} is already in your selection`);
         return;
       }
 
@@ -172,21 +164,14 @@ export function TaskMaterialSearch({
         return rest;
       });
 
-      toast({
-        title: "Material Selected",
-        description: `Added ${quantity}x ${product.name} to your selection`,
-      });
+      toast.success(`Added ${quantity}x ${product.name} to your selection`);
 
       return;
     }
 
     // Edit mode: add directly to task
     if (!taskId) {
-      toast({
-        title: "Error",
-        description: "Task ID is required",
-        variant: "destructive",
-      });
+      toast.error("Task ID is required");
       return;
     }
 
@@ -195,10 +180,7 @@ export function TaskMaterialSearch({
     const result = await addProductToTask(product, taskId, projectId, quantity);
 
     if (result.success) {
-      toast({
-        title: "Material Added",
-        description: `Added ${quantity}x ${product.name} to task`,
-      });
+      toast.success(`Added ${quantity}x ${product.name} to task`);
       // Reset quantity for this product
       setQuantities((prev) => {
         const { [product.id]: _, ...rest } = prev;
@@ -208,11 +190,7 @@ export function TaskMaterialSearch({
     } else {
       const errorMessage =
         "error" in result ? result.error : "An error occurred";
-      toast({
-        title: "Failed to Add Material",
-        description: errorMessage || "An error occurred",
-        variant: "destructive",
-      });
+      toast.error(errorMessage || "An error occurred");
     }
 
     setAddingProductId(null);

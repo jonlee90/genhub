@@ -32,7 +32,7 @@ import {
   getVendorOptions,
   type VendorOption,
 } from "@/app/actions/expenses";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { m as motion } from "framer-motion";
 import Image from "next/image";
 import type { CreateExpenseModalProps } from "@/types/db/expense";
@@ -53,7 +53,6 @@ export function CreateExpenseModal({
   const [, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
-  const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -142,19 +141,13 @@ export function CreateExpenseModal({
 
     // Process with OCR
     setIsProcessingOCR(true);
-    toast({
-      title: "Processing Receipt",
-      description: "AI is extracting data from your receipt...",
-    });
+    toast.success("AI is extracting data from your receipt...");
 
     // In a real implementation, you'd call the OCR service here
     // For now, we'll simulate it
     setTimeout(() => {
       setIsProcessingOCR(false);
-      toast({
-        title: "OCR Complete",
-        description: "Receipt data extracted. Please review and confirm.",
-      });
+      toast.success("Receipt data extracted. Please review and confirm.");
       // In real implementation:
       // const result = await processReceiptOCR({ receiptImage: file });
       // if (result.success && result.data) {
@@ -189,19 +182,12 @@ export function CreateExpenseModal({
     });
 
     if (result.success) {
-      toast({
-        title: "Expense Added Successfully",
-        description: taskContext
+      toast.success(taskContext
           ? `Expense added to task: ${taskContext.taskTitle}`
-          : "Your expense has been added and is now under review.",
-      });
+          : "Your expense has been added and is now under review.");
       onClose();
     } else {
-      toast({
-        title: "Error",
-        description: result.error || "Failed to submit expense",
-        variant: "destructive",
-      });
+      toast.error(result.error || "Failed to submit expense");
     }
   });
 

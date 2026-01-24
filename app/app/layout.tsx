@@ -20,7 +20,7 @@ async function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <BottomNavProvider>
-        <div className="flex min-h-[100dvh] bg-gray-50 dark:bg-gray-900">
+        <div className="flex h-[100dvh] overflow-hidden bg-gray-50 dark:bg-gray-900">
           {/* PWA: Offline Status Banner - z-50 (highest priority) */}
           <OfflineBanner />
 
@@ -28,7 +28,7 @@ async function LayoutContent({ children }: { children: React.ReactNode }) {
           <Sidebar isOwner={ownerStatus} session={session} />
 
           {/* Main Content Area */}
-          <div className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex flex-col flex-1 min-w-0 md:overflow-hidden">
             {/* Page Content - Bottom padding for mobile nav clearance, none on desktop */}
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900 pb-safe-nav md:pb-0">
               {children}

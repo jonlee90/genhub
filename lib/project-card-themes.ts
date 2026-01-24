@@ -83,13 +83,25 @@ export const PROJECT_TYPE_THEMES: Record<string, ProjectTypeTheme> = {
     borderAccent: 'border-t-[var(--construction-blue)]',
     placeholderGradient: 'from-gray-100 to-gray-200',
   },
+  other: {
+    icon: Building2,
+    label: 'Other',
+    labelFull: 'Other',
+    headerBg: 'bg-construction-blue',           // Construction blue (consistent)
+    headerText: 'text-white',            // White text (consistent)
+    iconBg: 'bg-construction-blue/10',          // Blue tint background
+    iconColor: 'text-construction-blue',         // Blue icon
+    accentColor: 'text-blue-200',
+    borderAccent: 'border-t-[var(--construction-blue)]',
+    placeholderGradient: 'from-gray-100 to-gray-200',
+  },
 } as const;
 
 /**
- * Get theme for a project type, with fallback to residential
+ * Get theme for a project type, with fallback to other
  */
 export function getProjectTheme(projectType: string): ProjectTypeTheme {
-  return PROJECT_TYPE_THEMES[projectType] || PROJECT_TYPE_THEMES.residential;
+  return PROJECT_TYPE_THEMES[projectType] || PROJECT_TYPE_THEMES.other;
 }
 
 /**

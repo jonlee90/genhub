@@ -15,7 +15,7 @@ import { Wrench } from "lucide-react";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { cn, formatDate } from "@/lib/utils";
 import { updateMaterialAssignment, getMaterialAssignmentsByTask } from "@/app/actions/materials";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface Material {
   id: string;
@@ -77,7 +77,6 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   const loadMaterials = useCallback(async () => {
     setIsLoading(true);
@@ -120,17 +119,10 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
       });
 
       if (result.success) {
-        toast({
-          title: "Status Updated",
-          description: `Material status updated to ${PROCUREMENT_STATUS_CONFIG[newStatus as keyof typeof PROCUREMENT_STATUS_CONFIG].label}`,
-        });
+        toast.success(`Material status updated to ${PROCUREMENT_STATUS_CONFIG[newStatus as keyof typeof PROCUREMENT_STATUS_CONFIG].label}`);
         await loadMaterials();
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to update material status",
-          variant: "destructive",
-        });
+        toast.error(result.error || "Failed to update material status");
       }
       setUpdatingId(null);
     });

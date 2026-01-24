@@ -27,7 +27,7 @@ import {
   getProjectPhases,
   getPhaseTasks,
 } from "@/app/actions/materials";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 
 interface Project {
@@ -65,7 +65,6 @@ export function AssignMaterialModal({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoadingPhases, setIsLoadingPhases] = useState(false);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
-  const { toast } = useToast();
 
   // Use validated form hook with native validation
   const {
@@ -104,11 +103,7 @@ export function AssignMaterialModal({
       getProjectPhases(selectedProject)
         .then((result) => {
           if (!result.success) {
-            toast({
-              title: "Error",
-              description: result.error || "Failed to load project phases",
-              variant: "destructive",
-            });
+            toast.error(result.error || "Failed to load project phases");
             setPhases([]);
           } else {
             setPhases(result.data || []);
@@ -116,11 +111,7 @@ export function AssignMaterialModal({
           setIsLoadingPhases(false);
         })
         .catch((err) => {
-          toast({
-            title: "Error",
-            description: `Unexpected error: ${err.message}`,
-            variant: "destructive",
-          });
+          toast.error(`Unexpected error: ${err.message}`);
           setPhases([]);
           setIsLoadingPhases(false);
         });
@@ -139,11 +130,7 @@ export function AssignMaterialModal({
       getPhaseTasks(selectedPhase)
         .then((result) => {
           if (!result.success) {
-            toast({
-              title: "Error",
-              description: result.error || "Failed to load tasks",
-              variant: "destructive",
-            });
+            toast.error(result.error || "Failed to load tasks");
             setTasks([]);
           } else {
             setTasks(result.data || []);
@@ -151,11 +138,7 @@ export function AssignMaterialModal({
           setIsLoadingTasks(false);
         })
         .catch((err) => {
-          toast({
-            title: "Error",
-            description: `Unexpected error: ${err.message}`,
-            variant: "destructive",
-          });
+          toast.error(`Unexpected error: ${err.message}`);
           setTasks([]);
           setIsLoadingTasks(false);
         });
@@ -168,11 +151,7 @@ export function AssignMaterialModal({
   const onSubmit = handleSubmit(async (data) => {
     // Validate task_id is not empty placeholder
     if (!data.task_id || data.task_id === "_empty") {
-      toast({
-        title: "Validation Error",
-        description: "Please select a valid task.",
-        variant: "destructive",
-      });
+      toast.error("Please select a valid task.");
       return;
     }
 
@@ -200,12 +179,7 @@ export function AssignMaterialModal({
     const materialResult = await createMaterialFromHomeDepot(plainProduct);
 
     if (!materialResult.success || !materialResult.data) {
-      toast({
-        title: "Error",
-        description:
-          materialResult.error || "Failed to add material to catalog",
-        variant: "destructive",
-      });
+      toast.error(materialResult.error || "Failed to add material to catalog");
       return;
     }
 
@@ -222,18 +196,10 @@ export function AssignMaterialModal({
     });
 
     if (assignResult.success) {
-      toast({
-        title: "Material Assigned",
-        description: `${product.name} has been assigned to the task.`,
-      });
+      toast.success(`${product.name} has been assigned to the task.`);
       onClose();
     } else {
-      toast({
-        title: "Error",
-        description:
-          assignResult.error || "Failed to assign material to task",
-        variant: "destructive",
-      });
+      toast.error(assignResult.error || "Failed to assign material to task");
     }
   });
 

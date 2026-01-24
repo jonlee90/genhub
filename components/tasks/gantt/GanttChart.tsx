@@ -221,10 +221,10 @@ export function GanttChart({
     return positions;
   }, [sortedTasks, config]);
 
-  // Calculate dependency lines - includes hoveredTaskId for visual feedback
+  // Calculate dependency lines (optimized - remove hoveredTaskId from deps)
   const dependencyLines = useMemo(
     () => calculateDependencyLines(dependencies, taskPositions, hoveredTaskId),
-    [dependencies, taskPositions, hoveredTaskId]
+    [dependencies, taskPositions]
   );
 
   const totalWidth = calculateTotalWidth(config);
@@ -284,7 +284,7 @@ export function GanttChart({
   const chartContent = (
     <ScrollArea
       className={cn(
-        "w-full select-none bg-white dark:bg-gray-900",
+        "w-full min-w-0 select-none bg-white dark:bg-gray-900",
         // Only show grab cursor on desktop
         !isMobile && (isDraggingScroll ? "cursor-grabbing" : "cursor-grab")
       )}
@@ -293,10 +293,11 @@ export function GanttChart({
           totalHeight + config.headerHeight + (isMobile ? 20 : 40),
           isMobile ? 400 : 600
         ),
-        // Prevent all touch dragging on mobile
+        // Prevent overscroll and constrain touch behavior on mobile
         ...(isMobile && {
-          touchAction: 'none',
-          overscrollBehavior: 'contain'
+          touchAction: 'pan-x',
+          overscrollBehavior: 'contain',
+          WebkitOverflowScrolling: 'touch'
         })
       }}
       onMouseDown={!isMobile ? handleMouseDown : undefined}
@@ -308,8 +309,8 @@ export function GanttChart({
             className="relative bg-white dark:bg-gray-900"
             style={{
               width: totalWidth,
-              // Prevent all mobile touch dragging on chart content
-              ...(isMobile && { touchAction: 'none' })
+              // Prevent mobile touch dragging on inner content
+              ...(isMobile && { touchAction: 'pan-x' })
             }}
           >
             {/* Header */}
@@ -354,7 +355,7 @@ export function GanttChart({
       );
 
   return (
-    <div className={cn("bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden", className)}>
+    <div className={cn("w-full min-w-0 bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden", className)}>
       {/* Header with time scale toggle */}
       <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-white dark:to-gray-900">
 

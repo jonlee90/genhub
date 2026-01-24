@@ -34,7 +34,7 @@ import {
 } from "@/app/actions/tasks";
 import { CreatorBadge } from "@/components/ui/CreatorBadge";
 import { TaskTypeBadge } from "./TaskTypeSelector";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTaskFormState } from "@/hooks/useTaskFormState";
 import type { AssigneeOption as TaskAssigneeOption } from "@/app/actions/tasks";
 import { addProductToTask } from "@/app/actions/materials";
@@ -156,7 +156,6 @@ function TaskModalForm({
   userRole,
 }: Omit<TaskModalProps, "isOpen">) {
   const router = useRouter();
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -362,23 +361,18 @@ function TaskModalForm({
             try {
               const expenseResult = await createExpenseFromTask(task.id);
               if (expenseResult.success && expenseResult.data) {
-                toast({
-                  title: "Expense Created",
-                  description: `Expense for $${parseFloat(formState.actualCost).toFixed(2)} has been created from this task.`,
-                  variant: "default",
-                });
+                toast.success(`Expense for $${parseFloat(formState.actualCost).toFixed(2)} has been created from this task.`);
                 await fetchExpenses();
               } else if (!expenseResult.success) {
-                toast({
-                  title: "Warning",
-                  description: "Task saved but expense creation failed.",
-                  variant: "destructive",
-                });
+                toast.error("Task saved but expense creation failed.");
               }
             } catch {
               // Error creating expense - toast already handles user feedback
             }
           }
+
+          // Show success toast
+          toast.success(mode === "create" ? "Task created successfully" : "Task updated successfully");
 
           setSuccess(true);
           setTimeout(() => {
@@ -438,11 +432,7 @@ function TaskModalForm({
         setError(result.error);
         setShowDeleteConfirm(false);
       } else {
-        toast({
-          title: "Task Deleted",
-          description: "The task has been successfully deleted.",
-          variant: "default",
-        });
+        toast.success("Task deleted successfully");
         setTimeout(() => {
           onSuccess?.();
           onClose();

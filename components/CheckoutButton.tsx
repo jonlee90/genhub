@@ -1,7 +1,7 @@
 'use client';
 
 import { loadStripe } from '@stripe/stripe-js';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { SessionProvider, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';

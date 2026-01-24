@@ -155,6 +155,35 @@ export async function createProjectType(formData: FormData): Promise<{
     return { error: "Failed to create project type" };
   }
 
+  // Auto-create default phase templates for this new project type
+  // This ensures projects created with this type will have phases
+  const defaultPhases = [
+    { name: "Initiation", order_index: 1, description: "Project planning and setup" },
+    { name: "Pre-Construction", order_index: 2, description: "Site preparation and permits" },
+    { name: "Procurement", order_index: 3, description: "Material ordering and delivery" },
+    { name: "Construction", order_index: 4, description: "Active construction work" },
+    { name: "Post-Construction", order_index: 5, description: "Cleanup and closeout" },
+  ];
+
+  const { error: phaseError } = await supabase
+    .from("phase_templates")
+    .insert(
+      defaultPhases.map((phase) => ({
+        company_id: companyId,
+        project_type_config_id: projectType.id,
+        name: phase.name,
+        order_index: phase.order_index,
+        description: phase.description,
+        is_active: true,
+      }))
+    );
+
+  if (phaseError) {
+    console.error("[createProjectType] Failed to create default phase templates:", phaseError);
+    // Don't fail the entire operation, just log the error
+    // The trigger will still create default phases if templates are missing
+  }
+
   if (process.env.NODE_ENV === "development") {
     console.log("[createProjectType] Project type created:", projectType.id);
   }

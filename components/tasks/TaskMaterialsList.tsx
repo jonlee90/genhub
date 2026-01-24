@@ -49,7 +49,7 @@ import {
   updateMaterialAssignment,
 } from "@/app/actions/materials";
 import { getMaterialExpenseLink } from "@/app/actions/expenses";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { MaterialDeliveryPrompt } from ".//MaterialDeliveryPrompt";
 import type { TempMaterial } from ".//TaskMaterialsManager";
 
@@ -138,7 +138,6 @@ export function TaskMaterialsList({
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
 
   // MaterialDeliveryPrompt state
   const [deliveredMaterial, setDeliveredMaterial] =
@@ -191,17 +190,10 @@ export function TaskMaterialsList({
       const result = await removeMaterialFromTask(assignmentId);
 
       if (result.success) {
-        toast({
-          title: "Material Removed",
-          description: `Removed ${materialName} from task`,
-        });
+        toast.success(`Removed ${materialName} from task`);
         onRemove();
       } else {
-        toast({
-          title: "Failed to Remove",
-          description: result.error || "An error occurred",
-          variant: "destructive",
-        });
+        toast.error(result.error || "An error occurred");
       }
 
       setRemovingId(null);
@@ -223,11 +215,7 @@ export function TaskMaterialsList({
       if (result.success) {
         onQuantityUpdate();
       } else {
-        toast({
-          title: "Failed to Update",
-          description: result.error || "An error occurred",
-          variant: "destructive",
-        });
+        toast.error(result.error || "An error occurred");
       }
 
       setUpdatingId(null);
@@ -259,10 +247,7 @@ export function TaskMaterialsList({
         }
 
         // Show toast after expense check completes
-        toast({
-          title: "Status Updated",
-          description: `Material marked as ${newStatus}`,
-        });
+        toast.success(`Material marked as ${newStatus}`);
 
         // Refresh the list
         if (onStatusUpdate) {
@@ -271,11 +256,7 @@ export function TaskMaterialsList({
           onQuantityUpdate(); // Fallback to existing refresh
         }
       } else {
-        toast({
-          title: "Failed to Update Status",
-          description: result.error || "An error occurred",
-          variant: "destructive",
-        });
+        toast.error(result.error || "An error occurred");
       }
 
       setUpdatingStatusId(null);

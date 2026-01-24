@@ -222,7 +222,7 @@ export function DashboardContent({
   );
 
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="relative bg-gray-50 dark:bg-gray-950">
       {/* Subtle Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.05] z-0"

@@ -21,7 +21,7 @@ import { formatFileSize } from '@/lib/format-utils';
 import { ModelUploadModal } from './ModelUploadModal';
 import { ModelPreviewModal } from './ModelPreviewModal';
 import { resetToSystemDefault } from '@/app/actions/default-models';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 // Map icon names to Lucide icons
@@ -70,7 +70,6 @@ export function DefaultModelCard({
   companyCustom,
 }: DefaultModelCardProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -221,19 +220,11 @@ export function DefaultModelCard({
                   const result = await resetToSystemDefault(projectTypeConfigId);
 
                   if (result.success) {
-                    toast({
-                      title: 'Reset Successful',
-                      description: `${projectTypeName} has been reset to the system default model.`,
-                      variant: 'default',
-                    });
+                    toast.success(`${projectTypeName} has been reset to the system default model.`);
 
                     router.refresh();
                   } else {
-                    toast({
-                      title: 'Reset Failed',
-                      description: 'An error occurred while resetting to the system default.',
-                      variant: 'destructive',
-                    });
+                    toast.error('An error occurred while resetting to the system default.');
                   }
                 });
               }}

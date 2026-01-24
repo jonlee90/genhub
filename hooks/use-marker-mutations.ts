@@ -5,7 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   createMarker,
   updateMarker,
@@ -64,7 +64,6 @@ export function useCreateMarker(): UseCreateMarkerReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   const mutate = useCallback(
     async (data: SpatialMarkerInsert): Promise<SpatialMarker | null> => {
@@ -80,20 +79,13 @@ export function useCreateMarker(): UseCreateMarkerReturn {
         if (result.error) {
           console.error('[useCreateMarker] Error:', result.error);
           setError(result.error);
-          toast({
-            title: 'Failed to create marker',
-            description: result.error,
-            variant: 'destructive',
-          });
+          toast.error(result.error);
           return null;
         }
 
         // Debug: Success
         console.log('[useCreateMarker] Marker created:', result.data);
-        toast({
-          title: 'Marker created',
-          description: `Marker placed at ${data.floor_name || 'location'}`,
-        });
+        toast.success(`Marker placed at ${data.floor_name || 'location'}`);
 
         // Debug: Refresh page data
         router.refresh();
@@ -103,11 +95,7 @@ export function useCreateMarker(): UseCreateMarkerReturn {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useCreateMarker] Exception:', err);
         setError(message);
-        toast({
-          title: 'Failed to create marker',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error(message);
         return null;
       } finally {
         setIsLoading(false);
@@ -138,7 +126,6 @@ export function useUpdateMarker(): UseUpdateMarkerReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   const mutate = useCallback(
     async (markerId: string, data: SpatialMarkerUpdate): Promise<SpatialMarker | null> => {
@@ -154,20 +141,13 @@ export function useUpdateMarker(): UseUpdateMarkerReturn {
         if (result.error) {
           console.error('[useUpdateMarker] Error:', result.error);
           setError(result.error);
-          toast({
-            title: 'Failed to update marker',
-            description: result.error,
-            variant: 'destructive',
-          });
+          toast.error(result.error);
           return null;
         }
 
         // Debug: Success
         console.log('[useUpdateMarker] Marker updated:', result.data);
-        toast({
-          title: 'Marker updated',
-          description: 'Changes saved successfully',
-        });
+        toast.success('Changes saved successfully');
 
         // Debug: Refresh page data
         router.refresh();
@@ -177,11 +157,7 @@ export function useUpdateMarker(): UseUpdateMarkerReturn {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useUpdateMarker] Exception:', err);
         setError(message);
-        toast({
-          title: 'Failed to update marker',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error(message);
         return null;
       } finally {
         setIsLoading(false);
@@ -212,7 +188,6 @@ export function useDeleteMarker(): UseDeleteMarkerReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   const mutate = useCallback(
     async (markerId: string): Promise<boolean> => {
@@ -228,20 +203,13 @@ export function useDeleteMarker(): UseDeleteMarkerReturn {
         if (result.error) {
           console.error('[useDeleteMarker] Error:', result.error);
           setError(result.error);
-          toast({
-            title: 'Failed to delete marker',
-            description: result.error,
-            variant: 'destructive',
-          });
+          toast.error(result.error);
           return false;
         }
 
         // Debug: Success
         console.log('[useDeleteMarker] Marker deleted');
-        toast({
-          title: 'Marker deleted',
-          description: 'Marker removed successfully',
-        });
+        toast.success('Marker removed successfully');
 
         // Debug: Refresh page data
         router.refresh();
@@ -251,11 +219,7 @@ export function useDeleteMarker(): UseDeleteMarkerReturn {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useDeleteMarker] Exception:', err);
         setError(message);
-        toast({
-          title: 'Failed to delete marker',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error(message);
         return false;
       } finally {
         setIsLoading(false);
@@ -281,7 +245,6 @@ export function useMarkerMutations() {
   console.log('[useMarkerMutations] Hook initialized');
 
   const router = useRouter();
-  const { toast } = useToast();
 
   const createNote = useCallback(
     async (markerId: string, data: MarkerContentInsert): Promise<MarkerContent | null> => {
@@ -292,30 +255,19 @@ export function useMarkerMutations() {
 
         if (result.error) {
           console.error('[useMarkerMutations] Create error:', result.error);
-          toast({
-            title: 'Failed to create note',
-            description: result.error,
-            variant: 'destructive',
-          });
+          toast.error(result.error);
           return null;
         }
 
         console.log('[useMarkerMutations] Note created:', result.data);
-        toast({
-          title: 'Note added',
-          description: 'Your note has been saved',
-        });
+        toast.success('Your note has been saved');
 
         router.refresh();
         return result.data!;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useMarkerMutations] Exception:', err);
-        toast({
-          title: 'Failed to create note',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error(message);
         return null;
       }
     },
@@ -327,11 +279,7 @@ export function useMarkerMutations() {
       console.log('[useMarkerMutations] Update content not yet implemented:', contentId);
 
       // TODO: Implement updateMarkerContent server action
-      toast({
-        title: 'Not implemented',
-        description: 'Content update functionality coming soon',
-        variant: 'destructive',
-      });
+      toast.success('Content update functionality coming soon');
       return false;
     },
     [toast]
@@ -346,30 +294,19 @@ export function useMarkerMutations() {
 
         if (result.error) {
           console.error('[useMarkerMutations] Delete error:', result.error);
-          toast({
-            title: 'Failed to delete',
-            description: result.error,
-            variant: 'destructive',
-          });
+          toast.error(result.error);
           return false;
         }
 
         console.log('[useMarkerMutations] Content deleted');
-        toast({
-          title: 'Deleted',
-          description: 'Item removed successfully',
-        });
+        toast.success('Item removed successfully');
 
         router.refresh();
         return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         console.error('[useMarkerMutations] Exception:', err);
-        toast({
-          title: 'Failed to delete',
-          description: message,
-          variant: 'destructive',
-        });
+        toast.error(message);
         return false;
       }
     },

@@ -13,9 +13,10 @@
  * - Spinner during refresh
  * - threshold: 80px, maxPull: 120px
  * - Exposes scroll container ref via forwardRef
+ * - Uses non-passive touchmove listener for proper preventDefault
  */
 
-import { useState, useRef, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, useRef, useCallback, forwardRef, useImperativeHandle, useEffect } from 'react';
 import { Loader2, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -44,16 +45,29 @@ export const PullToRefresh = forwardRef<PullToRefreshHandle, PullToRefreshProps>
   const [pullState, setPullState] = useState<PullState>('idle');
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const startY = useRef(0);
+  const isPulling = useRef(false);
+
+  // Use refs for values accessed in event listener to avoid effect re-runs
+  const disabledRef = useRef(disabled);
+  const pullStateRef = useRef(pullState);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    disabledRef.current = disabled;
+  }, [disabled]);
+
+  useEffect(() => {
+    pullStateRef.current = pullState;
+  }, [pullState]);
 
   // Expose scroll container via ref
   useImperativeHandle(ref, () => ({
     getScrollContainer: () => containerRef.current,
   }), []);
-  const startY = useRef(0);
-  const isPulling = useRef(false);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (disabled || pullState === 'refreshing') return;
+    if (disabledRef.current || pullStateRef.current === 'refreshing') return;
 
     // Only start pull if at top of scroll
     const container = containerRef.current;
@@ -63,53 +77,64 @@ export const PullToRefresh = forwardRef<PullToRefreshHandle, PullToRefreshProps>
 
     startY.current = e.touches[0].clientY;
     isPulling.current = true;
-  }, [disabled, pullState]);
+  }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isPulling.current || disabled || pullState === 'refreshing') return;
-
+  // Use native event listener for touchmove with { passive: false }
+  // This allows preventDefault() to work on mobile browsers
+  useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    // Cancel if scrolled away from top
-    if (container.scrollTop > 0) {
-      isPulling.current = false;
-      setPullDistance(0);
-      setPullState('idle');
-      return;
-    }
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isPulling.current || disabledRef.current || pullStateRef.current === 'refreshing') return;
 
-    const currentY = e.touches[0].clientY;
-    const diff = currentY - startY.current;
+      // Cancel if scrolled away from top
+      if (container.scrollTop > 0) {
+        isPulling.current = false;
+        setPullDistance(0);
+        setPullState('idle');
+        return;
+      }
 
-    // Only pull downward
-    if (diff <= 0) {
-      setPullDistance(0);
-      setPullState('idle');
-      return;
-    }
+      const currentY = e.touches[0].clientY;
+      const diff = currentY - startY.current;
 
-    // Prevent default scroll when pulling
-    e.preventDefault();
+      // Only pull downward
+      if (diff <= 0) {
+        setPullDistance(0);
+        setPullState('idle');
+        return;
+      }
 
-    // Apply resistance curve and clamp to max
-    const distance = Math.min(diff * RESISTANCE, MAX_PULL);
-    setPullDistance(distance);
+      // Prevent default scroll when pulling down at top
+      e.preventDefault();
 
-    // Update pull state
-    if (distance >= THRESHOLD) {
-      setPullState('ready');
-    } else {
-      setPullState('pulling');
-    }
-  }, [disabled, pullState]);
+      // Apply resistance curve and clamp to max
+      const distance = Math.min(diff * RESISTANCE, MAX_PULL);
+      setPullDistance(distance);
+
+      // Update pull state
+      if (distance >= THRESHOLD) {
+        setPullState('ready');
+      } else {
+        setPullState('pulling');
+      }
+    };
+
+    // Attach with passive: false to allow preventDefault
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, []); // Empty deps - listener attached once, uses refs for current values
 
   const handleTouchEnd = useCallback(async () => {
-    if (!isPulling.current || disabled) return;
+    if (!isPulling.current || disabledRef.current) return;
 
     isPulling.current = false;
 
-    if (pullState === 'ready') {
+    if (pullStateRef.current === 'ready') {
       // Trigger refresh
       setPullState('refreshing');
       setPullDistance(THRESHOLD * 0.75); // Hold at indicator position
@@ -130,7 +155,7 @@ export const PullToRefresh = forwardRef<PullToRefreshHandle, PullToRefreshProps>
     }
 
     startY.current = 0;
-  }, [disabled, pullState, onRefresh]);
+  }, [onRefresh]);
 
   // Calculate visual properties
   const progress = Math.min(pullDistance / THRESHOLD, 1);
@@ -141,12 +166,10 @@ export const PullToRefresh = forwardRef<PullToRefreshHandle, PullToRefreshProps>
     <div
       ref={containerRef}
       className={cn(
-        'h-full overflow-y-auto overflow-x-hidden',
-        'touch-pan-y', // Allow vertical scrolling
+        'h-full overflow-y-auto overflow-x-hidden overscroll-y-contain',
         className
       )}
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Pull indicator */}

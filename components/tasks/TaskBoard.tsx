@@ -19,7 +19,7 @@ import { List } from "lucide-react";
 import { Plus } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { TaskStats } from "@/app/actions/projects";
 import type { AssigneeOption } from "@/app/actions/tasks";
 import type {
@@ -153,7 +153,6 @@ export function TaskBoard({
 }: TaskBoardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
 
   // Determine if we"re in project context
   const isProjectContext = !!projectId;
@@ -387,16 +386,9 @@ export function TaskBoard({
     const result = await updateTaskDates(taskId, newStartDate, newDueDate);
 
     if (result.error) {
-      toast({
-        title: "Error",
-        description: result.error,
-        variant: "destructive",
-      });
+      toast.error(result.error);
     } else {
-      toast({
-        title: "Task Updated",
-        description: "Task dates have been updated successfully",
-      });
+      toast.success("Task dates have been updated successfully");
       router.refresh();
     }
   };
@@ -422,7 +414,7 @@ export function TaskBoard({
 
       {/* Gantt Chart Timeline - Above Task Board */}
       {filteredTasks.length > 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 w-full min-w-0 overflow-hidden">
           <GanttChart
             tasks={ganttTasks}
             dependencies={taskDependencies}
@@ -441,7 +433,7 @@ export function TaskBoard({
         onMobileFilterClick && (
           <div ref={resultsCountRef}>
             {/* Search and Filter Row */}
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex flex-row items-center gap-2 mb-3">
               <SearchInput
                 value={mobileSearchQuery || ""}
                 onChange={onMobileSearchChange}

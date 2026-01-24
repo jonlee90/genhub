@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { CreatorBadge } from "@/components/ui/CreatorBadge";
 import { reviewExpense, deleteExpense } from "@/app/actions/expenses";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { m as motion } from "framer-motion";
@@ -113,7 +113,6 @@ export function ExpenseDetailModal({
   );
   const [reviewNotes, setReviewNotes] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const { toast } = useToast();
 
   const statusConfig = STATUS_CONFIG[expense.status];
   const StatusIcon = statusConfig.icon;
@@ -138,20 +137,10 @@ export function ExpenseDetailModal({
       });
 
       if (result.success) {
-        toast({
-          title:
-            reviewAction === "approve"
-              ? "Expense Approved"
-              : "Expense Rejected",
-          description: `The expense has been ${reviewAction}d.`,
-        });
+        toast.success(`The expense has been ${reviewAction}d.`);
         onClose();
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to review expense",
-          variant: "destructive",
-        });
+        toast.error(result.error || "Failed to review expense");
       }
     });
   };
@@ -162,19 +151,11 @@ export function ExpenseDetailModal({
       const result = await deleteExpense(expense.id);
 
       if (result.success) {
-        toast({
-          title: "Expense Deleted",
-          description: "The expense has been permanently deleted.",
-        });
+        toast.success("The expense has been permanently deleted.");
         onClose();
       } else {
-        toast({
-          title: "Error",
-          description:
-            result.error ||
-            "Failed to delete expense. You may not have permission.",
-          variant: "destructive",
-        });
+        toast.error(result.error ||
+            "Failed to delete expense. You may not have permission.");
         setShowDeleteConfirm(false);
       }
     });

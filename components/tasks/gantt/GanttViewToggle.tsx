@@ -14,16 +14,32 @@ interface GanttViewToggleProps {
 
 const VIEW_OPTIONS = [
   { id: "day" as TimeScale, label: "Day", shortLabel: "D", icon: Calendar },
-  { id: "week" as TimeScale, label: "Week", shortLabel: "W", icon: CalendarDays },
-  { id: "month" as TimeScale, label: "Month", shortLabel: "M", icon: CalendarRange },
+  {
+    id: "week" as TimeScale,
+    label: "Week",
+    shortLabel: "W",
+    icon: CalendarDays,
+  },
+  {
+    id: "month" as TimeScale,
+    label: "Month",
+    shortLabel: "M",
+    icon: CalendarRange,
+  },
 ] as const;
 
-export const GanttViewToggle = React.memo(function GanttViewToggle({ timeScale, onTimeScaleChange, isMobile = false }: GanttViewToggleProps) {
+export const GanttViewToggle = React.memo(function GanttViewToggle({
+  timeScale,
+  onTimeScaleChange,
+  isMobile = false,
+}: GanttViewToggleProps) {
   return (
-    <div className={cn(
-      "flex items-center rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm",
-      isMobile ? "gap-0.5 p-0.5 w-full" : "gap-1 p-1"
-    )}>
+    <div
+      className={cn(
+        "flex items-center rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm",
+        isMobile ? "gap-0.5 p-0.5 w-full" : "gap-1 p-1",
+      )}
+    >
       {VIEW_OPTIONS.map((option) => {
         const Icon = option.icon;
         const isActive = timeScale === option.id;
@@ -38,7 +54,7 @@ export const GanttViewToggle = React.memo(function GanttViewToggle({ timeScale, 
               "font-bold transition-all",
               isMobile ? "gap-1 w-full" : "gap-2",
               isActive &&
-                "bg-construction-blue text-white hover:bg-construction-blue/90 shadow-construction"
+                "bg-construction-blue text-white hover:bg-construction-blue/90 dark:bg-construction-blue/80 dark:hover:bg-construction-blue/70 shadow-construction",
             )}
           >
             <Icon className={cn(isMobile ? "h-3.5 w-3.5" : "h-4 w-4")} />

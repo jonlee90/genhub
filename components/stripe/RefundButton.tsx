@@ -3,7 +3,7 @@
 import { refund } from '@/app/actions/stripe';
 import { SessionProvider, useSession } from 'next-auth/react';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
 interface RefundButtonProps {

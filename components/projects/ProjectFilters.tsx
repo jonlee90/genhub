@@ -9,15 +9,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Home from 'lucide-react/icons/home';
-import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
-import Coffee from 'lucide-react/icons/coffee';
-import Building2 from 'lucide-react/icons/building-2';
-import Factory from 'lucide-react/icons/factory';
 import { DesktopTabs } from '@/components/ui/DesktopTabs';
 import { FilterTabs } from '@/components/ui/FilterTabs';
 import { PlaceholdersVanishInput } from '@/components/ui/aceternity/placeholders-vanish-input';
 import type { ProjectWithStats } from '@/app/actions/projects';
+import { PROJECT_TYPE_ICON_MAP } from '@/lib/config/project-type-display';
 
 interface ProjectFiltersProps {
   searchQuery: string;
@@ -29,6 +25,7 @@ interface ProjectFiltersProps {
   sortBy: string;
   onSortChange: (value: string) => void;
   projects: ProjectWithStats[];
+  projectTypes?: Array<{ id: string; name: string; icon_name: string | null }>;
 }
 
 // Search placeholders
@@ -38,6 +35,11 @@ const searchPlaceholders = [
   "Search by client...",
   "Filter by address...",
 ];
+
+// Normalize project type name to slug format (e.g., "Commercial Office" → "commercial_office")
+function normalizeProjectTypeName(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, '_');
+}
 
 export function ProjectFilters({
   searchQuery,
@@ -49,6 +51,7 @@ export function ProjectFilters({
   sortBy,
   onSortChange,
   projects,
+  projectTypes = [],
 }: ProjectFiltersProps) {
   // Calculate project counts by status
   const statusCounts = useMemo(() => {
@@ -99,7 +102,7 @@ export function ProjectFilters({
   ], [statusCounts]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  mb-3">
       {/* Status Filter Tabs - Mobile View (< 768px) */}
       <div className="md:hidden">
         <FilterTabs
@@ -145,36 +148,18 @@ export function ProjectFilters({
               <SelectItem value="all">
                 <span className="font-medium">All Types</span>
               </SelectItem>
-              <SelectItem value="residential">
-                <span className="flex items-center gap-2">
-                  <Home className="w-4 h-4 text-blue-600" />
-                  <span className="font-medium">Residential</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="restaurant">
-                <span className="flex items-center gap-2">
-                  <UtensilsCrossed className="w-4 h-4 text-amber-600" />
-                  <span className="font-medium">Restaurant</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="cafe">
-                <span className="flex items-center gap-2">
-                  <Coffee className="w-4 h-4 text-amber-500" />
-                  <span className="font-medium">Cafe</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="commercial_office">
-                <span className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-purple-600" />
-                  <span className="font-medium">Commercial Office</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="industrial">
-                <span className="flex items-center gap-2">
-                  <Factory className="w-4 h-4 text-slate-600" />
-                  <span className="font-medium">Industrial</span>
-                </span>
-              </SelectItem>
+              {projectTypes.map((type) => {
+                const IconComponent = type.icon_name ? PROJECT_TYPE_ICON_MAP[type.icon_name] : null;
+                const projectTypeSlug = normalizeProjectTypeName(type.name);
+                return (
+                  <SelectItem key={type.id} value={projectTypeSlug}>
+                    <span className="flex items-center gap-2">
+                      {IconComponent && <IconComponent className="w-4 h-4 text-construction-blue" />}
+                      <span className="font-medium">{type.name}</span>
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
 

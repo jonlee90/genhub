@@ -693,7 +693,7 @@ export async function createTask(
   revalidatePath(`/app/projects/${data.project_id}`);
 
   // Invalidate dashboard cache (task counts changed)
-  await invalidateDashboardCache(companyId);
+  await invalidateDashboardCache({ companyId });
 
   return { success: true, data: task };
 }
@@ -928,6 +928,9 @@ export async function updateTask(
   revalidatePath("/app/tasks");
   revalidatePath(`/app/tasks/${id}`);
   revalidatePath(`/app/projects/${projectId}`);
+
+  // Invalidate dashboard cache (task data changed)
+  await invalidateDashboardCache({ companyId });
 
   return { success: true, data: task };
 }
@@ -1656,6 +1659,9 @@ export async function deleteTask(taskId: string): Promise<MutationResult> {
   revalidatePath("/app/tasks");
   revalidatePath(`/app/projects/${projectId}`);
 
+  // Invalidate dashboard cache (task deleted)
+  await invalidateDashboardCache({ companyId });
+
   return { success: true };
 }
 
@@ -2002,6 +2008,9 @@ export async function updateTaskDueDate(taskId: string, newDueDate: string) {
   // Revalidate paths
   revalidatePath("/app/tasks");
   revalidatePath(`/app/projects/${projectId}`);
+
+  // Invalidate dashboard cache (task due date changed)
+  await invalidateDashboardCache({ companyId });
 
   return { success: true, data: task };
 }

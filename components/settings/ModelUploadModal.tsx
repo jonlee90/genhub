@@ -10,7 +10,7 @@ import AlertCircle from "lucide-react/icons/alert-circle";
 import Loader2 from "lucide-react/icons/loader-2";
 import { formatFileSize } from "@/lib/format-utils";
 import { uploadCompanyDefaultModel } from "@/app/actions/default-models";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 interface ModelUploadModalProps {
@@ -29,7 +29,6 @@ export function ModelUploadModal({
   onClose,
 }: ModelUploadModalProps) {
   const router = useRouter();
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -86,11 +85,7 @@ export function ModelUploadModal({
         setUploadProgress(100);
 
         if (result.success) {
-          toast({
-            title: "Upload Successful",
-            description: `Custom default model for ${projectTypeName} has been uploaded.`,
-            variant: "default",
-          });
+          toast.success(`Custom default model for ${projectTypeName} has been uploaded.`);
 
           // Refresh the page to show updated data
           router.refresh();
@@ -99,22 +94,14 @@ export function ModelUploadModal({
           setError(result.error || "Upload failed. Please try again.");
           setUploadProgress(0);
 
-          toast({
-            title: "Upload Failed",
-            description: result.error || "An error occurred during upload.",
-            variant: "destructive",
-          });
+          toast.error(result.error || "An error occurred during upload.");
         }
       } catch (err) {
         console.error("[ModelUploadModal] Upload error:", err);
         setError("An unexpected error occurred. Please try again.");
         setUploadProgress(0);
 
-        toast({
-          title: "Upload Failed",
-          description: "An unexpected error occurred.",
-          variant: "destructive",
-        });
+        toast.error("An unexpected error occurred.");
       }
     });
   }, [selectedFile, projectTypeConfigId, projectTypeName, toast, router, onClose]);

@@ -4,9 +4,9 @@
  * useFormSubmit Hook
  *
  * Standardized form submission behavior for all POST operations.
- * Handles loading states, success/error toasts, and optional overlay for complex operations.
+ * Handles loading states, success/error toasts (Sonner), and optional overlay for complex operations.
  *
- * @example Basic usage with simple toast feedback
+ * @example Basic usage with Sonner toast feedback
  * ```tsx
  * const { submit, isPending, formAction } = useFormSubmit({
  *   action: createPhase,
@@ -42,7 +42,7 @@
  */
 
 import { useActionState, useCallback, useState, useEffect } from 'react';
-import { showSuccessToast, showErrorToast } from '@/components/ui/CustomToast';
+import { toast } from 'sonner';
 import type { FormActionResult } from '@/types/server-actions';
 
 export interface UseFormSubmitOptions<TData> {
@@ -55,13 +55,13 @@ export interface UseFormSubmitOptions<TData> {
   /** Callback on error */
   onError?: (error: string) => void;
 
-  /** Success toast message (if not using overlay) */
+  /** Success toast message (Sonner basic toast, if not using overlay) */
   successMessage?: string;
 
-  /** Error toast message prefix */
+  /** Error toast message (Sonner basic toast, if not using overlay) */
   errorMessage?: string;
 
-  /** Use FormSubmissionOverlay instead of toast */
+  /** Use FormSubmissionOverlay instead of Sonner toast */
   useOverlay?: boolean;
 }
 
@@ -131,7 +131,7 @@ export function useFormSubmit<TData = unknown>(
 
       // Show toast ONLY if not using overlay (overlay handles success visually)
       if (!useOverlay) {
-        showSuccessToast(successMessage);
+        toast.success(successMessage);
       }
     } else {
       setIsComplete(false);
@@ -143,7 +143,7 @@ export function useFormSubmit<TData = unknown>(
 
       // Show error toast ONLY if not using overlay (overlay doesn't show errors)
       if (!useOverlay) {
-        showErrorToast(errorMessage || 'Operation failed', state.error);
+        toast.error(state.error || errorMessage);
       }
     }
   }, [state, onSuccess, onError, successMessage, errorMessage, useOverlay]);
@@ -163,7 +163,7 @@ export function useFormSubmit<TData = unknown>(
 
         // Show toast ONLY if not using overlay (overlay handles success visually)
         if (!useOverlay) {
-          showSuccessToast(successMessage);
+          toast.success(successMessage);
         }
       } else {
         if (onError) {
@@ -172,7 +172,7 @@ export function useFormSubmit<TData = unknown>(
 
         // Show error toast ONLY if not using overlay (overlay doesn't show errors)
         if (!useOverlay) {
-          showErrorToast(errorMessage || 'Operation failed', result.error);
+          toast.error(result.error || errorMessage);
         }
       }
 
