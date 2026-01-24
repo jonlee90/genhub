@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { Session } from "next-auth";
+import type { ThemePreference } from "@/lib/context/ThemeContext";
 
 export interface SlideMenuProps {
   isOpen: boolean;
@@ -41,4 +42,28 @@ export interface SlideMenuListItemProps {
   isActive: boolean;
   onClose: () => void;
   index?: number;
+}
+
+/**
+ * Theme Toggle Props
+ * Used for the animated sun/moon/monitor toggle in the SlideMenu
+ */
+export interface SlideMenuThemeToggleProps {
+  /** Current theme preference */
+  preference: ThemePreference;
+  /** Callback when theme is toggled */
+  onToggle: () => void;
+  /** Optional class name */
+  className?: string;
+}
+
+/**
+ * Role badge mapping for user section
+ */
+export type UserRole = "contractor" | "owner" | "admin" | "client" | "subcontractor";
+
+export interface RoleBadgeConfig {
+  label: string;
+  bgClass: string;
+  textClass: string;
 }

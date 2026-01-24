@@ -3,10 +3,10 @@
 import { m as motion } from "framer-motion";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { SlideMenuListItem } from "./SlideMenuListItem";
 import {
   listItemVariants,
-  prefersReducedMotion,
   reducedMotionVariants,
 } from "./animations";
 import type { SlideMenuListProps } from "./types";
@@ -16,6 +16,8 @@ export function SlideMenuList({
   onClose,
   currentPath,
 }: SlideMenuListProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   // Check if current path matches nav item
   const isActive = (href: string) => {
     return currentPath.startsWith(href);
@@ -28,7 +30,7 @@ export function SlideMenuList({
   };
 
   const variants = (
-    prefersReducedMotion ? reducedMotionVariants.listItem : listItemVariants
+    shouldReduceMotion ? reducedMotionVariants.listItem : listItemVariants
   ) as any;
 
   return (

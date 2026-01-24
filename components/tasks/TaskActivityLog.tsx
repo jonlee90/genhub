@@ -156,8 +156,8 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
   };
 
   return (
-    <Card className="border-2 border-gray-200">
-      <CardHeader className="bg-gradient-to-r from-[var(--construction-blue)]/10 to-transparent border-b border-gray-200">
+    <Card className="border-2 border-gray-200 dark:border-gray-700">
+      <CardHeader className="bg-gradient-to-r from-[var(--construction-blue)]/10 to-transparent border-b border-gray-200 dark:border-gray-700">
         <CardTitle className="font-black text-construction-blue flex items-center gap-2">
           <Wrench className="w-5 h-5" />
           Activity
@@ -241,14 +241,14 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-sm text-gray-900">
+                          <span className="font-bold text-sm text-gray-900 dark:text-gray-100">
                             {item.user?.name || "Unknown"}
                           </span>
                           <span className="text-xs text-construction-blue font-mono">
                             {formatDate(item.created_at)}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {renderActivityContent(item)}
                         </div>
                       </div>

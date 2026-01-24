@@ -94,7 +94,7 @@ export function PhotoGallerySection({
       const photo = photos.find((p) => p.url === photoUrl);
       if (photo) setSettingPrimaryId(photo.id);
 
-      const result = await setProjectPrimaryPhoto(projectId, photoUrl);
+      const result = await setProjectPrimaryPhoto({ projectId, photoUrl });
 
       setSettingPrimaryId(null);
 
@@ -115,7 +115,7 @@ export function PhotoGallerySection({
 
     setSettingPrimaryId("removing");
 
-    const result = await setProjectPrimaryPhoto(projectId, null);
+    const result = await setProjectPrimaryPhoto({ projectId, photoUrl: null });
 
     setSettingPrimaryId(null);
 

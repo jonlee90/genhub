@@ -47,7 +47,7 @@ export function ProjectOverview({
     loading: statsLoading,
     hasFetched: statsFetched,
   } = useDeferredData({
-    fetchFn: () => getProjectExpenseStats(project.id),
+    fetchFn: () => getProjectExpenseStats({ projectId: project.id }),
     delay: 800,
     cacheKey: `project-${project.id}-stats`,
     enabled: !initialExpenseStats || !initialTaskStats, // Skip if already provided
@@ -59,7 +59,7 @@ export function ProjectOverview({
     loading: teamLoading,
     hasFetched: teamFetched,
   } = useDeferredData({
-    fetchFn: () => getProjectTeamCosts(project.id),
+    fetchFn: () => getProjectTeamCosts({ projectId: project.id }),
     delay: 1200,
     cacheKey: `project-${project.id}-team-costs`,
     enabled: initialTeamCostSummaries.length === 0, // Skip if already provided

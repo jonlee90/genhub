@@ -70,7 +70,7 @@ async function ClientSpatialPageContent({ params: paramsPromise }: ClientSpatial
   const activeModel = modelResult.success ? modelResult.data : null;
 
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white dark:bg-gray-900">
       {/* Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
@@ -90,7 +90,7 @@ async function ClientSpatialPageContent({ params: paramsPromise }: ClientSpatial
               <h1 className="text-xl md:text-2xl font-black uppercase tracking-tight">
                 {project.name}
               </h1>
-              <p className="text-sm text-gray-600">3D Project View</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">3D Project View</p>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ async function ClientSpatialPageContent({ params: paramsPromise }: ClientSpatial
 
 function ClientSpatialLoading() {
   return (
-    <div className="relative min-h-screen bg-white">
+    <div className="relative min-h-screen bg-white dark:bg-gray-900">
       {/* Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"

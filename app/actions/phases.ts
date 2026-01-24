@@ -766,19 +766,25 @@ export async function applyTaskTemplates(
     return { error: 'Insufficient permissions to access this project' };
   }
 
-  // Find phase template(s) with matching name in the same company
-  // Get the one that has the most task templates (most useful match)
-  const { data: phaseTemplates, error: phaseTemplatesError } = await supabase
-    .from('phase_templates')
-    .select(`
-      id,
-      name,
-      task_templates!inner(id)
-    `)
-    .eq('company_id', companyId)
-    .eq('name', phase.name)
-    .eq('is_active', true);
+  // P-003 FIX: Parallelize phase templates and existing tasks queries
+  const [phaseTemplatesResult, existingTasksResult] = await Promise.all([
+    supabase
+      .from('phase_templates')
+      .select(`
+        id,
+        name,
+        task_templates!inner(id)
+      `)
+      .eq('company_id', companyId)
+      .eq('name', phase.name)
+      .eq('is_active', true),
+    supabase
+      .from('tasks')
+      .select('title')
+      .eq('phase_id', phaseId),
+  ]);
 
+  const { data: phaseTemplates, error: phaseTemplatesError } = phaseTemplatesResult;
   if (phaseTemplatesError) {
     console.error('[applyTaskTemplates] Error finding phase template:', phaseTemplatesError);
     return { error: 'Failed to find matching phase template' };
@@ -815,12 +821,8 @@ export async function applyTaskTemplates(
     return { error: 'No task templates found for this phase' };
   }
 
-  // Get existing tasks in this phase to check for duplicates
-  const { data: existingTasks } = await supabase
-    .from('tasks')
-    .select('title')
-    .eq('phase_id', phaseId);
-
+  // Use existing tasks data from parallel query
+  const { data: existingTasks } = existingTasksResult;
   const existingTitles = new Set(existingTasks?.map(t => t.title.toLowerCase()) || []);
 
   // Create tasks from templates (skip duplicates)

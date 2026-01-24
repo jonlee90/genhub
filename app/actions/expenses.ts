@@ -1217,11 +1217,13 @@ export async function createExpenseFromTask(
       return { success: false, error: "Unauthorized" };
     }
 
-    // Fetch task with project info
-    const { data: task, error: taskError } = await userContext.supabase
-      .from("tasks")
-      .select(
-        `
+    // P-006 FIX: Parallelize task fetch, expense check, and assignee lookup
+    const [taskResult, existingExpenseResult, primaryAssigneeResult] =
+      await Promise.all([
+        userContext.supabase
+          .from("tasks")
+          .select(
+            `
         id,
         title,
         actual_cost,
@@ -1233,10 +1235,37 @@ export async function createExpenseFromTask(
           company_id
         )
       `,
-      )
-      .eq("id", taskId)
-      .single();
+          )
+          .eq("id", taskId)
+          .single(),
+        userContext.supabase
+          .from("expenses")
+          .select("id")
+          .eq("task_id", taskId)
+          .maybeSingle(),
+        userContext.supabase
+          .from("task_assignees")
+          .select(
+            `
+        user_id,
+        subcontractor_id,
+        user:user_profiles (
+          id,
+          name
+        ),
+        subcontractor:subcontractors (
+          id,
+          company_name,
+          contact_name
+        )
+      `,
+          )
+          .eq("task_id", taskId)
+          .eq("is_primary", true)
+          .maybeSingle(),
+      ]);
 
+    const { data: task, error: taskError } = taskResult;
     if (taskError || !task) {
       console.error("[createExpenseFromTask] Task not found:", taskError);
       return { success: false, error: "Task not found" };
@@ -1260,12 +1289,7 @@ export async function createExpenseFromTask(
     }
 
     // Check if expense already exists for this task
-    const { data: existingExpense } = await userContext.supabase
-      .from("expenses")
-      .select("id")
-      .eq("task_id", taskId)
-      .maybeSingle();
-
+    const { data: existingExpense } = existingExpenseResult;
     if (existingExpense) {
       return {
         success: false,
@@ -1275,27 +1299,7 @@ export async function createExpenseFromTask(
 
     // Fetch primary assignee for vendor_name
     let vendorName: string | null = null;
-
-    const { data: primaryAssignee } = await userContext.supabase
-      .from("task_assignees")
-      .select(
-        `
-        user_id,
-        subcontractor_id,
-        user:user_profiles (
-          id,
-          name
-        ),
-        subcontractor:subcontractors (
-          id,
-          company_name,
-          contact_name
-        )
-      `,
-      )
-      .eq("task_id", taskId)
-      .eq("is_primary", true)
-      .maybeSingle();
+    const { data: primaryAssignee } = primaryAssigneeResult;
 
     if (primaryAssignee) {
       if (primaryAssignee.user_id && primaryAssignee.user) {

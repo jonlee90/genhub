@@ -4,6 +4,24 @@ import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth-context";
 import { verifyProjectAccess, verifyTaskAccess } from "@/lib/tasks-utils";
 import { logTaskActivity } from "./tasks-activity";
+import { z } from "zod";
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const linkTaskToMarkerSchema = z.object({
+  taskId: z.string().uuid(),
+  markerId: z.string().uuid(),
+});
+
+const getTasksByMarkerSchema = z.object({
+  markerId: z.string().uuid(),
+});
+
+const logTaskCompletionToMarkerSchema = z.object({
+  taskId: z.string().uuid(),
+});
 
 // ============================================
 // P4.2 - SPATIAL MARKER INTEGRATION
@@ -14,7 +32,15 @@ import { logTaskActivity } from "./tasks-activity";
  * @param taskId - Task UUID
  * @param markerId - Spatial marker UUID
  */
-export async function linkTaskToMarker(taskId: string, markerId: string) {
+export async function linkTaskToMarker(input: unknown) {
+  const validation = linkTaskToMarkerSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[linkTaskToMarker] Validation failed:", validation.error);
+    return { error: "Invalid input: taskId and markerId must be valid UUIDs" };
+  }
+
+  const { taskId, markerId } = validation.data;
+
   console.log(
     "[linkTaskToMarker] Linking task:",
     taskId,
@@ -89,7 +115,15 @@ export async function linkTaskToMarker(taskId: string, markerId: string) {
  * Get all tasks linked to a spatial marker
  * @param markerId - Spatial marker UUID
  */
-export async function getTasksByMarker(markerId: string) {
+export async function getTasksByMarker(input: unknown) {
+  const validation = getTasksByMarkerSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[getTasksByMarker] Validation failed:", validation.error);
+    return { error: "Invalid marker ID" };
+  }
+
+  const { markerId } = validation.data;
+
   console.log("[getTasksByMarker] Fetching tasks for marker:", markerId);
 
   const userContext = await getUserContext();
@@ -155,7 +189,18 @@ export async function getTasksByMarker(markerId: string) {
  * Activity logger for task status changes that creates marker activity content
  * This is called automatically when task status changes to 'completed'
  */
-export async function logTaskCompletionToMarker(taskId: string) {
+export async function logTaskCompletionToMarker(input: unknown) {
+  const validation = logTaskCompletionToMarkerSchema.safeParse(input);
+  if (!validation.success) {
+    console.error(
+      "[logTaskCompletionToMarker] Validation failed:",
+      validation.error
+    );
+    return { error: "Invalid task ID" };
+  }
+
+  const { taskId } = validation.data;
+
   console.log(
     "[logTaskCompletionToMarker] Logging task completion for:",
     taskId,

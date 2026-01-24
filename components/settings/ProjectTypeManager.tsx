@@ -226,8 +226,8 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           <div className="col-span-full flex flex-col items-center justify-center py-16 text-center">
             <div className="relative mb-6">
               <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-              <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-                <Building2 className="h-16 w-16 text-construction-blue" />
+              <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40">
+                <Building2 className="h-16 w-16 text-construction-blue dark:text-blue-400" />
               </div>
             </div>
             <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">

@@ -96,7 +96,7 @@ export function MessageList({
       setIsLoading(true);
       console.log("[MessageList] Loading messages for room:", chatRoomId);
 
-      const result = await getMessages(chatRoomId);
+      const result = await getMessages({ chatRoomId });
 
       if (result.messages) {
         // Messages come in DESC order (newest first), reverse for display (oldest first)
@@ -220,7 +220,7 @@ export function MessageList({
         const prevScrollHeight = target.scrollHeight;
         const prevScrollTop = target.scrollTop;
 
-        const result = await getMessages(chatRoomId, nextCursor);
+        const result = await getMessages({ chatRoomId, cursor: nextCursor });
 
         if (result.messages) {
           const reversed = result.messages.reverse();

@@ -5,6 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth-context";
 import type { createClient } from "@/utils/supabase/server";
+import { z } from "zod";
 
 // Type imports - use database types instead of local types
 import { Project3DModel, SpatialMarker } from "@/types/db/spatial";
@@ -17,10 +18,54 @@ type Task = {
 
 // HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
 
+// ============================================================================
+// ZOD VALIDATION SCHEMAS
+// ============================================================================
+
+const projectTypeSchema = z.string().min(1).max(100);
+
+const projectIdSchema = z.string().uuid();
+
+const modelIdSchema = z.string().uuid();
+
+const assignDefaultModelSchema = z.object({
+  projectId: z.string().uuid(),
+  projectType: z.string().min(1).max(100),
+});
+
+const createMarkersSchema = z.object({
+  projectId: z.string().uuid(),
+  modelId: z.string().uuid(),
+  tasks: z.array(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string(),
+      phase_id: z.string().uuid().nullable(),
+    })
+  ),
+});
+
+const uploadCompanyDefaultModelSchema = z.object({
+  projectTypeConfigId: z.string().uuid(),
+  formData: z.instanceof(FormData),
+});
+
+const resetToSystemDefaultSchema = z.object({
+  projectTypeConfigId: z.string().uuid(),
+});
+
 /**
  * Get system default model by project type
  */
-export async function getSystemDefaultModel(projectType: string) {
+export async function getSystemDefaultModel(input: unknown) {
+  const validation = projectTypeSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[getSystemDefaultModel] Validation failed:", validation.error);
+    return null;
+  }
+
+  const projectType = validation.data;
+
   console.log(
     "[getSystemDefaultModel] Fetching system default for project type:",
     projectType,
@@ -80,7 +125,15 @@ export async function getSystemDefaultModel(projectType: string) {
 /**
  * Get company custom default model for a project type
  */
-export async function getCompanyDefaultModel(projectType: string) {
+export async function getCompanyDefaultModel(input: unknown) {
+  const validation = projectTypeSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[getCompanyDefaultModel] Validation failed:", validation.error);
+    return null;
+  }
+
+  const projectType = validation.data;
+
   console.log(
     "[getCompanyDefaultModel] Fetching company default for project type:",
     projectType,
@@ -236,10 +289,19 @@ async function copyDefaultModelToProject(
  * Create markers from default configs, auto-linking to tasks
  */
 export async function createMarkersFromDefaultConfigs(
-  projectId: string,
-  modelId: string,
-  tasks: Task[],
+  input: unknown
 ): Promise<SpatialMarker[]> {
+  const validation = createMarkersSchema.safeParse(input);
+  if (!validation.success) {
+    console.error(
+      "[createMarkersFromDefaultConfigs] Validation failed:",
+      validation.error
+    );
+    return [];
+  }
+
+  const { projectId, modelId, tasks } = validation.data;
+
   console.log(
     "[createMarkersFromDefaultConfigs] Creating markers for project:",
     projectId,
@@ -377,9 +439,16 @@ export async function createMarkersFromDefaultConfigs(
  * Returns null if no default exists (project proceeds without default model)
  */
 export async function assignDefaultModel(
-  projectId: string,
-  projectType: string,
+  input: unknown
 ): Promise<Project3DModel | null> {
+  const validation = assignDefaultModelSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[assignDefaultModel] Validation failed:", validation.error);
+    return null;
+  }
+
+  const { projectId, projectType } = validation.data;
+
   console.log(
     "[assignDefaultModel] Assigning default model for project:",
     projectId,
@@ -513,20 +582,19 @@ export async function getDefaultModelsForCompany() {
     Industrial: "industrial",
   };
 
-  const result = [];
-
-  for (const typeConfig of typeConfigs) {
-    // Get system default
+  // P-004 FIX: Parallelize all system default and company custom queries
+  const systemDefaultQueries = typeConfigs.map((typeConfig) => {
     const systemType = projectTypeToSystemMap[typeConfig.name];
-    const { data: systemDefault } = await supabase
+    return supabase
       .from("default_3d_models")
       .select("*")
       .eq("project_type", systemType)
       .eq("is_active", true)
       .maybeSingle();
+  });
 
-    // Get company custom default
-    const { data: companyDefault } = await supabase
+  const companyCustomQueries = typeConfigs.map((typeConfig) =>
+    supabase
       .from("company_default_models")
       .select(
         `
@@ -549,9 +617,21 @@ export async function getDefaultModelsForCompany() {
       .eq("company_id", companyId)
       .eq("project_type_config_id", typeConfig.id)
       .eq("is_active", true)
-      .maybeSingle();
+      .maybeSingle(),
+  );
 
-    result.push({
+  // Execute all queries in parallel
+  const [systemDefaultResults, companyCustomResults] = await Promise.all([
+    Promise.all(systemDefaultQueries),
+    Promise.all(companyCustomQueries),
+  ]);
+
+  // Build result array
+  const result = typeConfigs.map((typeConfig, index) => {
+    const { data: systemDefault } = systemDefaultResults[index];
+    const { data: companyDefault } = companyCustomResults[index];
+
+    return {
       projectTypeConfigId: typeConfig.id,
       projectTypeName: typeConfig.name,
       projectTypeDescription: typeConfig.description,
@@ -567,8 +647,8 @@ export async function getDefaultModelsForCompany() {
             xktUrl: companyDefault.model.xkt_file_url,
           }
         : null,
-    });
-  }
+    };
+  });
 
   console.log(
     "[getDefaultModelsForCompany] Returning",
@@ -583,9 +663,22 @@ export async function getDefaultModelsForCompany() {
  * For Phase 5 - Company customization UI
  */
 export async function uploadCompanyDefaultModel(
-  formData: FormData,
-  projectTypeConfigId: string,
+  input: unknown
 ): Promise<{ success: boolean; error?: string }> {
+  const validation = uploadCompanyDefaultModelSchema.safeParse(input);
+  if (!validation.success) {
+    console.error(
+      "[uploadCompanyDefaultModel] Validation failed:",
+      validation.error
+    );
+    return {
+      success: false,
+      error: "Invalid input: " + validation.error.issues[0]?.message,
+    };
+  }
+
+  const { formData, projectTypeConfigId } = validation.data;
+
   console.log(
     "[uploadCompanyDefaultModel] Uploading company default for type config:",
     projectTypeConfigId,
@@ -616,8 +709,19 @@ export async function uploadCompanyDefaultModel(
  * For Phase 5 - Company customization UI
  */
 export async function resetToSystemDefault(
-  projectTypeConfigId: string,
+  input: unknown
 ): Promise<{ success: boolean }> {
+  const validation = resetToSystemDefaultSchema.safeParse(input);
+  if (!validation.success) {
+    console.error(
+      "[resetToSystemDefault] Validation failed:",
+      validation.error
+    );
+    return { success: false };
+  }
+
+  const { projectTypeConfigId } = validation.data;
+
   console.log(
     "[resetToSystemDefault] Resetting to system default for type config:",
     projectTypeConfigId,

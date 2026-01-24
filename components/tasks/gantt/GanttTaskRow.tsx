@@ -56,7 +56,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
 
   return (
     <div
-      className="flex border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+      className="flex border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors"
       style={{
         height: rowHeight,
         // content-visibility: auto provides automatic virtualization (rendering-content-visibility)
@@ -68,8 +68,8 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
       {/* Left sidebar: Task info - clickable to open edit modal */}
       <div
         className={cn(
-          "sticky left-0 z-10 bg-white border-r border-gray-200 flex items-center cursor-pointer transition-colors",
-          "hover:bg-gray-100",
+          "sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex items-center cursor-pointer transition-colors",
+          "hover:bg-gray-100 dark:hover:bg-gray-800",
           isMobile ? "gap-1.5 px-2 py-1" : "gap-3 px-3 py-2"
         )}
         style={{ width: sidebarWidth }}
@@ -106,7 +106,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             )}
             {/* Task title */}
             <span className={cn(
-              "font-semibold text-gray-900 truncate flex-1 min-w-0",
+              "font-semibold text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0",
               isMobile ? "text-xs" : "text-sm"
             )}>
               {task.title}
@@ -130,7 +130,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
           {/* Project name - secondary line */}
           {task.project ? (
             <span className={cn(
-              "text-gray-500 truncate",
+              "text-gray-500 dark:text-gray-400 truncate",
               isMobile ? "text-[10px] mt-0.5" : "text-xs mt-0.5"
             )}>
               {task.project.name}

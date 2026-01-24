@@ -97,13 +97,13 @@ const TASK_TYPE_CONFIG = {
  */
 const NoProjectTypeSelected = React.memo(() => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-      <Layers className="h-16 w-16 text-construction-blue" />
+    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40 mb-4">
+      <Layers className="h-16 w-16 text-construction-blue dark:text-blue-400" />
     </div>
-    <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+    <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
       Select a Project Type
     </h3>
-    <p className="text-gray-500 max-w-md">
+    <p className="text-gray-500 dark:text-gray-400 max-w-md">
       Choose a project type from the dropdown above to view and manage its
       phase templates
     </p>
@@ -124,14 +124,14 @@ const EmptyPhaseState = React.memo(function EmptyPhaseState({ onCreate }: EmptyP
     <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="relative mb-6">
         <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-          <Layers className="h-16 w-16 text-construction-blue" />
+        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40">
+          <Layers className="h-16 w-16 text-construction-blue dark:text-blue-400" />
         </div>
       </div>
-      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+      <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
         No Phase Templates Defined
       </h3>
-      <p className="text-gray-500 max-w-md mb-6">
+      <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
         Create your first phase template to organize tasks across project
         stages
       </p>
@@ -188,13 +188,13 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
       {taskCount === 0 ? (
         // Empty state when no task templates exist for this phase
         <div className="flex flex-col items-center justify-center py-8 text-center">
-          <div className="p-3 bg-gray-100 rounded-lg mb-3">
-            <Package className="h-8 w-8 text-gray-400" />
+          <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-lg mb-3">
+            <Package className="h-8 w-8 text-gray-400 dark:text-gray-500" />
           </div>
-          <p className="text-sm font-medium text-gray-600 mb-1">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
             No task templates yet
           </p>
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
             Add task templates to this phase to get started
           </p>
           <Button
@@ -211,7 +211,7 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
         // Task templates list with add button
         <div className="space-y-2">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
               Task Templates
             </p>
             <Button
@@ -234,7 +234,7 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
             return (
               <div
                 key={task.id}
-                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-construction-blue/30 transition-colors animate-in fade-in slide-in-from-left-2"
+                className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-construction-blue/30 transition-colors animate-in fade-in slide-in-from-left-2"
                 style={{
                   animationDelay: `${index * 50}ms`,
                   animationDuration: "300ms",
@@ -254,11 +254,11 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
 
                 {/* Task info */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm truncate">
+                  <p className="font-semibold text-gray-900 dark:text-gray-100 text-sm truncate">
                     {task.title}
                   </p>
                   {task.description ? (
-                    <p className="text-xs text-gray-600 line-clamp-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                       {task.description}
                     </p>
                   ) : null}
@@ -270,11 +270,11 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
                   className={cn(
                     "text-xs font-bold shrink-0",
                     task.default_priority === "high" &&
-                      "border-red-300 text-red-700 bg-red-50",
+                      "border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950",
                     task.default_priority === "medium" &&
-                      "border-amber-300 text-amber-700 bg-amber-50",
+                      "border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950",
                     task.default_priority === "low" &&
-                      "border-gray-300 text-gray-700 bg-gray-50",
+                      "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-400 bg-gray-50 dark:bg-gray-950",
                   )}
                 >
                   {task.default_priority}
@@ -423,7 +423,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           <h3 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight">
             Phase Templates
           </h3>
-          <p className="text-sm md:text-base text-gray-600 mt-1">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
             Define project phases and their associated task templates
           </p>
         </div>
@@ -433,7 +433,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
             value={selectedProjectTypeId}
             onValueChange={onProjectTypeChange}
           >
-            <SelectTrigger className="w-[200px] border-2 border-gray-200 focus:border-construction-blue font-semibold">
+            <SelectTrigger className="w-[200px] border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue font-semibold">
               <SelectValue placeholder="Select project type" />
             </SelectTrigger>
             <SelectContent>
@@ -465,7 +465,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border-2 border-gray-200 rounded-lg p-4 animate-pulse animate-in fade-in slide-in-from-bottom-4"
+              className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 animate-pulse animate-in fade-in slide-in-from-bottom-4"
               style={{
                 animationDelay: `${i * 50}ms`,
                 animationDuration: "400ms",
@@ -473,12 +473,12 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="h-5 w-5 bg-gray-200 rounded" />
-                <div className="h-5 w-5 bg-gray-200 rounded" />
-                <div className="h-10 w-10 bg-gray-200 rounded-lg" />
+                <div className="h-5 w-5 bg-gray-200 dark:bg-gray-800 rounded" />
+                <div className="h-5 w-5 bg-gray-200 dark:bg-gray-800 rounded" />
+                <div className="h-10 w-10 bg-gray-200 dark:bg-gray-800 rounded-lg" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-5 w-48 bg-gray-200 rounded" />
-                  <div className="h-4 w-full bg-gray-200 rounded" />
+                  <div className="h-5 w-48 bg-gray-200 dark:bg-gray-800 rounded" />
+                  <div className="h-4 w-full bg-gray-200 dark:bg-gray-800 rounded" />
                 </div>
               </div>
             </div>
@@ -565,7 +565,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-name"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Phase Name *
             </Label>
@@ -575,9 +575,9 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
               placeholder="e.g., Foundation, Framing, Finishing"
               required
               maxLength={100}
-              className="border-2 border-gray-200 focus:border-construction-blue"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Give this phase a clear, descriptive name
             </p>
           </div>
@@ -586,7 +586,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-description"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Description
             </Label>
@@ -596,9 +596,9 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
               placeholder="Brief description of this project phase"
               rows={3}
               maxLength={500}
-              className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue resize-none"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Help your team understand the purpose of this phase
             </p>
           </div>
@@ -643,7 +643,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-name"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Phase Name *
               </Label>
@@ -653,7 +653,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                 defaultValue={editingPhase.name}
                 required
                 maxLength={100}
-                className="border-2 border-gray-200 focus:border-construction-blue"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue"
               />
             </div>
 
@@ -661,7 +661,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-description"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Description
               </Label>
@@ -671,23 +671,23 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                 defaultValue={editingPhase.description || ""}
                 rows={3}
                 maxLength={500}
-                className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue resize-none"
               />
             </div>
 
             {/* Active toggle */}
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-950 rounded-lg border-2 border-gray-200 dark:border-gray-700">
               <input
                 type="checkbox"
                 id="edit-is-active"
                 name="is_active"
                 value="true"
                 defaultChecked={editingPhase.is_active ?? true}
-                className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
+                className="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 text-construction-blue focus:ring-construction-blue focus:ring-2"
               />
               <Label
                 htmlFor="edit-is-active"
-                className="cursor-pointer font-bold text-gray-900 flex-1"
+                className="cursor-pointer font-bold text-gray-900 dark:text-gray-100 flex-1"
               >
                 Active (visible when creating projects)
               </Label>
@@ -702,27 +702,27 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           open={!!deletingPhase}
           onOpenChange={() => setDeletingPhase(null)}
         >
-          <AlertDialogContent className="border-2 border-red-200">
+          <AlertDialogContent className="border-2 border-red-200 dark:border-red-700">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-black text-red-600 uppercase tracking-tight flex items-center gap-2">
+              <AlertDialogTitle className="text-xl font-black text-red-600 dark:text-red-400 uppercase tracking-tight flex items-center gap-2">
                 <AlertCircle className="h-6 w-6" />
                 Delete Phase Template
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-base text-gray-700">
+              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
                 Are you sure you want to delete{" "}
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 dark:text-gray-100">
                   "{deletingPhase.name}"
                 </span>
                 ?
               </AlertDialogDescription>
-              <div className="mt-3 p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
+              <div className="mt-3 p-4 bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-700 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-bold text-amber-900 mb-1">
+                    <h4 className="font-bold text-amber-900 dark:text-amber-100 mb-1">
                       Cascade Warning
                     </h4>
-                    <div className="text-sm text-amber-800">
+                    <div className="text-sm text-amber-800 dark:text-amber-300">
                       This will delete{" "}
                       <span className="font-bold">
                         {deletingPhase.task_templates?.length || 0} task
@@ -733,7 +733,7 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                       </span>{" "}
                       associated with this phase.
                     </div>
-                    <div className="text-sm text-amber-800 mt-2">
+                    <div className="text-sm text-amber-800 dark:text-amber-300 mt-2">
                       Existing projects will keep their data and are not
                       affected.
                     </div>

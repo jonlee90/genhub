@@ -17,6 +17,15 @@ import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import { getProjectTeamCostSummary } from './projects';
 import type { TeamCostSummary, TaskStats, ExpenseStats } from './projects';
+import { z } from 'zod';
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const projectIdSchema = z.object({
+  projectId: z.string().uuid(),
+});
 
 // Type for the RPC response structure
 interface ProjectDetailWithStatsResponse {
@@ -37,7 +46,15 @@ interface ProjectDetailWithStatsResponse {
  * Load expense statistics for a project
  * Non-critical - can be deferred after initial render
  */
-export async function getProjectExpenseStats(projectId: string) {
+export async function getProjectExpenseStats(input: unknown) {
+  const validation = projectIdSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getProjectExpenseStats] Validation failed:', validation.error);
+    throw new Error('Invalid project ID');
+  }
+
+  const { projectId } = validation.data;
+
   const supabase = await createClient();
   const session = await auth();
 
@@ -160,9 +177,17 @@ export async function getProjectExpenseStats(projectId: string) {
  * Load team cost summaries for a project
  * Non-critical - expensive calculation that can be deferred
  */
-export async function getProjectTeamCosts(projectId: string): Promise<{
+export async function getProjectTeamCosts(input: unknown): Promise<{
   teamCostSummaries: TeamCostSummary[];
 }> {
+  const validation = projectIdSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getProjectTeamCosts] Validation failed:', validation.error);
+    throw new Error('Invalid project ID');
+  }
+
+  const { projectId } = validation.data;
+
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -187,7 +212,15 @@ export async function getProjectTeamCosts(projectId: string): Promise<{
  * Load task dependencies for a project
  * Non-critical - only needed for gantt/dependency views
  */
-export async function getProjectTaskDependencies(projectId: string) {
+export async function getProjectTaskDependencies(input: unknown) {
+  const validation = projectIdSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getProjectTaskDependencies] Validation failed:', validation.error);
+    throw new Error('Invalid project ID');
+  }
+
+  const { projectId } = validation.data;
+
   const supabase = await createClient();
   const session = await auth();
 
@@ -242,11 +275,19 @@ export async function getProjectTaskDependencies(projectId: string) {
  * Load all deferred data in one call
  * Use this if you want to load everything at once after initial render
  */
-export const getProjectDeferredData = cache(async (projectId: string) => {
+export const getProjectDeferredData = cache(async (input: unknown) => {
+  const validation = projectIdSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getProjectDeferredData] Validation failed:', validation.error);
+    throw new Error('Invalid project ID');
+  }
+
+  const { projectId } = validation.data;
+
   const [expenseData, teamData, dependencyData] = await Promise.allSettled([
-    getProjectExpenseStats(projectId),
-    getProjectTeamCosts(projectId),
-    getProjectTaskDependencies(projectId),
+    getProjectExpenseStats({ projectId }),
+    getProjectTeamCosts({ projectId }),
+    getProjectTaskDependencies({ projectId }),
   ]);
 
   return {

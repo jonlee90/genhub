@@ -106,12 +106,12 @@ const DEFAULT_TASK_TYPE_CONFIG = {
  * Priority configuration with color-coded display properties
  */
 const PRIORITY_CONFIG = {
-  high: { label: "High", color: "border-red-300 text-red-700 bg-red-50" },
+  high: { label: "High", color: "border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950" },
   medium: {
     label: "Medium",
-    color: "border-amber-300 text-amber-700 bg-amber-50",
+    color: "border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950",
   },
-  low: { label: "Low", color: "border-gray-300 text-gray-700 bg-gray-50" },
+  low: { label: "Low", color: "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900" },
 };
 
 /**
@@ -120,13 +120,13 @@ const PRIORITY_CONFIG = {
  */
 const NoProjectTypeSelectedTask = memo(() => (
   <div className="flex flex-col items-center justify-center py-16 text-center">
-    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-      <ListChecks className="h-16 w-16 text-construction-blue" />
+    <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40 mb-4">
+      <ListChecks className="h-16 w-16 text-construction-blue dark:text-blue-400" />
     </div>
-    <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+    <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
       Select a Project Type
     </h3>
-    <p className="text-gray-500 max-w-md">
+    <p className="text-gray-500 dark:text-gray-400 max-w-md">
       Choose a project type and phase from the filters above to view and
       manage task templates
     </p>
@@ -145,13 +145,13 @@ interface NoPhaseSelectedProps {
 const NoPhaseSelected = memo(function NoPhaseSelected({ phasesAvailable }: NoPhaseSelectedProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20 mb-4">
-        <ListChecks className="h-16 w-16 text-construction-blue" />
+      <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40 mb-4">
+        <ListChecks className="h-16 w-16 text-construction-blue dark:text-blue-400" />
       </div>
-      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+      <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
         Select a Phase
       </h3>
-      <p className="text-gray-500 max-w-md">
+      <p className="text-gray-500 dark:text-gray-400 max-w-md">
         {!phasesAvailable
           ? "No phase templates found for this project type. Create phase templates first."
           : "Choose a phase template to view its task templates"}
@@ -173,14 +173,14 @@ const EmptyTaskState = memo(function EmptyTaskState({ onCreate }: EmptyTaskState
     <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="relative mb-6">
         <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-          <ListChecks className="h-16 w-16 text-construction-blue" />
+        <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40">
+          <ListChecks className="h-16 w-16 text-construction-blue dark:text-blue-400" />
         </div>
       </div>
-      <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-tight">
+      <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">
         No Task Templates Defined
       </h3>
-      <p className="text-gray-500 max-w-md mb-6">
+      <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
         Create task templates to define default tasks for this project phase
       </p>
       <Button

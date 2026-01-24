@@ -100,13 +100,16 @@ export function ProjectFilesTab({
 
     try {
       if (activeView === 'photos' || activeView === 'all') {
-        const result = await getProjectPhotosWithReceipts(projectId, {
-          category: filters.category.length > 0 ? filters.category : undefined,
-          search: filters.search || undefined,
-          dateFrom: filters.dateFrom,
-          dateTo: filters.dateTo,
-          source: filters.source.length > 0 ? filters.source : undefined,
-          showReceipts: filters.showReceipts,
+        const result = await getProjectPhotosWithReceipts({
+          projectId,
+          filters: {
+            category: filters.category.length > 0 ? filters.category : undefined,
+            search: filters.search || undefined,
+            dateFrom: filters.dateFrom,
+            dateTo: filters.dateTo,
+            source: filters.source.length > 0 ? filters.source : undefined,
+            showReceipts: filters.showReceipts,
+          },
         });
 
         if (result.error) {

@@ -49,7 +49,7 @@ const PROCUREMENT_STATUS_CONFIG = {
   needed: {
     label: "Need to Order",
     icon: Package,
-    color: "bg-gray-100 text-gray-700 border-gray-300",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600",
     dotColor: "bg-gray-400",
   },
   ordered: {
@@ -148,7 +148,7 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
 
   if (isLoading) {
     return (
-      <Card className="border-2 border-gray-200 shadow-construction">
+      <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-construction">
         <CardContent className="p-12">
           <div className="flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
@@ -160,9 +160,9 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
 
   if (materials.length === 0) {
     return (
-      <Card className="border border-gray-200">
+      <Card className="border border-gray-200 dark:border-gray-700">
         <CardContent className="p-4">
-          <div className="flex items-center justify-center gap-2 text-gray-500">
+          <div className="flex items-center justify-center gap-2 text-gray-500 dark:text-gray-400">
             <Package className="h-4 w-4" />
             <p className="text-sm">No materials assigned</p>
           </div>
@@ -172,15 +172,15 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
   }
 
   return (
-    <Card className="border-2 border-gray-200 shadow-construction">
-      <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+    <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-construction">
+      <CardHeader className="border-b-2 border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 dark:from-gray-950 to-white dark:to-gray-900">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-black text-construction-blue flex items-center gap-2">
             <Package className="h-5 w-5" />
             Materials ({materials.length})
           </CardTitle>
           <div className="text-right">
-            <div className="text-sm text-gray-600">Total Cost</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">Total Cost</div>
             <div className="text-xl font-black text-construction-blue">{formatCurrency(totalCost)}</div>
           </div>
         </div>
@@ -200,13 +200,13 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: index * 0.05 }}
-                  className="bg-white border-2 border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-start gap-4">
                     {/* Material Image or Icon */}
                     <div className="shrink-0">
                       {assignment.material.product_image_url ? (
-                        <div className="w-16 h-16 rounded-lg border-2 border-gray-200 overflow-hidden bg-white">
+                        <div className="w-16 h-16 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900">
                           <img
                             src={assignment.material.product_image_url}
                             alt={assignment.material.product_name}
@@ -226,7 +226,7 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                         <h4 className="font-bold text-construction-blue line-clamp-1">
                           {assignment.material.product_name}
                         </h4>
-                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-3 mt-1 text-sm text-gray-600 dark:text-gray-400">
                           <span>SKU: {assignment.material.sku}</span>
                           <span className="text-gray-400">•</span>
                           <Badge variant="outline" className="font-semibold capitalize text-xs">
@@ -238,24 +238,24 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                       {/* Quantity and Cost */}
                       <div className="flex items-center gap-6 text-sm">
                         <div>
-                          <span className="text-gray-600">Quantity:</span>{" "}
-                          <span className="font-bold text-gray-900">
+                          <span className="text-gray-600 dark:text-gray-400">Quantity:</span>{" "}
+                          <span className="font-bold text-gray-900 dark:text-gray-100">
                             {assignment.quantity} {assignment.material.unit_of_measure}
                           </span>
                         </div>
                         <div>
-                          <span className="text-gray-600">Unit Cost:</span>{" "}
-                          <span className="font-bold text-gray-900">{formatCurrency(assignment.unit_cost)}</span>
+                          <span className="text-gray-600 dark:text-gray-400">Unit Cost:</span>{" "}
+                          <span className="font-bold text-gray-900 dark:text-gray-100">{formatCurrency(assignment.unit_cost)}</span>
                         </div>
                         <div>
-                          <span className="text-gray-600">Total:</span>{" "}
+                          <span className="text-gray-600 dark:text-gray-400">Total:</span>{" "}
                           <span className="font-bold text-construction-blue">{formatCurrency(assignment.total_cost ?? 0)}</span>
                         </div>
                       </div>
 
                       {/* Purchaser */}
                       <div className="text-sm">
-                        <span className="text-gray-600">Purchaser:</span>{" "}
+                        <span className="text-gray-600 dark:text-gray-400">Purchaser:</span>{" "}
                         <Badge variant="outline" className="ml-1 capitalize font-semibold">
                           {assignment.purchaser_type === "gc" ? "General Contractor" :
                            assignment.purchaser_type === "pm" ? "Project Manager" : "Subcontractor"}
@@ -267,20 +267,20 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
                         <div className="grid grid-cols-3 gap-3 text-xs">
                           {assignment.ordered_date && (
                             <div>
-                              <div className="text-gray-500 font-semibold">Ordered</div>
-                              <div className="text-gray-900">{formatDate(assignment.ordered_date)}</div>
+                              <div className="text-gray-500 dark:text-gray-400 font-semibold">Ordered</div>
+                              <div className="text-gray-900 dark:text-gray-100">{formatDate(assignment.ordered_date)}</div>
                             </div>
                           )}
                           {assignment.delivered_date && (
                             <div>
-                              <div className="text-gray-500 font-semibold">Delivered</div>
-                              <div className="text-gray-900">{formatDate(assignment.delivered_date)}</div>
+                              <div className="text-gray-500 dark:text-gray-400 font-semibold">Delivered</div>
+                              <div className="text-gray-900 dark:text-gray-100">{formatDate(assignment.delivered_date)}</div>
                             </div>
                           )}
                           {assignment.installed_date && (
                             <div>
-                              <div className="text-gray-500 font-semibold">Installed</div>
-                              <div className="text-gray-900">{formatDate(assignment.installed_date)}</div>
+                              <div className="text-gray-500 dark:text-gray-400 font-semibold">Installed</div>
+                              <div className="text-gray-900 dark:text-gray-100">{formatDate(assignment.installed_date)}</div>
                             </div>
                           )}
                         </div>

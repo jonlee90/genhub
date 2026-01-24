@@ -142,11 +142,11 @@ export function TaskDetailsSection({
   };
 
   return (
-    <Card className="border-2 border-gray-200">
+    <Card className="border-2 border-gray-200 dark:border-gray-700">
       <CardContent className="p-6">
         {/* Header with Edit Button */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">Task Details</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Task Details</h2>
           {canEdit && !isEditMode && (
             <Button
               onClick={onEditToggle}
@@ -333,11 +333,11 @@ export function TaskDetailsSection({
           <div className="space-y-6">
             {/* Title */}
             <div>
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {task.title}
               </h3>
               {task.description && (
-                <p className="text-gray-600 mt-2">{task.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">{task.description}</p>
               )}
             </div>
 
@@ -345,11 +345,11 @@ export function TaskDetailsSection({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Priority */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-gray-600" />
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Priority</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Priority</p>
                   <Badge
                     className={cn(
                       'font-bold',
@@ -363,11 +363,11 @@ export function TaskDetailsSection({
 
               {/* Assignee */}
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-600" />
+                <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Assignee</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Assignee</p>
                   {task.assignee ? (
                     <div className="flex items-center gap-2">
                       <Avatar className="w-6 h-6">
@@ -389,11 +389,11 @@ export function TaskDetailsSection({
               {/* Start Date */}
               {task.start_date && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-gray-600" />
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Start Date</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Start Date</p>
                     <p className="text-sm font-medium">
                       {formatDate(task.start_date)}
                     </p>
@@ -407,18 +407,18 @@ export function TaskDetailsSection({
                   <div
                     className={cn(
                       'w-10 h-10 rounded-lg flex items-center justify-center',
-                      isOverdue ? 'bg-red-100' : 'bg-gray-100',
+                      isOverdue ? 'bg-red-100' : 'bg-gray-100 dark:bg-gray-800',
                     )}
                   >
                     <Calendar
                       className={cn(
                         'w-5 h-5',
-                        isOverdue ? 'text-red-600' : 'text-gray-600',
+                        isOverdue ? 'text-red-600' : 'text-gray-600 dark:text-gray-400',
                       )}
                     />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Due Date</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Due Date</p>
                     <p
                       className={cn(
                         'text-sm font-medium',
@@ -437,11 +437,11 @@ export function TaskDetailsSection({
               {/* Planned Cost */}
               {showCostFields && task.planned_cost !== null && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-gray-600" />
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Planned Cost</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Planned Cost</p>
                     <p className="text-sm font-medium">
                       {formatCurrency(task.planned_cost)}
                     </p>
@@ -452,11 +452,11 @@ export function TaskDetailsSection({
               {/* Actual Cost */}
               {showCostFields && task.actual_cost !== null && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-gray-600" />
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Actual Cost</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Actual Cost</p>
                     <p className="text-sm font-medium">
                       {formatCurrency(task.actual_cost)}
                     </p>
@@ -467,11 +467,11 @@ export function TaskDetailsSection({
               {/* Phase */}
               {task.phase && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-gray-600" />
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Phase</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Phase</p>
                     <p className="text-sm font-medium">{task.phase.name}</p>
                   </div>
                 </div>
@@ -485,11 +485,11 @@ export function TaskDetailsSection({
 
             {/* Blocked Reason */}
             {task.status === 'blocked' && task.blocked_reason && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <div className="bg-red-50 dark:bg-gray-950 border border-red-200 dark:border-gray-600 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-red-900">Blocked</p>
-                  <p className="text-sm text-red-700">{task.blocked_reason}</p>
+                  <p className="font-medium text-red-900 dark:text-gray-100">Blocked</p>
+                  <p className="text-sm text-red-700 dark:text-gray-300">{task.blocked_reason}</p>
                 </div>
               </div>
             )}

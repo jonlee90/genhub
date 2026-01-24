@@ -190,14 +190,14 @@ export function ProjectConfigurationSection() {
 
             {/* Industrial Header */}
             <div className="relative mb-4">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-              <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none pt-2 uppercase">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue dark:bg-blue-400" />
+              <h1 className="text-3xl font-black tracking-tighter text-construction-blue dark:text-blue-400 leading-none pt-2 uppercase">
                 CONFIGURATION
               </h1>
             </div>
 
             {/* FilterTabs - sticky */}
-            <div className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+            <div className="sticky top-0 z-30 -mx-4 px-4 py-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-700">
               <FilterTabs
                 tabs={CONFIG_TABS}
                 value={activeTab}
@@ -264,12 +264,12 @@ export function ProjectConfigurationSection() {
 
       {/* Industrial Header */}
       <div className="relative">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue dark:bg-blue-400" />
         <div className="pt-2 md:pt-4">
-          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none uppercase">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue dark:text-blue-400 leading-none uppercase">
             PROJECT CONFIGURATION
           </h1>
-          <p className="text-sm md:text-base text-gray-600 mt-2">
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-2">
             Manage project types, task types, and templates
           </p>
         </div>
@@ -286,7 +286,7 @@ export function ProjectConfigurationSection() {
       />
 
       {/* Card container */}
-      <div className="border-2 border-gray-200 rounded-xl shadow-construction bg-white p-4 md:p-6">
+      <div className="border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction bg-white dark:bg-gray-800 p-4 md:p-6">
         {activeTab === 'project-types' && (
           <ProjectTypeManager
             projectTypes={projectTypes}
@@ -330,7 +330,7 @@ export function ProjectConfigurationSection() {
       </div>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

@@ -32,14 +32,14 @@ export default async function SettingsPage() {
       {/* Industrial Header with Blueprint Aesthetic - Matching Projects/Tasks */}
       <div className="relative">
         {/* Construction border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue dark:bg-blue-400" />
 
         <div className="flex flex-col gap-4 pt-2 md:pt-4">
           {/* Title Row */}
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1 md:space-y-3">
               {/* Main Title - Heavy Industrial Typography matching Projects/Tasks */}
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
+              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue dark:text-blue-400 leading-none">
                 SETTINGS
               </h1>
               <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">

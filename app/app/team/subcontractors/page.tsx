@@ -1,9 +1,5 @@
 import { SubcontractorList } from "@/components/team/SubcontractorList";
 import { StatCard } from "@/components/team/StatCard";
-import HardHat from "lucide-react/icons/hard-hat";
-import Briefcase from "lucide-react/icons/briefcase";
-import AlertTriangle from "lucide-react/icons/alert-triangle";
-import Shield from "lucide-react/icons/shield";
 import { getSubcontractorsPageData } from "@/lib/team";
 
 export const metadata = {
@@ -75,28 +71,28 @@ export default async function SubcontractorsPage() {
       {stats.total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <StatCard
-            icon={HardHat}
+            icon="hard-hat"
             label="Total"
             sublabel="Subcontractors"
             value={stats.total}
             colorClass="blue"
           />
           <StatCard
-            icon={Briefcase}
+            icon="briefcase"
             label="Active"
             sublabel="Active Status"
             value={stats.active}
             colorClass="green"
           />
           <StatCard
-            icon={AlertTriangle}
+            icon="alert-triangle"
             label="Warning"
             sublabel="Expiring Licenses"
             value={stats.expiringLicenses}
             colorClass="yellow"
           />
           <StatCard
-            icon={Shield}
+            icon="shield"
             label="Alert"
             sublabel="Expiring Insurance"
             value={stats.expiringInsurance}

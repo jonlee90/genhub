@@ -241,17 +241,17 @@ export function AddMemberModal({
       <div className="space-y-4">
         {/* Debug: Search input */}
         <div className="space-y-2">
-          <Label htmlFor="search" className="font-bold text-gray-700">
+          <Label htmlFor="search" className="font-bold text-gray-700 dark:text-gray-300">
             Search Users
           </Label>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
             <Input
               id="search"
               placeholder="Search by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 border-2 border-gray-200 focus:border-construction-blue"
+              className="pl-10 border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue"
               disabled={loading}
             />
           </div>
@@ -259,26 +259,26 @@ export function AddMemberModal({
 
         {/* Debug: User list */}
         <div className="space-y-2">
-          <Label className="font-bold text-gray-700">Select User</Label>
-          <div className="border-2 border-gray-200 rounded-lg max-h-64 overflow-y-auto bg-gray-50">
+          <Label className="font-bold text-gray-700 dark:text-gray-300">Select User</Label>
+          <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-800">
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
-                <span className="ml-2 text-sm text-gray-600">
+                <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
                   Loading users...
                 </span>
               </div>
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-600">
+                <AlertCircle className="h-8 w-8 text-gray-400 dark:text-gray-500 mb-2" />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {searchQuery
                     ? "No users match your search"
                     : "No available users"}
                 </p>
               </div>
             ) : (
-              <div className="divide-y-2 divide-gray-200">
+              <div className="divide-y-2 divide-gray-200 dark:divide-gray-700">
                 <AnimatePresence>
                   {filteredUsers.map((user, index) => (
                     <motion.button
@@ -296,10 +296,10 @@ export function AddMemberModal({
                         setSelectedUserId(user.id);
                         setError(null);
                       }}
-                      className={`w-full flex items-center gap-3 p-3 hover:bg-white transition-colors ${
+                      className={`w-full flex items-center gap-3 p-3 hover:bg-white dark:hover:bg-gray-700 transition-colors ${
                         selectedUserId === user.id
                           ? "bg-construction-blue/10 border-l-4 border-l-construction-blue"
-                          : "bg-gray-50"
+                          : "bg-gray-50 dark:bg-gray-800"
                       }`}
                     >
                       <Avatar className="h-10 w-10 border-2 border-construction-blue/20">
@@ -309,10 +309,10 @@ export function AddMemberModal({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 text-left min-w-0">
-                        <p className="font-bold text-gray-900 truncate">
+                        <p className="font-bold text-gray-900 dark:text-gray-100 truncate">
                           {user.name}
                         </p>
-                        <p className="text-sm text-gray-600 truncate flex items-center gap-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 truncate flex items-center gap-1">
                           <Mail className="h-3 w-3" />
                           {user.email}
                         </p>
@@ -332,13 +332,13 @@ export function AddMemberModal({
 
         {/* Debug: Role selection */}
         <div className="space-y-2">
-          <Label htmlFor="role" className="font-bold text-gray-700">
+          <Label htmlFor="role" className="font-bold text-gray-700 dark:text-gray-300">
             Assign Role
           </Label>
           <Select value={selectedRole} onValueChange={setSelectedRole}>
             <SelectTrigger
               id="role"
-              className="border-2 border-gray-200 focus:border-construction-blue"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue"
             >
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>

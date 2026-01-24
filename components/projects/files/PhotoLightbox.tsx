@@ -145,7 +145,7 @@ export function PhotoLightbox({
     console.log('[PhotoLightbox] Deleting photo:', photo.id);
     setIsDeleting(true);
 
-    const result = await deleteProjectPhoto(photo.id);
+    const result = await deleteProjectPhoto({ photoId: photo.id });
 
     if (result.error) {
       toast.error(`Delete failed: ${result.error}`);

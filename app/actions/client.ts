@@ -11,6 +11,15 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
+import { z } from "zod";
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const getClientPermissionsSchema = z.object({
+  projectId: z.string().uuid(),
+});
 
 // ============================================
 // Types
@@ -41,7 +50,16 @@ export interface ClientPermissions {
  *   // Show budget information to client
  * }
  */
-export async function getClientPermissions(_projectId: string) {
+export async function getClientPermissions(input: unknown) {
+  // Validate input
+  const validation = getClientPermissionsSchema.safeParse(input);
+  if (!validation.success) {
+    console.error("[getClientPermissions] Validation failed:", validation.error);
+    return { error: "Invalid project ID" };
+  }
+
+  const { projectId: _projectId } = validation.data;
+
   // Verify authentication
   const session = await auth();
   if (!session?.user) {

@@ -74,8 +74,8 @@ export function AutoExpenseToggle({
           "min-h-[44px] px-4 py-3",
           "rounded-xl border-2 transition-all duration-200",
           enabled
-            ? "bg-green-50 border-green-200"
-            : "bg-gray-50 border-gray-200",
+            ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
+            : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700",
           disabled
             ? "opacity-50 cursor-not-allowed"
             : "cursor-pointer"
@@ -88,21 +88,21 @@ export function AutoExpenseToggle({
           <div
             className={cn(
               "flex items-center justify-center w-9 h-9 rounded-lg",
-              enabled ? "bg-green-100" : "bg-gray-100"
+              enabled ? "bg-green-100 dark:bg-green-900/50" : "bg-gray-100 dark:bg-gray-800"
             )}
           >
             <Receipt
               className={cn(
                 "w-5 h-5",
-                enabled ? "text-green-600" : "text-gray-500"
+                enabled ? "text-green-600" : "text-gray-500 dark:text-gray-400"
               )}
             />
           </div>
           <div className="text-left">
-            <div className="font-semibold text-gray-900 text-sm">
+            <div className="font-semibold text-gray-900 dark:text-gray-100 text-sm">
               Create expense from cost
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-gray-400">
               Auto-create an expense record when saving
             </div>
           </div>
@@ -118,14 +118,14 @@ export function AutoExpenseToggle({
       {enabled && (
         <div
           className={cn(
-            "rounded-xl border-2 border-green-200 bg-green-50/50",
+            "rounded-xl border-2 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30",
             "border-l-4 border-l-green-500",
             "p-4 space-y-3",
             "animate-in slide-in-from-top-2 duration-200"
           )}
         >
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-semibold text-green-700 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider">
               Expense Preview
             </span>
           </div>
@@ -137,7 +137,7 @@ export function AutoExpenseToggle({
               icon={DollarSign}
               label="Amount"
               value={formatBudgetFull(actualCost)}
-              valueClassName="text-green-700 font-bold"
+              valueClassName="text-green-700 dark:text-green-400 font-bold"
             />
 
             {/* Description */}
@@ -149,7 +149,7 @@ export function AutoExpenseToggle({
 
             {/* Category - Editable Dropdown */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80">
+              <div className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80 dark:bg-gray-900/80">
                 <Tag className="w-4 h-4 text-green-600" />
               </div>
               <div className="flex-1 min-w-0">
@@ -164,7 +164,7 @@ export function AutoExpenseToggle({
                   }}
                   disabled={disabled}
                 >
-                  <SelectTrigger className="h-8 w-full border-0 bg-transparent p-0 text-sm font-medium text-gray-900 hover:bg-white/50 focus:ring-1 focus:ring-green-300">
+                  <SelectTrigger className="h-8 w-full border-0 bg-transparent p-0 text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-800/50 focus:ring-1 focus:ring-green-300">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -211,14 +211,14 @@ interface PreviewFieldProps {
 function PreviewField({ icon: Icon, label, value, valueClassName }: PreviewFieldProps) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80">
+      <div className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80 dark:bg-gray-900/80">
         <Icon className="w-4 h-4 text-green-600" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
           {label}
         </div>
-        <div className={cn("text-sm font-medium text-gray-900 truncate", valueClassName)}>
+        <div className={cn("text-sm font-medium text-gray-900 dark:text-gray-100 truncate", valueClassName)}>
           {value}
         </div>
       </div>

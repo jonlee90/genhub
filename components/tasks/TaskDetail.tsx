@@ -260,7 +260,7 @@ export function TaskDetail({
         {/* Status Selector */}
         {canEdit && (
           <div className="flex items-center gap-3">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Change Status:
             </label>
             <Select value={task.status} onValueChange={handleStatusChange}>

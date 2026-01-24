@@ -36,7 +36,6 @@ import {
   useTaskModal,
 } from "@/components/tasks/TaskModalContext";
 import { ProjectFilesTab } from "./files/ProjectFilesTab";
-import { DashboardStats } from "../tasks/DashboardStats";
 import { useModalData } from "@/hooks/use-modal-data";
 
 // Dynamic import TaskModal (only loads when modal opens)
@@ -262,7 +261,7 @@ export function ProjectDetailContent({
           {/* Hero Card with Project Identity */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-construction-lg overflow-hidden">
             {/* Top Section: Project Identity */}
-            <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white">
+            <div className="p-4 sm:p-6 bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
               {/* Row 1: Icon + Name + Status */}
               <div className="flex items-start gap-3 sm:gap-4">
                 {/* Project Type Icon */}
@@ -279,8 +278,8 @@ export function ProjectDetailContent({
                     {project.name}
                   </h1>
                   <div className="flex items-center gap-2 mt-1.5">
-                    <div className="h-0.5 w-6 bg-[#3C3C3C] rounded-full" />
-                    <span className="text-[10px] font-bold text-[#3C3C3C] uppercase tracking-widest sm:text-xs">
+                    <div className="h-0.5 w-6 bg-construction-accent rounded-full" />
+                    <span className="text-[10px] font-bold text-construction-accent uppercase tracking-widest sm:text-xs">
                       {project.project_type?.replace(/_/g, " ") ||
                         "General Construction"}
                     </span>
@@ -308,7 +307,7 @@ export function ProjectDetailContent({
               {/* Description (if exists) */}
               {displayDescription && (
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 sm:line-clamp-none">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 sm:line-clamp-none">
                     {displayDescription}
                   </p>
                   {shouldTruncateDescription && (
@@ -357,8 +356,8 @@ export function ProjectDetailContent({
                       <ExternalLink className="h-3.5 w-3.5 flex-shrink-0 opacity-60" />
                     </a>
                   ) : (
-                    <div className="flex items-center gap-2 text-xs text-gray-600 sm:text-sm">
-                      <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
+                      <MapPin className="h-4 w-4 flex-shrink-0 text-gray-400 dark:text-gray-500" />
                       <span>
                         {[project.address, project.city, project.state]
                           .filter(Boolean)
@@ -371,17 +370,17 @@ export function ProjectDetailContent({
             </div>
 
             {/* Bottom Section: Quick Stats Grid */}
-            <div className="grid grid-cols-2 gap-px bg-gray-200 sm:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700 sm:grid-cols-3 lg:grid-cols-6">
               {/* Progress */}
               <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <TrendingUp className="h-3.5 w-3.5 text-construction-blue" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Progress
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-construction-blue rounded-full transition-all duration-500"
                       style={{
@@ -404,12 +403,12 @@ export function ProjectDetailContent({
                       getHealthColor(project.health_score || 0),
                     )}
                   />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Health
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all duration-500",
@@ -438,12 +437,12 @@ export function ProjectDetailContent({
               {/* Start Date */}
               <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <Calendar className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Start
                   </span>
                 </div>
-                <span className="text-sm font-bold text-gray-900">
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                   {project.start_date
                     ? new Date(project.start_date).toLocaleDateString("en-US", {
                         month: "short",
@@ -456,12 +455,12 @@ export function ProjectDetailContent({
               {/* End Date */}
               <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <Target className="h-3.5 w-3.5 text-gray-400" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <Target className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Target
                   </span>
                 </div>
-                <span className="text-sm font-bold text-gray-900">
+                <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                   {project.end_date
                     ? new Date(project.end_date).toLocaleDateString("en-US", {
                         month: "short",
@@ -479,10 +478,10 @@ export function ProjectDetailContent({
                       "h-3.5 w-3.5",
                       daysRemaining !== null && daysRemaining < 0
                         ? "text-construction-red"
-                        : "text-gray-400",
+                        : "text-gray-400 dark:text-gray-500",
                     )}
                   />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {daysRemaining !== null && daysRemaining < 0
                       ? "Overdue"
                       : "Days Left"}
@@ -493,7 +492,7 @@ export function ProjectDetailContent({
                     "text-sm font-black tabular-nums",
                     daysRemaining !== null && daysRemaining < 0
                       ? "text-construction-red"
-                      : "text-gray-900",
+                      : "text-gray-900 dark:text-gray-100",
                   )}
                 >
                   {daysRemaining !== null ? Math.abs(daysRemaining) : "N/A"}
@@ -504,11 +503,11 @@ export function ProjectDetailContent({
               <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
                   <DollarSign className="h-3.5 w-3.5 text-construction-green" />
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Budget
                   </span>
                 </div>
-                <span className="text-sm font-black text-gray-900 tabular-nums">
+                <span className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums">
                   {project.budget
                     ? `$${(project.budget / 1000).toFixed(0)}k`
                     : "Not set"}
@@ -516,29 +515,6 @@ export function ProjectDetailContent({
               </div>
             </div>
           </div>
-
-          {/* Task Stats - Only show on Tasks tab */}
-          {activeTab === "tasks" && (
-            <DashboardStats
-              tasks={
-                (project.tasks || []).filter(
-                  (t) => t.id && t.title && t.project_id
-                ) as Array<{
-                  id: string;
-                  title: string;
-                  status: string | null;
-                  due_date?: string | null;
-                  actual_cost?: number | string | null;
-                  planned_cost?: number | string | null;
-                  assignee_id?: string | null;
-                  project_id: string;
-                }>
-              }
-              projectFilter={project.id}
-              projects={resolvedProjects}
-              budget={project.budget}
-            />
-          )}
         </motion.div>
 
         {/* Tab Navigation - Mobile-First Pill Design */}
@@ -549,7 +525,7 @@ export function ProjectDetailContent({
           className="relative -mx-4 px-4 md:mx-0 md:px-0"
         >
           {/* Industrial accent line */}
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200" />
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200 dark:bg-gray-700" />
 
           {/* Scrollable tab container with snap points */}
           <div
@@ -571,7 +547,7 @@ export function ProjectDetailContent({
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "overview"
                   ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
               )}
             >
               <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -589,7 +565,7 @@ export function ProjectDetailContent({
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "team"
                   ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
               )}
             >
               <Users className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -619,7 +595,7 @@ export function ProjectDetailContent({
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "tasks"
                   ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
               )}
             >
               <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -649,7 +625,7 @@ export function ProjectDetailContent({
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "files"
                   ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
               )}
             >
               <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -681,7 +657,7 @@ export function ProjectDetailContent({
                 "sm:px-5 sm:py-3 sm:text-sm",
                 activeTab === "settings"
                   ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300",
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
               )}
             >
               <Settings className="h-4 w-4 sm:h-5 sm:w-5" />

@@ -49,7 +49,7 @@ export const StepIndicator = memo(function StepIndicator({
       />
 
       {/* Desktop view - full stepper */}
-      <div className={cn('hidden md:block px-6 py-4 border-b border-gray-200', className)}>
+      <div className={cn('hidden md:block px-6 py-4 border-b border-gray-200 dark:border-gray-700', className)}>
         <div className="flex items-center justify-between relative">
         {steps.map((step, index) => {
           const stepNumber = index + 1;
@@ -137,7 +137,7 @@ export const StepIndicator = memo(function StepIndicator({
                   className={cn(
                     'flex-1 h-1 mx-2 rounded-full transition-all duration-500',
                     'relative top-[-16px]', // Align with circle center
-                    isCompleted ? 'bg-opacity-100' : 'bg-gray-200'
+                    isCompleted ? 'bg-opacity-100' : 'bg-gray-200 dark:bg-gray-700'
                   )}
                   style={
                     isCompleted
@@ -165,7 +165,7 @@ export const StepIndicator = memo(function StepIndicator({
     </div>
 
       {/* Mobile view - compact dots with current label */}
-      <div className={cn('md:hidden px-6 py-4 border-b border-gray-200', className)}>
+      <div className={cn('md:hidden px-6 py-4 border-b border-gray-200 dark:border-gray-700', className)}>
         <div className="flex flex-col items-center gap-3">
           {/* Dots indicator */}
           <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export const StepIndicator = memo(function StepIndicator({
                     'h-2 w-2 rounded-full transition-all duration-300',
                     isActive && 'w-6',
                     isCompleted && 'bg-opacity-100',
-                    !isActive && !isCompleted && 'bg-gray-300'
+                    !isActive && !isCompleted && 'bg-gray-300 dark:bg-gray-600'
                   )}
                   style={
                     isActive || isCompleted
@@ -203,7 +203,7 @@ export const StepIndicator = memo(function StepIndicator({
             >
               {steps[currentStep - 1]}
             </p>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
               Step {currentStep} of {steps.length}
             </p>
           </div>

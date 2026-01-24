@@ -204,7 +204,15 @@
       "mcp__plugin_playwright_playwright__browser_navigate",
       "mcp__plugin_playwright_playwright__browser_wait_for",
       "Skill(kc:spec)",
-      "Bash(pgrep:*)"
+      "Bash(pgrep:*)",
+      "mcp__next-devtools__nextjs_docs",
+      "Bash(for file in app/actions/*.ts)",
+      "Bash(do if ! grep -q \"z\\\\.object\\\\|safeParse\" \"$file\")",
+      "Bash(then basename \"$file\")",
+      "Bash(fi)",
+      "Bash(while read file)",
+      "Bash(do if ! grep -q \"dark:\" \"$file\")",
+      "Bash(then echo \"$file\" fi done)"
     ],
     "deny": [],
     "ask": []

@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* FOUC Prevention Script - Runs BEFORE CSS loads */}
         {/* Note: dangerouslySetInnerHTML is safe here - contains only hardcoded logic with no user input */}

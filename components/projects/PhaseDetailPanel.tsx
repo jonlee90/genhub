@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import X from 'lucide-react/icons/x';
 import CheckCircle2 from 'lucide-react/icons/check-circle-2';
@@ -18,13 +19,18 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { isTaskOverdue, formatDate } from '@/lib/date-utils';
 import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
-import { TaskModal } from '@/components/tasks/TaskModal';
 import { toast } from 'sonner';
 import { m as motion } from 'framer-motion';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 import type { TasksRow } from '@/types/db/tables/tasks';
+
+// B-001: Dynamic import for heavy TaskModal component (-50KB from initial bundle)
+const TaskModal = dynamic(() => import('@/components/tasks/TaskModal').then((mod) => ({ default: mod.TaskModal })), {
+  ssr: false,
+  loading: () => null,
+});
 
 type Phase = ProjectPhasesRow;
 type Task = TasksRow & {

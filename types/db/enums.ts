@@ -27,7 +27,7 @@ export type SpatialMarkerType = 'issue' | 'note' | 'photo' | 'inspection' | 'rfi
 export type SpatialProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed';
-export type TaskType = 'work' | 'purchase' | 'approval' | 'admin';
+export type TaskType = string;
 export type TradeType = 'general' | 'electrical' | 'plumbing' | 'hvac' | 'carpentry' | 'masonry' | 'roofing' | 'flooring' | 'painting' | 'drywall' | 'concrete' | 'landscaping' | 'demolition' | 'steel_work' | 'glass_glazing' | 'fire_protection' | 'insulation' | 'other';
 export type UserRole = 'admin' | 'project_manager' | 'foreman' | 'field_worker' | 'subcontractor' | 'client';
 
