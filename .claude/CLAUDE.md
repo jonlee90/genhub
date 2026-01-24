@@ -13,6 +13,7 @@
 | Lucide icons only | `heroicons`/`fontawesome` | Bundle bloat |
 | 44px touch targets | `min-h-[44px]` missing on interactive | Failed accessibility |
 | Server Actions for DB | Direct DB in components | Security/architecture violation |
+| React best practices | Ignoring Vercel guidelines | Suboptimal performance, bundle bloat |
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -49,9 +50,11 @@
 
 **Serena Memories:** Always load `genhub-database-schema`, `genhub-server-actions`, `genhub-component-patterns`. Load by task: `genhub-common-gotchas`, `genhub-architectural-decisions`.
 
+**React Code Standards:** Before modifying any React component, page, or hook → Check `vercel-react-best-practices` skill for relevant optimization patterns. Apply Vercel's guidelines for component rendering, memoization, hooks, data fetching, and Core Web Vitals.
+
 **Session Workflow:**
 - **START:** `mcp__memory__read_graph()` → Load Serena memories → `mcp__supabase__list_tables` (if DB work)
-- **DURING:** Context7 before library code | Update Memory MCP after decisions
+- **DURING:** Context7 before library code | Check `vercel-react-best-practices` for React changes | Update Memory MCP after decisions
 - **END:** Update ActiveTask | Trigger learning check (if significant)
 
 ---
