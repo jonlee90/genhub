@@ -222,7 +222,8 @@
       "mcp__plugin_playwright_playwright__browser_click",
       "mcp__plugin_playwright_playwright__browser_press_key",
       "Bash(npm uninstall:*)",
-      "mcp__next-devtools__browser_eval"
+      "mcp__next-devtools__browser_eval",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
