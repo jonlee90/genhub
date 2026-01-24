@@ -69,38 +69,17 @@ export async function getClientPermissions(input: unknown) {
 
   const supabase = await createClient();
 
-  // Get user's company_id via company_users
-  const { data: companyUser, error: companyError } = await supabase
+  // HIGH-2 FIX: Single query with join to eliminate N+1
+  const { data: result, error } = await supabase
     .from("company_users")
-    .select("company_id")
+    .select("company_id, companies!inner(client_can_view_budget)")
     .eq("user_id", session.user.id!)
     .eq("status", "active")
     .maybeSingle();
 
-  if (companyError || !companyUser) {
+  if (error || !result) {
     console.error(
-      "[getClientPermissions] Error fetching company user:",
-      companyError,
-    );
-    return {
-      data: {
-        can_view_budget: false,
-        can_approve_change_orders: false,
-        can_view_invoices: false,
-      },
-    };
-  }
-
-  // Fetch client permissions from companies table
-  const { data: company, error } = await supabase
-    .from("companies")
-    .select("client_can_view_budget")
-    .eq("id", companyUser.company_id)
-    .single();
-
-  if (error) {
-    console.error(
-      "[getClientPermissions] Error fetching company settings:",
+      "[getClientPermissions] Error fetching company permissions:",
       error,
     );
     // Default to no budget visibility on error
@@ -118,7 +97,8 @@ export async function getClientPermissions(input: unknown) {
   // If column doesn't exist yet, default to false (migration not applied)
   return {
     data: {
-      can_view_budget: (company as any).client_can_view_budget || false,
+      can_view_budget:
+        (result.companies as any)?.client_can_view_budget || false,
       can_approve_change_orders: false, // Future feature - placeholder
       can_view_invoices: false, // Future feature - placeholder
     } as ClientPermissions,

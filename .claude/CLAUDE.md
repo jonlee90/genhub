@@ -25,7 +25,7 @@ Server Components→ ✅ YES DB → Data fetching, SSR
 ## PROJECT
 
 **Stack:** Next.js 16, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
-**Design:** Primary `#001B51`, Accent `#3C3C3C`, 44px touch, `dvh` not `vh`
+**Design:** Primary `#001B51`, Accent `#3C3C3C`, 44px touch, `dvh` not `vh`, **dark mode always included**
 
 ---
 
@@ -74,6 +74,8 @@ hooks/**/*.ts    → rerender-*, advanced-*
 - Mixed independent → Parallel agents
 - Mixed dependent → Sequential: backend → frontend → OpenCode
 
+**NO .md FILES:** Never create reports, audits, or documentation files unless explicitly requested (handoffs excluded)
+
 ---
 
 ## OPENCODE HANDOFF
@@ -107,6 +109,20 @@ hooks/**/*.ts    → rerender-*, advanced-*
 
 ---
 
+## TASK COMPLETION REPORT
+
+**REQUIRED:** After every task completion, report:
+```
+✅ Task Complete
+
+Tokens: {input}/{limit} ({percentage}%)
+Agents: {agent-names or "None"}
+Skills: {skill-names or "None"}
+Context: {files-read-count} files, {symbols-count} symbols
+```
+
+---
+
 ## STOP CONDITIONS
 
 - Agent boundary violation
@@ -122,6 +138,7 @@ hooks/**/*.ts    → rerender-*, advanced-*
 |---------|---------|
 | `/kc:spec {feature}` | Create requirements → design → tasks |
 | `/kc:impl {task-id}` | Execute task from spec |
+| `/kc:audit {module}` | Security, performance, quality audit |
 
 ---
 

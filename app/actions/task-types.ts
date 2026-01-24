@@ -70,7 +70,9 @@ export async function getTaskTypes(): Promise<{
   taskTypes?: TaskTypeConfig[];
   error?: string;
 }> {
-  console.log("[getTaskTypes] Fetching active task types...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskTypes] Fetching active task types...");
+  }
 
   // Use cached getUserContext (CRIT-001 optimization)
   const ctx = await getBaseUserContext();
@@ -106,7 +108,9 @@ export async function getAllTaskTypes(): Promise<{
   taskTypes?: TaskTypeConfig[];
   error?: string;
 }> {
-  console.log("[getAllTaskTypes] Fetching all task types for admin...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getAllTaskTypes] Fetching all task types for admin...");
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -140,7 +144,9 @@ export async function createTaskType(formData: FormData): Promise<{
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[createTaskType] Creating new task type...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createTaskType] Creating new task type...");
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -184,7 +190,9 @@ export async function createTaskType(formData: FormData): Promise<{
     return { error: "Failed to create task type" };
   }
 
-  console.log("[createTaskType] Task type created:", taskType.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createTaskType] Task type created:", taskType.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, taskType };
 }
@@ -202,7 +210,9 @@ export async function updateTaskType(
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[updateTaskType] Updating task type:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateTaskType] Updating task type:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -255,7 +265,9 @@ export async function updateTaskType(
     return { error: "Failed to update task type" };
   }
 
-  console.log("[updateTaskType] Task type updated:", taskType.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateTaskType] Task type updated:", taskType.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, taskType };
 }
@@ -268,7 +280,9 @@ export async function deleteTaskType(id: string): Promise<{
   success?: boolean;
   error?: string;
 }> {
-  console.log("[deleteTaskType] Soft deleting task type:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteTaskType] Soft deleting task type:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -306,7 +320,9 @@ export async function deleteTaskType(id: string): Promise<{
     return { error: "Failed to delete task type" };
   }
 
-  console.log("[deleteTaskType] Task type soft deleted:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteTaskType] Task type soft deleted:", id);
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }

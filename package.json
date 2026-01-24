@@ -8,7 +8,7 @@
     "prebuild": "node scripts/inject-sw-env.js",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "email": "email dev",
     "lint:ts": "tsc --noEmit",
     "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhook/stripe",

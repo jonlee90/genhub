@@ -70,7 +70,9 @@ export async function getTaskTemplates(phaseTemplateId?: string): Promise<{
   taskTemplates?: TaskTemplate[];
   error?: string;
 }> {
-  console.log("[getTaskTemplates] Fetching task templates...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskTemplates] Fetching task templates...");
+  }
 
   // Use cached getUserContext (CRIT-001 optimization)
   const ctx = await getBaseUserContext();
@@ -112,7 +114,9 @@ export async function createTaskTemplate(formData: FormData): Promise<{
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[createTaskTemplate] Creating new task template...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createTaskTemplate] Creating new task template...");
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -168,7 +172,9 @@ export async function createTaskTemplate(formData: FormData): Promise<{
     return { error: "Failed to create task template" };
   }
 
-  console.log("[createTaskTemplate] Task template created:", taskTemplate.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createTaskTemplate] Task template created:", taskTemplate.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, taskTemplate };
 }
@@ -185,7 +191,9 @@ export async function updateTaskTemplate(
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[updateTaskTemplate] Updating task template:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateTaskTemplate] Updating task template:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -236,7 +244,9 @@ export async function updateTaskTemplate(
     return { error: "Failed to update task template" };
   }
 
-  console.log("[updateTaskTemplate] Task template updated:", taskTemplate.id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updateTaskTemplate] Task template updated:", taskTemplate.id);
+  }
   revalidatePath("/app/settings");
   return { success: true, taskTemplate };
 }
@@ -248,7 +258,9 @@ export async function deleteTaskTemplate(id: string): Promise<{
   success?: boolean;
   error?: string;
 }> {
-  console.log("[deleteTaskTemplate] Deleting task template:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteTaskTemplate] Deleting task template:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -276,7 +288,9 @@ export async function deleteTaskTemplate(id: string): Promise<{
     return { error: "Failed to delete task template" };
   }
 
-  console.log("[deleteTaskTemplate] Task template deleted:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deleteTaskTemplate] Task template deleted:", id);
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }
@@ -292,10 +306,12 @@ export async function reorderTaskTemplates(
   success?: boolean;
   error?: string;
 }> {
-  console.log(
-    "[reorderTaskTemplates] Reordering tasks for phase:",
-    phaseTemplateId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[reorderTaskTemplates] Reordering tasks for phase:",
+      phaseTemplateId,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -323,7 +339,9 @@ export async function reorderTaskTemplates(
     return { error: "Failed to reorder task templates" };
   }
 
-  console.log("[reorderTaskTemplates] Reordered", orderedIds.length, "tasks");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[reorderTaskTemplates] Reordered", orderedIds.length, "tasks");
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }

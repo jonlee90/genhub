@@ -67,7 +67,9 @@ export async function getPhaseTemplates(projectTypeConfigId?: string): Promise<{
   phaseTemplates?: PhaseTemplateWithTasks[];
   error?: string;
 }> {
-  console.log("[getPhaseTemplates] Fetching phase templates...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getPhaseTemplates] Fetching phase templates...");
+  }
 
   const userContext = await getBaseUserContext();
   if ("error" in userContext) {
@@ -113,7 +115,9 @@ export async function createPhaseTemplate(formData: FormData): Promise<{
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[createPhaseTemplate] Creating new phase template...");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[createPhaseTemplate] Creating new phase template...");
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -172,10 +176,12 @@ export async function createPhaseTemplate(formData: FormData): Promise<{
     return { error: "Failed to create phase template" };
   }
 
-  console.log(
-    "[createPhaseTemplate] Phase template created:",
-    phaseTemplate.id,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[createPhaseTemplate] Phase template created:",
+      phaseTemplate.id,
+    );
+  }
   revalidatePath("/app/settings");
   return { success: true, phaseTemplate };
 }
@@ -192,7 +198,9 @@ export async function updatePhaseTemplate(
   error?: string;
   fieldErrors?: Record<string, string[]>;
 }> {
-  console.log("[updatePhaseTemplate] Updating phase template:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[updatePhaseTemplate] Updating phase template:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -246,10 +254,12 @@ export async function updatePhaseTemplate(
     return { error: "Failed to update phase template" };
   }
 
-  console.log(
-    "[updatePhaseTemplate] Phase template updated:",
-    phaseTemplate.id,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[updatePhaseTemplate] Phase template updated:",
+      phaseTemplate.id,
+    );
+  }
   revalidatePath("/app/settings");
   return { success: true, phaseTemplate };
 }
@@ -262,7 +272,9 @@ export async function deletePhaseTemplate(id: string): Promise<{
   success?: boolean;
   error?: string;
 }> {
-  console.log("[deletePhaseTemplate] Deleting phase template:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deletePhaseTemplate] Deleting phase template:", id);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -293,7 +305,9 @@ export async function deletePhaseTemplate(id: string): Promise<{
     return { error: "Failed to delete phase template" };
   }
 
-  console.log("[deletePhaseTemplate] Phase template deleted:", id);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[deletePhaseTemplate] Phase template deleted:", id);
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }
@@ -309,10 +323,12 @@ export async function reorderPhaseTemplates(
   success?: boolean;
   error?: string;
 }> {
-  console.log(
-    "[reorderPhaseTemplates] Reordering phases for project type:",
-    projectTypeConfigId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[reorderPhaseTemplates] Reordering phases for project type:",
+      projectTypeConfigId,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -340,7 +356,9 @@ export async function reorderPhaseTemplates(
     return { error: "Failed to reorder phase templates" };
   }
 
-  console.log("[reorderPhaseTemplates] Reordered", orderedIds.length, "phases");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[reorderPhaseTemplates] Reordered", orderedIds.length, "phases");
+  }
   revalidatePath("/app/settings");
   return { success: true };
 }

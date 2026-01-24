@@ -83,7 +83,7 @@ export function KakaoTalkSettings() {
 
   useEffect(() => {
     fetchConnectionStatus();
-  }, []);
+  }, [fetchConnectionStatus]);
 
   // ============================================
   // Handlers

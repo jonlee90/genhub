@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { ChatNotificationPreferences } from "@/components/settings/ChatNotificationPreferences";
 import { KakaoTalkSettings } from "@/components/settings/KakaoTalkSettings";
 import { SettingsSectionHeader } from "@/components/settings/SettingsSectionHeader";
@@ -13,6 +14,16 @@ const BLUEPRINT_BACKGROUND_STYLE = {
   backgroundSize: "40px 40px",
   color: "var(--construction-blue)",
 } as const;
+
+// HIGH-3 FIX: Loading skeleton for Suspense boundaries
+function SectionSkeleton() {
+  return (
+    <div className="animate-pulse space-y-3">
+      <div className="h-24 bg-gray-200 dark:bg-gray-800 rounded-xl border-2 border-gray-300 dark:border-gray-700" />
+      <div className="h-32 bg-gray-200 dark:bg-gray-800 rounded-xl border-2 border-gray-300 dark:border-gray-700" />
+    </div>
+  );
+}
 
 /**
  * Settings Page - Mobile-first PWA design for construction workers
@@ -62,7 +73,9 @@ export default async function SettingsPage() {
               title="Project Configuration"
               description="Manage project types, task types, and workflow templates"
             />
-            <ProjectConfigurationSection />
+            <Suspense fallback={<SectionSkeleton />}>
+              <ProjectConfigurationSection />
+            </Suspense>
           </section>
         )}
 
@@ -75,7 +88,9 @@ export default async function SettingsPage() {
             title="Notifications"
             description="Manage how you receive job site alerts and updates"
           />
-          <ChatNotificationPreferences />
+          <Suspense fallback={<SectionSkeleton />}>
+            <ChatNotificationPreferences />
+          </Suspense>
         </section>
 
         {/* ============================================ */}
@@ -87,7 +102,9 @@ export default async function SettingsPage() {
             title="KakaoTalk Integration"
             description="Connect your KakaoTalk account for notifications and message sync"
           />
-          <KakaoTalkSettings />
+          <Suspense fallback={<SectionSkeleton />}>
+            <KakaoTalkSettings />
+          </Suspense>
         </section>
 
         {/* ============================================ */}

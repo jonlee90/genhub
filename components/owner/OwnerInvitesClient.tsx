@@ -261,27 +261,17 @@ export function OwnerInvitesClient({ invitations }: OwnerInvitesClientProps) {
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-800">
             {invitations.map((invitation) => {
-              const isExpired = !isAfter(
-                new Date(invitation.expires_at),
-                new Date(),
-              );
               const inviteLink = `${typeof window !== "undefined" ? window.location.origin : ""}/admin-invite?token=${invitation.invitation_token}`;
 
               return (
-                <div
-                  key={invitation.id}
-                  className={cn(
-                    "px-5 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors",
-                    isExpired && "opacity-60",
-                  )}
-                >
+                <div key={invitation.id} className="px-5 py-4 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-medium text-gray-900 dark:text-gray-100">
                           {invitation.email}
                         </span>
-                        {isExpired && (
+                        {isAfter(new Date(), new Date(invitation.expires_at)) && (
                           <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">
                             EXPIRED
                           </span>

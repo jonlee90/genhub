@@ -60,8 +60,14 @@ skills:
 | Touch | 44px minimum (`min-h-[44px] min-w-[44px]`) |
 | Viewport | `dvh` not `vh` |
 | Safe areas | `pb-[env(safe-area-inset-bottom)]` |
+| Dark Mode | Always include - use `dark:` variants for all colors/backgrounds |
 
 **Patterns:** See `genhub-patterns` skill for Touch Button, ResponsiveModal, Server Action integration.
+
+**Dark Mode Implementation:**
+- Use Tailwind `dark:` variants on all color/background classes
+- Ensure text contrast meets WCAG standards in both modes
+- Test interactive states (hover, active, focus) in dark mode
 
 ---
 
@@ -95,7 +101,7 @@ FOR each task:
   2. Check authority (STOP if DB/auth)
   3. Check hard rules (STOP if violation)
   4. Implement using genhub-patterns
-  5. Verify: 44px targets, active states, no Supabase
+  5. Verify: 44px targets, active states, dark mode variants, no Supabase
   6. Mark TodoWrite: completed
 
 AFTER all tasks (if MODE=FULL):
@@ -137,7 +143,7 @@ Issues: {if any}
 **Files Changed:**
 - `path/file.tsx` - Description
 
-**Mobile Checks:** ✓ 44px | ✓ active states | ✓ safe areas
+**Mobile Checks:** ✓ 44px | ✓ active states | ✓ dark mode | ✓ safe areas
 
 **Build:** ✓ pass | ✗ fail
 
