@@ -165,8 +165,8 @@ WITHOUT SPEC (direct task list):
 | Schema change, migration, RLS | backend-engineer | Security review after |
 | Bug fix in component | frontend-engineer | Unless needs DB |
 | Bug fix in action/API | backend-engineer | |
-| Review/validation/testing | **OpenCode GPT-5.2** | Handoff after task complete |
-| Both UI + DB needed | Sequential: backend → frontend → **OpenCode** | |
+| Review/validation/testing | code-reviewer | Post-implementation |
+| Both UI + DB needed | Sequential: backend → frontend → review | |
 
 ### Orchestration Flags
 
@@ -210,25 +210,6 @@ Step 4: VERIFY & REPORT
 
 ### Preflight Check (Complex Tasks)
 
-| Scenario | Strategy |
-|----------|----------|
-| All same domain | Single agent with full task list |
-| Mixed domains, independent | Parallel: multiple Task calls in one message |
-| Mixed domains, dependent | Sequential: backend → frontend → **OpenCode handoff** |
-| Complex feature with spec | Use `/kc:impl` instead |
-
-**Step 3.5: OpenCode Handoff (After Implementation)**
-```
-After completing implementation tasks:
-1. Run npx tsc --noEmit && npm run lint
-2. Create handoff file: .claude/handoffs/claude-to-opencode-{timestamp}.md
-3. Notify user: "Handoff created for OpenCode review"
-```
-
-**Step 4: Track & Report**
-- Mark TodoWrite items `in_progress` → `completed`
-- If budget hit: complete current, report remaining
-- Collect agent outputs, summarize for user
 Before major implementations, verify:
 - [ ] Spec files exist at expected paths (if referenced)
 - [ ] No type conflicts with existing schema
@@ -246,56 +227,6 @@ All agents must return this structure:
 ```
 ## Task Complete
 
-| Type | Agents |
-|------|--------|
-| **With budgets** | backend-engineer(90k), frontend-engineer(90k), performance-engineer(60k) |
-| **Planning-only** | frontend-architect, supabase-schema-architect, ai-sdk-v5-expert |
-| **External (OpenCode)** | code-reviewer, refactor-specialist, component-scanner, tailwind-optimizer |
-
----
-
-## OPENCODE HANDOFF (Post-Task)
-
-After completing any significant task, create a handoff for OpenCode GPT-5.2-Codex:
-
-### When to Handoff
-
-| Task Type | Handoff Required |
-|-----------|------------------|
-| New component/feature | YES |
-| Bug fix (multi-file) | YES |
-| Refactoring | YES |
-| Single-line fix | NO |
-| Config change | NO |
-| Type-only change | NO |
-
-### Handoff Protocol
-
-**Step 1:** Complete implementation and run initial validation
-```bash
-npx tsc --noEmit && npm run lint
-```
-
-**Step 2:** Create handoff file at `.claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md`
-
-**Step 3:** Use template from `.claude/handoffs/README.md`
-
-### What OpenCode Will Do
-
-1. **Validate** - Run full test suite (tsc, lint, build)
-2. **Reusability Scan** - Check for patterns to extract
-3. **Duplication Check** - Verify no code repetition
-4. **Tailwind Optimization** - Clean up classes
-5. **HTML Structure** - Simplify div soup
-6. **Debug** - Ensure 100% working
-
-### OpenCode Response
-
-OpenCode creates response at `.claude/handoffs/opencode-to-claude-{YYYYMMDD-HHMM}.md` with:
-- Validation results
-- Refactoring changes made
-- New reusable components created
-- Remaining issues (if any)
 **Status:** ✓ completed | ✗ failed | ⚠️ partial (N/M)
 
 **Tasks:**

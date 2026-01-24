@@ -47,8 +47,5 @@ next-env.d.ts
 .dev.vars
 .wrangler 
 
-# OpenCode (track config, ignore session data)
-.opencode/memory/
-.opencode/reports/
-
+.opencode
 .serena
