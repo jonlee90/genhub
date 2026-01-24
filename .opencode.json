@@ -1,0 +1,135 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "name": "genhub-pwa",
+  "description": "GenHub Construction PWA - OpenCode Integration",
+
+  "providers": {
+    "openai": {
+      "enabled": true,
+      "apiKeyEnv": "OPENAI_API_KEY",
+      "options": {
+        "reasoningEffort": "high",
+        "reasoningSummary": "auto",
+        "textVerbosity": "medium",
+        "store": false
+      }
+    },
+    "anthropic": {
+      "enabled": true,
+      "apiKeyEnv": "ANTHROPIC_API_KEY"
+    }
+  },
+
+  "agents": {
+    "coder": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 16000,
+      "description": "Primary coding agent for GenHub PWA"
+    },
+    "reviewer": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 12000,
+      "prompt": ".opencode/agents/code-reviewer.md",
+      "description": "Code review, refactoring, and reusability analysis"
+    },
+    "refactor": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 16000,
+      "prompt": ".opencode/agents/refactor-specialist.md",
+      "description": "Tailwind/HTML optimization and component cleanup"
+    },
+    "task": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 8000,
+      "description": "General task execution"
+    },
+    "title": {
+      "model": "gpt-5.2",
+      "maxTokens": 500,
+      "description": "Session title generation"
+    }
+  },
+
+  "subagents": {
+    "component-scanner": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 10000,
+      "prompt": ".opencode/agents/component-scanner.md",
+      "tools": ["read", "glob", "grep", "bash"],
+      "description": "Scans modules for refactorable code patterns"
+    },
+    "tailwind-optimizer": {
+      "model": "gpt-5.2-codex",
+      "maxTokens": 8000,
+      "prompt": ".opencode/agents/tailwind-optimizer.md",
+      "tools": ["read", "edit", "glob", "grep"],
+      "description": "HTML/CSS Tailwind expert for class optimization"
+    }
+  },
+
+  "skills": {
+    "discovery": [
+      ".opencode/skill/",
+      ".claude/skills/"
+    ],
+    "autoLoad": [
+      "vercel-react-best-practices"
+    ]
+  },
+
+  "rules": [
+    "AGENTS.md",
+    ".opencode/rules/genhub-patterns.md"
+  ],
+
+  "commands": {
+    "discovery": [
+      ".opencode/commands/",
+      ".claude/commands/"
+    ]
+  },
+
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server"],
+      "env": {
+        "SUPABASE_URL": "${SUPABASE_URL}",
+        "SUPABASE_SERVICE_ROLE_KEY": "${SUPABASE_SERVICE_ROLE_KEY}"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@anthropic-ai/memory-mcp"],
+      "env": {
+        "MEMORY_FILE": ".opencode/memory/graph.json"
+      }
+    }
+  },
+
+  "hooks": {
+    "afterEdit": {
+      "command": "npm run lint -- --file ${file} --fix",
+      "description": "Auto-fix linting issues after edits"
+    }
+  },
+
+  "workflow": {
+    "postTask": {
+      "enabled": true,
+      "agent": "reviewer",
+      "description": "Auto-review after task completion"
+    },
+    "chains": {
+      "full-review": ["reviewer", "refactor", "component-scanner"],
+      "quick-check": ["reviewer"],
+      "deep-refactor": ["component-scanner", "tailwind-optimizer", "refactor"]
+    }
+  },
+
+  "context": {
+    "handoffDir": ".claude/handoffs/",
+    "sharedMemory": ".opencode/memory/",
+    "syncWithClaude": true
+  }
+}
