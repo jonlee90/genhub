@@ -44,7 +44,14 @@ export function AssigneeMultiSelect({
   useEffect(() => {
     // If assignees are provided via props, use them directly
     if (assignees) {
-      setOptions(assignees);
+      // Use functional update to avoid setState in effect anti-pattern
+      setOptions((prev) => {
+        // Only update if different to avoid unnecessary re-renders
+        if (JSON.stringify(prev) !== JSON.stringify(assignees)) {
+          return assignees;
+        }
+        return prev;
+      });
       setLoading(false);
       return;
     }
@@ -53,7 +60,7 @@ export function AssigneeMultiSelect({
     if (projectId) {
       setLoading(true);
       getProjectAssignees(projectId).then((result) => {
-        if (result.data) setOptions(result.data);
+        if (result.success && result.data) setOptions(result.data);
         setLoading(false);
       });
     }

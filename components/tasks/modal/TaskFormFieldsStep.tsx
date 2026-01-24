@@ -12,10 +12,10 @@
  * - Materials section
  * - Expenses section
  */
-'use client';
+"use client";
 
-import React, { useState, useMemo } from 'react';
-import { m as motion } from 'framer-motion';
+import React, { useState, useMemo } from "react";
+import { m as motion } from "framer-motion";
 import {
   Calendar,
   Flag,
@@ -30,23 +30,26 @@ import {
   Check,
   RotateCcw,
   XCircle,
-} from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+} from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
-import { isFieldVisible } from '@/lib/config/task-type-fields';
-import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { TaskType } from '@/types/db/enums';
-import type { FieldConfig } from '@/lib/config/task-type-fields';
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import { isFieldVisible } from "@/lib/config/task-type-fields";
+import {
+  TASK_STATUS_CONFIG,
+  TASK_PRIORITY_CONFIG,
+} from "@/lib/config/task-colors";
+import type { TaskType } from "@/types/db/enums";
+import type { FieldConfig } from "@/lib/config/task-type-fields";
 
 interface Project {
   id: string;
@@ -60,7 +63,7 @@ interface Project {
 
 interface TaskFormFieldsStepProps {
   // Mode
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   taskType: TaskType | null;
   config: FieldConfig;
 
@@ -104,7 +107,9 @@ interface TaskFormFieldsStepProps {
   approvalStatus?: string | null;
   approvalNotes?: string;
   onApprovalNotesChange?: (value: string) => void;
-  onApprovalAction?: (status: 'approved' | 'rejected' | 'revision_requested') => void;
+  onApprovalAction?: (
+    status: "approved" | "rejected" | "revision_requested",
+  ) => void;
   isApprovalPending?: boolean;
   approvedBy?: string | null;
   approvedAt?: string | null;
@@ -112,8 +117,8 @@ interface TaskFormFieldsStepProps {
 }
 
 const DEFAULT_THEME = {
-  iconColor: 'text-construction-blue',
-  focusRing: 'focus:ring-construction-blue/20 focus:border-construction-blue',
+  iconColor: "text-construction-blue",
+  focusRing: "focus:ring-construction-blue/20 focus:border-construction-blue",
 };
 
 /**
@@ -179,13 +184,13 @@ export function TaskFormFieldsStep({
       className="space-y-5"
     >
       {/* Project Selection - Required for create mode */}
-      {mode === 'create' && (
+      {mode === "create" && (
         <div className="space-y-2">
           <Label
             htmlFor="project"
-            className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+            className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
           >
-            <FolderKanban className="h-4 w-4 text-gray-400" />
+            <FolderKanban className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             Project <span className="text-red-500">*</span>
           </Label>
           <Select
@@ -193,11 +198,14 @@ export function TaskFormFieldsStep({
             onValueChange={(value) => {
               onProjectChange(value);
               // Reset phase when project changes
-              onPhaseChange('none');
+              onPhaseChange("none");
             }}
             disabled={disabled}
           >
-            <SelectTrigger id="project" className="h-11 border-gray-200">
+            <SelectTrigger
+              id="project"
+              className="h-11 border-gray-200 dark:border-gray-700"
+            >
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
             <SelectContent>
@@ -212,21 +220,27 @@ export function TaskFormFieldsStep({
       )}
 
       {/* Approval Status Section - Conditional rendering based on task type */}
-      {isFieldVisible(taskType, 'approvalWorkflow', mode) && approvalStatus && (
-        <div className="p-4 rounded-xl border-2 border-amber-200 bg-amber-50">
+      {isFieldVisible(taskType, "approvalWorkflow", mode) && approvalStatus && (
+        <div className="p-4 rounded-xl border-2 border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20">
           <div className="flex items-center gap-2 mb-3">
             <ClipboardList className="w-5 h-5 text-amber-600" />
-            <h3 className="text-sm font-bold text-amber-800">Approval Workflow</h3>
+            <h3 className="text-sm font-bold text-amber-800 dark:text-amber-200">
+              Approval Workflow
+            </h3>
             <span
               className={cn(
-                'ml-auto px-2 py-0.5 rounded-full text-xs font-medium',
-                approvalStatus === 'pending' && 'bg-amber-200 text-amber-800',
-                approvalStatus === 'approved' && 'bg-emerald-200 text-emerald-800',
-                approvalStatus === 'rejected' && 'bg-red-200 text-red-800',
-                approvalStatus === 'revision_requested' && 'bg-orange-200 text-orange-800',
+                "ml-auto px-2 py-0.5 rounded-full text-xs font-medium",
+                approvalStatus === "pending" &&
+                  "bg-amber-200 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200",
+                approvalStatus === "approved" &&
+                  "bg-emerald-200 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200",
+                approvalStatus === "rejected" &&
+                  "bg-red-200 text-red-800 dark:bg-red-900/40 dark:text-red-200",
+                approvalStatus === "revision_requested" &&
+                  "bg-orange-200 text-orange-800 dark:bg-orange-900/40 dark:text-orange-200",
               )}
             >
-              {approvalStatus.replace('_', ' ').toUpperCase()}
+              {approvalStatus.replace("_", " ").toUpperCase()}
             </span>
           </div>
 
@@ -234,29 +248,29 @@ export function TaskFormFieldsStep({
           <div className="space-y-2 mb-3">
             <Label
               htmlFor="approval_notes"
-              className="text-sm font-medium text-amber-700 flex items-center gap-2"
+              className="text-sm font-medium text-amber-700 dark:text-amber-300 flex items-center gap-2"
             >
               <MessageSquare className="h-4 w-4" />
               Approval Notes
             </Label>
             <Textarea
               id="approval_notes"
-              value={approvalNotes || ''}
+              value={approvalNotes || ""}
               onChange={(e) => onApprovalNotesChange?.(e.target.value)}
               placeholder="Add notes for this approval decision..."
               rows={2}
-              disabled={isApprovalPending || approvalStatus === 'approved'}
-              className="border-amber-200 focus:ring-amber-500/20 focus:border-amber-500 bg-white"
+              disabled={isApprovalPending || approvalStatus === "approved"}
+              className="border-amber-200 dark:border-amber-900/40 focus:ring-amber-500/20 focus:border-amber-500 bg-white dark:bg-gray-900"
             />
           </div>
 
           {/* Approval Action Buttons */}
-          {approvalStatus !== 'approved' && onApprovalAction && (
+          {approvalStatus !== "approved" && onApprovalAction && (
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 size="sm"
-                onClick={() => onApprovalAction('approved')}
+                onClick={() => onApprovalAction("approved")}
                 disabled={isApprovalPending}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white"
               >
@@ -271,7 +285,7 @@ export function TaskFormFieldsStep({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => onApprovalAction('revision_requested')}
+                onClick={() => onApprovalAction("revision_requested")}
                 disabled={isApprovalPending}
                 className="border-orange-300 text-orange-700 hover:bg-orange-50"
               >
@@ -282,7 +296,7 @@ export function TaskFormFieldsStep({
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => onApprovalAction('rejected')}
+                onClick={() => onApprovalAction("rejected")}
                 disabled={isApprovalPending}
                 className="border-red-300 text-red-700 hover:bg-red-50"
               >
@@ -296,7 +310,9 @@ export function TaskFormFieldsStep({
           {approvedBy && approvedAt && (
             <div className="mt-3 pt-3 border-t border-amber-200 text-xs text-amber-700">
               Last updated: {new Date(approvedAt).toLocaleDateString()}
-              {approvalNotesHistory && <p className="mt-1 italic">"{approvalNotesHistory}"</p>}
+              {approvalNotesHistory && (
+                <p className="mt-1 italic">"{approvalNotesHistory}"</p>
+              )}
             </div>
           )}
         </div>
@@ -306,9 +322,9 @@ export function TaskFormFieldsStep({
       <div className="space-y-2">
         <Label
           htmlFor="title"
-          className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+          className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
         >
-          <Sparkles className={cn('h-4 w-4', theme.iconColor)} />
+          <Sparkles className={cn("h-4 w-4", theme.iconColor)} />
           Task Title <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -318,7 +334,10 @@ export function TaskFormFieldsStep({
           placeholder="What needs to be done?"
           required
           disabled={disabled}
-          className={cn('h-11 border-gray-200', theme.focusRing)}
+          className={cn(
+            "h-11 border-gray-200 dark:border-gray-700",
+            theme.focusRing,
+          )}
         />
       </div>
 
@@ -326,9 +345,9 @@ export function TaskFormFieldsStep({
       <div className="space-y-2">
         <Label
           htmlFor="description"
-          className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+          className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
         >
-          <FileText className="h-4 w-4 text-gray-400" />
+          <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           Description
         </Label>
         <Textarea
@@ -338,36 +357,54 @@ export function TaskFormFieldsStep({
           placeholder="Add details about this task..."
           rows={3}
           disabled={disabled}
-          className={cn('border-gray-200 resize-none', theme.focusRing)}
+          className={cn(
+            "border-gray-200 dark:border-gray-700 resize-none",
+            theme.focusRing,
+          )}
         />
       </div>
 
       {/* Status & Phase Row */}
       <div
         className={cn(
-          'grid gap-4',
-          isFieldVisible(taskType, 'phase', mode) ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1',
+          "grid gap-4",
+          isFieldVisible(taskType, "phase", mode)
+            ? "grid-cols-1 sm:grid-cols-2"
+            : "grid-cols-1",
         )}
       >
         {/* Status field - Edit mode only */}
-        {mode === 'edit' && (
+        {mode === "edit" && (
           <div className="space-y-2">
             <Label
               htmlFor="status"
-              className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
             >
-              <ClipboardList className="h-4 w-4 text-gray-400" />
+              <ClipboardList className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               Status <span className="text-red-500">*</span>
             </Label>
-            <Select value={status} onValueChange={onStatusChange} disabled={disabled}>
-              <SelectTrigger id="status" className="h-11 border-gray-200">
+            <Select
+              value={status}
+              onValueChange={onStatusChange}
+              disabled={disabled}
+            >
+              <SelectTrigger
+                id="status"
+                className="h-11 border-gray-200 dark:border-gray-700"
+              >
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(TASK_STATUS_CONFIG).map(([value, config]) => (
-                  <SelectItem key={value} value={value} textValue={config.label}>
+                  <SelectItem
+                    key={value}
+                    value={value}
+                    textValue={config.label}
+                  >
                     <div className="flex items-center gap-2">
-                      <div className={cn('w-2 h-2 rounded-full', config.dotColor)} />
+                      <div
+                        className={cn("w-2 h-2 rounded-full", config.dotColor)}
+                      />
                       <span>{config.label}</span>
                     </div>
                   </SelectItem>
@@ -378,13 +415,13 @@ export function TaskFormFieldsStep({
         )}
 
         {/* Phase field - Hidden for admin tasks */}
-        {isFieldVisible(taskType, 'phase', mode) && (
+        {isFieldVisible(taskType, "phase", mode) && (
           <div className="space-y-2">
             <Label
               htmlFor="phase"
-              className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+              className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
             >
-              <Layers className="h-4 w-4 text-gray-400" />
+              <Layers className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               Phase
             </Label>
             <Select
@@ -392,7 +429,10 @@ export function TaskFormFieldsStep({
               onValueChange={onPhaseChange}
               disabled={disabled || !selectedProjectId}
             >
-              <SelectTrigger id="phase" className="h-11 border-gray-200">
+              <SelectTrigger
+                id="phase"
+                className="h-11 border-gray-200 dark:border-gray-700"
+              >
                 <SelectValue placeholder="Select phase" />
               </SelectTrigger>
               <SelectContent>
@@ -414,20 +454,29 @@ export function TaskFormFieldsStep({
       <div className="space-y-2">
         <Label
           htmlFor="priority"
-          className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+          className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
         >
-          <Flag className="h-4 w-4 text-gray-400" />
+          <Flag className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           Priority
         </Label>
-        <Select value={priority} onValueChange={onPriorityChange} disabled={disabled}>
-          <SelectTrigger id="priority" className="h-11 border-gray-200">
+        <Select
+          value={priority}
+          onValueChange={onPriorityChange}
+          disabled={disabled}
+        >
+          <SelectTrigger
+            id="priority"
+            className="h-11 border-gray-200 dark:border-gray-700"
+          >
             <SelectValue placeholder="Select priority" />
           </SelectTrigger>
           <SelectContent>
             {Object.entries(TASK_PRIORITY_CONFIG).map(([value, config]) => (
               <SelectItem key={value} value={value} textValue={config.label}>
                 <div className="flex items-center gap-2">
-                  <div className={cn('w-2 h-2 rounded-full', config.dotColor)} />
+                  <div
+                    className={cn("w-2 h-2 rounded-full", config.dotColor)}
+                  />
                   <span>{config.label}</span>
                 </div>
               </SelectItem>
@@ -439,17 +488,17 @@ export function TaskFormFieldsStep({
       {/* Date Range Row */}
       <div
         className={cn(
-          'grid gap-4',
-          isFieldVisible(taskType, 'startDate', mode)
-            ? 'grid-cols-1 sm:grid-cols-2'
-            : 'grid-cols-1',
+          "grid gap-4",
+          isFieldVisible(taskType, "startDate", mode)
+            ? "grid-cols-1 sm:grid-cols-2"
+            : "grid-cols-1",
         )}
       >
         {/* Start Date - Hidden for admin tasks */}
-        {isFieldVisible(taskType, 'startDate', mode) && (
+        {isFieldVisible(taskType, "startDate", mode) && (
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-400" />
+            <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               Start Date
             </Label>
             <Input
@@ -457,14 +506,14 @@ export function TaskFormFieldsStep({
               value={startDate}
               onChange={(e) => handleStartDateChange(e.target.value)}
               disabled={disabled}
-              className="h-11 border-gray-200"
+              className="h-11 border-gray-200 dark:border-gray-700"
             />
           </div>
         )}
 
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-400" />
+          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
             Due Date
           </Label>
           <Input
@@ -473,25 +522,25 @@ export function TaskFormFieldsStep({
             onChange={(e) => onDueDateChange(e.target.value)}
             disabled={disabled}
             min={startDate || undefined}
-            className="h-11 border-gray-200"
+            className="h-11 border-gray-200 dark:border-gray-700"
           />
         </div>
       </div>
 
       {/* Costs Row - Conditional rendering and dynamic labels */}
-      {isFieldVisible(taskType, 'plannedCost', mode) && (
+      {isFieldVisible(taskType, "plannedCost", mode) && (
         <div
           className={cn(
-            'grid gap-4',
-            isFieldVisible(taskType, 'actualCost', mode)
-              ? 'grid-cols-1 sm:grid-cols-2'
-              : 'grid-cols-1',
+            "grid gap-4",
+            isFieldVisible(taskType, "actualCost", mode)
+              ? "grid-cols-1 sm:grid-cols-2"
+              : "grid-cols-1",
           )}
         >
           {/* Planned Cost with dynamic label */}
           <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-gray-400" />
+            <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               {config.labels.plannedCost}
             </Label>
             <Input
@@ -503,18 +552,18 @@ export function TaskFormFieldsStep({
               placeholder="0.00"
               disabled={disabled}
               className={cn(
-                'h-11 border-gray-200',
-                taskType === 'purchase' &&
-                  'border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500',
+                "h-11 border-gray-200 dark:border-gray-700",
+                taskType === "purchase" &&
+                  "border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500",
               )}
             />
           </div>
 
           {/* Actual Cost - Edit mode only */}
-          {isFieldVisible(taskType, 'actualCost', mode) && (
+          {isFieldVisible(taskType, "actualCost", mode) && (
             <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <DollarSign className={cn('h-4 w-4', theme.iconColor)} />
+              <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <DollarSign className={cn("h-4 w-4", theme.iconColor)} />
                 Actual Cost
               </Label>
               <Input
@@ -525,7 +574,7 @@ export function TaskFormFieldsStep({
                 onChange={(e) => onActualCostChange(e.target.value)}
                 placeholder="0.00"
                 disabled={disabled}
-                className="h-11 border-gray-200"
+                className="h-11 border-gray-200 dark:border-gray-700"
               />
             </div>
           )}

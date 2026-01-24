@@ -7,7 +7,7 @@
  * - Single responsive ProjectCard component (no MobileProjectCard)
  * - CSS-based stagger animations instead of per-item framer-motion
  * - Memoized filter/sort/stats calculations
- * - Extracted reusable components (EmptyState, NoResultsState, ResultsCount)
+ * - Extracted reusable components (EmptyState, NoResultsState)
  * - Reduced framer-motion usage to essential animations only
  * - B-002: Dynamic import for CreateProjectModal (-40KB from initial bundle)
  */
@@ -45,32 +45,6 @@ const CreateProjectModal = dynamic(() => import('./CreateProjectModal').then((mo
 // ============================================
 // Extracted Components for Better Performance
 // ============================================
-
-/**
- * Results count indicator - memoized
- */
-const ResultsCount = memo(function ResultsCount({
-  filtered,
-  total,
-}: {
-  filtered: number;
-  total: number;
-}) {
-  return (
-    <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-construction-blue/5 dark:from-construction-blue/10 to-transparent rounded-lg border-l-4 border-construction-blue dark:border-construction-blue">
-      <div className="flex items-center gap-1.5 md:gap-2">
-        <div className="w-2 h-2 bg-construction-blue dark:bg-construction-blue rounded-full animate-pulse" />
-        <span className="text-xs md:text-sm font-mono font-bold uppercase tracking-wider text-construction-blue dark:text-construction-blue">
-          Status
-        </span>
-      </div>
-      <div className="h-4 w-px bg-construction-blue/30 dark:bg-construction-blue/50" />
-      <span className="text-xs md:text-sm font-bold text-gray-700 dark:text-gray-300">
-        {filtered} of {total} projects
-      </span>
-    </div>
-  );
-});
 
 
 /**
@@ -546,7 +520,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
       {isMobile ? (
         <div className="flex flex-col h-full">
           <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
-            <div className="p-4 pb-32">
+            <div className="p-4">
               <BlueprintBackground />
 
               <div className="relative mb-4">
@@ -587,11 +561,6 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
                 onSortChange={setSortBy}
                 projects={projects}
               />
-
-              {/* Results count */}
-              <div className="my-4">
-                <ResultsCount filtered={filteredProjects.length} total={projects.length} />
-              </div>
 
               {/* Project cards */}
               {filteredProjects.length === 0 ? (
@@ -668,9 +637,6 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
             onSortChange={setSortBy}
             projects={projects}
           />
-
-          {/* Results count */}
-          <ResultsCount filtered={filteredProjects.length} total={projects.length} />
 
           {/* Project grid or empty state */}
           {filteredProjects.length === 0 ? (

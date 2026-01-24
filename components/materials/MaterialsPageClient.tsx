@@ -156,7 +156,7 @@ export function MaterialsPageClient({
           onRefresh={handleRefresh}
           className="flex-1"
         >
-          <div className="p-4 pb-32">
+          <div className="p-4">
             {/* Blueprint Grid Background */}
             <div className="fixed inset-0 pointer-events-none opacity-[0.03] -z-10">
               <div

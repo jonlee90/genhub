@@ -68,7 +68,8 @@ export function MaterialDeliveryPrompt({
   onExpenseCreated,
 }: MaterialDeliveryPromptProps) {
   const [isCreating, setIsCreating] = useState(false);
-  const { error, setError, clearError, successMessage, showSuccess } = useActionWithError();
+  const { error, setError, clearError, successMessage, showSuccess } =
+    useActionWithError();
 
   // Early return if no material assignment
   if (!materialAssignment) {
@@ -139,24 +140,24 @@ export function MaterialDeliveryPrompt({
       {/* Material Details */}
       <div className="space-y-4">
         {/* Material Info */}
-        <div className="rounded-lg border-2 border-gray-200 bg-gray-50 p-4 space-y-2">
+        <div className="rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-4 space-y-2">
           <div className="font-bold text-construction-blue">
             {materialAssignment.material.product_name}
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <div className="text-gray-600">Quantity:</div>
-            <div className="font-medium text-gray-900">
+            <div className="text-gray-600 dark:text-gray-400">Quantity:</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">
               {materialAssignment.quantity}{" "}
               {materialAssignment.material.unit_of_measure}
             </div>
 
-            <div className="text-gray-600">Price/Unit:</div>
-            <div className="font-medium text-gray-900">
+            <div className="text-gray-600 dark:text-gray-400">Price/Unit:</div>
+            <div className="font-medium text-gray-900 dark:text-gray-100">
               ${(materialAssignment.unit_cost || 0).toFixed(2)}
             </div>
 
-            <div className="text-gray-600">Total Cost:</div>
+            <div className="text-gray-600 dark:text-gray-400">Total Cost:</div>
             <div className="font-black text-construction-blue">
               ${totalCost.toFixed(2)}
             </div>
@@ -166,7 +167,7 @@ export function MaterialDeliveryPrompt({
         {/* Info Alert */}
         <Alert className="border-construction-blue/20 bg-construction-blue/5">
           <DollarSign className="h-4 w-4 text-construction-blue" />
-          <AlertDescription className="text-sm text-gray-600">
+          <AlertDescription className="text-sm text-gray-600 dark:text-gray-400">
             An expense will be created for this material delivery. It will be
             linked to this task and require approval.
           </AlertDescription>

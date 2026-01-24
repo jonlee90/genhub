@@ -76,9 +76,7 @@ export function AutoExpenseToggle({
           enabled
             ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800"
             : "bg-gray-50 dark:bg-gray-950 border-gray-200 dark:border-gray-700",
-          disabled
-            ? "opacity-50 cursor-not-allowed"
-            : "cursor-pointer"
+          disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
         )}
       >
         <div
@@ -88,13 +86,15 @@ export function AutoExpenseToggle({
           <div
             className={cn(
               "flex items-center justify-center w-9 h-9 rounded-lg",
-              enabled ? "bg-green-100 dark:bg-green-900/50" : "bg-gray-100 dark:bg-gray-800"
+              enabled
+                ? "bg-green-100 dark:bg-green-900/50"
+                : "bg-gray-100 dark:bg-gray-800",
             )}
           >
             <Receipt
               className={cn(
                 "w-5 h-5",
-                enabled ? "text-green-600" : "text-gray-500 dark:text-gray-400"
+                enabled ? "text-green-600" : "text-gray-500 dark:text-gray-400",
               )}
             />
           </div>
@@ -121,7 +121,7 @@ export function AutoExpenseToggle({
             "rounded-xl border-2 border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-950/30",
             "border-l-4 border-l-green-500",
             "p-4 space-y-3",
-            "animate-in slide-in-from-top-2 duration-200"
+            "animate-in slide-in-from-top-2 duration-200",
           )}
         >
           <div className="flex items-center gap-2 mb-2">
@@ -153,7 +153,7 @@ export function AutoExpenseToggle({
                 <Tag className="w-4 h-4 text-green-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
                   Category
                 </div>
                 <Select
@@ -182,15 +182,15 @@ export function AutoExpenseToggle({
               icon={Building2}
               label="Vendor"
               value={vendorName || "Not specified"}
-              valueClassName={!vendorName ? "text-gray-400 italic" : undefined}
+              valueClassName={
+                !vendorName
+                  ? "text-gray-400 dark:text-gray-500 italic"
+                  : undefined
+              }
             />
 
             {/* Date */}
-            <PreviewField
-              icon={Calendar}
-              label="Date"
-              value={expenseDate}
-            />
+            <PreviewField icon={Calendar} label="Date" value={expenseDate} />
           </div>
         </div>
       )}
@@ -208,17 +208,27 @@ interface PreviewFieldProps {
   valueClassName?: string;
 }
 
-function PreviewField({ icon: Icon, label, value, valueClassName }: PreviewFieldProps) {
+function PreviewField({
+  icon: Icon,
+  label,
+  value,
+  valueClassName,
+}: PreviewFieldProps) {
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center justify-center w-7 h-7 rounded-md bg-white/80 dark:bg-gray-900/80">
         <Icon className="w-4 h-4 text-green-600" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
           {label}
         </div>
-        <div className={cn("text-sm font-medium text-gray-900 dark:text-gray-100 truncate", valueClassName)}>
+        <div
+          className={cn(
+            "text-sm font-medium text-gray-900 dark:text-gray-100 truncate",
+            valueClassName,
+          )}
+        >
           {value}
         </div>
       </div>

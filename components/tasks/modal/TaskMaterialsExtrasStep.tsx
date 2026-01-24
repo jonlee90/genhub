@@ -7,17 +7,20 @@
  * - Auto-expense toggle and settings
  * - Expenses section (edit mode)
  */
-'use client';
+"use client";
 
-import React from 'react';
-import { Package } from 'lucide-react';
-import { TaskMaterialsManager, type TempMaterial } from '../TaskMaterialsManager';
-import { TaskReceiptUpload } from '../TaskReceiptUpload';
-import { AutoExpenseToggle } from '../AutoExpenseToggle';
-import { TaskExpensesSection, type TaskExpense } from '../TaskExpensesSection';
-import { isFieldVisible } from '@/lib/config/task-type-fields';
-import type { TaskType } from '@/types/db/enums';
-import type { AssigneeOption } from '../PrimaryAssigneeSelector';
+import React from "react";
+import { Package } from "lucide-react";
+import {
+  TaskMaterialsManager,
+  type TempMaterial,
+} from "../TaskMaterialsManager";
+import { TaskReceiptUpload } from "../TaskReceiptUpload";
+import { AutoExpenseToggle } from "../AutoExpenseToggle";
+import { TaskExpensesSection, type TaskExpense } from "../TaskExpensesSection";
+import { isFieldVisible } from "@/lib/config/task-type-fields";
+import type { TaskType } from "@/types/db/enums";
+import type { AssigneeOption } from "../PrimaryAssigneeSelector";
 
 interface Project {
   id: string;
@@ -26,7 +29,7 @@ interface Project {
 
 interface TaskMaterialsExtrasStepProps {
   // Mode and task type
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   taskType: TaskType | null;
 
   // Task context
@@ -91,21 +94,23 @@ export function TaskMaterialsExtrasStep({
   onExpenseAdded,
   projects = [],
   tasks = [],
-  projectName = '',
+  projectName = "",
   disabled,
 }: TaskMaterialsExtrasStepProps) {
   return (
     <div className="space-y-5">
       {/* Materials Section - Conditional rendering with emphasis */}
-      {isFieldVisible(taskType, 'materialsSection', mode) && (
+      {isFieldVisible(taskType, "materialsSection", mode) && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
+          <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
             <Package className="h-4 w-4 text-construction-blue" />
-            <h3 className="text-sm font-bold text-gray-900">Materials</h3>
-            <p className="text-xs ml-auto text-gray-500">
-              {mode === 'create'
-                ? `${tempMaterials.length} material${tempMaterials.length !== 1 ? 's' : ''} selected`
-                : 'Search & manage task materials'}
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+              Materials
+            </h3>
+            <p className="text-xs ml-auto text-gray-500 dark:text-gray-400">
+              {mode === "create"
+                ? `${tempMaterials.length} material${tempMaterials.length !== 1 ? "s" : ""} selected`
+                : "Search & manage task materials"}
             </p>
           </div>
           <TaskMaterialsManager
@@ -142,26 +147,28 @@ export function TaskMaterialsExtrasStep({
       )}
 
       {/* Expenses Section - Edit mode only */}
-      {showExpenses && isFieldVisible(taskType, 'expensesSection', mode) && taskId && (
-        <div className="space-y-2">
-          {expensesLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <TaskExpensesSection
-              taskId={taskId}
-              taskTitle={taskTitle}
-              projectId={projectId}
-              projectName={projectName}
-              expenses={expenses}
-              projects={projects}
-              tasks={tasks}
-              onExpenseAdded={onExpenseAdded}
-            />
-          )}
-        </div>
-      )}
+      {showExpenses &&
+        isFieldVisible(taskType, "expensesSection", mode) &&
+        taskId && (
+          <div className="space-y-2">
+            {expensesLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <TaskExpensesSection
+                taskId={taskId}
+                taskTitle={taskTitle}
+                projectId={projectId}
+                projectName={projectName}
+                expenses={expenses}
+                projects={projects}
+                tasks={tasks}
+                onExpenseAdded={onExpenseAdded}
+              />
+            )}
+          </div>
+        )}
     </div>
   );
 }

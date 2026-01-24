@@ -19,6 +19,11 @@ import type {
   ApprovalStatus,
   ActivityAction,
 } from "@/types/db/enums";
+import type {
+  ActionResult,
+  FormActionResult,
+  MutationResult,
+} from "@/types/server-actions";
 
 type Task = TasksRow;
 type TaskInsert = TasksInsert;
@@ -281,13 +286,12 @@ async function logTaskActivity(
  * Get all assignable users and subcontractors for a project
  * Returns combined list of ALL company team members + ALL company subcontractors
  */
-export async function getProjectAssignees(projectId: string): Promise<{
-  data?: AssigneeOption[];
-  error?: string;
-}> {
+export async function getProjectAssignees(
+  projectId: string,
+): Promise<ActionResult<AssigneeOption[]>> {
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -299,7 +303,7 @@ export async function getProjectAssignees(projectId: string): Promise<{
     companyId,
   );
   if ("error" in projectCheck) {
-    return { error: projectCheck.error };
+    return { success: false, error: projectCheck.error as string };
   }
 
   // Transform into unified assignee options
@@ -339,7 +343,7 @@ export async function getProjectAssignees(projectId: string): Promise<{
         usersError,
       );
     });
-    return { error: "Failed to fetch team members" };
+    return { success: false, error: "Failed to fetch team members" };
   }
 
   companyUsers?.forEach((cu) => {
@@ -387,7 +391,7 @@ export async function getProjectAssignees(projectId: string): Promise<{
       self.findIndex((a) => a.id === assignee.id && a.type === assignee.type),
   );
 
-  return { data: uniqueAssignees };
+  return { success: true, data: uniqueAssignees };
 }
 
 /**
@@ -464,11 +468,11 @@ async function updateTaskAssignees(
 export async function createTask(
   prevState: CreateTaskFormState | null,
   formData: FormData,
-) {
+): Promise<FormActionResult<Task>> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -486,7 +490,9 @@ export async function createTask(
     try {
       assigneeIds = JSON.parse(assigneeIdsJson);
     } catch (e) {
-      console.warn("[createTask] Failed to parse assignee_ids JSON:", e);
+      after(() => {
+        console.warn("[createTask] Failed to parse assignee_ids JSON:", e);
+      });
     }
   }
 
@@ -519,6 +525,7 @@ export async function createTask(
   const validation = createTaskSchema.safeParse(rawData);
   if (!validation.success) {
     return {
+      success: false,
       error: "Validation failed",
       fieldErrors: validation.error.flatten().fieldErrors,
     };
@@ -533,7 +540,7 @@ export async function createTask(
     companyId,
   );
   if ("error" in projectCheck) {
-    return { error: projectCheck.error };
+    return { success: false, error: projectCheck.error as string };
   }
 
   // Prepare task data with task_type support
@@ -566,7 +573,7 @@ export async function createTask(
     after(() => {
       console.error("Error creating task:", insertError);
     });
-    return { error: "Failed to create task. Please try again." };
+    return { success: false, error: "Failed to create task. Please try again." };
   }
 
   // CRITICAL OPTIMIZATION (HIGH-002): Parallelize post-creation operations
@@ -688,17 +695,19 @@ export async function createTask(
   // Invalidate dashboard cache (task counts changed)
   await invalidateDashboardCache(companyId);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
  * Update a task's fields
  */
-export async function updateTask(formData: FormData) {
+export async function updateTask(
+  formData: FormData,
+): Promise<FormActionResult<Task>> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -717,7 +726,9 @@ export async function updateTask(formData: FormData) {
     try {
       assigneeIds = JSON.parse(assigneeIdsJson);
     } catch (e) {
-      console.warn("[updateTask] Failed to parse assignee_ids:", e);
+      after(() => {
+        console.warn("[updateTask] Failed to parse assignee_ids:", e);
+      });
     }
   }
 
@@ -749,6 +760,7 @@ export async function updateTask(formData: FormData) {
   const validation = updateTaskSchema.safeParse(rawData);
   if (!validation.success) {
     return {
+      success: false,
       error: "Validation failed",
       fieldErrors: validation.error.flatten().fieldErrors,
     };
@@ -759,7 +771,7 @@ export async function updateTask(formData: FormData) {
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, id, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { task: existingTask, projectId } = taskCheck;
@@ -827,7 +839,7 @@ export async function updateTask(formData: FormData) {
     after(() => {
       console.error("Error updating task:", updateError);
     });
-    return { error: "Failed to update task. Please try again." };
+    return { success: false, error: "Failed to update task. Please try again." };
   }
 
   // CRITICAL OPTIMIZATION (CRIT-005): Batch activity logging
@@ -917,7 +929,7 @@ export async function updateTask(formData: FormData) {
   revalidatePath(`/app/tasks/${id}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
@@ -925,15 +937,17 @@ export async function updateTask(formData: FormData) {
  * Extended version that supports UpdateTaskInput interface with autoCreateExpense flag
  *
  * @param input - UpdateTaskInput with optional autoCreateExpense and primaryAssigneeId
- * @returns UpdateTaskResult with optional expenseId if expense was created
+ * @returns FormActionResult with optional expenseId if expense was created
  */
 export async function updateTaskWithExpense(
   input: UpdateTaskInput,
-): Promise<UpdateTaskResult> {
+): Promise<
+  FormActionResult<Task & { expenseId?: string; expenseError?: string }>
+> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { success: false, error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -953,7 +967,7 @@ export async function updateTaskWithExpense(
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, id, companyId);
   if ("error" in taskCheck) {
-    return { success: false, error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { task: existingTask, projectId } = taskCheck;
@@ -989,7 +1003,9 @@ export async function updateTaskWithExpense(
     .single();
 
   if (updateError) {
-    console.error("[updateTaskWithExpense] Error updating task:", updateError);
+    after(() => {
+      console.error("[updateTaskWithExpense] Error updating task:", updateError);
+    });
     return {
       success: false,
       error: "Failed to update task. Please try again.",
@@ -1030,18 +1046,20 @@ export async function updateTaskWithExpense(
       assigneeType,
     );
     if (primaryResult.error) {
-      console.warn(
-        "[updateTaskWithExpense] Failed to set primary assignee:",
-        primaryResult.error,
-      );
+      after(() => {
+        console.warn(
+          "[updateTaskWithExpense] Failed to set primary assignee:",
+          primaryResult.error,
+        );
+      });
       // Continue - this is not a critical failure
     }
   }
 
-  // Result object to build up
-  const result: UpdateTaskResult = { success: true, task };
-
   // Handle auto-expense creation if requested
+  let expenseId: string | undefined;
+  let expenseError: string | undefined;
+
   if (input.autoCreateExpense && task.actual_cost && task.actual_cost > 0) {
     try {
       // Import createExpenseFromTask dynamically to avoid circular imports
@@ -1049,24 +1067,28 @@ export async function updateTaskWithExpense(
       const expenseResult = await createExpenseFromTask(id);
 
       if (expenseResult.success && expenseResult.data) {
-        result.expenseId = expenseResult.data.id;
+        expenseId = expenseResult.data.id;
         // Revalidate expense routes
         revalidatePath("/app/expenses");
       } else if (expenseResult.error) {
         // Task saved but expense creation failed - report error but don't fail
-        result.expenseError = expenseResult.error;
-        console.warn(
-          "[updateTaskWithExpense] Expense creation failed:",
-          expenseResult.error,
-        );
+        expenseError = expenseResult.error;
+        after(() => {
+          console.warn(
+            "[updateTaskWithExpense] Expense creation failed:",
+            expenseResult.error,
+          );
+        });
       }
     } catch (error) {
       // Task saved but expense creation threw - report error but don't fail
-      result.expenseError = "Failed to create expense from task";
-      console.error(
-        "[updateTaskWithExpense] Expense creation exception:",
-        error,
-      );
+      expenseError = "Failed to create expense from task";
+      after(() => {
+        console.error(
+          "[updateTaskWithExpense] Expense creation exception:",
+          error,
+        );
+      });
     }
   }
 
@@ -1075,7 +1097,7 @@ export async function updateTaskWithExpense(
   revalidatePath(`/app/tasks/${id}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  return result;
+  return { success: true, data: { ...task, expenseId, expenseError } };
 }
 
 /**
@@ -1092,13 +1114,13 @@ export async function setPrimaryAssignee(
   assigneeId: string,
   assigneeType: "user" | "subcontractor",
 ): Promise<{ success: boolean; error?: string }> {
-  after(() => {
+  if (process.env.NODE_ENV === "development") {
     console.log("[setPrimaryAssignee] Setting primary assignee:", {
       taskId,
       assigneeId,
       assigneeType,
     });
-  });
+  }
 
   // Validate inputs
   const inputSchema = z.object({
@@ -1119,7 +1141,7 @@ export async function setPrimaryAssignee(
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { success: false, error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -1127,7 +1149,7 @@ export async function setPrimaryAssignee(
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { success: false, error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { projectId } = taskCheck;
@@ -1186,9 +1208,9 @@ export async function setPrimaryAssignee(
   revalidatePath(`/app/tasks/${taskId}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  after(() => {
+  if (process.env.NODE_ENV === "development") {
     console.log("[setPrimaryAssignee] Primary assignee set successfully");
-  });
+  }
   return { success: true };
 }
 
@@ -1200,11 +1222,11 @@ export async function updateTaskStatus(
   taskId: string,
   status: TaskStatus,
   blockedReason?: string,
-) {
+): Promise<ActionResult<Task>> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, role, supabase } = userContext;
@@ -1216,18 +1238,21 @@ export async function updateTaskStatus(
     blocked_reason: blockedReason,
   });
   if (!validation.success) {
-    return { error: "Invalid input" };
+    return { success: false, error: "Invalid input" };
   }
 
   // Require blocked reason when status is blocked
   if (status === "blocked" && !blockedReason) {
-    return { error: "Blocked reason is required when status is blocked" };
+    return {
+      success: false,
+      error: "Blocked reason is required when status is blocked",
+    };
   }
 
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { task: existingTask, projectId } = taskCheck;
@@ -1255,7 +1280,10 @@ export async function updateTaskStatus(
     after(() => {
       console.error("Error updating task status:", updateError);
     });
-    return { error: "Failed to update task status. Please try again." };
+    return {
+      success: false,
+      error: "Failed to update task status. Please try again.",
+    };
   }
 
   // Log activity
@@ -1318,7 +1346,7 @@ export async function updateTaskStatus(
   revalidatePath(`/app/tasks/${taskId}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
@@ -1327,11 +1355,11 @@ export async function updateTaskStatus(
 export async function addTaskDependency(
   taskId: string,
   dependsOnTaskId: string,
-) {
+): Promise<MutationResult> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -1342,18 +1370,18 @@ export async function addTaskDependency(
     depends_on_task_id: dependsOnTaskId,
   });
   if (!validation.success) {
-    return { error: "Invalid input" };
+    return { success: false, error: "Invalid input" };
   }
 
   // Prevent self-dependencies
   if (taskId === dependsOnTaskId) {
-    return { error: "A task cannot depend on itself" };
+    return { success: false, error: "A task cannot depend on itself" };
   }
 
   // Verify both tasks exist and are in same project
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const dependsCheck = await verifyTaskAccess(
@@ -1362,11 +1390,11 @@ export async function addTaskDependency(
     companyId,
   );
   if ("error" in dependsCheck) {
-    return { error: "Dependency task not found" };
+    return { success: false, error: "Dependency task not found" };
   }
 
   if (taskCheck.projectId !== dependsCheck.projectId) {
-    return { error: "Tasks must be in the same project" };
+    return { success: false, error: "Tasks must be in the same project" };
   }
 
   // Check for circular dependencies
@@ -1377,7 +1405,7 @@ export async function addTaskDependency(
     .eq("depends_on_task_id", taskId);
 
   if (existingDeps && existingDeps.length > 0) {
-    return { error: "This would create a circular dependency" };
+    return { success: false, error: "This would create a circular dependency" };
   }
 
   // Create dependency
@@ -1391,12 +1419,12 @@ export async function addTaskDependency(
 
   if (insertError) {
     if (insertError.code === "23505") {
-      return { error: "This dependency already exists" };
+      return { success: false, error: "This dependency already exists" };
     }
     after(() => {
       console.error("Error adding dependency:", insertError);
     });
-    return { error: "Failed to add dependency. Please try again." };
+    return { success: false, error: "Failed to add dependency. Please try again." };
   }
 
   // Log activity
@@ -1437,11 +1465,11 @@ export async function addTaskDependency(
 export async function removeTaskDependency(
   taskId: string,
   dependsOnTaskId: string,
-) {
+): Promise<MutationResult> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -1449,7 +1477,7 @@ export async function removeTaskDependency(
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   // Get dependency info for logging
@@ -1470,7 +1498,10 @@ export async function removeTaskDependency(
     after(() => {
       console.error("Error removing dependency:", deleteError);
     });
-    return { error: "Failed to remove dependency. Please try again." };
+    return {
+      success: false,
+      error: "Failed to remove dependency. Please try again.",
+    };
   }
 
   // Log activity
@@ -1494,11 +1525,14 @@ export async function removeTaskDependency(
 /**
  * Add a comment to a task
  */
-export async function addTaskComment(taskId: string, comment: string) {
+export async function addTaskComment(
+  taskId: string,
+  comment: string,
+): Promise<ActionResult<{ id: string }>> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, supabase } = userContext;
@@ -1506,13 +1540,13 @@ export async function addTaskComment(taskId: string, comment: string) {
   // Validate input
   const validation = addCommentSchema.safeParse({ task_id: taskId, comment });
   if (!validation.success) {
-    return { error: "Invalid input" };
+    return { success: false, error: "Invalid input" };
   }
 
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   // Log comment
@@ -1531,7 +1565,7 @@ export async function addTaskComment(taskId: string, comment: string) {
     after(() => {
       console.error("Error adding comment:", insertError);
     });
-    return { error: "Failed to add comment. Please try again." };
+    return { success: false, error: "Failed to add comment. Please try again." };
   }
 
   // Notify task participants (creator and assignee)
@@ -1574,30 +1608,33 @@ export async function addTaskComment(taskId: string, comment: string) {
   revalidatePath("/app/tasks");
   revalidatePath(`/app/tasks/${taskId}`);
 
-  return { success: true, activity };
+  return { success: true, data: activity };
 }
 
 /**
  * Delete a task
  */
-export async function deleteTask(taskId: string) {
+export async function deleteTask(taskId: string): Promise<MutationResult> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, role, supabase } = userContext;
 
   // Only Admin and PM can delete tasks
   if (role !== "admin" && role !== "project_manager") {
-    return { error: "Insufficient permissions to delete tasks" };
+    return {
+      success: false,
+      error: "Insufficient permissions to delete tasks",
+    };
   }
 
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { projectId } = taskCheck;
@@ -1612,7 +1649,7 @@ export async function deleteTask(taskId: string) {
     after(() => {
       console.error("Error deleting task:", deleteError);
     });
-    return { error: "Failed to delete task. Please try again." };
+    return { success: false, error: "Failed to delete task. Please try again." };
   }
 
   // Revalidate paths
@@ -1630,16 +1667,18 @@ export async function updateApprovalStatus(
   taskId: string,
   approvalStatus: ApprovalStatus,
   approvalNotes?: string,
-) {
-  console.log(
-    "[updateApprovalStatus] Starting approval update for task:",
-    taskId,
-  );
+): Promise<ActionResult<Task>> {
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[updateApprovalStatus] Starting approval update for task:",
+      taskId,
+    );
+  }
 
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { userId, companyId, role, supabase } = userContext;
@@ -1651,38 +1690,46 @@ export async function updateApprovalStatus(
     approval_notes: approvalNotes,
   });
   if (!validation.success) {
-    console.error(
-      "[updateApprovalStatus] Validation failed:",
-      validation.error,
-    );
+    after(() => {
+      console.error(
+        "[updateApprovalStatus] Validation failed:",
+        validation.error,
+      );
+    });
     return {
+      success: false,
       error: "Invalid input",
-      fieldErrors: validation.error.flatten().fieldErrors,
     };
   }
 
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   const { task: existingTask, projectId } = taskCheck;
 
   // Verify task is an approval-type task
   if (existingTask.task_type !== "approval") {
-    console.error(
-      "[updateApprovalStatus] Task is not an approval type:",
-      existingTask.task_type,
-    );
+    after(() => {
+      console.error(
+        "[updateApprovalStatus] Task is not an approval type:",
+        existingTask.task_type,
+      );
+    });
     return {
+      success: false,
       error: "Only approval-type tasks can have their approval status updated",
     };
   }
 
   // Only Admin and PM can approve/reject tasks
   if (role !== "admin" && role !== "project_manager") {
-    return { error: "Insufficient permissions to update approval status" };
+    return {
+      success: false,
+      error: "Insufficient permissions to update approval status",
+    };
   }
 
   // Prepare update
@@ -1721,12 +1768,15 @@ export async function updateApprovalStatus(
     after(() => {
       console.error("[updateApprovalStatus] Error updating task:", updateError);
     });
-    return { error: "Failed to update approval status. Please try again." };
+    return {
+      success: false,
+      error: "Failed to update approval status. Please try again.",
+    };
   }
 
-  after(() => {
+  if (process.env.NODE_ENV === "development") {
     console.log("[updateApprovalStatus] Task updated successfully:", task.id);
-  });
+  }
 
   // Log activity
   await logTaskActivity(
@@ -1787,7 +1837,7 @@ export async function updateApprovalStatus(
   revalidatePath(`/app/tasks/${taskId}`);
   revalidatePath(`/app/projects/${projectId}`);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
@@ -1801,11 +1851,11 @@ export async function getProjectTasks(
     assignee_id?: string;
     priority?: TaskPriority;
   },
-) {
+): Promise<ActionResult<any[]>> {
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -1817,7 +1867,7 @@ export async function getProjectTasks(
     companyId,
   );
   if ("error" in projectCheck) {
-    return { error: projectCheck.error };
+    return { success: false, error: projectCheck.error as string };
   }
 
   // Build query - explicit field selection for performance (API-TASK-002)
@@ -1895,11 +1945,13 @@ export async function getProjectTasks(
   const { data: tasks, error } = await query;
 
   if (error) {
-    console.error("Error fetching tasks:", error);
-    return { error: "Failed to load tasks" };
+    after(() => {
+      console.error("Error fetching tasks:", error);
+    });
+    return { success: false, error: "Failed to load tasks" };
   }
 
-  return { success: true, tasks };
+  return { success: true, data: tasks };
 }
 
 /**
@@ -1931,7 +1983,9 @@ export async function updateTaskDueDate(taskId: string, newDueDate: string) {
     .single();
 
   if (updateError) {
-    console.error("Error updating task due date:", updateError);
+    after(() => {
+      console.error("Error updating task due date:", updateError);
+    });
     return { error: "Failed to update task date" };
   }
 
@@ -1949,7 +2003,7 @@ export async function updateTaskDueDate(taskId: string, newDueDate: string) {
   revalidatePath("/app/tasks");
   revalidatePath(`/app/projects/${projectId}`);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
@@ -1987,7 +2041,9 @@ export async function updateTaskDates(
     .single();
 
   if (updateError) {
-    console.error("Error updating task dates:", updateError);
+    after(() => {
+      console.error("Error updating task dates:", updateError);
+    });
     return { error: "Failed to update task dates" };
   }
 
@@ -2005,7 +2061,7 @@ export async function updateTaskDates(
   revalidatePath("/app/tasks");
   revalidatePath(`/app/projects/${projectId}`);
 
-  return { success: true, task };
+  return { success: true, data: task };
 }
 
 /**
@@ -2027,7 +2083,9 @@ export async function getTaskDependencies(taskIds: string[]) {
     );
 
   if (error) {
-    console.error("Error fetching dependencies:", error);
+    after(() => {
+      console.error("Error fetching dependencies:", error);
+    });
     return { error: "Failed to load dependencies", dependencies: [] };
   }
 
@@ -2044,12 +2102,14 @@ export async function getTaskDependencies(taskIds: string[]) {
  * @param markerId - Spatial marker UUID
  */
 export async function linkTaskToMarker(taskId: string, markerId: string) {
-  console.log(
-    "[linkTaskToMarker] Linking task:",
-    taskId,
-    "to marker:",
-    markerId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[linkTaskToMarker] Linking task:",
+      taskId,
+      "to marker:",
+      markerId,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -2090,7 +2150,9 @@ export async function linkTaskToMarker(taskId: string, markerId: string) {
     .single();
 
   if (updateError) {
-    console.error("[linkTaskToMarker] Error:", updateError);
+    after(() => {
+      console.error("[linkTaskToMarker] Error:", updateError);
+    });
     return { error: "Failed to link task to marker" };
   }
 
@@ -2110,7 +2172,9 @@ export async function linkTaskToMarker(taskId: string, markerId: string) {
   revalidatePath(`/app/projects/${projectId}`);
   revalidatePath(`/app/projects/${projectId}/spatial`);
 
-  console.log("[linkTaskToMarker] Task linked successfully");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[linkTaskToMarker] Task linked successfully");
+  }
   return { success: true, task: updatedTask };
 }
 
@@ -2119,7 +2183,9 @@ export async function linkTaskToMarker(taskId: string, markerId: string) {
  * @param markerId - Spatial marker UUID
  */
 export async function getTasksByMarker(markerId: string) {
-  console.log("[getTasksByMarker] Fetching tasks for marker:", markerId);
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTasksByMarker] Fetching tasks for marker:", markerId);
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -2172,11 +2238,15 @@ export async function getTasksByMarker(markerId: string) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("[getTasksByMarker] Error:", error);
+    after(() => {
+      console.error("[getTasksByMarker] Error:", error);
+    });
     return { error: "Failed to fetch tasks" };
   }
 
-  console.log("[getTasksByMarker] Found", tasks?.length || 0, "tasks");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTasksByMarker] Found", tasks?.length || 0, "tasks");
+  }
   return { success: true, tasks: tasks || [] };
 }
 
@@ -2185,10 +2255,12 @@ export async function getTasksByMarker(markerId: string) {
  * This is called automatically when task status changes to 'completed'
  */
 export async function logTaskCompletionToMarker(taskId: string) {
-  console.log(
-    "[logTaskCompletionToMarker] Logging task completion for:",
-    taskId,
-  );
+  if (process.env.NODE_ENV === "development") {
+    console.log(
+      "[logTaskCompletionToMarker] Logging task completion for:",
+      taskId,
+    );
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) {
@@ -2228,17 +2300,21 @@ export async function logTaskCompletionToMarker(taskId: string) {
   });
 
   if (contentError) {
-    console.error(
-      "[logTaskCompletionToMarker] Error creating activity:",
-      contentError,
-    );
+    after(() => {
+      console.error(
+        "[logTaskCompletionToMarker] Error creating activity:",
+        contentError,
+      );
+    });
     return { error: "Failed to log activity to marker" };
   }
 
   // Revalidate spatial view
   revalidatePath(`/app/projects/${task.project_id}/spatial`);
 
-  console.log("[logTaskCompletionToMarker] Activity logged successfully");
+  if (process.env.NODE_ENV === "development") {
+    console.log("[logTaskCompletionToMarker] Activity logged successfully");
+  }
   return { success: true };
 }
 
@@ -2252,8 +2328,8 @@ export async function logTaskCompletionToMarker(taskId: string) {
  * @param taskId - Task UUID
  * @returns TaskDetails object or error
  */
-export async function getTaskDetails(taskId: string): Promise<{
-  data?: {
+export async function getTaskDetails(taskId: string): Promise<
+  ActionResult<{
     id: string;
     title: string;
     description?: string;
@@ -2284,15 +2360,16 @@ export async function getTaskDetails(taskId: string): Promise<{
     actual_cost?: number;
     created_at: string;
     updated_at: string;
-  };
-  error?: string;
-}> {
-  console.log("[getTaskDetails] Fetching details for task:", taskId);
+  }>
+> {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskDetails] Fetching details for task:", taskId);
+  }
 
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -2300,7 +2377,7 @@ export async function getTaskDetails(taskId: string): Promise<{
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   // API-TASK-006 FIX: Consolidate into parallel queries to eliminate waterfall
@@ -2370,8 +2447,10 @@ export async function getTaskDetails(taskId: string): Promise<{
   ]);
 
   if (taskError || !task) {
-    console.error("[getTaskDetails] Error fetching task:", taskError);
-    return { error: "Task not found" };
+    after(() => {
+      console.error("[getTaskDetails] Error fetching task:", taskError);
+    });
+    return { success: false, error: "Task not found" };
   }
 
   // Transform data
@@ -2416,14 +2495,16 @@ export async function getTaskDetails(taskId: string): Promise<{
     updated_at: task.updated_at,
   };
 
-  console.log("[getTaskDetails] Task details fetched successfully", {
-    taskId,
-    materialCount,
-    expenseCount,
-    attachmentCount,
-  });
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskDetails] Task details fetched successfully", {
+      taskId,
+      materialCount,
+      expenseCount,
+      attachmentCount,
+    });
+  }
 
-  return { data: taskDetails };
+  return { success: true, data: taskDetails };
 }
 
 /**
@@ -2432,24 +2513,27 @@ export async function getTaskDetails(taskId: string): Promise<{
  * @param taskId - Task UUID
  * @returns Array of activity logs or error
  */
-export async function getTaskActivity(taskId: string): Promise<{
-  data?: Array<{
-    id: string;
-    action: ActivityAction;
-    user_name: string;
-    timestamp: string;
-    old_value?: string;
-    new_value?: string;
-    comment?: string;
-  }>;
-  error?: string;
-}> {
-  console.log("[getTaskActivity] Fetching activity for task:", taskId);
+export async function getTaskActivity(taskId: string): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      action: ActivityAction;
+      user_name: string;
+      timestamp: string;
+      old_value?: string;
+      new_value?: string;
+      comment?: string;
+    }>
+  >
+> {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskActivity] Fetching activity for task:", taskId);
+  }
 
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -2457,7 +2541,7 @@ export async function getTaskActivity(taskId: string): Promise<{
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   // Fetch activity log with user details
@@ -2479,8 +2563,10 @@ export async function getTaskActivity(taskId: string): Promise<{
     .order("created_at", { ascending: false });
 
   if (activityError) {
-    console.error("[getTaskActivity] Error fetching activity:", activityError);
-    return { error: "Failed to fetch activity log" };
+    after(() => {
+      console.error("[getTaskActivity] Error fetching activity:", activityError);
+    });
+    return { success: false, error: "Failed to fetch activity log" };
   }
 
   // Transform data - infer action from old_value/new_value/comment changes
@@ -2500,12 +2586,14 @@ export async function getTaskActivity(taskId: string): Promise<{
     comment: activity.comment || undefined,
   }));
 
-  console.log("[getTaskActivity] Activity log fetched successfully", {
-    taskId,
-    activityCount: activityLog.length,
-  });
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskActivity] Activity log fetched successfully", {
+      taskId,
+      activityCount: activityLog.length,
+    });
+  }
 
-  return { data: activityLog };
+  return { success: true, data: activityLog };
 }
 
 /**
@@ -2514,23 +2602,26 @@ export async function getTaskActivity(taskId: string): Promise<{
  * @param taskId - Task UUID
  * @returns Array of attachments or error
  */
-export async function getTaskAttachments(taskId: string): Promise<{
-  data?: Array<{
-    id: string;
-    file_name: string;
-    file_url: string;
-    file_type?: string | null;
-    file_size?: number | null;
-    created_at: string;
-  }>;
-  error?: string;
-}> {
-  console.log("[getTaskAttachments] Fetching attachments for task:", taskId);
+export async function getTaskAttachments(taskId: string): Promise<
+  ActionResult<
+    Array<{
+      id: string;
+      file_name: string;
+      file_url: string;
+      file_type?: string | null;
+      file_size?: number | null;
+      created_at: string;
+    }>
+  >
+> {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskAttachments] Fetching attachments for task:", taskId);
+  }
 
   // Get user context
   const userContext = await getUserContext();
   if ("error" in userContext) {
-    return { error: userContext.error };
+    return { success: false, error: userContext.error as string };
   }
 
   const { companyId, supabase } = userContext;
@@ -2538,7 +2629,7 @@ export async function getTaskAttachments(taskId: string): Promise<{
   // Verify task access
   const taskCheck = await verifyTaskAccess(supabase, taskId, companyId);
   if ("error" in taskCheck) {
-    return { error: taskCheck.error };
+    return { success: false, error: taskCheck.error as string };
   }
 
   // Fetch attachments for this task
@@ -2558,19 +2649,23 @@ export async function getTaskAttachments(taskId: string): Promise<{
     .order("created_at", { ascending: false });
 
   if (attachmentsError) {
-    console.error(
-      "[getTaskAttachments] Error fetching attachments:",
-      attachmentsError,
-    );
-    return { error: "Failed to fetch attachments" };
+    after(() => {
+      console.error(
+        "[getTaskAttachments] Error fetching attachments:",
+        attachmentsError,
+      );
+    });
+    return { success: false, error: "Failed to fetch attachments" };
   }
 
-  console.log("[getTaskAttachments] Attachments fetched successfully", {
-    taskId,
-    attachmentCount: attachments?.length || 0,
-  });
+  if (process.env.NODE_ENV === "development") {
+    console.log("[getTaskAttachments] Attachments fetched successfully", {
+      taskId,
+      attachmentCount: attachments?.length || 0,
+    });
+  }
 
-  return { data: attachments || [] };
+  return { success: true, data: attachments || [] };
 }
 
 // ============================================
@@ -2589,21 +2684,22 @@ export async function getTaskAttachments(taskId: string): Promise<{
 export async function getTaskAnalytics(
   projectFilter: string = "all",
   companyId: string,
-): Promise<{
-  data?: import("@/types/analytics").TaskAnalytics;
-  error?: string;
-}> {
+): Promise<ActionResult<import("@/types/analytics").TaskAnalytics>> {
   try {
-    console.log("[getTaskAnalytics] Fetching analytics", {
-      projectFilter,
-      companyId,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("[getTaskAnalytics] Fetching analytics", {
+        projectFilter,
+        companyId,
+      });
+    }
 
     // Auth check: require authenticated user
     const session = await auth();
     if (!session?.user?.id) {
-      console.error("[getTaskAnalytics] Not authenticated");
-      return { error: "Not authenticated" };
+      after(() => {
+        console.error("[getTaskAnalytics] Not authenticated");
+      });
+      return { success: false, error: "Not authenticated" };
     }
 
     // Input validation
@@ -2620,11 +2716,13 @@ export async function getTaskAnalytics(
       companyId,
     });
     if (!validationResult.success) {
-      console.error(
-        "[getTaskAnalytics] Validation failed:",
-        validationResult.error,
-      );
-      return { error: "Invalid input parameters" };
+      after(() => {
+        console.error(
+          "[getTaskAnalytics] Validation failed:",
+          validationResult.error,
+        );
+      });
+      return { success: false, error: "Invalid input parameters" };
     }
 
     // Create Supabase client
@@ -2640,11 +2738,13 @@ export async function getTaskAnalytics(
       .single();
 
     if (companyError || !userCompany) {
-      console.error(
-        "[getTaskAnalytics] User does not belong to company:",
-        companyId,
-      );
-      return { error: "Unauthorized" };
+      after(() => {
+        console.error(
+          "[getTaskAnalytics] User does not belong to company:",
+          companyId,
+        );
+      });
+      return { success: false, error: "Unauthorized" };
     }
 
     // SECURITY: If projectFilter is not 'all', verify project belongs to the company
@@ -2656,11 +2756,13 @@ export async function getTaskAnalytics(
         .single();
 
       if (projectError || !project || project.company_id !== companyId) {
-        console.error(
-          "[getTaskAnalytics] Project does not belong to company:",
-          { projectFilter, companyId },
-        );
-        return { error: "Invalid project" };
+        after(() => {
+          console.error(
+            "[getTaskAnalytics] Project does not belong to company:",
+            { projectFilter, companyId },
+          );
+        });
+        return { success: false, error: "Invalid project" };
       }
     }
 
@@ -2671,15 +2773,20 @@ export async function getTaskAnalytics(
     });
 
     if (error) {
-      console.error("[getTaskAnalytics] RPC error:", error);
-      return { error: "Failed to fetch analytics" };
+      after(() => {
+        console.error("[getTaskAnalytics] RPC error:", error);
+      });
+      return { success: false, error: "Failed to fetch analytics" };
     }
 
     // Handle empty result set
     if (!data || data.length === 0) {
-      console.warn("[getTaskAnalytics] No data returned");
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[getTaskAnalytics] No data returned");
+      }
       // Return empty analytics structure
       return {
+        success: true,
         data: {
           completion: { total: 0, completed: 0, rate: 0 },
           schedule: { overdue: 0, atRisk: 0, onTime: 0 },
@@ -2762,14 +2869,18 @@ export async function getTaskAnalytics(
       },
     };
 
-    console.log("[getTaskAnalytics] Analytics fetched successfully", {
-      totalTasks: analytics.completion.total,
-      completionRate: analytics.completion.rate,
-    });
+    if (process.env.NODE_ENV === "development") {
+      console.log("[getTaskAnalytics] Analytics fetched successfully", {
+        totalTasks: analytics.completion.total,
+        completionRate: analytics.completion.rate,
+      });
+    }
 
-    return { data: analytics };
+    return { success: true, data: analytics };
   } catch (error) {
-    console.error("[getTaskAnalytics] Unexpected error:", error);
-    return { error: "An unexpected error occurred" };
+    after(() => {
+      console.error("[getTaskAnalytics] Unexpected error:", error);
+    });
+    return { success: false, error: "An unexpected error occurred" };
   }
 }

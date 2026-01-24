@@ -412,10 +412,12 @@ export function AddSubcontractorModal({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3"
+            className="bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/40 rounded-xl p-4 flex items-start gap-3"
           >
-            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800 font-medium">{error}</p>
+            <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-red-800 dark:text-red-300 font-medium">
+              {error}
+            </p>
           </motion.div>
         )}
 
@@ -424,12 +426,12 @@ export function AddSubcontractorModal({
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-green-50 border-2 border-green-200 rounded-xl p-4 flex items-center gap-3"
+            className="bg-green-50 dark:bg-green-950/30 border-2 border-green-200 dark:border-green-900/40 rounded-xl p-4 flex items-center gap-3"
           >
             <div className="h-6 w-6 rounded-full bg-[#059669] flex items-center justify-center flex-shrink-0">
               <Check className="h-4 w-4 text-white" />
             </div>
-            <p className="text-sm text-green-800 font-medium">
+            <p className="text-sm text-green-800 dark:text-green-300 font-medium">
               Subcontractor added to project!
             </p>
           </motion.div>

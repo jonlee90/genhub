@@ -1,36 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import { useState, useTransition, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import X from 'lucide-react/icons/x';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import Clock from 'lucide-react/icons/clock';
-import AlertTriangle from 'lucide-react/icons/alert-triangle';
-import Ban from 'lucide-react/icons/ban';
-import Calendar from 'lucide-react/icons/calendar';
-import ListTodo from 'lucide-react/icons/list-todo';
-import Target from 'lucide-react/icons/target';
-import TrendingUp from 'lucide-react/icons/trending-up';
-import Zap from 'lucide-react/icons/zap';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { isTaskOverdue, formatDate } from '@/lib/date-utils';
-import { TaskModalTrigger } from '@/components/tasks/TaskModalTrigger';
-import { toast } from 'sonner';
-import { m as motion } from 'framer-motion';
-import { cn, formatPercentWhole } from '@/lib/utils';
-import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from '@/lib/config/task-colors';
-import type { ProjectPhasesRow } from '@/types/db/tables/projects';
-import type { TasksRow } from '@/types/db/tables/tasks';
+import X from "lucide-react/icons/x";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Clock from "lucide-react/icons/clock";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
+import Ban from "lucide-react/icons/ban";
+import Calendar from "lucide-react/icons/calendar";
+import ListTodo from "lucide-react/icons/list-todo";
+import Target from "lucide-react/icons/target";
+import TrendingUp from "lucide-react/icons/trending-up";
+import Zap from "lucide-react/icons/zap";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { isTaskOverdue, formatDate } from "@/lib/date-utils";
+import { TaskModalTrigger } from "@/components/tasks/TaskModalTrigger";
+import { toast } from "sonner";
+import { m as motion } from "framer-motion";
+import { cn, formatPercentWhole } from "@/lib/utils";
+import {
+  TASK_STATUS_CONFIG,
+  TASK_PRIORITY_CONFIG,
+} from "@/lib/config/task-colors";
+import type { ProjectPhasesRow } from "@/types/db/tables/projects";
+import type { TasksRow } from "@/types/db/tables/tasks";
 
 // B-001: Dynamic import for heavy TaskModal component (-50KB from initial bundle)
-const TaskModal = dynamic(() => import('@/components/tasks/TaskModal').then((mod) => ({ default: mod.TaskModal })), {
-  ssr: false,
-  loading: () => null,
-});
+const TaskModal = dynamic(
+  () =>
+    import("@/components/tasks/TaskModal").then((mod) => ({
+      default: mod.TaskModal,
+    })),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 type Phase = ProjectPhasesRow;
 type Task = TasksRow & {
@@ -107,20 +116,26 @@ export function PhaseDetailPanel({
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Performance optimization: Memoize computed values
-  const statusConfig = useMemo(() => ({
-    not_started: { label: 'Not Started', color: 'text-gray-700' },
-    in_progress: { label: 'In Progress', color: 'text-construction-blue' },
-    completed: { label: 'Completed', color: 'text-[#059669]' },
-  }), []);
+  const statusConfig = useMemo(
+    () => ({
+      not_started: { label: "Not Started", color: "text-gray-700" },
+      in_progress: { label: "In Progress", color: "text-construction-blue" },
+      completed: { label: "Completed", color: "text-[#059669]" },
+    }),
+    [],
+  );
 
   const phaseStatus = useMemo(
     () => statusConfig[phase.status as keyof typeof statusConfig],
-    [phase.status, statusConfig]
+    [phase.status, statusConfig],
   );
 
   const progressPercentageRaw = useMemo(
-    () => stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0,
-    [stats.totalTasks, stats.completedTasks]
+    () =>
+      stats.totalTasks > 0
+        ? (stats.completedTasks / stats.totalTasks) * 100
+        : 0,
+    [stats.totalTasks, stats.completedTasks],
   );
 
   return (
@@ -134,28 +149,29 @@ export function PhaseDetailPanel({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-         
-        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
-
+          <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
             <div className="p-2 bg-construction-blue rounded-lg">
               <ListTodo className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h4 className="text-lg font-bold text-construction-blue">{phase.name} Tasks</h4>
-             
-                
-            {phase.notes && (
-               <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{phase.notes}</p>
-            )}
-              
+              <h4 className="text-lg font-bold text-construction-blue">
+                {phase.name} Tasks
+              </h4>
+
+              {phase.notes && (
+                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                  {phase.notes}
+                </p>
+              )}
             </div>
 
-
             <div className="flex items-center gap-3 mb-2">
-              <span className={cn(
-                "text-sm font-semibold px-2.5 py-1 rounded-md",
-                phaseStatus.color
-              )}>
+              <span
+                className={cn(
+                  "text-sm font-semibold px-2.5 py-1 rounded-md",
+                  phaseStatus.color,
+                )}
+              >
                 {phaseStatus.label}
               </span>
             </div>
@@ -181,14 +197,16 @@ export function PhaseDetailPanel({
             {/* Start Date Card */}
             {phase.started_at && (
               <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Started</p>
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
+                  Started
+                </p>
                 <div className="flex items-center gap-2 text-construction-blue">
                   <Calendar className="h-5 w-5" />
                   <span className="text-sm font-bold">
-                    {new Date(phase.started_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
+                    {new Date(phase.started_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
                     })}
                   </span>
                 </div>
@@ -198,14 +216,16 @@ export function PhaseDetailPanel({
             {/* Completed Date Card */}
             {phase.completed_at && (
               <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">Completed</p>
+                <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wide">
+                  Completed
+                </p>
                 <div className="flex items-center gap-2 text-[#059669]">
                   <CheckCircle2 className="h-5 w-5" />
                   <span className="text-sm font-bold">
-                    {new Date(phase.completed_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric'
+                    {new Date(phase.completed_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
                     })}
                   </span>
                 </div>
@@ -213,7 +233,6 @@ export function PhaseDetailPanel({
             )}
           </motion.div>
         )}
-
 
         {/* Action Buttons 
         <motion.div
@@ -258,7 +277,12 @@ export function PhaseDetailPanel({
             <div className="flex items-center gap-4">
               {/* Arc Progress Gauge */}
               <div className="relative flex-shrink-0">
-                <svg width="80" height="48" viewBox="0 0 80 48" className="overflow-visible">
+                <svg
+                  width="80"
+                  height="48"
+                  viewBox="0 0 80 48"
+                  className="overflow-visible"
+                >
                   {/* Background arc */}
                   <path
                     d="M 8 44 A 32 32 0 0 1 72 44"
@@ -276,8 +300,11 @@ export function PhaseDetailPanel({
                     strokeLinecap="round"
                     strokeDasharray="100.53"
                     initial={{ strokeDashoffset: 100.53 }}
-                    animate={{ strokeDashoffset: 100.53 - (progressPercentageRaw / 100) * 100.53 }}
-                    transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
+                    animate={{
+                      strokeDashoffset:
+                        100.53 - (progressPercentageRaw / 100) * 100.53,
+                    }}
+                    transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
                   />
                   {/* Tick marks */}
                   {[0, 25, 50, 75, 100].map((tick, i) => {
@@ -293,7 +320,11 @@ export function PhaseDetailPanel({
                         y1={y1}
                         x2={x2}
                         y2={y2}
-                        stroke={tick <= progressPercentageRaw ? 'var(--construction-blue)' : '#D1D5DB'}
+                        stroke={
+                          tick <= progressPercentageRaw
+                            ? "var(--construction-blue)"
+                            : "#D1D5DB"
+                        }
                         strokeWidth="1.5"
                         strokeLinecap="round"
                       />
@@ -324,8 +355,12 @@ export function PhaseDetailPanel({
                 >
                   <CheckCircle2 className="w-4 h-4 text-[#059669]" />
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Completed</p>
-                    <p className="text-sm font-bold text-[#059669] tabular-nums">{stats.completedTasks}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      Completed
+                    </p>
+                    <p className="text-sm font-bold text-[#059669] tabular-nums">
+                      {stats.completedTasks}
+                    </p>
                   </div>
                 </motion.div>
 
@@ -338,8 +373,12 @@ export function PhaseDetailPanel({
                 >
                   <Target className="w-4 h-4 text-construction-blue" />
                   <div className="min-w-0">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Left</p>
-                    <p className="text-sm font-bold text-construction-blue tabular-nums">{stats.totalTasks - stats.completedTasks}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      Left
+                    </p>
+                    <p className="text-sm font-bold text-construction-blue tabular-nums">
+                      {stats.totalTasks - stats.completedTasks}
+                    </p>
                   </div>
                 </motion.div>
               </div>
@@ -353,8 +392,12 @@ export function PhaseDetailPanel({
               transition={{ delay: 0.7 }}
             >
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Task Distribution</span>
-                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tabular-nums">{stats.totalTasks} total</span>
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                  Task Distribution
+                </span>
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tabular-nums">
+                  {stats.totalTasks} total
+                </span>
               </div>
 
               {stats.totalTasks > 0 ? (
@@ -364,18 +407,26 @@ export function PhaseDetailPanel({
                     <motion.div
                       className="h-full bg-[#059669]"
                       initial={{ width: 0 }}
-                      animate={{ width: `${(stats.completedTasks / stats.totalTasks) * 100}%` }}
+                      animate={{
+                        width: `${(stats.completedTasks / stats.totalTasks) * 100}%`,
+                      }}
                       transition={{ duration: 0.8, delay: 0.8 }}
                     />
                   )}
                   {/* In Progress segment (remaining - blocked - overdue) */}
                   {(() => {
-                    const inProgressTasks = stats.totalTasks - stats.completedTasks - stats.blockedTasks - stats.overdueTasks;
+                    const inProgressTasks =
+                      stats.totalTasks -
+                      stats.completedTasks -
+                      stats.blockedTasks -
+                      stats.overdueTasks;
                     return inProgressTasks > 0 ? (
                       <motion.div
                         className="h-full bg-[#3B82F6]"
                         initial={{ width: 0 }}
-                        animate={{ width: `${(inProgressTasks / stats.totalTasks) * 100}%` }}
+                        animate={{
+                          width: `${(inProgressTasks / stats.totalTasks) * 100}%`,
+                        }}
                         transition={{ duration: 0.8, delay: 0.9 }}
                       />
                     ) : null;
@@ -385,7 +436,9 @@ export function PhaseDetailPanel({
                     <motion.div
                       className="h-full bg-[#F59E0B]"
                       initial={{ width: 0 }}
-                      animate={{ width: `${(stats.overdueTasks / stats.totalTasks) * 100}%` }}
+                      animate={{
+                        width: `${(stats.overdueTasks / stats.totalTasks) * 100}%`,
+                      }}
                       transition={{ duration: 0.8, delay: 1.0 }}
                     />
                   )}
@@ -394,7 +447,9 @@ export function PhaseDetailPanel({
                     <motion.div
                       className="h-full bg-[#DC2626]"
                       initial={{ width: 0 }}
-                      animate={{ width: `${(stats.blockedTasks / stats.totalTasks) * 100}%` }}
+                      animate={{
+                        width: `${(stats.blockedTasks / stats.totalTasks) * 100}%`,
+                      }}
                       transition={{ duration: 0.8, delay: 1.1 }}
                     />
                   )}
@@ -407,22 +462,30 @@ export function PhaseDetailPanel({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#059669] rounded-full" />
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Completed</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    Completed
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="w-2 h-2 bg-[#3B82F6] rounded-full" />
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400">Active</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                    Active
+                  </span>
                 </div>
                 {stats.overdueTasks > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-[#F59E0B] rounded-full" />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Overdue</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      Overdue
+                    </span>
                   </div>
                 )}
                 {stats.blockedTasks > 0 && (
                   <div className="flex items-center gap-1">
                     <span className="w-2 h-2 bg-[#DC2626] rounded-full" />
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400">Blocked</span>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                      Blocked
+                    </span>
                   </div>
                 )}
               </div>
@@ -433,12 +496,12 @@ export function PhaseDetailPanel({
               className={cn(
                 "mt-4 p-2.5 rounded-lg flex items-center gap-2",
                 progressPercentageRaw === 100
-                  ? "bg-[#059669]/10 border border-[#059669]/20"
+                  ? "bg-[#059669]/10 border border-[#059669]/20 dark:bg-[#059669]/20 dark:border-[#059669]/40"
                   : progressPercentageRaw >= 75
-                    ? "bg-construction-blue/5 border border-construction-blue/10"
+                    ? "bg-construction-blue/5 border border-construction-blue/10 dark:bg-construction-blue/15 dark:border-construction-blue/30"
                     : stats.blockedTasks > 0 || stats.overdueTasks > 0
-                      ? "bg-[#F59E0B]/10 border border-[#F59E0B]/20"
-                      : "bg-gray-50 border border-gray-100"
+                      ? "bg-[#F59E0B]/10 border border-[#F59E0B]/20 dark:bg-[#F59E0B]/20 dark:border-[#F59E0B]/40"
+                      : "bg-gray-50 border border-gray-100 dark:bg-gray-900 dark:border-gray-800",
               )}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -449,14 +512,19 @@ export function PhaseDetailPanel({
                   <div className="p-1 bg-[#059669]/20 rounded">
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#059669]" />
                   </div>
-                  <span className="text-xs font-medium text-[#059669]">Phase Complete! All tasks finished.</span>
+                  <span className="text-xs font-medium text-[#059669]">
+                    Phase Complete! All tasks finished.
+                  </span>
                 </>
               ) : progressPercentageRaw >= 75 ? (
                 <>
                   <div className="p-1 bg-construction-blue/10 rounded">
                     <TrendingUp className="w-3.5 h-3.5 text-construction-blue" />
                   </div>
-                  <span className="text-xs font-medium text-construction-blue">Great progress! {stats.totalTasks - stats.completedTasks} tasks to go.</span>
+                  <span className="text-xs font-medium text-construction-blue">
+                    Great progress! {stats.totalTasks - stats.completedTasks}{" "}
+                    tasks to go.
+                  </span>
                 </>
               ) : stats.blockedTasks > 0 || stats.overdueTasks > 0 ? (
                 <>
@@ -467,8 +535,8 @@ export function PhaseDetailPanel({
                     {stats.blockedTasks > 0 && stats.overdueTasks > 0
                       ? `${stats.blockedTasks} blocked, ${stats.overdueTasks} overdue - needs attention`
                       : stats.blockedTasks > 0
-                        ? `${stats.blockedTasks} blocked task${stats.blockedTasks > 1 ? 's' : ''} - review dependencies`
-                        : `${stats.overdueTasks} overdue task${stats.overdueTasks > 1 ? 's' : ''} - consider priority`}
+                        ? `${stats.blockedTasks} blocked task${stats.blockedTasks > 1 ? "s" : ""} - review dependencies`
+                        : `${stats.overdueTasks} overdue task${stats.overdueTasks > 1 ? "s" : ""} - consider priority`}
                   </span>
                 </>
               ) : stats.totalTasks === 0 ? (
@@ -476,20 +544,24 @@ export function PhaseDetailPanel({
                   <div className="p-1 bg-gray-100 dark:bg-gray-800 rounded">
                     <Zap className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">No tasks yet. Add tasks to track progress.</span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    No tasks yet. Add tasks to track progress.
+                  </span>
                 </>
               ) : (
                 <>
                   <div className="p-1 bg-gray-100 dark:bg-gray-800 rounded">
                     <Zap className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                   </div>
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Keep going! {stats.totalTasks - stats.completedTasks} tasks remaining.</span>
+                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                    Keep going! {stats.totalTasks - stats.completedTasks} tasks
+                    remaining.
+                  </span>
                 </>
               )}
             </motion.div>
           </div>
         </motion.div>
-
       </div>
 
       {/* RIGHT COLUMN - Task List */}
@@ -501,8 +573,7 @@ export function PhaseDetailPanel({
       >
         {/* Section Header */}
         <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
-
-        <TaskModalTrigger
+          <TaskModalTrigger
             projects={projects}
             teamMembers={teamMembers}
             preselectedProjectId={projectId}
@@ -526,15 +597,26 @@ export function PhaseDetailPanel({
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-200 dark:bg-gray-700 rounded-2xl flex items-center justify-center">
               <ListTodo className="h-8 w-8 text-gray-400 dark:text-gray-500" />
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-300 font-bold mb-1">No Tasks Yet</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Click "Add New Task" to get started</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-bold mb-1">
+              No Tasks Yet
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Click "Add New Task" to get started
+            </p>
           </motion.div>
         ) : (
           <div className="space-y-2.5 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
             {tasks.map((task) => {
-              const statusConfig = TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG];
-              const priorityConfig = TASK_PRIORITY_CONFIG[task.priority as keyof typeof TASK_PRIORITY_CONFIG];
-              const StatusIcon = STATUS_ICONS[task.status as keyof typeof STATUS_ICONS];
+              const statusConfig =
+                TASK_STATUS_CONFIG[
+                  task.status as keyof typeof TASK_STATUS_CONFIG
+                ];
+              const priorityConfig =
+                TASK_PRIORITY_CONFIG[
+                  task.priority as keyof typeof TASK_PRIORITY_CONFIG
+                ];
+              const StatusIcon =
+                STATUS_ICONS[task.status as keyof typeof STATUS_ICONS];
               const isOverdue = isTaskOverdue(task.due_date, task.status);
 
               return (
@@ -549,7 +631,7 @@ export function PhaseDetailPanel({
                     setEditingTask(task);
                   }}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       onModalOpen?.();
                       setEditingTask(task);
@@ -558,15 +640,24 @@ export function PhaseDetailPanel({
                 >
                   <div className="flex items-start gap-3.5">
                     {/* Status Icon */}
-                    <div className={cn(
-                      "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                      task.status === 'completed' && 'bg-emerald-50 dark:bg-emerald-950 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900',
-                      task.status === 'blocked' && 'bg-red-50 dark:bg-red-950 group-hover:bg-red-100 dark:group-hover:bg-red-900',
-                      task.status === 'in_progress' && 'bg-blue-50 dark:bg-blue-950 group-hover:bg-blue-100 dark:group-hover:bg-blue-900',
-                      task.status === 'todo' && 'bg-gray-50 dark:bg-gray-950 group-hover:bg-gray-100 dark:group-hover:bg-gray-900',
-                      task.status === 'review' && 'bg-amber-50 dark:bg-amber-950 group-hover:bg-amber-100 dark:group-hover:bg-amber-900'
-                    )}>
-                      <StatusIcon className={cn("h-5 w-5", statusConfig.iconColor)} />
+                    <div
+                      className={cn(
+                        "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+                        task.status === "completed" &&
+                          "bg-emerald-50 dark:bg-emerald-950 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900",
+                        task.status === "blocked" &&
+                          "bg-red-50 dark:bg-red-950 group-hover:bg-red-100 dark:group-hover:bg-red-900",
+                        task.status === "in_progress" &&
+                          "bg-blue-50 dark:bg-blue-950 group-hover:bg-blue-100 dark:group-hover:bg-blue-900",
+                        task.status === "todo" &&
+                          "bg-gray-50 dark:bg-gray-950 group-hover:bg-gray-100 dark:group-hover:bg-gray-900",
+                        task.status === "review" &&
+                          "bg-amber-50 dark:bg-amber-950 group-hover:bg-amber-100 dark:group-hover:bg-amber-900",
+                      )}
+                    >
+                      <StatusIcon
+                        className={cn("h-5 w-5", statusConfig.iconColor)}
+                      />
                     </div>
 
                     {/* Task Content */}
@@ -577,13 +668,19 @@ export function PhaseDetailPanel({
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge
                           variant="outline"
-                          className={cn("text-xs font-bold border-2", statusConfig.badgeColor)}
+                          className={cn(
+                            "text-xs font-bold border-2",
+                            statusConfig.badgeColor,
+                          )}
                         >
                           {statusConfig.label}
                         </Badge>
                         <Badge
                           variant="outline"
-                          className={cn("text-xs font-bold border-2", priorityConfig.badgeColor)}
+                          className={cn(
+                            "text-xs font-bold border-2",
+                            priorityConfig.badgeColor,
+                          )}
                         >
                           {priorityConfig.label.toUpperCase()}
                         </Badge>
@@ -591,20 +688,42 @@ export function PhaseDetailPanel({
                         {task.assignees && task.assignees.length > 0 && (
                           <div className="flex -space-x-1.5 ml-auto">
                             {task.assignees.slice(0, 3).map((a) => {
-                              const name = a.user?.name || a.subcontractor?.contact_name || '?';
+                              const name =
+                                a.user?.name ||
+                                a.subcontractor?.contact_name ||
+                                "?";
                               const isUser = !!a.user_id;
                               return (
-                                <Avatar key={a.id} className="h-6 w-6 border-2 border-white">
-                                  <AvatarImage src={a.user?.avatar_url || undefined} />
-                                  <AvatarFallback className={cn("text-[9px] text-white", isUser ? "bg-construction-blue" : "bg-orange-600")}>
-                                    {name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)}
+                                <Avatar
+                                  key={a.id}
+                                  className="h-6 w-6 border-2 border-white"
+                                >
+                                  <AvatarImage
+                                    src={a.user?.avatar_url || undefined}
+                                  />
+                                  <AvatarFallback
+                                    className={cn(
+                                      "text-[9px] text-white",
+                                      isUser
+                                        ? "bg-construction-blue"
+                                        : "bg-orange-600",
+                                    )}
+                                  >
+                                    {name
+                                      .split(" ")
+                                      .map((n: string) => n[0])
+                                      .join("")
+                                      .toUpperCase()
+                                      .slice(0, 2)}
                                   </AvatarFallback>
                                 </Avatar>
                               );
                             })}
                             {task.assignees.length > 3 && (
                               <div className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                                <span className="text-[9px] font-bold text-gray-600 dark:text-gray-400">+{task.assignees.length - 3}</span>
+                                <span className="text-[9px] font-bold text-gray-600 dark:text-gray-400">
+                                  +{task.assignees.length - 3}
+                                </span>
                               </div>
                             )}
                           </div>
@@ -614,10 +733,14 @@ export function PhaseDetailPanel({
 
                     {/* Due Date */}
                     {task.due_date && (
-                      <div className={cn(
-                        "flex-shrink-0 flex flex-col items-end gap-1",
-                        isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
-                      )}>
+                      <div
+                        className={cn(
+                          "flex-shrink-0 flex flex-col items-end gap-1",
+                          isOverdue
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-gray-600 dark:text-gray-400",
+                        )}
+                      >
                         <Calendar className="h-4 w-4" />
                         <span className="text-xs font-bold tabular-nums leading-none">
                           {formatDate(task.due_date)}

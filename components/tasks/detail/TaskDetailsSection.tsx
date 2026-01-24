@@ -2,24 +2,24 @@
  * TaskDetailsSection - Basic task information display
  * Extracted from TaskDetail.tsx for better maintainability
  */
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Save,
   Pencil,
@@ -29,20 +29,20 @@ import {
   Clock,
   FileText,
   AlertTriangle,
-} from 'lucide-react';
-import { TaskTypeBadge } from '../TaskTypeSelector';
-import { updateTask } from '@/app/actions/tasks';
-import { cn, formatDate, getInitials } from '@/lib/utils';
+} from "lucide-react";
+import { TaskTypeBadge } from "../TaskTypeSelector";
+import { updateTask } from "@/app/actions/tasks";
+import { cn, formatDate, getInitials } from "@/lib/utils";
 import {
   TASK_STATUS_CONFIG,
   TASK_PRIORITY_CONFIG,
-} from '@/lib/config/task-colors';
+} from "@/lib/config/task-colors";
 import type {
   TaskStatus,
   TaskPriority,
   TaskType,
   UserRole,
-} from '@/types/db/enums';
+} from "@/types/db/enums";
 
 interface TaskDetailsData {
   id: string;
@@ -101,30 +101,30 @@ export function TaskDetailsSection({
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
 
-  const taskType: TaskType = task.task_type || 'work';
-  const isApprovalTask = taskType === 'approval';
+  const taskType: TaskType = task.task_type || "work";
+  const isApprovalTask = taskType === "approval";
   const showCostFields = !isApprovalTask;
 
   const canEdit =
-    userRole === 'admin' ||
-    userRole === 'project_manager' ||
+    userRole === "admin" ||
+    userRole === "project_manager" ||
     task.assignee_id === task.created_by;
 
   const isOverdue =
     task.due_date &&
     new Date(task.due_date) < new Date() &&
-    task.status !== 'completed';
+    task.status !== "completed";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSaving(true);
 
     const formData = new FormData(e.currentTarget);
-    formData.append('id', task.id);
+    formData.append("id", task.id);
 
     const result = await updateTask(formData);
 
-    if (result?.error) {
+    if (!result.success) {
       onError(result.error);
     } else {
       onSaveSuccess();
@@ -135,9 +135,9 @@ export function TaskDetailsSection({
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
     }).format(amount);
   };
 
@@ -146,7 +146,9 @@ export function TaskDetailsSection({
       <CardContent className="p-6">
         {/* Header with Edit Button */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Task Details</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            Task Details
+          </h2>
           {canEdit && !isEditMode && (
             <Button
               onClick={onEditToggle}
@@ -179,7 +181,7 @@ export function TaskDetailsSection({
               <Textarea
                 id="description"
                 name="description"
-                defaultValue={task.description || ''}
+                defaultValue={task.description || ""}
                 placeholder="Enter task description (optional)"
                 rows={4}
               />
@@ -205,7 +207,7 @@ export function TaskDetailsSection({
                 <Label htmlFor="assignee_id">Assignee</Label>
                 <Select
                   name="assignee_id"
-                  defaultValue={task.assignee_id || 'unassigned'}
+                  defaultValue={task.assignee_id || "unassigned"}
                 >
                   <SelectTrigger id="assignee_id">
                     <SelectValue />
@@ -231,8 +233,8 @@ export function TaskDetailsSection({
                   type="date"
                   defaultValue={
                     task.start_date
-                      ? new Date(task.start_date).toISOString().split('T')[0]
-                      : ''
+                      ? new Date(task.start_date).toISOString().split("T")[0]
+                      : ""
                   }
                 />
               </div>
@@ -245,8 +247,8 @@ export function TaskDetailsSection({
                   type="date"
                   defaultValue={
                     task.due_date
-                      ? new Date(task.due_date).toISOString().split('T')[0]
-                      : ''
+                      ? new Date(task.due_date).toISOString().split("T")[0]
+                      : ""
                   }
                 />
               </div>
@@ -261,7 +263,7 @@ export function TaskDetailsSection({
                     name="planned_cost"
                     type="number"
                     step="0.01"
-                    defaultValue={task.planned_cost || ''}
+                    defaultValue={task.planned_cost || ""}
                     placeholder="0.00"
                   />
                 </div>
@@ -273,7 +275,7 @@ export function TaskDetailsSection({
                     name="actual_cost"
                     type="number"
                     step="0.01"
-                    defaultValue={task.actual_cost || ''}
+                    defaultValue={task.actual_cost || ""}
                     placeholder="0.00"
                   />
                 </div>
@@ -284,7 +286,7 @@ export function TaskDetailsSection({
               <Label htmlFor="phase_id">Phase</Label>
               <Select
                 name="phase_id"
-                defaultValue={task.phase_id || 'no_phase'}
+                defaultValue={task.phase_id || "no_phase"}
               >
                 <SelectTrigger id="phase_id">
                   <SelectValue />
@@ -337,7 +339,9 @@ export function TaskDetailsSection({
                 {task.title}
               </h3>
               {task.description && (
-                <p className="text-gray-600 dark:text-gray-400 mt-2">{task.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 mt-2">
+                  {task.description}
+                </p>
               )}
             </div>
 
@@ -349,10 +353,12 @@ export function TaskDetailsSection({
                   <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Priority</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Priority
+                  </p>
                   <Badge
                     className={cn(
-                      'font-bold',
+                      "font-bold",
                       TASK_PRIORITY_CONFIG[task.priority].badgeColor,
                     )}
                   >
@@ -367,11 +373,13 @@ export function TaskDetailsSection({
                   <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Assignee</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Assignee
+                  </p>
                   {task.assignee ? (
                     <div className="flex items-center gap-2">
                       <Avatar className="w-6 h-6">
-                        <AvatarImage src={task.assignee.avatar_url || ''} />
+                        <AvatarImage src={task.assignee.avatar_url || ""} />
                         <AvatarFallback className="text-xs">
                           {getInitials(task.assignee.name)}
                         </AvatarFallback>
@@ -393,7 +401,9 @@ export function TaskDetailsSection({
                     <Calendar className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Start Date</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Start Date
+                    </p>
                     <p className="text-sm font-medium">
                       {formatDate(task.start_date)}
                     </p>
@@ -406,23 +416,29 @@ export function TaskDetailsSection({
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
-                      'w-10 h-10 rounded-lg flex items-center justify-center',
-                      isOverdue ? 'bg-red-100' : 'bg-gray-100 dark:bg-gray-800',
+                      "w-10 h-10 rounded-lg flex items-center justify-center",
+                      isOverdue
+                        ? "bg-red-100 dark:bg-red-950/30"
+                        : "bg-gray-100 dark:bg-gray-800",
                     )}
                   >
                     <Calendar
                       className={cn(
-                        'w-5 h-5',
-                        isOverdue ? 'text-red-600' : 'text-gray-600 dark:text-gray-400',
+                        "w-5 h-5",
+                        isOverdue
+                          ? "text-red-600"
+                          : "text-gray-600 dark:text-gray-400",
                       )}
                     />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Due Date</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Due Date
+                    </p>
                     <p
                       className={cn(
-                        'text-sm font-medium',
-                        isOverdue && 'text-red-600',
+                        "text-sm font-medium",
+                        isOverdue && "text-red-600",
                       )}
                     >
                       {formatDate(task.due_date)}
@@ -441,7 +457,9 @@ export function TaskDetailsSection({
                     <DollarSign className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Planned Cost</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Planned Cost
+                    </p>
                     <p className="text-sm font-medium">
                       {formatCurrency(task.planned_cost)}
                     </p>
@@ -456,7 +474,9 @@ export function TaskDetailsSection({
                     <DollarSign className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Actual Cost</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Actual Cost
+                    </p>
                     <p className="text-sm font-medium">
                       {formatCurrency(task.actual_cost)}
                     </p>
@@ -471,7 +491,9 @@ export function TaskDetailsSection({
                     <FileText className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Phase</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Phase
+                    </p>
                     <p className="text-sm font-medium">{task.phase.name}</p>
                   </div>
                 </div>
@@ -484,12 +506,16 @@ export function TaskDetailsSection({
             </div>
 
             {/* Blocked Reason */}
-            {task.status === 'blocked' && task.blocked_reason && (
+            {task.status === "blocked" && task.blocked_reason && (
               <div className="bg-red-50 dark:bg-gray-950 border border-red-200 dark:border-gray-600 rounded-lg p-4 flex items-start gap-3">
                 <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-medium text-red-900 dark:text-gray-100">Blocked</p>
-                  <p className="text-sm text-red-700 dark:text-gray-300">{task.blocked_reason}</p>
+                  <p className="font-medium text-red-900 dark:text-gray-100">
+                    Blocked
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-gray-300">
+                    {task.blocked_reason}
+                  </p>
                 </div>
               </div>
             )}

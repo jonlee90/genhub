@@ -21,14 +21,14 @@ export function TaskDetailTabs({
   onDependencies,
 }: TaskDetailTabsProps) {
   return (
-    <div className="flex items-center gap-2 border-b-2 border-gray-200">
+    <div className="flex items-center gap-2 border-b-2 border-gray-200 dark:border-gray-700">
       <button
         onClick={onOverview}
         className={cn(
           "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
           activeTab === "overview"
             ? "text-construction-blue border-construction-blue"
-            : "text-gray-500 border-transparent hover:text-gray-700",
+            : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200",
         )}
       >
         <FileText className="h-4 w-4" />
@@ -40,7 +40,7 @@ export function TaskDetailTabs({
           "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
           activeTab === "materials"
             ? "text-construction-blue border-construction-blue"
-            : "text-gray-500 border-transparent hover:text-gray-700",
+            : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200",
         )}
       >
         <Package className="h-4 w-4" />
@@ -52,7 +52,7 @@ export function TaskDetailTabs({
           "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
           activeTab === "activity"
             ? "text-construction-blue border-construction-blue"
-            : "text-gray-500 border-transparent hover:text-gray-700",
+            : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200",
         )}
       >
         <Activity className="h-4 w-4" />
@@ -69,7 +69,7 @@ export function TaskDetailTabs({
           "px-6 py-3 font-bold text-sm transition-all flex items-center gap-2 border-b-2 -mb-[2px]",
           activeTab === "dependencies"
             ? "text-construction-blue border-construction-blue"
-            : "text-gray-500 border-transparent hover:text-gray-700",
+            : "text-gray-500 dark:text-gray-400 border-transparent hover:text-gray-700 dark:hover:text-gray-200",
         )}
       >
         Dependencies

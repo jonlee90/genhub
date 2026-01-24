@@ -31,17 +31,17 @@ export function TaskModalDeleteDialog({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative bg-white rounded-2xl shadow-xl p-6 max-w-md w-full"
+            className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 max-w-md w-full"
           >
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-600" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/30 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   Delete Task
                 </h3>
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
                   Are you sure you want to delete this task? This action cannot
                   be undone.
                 </p>

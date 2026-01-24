@@ -107,6 +107,8 @@ function TasksPageContent({
   // Server renders desktop layout, client switches to mobile after mount if needed
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
+    // This is a legitimate hydration-safe pattern - setState on mount is intentional
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasMounted(true);
   }, []);
 
@@ -118,7 +120,8 @@ function TasksPageContent({
   useEffect(() => {
     // Early return for "all" projects case
     if (projectFilter === "all") {
-      setAssignees([]);
+      // Use functional update to clear assignees - avoids setState-in-effect warning
+      setAssignees((prev) => (prev.length > 0 ? [] : prev));
       return;
     }
 
@@ -129,7 +132,7 @@ function TasksPageContent({
       // Don't update state if this effect has been cleaned up
       if (cancelled) return;
 
-      if (result.data) {
+      if (result.success && result.data) {
         setAssignees(result.data);
       } else {
         setAssignees([]);
@@ -259,13 +262,111 @@ function TasksPageContent({
     count: statusCounts[tab.value] || 0,
   }));
 
+  // Compute task summary stats BEFORE conditional rendering (fixes react-hooks/rules-of-hooks)
+  // This memoized value is used in both mobile and desktop layouts
+  const taskSummaryCard = useMemo(() => {
+    // Early return null if no tasks to display
+    if (filteredTasks.length === 0) {
+      return null;
+    }
+
+    const now = new Date();
+    const completed = filteredTasks.filter((t) => t.status === "completed").length;
+    const blocked = filteredTasks.filter((t) => t.status === "blocked").length;
+    const inProgress = filteredTasks.filter((t) => t.status === "in_progress").length;
+    const overdue = filteredTasks.filter((t) => {
+      if (!t.due_date || t.status === "completed") return false;
+      return new Date(t.due_date) < now;
+    }).length;
+
+    const totalPlannedCost = filteredTasks.reduce(
+      (sum, t) => sum + (Number(t.planned_cost) || 0),
+      0,
+    );
+    const totalActualCost = filteredTasks.reduce(
+      (sum, t) => sum + (Number(t.actual_cost) || 0),
+      0,
+    );
+    const budgetVariance = totalPlannedCost - totalActualCost;
+    const budgetUtilization =
+      totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
+
+    const unassignedCount = filteredTasks.filter((t) => !t.assignee_id).length;
+
+    const assigneeCounts: Record<
+      string,
+      { id: string; name: string; avatar_url: string | null; count: number }
+    > = {};
+    filteredTasks.forEach((task) => {
+      if (task.assignee) {
+        const key = task.assignee.id;
+        if (!assigneeCounts[key]) {
+          assigneeCounts[key] = {
+            id: task.assignee.id,
+            name: task.assignee.name,
+            avatar_url: task.assignee.avatar_url,
+            count: 0,
+          };
+        }
+        assigneeCounts[key].count++;
+      }
+    });
+    const topAssignees = Object.values(assigneeCounts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map((a) => ({
+        id: a.id,
+        name: a.name,
+        avatar_url: a.avatar_url,
+        taskCount: a.count,
+      }));
+
+    const tasksWithMaterials = filteredTasks.filter(
+      (t) => t.materialStats && t.materialStats.count > 0,
+    ).length;
+    const totalMaterialCost = filteredTasks.reduce(
+      (sum, t) => sum + (t.materialStats?.totalCost || 0),
+      0,
+    );
+
+    const projectBudget =
+      projectFilter === "all"
+        ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
+        : projects.find((p) => p.id === projectFilter)
+          ? Number(projects.find((p) => p.id === projectFilter)?.budget) || 0
+          : 0;
+
+    return (
+      <div className="my-3">
+        <ProjectTaskSummary
+          taskStats={{
+            total: filteredTasks.length,
+            completed,
+            inProgress,
+            blocked,
+            overdue,
+            totalPlannedCost,
+            totalActualCost,
+            budgetVariance,
+            budgetUtilization,
+            unassignedCount,
+            topAssignees,
+            tasksWithMaterials,
+            totalMaterialCost,
+          }}
+          projectBudget={projectBudget}
+        />
+      </div>
+    );
+  }, [filteredTasks, projectFilter, projects]);
+
   // Mobile layout
   if (isMobile) {
     return (
       <div className="flex flex-col h-full">
           {/* Task list with pull-to-refresh */}
           <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
-          <div className="p-4 pb-32">
+          <div className="p-4">
           <BlueprintBackground />
 
             <div className="relative mb-4">
@@ -292,8 +393,11 @@ function TasksPageContent({
               />
             </div>
 
-            {/* Empty state - show when no tasks exist */}
-            {filteredTasks.length === 0 ? (
+            {/* Task Summary - using pre-computed value to avoid conditional hooks */}
+            {taskSummaryCard}
+
+            {/* Empty states - show when no tasks exist */}
+            {filteredTasks.length === 0 && (
               tasks.length === 0 ? (
                 // No tasks exist at all - show full construction-themed empty state
                 <EmptyStateCard
@@ -318,103 +422,11 @@ function TasksPageContent({
                   </p>
                 </div>
               )
-            ) : (
-              <>
-                {/* Task Summary on Mobile */}
-                {useMemo(() => {
-                  const now = new Date();
-                  const completed = filteredTasks.filter(
-                    (t) => t.status === "completed",
-                  ).length;
-                  const blocked = filteredTasks.filter((t) => t.status === "blocked").length;
-                  const inProgress = filteredTasks.filter(
-                    (t) => t.status === "in_progress",
-                  ).length;
-                  const overdue = filteredTasks.filter((t) => {
-                    if (!t.due_date || t.status === "completed") return false;
-                    return new Date(t.due_date) < now;
-                  }).length;
+            )}
 
-                  const totalPlannedCost = filteredTasks.reduce(
-                    (sum, t) => sum + (Number(t.planned_cost) || 0),
-                    0,
-                  );
-                  const totalActualCost = filteredTasks.reduce(
-                    (sum, t) => sum + (Number(t.actual_cost) || 0),
-                    0,
-                  );
-                  const budgetVariance = totalPlannedCost - totalActualCost;
-                  const budgetUtilization =
-                    totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
-
-                  const unassignedCount = filteredTasks.filter((t) => !t.assignee_id).length;
-
-                  const assigneeCounts: Record<
-                    string,
-                    { id: string; name: string; avatar_url: string | null; count: number }
-                  > = {};
-                  filteredTasks.forEach((task) => {
-                    if (task.assignee) {
-                      const key = task.assignee.id;
-                      if (!assigneeCounts[key]) {
-                        assigneeCounts[key] = {
-                          id: task.assignee.id,
-                          name: task.assignee.name,
-                          avatar_url: task.assignee.avatar_url,
-                          count: 0,
-                        };
-                      }
-                      assigneeCounts[key].count++;
-                    }
-                  });
-                  const topAssignees = Object.values(assigneeCounts)
-                    .sort((a, b) => b.count - a.count)
-                    .slice(0, 3)
-                    .map((a) => ({
-                      id: a.id,
-                      name: a.name,
-                      avatar_url: a.avatar_url,
-                      taskCount: a.count,
-                    }));
-
-                  const tasksWithMaterials = filteredTasks.filter(
-                    (t) => t.materialStats && t.materialStats.count > 0,
-                  ).length;
-                  const totalMaterialCost = filteredTasks.reduce(
-                    (sum, t) => sum + (t.materialStats?.totalCost || 0),
-                    0,
-                  );
-
-                  const projectBudget = projectFilter === "all"
-                    ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
-                    : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
-
-                  return (
-                    <div className="my-3">
-                      <ProjectTaskSummary
-                        taskStats={{
-                          total: filteredTasks.length,
-                          completed,
-                          inProgress,
-                          blocked,
-                          overdue,
-                          totalPlannedCost,
-                          totalActualCost,
-                          budgetVariance,
-                          budgetUtilization,
-                          unassignedCount,
-                          topAssignees,
-                          tasksWithMaterials,
-                          totalMaterialCost,
-                        }}
-                        projectBudget={projectBudget}
-                      />
-                    </div>
-                  );
-                }, [filteredTasks, projectFilter, projects])}
-
-                {/* Task Board - will use list view on mobile */}
-                <TaskBoard
+            {/* Task Board - will use list view on mobile */}
+            {filteredTasks.length > 0 && (
+              <TaskBoard
                   initialTasks={filteredTasks}
                   taskDependencies={taskDependencies}
                   projects={projects}
@@ -435,7 +447,6 @@ function TasksPageContent({
                   userRole={userRole}
                   taskTypes={taskTypes}
                 />
-              </>
             )}
           </div>
         </PullToRefresh>
@@ -586,98 +597,12 @@ function TasksPageContent({
         )
       ) : (
         <>
-          {/* Task Summary - at very top after header */}
-          {useMemo(() => {
-            const now = new Date();
-            const completed = taskMetrics.filteredTasks.filter(
-              (t) => t.status === "completed",
-            ).length;
-            const blocked = taskMetrics.filteredTasks.filter((t) => t.status === "blocked").length;
-            const inProgress = taskMetrics.filteredTasks.filter(
-              (t) => t.status === "in_progress",
-            ).length;
-            const overdue = taskMetrics.filteredTasks.filter((t) => {
-              if (!t.due_date || t.status === "completed") return false;
-              return new Date(t.due_date) < now;
-            }).length;
-
-            const totalPlannedCost = taskMetrics.filteredTasks.reduce(
-              (sum, t) => sum + (Number(t.planned_cost) || 0),
-              0,
-            );
-            const totalActualCost = taskMetrics.filteredTasks.reduce(
-              (sum, t) => sum + (Number(t.actual_cost) || 0),
-              0,
-            );
-            const budgetVariance = totalPlannedCost - totalActualCost;
-            const budgetUtilization =
-              totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
-
-            const unassignedCount = taskMetrics.filteredTasks.filter((t) => !t.assignee_id).length;
-
-            const assigneeCounts: Record<
-              string,
-              { id: string; name: string; avatar_url: string | null; count: number }
-            > = {};
-            taskMetrics.filteredTasks.forEach((task) => {
-              if (task.assignee) {
-                const key = task.assignee.id;
-                if (!assigneeCounts[key]) {
-                  assigneeCounts[key] = {
-                    id: task.assignee.id,
-                    name: task.assignee.name,
-                    avatar_url: task.assignee.avatar_url,
-                    count: 0,
-                  };
-                }
-                assigneeCounts[key].count++;
-              }
-            });
-            const topAssignees = Object.values(assigneeCounts)
-              .sort((a, b) => b.count - a.count)
-              .slice(0, 3)
-              .map((a) => ({
-                id: a.id,
-                name: a.name,
-                avatar_url: a.avatar_url,
-                taskCount: a.count,
-              }));
-
-            const tasksWithMaterials = taskMetrics.filteredTasks.filter(
-              (t) => t.materialStats && t.materialStats.count > 0,
-            ).length;
-            const totalMaterialCost = taskMetrics.filteredTasks.reduce(
-              (sum, t) => sum + (t.materialStats?.totalCost || 0),
-              0,
-            );
-
-            const projectBudget = projectFilter === "all"
-              ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
-              : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
-
-            return (
-              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <ProjectTaskSummary
-                  taskStats={{
-                    total: taskMetrics.filteredTasks.length,
-                    completed,
-                    inProgress,
-                    blocked,
-                    overdue,
-                    totalPlannedCost,
-                    totalActualCost,
-                    budgetVariance,
-                    budgetUtilization,
-                    unassignedCount,
-                    topAssignees,
-                    tasksWithMaterials,
-                    totalMaterialCost,
-                  }}
-                  projectBudget={projectBudget}
-                />
-              </div>
-            );
-          }, [taskMetrics, projectFilter, projects])}
+          {/* Task Summary - using pre-computed value to avoid conditional hooks */}
+          {taskSummaryCard && (
+            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+              {taskSummaryCard}
+            </div>
+          )}
 
           {/* Task Board with external project filter */}
           <TaskBoard

@@ -32,10 +32,10 @@ import type { HomeDepotProduct } from "@/lib/services/home-depot-api";
 import type { TempMaterial } from ".//TaskMaterialsManager";
 
 interface TaskMaterialSearchProps {
-  taskId?: string;              // Optional for create mode
+  taskId?: string; // Optional for create mode
   projectId: string;
-  onMaterialAdded: () => void;  // Edit mode callback
-  mode?: "create" | "edit";     // Mode determines behavior
+  onMaterialAdded: () => void; // Edit mode callback
+  mode?: "create" | "edit"; // Mode determines behavior
   tempMaterials?: TempMaterial[];
   onTempMaterialAdd?: (material: TempMaterial) => void;
 }
@@ -44,7 +44,8 @@ interface TaskMaterialSearchProps {
 const STOCK_STATUS_CONFIG = {
   in_stock: {
     label: "In Stock",
-    color: "bg-construction-green/10 text-construction-green border-construction-green/30",
+    color:
+      "bg-construction-green/10 text-construction-green border-construction-green/30",
   },
   low_stock: {
     label: "Low Stock",
@@ -56,7 +57,8 @@ const STOCK_STATUS_CONFIG = {
   },
   special_order: {
     label: "Special Order",
-    color: "bg-construction-blue/10 text-construction-blue border-construction-blue/30",
+    color:
+      "bg-construction-blue/10 text-construction-blue border-construction-blue/30",
   },
 };
 
@@ -77,22 +79,7 @@ export function TaskMaterialSearch({
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
-  // Debounced search
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setProducts([]);
-      setHasSearched(false);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      handleSearch();
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  // Search handler
+  // Search handler - defined before useEffect to avoid hoisting issues
   const handleSearch = useCallback(() => {
     if (!searchQuery.trim()) return;
 
@@ -115,12 +102,27 @@ export function TaskMaterialSearch({
     });
   }, [searchQuery, toast]);
 
+  // Debounced search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setProducts([]);
+      setHasSearched(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      handleSearch();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, handleSearch]);
+
   // Get quantity for a product
   const getQuantity = (productId: string) => quantities[productId] || 1;
 
   // Update quantity for a product
   const updateQuantity = (productId: string, delta: number) => {
-    setQuantities(prev => {
+    setQuantities((prev) => {
       const current = prev[productId] || 1;
       const newValue = Math.max(1, current + delta);
       return { ...prev, [productId]: newValue };
@@ -130,7 +132,7 @@ export function TaskMaterialSearch({
   // Set quantity directly
   const setQuantity = (productId: string, value: number) => {
     const newValue = Math.max(1, value);
-    setQuantities(prev => ({ ...prev, [productId]: newValue }));
+    setQuantities((prev) => ({ ...prev, [productId]: newValue }));
   };
 
   // Add product to task (edit mode) or to temp list (create mode)
@@ -140,7 +142,7 @@ export function TaskMaterialSearch({
     // Create mode: add to temporary materials list
     if (mode === "create") {
       // Check if product already in temp list
-      const existing = tempMaterials.find(m => m.product_id === product.id);
+      const existing = tempMaterials.find((m) => m.product_id === product.id);
       if (existing) {
         toast({
           title: "Material Already Added",
@@ -165,7 +167,7 @@ export function TaskMaterialSearch({
       onTempMaterialAdd?.(tempMaterial);
 
       // Reset quantity for this product
-      setQuantities(prev => {
+      setQuantities((prev) => {
         const { [product.id]: _, ...rest } = prev;
         return rest;
       });
@@ -198,13 +200,14 @@ export function TaskMaterialSearch({
         description: `Added ${quantity}x ${product.name} to task`,
       });
       // Reset quantity for this product
-      setQuantities(prev => {
+      setQuantities((prev) => {
         const { [product.id]: _, ...rest } = prev;
         return rest;
       });
       onMaterialAdded();
     } else {
-      const errorMessage = "error" in result ? result.error : "An error occurred";
+      const errorMessage =
+        "error" in result ? result.error : "An error occurred";
       toast({
         title: "Failed to Add Material",
         description: errorMessage || "An error occurred",
@@ -245,7 +248,9 @@ export function TaskMaterialSearch({
       <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
         <AnimatePresence mode="popLayout">
           {products.map((product, index) => {
-            const stockConfig = STOCK_STATUS_CONFIG[product.stockStatus] || STOCK_STATUS_CONFIG.in_stock;
+            const stockConfig =
+              STOCK_STATUS_CONFIG[product.stockStatus] ||
+              STOCK_STATUS_CONFIG.in_stock;
             const isAdding = addingProductId === product.id;
             const quantity = getQuantity(product.id);
 
@@ -256,10 +261,10 @@ export function TaskMaterialSearch({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ delay: index * 0.03 }}
-                className="flex items-start gap-3 p-3 bg-white border-2 border-gray-200 rounded-lg hover:border-construction-blue/50 hover:shadow-sm transition-all"
+                className="flex items-start gap-3 p-3 bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-construction-blue/50 hover:shadow-sm transition-all"
               >
                 {/* Product Image */}
-                <div className="shrink-0 w-14 h-14 rounded-md border border-gray-200 overflow-hidden bg-white flex items-center justify-center">
+                <div className="shrink-0 w-14 h-14 rounded-md border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900 flex items-center justify-center">
                   {product.imageUrl ? (
                     <img
                       src={product.imageUrl}
@@ -267,7 +272,7 @@ export function TaskMaterialSearch({
                       className="w-full h-full object-contain"
                     />
                   ) : (
-                    <Package className="h-6 w-6 text-gray-400" />
+                    <Package className="h-6 w-6 text-gray-400 dark:text-gray-500" />
                   )}
                 </div>
 
@@ -280,30 +285,35 @@ export function TaskMaterialSearch({
                     <span className="text-lg font-black text-construction-blue">
                       {formatCurrency(product.price)}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
                       / {product.unitOfMeasure}
                     </span>
                     <Badge
                       variant="outline"
-                      className={cn("text-[10px] px-1.5 py-0 border", stockConfig.color)}
+                      className={cn(
+                        "text-[10px] px-1.5 py-0 border",
+                        stockConfig.color,
+                      )}
                     >
                       {stockConfig.label}
                     </Badge>
                   </div>
                   {product.sku && (
-                    <p className="text-[10px] text-gray-500">SKU: {product.sku}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">
+                      SKU: {product.sku}
+                    </p>
                   )}
                 </div>
 
                 {/* Quantity & Add Controls */}
                 <div className="shrink-0 flex flex-col items-end gap-2">
                   {/* Quantity Control */}
-                  <div className="flex items-center gap-1 border-2 border-gray-200 rounded-md">
+                  <div className="flex items-center gap-1 border-2 border-gray-200 dark:border-gray-700 rounded-md">
                     <button
                       type="button"
                       onClick={() => updateQuantity(product.id, -1)}
                       disabled={isAdding || quantity <= 1}
-                      className="p-1 hover:bg-gray-100 disabled:opacity-50 rounded-l"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 rounded-l"
                     >
                       <Minus className="h-3 w-3" />
                     </button>
@@ -311,15 +321,17 @@ export function TaskMaterialSearch({
                       type="number"
                       min="1"
                       value={quantity}
-                      onChange={(e) => setQuantity(product.id, parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        setQuantity(product.id, parseInt(e.target.value) || 1)
+                      }
                       disabled={isAdding}
-                      className="w-10 h-6 text-center text-sm font-bold border-x-2 border-gray-200 focus:outline-none"
+                      className="w-10 h-6 text-center text-sm font-bold border-x-2 border-gray-200 dark:border-gray-700 focus:outline-none bg-transparent"
                     />
                     <button
                       type="button"
                       onClick={() => updateQuantity(product.id, 1)}
                       disabled={isAdding}
-                      className="p-1 hover:bg-gray-100 disabled:opacity-50 rounded-r"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 rounded-r"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
@@ -330,12 +342,14 @@ export function TaskMaterialSearch({
                     type="button"
                     size="sm"
                     onClick={() => handleAddProduct(product)}
-                    disabled={isAdding || product.stockStatus === "out_of_stock"}
+                    disabled={
+                      isAdding || product.stockStatus === "out_of_stock"
+                    }
                     className={cn(
                       "h-7 px-3 text-xs font-bold",
                       product.stockStatus === "out_of_stock"
-                        ? "bg-gray-200 text-gray-500"
-                        : "bg-construction-blue hover:bg-construction-blue/90 text-white"
+                        ? "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400"
+                        : "bg-construction-blue hover:bg-construction-blue/90 text-white",
                     )}
                   >
                     {isAdding ? (
@@ -359,9 +373,11 @@ export function TaskMaterialSearch({
         {/* Empty State - No Search */}
         {!hasSearched && products.length === 0 && !isSearching && (
           <div className="py-8 text-center">
-            <Search className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-gray-900">Search for Materials</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <Search className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Search for Materials
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Enter a product name to search Home Depot catalog
             </p>
           </div>
@@ -370,9 +386,11 @@ export function TaskMaterialSearch({
         {/* Empty State - No Results */}
         {hasSearched && products.length === 0 && !isSearching && (
           <div className="py-8 text-center">
-            <AlertCircle className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-gray-900">No Products Found</p>
-            <p className="text-xs text-gray-500 mt-1">
+            <AlertCircle className="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              No Products Found
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Try a different search term
             </p>
           </div>
@@ -382,7 +400,9 @@ export function TaskMaterialSearch({
         {isSearching && products.length === 0 && (
           <div className="py-8 text-center">
             <Loader2 className="h-10 w-10 text-construction-blue mx-auto mb-3 animate-spin" />
-            <p className="text-sm font-semibold text-gray-600">Searching Home Depot...</p>
+            <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
+              Searching Home Depot...
+            </p>
           </div>
         )}
       </div>

@@ -59,12 +59,8 @@ import {
   deleteTaskTemplate,
   reorderTaskTemplates,
 } from "@/app/actions/task-templates";
-import {
-  type ProjectTypeWithCount,
-} from "@/app/actions/project-types";
-import {
-  type PhaseTemplateWithTasks,
-} from "@/app/actions/phase-templates";
+import { type ProjectTypeWithCount } from "@/app/actions/project-types";
+import { type PhaseTemplateWithTasks } from "@/app/actions/phase-templates";
 import type {
   TaskTemplatesRow,
   TaskTypeConfigsRow,
@@ -106,12 +102,21 @@ const DEFAULT_TASK_TYPE_CONFIG = {
  * Priority configuration with color-coded display properties
  */
 const PRIORITY_CONFIG = {
-  high: { label: "High", color: "border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950" },
+  high: {
+    label: "High",
+    color:
+      "border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950",
+  },
   medium: {
     label: "Medium",
-    color: "border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950",
+    color:
+      "border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950",
   },
-  low: { label: "Low", color: "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900" },
+  low: {
+    label: "Low",
+    color:
+      "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900",
+  },
 };
 
 /**
@@ -127,12 +132,12 @@ const NoProjectTypeSelectedTask = memo(() => (
       Select a Project Type
     </h3>
     <p className="text-gray-500 dark:text-gray-400 max-w-md">
-      Choose a project type and phase from the filters above to view and
-      manage task templates
+      Choose a project type and phase from the filters above to view and manage
+      task templates
     </p>
   </div>
 ));
-NoProjectTypeSelectedTask.displayName = 'NoProjectTypeSelectedTask';
+NoProjectTypeSelectedTask.displayName = "NoProjectTypeSelectedTask";
 
 /**
  * Empty state when no phase is selected
@@ -142,7 +147,9 @@ interface NoPhaseSelectedProps {
   phasesAvailable: boolean;
 }
 
-const NoPhaseSelected = memo(function NoPhaseSelected({ phasesAvailable }: NoPhaseSelectedProps) {
+const NoPhaseSelected = memo(function NoPhaseSelected({
+  phasesAvailable,
+}: NoPhaseSelectedProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center">
       <div className="p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40 mb-4">
@@ -168,7 +175,9 @@ interface EmptyTaskStateProps {
   onCreate: () => void;
 }
 
-const EmptyTaskState = memo(function EmptyTaskState({ onCreate }: EmptyTaskStateProps) {
+const EmptyTaskState = memo(function EmptyTaskState({
+  onCreate,
+}: EmptyTaskStateProps) {
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in zoom-in-95 duration-500">
       <div className="relative mb-6">
@@ -252,7 +261,11 @@ const SortableTaskItem = memo(function SortableTaskItem({
       id={task.id}
       title={task.title}
       description={task.description || undefined}
-      orderIndex={task.order_index !== null && task.order_index !== undefined ? task.order_index : undefined}
+      orderIndex={
+        task.order_index !== null && task.order_index !== undefined
+          ? task.order_index
+          : undefined
+      }
       badges={badges}
       onEdit={onEdit}
       onDelete={onDelete}
@@ -350,76 +363,85 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
   // Vercel React Best Practice: rerender-functional-setstate
   // Using functional setState to avoid including taskTemplates in dependencies,
   // which keeps this callback stable and prevents unnecessary re-renders.
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event;
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
 
-    if (!over || active.id === over.id || !selectedPhaseTemplateId) return;
+      if (!over || active.id === over.id || !selectedPhaseTemplateId) return;
 
-    let orderedIds: string[] = [];
+      let orderedIds: string[] = [];
 
-    // Optimistic update using functional setState
-    setTaskTemplates(current => {
-      const oldIndex = current.findIndex((t) => t.id === active.id);
-      const newIndex = current.findIndex((t) => t.id === over.id);
+      // Optimistic update using functional setState
+      setTaskTemplates((current) => {
+        const oldIndex = current.findIndex((t) => t.id === active.id);
+        const newIndex = current.findIndex((t) => t.id === over.id);
 
-      if (oldIndex === -1 || newIndex === -1) return current;
+        if (oldIndex === -1 || newIndex === -1) return current;
 
-      const newOrder = arrayMove(current, oldIndex, newIndex);
-      orderedIds = newOrder.map((t) => t.id);
-      return newOrder;
-    });
+        const newOrder = arrayMove(current, oldIndex, newIndex);
+        orderedIds = newOrder.map((t) => t.id);
+        return newOrder;
+      });
 
-    // Persist to backend (async, outside setState)
-    const result = await reorderTaskTemplates(
-      selectedPhaseTemplateId,
-      orderedIds,
-    );
+      // Persist to backend (async, outside setState)
+      const result = await reorderTaskTemplates(
+        selectedPhaseTemplateId,
+        orderedIds,
+      );
 
-    if (result.error) {
-      toast.error("Failed to reorder tasks");
-      // Revert on error by reloading from server
-      loadTaskTemplates(selectedPhaseTemplateId);
-    } else {
-      toast.success("Task order updated");
-    }
-  }, [selectedPhaseTemplateId, loadTaskTemplates]);
+      if (result.error) {
+        toast.error("Failed to reorder tasks");
+        // Revert on error by reloading from server
+        loadTaskTemplates(selectedPhaseTemplateId);
+      } else {
+        toast.success("Task order updated");
+      }
+    },
+    [selectedPhaseTemplateId, loadTaskTemplates],
+  );
 
   // Handle task template creation - form submission
-  const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleCreate = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-    const result = await createTaskTemplate(formData);
+      const formData = new FormData(e.currentTarget);
+      const result = await createTaskTemplate(formData);
 
-    if (result.success) {
-      toast.success("Task template created successfully");
-      setShowCreateModal(false);
-      if (selectedPhaseTemplateId) {
-        loadTaskTemplates(selectedPhaseTemplateId);
+      if (result.success) {
+        toast.success("Task template created successfully");
+        setShowCreateModal(false);
+        if (selectedPhaseTemplateId) {
+          loadTaskTemplates(selectedPhaseTemplateId);
+        }
+      } else {
+        toast.error(result.error || "Failed to create task template");
       }
-    } else {
-      toast.error(result.error || "Failed to create task template");
-    }
-  }, [selectedPhaseTemplateId, loadTaskTemplates]);
+    },
+    [selectedPhaseTemplateId, loadTaskTemplates],
+  );
 
   // Handle task template update - form submission
-  const handleUpdate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingTask) return;
+  const handleUpdate = useCallback(
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!editingTask) return;
 
-    const formData = new FormData(e.currentTarget);
-    const result = await updateTaskTemplate(editingTask.id, formData);
+      const formData = new FormData(e.currentTarget);
+      const result = await updateTaskTemplate(editingTask.id, formData);
 
-    if (result.success) {
-      toast.success("Task template updated successfully");
-      setEditingTask(null);
-      if (selectedPhaseTemplateId) {
-        loadTaskTemplates(selectedPhaseTemplateId);
+      if (result.success) {
+        toast.success("Task template updated successfully");
+        setEditingTask(null);
+        if (selectedPhaseTemplateId) {
+          loadTaskTemplates(selectedPhaseTemplateId);
+        }
+      } else {
+        toast.error(result.error || "Failed to update task template");
       }
-    } else {
-      toast.error(result.error || "Failed to update task template");
-    }
-  }, [editingTask, selectedPhaseTemplateId, loadTaskTemplates]);
+    },
+    [editingTask, selectedPhaseTemplateId, loadTaskTemplates],
+  );
 
   // Handle task template deletion
   const handleDelete = useCallback(async () => {
@@ -459,7 +481,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <h3 className="text-xl md:text-2xl font-black text-construction-blue uppercase tracking-tight">
               Task Templates
             </h3>
-            <p className="text-sm md:text-base text-gray-600 mt-1">
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
               Define default tasks for each project phase
             </p>
           </div>
@@ -479,7 +501,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           <div className="flex-1">
             <Label
               htmlFor="project-type-filter"
-              className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider"
+              className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 block uppercase tracking-wider"
             >
               Project Type
             </Label>
@@ -489,7 +511,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             >
               <SelectTrigger
                 id="project-type-filter"
-                className="border-2 border-gray-200 focus:border-construction-blue font-semibold"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue font-semibold bg-white dark:bg-gray-900"
               >
                 <SelectValue placeholder="Select project type" />
               </SelectTrigger>
@@ -507,7 +529,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           <div className="flex-1">
             <Label
               htmlFor="phase-filter"
-              className="text-xs font-bold text-gray-700 mb-1.5 block uppercase tracking-wider"
+              className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 block uppercase tracking-wider"
             >
               Phase Template
             </Label>
@@ -518,7 +540,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             >
               <SelectTrigger
                 id="phase-filter"
-                className="border-2 border-gray-200 focus:border-construction-blue font-semibold"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue font-semibold bg-white dark:bg-gray-900"
               >
                 <SelectValue placeholder="Select phase" />
               </SelectTrigger>
@@ -545,20 +567,20 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white border-2 border-gray-200 rounded-lg p-3 animate-pulse animate-in fade-in slide-in-from-bottom-4"
+              className="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 animate-pulse animate-in fade-in slide-in-from-bottom-4"
               style={{
                 animationDelay: `${i * 50}ms`,
-                animationDuration: '400ms',
-                animationFillMode: 'both',
+                animationDuration: "400ms",
+                animationFillMode: "both",
               }}
             >
               <div className="flex items-center gap-3">
-                <div className="h-5 w-5 bg-gray-200 rounded" />
-                <div className="h-8 w-8 bg-gray-200 rounded" />
-                <div className="h-8 w-20 bg-gray-200 rounded-md" />
+                <div className="h-5 w-5 bg-gray-200 dark:bg-gray-800 rounded" />
+                <div className="h-8 w-8 bg-gray-200 dark:bg-gray-800 rounded" />
+                <div className="h-8 w-20 bg-gray-200 dark:bg-gray-800 rounded-md" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-48 bg-gray-200 rounded" />
-                  <div className="h-3 w-full bg-gray-200 rounded" />
+                  <div className="h-4 w-48 bg-gray-200 dark:bg-gray-800 rounded" />
+                  <div className="h-3 w-full bg-gray-200 dark:bg-gray-800 rounded" />
                 </div>
               </div>
             </div>
@@ -584,8 +606,8 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                   className="animate-in fade-in slide-in-from-bottom-4"
                   style={{
                     animationDelay: `${Math.min(index * 50, 300)}ms`,
-                    animationDuration: '400ms',
-                    animationFillMode: 'both',
+                    animationDuration: "400ms",
+                    animationFillMode: "both",
                   }}
                 >
                   <SortableTaskItem
@@ -613,7 +635,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         onBack={() => setShowCreateModal(false)}
         backLabel="Cancel"
         onContinue={() => {
-          const form = document.getElementById("create-task-template-form") as HTMLFormElement;
+          const form = document.getElementById(
+            "create-task-template-form",
+          ) as HTMLFormElement;
           form?.requestSubmit();
         }}
         continueLabel="Create Task Template"
@@ -634,7 +658,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-title"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Task Title *
             </Label>
@@ -644,9 +668,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
               placeholder="e.g., Pour Foundation, Install Electrical, Final Inspection"
               required
               maxLength={500}
-              className="border-2 border-gray-200 focus:border-construction-blue"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Give this task a clear, action-oriented name
             </p>
           </div>
@@ -655,7 +679,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-description"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Description
             </Label>
@@ -665,9 +689,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
               placeholder="Brief description of what this task involves"
               rows={3}
               maxLength={2000}
-              className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900 resize-none"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Help your team understand the scope and requirements
             </p>
           </div>
@@ -678,14 +702,14 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="create-task-type"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Task Type *
               </Label>
               <Select name="default_task_type" defaultValue="work">
                 <SelectTrigger
                   id="create-task-type"
-                  className="border-2 border-gray-200 focus:border-construction-blue"
+                  className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -709,14 +733,14 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="create-priority"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Default Priority *
               </Label>
               <Select name="default_priority" defaultValue="medium">
                 <SelectTrigger
                   id="create-priority"
-                  className="border-2 border-gray-200 focus:border-construction-blue"
+                  className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -748,7 +772,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           <div className="space-y-2">
             <Label
               htmlFor="create-days-offset"
-              className="text-sm font-bold text-gray-900"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
             >
               Days After Project Start (Optional)
             </Label>
@@ -760,9 +784,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
               max="365"
               defaultValue="30"
               placeholder="e.g., 0, 7, 30"
-              className="border-2 border-gray-200 focus:border-construction-blue"
+              className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
             />
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               Auto-schedule this task X days after project start. Leave empty
               for manual scheduling.
             </p>
@@ -783,7 +807,9 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           onBack={() => setEditingTask(null)}
           backLabel="Cancel"
           onContinue={() => {
-            const form = document.getElementById("edit-task-template-form") as HTMLFormElement;
+            const form = document.getElementById(
+              "edit-task-template-form",
+            ) as HTMLFormElement;
             form?.requestSubmit();
           }}
           continueLabel="Save Changes"
@@ -797,7 +823,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-title"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Task Title *
               </Label>
@@ -807,7 +833,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 defaultValue={editingTask.title}
                 required
                 maxLength={500}
-                className="border-2 border-gray-200 focus:border-construction-blue"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
               />
             </div>
 
@@ -815,7 +841,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-description"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Description
               </Label>
@@ -825,7 +851,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 defaultValue={editingTask.description || ""}
                 rows={3}
                 maxLength={2000}
-                className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900 resize-none"
               />
             </div>
 
@@ -835,7 +861,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-task-type"
-                  className="text-sm font-bold text-gray-900"
+                  className="text-sm font-bold text-gray-900 dark:text-gray-100"
                 >
                   Task Type *
                 </Label>
@@ -845,7 +871,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 >
                   <SelectTrigger
                     id="edit-task-type"
-                    className="border-2 border-gray-200 focus:border-construction-blue"
+                    className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -869,7 +895,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
               <div className="space-y-2">
                 <Label
                   htmlFor="edit-priority"
-                  className="text-sm font-bold text-gray-900"
+                  className="text-sm font-bold text-gray-900 dark:text-gray-100"
                 >
                   Default Priority *
                 </Label>
@@ -879,7 +905,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 >
                   <SelectTrigger
                     id="edit-priority"
-                    className="border-2 border-gray-200 focus:border-construction-blue"
+                    className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                   >
                     <SelectValue />
                   </SelectTrigger>
@@ -911,7 +937,7 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
             <div className="space-y-2">
               <Label
                 htmlFor="edit-days-offset"
-                className="text-sm font-bold text-gray-900"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
               >
                 Days After Project Start (Optional)
               </Label>
@@ -923,27 +949,27 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
                 max="365"
                 defaultValue={editingTask.days_offset ?? ""}
                 placeholder="e.g., 0, 7, 30"
-                className="border-2 border-gray-200 focus:border-construction-blue"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Auto-schedule this task X days after project start. Leave empty
                 for manual scheduling.
               </p>
             </div>
 
             {/* Active toggle */}
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg border-2 border-gray-200">
+            <div className="flex items-center space-x-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-gray-200 dark:border-gray-700">
               <input
                 type="checkbox"
                 id="edit-is-active"
                 name="is_active"
                 value="true"
                 defaultChecked={editingTask.is_active ?? true}
-                className="h-5 w-5 rounded border-2 border-gray-300 text-construction-blue focus:ring-construction-blue focus:ring-2"
+                className="h-5 w-5 rounded border-2 border-gray-300 dark:border-gray-600 text-construction-blue focus:ring-construction-blue focus:ring-2"
               />
               <Label
                 htmlFor="edit-is-active"
-                className="cursor-pointer font-bold text-gray-900 flex-1"
+                className="cursor-pointer font-bold text-gray-900 dark:text-gray-100 flex-1"
               >
                 Active (visible when creating tasks)
               </Label>
@@ -958,27 +984,27 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           open={!!deletingTask}
           onOpenChange={() => setDeletingTask(null)}
         >
-          <AlertDialogContent className="border-2 border-red-200">
+          <AlertDialogContent className="border-2 border-red-200 dark:border-red-900/40">
             <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-black text-red-600 uppercase tracking-tight flex items-center gap-2">
+              <AlertDialogTitle className="text-xl font-black text-red-600 dark:text-red-400 uppercase tracking-tight flex items-center gap-2">
                 <AlertCircle className="h-6 w-6" />
                 Delete Task Template
               </AlertDialogTitle>
-              <AlertDialogDescription className="text-base text-gray-700">
+              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
                 Are you sure you want to delete{" "}
-                <span className="font-bold text-gray-900">
+                <span className="font-bold text-gray-900 dark:text-gray-100">
                   "{deletingTask.title}"
                 </span>
                 ?
               </AlertDialogDescription>
-              <div className="mt-3 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <div className="mt-3 p-4 bg-blue-50 dark:bg-blue-950/30 border-2 border-blue-200 dark:border-blue-900/40 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                  <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="font-bold text-blue-900 mb-1">
+                    <h4 className="font-bold text-blue-900 dark:text-blue-200 mb-1">
                       Template Only
                     </h4>
-                    <div className="text-sm text-blue-800">
+                    <div className="text-sm text-blue-800 dark:text-blue-200">
                       This will delete the task template. Existing tasks in
                       projects will not be affected.
                     </div>

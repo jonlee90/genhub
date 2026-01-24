@@ -4,8 +4,19 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
+import type { TaskStatus } from "@/types/db/task";
 
-export const getTasksPageData = cache(async function getTasksPageData() {
+interface TasksPageFilters {
+  projectFilter?: string;
+  statusFilter?: TaskStatus | "all";
+  searchQuery?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export const getTasksPageData = cache(async function getTasksPageData(
+  filters?: TasksPageFilters,
+) {
   const [supabase, session] = await Promise.all([createClient(), auth()]);
 
   if (!session?.user?.id) {
@@ -92,25 +103,44 @@ export const getTasksPageData = cache(async function getTasksPageData() {
       .eq("company_id", companyId)
       .eq("status", "active"),
 
-    // Get all tasks for this company's projects
-    supabase
-      .from("tasks")
-      .select(
-        `
-        *,
-        project:projects!inner (
-          id,
-          name,
-          company_id
-        ),
-        phase:project_phases (
-          id,
-          name
+    // Get all tasks for this company's projects with server-side filtering
+    (() => {
+      let query = supabase
+        .from("tasks")
+        .select(
+          `
+          *,
+          project:projects!inner (
+            id,
+            name,
+            company_id
+          ),
+          phase:project_phases (
+            id,
+            name
+          )
+        `,
         )
-      `,
-      )
-      .eq("project.company_id", companyId)
-      .order("created_at", { ascending: false }),
+        .eq("project.company_id", companyId);
+
+      // Apply server-side filters
+      if (filters?.projectFilter && filters.projectFilter !== "all") {
+        query = query.eq("project_id", filters.projectFilter);
+      }
+      if (filters?.statusFilter && filters.statusFilter !== "all") {
+        query = query.eq("status", filters.statusFilter as TaskStatus);
+      }
+      if (filters?.searchQuery) {
+        query = query.ilike("title", `%${filters.searchQuery}%`);
+      }
+
+      // Apply pagination
+      const limit = filters?.limit || 50;
+      const offset = filters?.offset || 0;
+      query = query.range(offset, offset + limit - 1);
+
+      return query.order("created_at", { ascending: false });
+    })(),
 
     // Get all active task types for this company (for modal)
     supabase
@@ -138,61 +168,38 @@ export const getTasksPageData = cache(async function getTasksPageData() {
     };
   }
 
-  // Collect unique IDs for batch fetching
-  const assigneeIds = [
-    ...new Set(
-      tasks
-        .filter((task: any) => task.assignee_id)
-        .map((task: any) => task.assignee_id),
-    ),
-  ];
+  // Collect task IDs for batch fetching related data
   const taskIds = tasks.map((task: any) => task.id);
 
   // OPTIMIZATION: Run secondary queries in parallel
-  const [
-    assigneesResult,
-    materialStatsResult,
-    expenseStatsResult,
-    dependenciesResult,
-  ] = await Promise.all([
-    // Fetch user profiles for assignees
-    assigneeIds.length > 0
-      ? supabase
-          .from("user_profiles")
-          .select("id, name, email, avatar_url")
-          .in("id", assigneeIds)
-      : Promise.resolve({ data: [] }),
+  const [assigneesResult, materialStatsResult, expenseStatsResult, dependenciesResult] =
+    await Promise.all([
+      // Fetch assignee user profiles
+      supabase
+        .from("user_profiles")
+        .select("id, name, email, avatar_url")
+        .in(
+          "id",
+          tasks.map((t: any) => t.assignee_id).filter((id): id is string => !!id),
+        ),
 
-    // Fetch material assignment counts and totals for each task
-    supabase
-      .from("material_assignments")
-      .select("task_id, quantity, total_cost")
-      .in("task_id", taskIds),
+      // Fetch material assignment counts and totals for each task
+      supabase
+        .from("material_assignments")
+        .select("task_id, quantity, total_cost")
+        .in("task_id", taskIds),
 
-    // Fetch expense counts and totals for each task
-    supabase.from("expenses").select("task_id, amount").in("task_id", taskIds),
+      // Fetch expense counts and totals for each task
+      supabase.from("expenses").select("task_id, amount").in("task_id", taskIds),
 
-    // Fetch task dependencies for Gantt chart
-    supabase
-      .from("task_dependencies")
-      .select("*")
-      .or(
-        `task_id.in.(${taskIds.join(",")}),depends_on_task_id.in.(${taskIds.join(",")})`,
-      ),
-  ]);
-
-  // Attach assignees to tasks
-  const assignees = assigneesResult.data || [];
-  if (assignees.length > 0) {
-    const assigneeMap = new Map(
-      assignees.map((assignee: any) => [assignee.id, assignee]),
-    );
-    (tasks as any[]).forEach((task: any) => {
-      if (task.assignee_id) {
-        task.assignee = assigneeMap.get(task.assignee_id) || null;
-      }
-    });
-  }
+      // Fetch task dependencies for Gantt chart
+      supabase
+        .from("task_dependencies")
+        .select("*")
+        .or(
+          `task_id.in.(${taskIds.join(",")}),depends_on_task_id.in.(${taskIds.join(",")})`,
+        ),
+    ]);
 
   // Aggregate material stats per task
   const materialStats = materialStatsResult.data || [];
@@ -227,6 +234,19 @@ export const getTasksPageData = cache(async function getTasksPageData() {
     // Attach expense stats to tasks
     (tasks as any[]).forEach((task: any) => {
       task.expenseStats = statsByTask[task.id] || { count: 0, totalAmount: 0 };
+    });
+  }
+
+  // Attach assignee user profiles to tasks
+  const assignees = assigneesResult.data || [];
+  if (assignees.length > 0) {
+    const assigneeMap = assignees.reduce((acc: any, assignee: any) => {
+      acc[assignee.id] = assignee;
+      return acc;
+    }, {});
+
+    (tasks as any[]).forEach((task: any) => {
+      task.assignee = task.assignee_id ? assigneeMap[task.assignee_id] || null : null;
     });
   }
 
@@ -337,7 +357,16 @@ export const getTaskDetailData = cache(async function getTaskDetailData(
 
   const activityPromise = supabase
     .from("task_activity")
-    .select("*")
+    .select(
+      `
+      *,
+      user:user_profiles!task_activity_user_id_fkey (
+        id,
+        name,
+        avatar_url
+      )
+    `,
+    )
     .eq("task_id", taskId)
     .order("created_at", { ascending: false });
 
@@ -426,8 +455,10 @@ export const getTaskDetailData = cache(async function getTaskDetailData(
       userProfileMap.get(task.created_by) || null;
   }
 
-  const activityRaw = activityResult.data as TaskActivityRecord[] | null;
-  let activity: Array<{
+  const activityRaw = activityResult.data as (TaskActivityRecord & {
+    user: TaskUserProfile | null;
+  })[] | null;
+  const activity: Array<{
     id: string;
     action: string;
     old_value: string | null;
@@ -435,45 +466,21 @@ export const getTaskDetailData = cache(async function getTaskDetailData(
     comment: string | null;
     created_at: string;
     user: { id: string; name: string; avatar_url: string | null } | null;
-  }> = [];
-
-  if (activityRaw && activityRaw.length > 0) {
-    const activityUserIds = activityRaw
-      .filter((record) => record.user_id)
-      .map((record) => record.user_id as string);
-    const uniqueActivityUserIds = [...new Set(activityUserIds)];
-
-    const activityUsers: Record<string, TaskUserProfile> = {};
-    if (uniqueActivityUserIds.length > 0) {
-      const { data: users } = await supabase
-        .from("user_profiles")
-        .select("id, name, avatar_url")
-        .in("id", uniqueActivityUserIds);
-
-      if (users) {
-        (users as TaskUserProfile[]).forEach((user) => {
-          activityUsers[user.id] = user;
-        });
-      }
-    }
-
-    activity = activityRaw.map((record) => ({
-      id: record.id,
-      action: record.comment
-        ? "comment"
-        : record.old_value
-          ? "updated"
-          : "created",
-      old_value: record.old_value,
-      new_value: record.new_value,
-      comment: record.comment,
-      created_at: record.created_at,
-      user:
-        record.user_id && activityUsers[record.user_id]
-          ? activityUsers[record.user_id]
-          : null,
-    }));
-  }
+  }> = activityRaw
+    ? activityRaw.map((record) => ({
+        id: record.id,
+        action: record.comment
+          ? "comment"
+          : record.old_value
+            ? "updated"
+            : "created",
+        old_value: record.old_value,
+        new_value: record.new_value,
+        comment: record.comment,
+        created_at: record.created_at,
+        user: record.user || null,
+      }))
+    : [];
 
   const dependencies = ((dependenciesRaw.data as TaskDependencyRecord[]) || [])
     .filter((record) => record.depends_on_task !== null)

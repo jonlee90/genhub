@@ -130,12 +130,18 @@ export function KanbanBoard({ tasks, onTaskClick, phases, taskTypes }: KanbanBoa
 
       startTransition(async () => {
         setOptimisticTasks({ taskId, newStatus });
-        await updateTaskStatus(taskId, newStatus, reason);
+        const result = await updateTaskStatus(taskId, newStatus, reason);
+        if (!result.success && process.env.NODE_ENV === "development") {
+          console.error("Failed to update task status:", result.error);
+        }
       });
     } else {
       startTransition(async () => {
         setOptimisticTasks({ taskId, newStatus });
-        await updateTaskStatus(taskId, newStatus);
+        const result = await updateTaskStatus(taskId, newStatus);
+        if (!result.success && process.env.NODE_ENV === "development") {
+          console.error("Failed to update task status:", result.error);
+        }
       });
     }
   }, [optimisticTasks, setOptimisticTasks, startTransition]);

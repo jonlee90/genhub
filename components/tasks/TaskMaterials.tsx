@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -79,11 +79,7 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadMaterials();
-  }, [taskId]);
-
-  const loadMaterials = async () => {
+  const loadMaterials = useCallback(async () => {
     setIsLoading(true);
 
     // Use server action for proper authentication
@@ -109,7 +105,11 @@ export function TaskMaterials({ taskId, canEdit }: TaskMaterialsProps) {
     }
 
     setIsLoading(false);
-  };
+  }, [taskId]);
+
+  useEffect(() => {
+    loadMaterials();
+  }, [loadMaterials]);
 
   const handleStatusUpdate = (materialAssignmentId: string, newStatus: string) => {
     setUpdatingId(materialAssignmentId);

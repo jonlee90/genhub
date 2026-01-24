@@ -44,7 +44,10 @@ export interface MaterialTabProps {
  * Shows table with product name, SKU, quantity, status badge, and cost
  * Calculates total cost summary
  */
-export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabProps) {
+export function MaterialTab({
+  taskId,
+  hasBudgetVisibility = true,
+}: MaterialTabProps) {
   // State
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +72,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     };
 
     fetchMaterials();
-  }, [taskId]);
+  }, [taskId, setError]);
 
   // Material status color helper
   const getMaterialStatusColor = (status: string) => {
@@ -87,7 +90,9 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
-        <p className="text-sm text-gray-500">Loading materials...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading materials...
+        </p>
       </div>
     );
   }
@@ -101,23 +106,30 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
   if (materials.length === 0) {
     return (
       <div className="text-center py-12">
-        <Package className="h-16 w-16 mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-500 font-semibold">No materials linked to this task</p>
-        <p className="text-sm text-gray-400 mt-1">Materials will appear here when assigned</p>
+        <Package className="h-16 w-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+        <p className="text-gray-500 dark:text-gray-400 font-semibold">
+          No materials linked to this task
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+          Materials will appear here when assigned
+        </p>
       </div>
     );
   }
 
   // Calculate total cost
-  const totalCost = materials.reduce((sum, m) => sum + (m.unit_cost * m.quantity), 0);
+  const totalCost = materials.reduce(
+    (sum, m) => sum + m.unit_cost * m.quantity,
+    0,
+  );
 
   return (
     <div className="space-y-4">
       {/* Materials Table */}
-      <div className="border-2 border-gray-200 rounded-lg overflow-hidden">
+      <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b-2 border-gray-200">
-            <tr className="text-left text-xs uppercase font-bold text-gray-600">
+          <thead className="bg-gray-50 dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700">
+            <tr className="text-left text-xs uppercase font-bold text-gray-600 dark:text-gray-300">
               <th className="p-3">Material</th>
               <th className="p-3 text-center">Qty</th>
               <th className="p-3 text-center">Status</th>
@@ -129,15 +141,19 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
               <tr
                 key={material.id}
                 className={cn(
-                  "border-b border-gray-100 hover:bg-gray-50 transition-colors",
-                  index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                  "border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors",
+                  index % 2 === 0
+                    ? "bg-white dark:bg-gray-900"
+                    : "bg-gray-50/50 dark:bg-gray-800/50",
                 )}
               >
                 {/* Material name and SKU */}
                 <td className="p-3">
-                  <div className="font-semibold text-sm">{material.material.product_name}</div>
+                  <div className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                    {material.material.product_name}
+                  </div>
                   {material.material.sku && (
-                    <div className="text-xs text-gray-500 font-mono mt-0.5">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5">
                       SKU: {material.material.sku}
                     </div>
                   )}
@@ -150,10 +166,12 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
 
                 {/* Status badge */}
                 <td className="p-3 text-center">
-                  <span className={cn(
-                    "px-2 py-1 rounded text-xs font-bold uppercase text-white inline-block",
-                    getMaterialStatusColor(material.procurement_status)
-                  )}>
+                  <span
+                    className={cn(
+                      "px-2 py-1 rounded text-xs font-bold uppercase text-white inline-block",
+                      getMaterialStatusColor(material.procurement_status),
+                    )}
+                  >
                     {material.procurement_status}
                   </span>
                 </td>
@@ -165,7 +183,7 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
                       <span className="font-bold text-sm">
                         ${(material.unit_cost * material.quantity).toFixed(2)}
                       </span>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         ${material.unit_cost.toFixed(2)} × {material.quantity}
                       </div>
                     </>
@@ -181,15 +199,18 @@ export function MaterialTab({ taskId, hasBudgetVisibility = true }: MaterialTabP
 
       {/* Total Cost Summary (conditionally hidden) */}
       {hasBudgetVisibility && (
-        <div className="border-2 border-construction-blue rounded-lg p-4 bg-construction-blue/5">
+        <div className="border-2 border-construction-blue dark:border-construction-blue/40 rounded-lg p-4 bg-construction-blue/5 dark:bg-construction-blue/10">
           <div className="flex justify-between items-center">
-            <span className="font-bold uppercase text-sm text-construction-blue">Total Material Cost:</span>
+            <span className="font-bold uppercase text-sm text-construction-blue">
+              Total Material Cost:
+            </span>
             <span className="text-2xl font-black text-construction-blue">
               ${totalCost.toFixed(2)}
             </span>
           </div>
-          <p className="text-xs text-gray-600 mt-2">
-            Based on {materials.length} material assignment{materials.length !== 1 ? "s" : ""}
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+            Based on {materials.length} material assignment
+            {materials.length !== 1 ? "s" : ""}
           </p>
         </div>
       )}

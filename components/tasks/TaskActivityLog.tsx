@@ -93,8 +93,10 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
       if (!comment.trim()) return;
 
       setIsSubmitting(true);
-      await addTaskComment(taskId, comment);
-      setComment("");
+      const result = await addTaskComment(taskId, comment);
+      if (result.success) {
+        setComment("");
+      }
       setIsSubmitting(false);
     },
     [comment, taskId],

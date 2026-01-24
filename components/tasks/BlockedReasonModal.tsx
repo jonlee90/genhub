@@ -60,7 +60,10 @@ export function BlockedReasonModal({
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="reason" className="font-bold text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="reason"
+              className="font-bold text-gray-700 dark:text-gray-300"
+            >
               Reason for blocking
             </Label>
             <Textarea
@@ -73,7 +76,7 @@ export function BlockedReasonModal({
               }}
               rows={3}
               autoFocus
-              className="border-2 border-gray-300 dark:border-gray-600 focus:border-construction-red dark:focus:border-construction-red"
+              className="border-2 border-gray-300 dark:border-gray-600 focus:border-construction-red dark:focus:border-construction-red bg-white dark:bg-gray-900"
             />
           </div>
 

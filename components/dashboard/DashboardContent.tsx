@@ -222,7 +222,7 @@ export function DashboardContent({
   );
 
   return (
-    <div className="relative min-h-[100dvh] bg-gray-50 dark:bg-gray-950">
+    <div className="relative min-h-full bg-gray-50 dark:bg-gray-950">
       {/* Subtle Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.05] z-0"
@@ -230,7 +230,7 @@ export function DashboardContent({
       />
 
       {/* Main Content */}
-      <main className="relative z-10 px-4 py-6 pb-24 md:px-6 md:py-8 space-y-6">
+      <main className="relative z-10 px-4 py-6 md:px-6 md:py-8 space-y-6">
         {/* Dashboard Header */}
         <DashboardHeader userName={userName} />
 

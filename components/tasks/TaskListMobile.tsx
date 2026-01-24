@@ -51,7 +51,10 @@ export function TaskListMobile({
     setPendingActions((prev) => new Set(prev).add(task.id));
 
     try {
-      await updateTaskStatus(task.id, "completed");
+      const result = await updateTaskStatus(task.id, "completed");
+      if (!result.success) {
+        // Task completion failed - UI will remain in pending state briefly
+      }
     } catch {
       // Task completion failed - UI will remain in pending state briefly
     } finally {
@@ -75,7 +78,10 @@ export function TaskListMobile({
     setPendingActions((prev) => new Set(prev).add(task.id));
 
     try {
-      await deleteTask(task.id);
+      const result = await deleteTask(task.id);
+      if (!result.success) {
+        // Task deletion failed - UI will remain in pending state briefly
+      }
     } catch {
       // Task deletion failed - UI will remain in pending state briefly
     } finally {

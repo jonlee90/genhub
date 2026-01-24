@@ -4,14 +4,17 @@
  * Renders multi-assignee selector and optional primary assignee selector
  * for auto-expense functionality.
  */
-'use client';
+"use client";
 
-import React from 'react';
-import { User } from 'lucide-react';
-import { Label } from '@/components/ui/label';
-import { AssigneeMultiSelect } from '../AssigneeMultiSelect';
-import { PrimaryAssigneeSelector, type AssigneeOption } from '../PrimaryAssigneeSelector';
-import type { TaskAssignee } from '@/app/actions/tasks';
+import React from "react";
+import { User } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { AssigneeMultiSelect } from "../AssigneeMultiSelect";
+import {
+  PrimaryAssigneeSelector,
+  type AssigneeOption,
+} from "../PrimaryAssigneeSelector";
+import type { TaskAssignee } from "@/app/actions/tasks";
 
 interface TaskAssigneeStepProps {
   // Project context
@@ -29,7 +32,7 @@ interface TaskAssigneeStepProps {
   // Optional: Pre-fetched assignees to avoid N+1 queries
   assignees?: Array<{
     id: string;
-    type: 'user' | 'subcontractor';
+    type: "user" | "subcontractor";
     name: string;
     email?: string;
     avatar_url?: string | null;
@@ -64,9 +67,9 @@ export function TaskAssigneeStep({
       <div className="space-y-2">
         <Label
           htmlFor="assignee"
-          className="text-sm font-semibold text-gray-700 flex items-center gap-2"
+          className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
         >
-          <User className="h-4 w-4 text-gray-400" />
+          <User className="h-4 w-4 text-gray-400 dark:text-gray-500" />
           Assignees
         </Label>
         <AssigneeMultiSelect

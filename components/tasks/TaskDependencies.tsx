@@ -40,8 +40,12 @@ export function TaskDependencies({
 
   const handleRemove = async (dependsOnTaskId: string) => {
     setIsRemoving(dependsOnTaskId);
-    await removeTaskDependency(taskId, dependsOnTaskId);
-    setIsRemoving(null);
+    const result = await removeTaskDependency(taskId, dependsOnTaskId);
+    if (result.success) {
+      setIsRemoving(null);
+    } else {
+      setIsRemoving(null);
+    }
   };
 
   const getStatusDisplay = (status: string) => {

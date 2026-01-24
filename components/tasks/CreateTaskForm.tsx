@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,9 @@ import { Package } from "lucide-react";
 import { AlertCircle } from "lucide-react";
 import { Plus } from "lucide-react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { createTask, type CreateTaskFormState } from "@/app/actions/tasks";
+import { createTask } from "@/app/actions/tasks";
+import { useFormSubmit } from "@/hooks/use-form-submit";
+import type { TaskRow as Task } from "@/types/db/task";
 import { TaskTypeSelector, TaskTypeBadge } from ".//TaskTypeSelector";
 import { TaskMaterialsManager } from "./TaskMaterialsManager";
 import { TaskReceiptUpload } from "./TaskReceiptUpload";
@@ -38,14 +40,6 @@ interface CreateTaskFormProps {
   /** Task types from database - passed from Server Component parent */
   taskTypes?: TaskTypeConfigsRow[];
 }
-
-// Initial state matching createTask action return type
-const initialState: CreateTaskFormState = {
-  error: null,
-  fieldErrors: null,
-  success: false,
-  task: null,
-};
 
 // Step configuration for multi-step form flow
 // Work: Type -> Details (2 steps)
@@ -74,12 +68,15 @@ export function CreateTaskForm({
   taskTypes = [],
 }: CreateTaskFormProps) {
   const router = useRouter();
-  const [state, formAction, isPending] = useActionState(createTask, initialState);
-  const [selectedProjectId, setSelectedProjectId] = useState(preselectedProjectId || "");
+  const [selectedProjectId, setSelectedProjectId] = useState(
+    preselectedProjectId || "",
+  );
 
   // Multi-step form state
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedTaskType, setSelectedTaskType] = useState<TaskType | null>(null);
+  const [selectedTaskType, setSelectedTaskType] = useState<TaskType | null>(
+    null,
+  );
   const [createdTaskId, setCreatedTaskId] = useState<string | null>(null);
 
   // Receipt photo state
@@ -93,12 +90,13 @@ export function CreateTaskForm({
   const selectedProject = projects.find((p) => p.id === selectedProjectId);
   const phases = selectedProject?.project_phases || [];
 
-  // Handle task creation success
-  useEffect(() => {
-    if (state?.success && state?.task) {
+  // Use form submit hook
+  const { formAction, isPending, result } = useFormSubmit({
+    action: (formData) => createTask(null, formData),
+    onSuccess: (task) => {
       // For Purchase tasks, go to materials step after task creation
       if (selectedTaskType === "purchase" && currentStep === 2) {
-        setCreatedTaskId(state.task.id);
+        setCreatedTaskId(task.id);
         setCurrentStep(3);
         return;
       }
@@ -107,10 +105,12 @@ export function CreateTaskForm({
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push(`/app/tasks/${state.task.id}`);
+        router.push(`/app/tasks/${task.id}`);
       }
-    }
-  }, [state, router, onSuccess, selectedTaskType, currentStep]);
+    },
+    successMessage: "Task created successfully",
+    errorMessage: "Failed to create task",
+  });
 
   // Handle type selection
   const handleTypeSelect = (type: TaskType) => {
@@ -147,8 +147,8 @@ export function CreateTaskForm({
   const showCostFields = selectedTaskType !== "approval";
 
   return (
-    <Card className="border-2 border-gray-200 shadow-lg">
-      <CardHeader className="border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+    <Card className="border-2 border-gray-200 dark:border-gray-700 shadow-lg">
+      <CardHeader className="border-b-2 border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CardTitle className="text-xl font-black text-construction-blue flex items-center gap-2">
@@ -161,16 +161,20 @@ export function CreateTaskForm({
             )}
           </div>
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="font-bold text-construction-blue">Step {currentStep}</span>
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <span className="font-bold text-construction-blue">
+              Step {currentStep}
+            </span>
             <span>of {totalSteps}</span>
-            <span className="text-gray-400">|</span>
-            <span className="font-medium">{getStepLabel(currentStep, selectedTaskType)}</span>
+            <span className="text-gray-400 dark:text-gray-500">|</span>
+            <span className="font-medium">
+              {getStepLabel(currentStep, selectedTaskType)}
+            </span>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="mt-4 h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-construction-blue"
             initial={{ width: 0 }}
@@ -183,15 +187,15 @@ export function CreateTaskForm({
       <CardContent className="p-6">
         {/* Error Display */}
         <AnimatePresence>
-          {state?.error && (
+          {result && !result.success && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-6 bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
+              className="mb-6 bg-red-50 dark:bg-red-950/30 border-2 border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm flex items-center gap-2"
             >
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              {state.error}
+              {result.error}
             </motion.div>
           )}
         </AnimatePresence>
@@ -215,7 +219,7 @@ export function CreateTaskForm({
               />
 
               {/* Navigation for Step 1 */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t-2 border-gray-100">
+              <div className="flex justify-end gap-4 mt-8 pt-6 border-t-2 border-gray-100 dark:border-gray-800">
                 <Button
                   type="button"
                   variant="outline"
@@ -249,34 +253,49 @@ export function CreateTaskForm({
             >
               <form action={formAction} className="space-y-6">
                 {/* Hidden task_type field */}
-                <input type="hidden" name="task_type" value={selectedTaskType || "work"} />
+                <input
+                  type="hidden"
+                  name="task_type"
+                  value={selectedTaskType || "work"}
+                />
 
                 {/* Title */}
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-sm font-bold text-gray-700">
+                  <Label
+                    htmlFor="title"
+                    className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                  >
                     Title <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="title"
                     name="title"
                     placeholder={
-                      selectedTaskType === "purchase" ? "e.g., Order lumber for framing" :
-                      selectedTaskType === "approval" ? "e.g., Building permit approval" :
-                      selectedTaskType === "admin" ? "e.g., Update project schedule" :
-                      "Enter task title"
+                      selectedTaskType === "purchase"
+                        ? "e.g., Order lumber for framing"
+                        : selectedTaskType === "approval"
+                          ? "e.g., Building permit approval"
+                          : selectedTaskType === "admin"
+                            ? "e.g., Update project schedule"
+                            : "Enter task title"
                     }
                     required
                     disabled={isPending}
-                    className="border-2 border-gray-200 focus:border-construction-blue"
+                    className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                   />
-                  {state?.fieldErrors?.title && (
-                    <p className="text-sm text-red-500">{state.fieldErrors.title[0]}</p>
+                  {result && !result.success && result.fieldErrors?.title && (
+                    <p className="text-sm text-red-500">
+                      {result.fieldErrors.title[0]}
+                    </p>
                   )}
                 </div>
 
                 {/* Description */}
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-bold text-gray-700">
+                  <Label
+                    htmlFor="description"
+                    className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                  >
                     Description
                   </Label>
                   <Textarea
@@ -285,14 +304,17 @@ export function CreateTaskForm({
                     placeholder="Describe the task in detail..."
                     rows={3}
                     disabled={isPending}
-                    className="border-2 border-gray-200 focus:border-construction-blue resize-none"
+                    className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900 resize-none"
                   />
                 </div>
 
                 {/* Project & Phase */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="project_id" className="text-sm font-bold text-gray-700">
+                    <Label
+                      htmlFor="project_id"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
                       Project <span className="text-red-500">*</span>
                     </Label>
                     <Select
@@ -302,7 +324,7 @@ export function CreateTaskForm({
                       required
                       disabled={isPending}
                     >
-                      <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                      <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900">
                         <SelectValue placeholder="Select project" />
                       </SelectTrigger>
                       <SelectContent>
@@ -313,13 +335,18 @@ export function CreateTaskForm({
                         ))}
                       </SelectContent>
                     </Select>
-                    {state?.fieldErrors?.project_id && (
-                      <p className="text-sm text-red-500">{state.fieldErrors.project_id[0]}</p>
+                    {result && !result.success && result.fieldErrors?.project_id && (
+                      <p className="text-sm text-red-500">
+                        {result.fieldErrors.project_id[0]}
+                      </p>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phase_id" className="text-sm font-bold text-gray-700">
+                    <Label
+                      htmlFor="phase_id"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
                       Phase
                     </Label>
                     <Select
@@ -327,13 +354,16 @@ export function CreateTaskForm({
                       defaultValue={preselectedPhaseId || "none"}
                       disabled={isPending || !selectedProjectId}
                     >
-                      <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                      <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900">
                         <SelectValue placeholder="Select phase (optional)" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">No phase</SelectItem>
                         {phases
-                          .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                          .sort(
+                            (a, b) =>
+                              (a.order_index ?? 0) - (b.order_index ?? 0),
+                          )
                           .map((phase) => (
                             <SelectItem key={phase.id} value={phase.id}>
                               {phase.name}
@@ -347,12 +377,22 @@ export function CreateTaskForm({
                 {/* Assignee & Priority */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="assignee_id" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === "purchase" ? "Purchaser" :
-                       selectedTaskType === "approval" ? "Approver" : "Assignee"}
+                    <Label
+                      htmlFor="assignee_id"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
+                      {selectedTaskType === "purchase"
+                        ? "Purchaser"
+                        : selectedTaskType === "approval"
+                          ? "Approver"
+                          : "Assignee"}
                     </Label>
-                    <Select name="assignee_id" defaultValue="unassigned" disabled={isPending}>
-                      <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                    <Select
+                      name="assignee_id"
+                      defaultValue="unassigned"
+                      disabled={isPending}
+                    >
+                      <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900">
                         <SelectValue placeholder="Unassigned" />
                       </SelectTrigger>
                       <SelectContent>
@@ -367,15 +407,20 @@ export function CreateTaskForm({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="priority" className="text-sm font-bold text-gray-700">
+                    <Label
+                      htmlFor="priority"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
                       Priority
                     </Label>
                     <Select
                       name="priority"
-                      defaultValue={selectedTaskType === "admin" ? "low" : "medium"}
+                      defaultValue={
+                        selectedTaskType === "admin" ? "low" : "medium"
+                      }
                       disabled={isPending}
                     >
-                      <SelectTrigger className="border-2 border-gray-200 focus:border-construction-blue">
+                      <SelectTrigger className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -391,7 +436,10 @@ export function CreateTaskForm({
                 <div className="grid gap-4 md:grid-cols-2">
                   {selectedTaskType !== "approval" && (
                     <div className="space-y-2">
-                      <Label htmlFor="start_date" className="text-sm font-bold text-gray-700">
+                      <Label
+                        htmlFor="start_date"
+                        className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                      >
                         Start Date
                       </Label>
                       <Input
@@ -399,22 +447,30 @@ export function CreateTaskForm({
                         name="start_date"
                         type="date"
                         disabled={isPending}
-                        className="border-2 border-gray-200 focus:border-construction-blue"
+                        className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                       />
                     </div>
                   )}
 
-                  <div className={`space-y-2 ${selectedTaskType === "approval" ? "md:col-span-2" : ""}`}>
-                    <Label htmlFor="due_date" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === "approval" ? "Deadline" :
-                       selectedTaskType === "purchase" ? "Order By Date" : "Due Date"}
+                  <div
+                    className={`space-y-2 ${selectedTaskType === "approval" ? "md:col-span-2" : ""}`}
+                  >
+                    <Label
+                      htmlFor="due_date"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
+                      {selectedTaskType === "approval"
+                        ? "Deadline"
+                        : selectedTaskType === "purchase"
+                          ? "Order By Date"
+                          : "Due Date"}
                     </Label>
                     <Input
                       id="due_date"
                       name="due_date"
                       type="date"
                       disabled={isPending}
-                      className="border-2 border-gray-200 focus:border-construction-blue"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                     />
                   </div>
                 </div>
@@ -422,8 +478,13 @@ export function CreateTaskForm({
                 {/* Cost - only show for non-approval tasks */}
                 {showCostFields && (
                   <div className="space-y-2">
-                    <Label htmlFor="planned_cost" className="text-sm font-bold text-gray-700">
-                      {selectedTaskType === "purchase" ? "Budget Estimate ($)" : "Planned Cost ($)"}
+                    <Label
+                      htmlFor="planned_cost"
+                      className="text-sm font-bold text-gray-700 dark:text-gray-300"
+                    >
+                      {selectedTaskType === "purchase"
+                        ? "Budget Estimate ($)"
+                        : "Planned Cost ($)"}
                     </Label>
                     <Input
                       id="planned_cost"
@@ -433,7 +494,7 @@ export function CreateTaskForm({
                       step="0.01"
                       placeholder="0.00"
                       disabled={isPending}
-                      className="border-2 border-gray-200 focus:border-construction-blue"
+                      className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue dark:focus:border-construction-blue bg-white dark:bg-gray-900"
                     />
                   </div>
                 )}
@@ -451,11 +512,15 @@ export function CreateTaskForm({
 
                 {/* Hidden field for receipt URL (will be set after upload in real implementation) */}
                 {receiptPreview && (
-                  <input type="hidden" name="receipt_photo_url" value={receiptPreview} />
+                  <input
+                    type="hidden"
+                    name="receipt_photo_url"
+                    value={receiptPreview}
+                  />
                 )}
 
                 {/* Navigation for Step 2 */}
-                <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100">
+                <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100 dark:border-gray-800">
                   <Button
                     type="button"
                     variant="outline"
@@ -506,61 +571,66 @@ export function CreateTaskForm({
           )}
 
           {/* STEP 3: Materials (Purchase tasks only) */}
-          {currentStep === 3 && selectedTaskType === "purchase" && createdTaskId && (
-            <motion.div
-              key="step-3"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <Package className="h-5 w-5 text-emerald-600" />
+          {currentStep === 3 &&
+            selectedTaskType === "purchase" &&
+            createdTaskId && (
+              <motion.div
+                key="step-3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 bg-emerald-100 rounded-lg">
+                      <Package className="h-5 w-5 text-emerald-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">
+                        Add Materials
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Search Home Depot products and add them to this purchase
+                        task
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Add Materials</h3>
-                    <p className="text-sm text-gray-600">
-                      Search Home Depot products and add them to this purchase task
-                    </p>
+
+                  {/* Materials Manager in edit mode */}
+                  <TaskMaterialsManager
+                    taskId={createdTaskId}
+                    projectId={selectedProjectId}
+                    mode="edit"
+                  />
+
+                  {/* Navigation for Step 3 */}
+                  <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100 dark:border-gray-800">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleSkipMaterials}
+                      className="border-2"
+                    >
+                      Skip for Now
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        if (onSuccess) {
+                          onSuccess();
+                        } else {
+                          router.push(`/app/tasks/${createdTaskId}`);
+                        }
+                      }}
+                      className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+                    >
+                      Done
+                    </Button>
                   </div>
                 </div>
-
-                {/* Materials Manager in edit mode */}
-                <TaskMaterialsManager
-                  taskId={createdTaskId}
-                  projectId={selectedProjectId}
-                  mode="edit"
-                />
-
-                {/* Navigation for Step 3 */}
-                <div className="flex justify-between gap-4 pt-6 border-t-2 border-gray-100">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSkipMaterials}
-                    className="border-2"
-                  >
-                    Skip for Now
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      if (onSuccess) {
-                        onSuccess();
-                      } else {
-                        router.push(`/app/tasks/${createdTaskId}`);
-                      }
-                    }}
-                    className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-                  >
-                    Done
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
         </AnimatePresence>
       </CardContent>
     </Card>

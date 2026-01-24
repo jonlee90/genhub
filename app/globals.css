@@ -410,6 +410,11 @@ textarea:focus {
   padding-right: var(--safe-area-right);
 }
 
+/* Bottom nav clearance - combines nav height (3.5rem/56px) + safe area */
+.pb-safe-nav {
+  padding-bottom: calc(3.5rem + var(--safe-area-bottom));
+}
+
 /* Mobile-optimized focus states */
 @media (max-width: 768px) {
   input:focus,

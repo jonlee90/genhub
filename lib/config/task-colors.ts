@@ -16,7 +16,7 @@
  * - Warning: #F59E0B
  */
 
-import type { TaskStatus, TaskPriority } from '@/types/db/enums';
+import type { TaskStatus, TaskPriority } from "@/types/db/enums";
 
 // ============================================
 // STATUS CONFIGURATION
@@ -36,39 +36,44 @@ export interface StatusConfig {
 
 export const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
   todo: {
-    label: 'To Do',
-    badgeColor: 'bg-gray-100 text-gray-700 border-gray-300',
-    solidColor: 'bg-gray-500 text-white',
-    dotColor: 'bg-gray-400',
-    iconColor: 'text-gray-500',
+    label: "To Do",
+    badgeColor:
+      "bg-gray-100 text-gray-700 border-gray-300 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700",
+    solidColor: "bg-gray-500 text-white",
+    dotColor: "bg-gray-400",
+    iconColor: "text-gray-500",
   },
   in_progress: {
-    label: 'In Progress',
-    badgeColor: 'bg-blue-100 text-blue-700 border-blue-300',
-    solidColor: 'bg-construction-blue text-white',
-    dotColor: 'bg-blue-500',
-    iconColor: 'text-blue-600',
+    label: "In Progress",
+    badgeColor:
+      "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-900/40",
+    solidColor: "bg-construction-blue text-white",
+    dotColor: "bg-blue-500",
+    iconColor: "text-blue-600",
   },
   review: {
-    label: 'Review',
-    badgeColor: 'bg-amber-100 text-amber-700 border-amber-300',
-    solidColor: 'bg-amber-500 text-white',
-    dotColor: 'bg-amber-500',
-    iconColor: 'text-amber-600',
+    label: "Review",
+    badgeColor:
+      "bg-amber-100 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40",
+    solidColor: "bg-amber-500 text-white",
+    dotColor: "bg-amber-500",
+    iconColor: "text-amber-600",
   },
   blocked: {
-    label: 'Blocked',
-    badgeColor: 'bg-red-100 text-red-700 border-red-300',
-    solidColor: 'bg-[#DC2626] text-white',
-    dotColor: 'bg-red-500',
-    iconColor: 'text-red-600',
+    label: "Blocked",
+    badgeColor:
+      "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/40",
+    solidColor: "bg-[#DC2626] text-white",
+    dotColor: "bg-red-500",
+    iconColor: "text-red-600",
   },
   completed: {
-    label: 'Completed',
-    badgeColor: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-    solidColor: 'bg-[#059669] text-white',
-    dotColor: 'bg-emerald-500',
-    iconColor: 'text-emerald-600',
+    label: "Completed",
+    badgeColor:
+      "bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40",
+    solidColor: "bg-[#059669] text-white",
+    dotColor: "bg-emerald-500",
+    iconColor: "text-emerald-600",
   },
 };
 
@@ -88,28 +93,32 @@ export interface PriorityConfig {
 
 export const TASK_PRIORITY_CONFIG: Record<TaskPriority, PriorityConfig> = {
   low: {
-    label: 'Low',
-    badgeColor: 'bg-[#059669]/10 text-[#059669] border-[#059669]/30',
-    dotColor: 'bg-[#059669]',
-    accentColor: 'text-[#059669]',
+    label: "Low",
+    badgeColor:
+      "bg-[#059669]/10 text-[#059669] border-[#059669]/30 dark:bg-[#059669]/20 dark:text-[#34D399] dark:border-[#059669]/50",
+    dotColor: "bg-[#059669]",
+    accentColor: "text-[#059669]",
   },
   medium: {
-    label: 'Medium',
-    badgeColor: 'bg-[#F59E0B]/10 text-[#B45309] border-[#F59E0B]/30',
-    dotColor: 'bg-[#F59E0B]',
-    accentColor: 'text-[#B45309]',
+    label: "Medium",
+    badgeColor:
+      "bg-[#F59E0B]/10 text-[#B45309] border-[#F59E0B]/30 dark:bg-[#F59E0B]/20 dark:text-[#FBBF24] dark:border-[#F59E0B]/50",
+    dotColor: "bg-[#F59E0B]",
+    accentColor: "text-[#B45309]",
   },
   high: {
-    label: 'High',
-    badgeColor: 'bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/30',
-    dotColor: 'bg-[#DC2626]',
-    accentColor: 'text-[#DC2626]',
+    label: "High",
+    badgeColor:
+      "bg-[#DC2626]/10 text-[#DC2626] border-[#DC2626]/30 dark:bg-[#DC2626]/20 dark:text-[#F87171] dark:border-[#DC2626]/50",
+    dotColor: "bg-[#DC2626]",
+    accentColor: "text-[#DC2626]",
   },
   critical: {
-    label: 'Critical',
-    badgeColor: 'bg-purple-100 text-purple-700 border-purple-300',
-    dotColor: 'bg-purple-500',
-    accentColor: 'text-purple-600',
+    label: "Critical",
+    badgeColor:
+      "bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-900/40",
+    dotColor: "bg-purple-500",
+    accentColor: "text-purple-600",
   },
 };
 
@@ -128,7 +137,10 @@ export function getStatusConfig(status: string): StatusConfig {
  * Get priority configuration with fallback
  */
 export function getPriorityConfig(priority: string): PriorityConfig {
-  return TASK_PRIORITY_CONFIG[priority as TaskPriority] || TASK_PRIORITY_CONFIG.medium;
+  return (
+    TASK_PRIORITY_CONFIG[priority as TaskPriority] ||
+    TASK_PRIORITY_CONFIG.medium
+  );
 }
 
 /**

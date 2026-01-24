@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useActionState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   createSubcontractor,
   uploadSubcontractorDocument,
 } from "@/app/actions/subcontractors";
 import type { TradeType } from "@/types/db/enums";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { useFormSubmit } from "@/hooks/use-form-submit";
 import { addSubcontractorValidation } from "@/lib/validation/client-validation";
 import { Controller } from "react-hook-form";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
@@ -109,9 +110,9 @@ export function AddSubcontractorModal({
 
   const rating = watch("rating") || 0;
 
-  // Use useActionState hook for form submission
-  const [state, formAction, isPending] = useActionState(
-    async (prevState: any, formData: FormData) => {
+  // Use form submit hook
+  const { formAction, isPending, result } = useFormSubmit({
+    action: async (formData) => {
       // Capture form data before submission
       setCapturedFormData({
         licenseNumber: (formData.get("license_number") as string) || undefined,
@@ -123,112 +124,118 @@ export function AddSubcontractorModal({
       });
 
       const result = await createSubcontractor(formData);
-      return result;
+      // Convert to FormActionResult
+      if (result.success && result.data) {
+        return { success: true as const, data: result.data };
+      }
+      return {
+        success: false as const,
+        error: result.error || 'Failed to create subcontractor',
+        fieldErrors: 'fieldErrors' in result ? result.fieldErrors : undefined,
+      };
     },
-    null,
-  );
+    successMessage: "Subcontractor created successfully!",
+    errorMessage: "Failed to create subcontractor",
+  });
 
   // Handle successful creation and document upload
   useEffect(() => {
+    if (!result || !result.success) return;
+
     let isCancelled = false;
 
-    if (state?.success && state?.data) {
-      const uploadDocuments = async () => {
-        if (isCancelled) return;
+    const uploadDocuments = async () => {
+      if (isCancelled) return;
 
-        const subcontractorId = state.data.id;
-        let uploadErrors = false;
+      const subcontractorId = result.data.id;
+      let uploadErrors = false;
 
-        // Upload license document if provided
-        if (licenseFile && !isCancelled) {
-          setIsUploadingDocs(true);
-          const licenseFormData = new FormData();
-          licenseFormData.append("subcontractor_id", subcontractorId);
-          licenseFormData.append("document_type", "license");
-          licenseFormData.append("file", licenseFile);
+      // Upload license document if provided
+      if (licenseFile && !isCancelled) {
+        setIsUploadingDocs(true);
+        const licenseFormData = new FormData();
+        licenseFormData.append("subcontractor_id", subcontractorId);
+        licenseFormData.append("document_type", "license");
+        licenseFormData.append("file", licenseFile);
 
-          // Use captured state instead of DOM queries
-          if (capturedFormData.licenseNumber) {
-            licenseFormData.append(
-              "license_number",
-              capturedFormData.licenseNumber,
-            );
-          }
-          if (capturedFormData.licenseExpiry) {
-            licenseFormData.append(
-              "license_expiry",
-              capturedFormData.licenseExpiry,
-            );
-          }
-
-          const licenseResult =
-            await uploadSubcontractorDocument(licenseFormData);
-          if (!isCancelled && !licenseResult.success) {
-            toast.error(`License upload failed: ${licenseResult.error}`);
-            uploadErrors = true;
-          }
+        // Use captured state instead of DOM queries
+        if (capturedFormData.licenseNumber) {
+          licenseFormData.append(
+            "license_number",
+            capturedFormData.licenseNumber,
+          );
+        }
+        if (capturedFormData.licenseExpiry) {
+          licenseFormData.append(
+            "license_expiry",
+            capturedFormData.licenseExpiry,
+          );
         }
 
-        // Upload insurance document if provided
-        if (insuranceFile && !isCancelled) {
-          setIsUploadingDocs(true);
-          const insuranceFormData = new FormData();
-          insuranceFormData.append("subcontractor_id", subcontractorId);
-          insuranceFormData.append("document_type", "insurance");
-          insuranceFormData.append("file", insuranceFile);
+        const licenseResult =
+          await uploadSubcontractorDocument(licenseFormData);
+        if (!isCancelled && !licenseResult.success) {
+          toast.error(`License upload failed: ${licenseResult.error}`);
+          uploadErrors = true;
+        }
+      }
 
-          // Use captured state instead of DOM queries
-          if (capturedFormData.insuranceProvider) {
-            insuranceFormData.append(
-              "insurance_provider",
-              capturedFormData.insuranceProvider,
-            );
-          }
-          if (capturedFormData.insuranceExpiry) {
-            insuranceFormData.append(
-              "insurance_expiry",
-              capturedFormData.insuranceExpiry,
-            );
-          }
+      // Upload insurance document if provided
+      if (insuranceFile && !isCancelled) {
+        setIsUploadingDocs(true);
+        const insuranceFormData = new FormData();
+        insuranceFormData.append("subcontractor_id", subcontractorId);
+        insuranceFormData.append("document_type", "insurance");
+        insuranceFormData.append("file", insuranceFile);
 
-          const insuranceResult =
-            await uploadSubcontractorDocument(insuranceFormData);
-          if (!isCancelled && !insuranceResult.success) {
-            toast.error(`Insurance upload failed: ${insuranceResult.error}`);
-            uploadErrors = true;
-          }
+        // Use captured state instead of DOM queries
+        if (capturedFormData.insuranceProvider) {
+          insuranceFormData.append(
+            "insurance_provider",
+            capturedFormData.insuranceProvider,
+          );
+        }
+        if (capturedFormData.insuranceExpiry) {
+          insuranceFormData.append(
+            "insurance_expiry",
+            capturedFormData.insuranceExpiry,
+          );
         }
 
-        if (!isCancelled) {
-          setIsUploadingDocs(false);
-
-          // Show success message and close modal
-          if (!uploadErrors) {
-            toast.success("Subcontractor created successfully!");
-          } else {
-            toast.warning(
-              "Subcontractor created but some documents failed to upload.",
-            );
-          }
-
-          // Close modal after a short delay
-          setTimeout(() => {
-            if (!isCancelled) {
-              handleClose();
-            }
-          }, 1500);
+        const insuranceResult =
+          await uploadSubcontractorDocument(insuranceFormData);
+        if (!isCancelled && !insuranceResult.success) {
+          toast.error(`Insurance upload failed: ${insuranceResult.error}`);
+          uploadErrors = true;
         }
-      };
+      }
 
-      uploadDocuments();
-    }
+      if (!isCancelled) {
+        setIsUploadingDocs(false);
+
+        // Show warning if some documents failed
+        if (uploadErrors) {
+          toast.warning(
+            "Subcontractor created but some documents failed to upload.",
+          );
+        }
+
+        // Close modal after a short delay
+        setTimeout(() => {
+          if (!isCancelled) {
+            handleClose();
+          }
+        }, 1500);
+      }
+    };
+
+    uploadDocuments();
 
     return () => {
       isCancelled = true;
     };
   }, [
-    state?.success,
-    state?.data,
+    result,
     licenseFile,
     insuranceFile,
     capturedFormData,
@@ -304,21 +311,21 @@ export function AddSubcontractorModal({
     >
       <form action={formAction} className="space-y-6">
         {/* Success Message */}
-        {state?.success && (
+        {result?.success && (
           <Alert className="bg-green-50 border-2 border-green-300 text-green-900">
             <CheckCircle2 className="h-5 w-5 text-green-600" />
             <AlertDescription className="ml-2 font-semibold">
-              {state.message}
+              Subcontractor created successfully!
             </AlertDescription>
           </Alert>
         )}
 
         {/* Error Message */}
-        {state?.error && !state?.fieldErrors && (
+        {result && !result.success && (
           <Alert className="bg-red-50 border-2 border-red-300 text-red-900">
             <XCircle className="h-5 w-5 text-red-600" />
             <AlertDescription className="ml-2 font-semibold">
-              {state.error}
+              {result.error}
             </AlertDescription>
           </Alert>
         )}
@@ -336,7 +343,7 @@ export function AddSubcontractorModal({
             id="company_name"
             type="text"
             placeholder="ABC Construction LLC"
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
             {...register("company_name", addSubcontractorValidation.company_name)}
           />
@@ -364,7 +371,7 @@ export function AddSubcontractorModal({
               <Select
                 value={field.value}
                 onValueChange={field.onChange}
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
               >
                 <SelectTrigger className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue">
                   <SelectValue placeholder="Select trade" />
@@ -401,7 +408,7 @@ export function AddSubcontractorModal({
             id="contact_name"
             type="text"
             placeholder="John Doe"
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
             {...register("contact_name", addSubcontractorValidation.contact_name)}
           />
@@ -425,7 +432,7 @@ export function AddSubcontractorModal({
             id="email"
             type="email"
             placeholder="john@abcconstruction.com"
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
             {...register("email", addSubcontractorValidation.email)}
           />
@@ -447,7 +454,7 @@ export function AddSubcontractorModal({
           </Label>
           <PhoneInput
             id="phone"
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             error={errors.phone?.message}
             {...register("phone", addSubcontractorValidation.phone)}
           />
@@ -466,7 +473,7 @@ export function AddSubcontractorModal({
             id="address"
             placeholder="123 Main Street, City, State ZIP"
             rows={2}
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
             {...register("address", addSubcontractorValidation.address)}
           />
@@ -496,7 +503,7 @@ export function AddSubcontractorModal({
                 id="license_number"
                 type="text"
                 placeholder="LIC-123456"
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
                 {...register("license_number", addSubcontractorValidation.license_number)}
               />
@@ -513,7 +520,7 @@ export function AddSubcontractorModal({
                 id="license_expiry"
                 name="license_expiry"
                 type="date"
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
               />
             </div>
@@ -532,7 +539,7 @@ export function AddSubcontractorModal({
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleLicenseFileChange}
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
               />
               {licenseFile && (
@@ -541,7 +548,7 @@ export function AddSubcontractorModal({
                   variant="ghost"
                   size="sm"
                   onClick={() => setLicenseFile(null)}
-                  disabled={isPending || state?.success || isUploadingDocs}
+                  disabled={isPending || result?.success || isUploadingDocs}
                 >
                   <XCircle className="h-4 w-4" />
                 </Button>
@@ -576,7 +583,7 @@ export function AddSubcontractorModal({
                 id="insurance_provider"
                 type="text"
                 placeholder="ABC Insurance Co."
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
                 {...register("insurance_provider", addSubcontractorValidation.insurance_provider)}
               />
@@ -593,7 +600,7 @@ export function AddSubcontractorModal({
                 id="insurance_expiry"
                 name="insurance_expiry"
                 type="date"
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
               />
             </div>
@@ -612,7 +619,7 @@ export function AddSubcontractorModal({
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleInsuranceFileChange}
-                disabled={isPending || state?.success || isUploadingDocs}
+                disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
               />
               {insuranceFile && (
@@ -621,7 +628,7 @@ export function AddSubcontractorModal({
                   variant="ghost"
                   size="sm"
                   onClick={() => setInsuranceFile(null)}
-                  disabled={isPending || state?.success || isUploadingDocs}
+                  disabled={isPending || result?.success || isUploadingDocs}
                 >
                   <XCircle className="h-4 w-4" />
                 </Button>
@@ -655,7 +662,7 @@ export function AddSubcontractorModal({
                     key={i}
                     type="button"
                     onClick={() => field.onChange(i)}
-                    disabled={isPending || state?.success || isUploadingDocs}
+                    disabled={isPending || result?.success || isUploadingDocs}
                     className="focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95 transition-transform"
                   >
                     <Star
@@ -685,7 +692,7 @@ export function AddSubcontractorModal({
             id="notes"
             placeholder="Any additional notes or comments..."
             rows={3}
-            disabled={isPending || state?.success || isUploadingDocs}
+            disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
             {...register("notes", addSubcontractorValidation.notes)}
           />
@@ -708,7 +715,7 @@ export function AddSubcontractorModal({
           </Button>
           <Button
             type="submit"
-            disabled={!canSubmit || isPending || state?.success || isUploadingDocs}
+            disabled={!canSubmit || isPending || result?.success || isUploadingDocs}
             className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50 min-h-[44px] active:scale-95"
           >
             {isPending ? (
@@ -721,7 +728,7 @@ export function AddSubcontractorModal({
                 <Upload className="h-4 w-4 mr-2 animate-pulse" />
                 Uploading Documents...
               </>
-            ) : state?.success ? (
+            ) : result?.success ? (
               <>
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Created!

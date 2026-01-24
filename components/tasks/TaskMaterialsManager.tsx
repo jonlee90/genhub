@@ -25,10 +25,10 @@ import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
 // Interface definitions
 interface TaskMaterialsManagerProps {
-  taskId?: string;          // For edit mode (existing task)
-  projectId: string;        // Required for material assignment
+  taskId?: string; // For edit mode (existing task)
+  projectId: string; // Required for material assignment
   onMaterialsChange?: () => void; // Callback when materials are added/removed
-  mode: "create" | "edit";  // Determines UI behavior
+  mode: "create" | "edit"; // Determines UI behavior
   // Create mode: store materials temporarily
   tempMaterials?: TempMaterial[];
   onTempMaterialsChange?: (materials: TempMaterial[]) => void;
@@ -80,7 +80,9 @@ export function TaskMaterialsManager({
   onTempMaterialsChange,
 }: TaskMaterialsManagerProps) {
   // State management
-  const [activeTab, setActiveTab] = useState<TabType>(mode === "edit" ? "assigned" : "search");
+  const [activeTab, setActiveTab] = useState<TabType>(
+    mode === "edit" ? "assigned" : "search",
+  );
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { error, setError, clearError } = useActionWithError();
@@ -103,11 +105,13 @@ export function TaskMaterialsManager({
     }
 
     setIsLoading(false);
-  }, [taskId]);
+  }, [taskId, setError]);
 
-  // Initial load
+  // Initial load - call loadMaterials on mount in edit mode
   useEffect(() => {
     if (mode === "edit" && taskId) {
+      // This is an intentional async call in effect for data fetching
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadMaterials();
     }
   }, [mode, taskId, loadMaterials]);
@@ -133,16 +137,18 @@ export function TaskMaterialsManager({
   }, [loadMaterials, onMaterialsChange]);
 
   // Calculate total cost (edit mode uses materials, create mode uses tempMaterials)
-  const totalCost = mode === "edit"
-    ? materials.reduce((sum, m) => sum + (m.total_cost || 0), 0)
-    : tempMaterials.reduce((sum, m) => sum + (m.price * m.quantity), 0);
+  const totalCost =
+    mode === "edit"
+      ? materials.reduce((sum, m) => sum + (m.total_cost || 0), 0)
+      : tempMaterials.reduce((sum, m) => sum + m.price * m.quantity, 0);
 
   // Get material count for badge
-  const materialCount = mode === "edit" ? materials.length : tempMaterials.length;
+  const materialCount =
+    mode === "edit" ? materials.length : tempMaterials.length;
   return (
     <div className="space-y-4">
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+      <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
         {/* Search Tab */}
         <button
           type="button"
@@ -150,8 +156,8 @@ export function TaskMaterialsManager({
           className={cn(
             "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all",
             activeTab === "search"
-              ? "bg-white text-construction-blue shadow-sm"
-              : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              ? "bg-white dark:bg-gray-900 text-construction-blue shadow-sm"
+              : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-700",
           )}
         >
           <Search className="h-4 w-4" />
@@ -165,8 +171,8 @@ export function TaskMaterialsManager({
           className={cn(
             "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-md text-sm font-bold transition-all",
             activeTab === "assigned"
-              ? "bg-white text-construction-blue shadow-sm"
-              : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+              ? "bg-white dark:bg-gray-900 text-construction-blue shadow-sm"
+              : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-700",
           )}
         >
           <Package className="h-4 w-4" />
@@ -178,7 +184,7 @@ export function TaskMaterialsManager({
                 "ml-1 text-xs h-5 min-w-5 flex items-center justify-center",
                 activeTab === "assigned"
                   ? "bg-construction-blue text-white"
-                  : "bg-gray-200 text-gray-700"
+                  : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200",
               )}
             >
               {materialCount}
@@ -242,14 +248,14 @@ export function TaskMaterialsManager({
                 tempMaterials={tempMaterials}
                 onTempMaterialRemove={(productId) => {
                   onTempMaterialsChange?.(
-                    tempMaterials.filter(m => m.product_id !== productId)
+                    tempMaterials.filter((m) => m.product_id !== productId),
                   );
                 }}
                 onTempMaterialQuantityChange={(productId, quantity) => {
                   onTempMaterialsChange?.(
-                    tempMaterials.map(m =>
-                      m.product_id === productId ? { ...m, quantity } : m
-                    )
+                    tempMaterials.map((m) =>
+                      m.product_id === productId ? { ...m, quantity } : m,
+                    ),
                   );
                 }}
               />

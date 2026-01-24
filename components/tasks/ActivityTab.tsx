@@ -43,10 +43,10 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
 
       const result = await getTaskActivity(taskId);
 
-      if (result.error) {
+      if (!result.success) {
         setError(result.error);
         setActivities([]);
-      } else if (result.data) {
+      } else {
         setActivities(result.data);
       }
 
@@ -54,7 +54,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     };
 
     fetchActivity();
-  }, [taskId]);
+  }, [taskId, setError]);
 
   // Format timestamp helper
   const formatTimestamp = (timestamp: string) => {

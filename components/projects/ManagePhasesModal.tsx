@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
@@ -26,7 +26,7 @@ import {
   updatePhaseName,
   deletePhase,
 } from "@/app/actions/phases";
-import { toast } from "sonner";
+import { useFormSubmit } from "@/hooks/use-form-submit";
 import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 
 type Phase = ProjectPhasesRow;
@@ -49,7 +49,6 @@ export function ManagePhasesModal({
   onSuccess,
 }: ManagePhasesModalProps) {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [mode, setMode] = useState<ModalMode>("list");
   const [selectedPhase, setSelectedPhase] = useState<Phase | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +66,88 @@ export function ManagePhasesModal({
     selectedPhase: selectedPhase?.id,
   });
 
+  // Form submission hooks with legacy result conversion
+  const createPhaseSubmit = useFormSubmit({
+    action: async (formData) => {
+      const result = await createPhase(projectId, formData);
+      if (result.success && result.phase) {
+        return { success: true as const, data: result.phase };
+      }
+      return { success: false as const, error: result.error || 'Failed to create phase' };
+    },
+    onSuccess: () => {
+      setPhaseName("");
+      setPhaseDescription("");
+      setMode("list");
+      onSuccess?.();
+      router.refresh();
+    },
+    onError: (errorMsg) => {
+      setError(errorMsg);
+    },
+    successMessage: "Phase created successfully",
+    errorMessage: "Failed to create phase",
+  });
+
+  const updatePhaseSubmit = useFormSubmit({
+    action: async (formData) => {
+      const result = await updatePhaseName(selectedPhase!.id, formData);
+      if (result.success && result.phase) {
+        return { success: true as const, data: result.phase };
+      }
+      return { success: false as const, error: result.error || 'Failed to update phase' };
+    },
+    onSuccess: () => {
+      setMode("list");
+      setSelectedPhase(null);
+      onSuccess?.();
+      router.refresh();
+    },
+    onError: (errorMsg) => {
+      setError(errorMsg);
+    },
+    successMessage: "Phase updated successfully",
+    errorMessage: "Failed to update phase",
+  });
+
+  const deletePhaseSubmit = useFormSubmit({
+    action: async () => {
+      // Validate before submitting
+      if (deleteTaskHandling === "move" && !targetPhaseId) {
+        return {
+          success: false as const,
+          error: "Please select a target phase for tasks",
+        };
+      }
+      const result = await deletePhase(
+        selectedPhase!.id,
+        deleteTaskHandling,
+        targetPhaseId || undefined
+      );
+      if (result.success) {
+        return { success: true as const, data: undefined as any };
+      }
+      return { success: false as const, error: result.error || 'Failed to delete phase' };
+    },
+    onSuccess: () => {
+      setMode("list");
+      setSelectedPhase(null);
+      onSuccess?.();
+      router.refresh();
+    },
+    onError: (errorMsg) => {
+      setError(errorMsg);
+    },
+    successMessage: "Phase deleted successfully",
+    errorMessage: "Failed to delete phase",
+  });
+
+  // Determine which submit is pending
+  const isPending =
+    createPhaseSubmit.isPending ||
+    updatePhaseSubmit.isPending ||
+    deletePhaseSubmit.isPending;
+
   // Performance optimization: Memoize event handlers to prevent recreation on every render
   const handleCreatePhase = useCallback(async () => {
     console.log("[ManagePhasesModal] Creating phase:", phaseName);
@@ -78,22 +159,8 @@ export function ManagePhasesModal({
       formData.append("description", phaseDescription);
     }
 
-    startTransition(async () => {
-      const result = await createPhase(projectId, formData);
-
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else {
-        toast.success("Phase created successfully");
-        setPhaseName("");
-        setPhaseDescription("");
-        setMode("list");
-        onSuccess?.();
-        router.refresh();
-      }
-    });
-  }, [phaseName, phaseDescription, projectId, onSuccess, router]);
+    await createPhaseSubmit.submit(formData);
+  }, [phaseName, phaseDescription, createPhaseSubmit]);
 
   const handleUpdatePhase = useCallback(async () => {
     if (!selectedPhase) return;
@@ -107,21 +174,8 @@ export function ManagePhasesModal({
       formData.append("description", phaseDescription);
     }
 
-    startTransition(async () => {
-      const result = await updatePhaseName(selectedPhase.id, formData);
-
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else {
-        toast.success("Phase updated successfully");
-        setMode("list");
-        setSelectedPhase(null);
-        onSuccess?.();
-        router.refresh();
-      }
-    });
-  }, [selectedPhase, phaseName, phaseDescription, onSuccess, router]);
+    await updatePhaseSubmit.submit(formData);
+  }, [selectedPhase, phaseName, phaseDescription, updatePhaseSubmit]);
 
   const handleDeletePhase = useCallback(async () => {
     if (!selectedPhase) return;
@@ -132,31 +186,9 @@ export function ManagePhasesModal({
     });
     setError(null);
 
-    if (deleteTaskHandling === "move" && !targetPhaseId) {
-      setError("Please select a target phase for tasks");
-      toast.error("Please select a target phase for tasks");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await deletePhase(
-        selectedPhase.id,
-        deleteTaskHandling,
-        targetPhaseId || undefined,
-      );
-
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else {
-        toast.success("Phase deleted successfully");
-        setMode("list");
-        setSelectedPhase(null);
-        onSuccess?.();
-        router.refresh();
-      }
-    });
-  }, [selectedPhase, deleteTaskHandling, targetPhaseId, onSuccess, router]);
+    // Validation is now handled inside the submit action
+    await deletePhaseSubmit.submit(new FormData());
+  }, [selectedPhase, deleteTaskHandling, targetPhaseId, deletePhaseSubmit]);
 
   const handleEditClick = useCallback((phase: Phase) => {
     console.log("[ManagePhasesModal] Edit phase:", phase.id);

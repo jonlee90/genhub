@@ -79,6 +79,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
   // Fetch task details when panel opens
   useEffect(() => {
     if (!taskId || !isOpen) {
+      // Clear state when panel closes
       setTaskData(null);
       setError(null);
       return;
@@ -90,10 +91,10 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
 
       const result = await getTaskDetails(taskId);
 
-      if (result.error) {
+      if (!result.success) {
         setError(result.error);
         setTaskData(null);
-      } else if (result.data) {
+      } else {
         setTaskData(result.data);
       }
 
@@ -101,7 +102,7 @@ export function TaskDetailPanel({ taskId, isOpen, onClose, userRole, hasBudgetVi
     };
 
     fetchTask();
-  }, [taskId, isOpen]);
+  }, [taskId, isOpen, setError]);
 
   // Reset tab when panel opens
   useEffect(() => {

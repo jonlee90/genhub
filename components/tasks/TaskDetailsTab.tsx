@@ -10,7 +10,10 @@ import { DollarSign } from "lucide-react";
 import { Flag } from "lucide-react";
 import { Clock } from "lucide-react";
 import { cn, formatPercent, formatDate } from "@/lib/utils";
-import { TASK_STATUS_CONFIG, TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
+import {
+  TASK_STATUS_CONFIG,
+  TASK_PRIORITY_CONFIG,
+} from "@/lib/config/task-colors";
 import type { TaskDetails } from ".//TaskDetailPanel";
 
 // Component props
@@ -25,24 +28,32 @@ export interface TaskDetailsTabProps {
  */
 export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
   // Get status/priority configs from shared color system
-  const statusConfig = TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG] || TASK_STATUS_CONFIG.todo;
-  const priorityConfig = TASK_PRIORITY_CONFIG[task.priority as keyof typeof TASK_PRIORITY_CONFIG] || TASK_PRIORITY_CONFIG.medium;
+  const statusConfig =
+    TASK_STATUS_CONFIG[task.status as keyof typeof TASK_STATUS_CONFIG] ||
+    TASK_STATUS_CONFIG.todo;
+  const priorityConfig =
+    TASK_PRIORITY_CONFIG[task.priority as keyof typeof TASK_PRIORITY_CONFIG] ||
+    TASK_PRIORITY_CONFIG.medium;
 
   return (
     <div className="space-y-6">
       {/* Status and Priority Badges */}
       <div className="flex gap-2 flex-wrap">
-        <div className={cn(
-          "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
-          statusConfig.badgeColor
-        )}>
+        <div
+          className={cn(
+            "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
+            statusConfig.badgeColor,
+          )}
+        >
           <Clock className="h-4 w-4" />
           {statusConfig.label}
         </div>
-        <div className={cn(
-          "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
-          priorityConfig.badgeColor
-        )}>
+        <div
+          className={cn(
+            "px-3 py-1.5 rounded-lg text-sm font-bold uppercase flex items-center gap-2 border",
+            priorityConfig.badgeColor,
+          )}
+        >
           <Flag className="h-4 w-4" />
           {priorityConfig.label}
         </div>
@@ -51,8 +62,12 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
       {/* Description */}
       {task.description && (
         <div className="border-l-4 border-l-[var(--construction-blue)] pl-4">
-          <h3 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">Description</h3>
-          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{task.description}</p>
+          <h3 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">
+            Description
+          </h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+            {task.description}
+          </p>
         </div>
       )}
 
@@ -77,10 +92,14 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
                   {task.assignee.name.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="font-semibold text-sm">{task.assignee.name}</span>
+              <span className="font-semibold text-sm text-gray-900 dark:text-gray-100">
+                {task.assignee.name}
+              </span>
             </div>
           ) : (
-            <span className="text-sm text-gray-400">Unassigned</span>
+            <span className="text-sm text-gray-400 dark:text-gray-500">
+              Unassigned
+            </span>
           )}
         </div>
 
@@ -101,7 +120,9 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             <Calendar className="h-4 w-4" />
             Start Date
           </div>
-          <span className="font-semibold text-sm">{formatDate(task.start_date)}</span>
+          <span className="font-semibold text-sm">
+            {formatDate(task.start_date)}
+          </span>
         </div>
 
         {/* Due Date */}
@@ -110,12 +131,16 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             <Calendar className="h-4 w-4" />
             Due Date
           </div>
-          <span className={cn(
-            "font-semibold text-sm",
-            task.due_date && new Date(task.due_date) < new Date() && task.status !== "completed"
-              ? "text-red-600"
-              : ""
-          )}>
+          <span
+            className={cn(
+              "font-semibold text-sm",
+              task.due_date &&
+                new Date(task.due_date) < new Date() &&
+                task.status !== "completed"
+                ? "text-red-600"
+                : "",
+            )}
+          >
             {formatDate(task.due_date)}
           </span>
         </div>
@@ -123,28 +148,41 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
 
       {/* 3D Location (if spatial marker exists) */}
       {task.spatial_marker && (
-        <div className="border-2 border-construction-blue rounded-lg p-4 bg-construction-blue/5">
+        <div className="border-2 border-construction-blue dark:border-construction-blue/40 rounded-lg p-4 bg-construction-blue/5 dark:bg-construction-blue/10">
           <div className="flex items-center gap-2 text-xs font-bold uppercase text-construction-blue mb-3">
             <MapPin className="h-4 w-4" />
             3D Location
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 block">X</span>
-              <span className="font-mono font-semibold">{task.spatial_marker.position_x.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                X
+              </span>
+              <span className="font-mono font-semibold">
+                {task.spatial_marker.position_x.toFixed(2)}
+              </span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 block">Y</span>
-              <span className="font-mono font-semibold">{task.spatial_marker.position_y.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                Y
+              </span>
+              <span className="font-mono font-semibold">
+                {task.spatial_marker.position_y.toFixed(2)}
+              </span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 block">Z</span>
-              <span className="font-mono font-semibold">{task.spatial_marker.position_z.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                Z
+              </span>
+              <span className="font-mono font-semibold">
+                {task.spatial_marker.position_z.toFixed(2)}
+              </span>
             </div>
           </div>
           {task.spatial_marker.element_id && (
             <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
-              <span className="font-semibold">Element ID:</span> {task.spatial_marker.element_id}
+              <span className="font-semibold">Element ID:</span>{" "}
+              {task.spatial_marker.element_id}
             </div>
           )}
         </div>
@@ -159,47 +197,67 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Planned</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
+                Planned
+              </span>
               <span className="text-lg font-black text-construction-blue">
                 ${(task.planned_cost || 0).toFixed(2)}
               </span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Actual</span>
-              <span className={cn(
-                "text-lg font-black",
-                task.actual_cost && task.planned_cost && task.actual_cost > task.planned_cost
-                  ? "text-red-600"
-                  : "text-green-600"
-              )}>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
+                Actual
+              </span>
+              <span
+                className={cn(
+                  "text-lg font-black",
+                  task.actual_cost &&
+                    task.planned_cost &&
+                    task.actual_cost > task.planned_cost
+                    ? "text-red-600"
+                    : "text-green-600",
+                )}
+              >
                 ${(task.actual_cost || 0).toFixed(2)}
               </span>
             </div>
           </div>
-          {task.actual_cost !== undefined && task.planned_cost !== undefined && (
-            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Variance</span>
-              <span className={cn(
-                "text-sm font-bold",
-                task.actual_cost > task.planned_cost ? "text-red-600" : "text-green-600"
-              )}>
-                {task.actual_cost > task.planned_cost ? "+" : ""}
-                ${(task.actual_cost - task.planned_cost).toFixed(2)}
-                {" "}
-                ({task.actual_cost > task.planned_cost ? "+" : "-"}{formatPercent(Math.abs((task.actual_cost / task.planned_cost - 1) * 100))})
-              </span>
-            </div>
-          )}
+          {task.actual_cost !== undefined &&
+            task.planned_cost !== undefined && (
+              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">
+                  Variance
+                </span>
+                <span
+                  className={cn(
+                    "text-sm font-bold",
+                    task.actual_cost > task.planned_cost
+                      ? "text-red-600"
+                      : "text-green-600",
+                  )}
+                >
+                  {task.actual_cost > task.planned_cost ? "+" : ""}$
+                  {(task.actual_cost - task.planned_cost).toFixed(2)} (
+                  {task.actual_cost > task.planned_cost ? "+" : "-"}
+                  {formatPercent(
+                    Math.abs((task.actual_cost / task.planned_cost - 1) * 100),
+                  )}
+                  )
+                </span>
+              </div>
+            )}
         </div>
       )}
 
       {/* Metadata */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
         <p>
-          <span className="font-semibold">Created:</span> {formatDate(task.created_at)}
+          <span className="font-semibold">Created:</span>{" "}
+          {formatDate(task.created_at)}
         </p>
         <p>
-          <span className="font-semibold">Last Updated:</span> {formatDate(task.updated_at)}
+          <span className="font-semibold">Last Updated:</span>{" "}
+          {formatDate(task.updated_at)}
         </p>
       </div>
     </div>

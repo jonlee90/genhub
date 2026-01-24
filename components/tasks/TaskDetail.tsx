@@ -199,7 +199,7 @@ export function TaskDetail({
 
     clearError();
     const result = await updateTaskStatus(task.id, newStatus);
-    if (result?.error) {
+    if (!result.success) {
       setError(result.error);
     }
   };
@@ -210,7 +210,7 @@ export function TaskDetail({
 
     clearError();
     const result = await updateTaskStatus(task.id, pendingStatus, reason);
-    if (result?.error) {
+    if (!result.success) {
       setError(result.error);
     }
     setPendingStatus(null);
@@ -225,7 +225,7 @@ export function TaskDetail({
 
     const result = await deleteTask(task.id);
 
-    if (result?.error) {
+    if (!result.success) {
       setError(result.error);
       setIsDeleting(false);
     } else {

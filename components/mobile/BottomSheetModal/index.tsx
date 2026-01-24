@@ -318,7 +318,7 @@ function BottomSheetModalContent({
                       "transition-all duration-150",
                       "active:scale-95 active:bg-gray-200 dark:active:bg-gray-700",
                       "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400",
-                      "ml-5 mb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                      "ml-5 mb-0",
                     )}
                     aria-label={backLabel}
                   >
@@ -344,7 +344,7 @@ function BottomSheetModalContent({
                         : "active:scale-95 hover:shadow-lg",
                       "focus:outline-none focus:ring-2 focus:ring-offset-2",
                       "disabled:active:scale-100",
-                      "mr-5 mb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                      "mr-5 mb-0",
                     )}
                     style={{
                       background: continueDisabled

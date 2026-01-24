@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import {
-  Receipt,
-  Plus,
-  Clock,
-  CheckCircle2,
-  XCircle,
-} from "lucide-react";
+import { Receipt, Plus, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -34,15 +28,20 @@ interface TaskExpensesSectionProps {
   expenses: TaskExpense[];
   onExpenseAdded?: () => void;
   projects: Array<{ id: string; name: string }>;
-  tasks: Array<{ id: string; title: string; project_id: string; task_type?: string | null }>;
+  tasks: Array<{
+    id: string;
+    title: string;
+    project_id: string;
+    task_type?: string | null;
+  }>;
 }
 
 // Status configuration for expense badges
 const STATUS_CONFIG = {
   submitted: {
     icon: Clock,
-    color: "text-gray-600",
-    bg: "bg-gray-100",
+    color: "text-gray-600 dark:text-gray-400",
+    bg: "bg-gray-100 dark:bg-gray-800",
     label: "Submitted",
   },
   under_review: {
@@ -96,7 +95,7 @@ export function TaskExpensesSection({
   // Calculate expense totals
   const totalAmount = expenses.reduce((sum, e) => sum + e.amount, 0);
   const approvedAmount = expenses
-    .filter(e => e.status === "approved" || e.status === "paid")
+    .filter((e) => e.status === "approved" || e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
 
   // Handle expense created callback
@@ -111,10 +110,10 @@ export function TaskExpensesSection({
   return (
     <div className="space-y-3">
       {/* Header with totals and add button */}
-      <div className="flex items-center justify-between pb-2 border-b border-gray-200">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4 text-construction-blue" />
-          <h3 className="text-sm font-bold text-gray-900">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
             Expenses
             {expenses.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
@@ -139,14 +138,18 @@ export function TaskExpensesSection({
 
       {/* Summary row with totals */}
       {expenses.length > 0 && (
-        <div className="flex items-center gap-4 p-2 bg-gray-50 rounded-lg text-sm">
+        <div className="flex items-center gap-4 p-2 bg-gray-50 dark:bg-gray-900 rounded-lg text-sm">
           <div>
-            <span className="text-gray-500">Total:</span>{" "}
-            <span className="font-bold text-gray-900">{formatCurrency(totalAmount)}</span>
+            <span className="text-gray-500 dark:text-gray-400">Total:</span>{" "}
+            <span className="font-bold text-gray-900 dark:text-gray-100">
+              {formatCurrency(totalAmount)}
+            </span>
           </div>
           <div>
-            <span className="text-gray-500">Approved:</span>{" "}
-            <span className="font-bold text-construction-green">{formatCurrency(approvedAmount)}</span>
+            <span className="text-gray-500 dark:text-gray-400">Approved:</span>{" "}
+            <span className="font-bold text-construction-green">
+              {formatCurrency(approvedAmount)}
+            </span>
           </div>
         </div>
       )}
@@ -164,21 +167,23 @@ export function TaskExpensesSection({
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg hover:border-construction-blue/30 transition-colors"
+                className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-construction-blue/30 transition-colors"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                     {expense.description}
                   </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <span>{expense.vendor_name || "No vendor"}</span>
                     <span>-</span>
-                    <span>{new Date(expense.expense_date).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(expense.expense_date).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3 ml-3">
-                  <span className="text-sm font-bold text-gray-900">
+                  <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
                     {formatCurrency(expense.amount)}
                   </span>
                   <div className={cn("p-1 rounded", status.bg)}>
@@ -191,10 +196,12 @@ export function TaskExpensesSection({
         </div>
       ) : (
         // Empty state
-        <div className="text-center py-6 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
-          <Receipt className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">No expenses yet</p>
-          <p className="text-xs text-gray-400 mt-1">
+        <div className="text-center py-6 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
+          <Receipt className="h-8 w-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No expenses yet
+          </p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
             Add expenses to track actual costs
           </p>
         </div>

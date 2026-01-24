@@ -35,26 +35,30 @@ const APPROVAL_STATUS_CONFIG: Record<
 > = {
   pending: {
     label: "Pending Approval",
-    color: "text-amber-700",
-    bgColor: "bg-amber-100 border-amber-300",
+    color: "text-amber-700 dark:text-amber-300",
+    bgColor:
+      "bg-amber-100 border-amber-300 dark:bg-amber-950/30 dark:border-amber-900/40",
     icon: Clock,
   },
   approved: {
     label: "Approved",
-    color: "text-green-700",
-    bgColor: "bg-green-100 border-green-300",
+    color: "text-green-700 dark:text-green-300",
+    bgColor:
+      "bg-green-100 border-green-300 dark:bg-green-950/30 dark:border-green-900/40",
     icon: CheckCircle2,
   },
   rejected: {
     label: "Rejected",
-    color: "text-red-700",
-    bgColor: "bg-red-100 border-red-300",
+    color: "text-red-700 dark:text-red-300",
+    bgColor:
+      "bg-red-100 border-red-300 dark:bg-red-950/30 dark:border-red-900/40",
     icon: Ban,
   },
   revision_requested: {
     label: "Revision Requested",
-    color: "text-orange-700",
-    bgColor: "bg-orange-100 border-orange-300",
+    color: "text-orange-700 dark:text-orange-300",
+    bgColor:
+      "bg-orange-100 border-orange-300 dark:bg-orange-950/30 dark:border-orange-900/40",
     icon: RotateCcw,
   },
 };
@@ -101,33 +105,36 @@ export function TaskApprovalSection({
     setApprovalNotes("");
   }, []);
 
+  const executeApproval = useCallback(
+    async (status: ApprovalStatus, notes: string) => {
+      setIsUpdatingApproval(true);
+      try {
+        const result = await updateApprovalStatus(
+          task.id,
+          status,
+          notes || undefined,
+        );
+
+        if (!result.success) {
+          onError(result.error);
+        } else {
+          setShowApprovalModal(false);
+          setApprovalAction(null);
+          setApprovalNotes("");
+          onSuccess();
+        }
+      } finally {
+        setIsUpdatingApproval(false);
+      }
+    },
+    [task.id, onError, onSuccess],
+  );
+
   const handleApprovalConfirm = useCallback(async () => {
     if (!approvalAction) return;
 
     await executeApproval(approvalAction, approvalNotes);
-  }, [approvalAction, approvalNotes]);
-
-  const executeApproval = async (status: ApprovalStatus, notes: string) => {
-    setIsUpdatingApproval(true);
-    try {
-      const result = await updateApprovalStatus(
-        task.id,
-        status,
-        notes || undefined,
-      );
-
-      if (result?.error) {
-        onError(result.error);
-      } else {
-        setShowApprovalModal(false);
-        setApprovalAction(null);
-        setApprovalNotes("");
-        onSuccess();
-      }
-    } finally {
-      setIsUpdatingApproval(false);
-    }
-  };
+  }, [approvalAction, approvalNotes, executeApproval]);
 
   if (!task.approval_status) {
     return null;
@@ -138,9 +145,9 @@ export function TaskApprovalSection({
 
   return (
     <>
-      <Card className="border-2 border-gray-200">
+      <Card className="border-2 border-gray-200 dark:border-gray-700">
         <CardContent className="p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Approval Status
           </h2>
 
@@ -200,7 +207,7 @@ export function TaskApprovalSection({
               <Button
                 onClick={() => handleApprovalAction("revision_requested")}
                 variant="outline"
-                className="border-orange-300 text-orange-700 hover:bg-orange-50 gap-2"
+                className="border-orange-300 text-orange-700 hover:bg-orange-50 dark:border-orange-900/40 dark:text-orange-300 dark:hover:bg-orange-950/30 gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 Request Revision
@@ -208,7 +215,7 @@ export function TaskApprovalSection({
               <Button
                 onClick={() => handleApprovalAction("rejected")}
                 variant="outline"
-                className="border-red-300 text-red-700 hover:bg-red-50 gap-2"
+                className="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30 gap-2"
               >
                 <Ban className="w-4 h-4" />
                 Reject
@@ -234,7 +241,7 @@ export function TaskApprovalSection({
         }
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {approvalAction === "approved" &&
               "Confirm that this task meets the required standards and can proceed."}
             {approvalAction === "revision_requested" &&
@@ -244,7 +251,10 @@ export function TaskApprovalSection({
           </p>
 
           <div className="space-y-2">
-            <Label htmlFor="approval-notes">
+            <Label
+              htmlFor="approval-notes"
+              className="text-gray-700 dark:text-gray-300"
+            >
               Notes{" "}
               {approvalAction !== "approved" && (
                 <span className="text-red-500">*</span>
@@ -261,6 +271,7 @@ export function TaskApprovalSection({
               }
               rows={4}
               required={approvalAction !== "approved"}
+              className="bg-white dark:bg-gray-900"
             />
           </div>
 

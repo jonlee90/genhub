@@ -15,10 +15,10 @@ export function TaskDetailDeleteModalContent({
 }: TaskDetailDeleteModalContentProps) {
   return (
     <div className="space-y-4">
-      <p className="text-gray-700">
+      <p className="text-gray-700 dark:text-gray-300">
         You are about to delete the task <strong>&quot;{title}&quot;</strong>.
       </p>
-      <p className="text-gray-700">
+      <p className="text-gray-700 dark:text-gray-300">
         All activity history, dependencies, and associated data will be
         permanently removed.
       </p>

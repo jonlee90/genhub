@@ -302,19 +302,16 @@ function TaskModalForm({
       try {
         const result =
           mode === "create"
-            ? await createTask(
-                { error: null, fieldErrors: null, success: false, task: null },
-                formData,
-              )
+            ? await createTask(null, formData)
             : await updateTask(formData);
 
-        if (result?.error) {
+        if (!result.success) {
           setError(result.error);
         } else {
           // Associate temp materials for create mode
           if (
             mode === "create" &&
-            result?.task &&
+            result.data &&
             formState.tempMaterials.length > 0
           ) {
             try {
@@ -340,8 +337,8 @@ function TaskModalForm({
 
                   return addProductToTask(
                     product,
-                    result.task.id,
-                    result.task.project_id,
+                    result.data.id,
+                    result.data.project_id,
                     tempMaterial.quantity,
                   );
                 },
@@ -364,14 +361,14 @@ function TaskModalForm({
           ) {
             try {
               const expenseResult = await createExpenseFromTask(task.id);
-              if (expenseResult.data) {
+              if (expenseResult.success && expenseResult.data) {
                 toast({
                   title: "Expense Created",
                   description: `Expense for $${parseFloat(formState.actualCost).toFixed(2)} has been created from this task.`,
                   variant: "default",
                 });
                 await fetchExpenses();
-              } else if (expenseResult.error) {
+              } else if (!expenseResult.success) {
                 toast({
                   title: "Warning",
                   description: "Task saved but expense creation failed.",
@@ -379,7 +376,7 @@ function TaskModalForm({
                 });
               }
             } catch {
-              console.error("Error creating expense from task");
+              // Error creating expense - toast already handles user feedback
             }
           }
 
@@ -410,7 +407,7 @@ function TaskModalForm({
         formState.approvalNotes || undefined,
       );
 
-      if (result?.error) {
+      if (!result.success) {
         setError(result.error);
       } else {
         setSuccess(true);
@@ -437,7 +434,7 @@ function TaskModalForm({
     try {
       const result = await deleteTask(task.id);
 
-      if (result?.error) {
+      if (!result.success) {
         setError(result.error);
         setShowDeleteConfirm(false);
       } else {

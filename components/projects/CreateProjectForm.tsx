@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useActionState,
   useState,
   useEffect,
   useMemo,
@@ -14,6 +13,7 @@ import { createProject } from "@/app/actions/projects";
 import { getPhaseTemplates } from "@/app/actions/phase-templates";
 import { getProjectTypes } from "@/app/actions/project-types";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { useFormSubmit } from "@/hooks/use-form-submit";
 import { createProjectValidation } from "@/lib/validation/client-validation";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { TouchButton } from "@/components/mobile/TouchButton";
@@ -73,7 +73,6 @@ export function CreateProjectForm({
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [projectType, setProjectType] = useState<string>("");
-  const [success, setSuccess] = useState(false);
 
   // Project type configs (for mapping to phase templates)
   // Use useRef to avoid triggering dependent effects when reference changes
@@ -114,19 +113,24 @@ export function CreateProjectForm({
   // Watch all form values
   const formValues = watch();
 
-  const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    async (prevState, formData) => {
+  // Use form submit hook with overlay
+  const { formAction, isPending, isComplete, result } = useFormSubmit({
+    action: async (formData) => {
       const result = await createProject(formData);
-      return result as FormState;
+      // Convert legacy result to FormActionResult
+      if ('project' in result && result.success) {
+        return { success: true as const, data: result.project };
+      } else if ('error' in result) {
+        return {
+          success: false as const,
+          error: result.error || 'Failed to create project',
+          fieldErrors: 'fieldErrors' in result ? result.fieldErrors : undefined,
+        };
+      }
+      return { success: false as const, error: 'Unknown error occurred' };
     },
-    {},
-  );
-
-  // Handle success - redirect or callback
-  useEffect(() => {
-    if (state.success && state.project) {
-      setSuccess(true);
-      const projectId = state.project.id;
+    onSuccess: (project) => {
+      const projectId = project.id;
       setTimeout(() => {
         if (isModal && onSuccess) {
           onSuccess(projectId);
@@ -134,8 +138,9 @@ export function CreateProjectForm({
           router.push(`/app/projects/${projectId}`);
         }
       }, 500);
-    }
-  }, [state.success, state.project, router, isModal, onSuccess]);
+    },
+    useOverlay: true,
+  });
 
   // Validate current step before continuing
   const validateCurrentStep = useCallback(async (): Promise<boolean> => {
@@ -335,8 +340,8 @@ export function CreateProjectForm({
       <form id="project-form" action={formAction} onSubmit={handleSubmit}>
         {/* Error/Success Messages */}
         <CreateProjectStatusAlerts
-          error={state.error || null}
-          success={success}
+          error={result && !result.success ? result.error : null}
+          success={isComplete}
         />
 
         {/* Hidden inputs to preserve form values across steps */}
@@ -673,7 +678,7 @@ export function CreateProjectForm({
       {/* Submission overlay with multi-step loader */}
       <FormSubmissionOverlay
         isSubmitting={isPending}
-        isComplete={success}
+        isComplete={isComplete}
         projectName={formValues.name}
       />
     </ResponsiveModal>

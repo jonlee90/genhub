@@ -20,11 +20,42 @@ type TaskTypeConfig = TaskTypeConfigsRow;
 
 // Predefined Tailwind color classes for common colors (performance optimization)
 // If color matches, use Tailwind classes; otherwise fall back to inline styles
-const COLOR_CLASSES: Record<string, { text: string; bg: string; border: string; ring: string; bgLight: string }> = {
-  "#3b82f6": { text: "text-blue-600", bg: "bg-blue-50 hover:bg-blue-100", border: "border-blue-200 data-[selected=true]:border-blue-500", ring: "#3b82f6", bgLight: "bg-blue-100" },
-  "#10b981": { text: "text-emerald-600", bg: "bg-emerald-50 hover:bg-emerald-100", border: "border-emerald-200 data-[selected=true]:border-emerald-500", ring: "#10b981", bgLight: "bg-emerald-100" },
-  "#f59e0b": { text: "text-amber-600", bg: "bg-amber-50 hover:bg-amber-100", border: "border-amber-200 data-[selected=true]:border-amber-500", ring: "#f59e0b", bgLight: "bg-amber-100" },
-  "#64748b": { text: "text-slate-600", bg: "bg-slate-50 hover:bg-slate-100", border: "border-slate-200 data-[selected=true]:border-slate-500", ring: "#64748b", bgLight: "bg-slate-100" },
+const COLOR_CLASSES: Record<
+  string,
+  { text: string; bg: string; border: string; ring: string; bgLight: string }
+> = {
+  "#3b82f6": {
+    text: "text-blue-600 dark:text-blue-300",
+    bg: "bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 dark:hover:bg-blue-900/40",
+    border:
+      "border-blue-200 data-[selected=true]:border-blue-500 dark:border-blue-900/50 dark:data-[selected=true]:border-blue-400",
+    ring: "#3b82f6",
+    bgLight: "bg-blue-100 dark:bg-blue-950/30",
+  },
+  "#10b981": {
+    text: "text-emerald-600 dark:text-emerald-300",
+    bg: "bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 dark:hover:bg-emerald-900/40",
+    border:
+      "border-emerald-200 data-[selected=true]:border-emerald-500 dark:border-emerald-900/50 dark:data-[selected=true]:border-emerald-400",
+    ring: "#10b981",
+    bgLight: "bg-emerald-100 dark:bg-emerald-950/30",
+  },
+  "#f59e0b": {
+    text: "text-amber-600 dark:text-amber-300",
+    bg: "bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40",
+    border:
+      "border-amber-200 data-[selected=true]:border-amber-500 dark:border-amber-900/50 dark:data-[selected=true]:border-amber-400",
+    ring: "#f59e0b",
+    bgLight: "bg-amber-100 dark:bg-amber-950/30",
+  },
+  "#64748b": {
+    text: "text-slate-600 dark:text-slate-300",
+    bg: "bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800/50",
+    border:
+      "border-slate-200 data-[selected=true]:border-slate-500 dark:border-slate-700/60 dark:data-[selected=true]:border-slate-400",
+    ring: "#64748b",
+    bgLight: "bg-slate-100 dark:bg-slate-900/40",
+  },
 };
 
 // Default color fallback
@@ -41,7 +72,7 @@ function toTitleCase(str: string): string {
   return str
     .trim()
     .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 }
 
@@ -55,7 +86,7 @@ export function deriveTaskTypeKey(name: string): TaskType {
     return normalized as TaskType;
   }
   // Partial match (e.g., "Work Tasks" → "work")
-  const match = VALID_TASK_TYPES.find(type => normalized.startsWith(type));
+  const match = VALID_TASK_TYPES.find((type) => normalized.startsWith(type));
   return match || "work"; // Fallback to "work"
 }
 
@@ -93,7 +124,7 @@ function getColorClasses(hexColor: string | null) {
  */
 export function convertTaskTypeConfig(config: TaskTypeConfig): TaskTypeInfo {
   const IconComponent = config.icon_name
-    ? (TASK_TYPE_ICON_MAP[config.icon_name] || Hammer)
+    ? TASK_TYPE_ICON_MAP[config.icon_name] || Hammer
     : Hammer;
   const color = config.color || DEFAULT_COLOR;
   const colorClasses = getColorClasses(color);
@@ -115,14 +146,14 @@ export function convertTaskTypeConfig(config: TaskTypeConfig): TaskTypeInfo {
  */
 export function getTaskTypeInfo(
   taskType: TaskType,
-  configs: TaskTypeConfig[]
+  configs: TaskTypeConfig[],
 ): TaskTypeInfo | null {
   if (!configs || configs.length === 0) {
     return null;
   }
 
   // Find config that matches this task type
-  const config = configs.find(c => deriveTaskTypeKey(c.name) === taskType);
+  const config = configs.find((c) => deriveTaskTypeKey(c.name) === taskType);
   if (!config) {
     // Return first config as fallback
     return convertTaskTypeConfig(configs[0]);
@@ -137,7 +168,7 @@ export function getTaskTypeInfo(
  */
 export function getTaskTypeInfoWithFallback(
   taskType: TaskType,
-  configs?: TaskTypeConfig[] | null
+  configs?: TaskTypeConfig[] | null,
 ): TaskTypeInfo {
   // If we have configs, use them
   if (configs && configs.length > 0) {
@@ -147,11 +178,30 @@ export function getTaskTypeInfoWithFallback(
 
   // Fallback: build minimal info from task type enum
   // This ensures badges can still display even without full config data
-  const fallbackMap: Record<TaskType, { name: string; icon: LucideIcon; color: string }> = {
-    work: { name: "Work", icon: TASK_TYPE_ICON_MAP["Hammer"] || Hammer, color: "#3b82f6" },
-    purchase: { name: "Purchase", icon: TASK_TYPE_ICON_MAP["ShoppingCart"] || Hammer, color: "#10b981" },
-    approval: { name: "Approval", icon: TASK_TYPE_ICON_MAP["ClipboardCheck"] || Hammer, color: "#f59e0b" },
-    admin: { name: "Admin", icon: TASK_TYPE_ICON_MAP["FileText"] || Hammer, color: "#64748b" },
+  const fallbackMap: Record<
+    TaskType,
+    { name: string; icon: LucideIcon; color: string }
+  > = {
+    work: {
+      name: "Work",
+      icon: TASK_TYPE_ICON_MAP["Hammer"] || Hammer,
+      color: "#3b82f6",
+    },
+    purchase: {
+      name: "Purchase",
+      icon: TASK_TYPE_ICON_MAP["ShoppingCart"] || Hammer,
+      color: "#10b981",
+    },
+    approval: {
+      name: "Approval",
+      icon: TASK_TYPE_ICON_MAP["ClipboardCheck"] || Hammer,
+      color: "#f59e0b",
+    },
+    admin: {
+      name: "Admin",
+      icon: TASK_TYPE_ICON_MAP["FileText"] || Hammer,
+      color: "#64748b",
+    },
   };
 
   const fallback = fallbackMap[taskType] || fallbackMap.work;
@@ -190,7 +240,7 @@ function TaskTypeSelectorInner({
       return [];
     }
     return prefetchedTaskTypes
-      .filter(t => t.is_active !== false)
+      .filter((t) => t.is_active !== false)
       .map(convertTaskTypeConfig);
   }, [prefetchedTaskTypes]);
 
@@ -199,7 +249,9 @@ function TaskTypeSelectorInner({
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-6 w-6 animate-spin text-construction-blue" />
-        <span className="ml-2 text-sm text-gray-600">Loading task types...</span>
+        <span className="ml-2 text-sm text-gray-600">
+          Loading task types...
+        </span>
       </div>
     );
   }
@@ -208,7 +260,9 @@ function TaskTypeSelectorInner({
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
         <AlertTriangle className="h-8 w-8 text-amber-500 mb-2" />
-        <p className="text-muted-foreground font-medium">No task types configured</p>
+        <p className="text-muted-foreground font-medium">
+          No task types configured
+        </p>
         <p className="text-sm text-muted-foreground">
           Contact your administrator to set up task types in Settings.
         </p>
@@ -238,23 +292,25 @@ function TaskTypeSelectorInner({
               whileHover={{ scale: disabled ? 1 : 1.02 }}
               whileTap={{ scale: disabled ? 1 : 0.98 }}
               className={cn(
-                'relative flex flex-col items-center p-4 sm:p-5 rounded-xl border-2',
-                'transition-all duration-200 cursor-pointer',
+                "relative flex flex-col items-center p-4 sm:p-5 rounded-xl border-2",
+                "transition-all duration-200 cursor-pointer",
                 !isCustomColor && taskType.colorClasses!.bg,
                 !isCustomColor && taskType.colorClasses!.border,
-                disabled ? 'opacity-50 cursor-not-allowed' : '',
-                isSelected ? 'ring-2 ring-offset-2 shadow-md' : 'shadow-sm',
-                'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary'
+                disabled ? "opacity-50 cursor-not-allowed" : "",
+                isSelected ? "ring-2 ring-offset-2 shadow-md" : "shadow-sm",
+                "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary",
               )}
               style={
                 isCustomColor
                   ? ({
                       backgroundColor: `${taskType.color}15`,
                       borderColor: taskType.color,
-                      '--tw-ring-color': taskType.color,
+                      "--tw-ring-color": taskType.color,
                     } as React.CSSProperties)
                   : ({
-                      '--tw-ring-color': isSelected ? taskType.colorClasses!.ring : undefined,
+                      "--tw-ring-color": isSelected
+                        ? taskType.colorClasses!.ring
+                        : undefined,
                     } as React.CSSProperties)
               }
             >
@@ -273,15 +329,19 @@ function TaskTypeSelectorInner({
               {/* Icon Container */}
               <div
                 className={cn(
-                  'w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-3',
-                  !isCustomColor && taskType.colorClasses!.bgLight
+                  "w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-3",
+                  !isCustomColor && taskType.colorClasses!.bgLight,
                 )}
-                style={isCustomColor ? { backgroundColor: `${taskType.color}25` } : undefined}
+                style={
+                  isCustomColor
+                    ? { backgroundColor: `${taskType.color}25` }
+                    : undefined
+                }
               >
                 <Icon
                   className={cn(
-                    'w-6 h-6 sm:w-7 sm:h-7',
-                    !isCustomColor && taskType.colorClasses!.text
+                    "w-6 h-6 sm:w-7 sm:h-7",
+                    !isCustomColor && taskType.colorClasses!.text,
                   )}
                   style={isCustomColor ? { color: taskType.color } : undefined}
                 />
@@ -290,8 +350,8 @@ function TaskTypeSelectorInner({
               {/* Label */}
               <span
                 className={cn(
-                  'font-semibold text-sm sm:text-base mb-1',
-                  !isCustomColor && taskType.colorClasses!.text
+                  "font-semibold text-sm sm:text-base mb-1",
+                  !isCustomColor && taskType.colorClasses!.text,
                 )}
                 style={isCustomColor ? { color: taskType.color } : undefined}
               >
@@ -308,11 +368,7 @@ function TaskTypeSelectorInner({
       </div>
 
       {/* Hidden input for form submission */}
-      <input
-        type="hidden"
-        name="task_type"
-        value={selectedType || "work"}
-      />
+      <input type="hidden" name="task_type" value={selectedType || "work"} />
     </div>
   );
 }
@@ -327,7 +383,7 @@ export const TaskTypeSelector = memo(TaskTypeSelectorInner);
  */
 export function TaskTypeBadge({
   type,
-  taskTypeConfigs
+  taskTypeConfigs,
 }: {
   type: TaskType;
   taskTypeConfigs?: TaskTypeConfig[] | null;
@@ -339,14 +395,18 @@ export function TaskTypeBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium',
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
         !isCustomColor && info.colorClasses!.bg,
-        !isCustomColor && info.colorClasses!.text
+        !isCustomColor && info.colorClasses!.text,
       )}
-      style={isCustomColor ? {
-        backgroundColor: `${info.color}20`,
-        color: info.color,
-      } : undefined}
+      style={
+        isCustomColor
+          ? {
+              backgroundColor: `${info.color}20`,
+              color: info.color,
+            }
+          : undefined
+      }
     >
       <Icon className="w-3.5 h-3.5" />
       {info.name}

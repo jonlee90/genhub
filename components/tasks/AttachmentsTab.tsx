@@ -45,10 +45,10 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
 
       const result = await getTaskAttachments(taskId);
 
-      if (result.error) {
+      if (!result.success) {
         setError(result.error);
         setAttachments([]);
-      } else if (result.data) {
+      } else {
         setAttachments(result.data);
       }
 
@@ -71,7 +71,9 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
-        <p className="text-sm text-gray-500">Loading attachments...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading attachments...
+        </p>
       </div>
     );
   }
@@ -85,16 +87,20 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
   if (attachments.length === 0) {
     return (
       <div className="text-center py-12">
-        <Paperclip className="h-16 w-16 mx-auto mb-3 text-gray-300" />
-        <p className="text-gray-500 font-semibold">No attachments</p>
-        <p className="text-sm text-gray-400 mt-1">Files and images will appear here when uploaded</p>
+        <Paperclip className="h-16 w-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+        <p className="text-gray-500 dark:text-gray-400 font-semibold">
+          No attachments
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+          Files and images will appear here when uploaded
+        </p>
       </div>
     );
   }
 
   // Separate images from other files
-  const images = attachments.filter(a => a.file_type?.startsWith("image/"));
-  const files = attachments.filter(a => !a.file_type?.startsWith("image/"));
+  const images = attachments.filter((a) => a.file_type?.startsWith("image/"));
+  const files = attachments.filter((a) => !a.file_type?.startsWith("image/"));
 
   return (
     <div className="space-y-6">
@@ -109,15 +115,15 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {images.map(image => (
+            {images.map((image) => (
               <button
                 key={image.id}
                 onClick={() => window.open(image.file_url, "_blank")}
                 className={cn(
                   "aspect-square rounded-lg overflow-hidden",
-                  "border-2 border-gray-200 hover:border-construction-blue",
+                  "border-2 border-gray-200 dark:border-gray-700 hover:border-construction-blue",
                   "transition-all duration-200 hover:shadow-lg",
-                  "relative group"
+                  "relative group",
                 )}
                 aria-label={`View ${image.file_name}`}
               >
@@ -129,19 +135,25 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 {/* Overlay on hover */}
-                <div className={cn(
-                  "absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100",
-                  "transition-opacity duration-200",
-                  "flex items-center justify-center"
-                )}>
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100",
+                    "transition-opacity duration-200",
+                    "flex items-center justify-center",
+                  )}
+                >
                   <ImageIcon className="h-8 w-8 text-white" />
                 </div>
                 {/* File name label */}
-                <div className={cn(
-                  "absolute bottom-0 left-0 right-0 bg-black/70 p-2",
-                  "opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                )}>
-                  <p className="text-xs text-white truncate">{image.file_name}</p>
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 right-0 bg-black/70 p-2",
+                    "opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+                  )}
+                >
+                  <p className="text-xs text-white truncate">
+                    {image.file_name}
+                  </p>
                 </div>
               </button>
             ))}
@@ -160,7 +172,7 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
           </div>
 
           <div className="space-y-2">
-            {files.map(file => (
+            {files.map((file) => (
               <a
                 key={file.id}
                 href={file.file_url}
@@ -169,30 +181,31 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
                 rel="noopener noreferrer"
                 className={cn(
                   "flex items-center gap-3 p-3",
-                  "border-2 border-gray-200 rounded-lg",
-                  "hover:border-construction-blue hover:bg-gray-50",
+                  "border-2 border-gray-200 dark:border-gray-700 rounded-lg",
+                  "hover:border-construction-blue hover:bg-gray-50 dark:hover:bg-gray-800",
                   "transition-all duration-200",
-                  "group"
+                  "group",
                 )}
               >
                 {/* File icon */}
-                <div className="p-2 bg-gray-100 rounded group-hover:bg-construction-blue transition-colors">
-                  <FileText className="h-6 w-6 text-gray-600 group-hover:text-white transition-colors" />
+                <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded group-hover:bg-construction-blue transition-colors">
+                  <FileText className="h-6 w-6 text-gray-600 dark:text-gray-300 group-hover:text-white transition-colors" />
                 </div>
 
                 {/* File details */}
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm text-gray-900 truncate">
+                  <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
                     {file.file_name}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     {formatFileSize(file.file_size ?? undefined)}
-                    {file.file_type && ` • ${file.file_type.split("/")[1]?.toUpperCase()}`}
+                    {file.file_type &&
+                      ` • ${file.file_type.split("/")[1]?.toUpperCase()}`}
                   </p>
                 </div>
 
                 {/* Download icon */}
-                <Download className="h-5 w-5 text-gray-400 group-hover:text-construction-blue transition-colors shrink-0" />
+                <Download className="h-5 w-5 text-gray-400 dark:text-gray-500 group-hover:text-construction-blue transition-colors shrink-0" />
               </a>
             ))}
           </div>
@@ -200,11 +213,14 @@ export function AttachmentsTab({ taskId }: AttachmentsTabProps) {
       )}
 
       {/* Summary */}
-      <div className="border-t border-gray-200 pt-4 text-xs text-gray-500">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4 text-xs text-gray-500 dark:text-gray-400">
         <p>
-          Total: {attachments.length} attachment{attachments.length !== 1 ? "s" : ""}
-          {images.length > 0 && ` (${images.length} image${images.length !== 1 ? "s" : ""})`}
-          {files.length > 0 && ` (${files.length} file${files.length !== 1 ? "s" : ""})`}
+          Total: {attachments.length} attachment
+          {attachments.length !== 1 ? "s" : ""}
+          {images.length > 0 &&
+            ` (${images.length} image${images.length !== 1 ? "s" : ""})`}
+          {files.length > 0 &&
+            ` (${files.length} file${files.length !== 1 ? "s" : ""})`}
         </p>
       </div>
     </div>
