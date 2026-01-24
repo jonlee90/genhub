@@ -3,7 +3,7 @@
 ##
 # Cleanup Idle MCP Dev Servers
 # Kills stale MCP processes, keeping only the most recent active session
-# Usage: ./scripts/cleanup-mcp-servers.sh [--dry-run]
+# Usage: bash scripts/cleanup-mcp-servers.sh [--dry-run]
 ##
 
 set -e
@@ -17,18 +17,15 @@ NC='\033[0m' # No Color
 
 # Get all MCP-related process info (PID, process name, start time)
 get_mcp_process_info() {
-  # Get processes matching MCP patterns
   ps aux | awk '
     /next-devtools-mcp|mcp-server-playwright|mcp-server-memory|context7-mcp|serena.*start-mcp/ && !/awk/ {
       cmd = $NF
-      # Extract just the process name from the path
       if (cmd ~ /next-devtools/) proc = "next-devtools-mcp"
       else if (cmd ~ /playwright/) proc = "mcp-server-playwright"
       else if (cmd ~ /memory/) proc = "mcp-server-memory"
       else if (cmd ~ /context7/) proc = "context7-mcp"
       else if (cmd ~ /serena/) proc = "serena"
       else proc = cmd
-
       pid = $2
       start_time = $9 " " $10
       printf "%s %s %s\n", pid, proc, start_time
@@ -38,8 +35,7 @@ get_mcp_process_info() {
 
 # Extract hour from start time (HH)
 get_start_hour() {
-  local start_time="$1"
-  echo "$start_time" | grep -oE '[0-9]{2}:[0-9]{2}' | cut -d: -f1
+  echo "$1" | grep -oE '[0-9]{2}:[0-9]{2}' | cut -d: -f1
 }
 
 # Main cleanup logic
@@ -76,65 +72,46 @@ main() {
     exit 0
   fi
 
-  # Find most recent start time by grouping processes
-  declare -A sessions
-  declare -a session_times
+  # Get unique start hours and find most recent
+  most_recent_hour=$(echo "$process_info" | awk '{print $3}' | grep -oE '[0-9]{2}:[0-9]{2}' | cut -d: -f1 | sort -n | tail -1)
 
+  # Collect PIDs from old sessions (those with different start hours than most recent)
+  pids_to_kill=""
   while IFS= read -r line; do
     pid=$(echo "$line" | awk '{print $1}')
-    proc=$(echo "$line" | awk '{print $2}')
     start_time=$(echo "$line" | cut -d' ' -f3-)
     start_hour=$(get_start_hour "$start_time")
 
-    # Group by start hour (simple grouping)
-    if [ -z "${sessions[$start_hour]}" ]; then
-      sessions[$start_hour]="$pid"
-      session_times+=("$start_hour")
-    else
-      sessions[$start_hour]="${sessions[$start_hour]} $pid"
+    if [ "$start_hour" != "$most_recent_hour" ]; then
+      pids_to_kill="$pids_to_kill $pid"
     fi
   done <<< "$process_info"
 
-  # Find most recent session (highest hour number)
-  most_recent_hour=""
-  for hour in "${session_times[@]}"; do
-    if [ -z "$most_recent_hour" ] || [ "$hour" -gt "$most_recent_hour" ]; then
-      most_recent_hour="$hour"
-    fi
-  done
-
-  # Collect PIDs from old sessions
-  pids_to_kill=()
-  for hour in "${session_times[@]}"; do
-    if [ "$hour" != "$most_recent_hour" ]; then
-      for pid in ${sessions[$hour]}; do
-        pids_to_kill+=("$pid")
-      done
-    fi
-  done
-
-  if [ ${#pids_to_kill[@]} -eq 0 ]; then
+  if [ -z "$pids_to_kill" ]; then
     echo -e "${COLOR_GREEN}✓ All MCP servers are from the current session - no cleanup needed${NC}"
     exit 0
   fi
 
   # Display processes to be killed
   echo -e "${COLOR_YELLOW}Stale MCP processes (from older sessions):${NC}"
-  for pid in "${pids_to_kill[@]}"; do
+  for pid in $pids_to_kill; do
     ps -p "$pid" -o pid,comm,etime 2>/dev/null || echo "  PID $pid (already terminated)"
   done
   echo ""
 
   # Handle dry-run mode
-  if [ "$DRY_RUN" == "--dry-run" ]; then
-    echo -e "${COLOR_BLUE}[DRY RUN] Would kill ${#pids_to_kill[@]} process(es)${NC}"
+  if [ "$DRY_RUN" = "--dry-run" ]; then
+    kill_count=$(echo "$pids_to_kill" | wc -w)
+    echo -e "${COLOR_BLUE}[DRY RUN] Would kill $kill_count process(es)${NC}"
     exit 0
   fi
 
   # Ask for confirmation
-  read -p "Kill ${#pids_to_kill[@]} stale process(es)? (y/N) " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  kill_count=$(echo "$pids_to_kill" | wc -w)
+  printf "Kill %d stale process(es)? (y/N) " "$kill_count"
+  read -r response
+
+  if [ "$response" != "y" ] && [ "$response" != "Y" ]; then
     echo "Cancelled"
     exit 0
   fi
@@ -142,13 +119,13 @@ main() {
   # Kill processes
   killed=0
   failed=0
-  for pid in "${pids_to_kill[@]}"; do
+  for pid in $pids_to_kill; do
     if kill -9 "$pid" 2>/dev/null; then
       echo -e "${COLOR_GREEN}✓ Killed PID $pid${NC}"
-      ((killed++))
+      killed=$((killed + 1))
     else
       echo -e "${COLOR_RED}✗ Failed to kill PID $pid (may already be terminated)${NC}"
-      ((failed++))
+      failed=$((failed + 1))
     fi
   done
 
