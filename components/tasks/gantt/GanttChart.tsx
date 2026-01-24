@@ -221,10 +221,10 @@ export function GanttChart({
     return positions;
   }, [sortedTasks, config]);
 
-  // Calculate dependency lines (optimized - remove hoveredTaskId from deps)
+  // Calculate dependency lines - includes hoveredTaskId for visual feedback
   const dependencyLines = useMemo(
     () => calculateDependencyLines(dependencies, taskPositions, hoveredTaskId),
-    [dependencies, taskPositions]
+    [dependencies, taskPositions, hoveredTaskId]
   );
 
   const totalWidth = calculateTotalWidth(config);
@@ -293,11 +293,10 @@ export function GanttChart({
           totalHeight + config.headerHeight + (isMobile ? 20 : 40),
           isMobile ? 400 : 600
         ),
-        // Prevent overscroll and constrain touch behavior on mobile
+        // Prevent all touch dragging on mobile
         ...(isMobile && {
-          touchAction: 'pan-x',
-          overscrollBehavior: 'contain',
-          WebkitOverflowScrolling: 'touch'
+          touchAction: 'none',
+          overscrollBehavior: 'contain'
         })
       }}
       onMouseDown={!isMobile ? handleMouseDown : undefined}
@@ -309,8 +308,8 @@ export function GanttChart({
             className="relative bg-white dark:bg-gray-900"
             style={{
               width: totalWidth,
-              // Prevent mobile touch dragging on inner content
-              ...(isMobile && { touchAction: 'pan-x' })
+              // Prevent all mobile touch dragging on chart content
+              ...(isMobile && { touchAction: 'none' })
             }}
           >
             {/* Header */}
