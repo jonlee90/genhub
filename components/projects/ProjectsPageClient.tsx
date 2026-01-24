@@ -520,7 +520,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
       {isMobile ? (
         <div className="flex flex-col h-full">
           <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
-            <div className="p-4">
+            <div className="pt-4 px-4 pb-safe-nav">
               <BlueprintBackground />
 
               <div className="relative mb-4">

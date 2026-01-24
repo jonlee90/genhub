@@ -230,7 +230,7 @@ export function DashboardContent({
       />
 
       {/* Main Content */}
-      <main className="relative z-10 px-4 py-6 md:px-6 md:py-8 space-y-6">
+      <main className="relative z-10 px-4 py-6 md:px-6 md:py-8 pb-safe-nav md:pb-8 space-y-6">
         {/* Dashboard Header */}
         <DashboardHeader userName={userName} />
 
