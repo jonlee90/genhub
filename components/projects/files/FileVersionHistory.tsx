@@ -141,7 +141,6 @@ export function FileVersionHistory({
       isOpen={true}
       onClose={onClose}
       title="Version History"
-      subtitle={filename || "Document versions"}
       icon={Clock}
       maxWidth="lg"
     >

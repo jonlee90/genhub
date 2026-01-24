@@ -17,13 +17,25 @@ export interface BottomSheetModalProps {
   // Header
   icon?: LucideIcon;
   title?: string;
-  subtitle?: string;
   badges?: ReactNode;
 
-  // Footer
-  leftActions?: ReactNode;
-  rightActions?: ReactNode;
-  showFooter?: boolean;
+  // Navigation
+  /** Callback for back button. If provided, shows back button (hidden on step 1) */
+  onBack?: () => void;
+  /** Callback for continue button. If provided, shows continue button */
+  onContinue?: () => void;
+  /** Label for back button. Default: "Back" */
+  backLabel?: string;
+  /** Label for continue button. Default: "Continue" */
+  continueLabel?: string;
+  /** Current step number (for showing/hiding back button) */
+  currentStep?: number;
+  /** Total number of steps (for display) */
+  totalSteps?: number;
+  /** Show navigation bar. Default: true */
+  showNavigation?: boolean;
+  /** Disable continue button. Default: false */
+  continueDisabled?: boolean;
 
   // Theming
   /** Theme name from modal-themes.ts (default, low, medium, high, info, success) */
@@ -49,7 +61,6 @@ export interface BottomSheetModalProps {
   className?: string;
   contentClassName?: string;
   headerClassName?: string;
-  footerClassName?: string;
 
   // Accessibility
   ariaLabel?: string;
@@ -59,19 +70,12 @@ export interface BottomSheetModalProps {
 export interface BottomSheetModalHeaderProps {
   icon?: LucideIcon;
   title?: string;
-  subtitle?: string;
   badges?: ReactNode;
   onClose: () => void;
   themePrimary: string;
   themeGradientFrom: string;
   themeGradientTo: string;
   iconColor?: string; // Custom color for icon background only
-  className?: string;
-}
-
-export interface BottomSheetModalFooterProps {
-  leftActions?: ReactNode;
-  rightActions?: ReactNode;
   className?: string;
 }
 

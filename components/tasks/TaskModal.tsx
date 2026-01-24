@@ -468,7 +468,6 @@ function TaskModalForm({
         onClose={onClose}
         icon={ClipboardList}
         title="Select Task Type"
-        subtitle="Choose the type of task you want to create"
         theme="default"
         maxWidth="2xl"
         snapPoints={["half", "full"]}
@@ -559,9 +558,6 @@ function TaskModalForm({
       onClose={onClose}
       icon={modalIcon}
       title={modalTitleText}
-      subtitle={
-        mode === "edit" && selectedProject ? selectedProject.name : undefined
-      }
       badges={approvalBadge || undefined}
       theme="default"
       iconColor={iconColor}

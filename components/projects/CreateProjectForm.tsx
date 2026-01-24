@@ -306,14 +306,12 @@ export function CreateProjectForm({
     [validateField],
   );
 
-  const handleNext = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
+  const handleNext = useCallback(() => {
       const isValid = validateCurrentStep();
       if (!isValid) return;
 
       if (currentStep < FORM_STEPS.length - 1) {
-        const form = e.currentTarget.closest("form");
+        const form = document.getElementById("project-form") as HTMLFormElement;
         if (form) {
           const formData = new FormData(form);
           const newValues = { ...formValues };
@@ -461,62 +459,39 @@ export function CreateProjectForm({
     return subtitles[currentStep];
   }, [currentStep]);
 
+  // Determine navigation handlers and labels based on current step
+  const shouldShowBack = currentStep > 0;
+  const isLastStep = currentStep === FORM_STEPS.length - 1;
+
   return (
     <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={FolderKanban}
       title={modalTitle}
-      subtitle={modalSubtitle}
-      steps={FORM_STEPS}
       currentStep={currentStep + 1}
+      totalSteps={FORM_STEPS.length}
       theme="default"
       maxWidth="3xl"
       formKey={`create-project-step-${currentStep}`}
       closeOnBackdropClick={false}
       closeOnEscape={true}
-      leftActions={
-        currentStep > 0 ? (
-          <TouchButton
-            type="button"
-            variant="ghost"
-            size="lg"
-            onClick={handlePrevious}
-            disabled={isPending}
-            icon={ArrowLeft}
-            iconPosition="left"
-          >
-            Back
-          </TouchButton>
-        ) : null
+      showNavigation={true}
+      onBack={shouldShowBack ? handlePrevious : undefined}
+      onContinue={
+        isLastStep
+          ? () => {
+              // Trigger form submission
+              const form = document.getElementById("project-form") as HTMLFormElement;
+              if (form) {
+                form.requestSubmit();
+              }
+            }
+          : handleNext
       }
-      rightActions={
-        currentStep < FORM_STEPS.length - 1 ? (
-          <TouchButton
-            type="button"
-            variant="primary"
-            size="lg"
-            onClick={handleNext}
-            disabled={isPending}
-            icon={ArrowRight}
-            iconPosition="right"
-          >
-            Continue
-          </TouchButton>
-        ) : (
-          <TouchButton
-            type="submit"
-            form="project-form"
-            variant="primary"
-            size="lg"
-            loading={isPending}
-            icon={isPending ? undefined : Plus}
-            iconPosition="left"
-          >
-            {isPending ? "Creating..." : "Create Project"}
-          </TouchButton>
-        )
-      }
+      backLabel="Back"
+      continueLabel={isLastStep ? "Create Project" : "Continue"}
+      continueDisabled={isPending}
     >
       <form id="project-form" action={formAction} onSubmit={handleSubmit}>
         {/* Error/Success Messages */}

@@ -89,7 +89,6 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
       isOpen={open}
       onClose={handleClose}
       title="New Message"
-      subtitle="Start a direct conversation"
       icon={MessageCircle}
       theme="default"
       maxWidth="md"

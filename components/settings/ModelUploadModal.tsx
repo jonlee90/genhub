@@ -125,7 +125,6 @@ export function ModelUploadModal({
       onClose={onClose}
       icon={Upload}
       title={`Upload Custom Model - ${projectTypeName}`}
-      subtitle="Upload a custom IFC file to replace the system default model"
       maxWidth="lg"
       theme="default"
       closeOnBackdropClick={!isPending}

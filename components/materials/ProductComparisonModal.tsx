@@ -85,7 +85,6 @@ export function ProductComparisonModal({
         onClose={onClose}
         icon={BarChart}
         title="Product Comparison"
-        subtitle="Compare up to 4 products side by side"
         maxWidth="4xl"
         leftActions={
           <Button

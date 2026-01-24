@@ -42,17 +42,20 @@ export interface ResponsiveModalProps {
   // Header props
   icon?: LucideIcon;
   title?: string;
-  subtitle?: string;
   badges?: ReactNode;
 
-  // Footer props
-  leftActions?: ReactNode;
-  rightActions?: ReactNode;
-  showFooter?: boolean;
+  // Navigation props (both desktop and mobile)
+  onBack?: () => void;
+  onContinue?: () => void;
+  backLabel?: string;
+  continueLabel?: string;
+  showNavigation?: boolean;
+  continueDisabled?: boolean;
 
-  // Stepper (desktop only)
+  // Stepper
   steps?: string[];
   currentStep?: number;
+  totalSteps?: number;
 
   // Theming
   theme?: ModalThemeName;
@@ -89,13 +92,16 @@ export const ResponsiveModal = memo(function ResponsiveModal({
   children,
   icon,
   title,
-  subtitle,
   badges,
-  leftActions,
-  rightActions,
-  showFooter = true,
+  onBack,
+  onContinue,
+  backLabel,
+  continueLabel,
+  showNavigation,
+  continueDisabled,
   steps,
   currentStep,
+  totalSteps,
   theme = "default",
   customTheme,
   iconColor,
@@ -123,11 +129,15 @@ export const ResponsiveModal = memo(function ResponsiveModal({
         onClose={onClose}
         icon={icon}
         title={title}
-        subtitle={subtitle}
         badges={badges}
-        leftActions={leftActions}
-        rightActions={rightActions}
-        showFooter={showFooter}
+        onBack={onBack}
+        onContinue={onContinue}
+        backLabel={backLabel}
+        continueLabel={continueLabel}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        showNavigation={showNavigation}
+        continueDisabled={continueDisabled}
         theme={theme}
         customTheme={customTheme}
         iconColor={iconColor}
@@ -139,7 +149,6 @@ export const ResponsiveModal = memo(function ResponsiveModal({
         className={className}
         contentClassName={contentClassName}
         headerClassName={headerClassName}
-        footerClassName={footerClassName}
         ariaLabel={ariaLabel}
         ariaDescribedBy={ariaDescribedBy}
       >
@@ -155,11 +164,13 @@ export const ResponsiveModal = memo(function ResponsiveModal({
       onClose={onClose}
       icon={icon}
       title={title || ""}
-      subtitle={subtitle}
       badges={badges}
-      leftActions={leftActions}
-      rightActions={rightActions}
-      showFooter={showFooter}
+      onBack={onBack}
+      onContinue={onContinue}
+      backLabel={backLabel}
+      continueLabel={continueLabel}
+      showNavigation={showNavigation}
+      continueDisabled={continueDisabled}
       steps={steps}
       currentStep={currentStep}
       theme={theme}

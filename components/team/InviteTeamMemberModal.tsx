@@ -124,7 +124,6 @@ export function InviteTeamMemberModal({
       onClose={handleClose}
       icon={UserPlus}
       title="Invite Team Member"
-      subtitle="Send an invitation to a new team member. They will receive an email with instructions to join your company."
       maxWidth="2xl"
       showFooter={false}
     >

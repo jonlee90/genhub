@@ -87,7 +87,6 @@ export function ConflictDialog({
       onClose={onClose}
       icon={AlertTriangle}
       title="Resolve Conflicts"
-      subtitle={`Marker: ${markerTitle}`}
       badges={
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
           {conflicts.length} conflict{conflicts.length > 1 ? "s" : ""}

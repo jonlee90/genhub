@@ -195,7 +195,6 @@ export function AddSubcontractorModal({
       onClose={() => onOpenChange(false)}
       icon={HardHat}
       title="Add Subcontractor"
-      subtitle="Select a subcontractor from your company to add to this project."
       maxWidth="lg"
       leftActions={
         <Button

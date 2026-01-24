@@ -148,7 +148,6 @@ export function MarkerFilterSheet({
       onClose={onClose}
       icon={Filter}
       title="Filter Markers"
-      subtitle="Select marker types to display"
       leftActions={leftActions}
       rightActions={rightActions}
       showFooter

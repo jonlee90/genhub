@@ -131,7 +131,6 @@ export function MaterialDeliveryPrompt({
       onClose={handleDismiss}
       icon={Truck}
       title="Material Delivered"
-      subtitle="Create an expense record for this delivery?"
       maxWidth="md"
       leftActions={
         <Button

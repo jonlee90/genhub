@@ -607,7 +607,6 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         onClose={() => setShowCreateModal(false)}
         icon={ListChecks}
         title="Create Task Template"
-        subtitle="Add a new task template to this phase"
         maxWidth="lg"
         leftActions={
           <Button
@@ -788,7 +787,6 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           onClose={() => setEditingTask(null)}
           icon={Edit}
           title="Edit Task Template"
-          subtitle="Update task template settings"
           maxWidth="lg"
           leftActions={
             <Button

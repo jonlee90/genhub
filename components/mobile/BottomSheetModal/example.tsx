@@ -51,28 +51,16 @@ export function FullFeaturedExample() {
         onClose={() => setIsOpen(false)}
         icon={ClipboardList}
         title="Edit Task"
-        subtitle="Update task details and save changes"
         badges={
           <span className="px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 rounded-full">
             In Progress
           </span>
         }
-        leftActions={
-          <button
-            onClick={() => console.log('Delete')}
-            className="h-12 px-4 text-red-600 font-medium rounded-xl active:bg-red-50 transition-colors"
-          >
-            Delete
-          </button>
-        }
-        rightActions={
-          <button
-            onClick={() => setIsOpen(false)}
-            className="h-12 px-6 bg-construction-blue text-white font-semibold rounded-xl active:scale-[0.98] active:bg-construction-blue/90 transition-all"
-          >
-            Save Changes
-          </button>
-        }
+        onBack={() => console.log('Delete')}
+        onContinue={() => setIsOpen(false)}
+        backLabel="Delete"
+        continueLabel="Save Changes"
+        currentStep={1}
       >
         <div className="space-y-4">
           <div className="space-y-2">
@@ -121,16 +109,9 @@ export function FilterSheetExample() {
         onClose={() => setIsOpen(false)}
         icon={Filter}
         title="Filters"
-        subtitle="Filter tasks by project"
         snapPoints={['content', 'half']}
-        rightActions={
-          <button
-            onClick={() => setIsOpen(false)}
-            className="h-12 px-6 bg-construction-blue text-white font-semibold rounded-xl active:scale-[0.98] transition-all"
-          >
-            Apply
-          </button>
-        }
+        onContinue={() => setIsOpen(false)}
+        continueLabel="Apply"
       >
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700 mb-3">Select Project</p>
@@ -171,28 +152,16 @@ export function ConfirmationSheetExample() {
         onClose={() => setIsOpen(false)}
         icon={Trash2}
         title="Delete Task?"
-        subtitle="This action cannot be undone. The task and all its data will be permanently removed."
         theme="high" // Red theme for destructive actions
         snapPoints={['content']}
-        leftActions={
-          <button
-            onClick={() => setIsOpen(false)}
-            className="h-12 px-6 text-gray-600 font-medium rounded-xl active:bg-gray-100 transition-colors"
-          >
-            Cancel
-          </button>
-        }
-        rightActions={
-          <button
-            onClick={() => {
-              console.log('Deleting...');
-              setIsOpen(false);
-            }}
-            className="h-12 px-6 bg-red-600 text-white font-semibold rounded-xl active:scale-[0.98] active:bg-red-700 transition-all"
-          >
-            Delete
-          </button>
-        }
+        onBack={() => setIsOpen(false)}
+        onContinue={() => {
+          console.log('Deleting...');
+          setIsOpen(false);
+        }}
+        backLabel="Cancel"
+        continueLabel="Delete"
+        currentStep={1}
       >
         {/* Optional: Additional content */}
         <div className="p-4 bg-red-50 rounded-xl">
@@ -224,7 +193,7 @@ export function SettingsSheetExample() {
         title="View Settings"
         snapPoints={['half', 'full']}
         initialSnapPoint="half"
-        showFooter={false} // No footer for settings
+        showNavigation={false}
       >
         <div className="space-y-6">
           <div className="space-y-3">
@@ -277,7 +246,6 @@ export function ProjectDetailsExample() {
         onClose={() => setIsOpen(false)}
         icon={Building2}
         title="Downtown Office Renovation"
-        subtitle="123 Main Street, Suite 400"
         theme="success" // Green theme for on-track projects
         badges={
           <>
@@ -290,14 +258,8 @@ export function ProjectDetailsExample() {
           </>
         }
         snapPoints={['half', 'full']}
-        rightActions={
-          <button
-            onClick={() => console.log('Navigate to project')}
-            className="h-12 px-6 bg-[#059669] text-white font-semibold rounded-xl active:scale-[0.98] transition-all"
-          >
-            View Details
-          </button>
-        }
+        onContinue={() => console.log('Navigate to project')}
+        continueLabel="View Details"
       >
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">

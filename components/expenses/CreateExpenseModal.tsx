@@ -225,11 +225,6 @@ export function CreateExpenseModal({
       onClose={onClose}
       icon={FileText}
       title={taskContext ? "Add Expense" : "Submit Expense"}
-      subtitle={
-        !taskContext
-          ? "Upload a receipt and let AI extract the details automatically"
-          : undefined
-      }
       theme="default"
       maxWidth="3xl"
       leftActions={

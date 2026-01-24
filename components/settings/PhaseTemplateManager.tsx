@@ -527,7 +527,6 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
         onClose={() => setShowCreateModal(false)}
         icon={Layers}
         title="Create Phase Template"
-        subtitle="Add a new phase template to organize project tasks"
         maxWidth="md"
         leftActions={
           <Button
@@ -612,7 +611,6 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           onClose={() => setEditingPhase(null)}
           icon={Pencil}
           title="Edit Phase Template"
-          subtitle="Update phase template settings"
           maxWidth="md"
           leftActions={
             <Button

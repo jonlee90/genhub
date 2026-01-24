@@ -204,7 +204,6 @@ export function AddMemberModal({
       onClose={() => onOpenChange(false)}
       icon={UserPlus}
       title="Add Team Member"
-      subtitle="Select a user from your company and assign them a role on this project."
       maxWidth="lg"
       leftActions={
         <Button

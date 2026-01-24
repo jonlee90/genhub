@@ -301,7 +301,6 @@ export function ManagePhasesModal({
       onClose={onClose}
       icon={Layers}
       title={getModalTitle()}
-      subtitle={getModalSubtitle()}
       theme="default"
       maxWidth="2xl"
       leftActions={renderLeftActions()}

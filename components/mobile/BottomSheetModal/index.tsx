@@ -17,53 +17,63 @@
  *   onClose={() => setIsOpen(false)}
  *   icon={ClipboardList}
  *   title="Task Details"
- *   subtitle="Optional description"
- *   rightActions={<Button onClick={handleSubmit}>Save</Button>}
+ *   onBack={() => handleBack()}
+ *   onContinue={() => handleContinue()}
+ *   currentStep={2}
+ *   totalSteps={3}
  * >
  *   <div>Modal content here</div>
  * </BottomSheetModal>
  * ```
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { m as motion, AnimatePresence, useMotionValue, PanInfo } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { getModalTheme } from '@/lib/config/modal-themes';
+import { useEffect, useState, useRef, useCallback } from "react";
+import {
+  m as motion,
+  AnimatePresence,
+  useMotionValue,
+  PanInfo,
+} from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { getModalTheme } from "@/lib/config/modal-themes";
 
-import { BottomSheetModalHeader } from './BottomSheetModalHeader';
-import { BottomSheetModalFooter } from './BottomSheetModalFooter';
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { BottomSheetModalHeader } from "./BottomSheetModalHeader";
 import {
   BottomSheetModalProps,
   SNAP_POINT_HEIGHTS,
   ANIMATION_CONFIG,
-} from './types';
+} from "./types";
 
-export function BottomSheetModal({
+function BottomSheetModalContent({
   isOpen,
   onClose,
   children,
   icon,
   title,
-  subtitle,
   badges,
-  leftActions,
-  rightActions,
-  showFooter = true,
-  theme: themeName = 'default',
+  onBack,
+  onContinue,
+  backLabel = "Back",
+  continueLabel = "Continue",
+  currentStep,
+  totalSteps,
+  showNavigation = true,
+  continueDisabled = false,
+  theme: themeName = "default",
   customTheme,
   iconColor,
   enableDragToDismiss = true,
   closeOnBackdropClick = true,
   closeOnEscape = true,
-  snapPoints = ['full'],
+  snapPoints = ["full"],
   initialSnapPoint,
   className,
   contentClassName,
   headerClassName,
-  footerClassName,
   ariaLabel,
   ariaDescribedBy,
 }: BottomSheetModalProps) {
@@ -74,8 +84,13 @@ export function BottomSheetModal({
   const shouldReduceMotion = useReducedMotion();
 
   // Snap point state
-  const [currentSnapIndex, setCurrentSnapIndex] = useState(0);
-  const currentSnapPoint = snapPoints[currentSnapIndex] || 'half';
+  const [currentSnapIndex, setCurrentSnapIndex] = useState(() => {
+    const initialIndex = initialSnapPoint
+      ? snapPoints.indexOf(initialSnapPoint)
+      : 0;
+    return Math.max(0, initialIndex);
+  });
+  const currentSnapPoint = snapPoints[currentSnapIndex] || "half";
   const currentHeight = SNAP_POINT_HEIGHTS[currentSnapPoint];
 
   // Drag state
@@ -83,47 +98,35 @@ export function BottomSheetModal({
   const [isDragging, setIsDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  // Initialize snap point when opening
+  // Lock body scroll while open
   useEffect(() => {
-    if (isOpen) {
-      const initialIndex = initialSnapPoint
-        ? snapPoints.indexOf(initialSnapPoint)
-        : 0;
-      setCurrentSnapIndex(Math.max(0, initialIndex));
-    }
-  }, [isOpen, initialSnapPoint, snapPoints]);
+    const scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
 
-  // Lock body scroll when open
-  useEffect(() => {
-    if (isOpen) {
-      const scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-
-      return () => {
-        document.body.style.overflow = '';
-        document.body.style.position = '';
-        document.body.style.top = '';
-        document.body.style.width = '';
-        window.scrollTo(0, scrollY);
-      };
-    }
-  }, [isOpen]);
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   // Handle ESC key
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, closeOnEscape, onClose]);
 
   // Handle drag gestures
@@ -135,7 +138,8 @@ export function BottomSheetModal({
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       setIsDragging(false);
 
-      const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+      const screenHeight =
+        typeof window !== "undefined" ? window.innerHeight : 800;
       const sheetHeight = screenHeight * currentHeight;
       const draggedDistance = info.offset.y;
       const velocity = info.velocity.y;
@@ -151,7 +155,10 @@ export function BottomSheetModal({
       }
 
       // Fast swipe up = expand
-      if (velocity < -ANIMATION_CONFIG.dismissVelocity && currentSnapIndex < snapPoints.length - 1) {
+      if (
+        velocity < -ANIMATION_CONFIG.dismissVelocity &&
+        currentSnapIndex < snapPoints.length - 1
+      ) {
         setCurrentSnapIndex(currentSnapIndex + 1);
         return;
       }
@@ -166,13 +173,16 @@ export function BottomSheetModal({
         } else {
           setCurrentSnapIndex(Math.max(0, currentSnapIndex - 1));
         }
-      } else if (draggedDistance < -dismissThreshold && currentSnapIndex < snapPoints.length - 1) {
+      } else if (
+        draggedDistance < -dismissThreshold &&
+        currentSnapIndex < snapPoints.length - 1
+      ) {
         // Dragged up significantly
         setCurrentSnapIndex(currentSnapIndex + 1);
       }
       // Otherwise snap back to current position (handled by motion)
     },
-    [currentHeight, currentSnapIndex, snapPoints.length, onClose]
+    [currentHeight, currentSnapIndex, snapPoints.length, onClose],
   );
 
   // Handle backdrop click
@@ -203,19 +213,19 @@ export function BottomSheetModal({
             key="bottom-sheet-container"
             ref={sheetRef}
             className={cn(
-              'fixed inset-x-0 bottom-0 z-50',
-              'flex flex-col',
-              'bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl',
-              'overflow-hidden',
-              className
+              "fixed inset-x-0 bottom-0 z-50",
+              "flex flex-col",
+              "bg-white dark:bg-gray-900 rounded-t-3xl shadow-2xl",
+              "overflow-hidden",
+              className,
             )}
-            initial={{ y: '100%' }}
+            initial={{ y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: '100%' }}
+            exit={{ y: "100%" }}
             transition={ANIMATION_CONFIG.spring}
             style={{
-              height: '92vh',
-              maxHeight: '92dvh',
+              height: "92vh",
+              maxHeight: "92dvh",
             }}
             role="dialog"
             aria-modal="true"
@@ -246,13 +256,18 @@ export function BottomSheetModal({
               >
                 <div
                   className={cn(
-                    'h-1.5 w-12 rounded-full transition-colors duration-150',
-                    isDragging ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-300 dark:bg-gray-700'
+                    "h-1.5 w-12 rounded-full transition-colors duration-150",
+                    isDragging
+                      ? "bg-gray-400 dark:bg-gray-500"
+                      : "bg-gray-300 dark:bg-gray-700",
                   )}
                 />
               </motion.div>
             ) : (
-              <div className="flex justify-center pt-3 pb-2 flex-shrink-0" aria-hidden="true">
+              <div
+                className="flex justify-center pt-3 pb-2 flex-shrink-0"
+                aria-hidden="true"
+              >
                 <div className="h-1.5 w-12 bg-gray-300 dark:bg-gray-700 rounded-full" />
               </div>
             )}
@@ -261,7 +276,6 @@ export function BottomSheetModal({
             <BottomSheetModalHeader
               icon={icon}
               title={title}
-              subtitle={subtitle}
               badges={badges}
               onClose={onClose}
               themePrimary={theme.primary}
@@ -274,23 +288,78 @@ export function BottomSheetModal({
             {/* Scrollable content area */}
             <div
               className={cn(
-                'flex-1 overflow-y-auto overflow-x-hidden',
-                'px-5 py-4',
+                "flex-1 overflow-y-auto overflow-x-hidden",
+                "px-5 py-4",
                 // Custom scrollbar styling
-                'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
-                contentClassName
+                "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800",
+                contentClassName,
               )}
             >
               {children}
             </div>
 
-            {/* Footer */}
-            {showFooter && (leftActions || rightActions) && (
-              <BottomSheetModalFooter
-                leftActions={leftActions}
-                rightActions={rightActions}
-                className={footerClassName}
-              />
+            {/* Fixed Navigation Bar - Bottom corners */}
+            {showNavigation && (onBack || onContinue) && (
+              <>
+                {typeof totalSteps === "number" &&
+                  typeof currentStep === "number" && (
+                    <span className="sr-only">{`Step ${currentStep} of ${totalSteps}`}</span>
+                  )}
+                {/* Back Button - Hidden on step 1 */}
+                {onBack && (!currentStep || currentStep > 1) && (
+                  <button
+                    onClick={onBack}
+                    className={cn(
+                      "absolute bottom-0 left-0",
+                      "h-11 px-4 min-h-[44px] rounded-lg",
+                      "bg-gray-100 dark:bg-gray-800",
+                      "flex items-center gap-2",
+                      "font-medium text-gray-700 dark:text-gray-200",
+                      "transition-all duration-150",
+                      "active:scale-95 active:bg-gray-200 dark:active:bg-gray-700",
+                      "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400",
+                      "ml-5 mb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                    )}
+                    aria-label={backLabel}
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>{backLabel}</span>
+                  </button>
+                )}
+
+                {/* Continue Button - Always at bottom right */}
+                {onContinue && (
+                  <button
+                    onClick={onContinue}
+                    disabled={continueDisabled}
+                    className={cn(
+                      "absolute bottom-0 right-0",
+                      "h-11 px-6 min-h-[44px] rounded-lg",
+                      "flex items-center gap-2",
+                      "font-semibold text-white",
+                      "transition-all duration-150",
+                      "shadow-md",
+                      continueDisabled
+                        ? "opacity-50 cursor-not-allowed"
+                        : "active:scale-95 hover:shadow-lg",
+                      "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                      "disabled:active:scale-100",
+                      "mr-5 mb-[max(0.75rem,env(safe-area-inset-bottom))]",
+                    )}
+                    style={{
+                      background: continueDisabled
+                        ? "#9CA3AF"
+                        : `linear-gradient(135deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+                      // @ts-ignore - CSS custom property
+                      "--tw-ring-color": theme.ring,
+                    }}
+                    aria-label={continueLabel}
+                  >
+                    <span>{continueLabel}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </button>
+                )}
+              </>
             )}
           </motion.div>
         </>
@@ -299,12 +368,13 @@ export function BottomSheetModal({
   );
 }
 
+// Export main component as BottomSheetModal
+export { BottomSheetModalContent as BottomSheetModal };
+
 // Export sub-components and types
-export { BottomSheetModalHeader } from './BottomSheetModalHeader';
-export { BottomSheetModalFooter } from './BottomSheetModalFooter';
+export { BottomSheetModalHeader } from "./BottomSheetModalHeader";
 export type {
   BottomSheetModalProps,
   BottomSheetModalHeaderProps,
-  BottomSheetModalFooterProps,
   SnapPoint,
-} from './types';
+} from "./types";

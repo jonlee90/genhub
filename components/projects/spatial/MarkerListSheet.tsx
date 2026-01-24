@@ -231,11 +231,6 @@ export function MarkerListSheet({
       onClose={onClose}
       icon={MapPin}
       title="Markers"
-      subtitle={
-        markerCount > 0
-          ? `${markerCount} marker${markerCount !== 1 ? "s" : ""} in view`
-          : undefined
-      }
       theme="default"
       showFooter={false}
       enableDragToDismiss

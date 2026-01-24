@@ -292,7 +292,6 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
         onClose={() => setShowCreateModal(false)}
         icon={Building2}
         title="Create Project Type"
-        subtitle="Add a new project type to your company"
         maxWidth="md"
         ariaLabel="Create project type dialog"
         leftActions={
@@ -439,7 +438,6 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           onClose={() => setEditingType(null)}
           icon={Pencil}
           title="Edit Project Type"
-          subtitle="Update project type settings"
           maxWidth="md"
           ariaLabel={`Edit ${editingType.name} project type`}
           leftActions={

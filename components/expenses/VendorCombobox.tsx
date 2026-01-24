@@ -293,7 +293,6 @@ export function VendorCombobox({
             }}
             icon={Users}
             title="Select Vendor"
-            subtitle="Choose from team or enter custom"
             maxWidth="md"
           >
             <div className="space-y-4">

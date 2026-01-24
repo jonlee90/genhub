@@ -48,7 +48,6 @@ export function BlockedReasonModal({
       onClose={handleClose}
       icon={AlertCircle}
       title="Block Task"
-      subtitle="Please provide a reason for blocking this task. This helps the team understand what needs to be resolved."
       theme="high"
       maxWidth="md"
       showFooter={false}

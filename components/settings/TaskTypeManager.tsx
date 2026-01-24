@@ -340,7 +340,6 @@ export const TaskTypeManager = memo(function TaskTypeManager({
         onClose={() => setShowCreateModal(false)}
         icon={Hammer}
         title="Create Task Type"
-        subtitle="Add a new task type to categorize work across your projects"
         maxWidth="md"
         leftActions={
           <Button
@@ -483,11 +482,6 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           onClose={() => setEditingType(null)}
           icon={Pencil}
           title="Edit Task Type"
-          subtitle={
-            (editingType.is_default ?? false)
-              ? "Customize default task type"
-              : "Update task type settings"
-          }
           maxWidth="md"
           leftActions={
             <Button

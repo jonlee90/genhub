@@ -25,7 +25,6 @@ export function BasicModalExample() {
         onClose={() => setIsOpen(false)}
         icon={HardHat}
         title="Basic Modal"
-        subtitle="This is a simple modal with default construction theme"
       >
         <div className="space-y-4">
           <p className="text-gray-700">
@@ -56,7 +55,6 @@ export function ModalWithActionsExample() {
         onClose={() => setIsOpen(false)}
         icon={Building2}
         title="Create New Project"
-        subtitle="Enter project details to get started"
         leftActions={
           <Button variant="ghost" onClick={() => setIsOpen(false)}>
             Cancel
@@ -126,7 +124,6 @@ export function SteppedModalExample() {
         onClose={() => setIsOpen(false)}
         icon={Wrench}
         title="Create Task"
-        subtitle={`Step ${currentStep} of ${steps.length}`}
         steps={steps}
         currentStep={currentStep}
         leftActions={
@@ -202,7 +199,6 @@ export function PriorityThemedModalsExample() {
             onClose={() => setOpenModal(null)}
             icon={Icon}
             title={title}
-            subtitle={`This modal uses the ${theme} priority theme`}
             theme={theme}
             badges={
               <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
@@ -241,7 +237,6 @@ export function LargeScrollableModalExample() {
         onClose={() => setIsOpen(false)}
         icon={Building2}
         title="Project Documentation"
-        subtitle="Complete project specifications and details"
         maxWidth="4xl"
         rightActions={
           <Button onClick={() => setIsOpen(false)}>Close</Button>
@@ -286,7 +281,6 @@ export function FormRemountExample() {
         onClose={() => setIsOpen(false)}
         icon={Wrench}
         title="Create Item"
-        subtitle="Form resets each time modal opens"
         formKey={formKey}
         rightActions={
           <>

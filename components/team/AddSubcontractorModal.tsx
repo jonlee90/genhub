@@ -278,7 +278,6 @@ export function AddSubcontractorModal({
       onClose={handleClose}
       icon={HardHat}
       title="Add Subcontractor"
-      subtitle="Add a new subcontractor to your company directory. Fill in the required fields and upload any relevant documents."
       maxWidth="3xl"
       showFooter={false}
     >

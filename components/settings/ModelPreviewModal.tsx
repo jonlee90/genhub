@@ -22,7 +22,6 @@ export function ModelPreviewModal({
       onClose={onClose}
       icon={Eye}
       title={`Preview: ${projectTypeName} Default Model`}
-      subtitle="3D model preview with interactive camera controls"
       maxWidth="4xl"
       theme="default"
       closeOnBackdropClick={true}

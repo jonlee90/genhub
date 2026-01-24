@@ -204,7 +204,6 @@ export function EditSubcontractorModal({
       onClose={handleClose}
       icon={Pencil}
       title="Edit Subcontractor"
-      subtitle={`Update details for ${subcontractor.company_name}`}
       maxWidth="3xl"
       showFooter={false}
     >

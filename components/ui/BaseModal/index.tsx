@@ -5,24 +5,20 @@
  * Responsive: Bottom sheet on mobile (with drag-to-dismiss), centered modal on desktop
  */
 
-'use client';
+"use client";
 
-import { useState, useMemo, useCallback } from 'react';
-import { m as motion, useMotionValue, PanInfo } from 'framer-motion';
-import { cn } from '@/lib/utils';
-import { useMediaQuery } from '@/lib/hooks/useMediaQuery';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
-import { getModalTheme } from '@/lib/config/modal-themes';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { useState, useMemo, useCallback } from "react";
+import { m as motion, useMotionValue, PanInfo } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { useMediaQuery } from "@/lib/hooks/useMediaQuery";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { getModalTheme } from "@/lib/config/modal-themes";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import { BaseModalHeader } from './BaseModalHeader';
-import { BaseModalFooter } from './BaseModalFooter';
-import { StepIndicator } from './StepIndicator';
+import { BaseModalHeader } from "./BaseModalHeader";
 
-import {
-  BaseModalProps,
-  MODAL_MAX_WIDTHS,
-} from './types';
+import { BaseModalProps, MODAL_MAX_WIDTHS } from "./types";
 
 // Drag-to-dismiss constants
 const DRAG_DISMISS_VELOCITY = 500; // px/s - fast swipe dismisses regardless of position
@@ -35,20 +31,22 @@ export function BaseModal({
   children,
   icon,
   title,
-  subtitle,
   badges,
-  leftActions,
-  rightActions,
-  showFooter = true,
+  onBack,
+  onContinue,
+  backLabel = "Back",
+  continueLabel = "Continue",
+  showNavigation = true,
+  continueDisabled = false,
   steps,
   currentStep = 1,
-  theme: themeName = 'default',
+  theme: themeName = "default",
   customTheme,
   iconColor,
   closeOnBackdropClick = true,
   closeOnEscape = true,
   formKey,
-  maxWidth = 'xl',
+  maxWidth = "xl",
   enableDragToDismiss = true,
   snapPoints: _snapPoints, // Reserved for future snap point behavior
   className,
@@ -58,26 +56,14 @@ export function BaseModal({
   ariaLabel,
   ariaDescribedBy,
 }: BaseModalProps) {
-  console.log('[BaseModal] Rendering modal:', {
-    isOpen,
-    title,
-    themeName,
-    maxWidth,
-    hasSteps: !!steps,
-    currentStep,
-    closeOnBackdropClick,
-    closeOnEscape,
-    enableDragToDismiss,
-  });
-
   // Memoize theme configuration to prevent recreation on every render
   const theme = useMemo(
     () => customTheme || getModalTheme(themeName),
-    [customTheme, themeName]
+    [customTheme, themeName],
   );
 
   // Detect mobile for bottom sheet behavior
-  const isMobile = useMediaQuery('(max-width: 767px)');
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   // Detect reduced motion preference (Accessibility)
   const shouldReduceMotion = useReducedMotion();
@@ -86,26 +72,24 @@ export function BaseModal({
   const dragY = useMotionValue(0);
   const [isDragging, setIsDragging] = useState(false);
 
-  console.log('[BaseModal] Device detection:', { isMobile });
-
   // Memoize dialog state change handler to prevent recreating on every render
   const handleOpenChange = useCallback(
     (newOpen: boolean) => {
-      console.log('[BaseModal] Dialog state change:', { newOpen });
-
       if (!newOpen) {
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   // Memoize drag end handler to prevent recreating on every render
   const handleDragEnd = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       setIsDragging(false);
-      const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
-      const draggedPastThreshold = info.offset.y > screenHeight * DRAG_DISMISS_THRESHOLD;
+      const screenHeight =
+        typeof window !== "undefined" ? window.innerHeight : 800;
+      const draggedPastThreshold =
+        info.offset.y > screenHeight * DRAG_DISMISS_THRESHOLD;
       const fastSwipe = info.velocity.y > DRAG_DISMISS_VELOCITY;
 
       if (draggedPastThreshold || fastSwipe) {
@@ -113,7 +97,7 @@ export function BaseModal({
         onClose();
       }
     },
-    [onClose]
+    [onClose],
   );
 
   // Memoize drag start handler to prevent recreating on every render
@@ -125,22 +109,22 @@ export function BaseModal({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          'bg-white dark:bg-gray-900 shadow-2xl flex flex-col p-0 gap-0 border-0 z-50',
+          "bg-white dark:bg-gray-900 shadow-2xl flex flex-col p-0 gap-0 border-0 z-50",
           // Mobile: Bottom sheet styles
           isMobile && [
-            'rounded-t-3xl',
-            'max-h-[90vh]',
-            'w-full',
-            'fixed inset-x-0 bottom-0 top-auto left-0 right-0',
-            'translate-x-0 translate-y-0',
+            "rounded-t-3xl",
+            "max-h-[90vh]",
+            "w-full",
+            "fixed inset-x-0 bottom-0 top-auto left-0 right-0",
+            "translate-x-0 translate-y-0",
           ],
           // Desktop: Centered modal styles - let Radix UI handle centering
           !isMobile && [
-            'rounded-2xl',
-            'max-h-[90vh]',
+            "rounded-2xl",
+            "max-h-[90vh]",
             MODAL_MAX_WIDTHS[maxWidth],
           ],
-          className
+          className,
         )}
         aria-label={ariaLabel || title}
         aria-describedby={ariaDescribedBy}
@@ -169,8 +153,8 @@ export function BaseModal({
         {/* Top accent gradient strip */}
         <div
           className={cn(
-            'h-1.5 w-full',
-            isMobile ? 'rounded-t-3xl' : 'rounded-t-2xl'
+            "h-1.5 w-full",
+            isMobile ? "rounded-t-3xl" : "rounded-t-2xl",
           )}
           style={{
             background: `linear-gradient(90deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
@@ -182,12 +166,13 @@ export function BaseModal({
             className="h-full w-full opacity-40"
             style={{
               background: `linear-gradient(90deg, transparent 0%, ${
-                typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-                  ? 'rgba(255, 255, 255, 0.2)'
-                  : 'rgba(255, 255, 255, 0.4)'
+                typeof window !== "undefined" &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches
+                  ? "rgba(255, 255, 255, 0.2)"
+                  : "rgba(255, 255, 255, 0.4)"
               } 50%, transparent 100%)`,
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 3s infinite',
+              backgroundSize: "200% 100%",
+              animation: "shimmer 3s infinite",
             }}
           />
         </div>
@@ -203,12 +188,20 @@ export function BaseModal({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             style={{ y: dragY }}
-            transition={shouldReduceMotion ? { duration: 0 } : { type: 'spring', ...SPRING_CONFIG }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : { type: "spring", ...SPRING_CONFIG }
+            }
           >
-            <div className={cn(
-              'h-1.5 w-12 rounded-full transition-colors',
-              isDragging ? 'bg-gray-400 dark:bg-gray-500' : 'bg-gray-300 dark:bg-gray-700'
-            )} />
+            <div
+              className={cn(
+                "h-1.5 w-12 rounded-full transition-colors",
+                isDragging
+                  ? "bg-gray-400 dark:bg-gray-500"
+                  : "bg-gray-300 dark:bg-gray-700",
+              )}
+            />
           </motion.div>
         ) : isMobile ? (
           <div className="flex justify-center pt-3 pb-2" aria-hidden="true">
@@ -216,53 +209,102 @@ export function BaseModal({
           </div>
         ) : null}
 
-        {/* Header */}
+        {/* Header with integrated step indicator */}
         <BaseModalHeader
           icon={icon}
           title={title}
-          subtitle={subtitle}
           badges={badges}
           onClose={onClose}
           theme={theme}
           iconColor={iconColor}
           className={headerClassName}
+          steps={steps}
+          currentStep={currentStep}
         />
-
-        {/* Step indicator */}
-        {steps && steps.length > 0 && (
-          <StepIndicator
-            steps={steps}
-            currentStep={currentStep}
-            theme={theme}
-          />
-        )}
 
         {/* Scrollable content area */}
         <div
           className={cn(
-            'flex-1 overflow-y-auto overflow-x-hidden',
-            'px-6 py-4',
+            "flex-1 overflow-y-auto overflow-x-hidden",
+            "px-6 py-4",
             // Custom scrollbar styling with dark mode support
-            'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800',
-            contentClassName
+            "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800",
+            contentClassName,
           )}
           style={{
-            maxHeight: isMobile ? 'calc(90vh - 280px)' : 'calc(90vh - 280px)',
+            maxHeight: isMobile ? "calc(90vh - 280px)" : "calc(90vh - 280px)",
           }}
         >
           {/* Key prop for form remounting */}
-          <div key={formKey}>
-            {children}
-          </div>
+          <div key={formKey}>{children}</div>
         </div>
 
-        {/* Footer */}
-        {showFooter && (leftActions || rightActions) && (
-          <BaseModalFooter
-            leftActions={leftActions}
-            rightActions={rightActions}
-            className={footerClassName}
-          />
+        {/* Fixed Navigation Bar - Bottom corners */}
+        {showNavigation && (onBack || onContinue) && (
+          <div
+            className={cn(
+              'flex items-center justify-between gap-3',
+              'px-6 pb-4',
+              footerClassName
+            )}
+          >
+            {/* Back Button - Hidden on step 1 */}
+            {onBack && (!currentStep || currentStep > 1) ? (
+              <button
+                onClick={onBack}
+                className={cn(
+                  'h-11 px-4 min-h-[44px] rounded-lg',
+                  'bg-gray-100 dark:bg-gray-800',
+                  'flex items-center gap-2',
+                  'font-medium text-gray-700 dark:text-gray-200',
+                  'transition-all duration-150',
+                  'hover:bg-gray-200 dark:hover:bg-gray-700',
+                  'active:scale-95',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
+                )}
+                aria-label={backLabel}
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span>{backLabel}</span>
+              </button>
+            ) : (
+              <div className="flex-shrink-0" />
+            )}
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Continue Button - Always at bottom right */}
+            {onContinue && (
+              <button
+                onClick={onContinue}
+                disabled={continueDisabled}
+                className={cn(
+                  'h-11 px-6 min-h-[44px] rounded-lg',
+                  'flex items-center gap-2',
+                  'font-semibold text-white',
+                  'transition-all duration-150',
+                  'shadow-md',
+                  continueDisabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:shadow-lg active:scale-95',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2',
+                  'disabled:active:scale-100'
+                )}
+                style={{
+                  background: continueDisabled
+                    ? '#9CA3AF'
+                    : `linear-gradient(135deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
+                  // @ts-ignore - CSS custom property
+                  '--tw-ring-color': theme.ring,
+                }}
+                aria-label={continueLabel}
+              >
+                <span>{continueLabel}</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         )}
       </DialogContent>
     </Dialog>
@@ -270,23 +312,21 @@ export function BaseModal({
 }
 
 // Export sub-components and types
-export { BaseModalHeader } from './BaseModalHeader';
-export { BaseModalFooter } from './BaseModalFooter';
-export { StepIndicator } from './StepIndicator';
+export { BaseModalHeader } from "./BaseModalHeader";
+export { StepIndicator } from "./StepIndicator";
 export type {
   BaseModalProps,
   BaseModalHeaderProps,
-  BaseModalFooterProps,
   StepIndicatorProps,
   ModalTheme,
   ModalSize,
-} from './types';
+} from "./types";
 
 // Add shimmer animation to global styles (if not already present)
-if (typeof document !== 'undefined') {
-  const styleId = 'basemodal-animations';
+if (typeof document !== "undefined") {
+  const styleId = "basemodal-animations";
   if (!document.getElementById(styleId)) {
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
       @keyframes shimmer {

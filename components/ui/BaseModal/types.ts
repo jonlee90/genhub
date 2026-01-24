@@ -34,13 +34,15 @@ export interface BaseModalProps {
   // Header
   icon?: LucideIcon;
   title: string;
-  subtitle?: string;
   badges?: ReactNode;
 
-  // Footer
-  leftActions?: ReactNode;
-  rightActions?: ReactNode;
-  showFooter?: boolean;
+  // Navigation
+  onBack?: () => void;
+  onContinue?: () => void;
+  backLabel?: string;
+  continueLabel?: string;
+  showNavigation?: boolean;
+  continueDisabled?: boolean;
 
   // Stepper
   steps?: string[];
@@ -77,18 +79,13 @@ export interface BaseModalProps {
 export interface BaseModalHeaderProps {
   icon?: LucideIcon;
   title: string;
-  subtitle?: string;
   badges?: ReactNode;
   onClose: () => void;
   theme: ModalTheme;
   iconColor?: string; // Custom color for icon background only
   className?: string;
-}
-
-export interface BaseModalFooterProps {
-  leftActions?: ReactNode;
-  rightActions?: ReactNode;
-  className?: string;
+  steps?: string[];
+  currentStep?: number;
 }
 
 export interface StepIndicatorProps {

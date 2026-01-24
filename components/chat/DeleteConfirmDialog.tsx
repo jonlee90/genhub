@@ -69,7 +69,6 @@ export function DeleteConfirmDialog({
       onClose={onCancel}
       icon={AlertTriangle}
       title="Delete Message"
-      subtitle="This action cannot be undone"
       theme="danger"
       maxWidth="sm"
       closeOnBackdropClick={!isDeleting}
