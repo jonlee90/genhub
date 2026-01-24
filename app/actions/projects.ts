@@ -233,15 +233,8 @@ export async function createProject(formData: FormData) {
 
     if (config) {
       projectTypeConfig = config;
-      // Derive the project_type enum value from config name
-      const nameToEnumMap: Record<string, string> = {
-        "residential": "residential",
-        "restaurant": "restaurant",
-        "cafe": "cafe",
-        "commercial office": "commercial_office",
-        "industrial": "industrial",
-      };
-      projectTypeValue = nameToEnumMap[config.name.toLowerCase()] || config.name.toLowerCase().replace(/\s+/g, '_');
+      // Convert config name to slug for project_type (now text, not enum)
+      projectTypeValue = config.name.toLowerCase().replace(/\s+/g, '_');
     }
   } else {
     // Legacy approach: Look up config by name mapping
@@ -287,7 +280,7 @@ export async function createProject(formData: FormData) {
     city: data.city || null,
     state: data.state || null,
     zip_code: data.zip_code || null,
-    project_type: projectTypeValue as any, // Use derived value (handles both UUID and legacy)
+    project_type: projectTypeValue, // Text field - supports custom type names
     project_type_config_id: projectTypeConfig?.id || null, // Set this for trigger
     description: data.description || null,
     start_date: data.start_date,
@@ -353,10 +346,10 @@ export async function createProject(formData: FormData) {
       await import("./default-models");
 
     // Step 1: Assign default model to project
-    const defaultModel = await assignDefaultModel(
-      project.id,
-      projectTypeValue,
-    );
+    const defaultModel = await assignDefaultModel({
+      projectId: project.id,
+      projectType: projectTypeValue,
+    });
 
     if (defaultModel) {
       if (process.env.NODE_ENV === "development") {
@@ -387,11 +380,11 @@ export async function createProject(formData: FormData) {
 
         // Step 3: Create markers from default configs with auto-linking
         // Type: createdTasks has { id, title, phase_id } which matches Task in default-models.ts
-        const createdMarkers = await createMarkersFromDefaultConfigs(
-          project.id,
-          defaultModel.id,
-          createdTasks,
-        );
+        const createdMarkers = await createMarkersFromDefaultConfigs({
+          projectId: project.id,
+          modelId: defaultModel.id,
+          tasks: createdTasks,
+        });
 
         if (createdMarkers && createdMarkers.length > 0) {
           const matchStats = {

@@ -51,16 +51,16 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
       {/* Description */}
       {task.description && (
         <div className="border-l-4 border-l-[var(--construction-blue)] pl-4">
-          <h3 className="text-xs font-bold uppercase text-gray-500 mb-2">Description</h3>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">{task.description}</p>
+          <h3 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">Description</h3>
+          <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{task.description}</p>
         </div>
       )}
 
       {/* Key Details Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Assignee */}
-        <div className="border-2 border-gray-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">
             <User className="h-4 w-4" />
             Assignee
           </div>
@@ -70,7 +70,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
                 <img
                   src={task.assignee.avatar_url}
                   alt={task.assignee.name}
-                  className="h-8 w-8 rounded-full border-2 border-gray-200"
+                  className="h-8 w-8 rounded-full border-2 border-gray-200 dark:border-gray-700"
                 />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-construction-blue flex items-center justify-center text-white text-sm font-bold">
@@ -85,8 +85,8 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
 
         {/* Phase */}
-        <div className="border-2 border-gray-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">
             <Flag className="h-4 w-4" />
             Phase
           </div>
@@ -96,8 +96,8 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
 
         {/* Start Date */}
-        <div className="border-2 border-gray-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">
             <Calendar className="h-4 w-4" />
             Start Date
           </div>
@@ -105,8 +105,8 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
         </div>
 
         {/* Due Date */}
-        <div className="border-2 border-gray-200 rounded-lg p-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-2">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">
             <Calendar className="h-4 w-4" />
             Due Date
           </div>
@@ -130,20 +130,20 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div>
-              <span className="text-xs text-gray-500 block">X</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">X</span>
               <span className="font-mono font-semibold">{task.spatial_marker.position_x.toFixed(2)}</span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 block">Y</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">Y</span>
               <span className="font-mono font-semibold">{task.spatial_marker.position_y.toFixed(2)}</span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 block">Z</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block">Z</span>
               <span className="font-mono font-semibold">{task.spatial_marker.position_z.toFixed(2)}</span>
             </div>
           </div>
           {task.spatial_marker.element_id && (
-            <div className="mt-2 text-xs text-gray-600">
+            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
               <span className="font-semibold">Element ID:</span> {task.spatial_marker.element_id}
             </div>
           )}
@@ -152,20 +152,20 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
 
       {/* Cost Summary */}
       {(task.planned_cost !== undefined || task.actual_cost !== undefined) && (
-        <div className="border-2 border-gray-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 mb-3">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-3">
             <DollarSign className="h-4 w-4" />
             Cost Summary
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-xs text-gray-500 block mb-1">Planned</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Planned</span>
               <span className="text-lg font-black text-construction-blue">
                 ${(task.planned_cost || 0).toFixed(2)}
               </span>
             </div>
             <div>
-              <span className="text-xs text-gray-500 block mb-1">Actual</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Actual</span>
               <span className={cn(
                 "text-lg font-black",
                 task.actual_cost && task.planned_cost && task.actual_cost > task.planned_cost
@@ -177,8 +177,8 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
             </div>
           </div>
           {task.actual_cost !== undefined && task.planned_cost !== undefined && (
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <span className="text-xs text-gray-500 block mb-1">Variance</span>
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Variance</span>
               <span className={cn(
                 "text-sm font-bold",
                 task.actual_cost > task.planned_cost ? "text-red-600" : "text-green-600"
@@ -194,7 +194,7 @@ export function TaskDetailsTab({ task, userRole }: TaskDetailsTabProps) {
       )}
 
       {/* Metadata */}
-      <div className="border-t border-gray-200 pt-4 text-xs text-gray-500 space-y-1">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-4 text-xs text-gray-500 dark:text-gray-400 space-y-1">
         <p>
           <span className="font-semibold">Created:</span> {formatDate(task.created_at)}
         </p>

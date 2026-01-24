@@ -18,6 +18,15 @@ import type {
   QuickActionProject,
   QuickActionTeamMember,
 } from "@/types/dashboard";
+import { z } from "zod";
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const invalidateDashboardCacheSchema = z.object({
+  companyId: z.string().uuid().optional(),
+});
 
 // ============================================
 // Helper Functions
@@ -395,11 +404,27 @@ export const getDashboardData = cache(async (): Promise<DashboardDataResult> => 
  * Usage: await invalidateDashboardCache();
  *
  * Optional: Pass companyId to invalidate only specific company cache:
- * await invalidateDashboardCache(companyId);
+ * await invalidateDashboardCache({ companyId });
  */
 export async function invalidateDashboardCache(
-  companyId?: string,
+  input?: unknown,
 ): Promise<void> {
+  let companyId: string | undefined;
+
+  if (input !== undefined) {
+    const validation = invalidateDashboardCacheSchema.safeParse(input);
+    if (!validation.success) {
+      console.error(
+        "[invalidateDashboardCache] Validation failed:",
+        validation.error
+      );
+      // Don't throw - just log and continue with cache invalidation
+      companyId = undefined;
+    } else {
+      companyId = validation.data.companyId;
+    }
+  }
+
   console.log("[invalidateDashboardCache] Invalidating dashboard cache tags");
   revalidateTag("dashboard", "max");
   revalidateTag("dashboard-kpis", "max");

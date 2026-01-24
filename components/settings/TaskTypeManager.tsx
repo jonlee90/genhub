@@ -221,7 +221,7 @@ export const TaskTypeManager = memo(function TaskTypeManager({
       {/* Debug: Header with Add button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl md:text-2xl font-black text-construction-blue dark:text-construction-blue uppercase tracking-tight">
+          <h3 className="text-xl md:text-2xl font-black text-construction-blue dark:text-blue-400 uppercase tracking-tight">
             Task Types
           </h3>
           <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
@@ -276,8 +276,8 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           >
             <div className="relative mb-6">
               <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-2xl" />
-              <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 rounded-full border-2 border-construction-blue/20">
-                <Hammer className="h-16 w-16 text-construction-blue" />
+              <div className="relative p-6 bg-gradient-to-br from-construction-blue/5 to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/20 rounded-full border-2 border-construction-blue/20 dark:border-construction-blue/40">
+                <Hammer className="h-16 w-16 text-construction-blue dark:text-blue-400" />
               </div>
             </div>
             <h3 className="text-xl font-black text-gray-900 dark:text-gray-100 mb-2 uppercase tracking-tight">

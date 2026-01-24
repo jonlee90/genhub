@@ -1643,7 +1643,7 @@ export type Database = {
           latitude: number | null
           longitude: number | null
           name: string
-          project_type: Database["public"]["Enums"]["project_type_old"]
+          project_type: string
           project_type_config_id: string | null
           start_date: string | null
           state: string | null
@@ -1671,7 +1671,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name: string
-          project_type?: Database["public"]["Enums"]["project_type_old"]
+          project_type?: string
           project_type_config_id?: string | null
           start_date?: string | null
           state?: string | null
@@ -1699,7 +1699,7 @@ export type Database = {
           latitude?: number | null
           longitude?: number | null
           name?: string
-          project_type?: Database["public"]["Enums"]["project_type_old"]
+          project_type?: string
           project_type_config_id?: string | null
           start_date?: string | null
           state?: string | null
@@ -2241,7 +2241,7 @@ export type Database = {
           created_at: string | null
           days_offset: number | null
           default_priority: Database["public"]["Enums"]["task_priority"] | null
-          default_task_type: Database["public"]["Enums"]["task_type"] | null
+          default_task_type: string | null
           description: string | null
           id: string
           is_active: boolean | null
@@ -2255,7 +2255,7 @@ export type Database = {
           created_at?: string | null
           days_offset?: number | null
           default_priority?: Database["public"]["Enums"]["task_priority"] | null
-          default_task_type?: Database["public"]["Enums"]["task_type"] | null
+          default_task_type?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
@@ -2269,7 +2269,7 @@ export type Database = {
           created_at?: string | null
           days_offset?: number | null
           default_priority?: Database["public"]["Enums"]["task_priority"] | null
-          default_task_type?: Database["public"]["Enums"]["task_type"] | null
+          default_task_type?: string | null
           description?: string | null
           id?: string
           is_active?: boolean | null
@@ -2365,7 +2365,7 @@ export type Database = {
           spatial_marker_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["task_status"]
-          task_type: Database["public"]["Enums"]["task_type"]
+          task_type: string
           title: string
           updated_at: string
         }
@@ -2393,7 +2393,7 @@ export type Database = {
           spatial_marker_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
-          task_type?: Database["public"]["Enums"]["task_type"]
+          task_type?: string
           title: string
           updated_at?: string
         }
@@ -2421,7 +2421,7 @@ export type Database = {
           spatial_marker_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["task_status"]
-          task_type?: Database["public"]["Enums"]["task_type"]
+          task_type?: string
           title?: string
           updated_at?: string
         }
@@ -2654,6 +2654,13 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_expenses_by_category: {
+        Args: { p_company_id: string }
+        Returns: {
+          amount: number
+          category: string
+        }[]
+      }
       get_project_detail_with_stats: {
         Args: { p_project_id: string }
         Returns: Json
@@ -2669,6 +2676,18 @@ export type Database = {
           total_expense_amount: number
           total_materials_cost: number
         }[]
+      }
+      get_project_team_cost_summary: {
+        Args: { p_project_id: string }
+        Returns: Json
+      }
+      get_project_types_with_counts: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
+      get_project_with_full_stats: {
+        Args: { p_company_id: string; p_project_id: string }
+        Returns: Json
       }
       get_projects_with_stats: {
         Args: { p_company_id: string; p_limit?: number; p_offset?: number }
@@ -2715,6 +2734,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_top_assignees: {
+        Args: { p_company_id: string; p_limit?: number }
+        Returns: {
+          avatar_url: string
+          id: string
+          name: string
+          task_count: number
+        }[]
+      }
       get_top_team_members_by_completed_tasks: {
         Args: { limit_count?: number; p_company_id: string }
         Returns: {
@@ -2733,10 +2761,6 @@ export type Database = {
       is_user_gc_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_user_owner: { Args: { p_user_id: string }; Returns: boolean }
       refresh_dashboard_kpis: { Args: never; Returns: undefined }
-      seed_company_templates: {
-        Args: { p_company_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
       activity_action:
@@ -2839,13 +2863,6 @@ export type Database = {
         | "cafe"
         | "commercial_office"
         | "industrial"
-      project_type_old:
-        | "residential"
-        | "restaurant_cafe"
-        | "commercial_office"
-        | "industrial"
-        | "restaurant"
-        | "cafe"
       purchaser_type: "gc" | "pm" | "subcontractor"
       spatial_marker_status: "open" | "in_progress" | "resolved" | "closed"
       spatial_marker_type:
@@ -2860,7 +2877,6 @@ export type Database = {
       spatial_processing_status: "pending" | "processing" | "ready" | "failed"
       task_priority: "low" | "medium" | "high" | "critical"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed"
-      task_type: "work" | "purchase" | "approval" | "admin"
       trade_type:
         | "general"
         | "electrical"
@@ -3125,14 +3141,6 @@ export const Constants = {
         "commercial_office",
         "industrial",
       ],
-      project_type_old: [
-        "residential",
-        "restaurant_cafe",
-        "commercial_office",
-        "industrial",
-        "restaurant",
-        "cafe",
-      ],
       purchaser_type: ["gc", "pm", "subcontractor"],
       spatial_marker_status: ["open", "in_progress", "resolved", "closed"],
       spatial_marker_type: [
@@ -3148,7 +3156,6 @@ export const Constants = {
       spatial_processing_status: ["pending", "processing", "ready", "failed"],
       task_priority: ["low", "medium", "high", "critical"],
       task_status: ["todo", "in_progress", "review", "blocked", "completed"],
-      task_type: ["work", "purchase", "approval", "admin"],
       trade_type: [
         "general",
         "electrical",
@@ -3180,3 +3187,4 @@ export const Constants = {
     },
   },
 } as const
+

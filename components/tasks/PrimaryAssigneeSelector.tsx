@@ -59,8 +59,8 @@ export function PrimaryAssigneeSelector({
     <div className="space-y-2">
       {/* Section Label */}
       <div className="flex items-center gap-2 px-1">
-        <Users className="w-4 h-4 text-gray-400" />
-        <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+        <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           Primary Assignee
         </span>
       </div>
@@ -68,7 +68,7 @@ export function PrimaryAssigneeSelector({
       {/* Assignee List */}
       <div
         className={cn(
-          "rounded-xl border-2 border-gray-200 bg-white overflow-hidden",
+          "rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden",
           disabled && "opacity-50",
         )}
       >
@@ -86,11 +86,11 @@ export function PrimaryAssigneeSelector({
                 "w-full flex items-center gap-3 px-4",
                 "min-h-[48px] py-2.5",
                 "transition-all duration-150",
-                !isLast && "border-b border-gray-100",
-                isPrimary ? "bg-construction-blue/5" : "bg-white hover:bg-gray-50",
+                !isLast && "border-b border-gray-100 dark:border-gray-800",
+                isPrimary ? "bg-construction-blue/5 dark:bg-construction-blue/10" : "bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800",
                 disabled
                   ? "cursor-not-allowed"
-                  : "cursor-pointer active:bg-gray-100",
+                  : "cursor-pointer active:bg-gray-100 dark:active:bg-gray-700",
               )}
             >
               {/* Star Icon */}
@@ -99,15 +99,15 @@ export function PrimaryAssigneeSelector({
                   "flex items-center justify-center",
                   "w-8 h-8 rounded-full",
                   "transition-colors duration-150",
-                  isPrimary ? "bg-amber-100" : "bg-gray-100",
+                  isPrimary ? "bg-amber-100 dark:bg-amber-900/30" : "bg-gray-100 dark:bg-gray-800",
                 )}
               >
                 <Star
                   className={cn(
                     "w-4 h-4 transition-colors duration-150",
                     isPrimary
-                      ? "text-amber-500 fill-amber-500"
-                      : "text-gray-400",
+                      ? "text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400"
+                      : "text-gray-400 dark:text-gray-500",
                   )}
                 />
               </div>
@@ -130,13 +130,13 @@ export function PrimaryAssigneeSelector({
                 <div
                   className={cn(
                     "font-medium text-sm truncate",
-                    isPrimary ? "text-construction-blue" : "text-gray-900",
+                    isPrimary ? "text-construction-blue dark:text-blue-400" : "text-gray-900 dark:text-gray-100",
                   )}
                 >
                   {assignee.name}
                 </div>
                 {assignee.type === "subcontractor" && assignee.companyName && (
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                     <Building2 className="w-3 h-3" />
                     <span className="truncate">{assignee.companyName}</span>
                   </div>
@@ -154,7 +154,7 @@ export function PrimaryAssigneeSelector({
                   "transition-all duration-150",
                   isPrimary
                     ? "border-construction-blue bg-construction-blue"
-                    : "border-gray-300 bg-white",
+                    : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900",
                 )}
               >
                 {isPrimary && <div className="w-2 h-2 rounded-full bg-white" />}
@@ -165,7 +165,7 @@ export function PrimaryAssigneeSelector({
       </div>
 
       {/* Hint Text */}
-      <p className="text-xs text-gray-500 px-1">
+      <p className="text-xs text-gray-500 dark:text-gray-400 px-1">
         The primary assignee will be used as the vendor name for auto-created
         expenses.
       </p>

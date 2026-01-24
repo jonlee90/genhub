@@ -53,12 +53,12 @@ async function ClientProjectDetailPageContent({
       projectResult.error,
     );
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="bg-white border-2 border-red-500 rounded-lg p-8 shadow-construction max-w-md">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="bg-white dark:bg-gray-900 border-2 border-red-500 rounded-lg p-8 shadow-construction max-w-md">
           <h2 className="text-2xl font-black text-red-600 uppercase mb-2">
             Project Not Found
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             The project you are trying to access does not exist or you do not
             have permission to view it.
           </p>
@@ -86,7 +86,7 @@ async function ClientProjectDetailPageContent({
   console.log("[ClientProjectDetailPage] Active model:", activeModel?.id);
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       {/* Fixed Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
@@ -98,19 +98,19 @@ async function ClientProjectDetailPageContent({
       {/* Industrial Header */}
       <div className="relative z-10">
         <div className="h-1 bg-construction-blue" />
-        <header className="bg-white border-b-2 border-gray-200 p-4 md:p-6">
+        <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-construction-blue">
                 {project.name}
               </h1>
-              <p className="text-gray-600 mt-1 text-sm md:text-base">
+              <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm md:text-base">
                 Client Portal - 3D Project View
               </p>
             </div>
 
             {/* Client View Badge */}
-            <div className="px-4 py-2 bg-construction-blue/10 border-2 border-construction-blue rounded-lg">
+            <div className="px-4 py-2 bg-construction-blue/10 dark:bg-construction-blue/20 border-2 border-construction-blue rounded-lg">
               <p className="text-xs font-bold uppercase tracking-wide text-construction-blue">
                 Client View
               </p>
@@ -119,7 +119,7 @@ async function ClientProjectDetailPageContent({
 
           {/* Project Info */}
           {project.description && (
-            <p className="text-sm text-gray-600 mt-4 max-w-3xl">
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 max-w-3xl">
               {project.description}
             </p>
           )}
@@ -141,7 +141,7 @@ async function ClientProjectDetailPageContent({
 
 function ClientProjectDetailLoading() {
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       {/* Fixed Blueprint Grid Background */}
       <div
         className="fixed inset-0 pointer-events-none opacity-[0.03] z-0"
@@ -153,7 +153,7 @@ function ClientProjectDetailLoading() {
       {/* Industrial Header */}
       <div className="relative z-10">
         <div className="h-1 bg-construction-blue" />
-        <header className="bg-white border-b-2 border-gray-200 p-4 md:p-6">
+        <header className="bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700 p-4 md:p-6">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 space-y-2">
               <Skeleton className="h-8 w-64" />

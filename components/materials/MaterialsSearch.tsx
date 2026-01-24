@@ -84,12 +84,12 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Search Controls */}
-      <div className="bg-white border-2 border-gray-200 rounded-lg p-3 md:p-6 shadow-construction">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-3 md:p-6 shadow-construction">
         <div className="space-y-3 md:space-y-4">
           {/* Search Bar */}
           <div className="flex flex-col md:flex-row gap-2 md:gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-gray-500" />
               <Input
                 type="text"
                 placeholder="Search Home Depot products..."
@@ -123,8 +123,8 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
             {/* Filter Dropdowns */}
             <div className="flex flex-col sm:flex-row gap-2 md:gap-4 flex-1">
               <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                <Filter className="h-4 w-4 text-gray-500" />
-                <span className="text-sm font-semibold text-gray-600">
+                <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-300">
                   Filters:
                 </span>
               </div>
@@ -162,12 +162,12 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
             </div>
 
             {/* View Toggle */}
-            <div className="flex gap-1 p-1 bg-gray-100 rounded-lg self-start md:self-auto border border-gray-200">
+            <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-700 rounded-lg self-start md:self-auto border border-gray-200 dark:border-gray-600">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className={`h-8 px-3 ${viewMode === "grid" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200"}`}
+                className={`h-8 px-3 ${viewMode === "grid" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200 dark:hover:bg-gray-600"}`}
               >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
@@ -175,7 +175,7 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className={`h-8 px-3 ${viewMode === "list" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200"}`}
+                className={`h-8 px-3 ${viewMode === "list" ? "bg-construction-blue text-white hover:bg-construction-blue/90" : "hover:bg-gray-200 dark:hover:bg-gray-600"}`}
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -263,7 +263,7 @@ export function MaterialsSearch({ projects }: MaterialsSearchProps) {
         <div className="flex items-center justify-center py-12 md:py-16">
           <div className="text-center space-y-3 md:space-y-4">
             <Loader2 className="h-10 w-10 md:h-12 md:w-12 animate-spin text-construction-blue mx-auto" />
-            <p className="text-sm md:text-lg font-semibold text-gray-600">
+            <p className="text-sm md:text-lg font-semibold text-gray-600 dark:text-gray-400">
               Searching Home Depot catalog...
             </p>
           </div>

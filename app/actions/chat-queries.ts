@@ -3,6 +3,21 @@
 import { createClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
 import type { ChatRoomWithUnread, MessageWithSender } from '@/types/db/chat';
+import { z } from 'zod';
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const getMessagesSchema = z.object({
+  chatRoomId: z.string().uuid('Invalid chat room ID'),
+  cursor: z.string().optional(),
+  limit: z.number().int().min(1).max(100).optional().default(50),
+});
+
+const getMessageByIdSchema = z.object({
+  messageId: z.string().uuid('Invalid message ID'),
+});
 
 // ============================================
 // Helper Functions
@@ -218,15 +233,24 @@ export async function getChatRooms(): Promise<{
  * Ordered by created_at DESC (newest first)
  */
 export async function getMessages(
-  chatRoomId: string,
-  cursor?: string,
-  limit: number = 50
+  input: unknown
 ): Promise<{
   success?: boolean;
   messages?: MessageWithSender[];
   nextCursor?: string | null;
   error?: string;
 }> {
+  // Validate input
+  const validation = getMessagesSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getMessages] Validation failed:', validation.error);
+    return {
+      error: 'Invalid input parameters',
+    };
+  }
+
+  const { chatRoomId, cursor, limit } = validation.data;
+
   console.log('[getMessages] Fetching messages for room:', chatRoomId, 'cursor:', cursor, 'limit:', limit);
 
   // Get user context
@@ -453,12 +477,23 @@ export async function getCompanyUsers(): Promise<{
  * Used by real-time hook to fetch complete message data after INSERT event
  */
 export async function getMessageById(
-  messageId: string
+  input: unknown
 ): Promise<{
   success?: boolean;
   message?: MessageWithSender;
   error?: string;
 }> {
+  // Validate input
+  const validation = getMessageByIdSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[getMessageById] Validation failed:', validation.error);
+    return {
+      error: 'Invalid message ID',
+    };
+  }
+
+  const { messageId } = validation.data;
+
   console.log('[getMessageById] Fetching message:', messageId);
 
   // Get user context

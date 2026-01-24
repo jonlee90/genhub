@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getUserContext, verifyProjectAccess } from "@/lib/auth/user-context";
+import { z } from "zod";
 import type { DocumentCategory } from "@/types/db/enums";
 
 type FileFilters = {
@@ -13,6 +14,62 @@ type FileFilters = {
   fileType?: ("document" | "image" | "cad" | "archive")[];
 };
 
+// ============================================================================
+// ZOD VALIDATION SCHEMAS
+// ============================================================================
+
+const projectIdSchema = z.string().uuid();
+
+const getProjectFilesSchema = z.object({
+  projectId: z.string().uuid(),
+  filters: z
+    .object({
+      category: z
+        .array(
+          z.enum([
+            "contract",
+            "permit",
+            "drawing",
+            "specification",
+            "invoice",
+            "receipt",
+            "photo",
+            "report",
+            "other",
+          ]),
+        )
+        .optional(),
+      search: z.string().min(1).max(200).optional(),
+      dateFrom: z.string().datetime().optional(),
+      dateTo: z.string().datetime().optional(),
+      uploadedBy: z.array(z.string().uuid()).optional(),
+      fileType: z
+        .array(z.enum(["document", "image", "cad", "archive"]))
+        .optional(),
+    })
+    .optional(),
+});
+
+const updateFileCategorySchema = z.object({
+  fileId: z.string().uuid(),
+  category: z.enum([
+    "contract",
+    "permit",
+    "drawing",
+    "specification",
+    "invoice",
+    "receipt",
+    "photo",
+    "report",
+    "other",
+  ]),
+});
+
+const bulkDeleteFilesSchema = z.object({
+  fileIds: z.array(z.string().uuid()).min(1).max(100),
+  projectId: z.string().uuid(),
+});
+
 /**
  * Get project files with filters
  */
@@ -22,6 +79,16 @@ export async function getProjectFiles(
 ) {
   if (process.env.NODE_ENV === "development") {
     console.log("[getProjectFiles] Fetching files for project:", projectId);
+  }
+
+  // Zod validation
+  try {
+    getProjectFilesSchema.parse({ projectId, filters });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: `Invalid input: ${error.issues[0].message}` };
+    }
+    return { error: "Invalid input parameters" };
   }
 
   const userContext = await getUserContext();
@@ -107,6 +174,16 @@ export async function deleteProjectFile(fileId: string) {
     console.log("[deleteProjectFile] Deleting file:", fileId);
   }
 
+  // Zod validation
+  try {
+    z.string().uuid().parse(fileId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid file ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -169,6 +246,16 @@ export async function updateFileCategory(
     );
   }
 
+  // Zod validation
+  try {
+    updateFileCategorySchema.parse({ fileId, category });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -225,6 +312,16 @@ export async function getFileVersionHistory(fileId: string) {
     console.log("[getFileVersionHistory] Fetching versions for file:", fileId);
   }
 
+  // Zod validation
+  try {
+    z.string().uuid().parse(fileId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid file ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -270,6 +367,16 @@ export async function getFileVersionHistory(fileId: string) {
 export async function bulkDeleteFiles(fileIds: string[], projectId: string) {
   if (process.env.NODE_ENV === "development") {
     console.log("[bulkDeleteFiles] Deleting files:", fileIds.length);
+  }
+
+  // Zod validation
+  try {
+    bulkDeleteFilesSchema.parse({ fileIds, projectId });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
   }
 
   const userContext = await getUserContext();

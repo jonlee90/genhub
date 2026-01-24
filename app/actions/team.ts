@@ -193,13 +193,13 @@ export async function inviteTeamMember(formData: FormData) {
 
     // Send invitation email
     console.log("[TEAM_INVITE] Sending invitation email to:", data.email);
-    const emailResult = await sendTeamInvitationEmail(
-      data.email,
-      data.name,
+    const emailResult = await sendTeamInvitationEmail({
+      email: data.email,
+      name: data.name,
       invitationLink,
-      inviterProfile?.name || "A team member",
-      company?.name || "your company",
-    );
+      inviterName: inviterProfile?.name || "A team member",
+      companyName: company?.name || "your company",
+    });
 
     if (!emailResult.success) {
       console.error("[TEAM_INVITE] Email sending failed:", emailResult.error);

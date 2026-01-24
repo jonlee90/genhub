@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth-context";
 import type { createClient } from "@/utils/supabase/server";
 import { processIFCFile } from "@/lib/ifc-converter";
+import { z } from "zod";
 import type {
   SpatialMarkerInsert,
   SpatialMarkerUpdate,
@@ -36,6 +37,236 @@ async function verifyProjectAccess(
 }
 
 // ============================================================================
+// ZOD VALIDATION SCHEMAS
+// ============================================================================
+
+const projectIdSchema = z.string().uuid();
+
+const uploadIFCFileSchema = z.object({
+  projectId: z.string().uuid(),
+  file: z
+    .instanceof(File)
+    .refine((f) => f.name.toLowerCase().endsWith(".ifc"), {
+      message: "Only .IFC files are supported",
+    })
+    .refine((f) => f.size <= 500 * 1024 * 1024, {
+      message: "File size must be less than 500MB",
+    }),
+});
+
+const createModelRecordSchema = z.object({
+  projectId: z.string().uuid(),
+  fileData: z.object({
+    fileName: z.string().min(1).max(500),
+    originalFileUrl: z.string().url(),
+    fileSizeBytes: z.number().int().positive(),
+  }),
+});
+
+const updateModelProcessingStatusSchema = z.object({
+  modelId: z.string().uuid(),
+  status: z.enum(["pending", "processing", "ready", "failed"]),
+  metadata: z
+    .object({
+      xktFileUrl: z.string().url().optional(),
+      lodMediumUrl: z.string().url().optional(),
+      lodLowUrl: z.string().url().optional(),
+      thumbnailUrl: z.string().url().optional(),
+      elementCount: z.number().int().nonnegative().optional(),
+      bounds: z.any().optional(),
+      floors: z.any().optional(),
+      processingError: z.string().optional(),
+    })
+    .optional(),
+});
+
+const setActiveModelVersionSchema = z.object({
+  projectId: z.string().uuid(),
+  modelId: z.string().uuid(),
+});
+
+const positionSchema = z.object({
+  x: z.number(),
+  y: z.number(),
+  z: z.number(),
+});
+
+const createMarkerSchema = z.object({
+  project_id: z.string().uuid(),
+  model_id: z.string().uuid().optional().nullable(),
+  type: z.enum([
+    "photo",
+    "note",
+    "issue",
+    "inspection",
+    "rfi",
+    "safety",
+    "material",
+    "progress",
+  ]),
+  status: z.enum(["open", "in_progress", "resolved", "closed"]).default("open"),
+  position_x: z.number(),
+  position_y: z.number(),
+  position_z: z.number(),
+  normal_x: z.number().optional().nullable(),
+  normal_y: z.number().optional().nullable(),
+  normal_z: z.number().optional().nullable(),
+  element_id: z.string().max(200).optional().nullable(),
+  element_type: z.string().max(100).optional().nullable(),
+  element_name: z.string().max(200).optional().nullable(),
+  floor_id: z.string().max(100).optional().nullable(),
+  floor_name: z.string().max(100).optional().nullable(),
+  room_id: z.string().max(100).optional().nullable(),
+  room_name: z.string().max(100).optional().nullable(),
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  task_id: z.string().uuid().optional().nullable(),
+  phase_id: z.string().uuid().optional().nullable(),
+  cluster_id: z.string().uuid().optional().nullable(),
+  marker_config_id: z.string().uuid().optional().nullable(),
+  is_client_visible: z.boolean().default(false),
+});
+
+const updateMarkerSchema = z.object({
+  markerId: z.string().uuid(),
+  data: z.object({
+    type: z
+      .enum([
+        "photo",
+        "note",
+        "issue",
+        "inspection",
+        "rfi",
+        "safety",
+        "material",
+        "progress",
+      ])
+      .optional(),
+    status: z
+      .enum(["open", "in_progress", "resolved", "closed"])
+      .optional(),
+    title: z.string().min(1).max(200).optional(),
+    description: z.string().max(2000).optional().nullable(),
+    position_x: z.number().optional(),
+    position_y: z.number().optional(),
+    position_z: z.number().optional(),
+    element_id: z.string().max(200).optional().nullable(),
+    element_type: z.string().max(100).optional().nullable(),
+    element_name: z.string().max(200).optional().nullable(),
+    floor_id: z.string().max(100).optional().nullable(),
+    floor_name: z.string().max(100).optional().nullable(),
+    room_id: z.string().max(100).optional().nullable(),
+    room_name: z.string().max(100).optional().nullable(),
+    task_id: z.string().uuid().optional().nullable(),
+    phase_id: z.string().uuid().optional().nullable(),
+    is_client_visible: z.boolean().optional(),
+  }),
+});
+
+const attachContentSchema = z.object({
+  markerId: z.string().uuid(),
+  content: z.object({
+    marker_id: z.string().uuid(),
+    type: z.enum(["photo", "file", "note", "activity"]),
+    photo_url: z.string().url().optional().nullable(),
+    photo_thumbnail_url: z.string().url().optional().nullable(),
+    photo_width: z.number().int().positive().optional().nullable(),
+    photo_height: z.number().int().positive().optional().nullable(),
+    photo_exif: z.any().optional().nullable(),
+    file_url: z.string().url().optional().nullable(),
+    file_name: z.string().max(500).optional().nullable(),
+    file_size_bytes: z.number().int().nonnegative().optional().nullable(),
+    file_mime_type: z.string().max(100).optional().nullable(),
+    note_text: z.string().max(5000).optional().nullable(),
+    note_format: z.enum(["plain", "markdown"]).default("plain").optional(),
+    activity_type: z.string().max(50).optional().nullable(),
+    activity_data: z.any().optional().nullable(),
+  }),
+});
+
+const markerFiltersSchema = z
+  .object({
+    type: z
+      .enum([
+        "photo",
+        "note",
+        "issue",
+        "inspection",
+        "rfi",
+        "safety",
+        "material",
+        "progress",
+      ])
+      .optional(),
+    status: z.enum(["open", "in_progress", "resolved", "closed"]).optional(),
+    floor_id: z.string().optional(),
+    task_id: z.string().uuid().optional(),
+    phase_id: z.string().uuid().optional(),
+    created_by: z.string().uuid().optional(),
+  })
+  .optional();
+
+const findNearestMarkerSchema = z.object({
+  projectId: z.string().uuid(),
+  latitude: z.number().min(-90).max(90),
+  longitude: z.number().min(-180).max(180),
+  radiusMeters: z.number().int().min(1).max(1000).default(50),
+});
+
+const getMarkersByProjectSchema = z.object({
+  projectId: z.string().uuid(),
+  filters: z
+    .object({
+      markerTypes: z
+        .array(
+          z.enum([
+            "photo",
+            "note",
+            "issue",
+            "inspection",
+            "rfi",
+            "safety",
+            "material",
+            "progress",
+          ]),
+        )
+        .optional(),
+      statuses: z
+        .array(z.enum(["open", "in_progress", "resolved", "closed"]))
+        .optional(),
+      priorities: z.array(z.string()).optional(),
+      phaseId: z.string().uuid().optional(),
+      hasTask: z.boolean().optional(),
+      hasMaterials: z.boolean().optional(),
+    })
+    .optional(),
+});
+
+const uploadMarkerAttachmentSchema = z.object({
+  markerId: z.string().uuid(),
+  file: z
+    .instanceof(File)
+    .refine((f) => f.size <= 50 * 1024 * 1024, {
+      message: "File size must be less than 50MB",
+    }),
+  contentType: z.enum(["photo", "file"]),
+});
+
+const createTaskAtLocationSchema = z.object({
+  taskData: z.object({
+    title: z.string().min(1).max(200),
+    description: z.string().max(2000).optional(),
+    priority: z.enum(["low", "medium", "high", "critical"]).default("medium"),
+    phase_id: z.string().uuid().optional(),
+    assignee_id: z.string().uuid().optional(),
+    due_date: z.string().datetime().optional(),
+  }),
+  position: positionSchema,
+  projectId: z.string().uuid(),
+  elementId: z.string().max(200).optional(),
+});
+
+// ============================================================================
 // P1.5 - 3D MODEL CRUD OPERATIONS
 // ============================================================================
 
@@ -44,6 +275,21 @@ async function verifyProjectAccess(
  */
 export async function uploadIFCFile(projectId: string, formData: FormData) {
   console.log("[uploadIFCFile] Starting upload for project:", projectId);
+
+  const file = formData.get("file") as File;
+  if (!file) {
+    return { error: "No file provided" };
+  }
+
+  // Zod validation
+  try {
+    uploadIFCFileSchema.parse({ projectId, file });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -57,21 +303,6 @@ export async function uploadIFCFile(projectId: string, formData: FormData) {
     companyId,
   );
   if ("error" in projectCheck) return { error: projectCheck.error };
-
-  const file = formData.get("file") as File;
-  if (!file) {
-    return { error: "No file provided" };
-  }
-
-  // Validate file
-  if (!file.name.toLowerCase().endsWith(".ifc")) {
-    return { error: "Only .IFC files are supported" };
-  }
-
-  const maxSize = 500 * 1024 * 1024; // 500MB
-  if (file.size > maxSize) {
-    return { error: "File size must be less than 500MB" };
-  }
 
   try {
     // Generate unique file path
@@ -148,6 +379,16 @@ export async function createModelRecord(
 ) {
   console.log("[createModelRecord] Creating model for project:", projectId);
 
+  // Zod validation
+  try {
+    createModelRecordSchema.parse({ projectId, fileData });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -204,6 +445,16 @@ export async function createModelRecord(
 export async function getProjectModels(projectId: string) {
   console.log("[getProjectModels] Fetching models for project:", projectId);
 
+  // Zod validation
+  try {
+    projectIdSchema.parse(projectId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid project ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -237,6 +488,16 @@ export async function getProjectModels(projectId: string) {
  */
 export async function getActiveModel(projectId: string) {
   console.log("[getActiveModel] Fetching active model for project:", projectId);
+
+  // Zod validation
+  try {
+    projectIdSchema.parse(projectId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid project ID format" };
+    }
+    return { error: "Invalid input" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -295,6 +556,16 @@ export async function updateModelProcessingStatus(
     status,
   );
 
+  // Zod validation
+  try {
+    updateModelProcessingStatusSchema.parse({ modelId, status, metadata });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -342,6 +613,16 @@ export async function setActiveModelVersion(
   modelId: string,
 ) {
   console.log("[setActiveModelVersion] Setting model as active:", modelId);
+
+  // Zod validation
+  try {
+    setActiveModelVersionSchema.parse({ projectId, modelId });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -407,6 +688,16 @@ export async function setActiveModelVersion(
  */
 export async function deleteModelVersion(modelId: string) {
   console.log("[deleteModelVersion] Deleting model:", modelId);
+
+  // Zod validation
+  try {
+    z.string().uuid().parse(modelId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid model ID format" };
+    }
+    return { error: "Invalid input" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -495,6 +786,16 @@ export async function replaceActiveModel(projectId: string, file: File) {
     projectId,
   );
 
+  // Zod validation
+  try {
+    uploadIFCFileSchema.parse({ projectId, file });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -566,6 +867,16 @@ export async function replaceActiveModel(projectId: string, file: File) {
 export async function createMarker(data: SpatialMarkerInsert) {
   console.log("[createMarker] Creating marker for project:", data.project_id);
 
+  // Zod validation
+  try {
+    createMarkerSchema.parse(data);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -616,6 +927,19 @@ export async function getProjectMarkers(
     filters,
   );
 
+  // Zod validation
+  try {
+    projectIdSchema.parse(projectId);
+    if (filters) {
+      markerFiltersSchema.parse(filters);
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -663,6 +987,16 @@ export async function getProjectMarkers(
 export async function getMarkerById(markerId: string) {
   console.log("[getMarkerById] Fetching marker:", markerId);
 
+  // Zod validation
+  try {
+    z.string().uuid().parse(markerId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid marker ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -692,6 +1026,16 @@ export async function updateMarker(
   data: SpatialMarkerUpdate,
 ) {
   console.log("[updateMarker] Updating marker:", markerId);
+
+  // Zod validation
+  try {
+    updateMarkerSchema.parse({ markerId, data });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -746,6 +1090,16 @@ export async function updateMarker(
 export async function deleteMarker(markerId: string) {
   console.log("[deleteMarker] Deleting marker:", markerId);
 
+  // Zod validation
+  try {
+    z.string().uuid().parse(markerId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid marker ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -796,6 +1150,16 @@ export async function attachContentToMarker(
 ) {
   console.log("[attachContentToMarker] Attaching content to marker:", markerId);
 
+  // Zod validation
+  try {
+    attachContentSchema.parse({ markerId, content });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -837,6 +1201,16 @@ export async function attachContentToMarker(
 export async function getMarkerContent(markerId: string) {
   console.log("[getMarkerContent] Fetching content for marker:", markerId);
 
+  // Zod validation
+  try {
+    z.string().uuid().parse(markerId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid marker ID format" };
+    }
+    return { error: "Invalid input" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -862,6 +1236,16 @@ export async function getMarkerContent(markerId: string) {
  */
 export async function deleteMarkerContent(contentId: string) {
   console.log("[deleteMarkerContent] Deleting content:", contentId);
+
+  // Zod validation
+  try {
+    z.string().uuid().parse(contentId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid content ID format" };
+    }
+    return { error: "Invalid input" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -914,6 +1298,17 @@ export async function getMarkersByPhase(projectId: string, phaseId: string) {
     "phase:",
     phaseId,
   );
+
+  // Zod validation
+  try {
+    projectIdSchema.parse(projectId);
+    z.string().uuid().parse(phaseId);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: "Invalid project ID or phase ID format" };
+    }
+    return { error: "Invalid input" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -991,6 +1386,16 @@ export async function findNearestMarker(
     latitude,
     longitude,
   );
+
+  // Zod validation
+  try {
+    findNearestMarkerSchema.parse({ projectId, latitude, longitude, radiusMeters });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
@@ -1128,6 +1533,16 @@ export async function getMarkersByProject(
     filters,
   });
 
+  // Zod validation
+  try {
+    getMarkersByProjectSchema.parse({ projectId, filters });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.issues[0].message };
+    }
+    return { error: "Invalid input parameters" };
+  }
+
   const userContext = await getUserContext();
   if ("error" in userContext) return { error: userContext.error };
 
@@ -1209,52 +1624,63 @@ export async function getMarkersByProject(
 
   if (!markers) return { success: true, data: [] };
 
-  // Fetch material counts for tasks (if hasMaterials filter is active)
-  let materialCounts: Record<string, number> = {};
+  // P-002 FIX: Parallelize material counts and marker content fetches
+  const markerIds = markers.map((m) => m.id);
+  const taskIds = markers
+    .map((m) => m.task_id)
+    .filter((id): id is string => id !== null);
 
-  if (filters?.hasMaterials !== undefined) {
-    const taskIds = markers
-      .map((m) => m.task_id)
-      .filter((id): id is string => id !== null);
+  // Build parallel queries
+  const queries = [];
 
-    if (taskIds.length > 0) {
-      const { data: assignments } = await supabase
+  if (filters?.hasMaterials !== undefined && taskIds.length > 0) {
+    queries.push(
+      supabase
         .from("material_assignments")
         .select("task_id")
-        .in("task_id", taskIds);
-
-      if (assignments) {
-        materialCounts = assignments.reduce(
-          (acc, a) => {
-            acc[a.task_id] = (acc[a.task_id] || 0) + 1;
-            return acc;
-          },
-          {} as Record<string, number>,
-        );
-      }
-    }
+        .in("task_id", taskIds),
+    );
+  } else {
+    queries.push(Promise.resolve({ data: null, error: null }));
   }
 
-  // Fetch marker content
-  const markerIds = markers.map((m) => m.id);
-  let markerContentMap: Record<string, any[]> = {};
-
   if (markerIds.length > 0) {
-    const { data: contents } = await supabase
-      .from("marker_content")
-      .select("id, marker_id, type, photo_url, photo_thumbnail_url, photo_width, photo_height, photo_exif, file_url, file_name, file_size_bytes, file_mime_type, note_text, note_format, activity_type, activity_data, created_by, created_at, updated_at")
-      .in("marker_id", markerIds);
+    queries.push(
+      supabase
+        .from("marker_content")
+        .select("id, marker_id, type, photo_url, photo_thumbnail_url, photo_width, photo_height, photo_exif, file_url, file_name, file_size_bytes, file_mime_type, note_text, note_format, activity_type, activity_data, created_by, created_at, updated_at")
+        .in("marker_id", markerIds),
+    );
+  } else {
+    queries.push(Promise.resolve({ data: null, error: null }));
+  }
 
-    if (contents) {
-      markerContentMap = contents.reduce(
-        (acc, c) => {
-          if (!acc[c.marker_id]) acc[c.marker_id] = [];
-          acc[c.marker_id].push(c);
-          return acc;
-        },
-        {} as Record<string, any[]>,
-      );
-    }
+  // Execute all queries in parallel
+  const [materialCountsResult, markerContentResult] = await Promise.all(queries);
+
+  // Process material counts
+  let materialCounts: Record<string, number> = {};
+  if (materialCountsResult.data) {
+    materialCounts = materialCountsResult.data.reduce(
+      (acc: Record<string, number>, a: any) => {
+        acc[a.task_id] = (acc[a.task_id] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+  }
+
+  // Process marker content
+  let markerContentMap: Record<string, any[]> = {};
+  if (markerContentResult.data) {
+    markerContentMap = markerContentResult.data.reduce(
+      (acc: Record<string, any[]>, c: any) => {
+        if (!acc[c.marker_id]) acc[c.marker_id] = [];
+        acc[c.marker_id].push(c);
+        return acc;
+      },
+      {},
+    );
   }
 
   // Transform markers to include extended info
@@ -1311,6 +1737,16 @@ export async function uploadMarkerAttachment(
     "[uploadMarkerAttachment] Uploading attachment to marker:",
     markerId,
   );
+
+  // Zod validation
+  try {
+    uploadMarkerAttachmentSchema.parse({ markerId, file, contentType });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0].message };
+    }
+    return { success: false, error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext)
@@ -1422,6 +1858,16 @@ export async function createTaskAtLocation(
   error?: string;
 }> {
   console.log("[createTaskAtLocation] Creating task at position:", position);
+
+  // Zod validation
+  try {
+    createTaskAtLocationSchema.parse({ taskData, position, projectId, elementId });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0].message };
+    }
+    return { success: false, error: "Invalid input parameters" };
+  }
 
   const userContext = await getUserContext();
   if ("error" in userContext)

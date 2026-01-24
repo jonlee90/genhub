@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { m as motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
   Receipt,
@@ -20,6 +20,7 @@ import {
 import { cn, getInitials } from "@/lib/utils";
 import { signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ThemeSegmentToggle } from "@/components/app/MoreMenu/ThemeSegmentToggle";
 import type { Session } from "next-auth";
 
 // Navigation grid items - designed for quick access
@@ -82,6 +83,7 @@ interface MoreMenuProps {
 
 export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
   const pathname = usePathname();
+  const shouldReduceMotion = useReducedMotion();
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -117,14 +119,12 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
     return pathname.startsWith(href);
   };
 
-  // Get user initials for avatar fallback
-
   const handleSignOut = async () => {
     onClose();
     await signOut({ callbackUrl: "/" });
   };
 
-  // Animation variants
+  // Animation variants with reduced motion support
   const backdropVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
@@ -135,21 +135,25 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
     visible: {
       y: 0,
       opacity: 1,
-      transition: {
-        type: "spring" as const,
-        damping: 28,
-        stiffness: 350,
-        mass: 0.8,
-      },
+      transition: shouldReduceMotion
+        ? { duration: 0.1 }
+        : {
+            type: "spring" as const,
+            damping: 28,
+            stiffness: 350,
+            mass: 0.8,
+          },
     },
     exit: {
       y: "100%",
       opacity: 0,
-      transition: {
-        type: "spring" as const,
-        damping: 35,
-        stiffness: 400,
-      },
+      transition: shouldReduceMotion
+        ? { duration: 0.1 }
+        : {
+            type: "spring" as const,
+            damping: 35,
+            stiffness: 400,
+          },
     },
   };
 
@@ -159,12 +163,14 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
       opacity: 1,
       scale: 1,
       y: 0,
-      transition: {
-        type: "spring" as const,
-        damping: 20,
-        stiffness: 300,
-        delay: i * 0.05,
-      },
+      transition: shouldReduceMotion
+        ? { duration: 0 }
+        : {
+            type: "spring" as const,
+            damping: 20,
+            stiffness: 300,
+            delay: i * 0.04,
+          },
     }),
   };
 
@@ -181,95 +187,102 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
             exit="hidden"
             transition={{ duration: 0.2 }}
             onClick={onClose}
+            role="presentation"
           />
 
-          {/* Control Panel Menu */}
+          {/* Control Panel Menu - Glassmorphism Design */}
           <motion.div
             className="fixed inset-x-0 bottom-0 z-50 md:hidden"
             variants={panelVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
+            role="dialog"
+            aria-modal="true"
+            aria-label="More menu"
             style={{
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
-            <div className="relative bg-white dark:bg-gray-900 rounded-t-[28px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
-              {/* Industrial top edge - thick bar */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-construction-blue via-[#0a3a8a] to-construction-blue" />
+            <div className="relative bg-white/80 dark:bg-gray-900/90 backdrop-blur-xl rounded-t-[32px] shadow-2xl overflow-hidden max-h-[85vh] flex flex-col">
+              {/* Industrial top edge - gradient accent */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-construction-blue via-[#0a3a8a] to-construction-blue" />
 
               {/* Drag handle */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-12 h-1.5 rounded-full bg-gray-300 dark:bg-gray-700" />
+                <div className="w-10 h-1 rounded-full bg-gray-300/80 dark:bg-gray-600/80" />
               </div>
 
-              {/* Header - User Dashboard Card */}
-              <div className="px-5 pt-2 pb-4">
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[var(--construction-blue)] via-[#002d7a] to-[#001545]">
-                  {/* Subtle grid pattern overlay */}
-                  <div
-                    className="absolute inset-0 opacity-[0.03]"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, white 1px, transparent 1px),
-                                        linear-gradient(to bottom, white 1px, transparent 1px)`,
-                      backgroundSize: "20px 20px",
-                    }}
-                  />
-
-                  {/* Close button */}
-                  <button
-                    onClick={onClose}
-                    className="absolute top-3 right-3 p-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:bg-white/30 active:scale-[0.92] transition-all z-10"
-                    aria-label="Close menu"
-                  >
-                    <X className="w-5 h-5 text-white" />
-                  </button>
+              {/* Header - Glassmorphism Card */}
+              <div className="px-4 pt-2 pb-4">
+                <div className="relative overflow-hidden rounded-2xl bg-white/60 dark:bg-gray-800/70 backdrop-blur-lg border border-white/30 dark:border-white/5 shadow-lg">
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 via-transparent to-construction-blue/10 dark:from-construction-blue/10 dark:to-construction-blue/5" />
 
                   <div className="relative p-4">
-                    {/* Logo and status row */}
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="relative">
-                        <div className="w-11 h-11 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                          <Image
-                            src="/icon-192.png"
-                            alt="GenHub"
-                            width={28}
-                            height={28}
-                            className="object-contain"
-                          />
+                    {/* Header row: Logo, Theme Toggle, Close */}
+                    <div className="flex items-center justify-between mb-4">
+                      {/* Logo and branding */}
+                      <div className="flex items-center gap-3">
+                        <div className="relative">
+                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-construction-blue to-[#002d7a] flex items-center justify-center shadow-md">
+                            <Image
+                              src="/icon-192.png"
+                              alt="GenHub"
+                              width={28}
+                              height={28}
+                              className="object-contain"
+                            />
+                          </div>
+                          {/* Status indicator */}
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                            <Zap className="w-2 h-2 text-white" />
+                          </div>
                         </div>
-                        {/* Status indicator */}
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-construction-blue flex items-center justify-center">
-                          <Zap className="w-2 h-2 text-white" />
+                        <div>
+                          <h2 className="text-lg font-black text-gray-900 dark:text-white tracking-tight">
+                            GenHub
+                          </h2>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              System Active
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <h2 className="text-lg font-black text-white tracking-tight">
-                          GenHub
-                        </h2>
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[11px] font-medium text-white/60 uppercase tracking-wider">
-                            System Active
-                          </span>
-                        </div>
+
+                      {/* Theme Toggle & Close Button */}
+                      <div className="flex items-center gap-2">
+                        <ThemeSegmentToggle size="sm" />
+                        <button
+                          onClick={onClose}
+                          className="p-2.5 rounded-xl bg-gray-100/80 dark:bg-gray-700/80 hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 active:scale-[0.92] transition-all"
+                          aria-label="Close menu"
+                        >
+                          <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                        </button>
                       </div>
                     </div>
 
                     {/* User profile card */}
                     {session?.user && (
                       <motion.div
-                        className="flex items-center gap-3 p-3 bg-white/[0.08] backdrop-blur-sm rounded-xl border border-white/10"
+                        className="flex items-center gap-3 p-3 bg-gray-50/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-600/30"
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{
-                          delay: 0.15,
-                          type: "spring",
-                          damping: 20,
-                        }}
+                        transition={
+                          shouldReduceMotion
+                            ? { duration: 0 }
+                            : {
+                                delay: 0.15,
+                                type: "spring",
+                                damping: 20,
+                              }
+                        }
                       >
                         <div className="relative">
-                          <Avatar className="h-11 w-11 ring-2 ring-white/20">
+                          <Avatar className="h-11 w-11 ring-2 ring-gray-200 dark:ring-gray-600">
                             <AvatarImage
                               src={session.user.image || undefined}
                             />
@@ -279,23 +292,23 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                                 : "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-[#002d7a] flex items-center justify-center">
+                          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-700 flex items-center justify-center">
                             <Shield className="w-2 h-2 text-white" />
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-white truncate">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                             {session.user.name || "User"}
                           </p>
-                          <p className="text-xs text-white/50 truncate font-medium">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate font-medium">
                             {session.user.email}
                           </p>
                         </div>
                         <div className="flex flex-col items-end gap-0.5">
-                          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                             Online
                           </span>
-                          <span className="text-[10px] text-white/40 font-medium">
+                          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
                             Contractor
                           </span>
                         </div>
@@ -305,8 +318,8 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                 </div>
               </div>
 
-              {/* Navigation Grid - Industrial Touch Buttons */}
-              <nav className="flex-1 overflow-y-auto px-5 pb-3">
+              {/* Navigation Grid - Refined glassmorphism */}
+              <nav className="flex-1 overflow-y-auto px-4 pb-3">
                 <div className="grid grid-cols-3 gap-3">
                   {navGridItems.map((item, index) => {
                     const active = isActive(item.href);
@@ -330,7 +343,7 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                             "active:scale-[0.96]",
                             active
                               ? "bg-construction-blue shadow-lg shadow-construction-blue/25"
-                              : "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600",
+                              : "bg-gray-50/80 dark:bg-gray-800/60 backdrop-blur-sm hover:bg-gray-100 dark:hover:bg-gray-700/70 active:bg-gray-200 dark:active:bg-gray-600 border border-gray-200/50 dark:border-gray-700/50"
                           )}
                         >
                           {/* Active indicator glow */}
@@ -345,13 +358,13 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                               "transition-all duration-150",
                               active
                                 ? "bg-white/20 text-white"
-                                : `${item.iconBg} text-gray-700 dark:text-gray-300`,
+                                : `${item.iconBg} text-gray-700 dark:text-gray-300`
                             )}
                           >
                             <Icon
                               className={cn(
                                 "w-6 h-6",
-                                active && "text-white drop-shadow-sm",
+                                active && "text-white drop-shadow-sm"
                               )}
                               strokeWidth={active ? 2.5 : 2}
                             />
@@ -361,7 +374,9 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                           <span
                             className={cn(
                               "text-[11px] font-bold tracking-wide",
-                              active ? "text-white" : "text-gray-700 dark:text-gray-300",
+                              active
+                                ? "text-white"
+                                : "text-gray-700 dark:text-gray-300"
                             )}
                           >
                             {item.name}
@@ -373,7 +388,11 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
                               className="absolute top-2 right-2 w-2 h-2 rounded-full bg-white shadow-sm"
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              transition={{ type: "spring", delay: 0.2 }}
+                              transition={
+                                shouldReduceMotion
+                                  ? { duration: 0 }
+                                  : { type: "spring", delay: 0.2 }
+                              }
                             />
                           )}
                         </Link>
@@ -384,18 +403,21 @@ export function MoreMenu({ isOpen, onClose, session }: MoreMenuProps) {
               </nav>
 
               {/* Footer - Sign Out */}
-              <div className="px-5 pt-3 pb-5 border-t border-gray-100 dark:border-gray-800">
+              <div className="px-4 pt-3 pb-5 border-t border-gray-200/50 dark:border-gray-700/50">
                 <button
                   onClick={handleSignOut}
                   className={cn(
                     "flex items-center justify-center gap-2.5 w-full",
                     "h-14 rounded-xl",
-                    "bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 dark:active:bg-gray-600",
+                    "bg-gray-50/80 dark:bg-gray-800/60 backdrop-blur-sm",
+                    "hover:bg-gray-100 dark:hover:bg-gray-700/70",
+                    "active:bg-gray-200 dark:active:bg-gray-600",
+                    "border border-gray-200/50 dark:border-gray-700/50",
                     "text-gray-700 dark:text-gray-300 font-bold",
-                    "active:scale-[0.98] transition-all duration-150",
+                    "active:scale-[0.98] transition-all duration-150"
                   )}
                 >
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200 dark:bg-gray-700">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-200/80 dark:bg-gray-700/80">
                     <LogOut className="w-5 h-5" />
                   </div>
                   <span>Sign Out</span>

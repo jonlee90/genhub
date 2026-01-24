@@ -332,9 +332,9 @@ export function ManagePhasesModal({
           >
             {phases.length === 0 ? (
               <div className="text-center py-12">
-                <Layers className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-600 font-medium">No phases yet</p>
-                <p className="text-sm text-gray-500 mt-1">
+                <Layers className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-400 font-medium">No phases yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   Click "Add Phase" to create your first phase
                 </p>
               </div>
@@ -345,15 +345,15 @@ export function ManagePhasesModal({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-3 p-4 bg-construction-blue/5 border-2 border-gray-200 rounded-xl hover:border-construction-blue/30 transition-colors group"
+                  className="flex items-center gap-3 p-4 bg-construction-blue/5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-construction-blue/30 transition-colors group"
                 >
                   <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-construction-blue text-white font-bold flex-shrink-0">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-gray-900">{phase.name}</p>
+                    <p className="font-bold text-gray-900 dark:text-gray-100">{phase.name}</p>
                     {phase.notes && (
-                      <p className="text-sm text-gray-600 mt-0.5 line-clamp-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-1">
                         {phase.notes}
                       </p>
                     )}

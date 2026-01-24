@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth/user-context";
 import type { ProjectPhotosRow } from "@/types/db/tables/projects";
 import type { PhotoCategory } from "@/types/db/enums";
+import { z } from "zod";
 
 type ProjectPhoto = ProjectPhotosRow;
 type PhotoFilters = {
@@ -14,6 +15,75 @@ type PhotoFilters = {
   source?: ("upload" | "task_receipt" | "expense_receipt")[];
   showReceipts?: boolean;
 };
+
+// ============================================================================
+// ZOD VALIDATION SCHEMAS
+// ============================================================================
+
+const getProjectPhotosWithReceiptsSchema = z.object({
+  projectId: z.string().uuid(),
+  filters: z
+    .object({
+      category: z
+        .array(
+          z.enum([
+            "site_progress",
+            "safety_documentation",
+            "permits_approvals",
+            "inspection_reports",
+            "material_receipts",
+            "change_orders",
+            "defects_issues",
+            "before_after",
+            "task_receipts",
+            "expense_receipts",
+            "general",
+          ])
+        )
+        .optional(),
+      search: z.string().min(1).max(200).optional(),
+      dateFrom: z.string().datetime().optional(),
+      dateTo: z.string().datetime().optional(),
+      source: z
+        .array(z.enum(["upload", "task_receipt", "expense_receipt"]))
+        .optional(),
+      showReceipts: z.boolean().optional(),
+    })
+    .optional(),
+});
+
+const setProjectPrimaryPhotoSchema = z.object({
+  projectId: z.string().uuid(),
+  photoUrl: z
+    .string()
+    .url()
+    .min(1)
+    .max(2048)
+    .nullable()
+    .refine(
+      (url) => {
+        if (url === null) return true;
+        // Validate URL is from expected storage domain (Supabase storage)
+        try {
+          const parsedUrl = new URL(url);
+          return (
+            parsedUrl.protocol === "https:" &&
+            (parsedUrl.hostname.includes("supabase") ||
+              parsedUrl.hostname.includes("amazonaws.com"))
+          );
+        } catch {
+          return false;
+        }
+      },
+      {
+        message: "Photo URL must be from an approved storage provider",
+      }
+    ),
+});
+
+const deleteProjectPhotoSchema = z.object({
+  photoId: z.string().uuid(),
+});
 
 export interface UnifiedPhoto {
   id: string;
@@ -39,10 +109,18 @@ export interface UnifiedPhoto {
  * - Task receipts via tasks.receipt_photo_url
  * - Expense receipts via expenses.receipt_url
  */
-export async function getProjectPhotosWithReceipts(
-  projectId: string,
-  filters?: PhotoFilters,
-) {
+export async function getProjectPhotosWithReceipts(params: unknown) {
+  // Validate input
+  const validated = getProjectPhotosWithReceiptsSchema.safeParse(params);
+  if (!validated.success) {
+    return {
+      error: "Invalid parameters",
+      details: validated.error.format(),
+    };
+  }
+
+  const { projectId, filters } = validated.data;
+
   if (process.env.NODE_ENV === "development") {
     console.log(
       "[getProjectPhotosWithReceipts] Fetching photos for project:",
@@ -226,9 +304,19 @@ export async function getProjectPhotosWithReceipts(
  * Updates projects.image_url column
  */
 export async function setProjectPrimaryPhoto(
-  projectId: string,
-  photoUrl: string | null,
+  params: unknown
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validated = setProjectPrimaryPhotoSchema.safeParse(params);
+  if (!validated.success) {
+    return {
+      success: false,
+      error: "Invalid parameters",
+    };
+  }
+
+  const { projectId, photoUrl } = validated.data;
+
   if (process.env.NODE_ENV === "development") {
     console.log(
       "[setProjectPrimaryPhoto] Setting primary photo for project:",
@@ -244,14 +332,7 @@ export async function setProjectPrimaryPhoto(
 
   const { supabase, userId, companyId } = userContext;
 
-  // 2. Validate projectId format (basic UUID check)
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(projectId)) {
-    return { success: false, error: "Invalid project ID format" };
-  }
-
-  // 3. Verify user has access to project (company_id check or project_team membership)
+  // 2. Verify user has access to project (company_id check or project_team membership)
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, company_id")
@@ -280,15 +361,8 @@ export async function setProjectPrimaryPhoto(
     }
   }
 
-  // 4. Validate photoUrl format if provided
+  // 3. Verify the photo exists in project_photos for this project (prevents arbitrary URL injection)
   if (photoUrl !== null) {
-    // Basic URL validation
-    try {
-      new URL(photoUrl);
-    } catch {
-      return { success: false, error: "Invalid photo URL format" };
-    }
-
     // Verify the photo exists in project_photos for this project (prevents arbitrary URL injection)
     const { data: existingPhoto, error: photoError } = await supabase
       .from("project_photos")
@@ -303,7 +377,7 @@ export async function setProjectPrimaryPhoto(
     }
   }
 
-  // 5. Update projects.image_url
+  // 4. Update projects.image_url
   const { error: updateError } = await supabase
     .from("projects")
     .update({ image_url: photoUrl, updated_at: new Date().toISOString() })
@@ -317,7 +391,7 @@ export async function setProjectPrimaryPhoto(
     };
   }
 
-  // 6. Revalidate paths
+  // 5. Revalidate paths
   revalidatePath(`/app/projects/${projectId}`);
   revalidatePath("/app/projects");
 
@@ -333,7 +407,18 @@ export async function setProjectPrimaryPhoto(
 /**
  * Delete project photo (soft delete)
  */
-export async function deleteProjectPhoto(photoId: string) {
+export async function deleteProjectPhoto(params: unknown) {
+  // Validate input
+  const validated = deleteProjectPhotoSchema.safeParse(params);
+  if (!validated.success) {
+    return {
+      error: "Invalid parameters",
+      details: validated.error.format(),
+    };
+  }
+
+  const { photoId } = validated.data;
+
   if (process.env.NODE_ENV === "development") {
     console.log("[deleteProjectPhoto] Deleting photo:", photoId);
   }

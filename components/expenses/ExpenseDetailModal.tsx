@@ -61,7 +61,7 @@ interface ExpenseDetailModalProps {
 const STATUS_CONFIG = {
   submitted: {
     label: "Submitted",
-    color: "bg-gray-100 text-gray-700 border-gray-300",
+    color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600",
     icon: FileText,
   },
   under_review: {
@@ -354,12 +354,12 @@ export function ExpenseDetailModal({
       <div className="space-y-6">
         {/* Receipt Image */}
         {expense.receipt_url && (
-          <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
-            <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
               Receipt Image
             </h3>
-            <div className="relative w-full h-96 bg-white rounded-lg overflow-hidden border-2 border-gray-200">
+            <div className="relative w-full h-96 bg-white dark:bg-gray-900 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
               <Image
                 src={expense.receipt_url}
                 alt="Receipt"
@@ -371,30 +371,30 @@ export function ExpenseDetailModal({
         )}
 
         {/* Expense Information */}
-        <div className="bg-white border-2 border-gray-200 rounded-lg p-6 space-y-4">
+        <div className="bg-white dark:bg-gray-850 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
           <h3 className="font-bold text-construction-blue text-lg mb-4">
             Expense Information
           </h3>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <Label className="text-sm font-bold text-gray-600">
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                 Description
               </Label>
-              <p className="text-base font-semibold text-gray-900 mt-1">
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {expense.description}
               </p>
             </div>
 
             <div>
-              <Label className="text-sm font-bold text-gray-600">Amount</Label>
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Amount</Label>
               <p className="text-2xl font-black text-construction-blue mt-1">
                 {formatCurrency(expense.amount)}
               </p>
             </div>
 
             <div>
-              <Label className="text-sm font-bold text-gray-600">
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                 Category
               </Label>
               <Badge
@@ -406,36 +406,36 @@ export function ExpenseDetailModal({
             </div>
 
             <div>
-              <Label className="text-sm font-bold text-gray-600">
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                 Expense Date
               </Label>
-              <p className="text-base font-semibold text-gray-900 mt-1">
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {formatDate(expense.expense_date)}
               </p>
             </div>
 
             {expense.vendor_name && (
               <div>
-                <Label className="text-sm font-bold text-gray-600">
+                <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                   Vendor
                 </Label>
-                <p className="text-base font-semibold text-gray-900 mt-1">
+                <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {expense.vendor_name}
                 </p>
               </div>
             )}
 
             <div>
-              <Label className="text-sm font-bold text-gray-600">Project</Label>
-              <p className="text-base font-semibold text-gray-900 mt-1">
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Project</Label>
+              <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {expense.project?.name || "N/A"}
               </p>
             </div>
 
             {expense.task && (
               <div className="md:col-span-2">
-                <Label className="text-sm font-bold text-gray-600">Task</Label>
-                <p className="text-base font-semibold text-gray-900 mt-1">
+                <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Task</Label>
+                <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {expense.task.title}
                 </p>
               </div>
@@ -444,8 +444,8 @@ export function ExpenseDetailModal({
         </div>
 
         {/* Submission & Review Info */}
-        <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 space-y-3">
-          <h3 className="font-bold text-gray-900 text-lg mb-4">Timeline</h3>
+        <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-3">
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">Timeline</h3>
 
           {/* Created By - Industrial Metadata Tag */}
           <CreatorBadge
@@ -459,10 +459,10 @@ export function ExpenseDetailModal({
               <FileText className="h-5 w-5 text-construction-blue" />
             </div>
             <div>
-              <Label className="text-sm font-bold text-gray-600">
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                 Submitted
               </Label>
-              <p className="text-sm text-gray-900">
+              <p className="text-sm text-gray-900 dark:text-gray-100">
                 {formatDate(expense.created_at)}
               </p>
             </div>
@@ -487,10 +487,10 @@ export function ExpenseDetailModal({
                   )}
                 </div>
                 <div>
-                  <Label className="text-sm font-bold text-gray-600">
+                  <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                     {expense.status === "approved" ? "Approved" : "Rejected"}
                   </Label>
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-gray-900 dark:text-gray-100">
                     {expense.reviewer.name}
                   </p>
                 </div>
@@ -509,11 +509,11 @@ export function ExpenseDetailModal({
               <Trash2 className="h-5 w-5" />
               Delete Expense
             </h3>
-            <p className="text-gray-700">
+            <p className="text-gray-700 dark:text-gray-300">
               Are you sure you want to delete this expense? This action cannot
               be undone.
             </p>
-            <p className="text-sm text-gray-600 italic">
+            <p className="text-sm text-gray-600 dark:text-gray-400 italic">
               Click "Delete Permanently" in the footer to confirm deletion.
             </p>
           </motion.div>

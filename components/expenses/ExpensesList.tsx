@@ -8,6 +8,7 @@ import { Receipt, X, ShieldAlert, Wrench, DollarSign } from "lucide-react";
 import { ExpenseCard } from "./ExpenseCard";
 import { FilterBar } from "@/components/ui/FilterBar";
 import { ExpenseProjectFilter } from "./ExpenseProjectFilter";
+import { EmptyStateCard } from "@/components/ui/EmptyStateCard";
 import type {
   ExpenseWithRelations,
   ExpensesListProps,
@@ -187,110 +188,16 @@ export function ExpensesList({
   // Empty State - No Expenses Created Yet
   if (initialExpenses.length === 0) {
     return (
-      <div className="relative">
-        {/* Industrial Frame - hidden on mobile */}
-        <div className="hidden md:block absolute inset-0 border-4 border-construction-blue/10 rounded-2xl transform rotate-1" />
-        <div className="hidden md:block absolute inset-0 border-4 border-construction-accent/10 rounded-2xl transform -rotate-1" />
-
-        <div className="relative flex flex-col items-center justify-center py-12 md:py-24 px-4 md:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 rounded-xl md:rounded-2xl border-2 border-gray-200 shadow-construction-lg">
-          {/* Construction Site Illustration */}
-          <div className="relative mb-6 md:mb-8">
-            {/* Receipt Icon - Central */}
-            <motion.div
-              className="relative z-10"
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.6, type: "spring", stiffness: 200 }}
-            >
-              <div className="relative p-5 md:p-8 bg-gradient-to-br from-construction-blue to-blue-700 rounded-2xl md:rounded-3xl shadow-construction-xl">
-                <Receipt className="h-12 w-12 md:h-20 md:w-20 text-white" />
-                <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent rounded-full animate-pulse" />
-              </div>
-            </motion.div>
-
-            {/* Floating Tools - hidden on small mobile */}
-            <motion.div
-              className="hidden sm:block absolute -left-10 md:-left-12 top-6 md:top-8 p-2 md:p-3 bg-white rounded-lg md:rounded-xl shadow-construction border-2 border-gray-200"
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <DollarSign className="h-4 w-4 md:h-6 md:w-6 text-construction-accent" />
-            </motion.div>
-
-            <motion.div
-              className="hidden sm:block absolute -right-10 md:-right-12 top-8 md:top-12 p-2 md:p-3 bg-white rounded-lg md:rounded-xl shadow-construction border-2 border-gray-200"
-              initial={{ x: 20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              <Wrench className="h-4 w-4 md:h-6 md:w-6 text-construction-blue" />
-            </motion.div>
-          </div>
-
-          {/* Heavy Industrial Typography */}
-          <motion.h2
-            className="text-2xl sm:text-3xl md:text-5xl font-black text-center mb-3 md:mb-4 bg-gradient-to-r from-construction-blue via-construction-blue to-blue-700 bg-clip-text text-transparent leading-tight"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            SUBMIT YOUR
-            <br />
-            FIRST EXPENSE
-          </motion.h2>
-
-          <motion.p
-            className="text-sm md:text-lg text-gray-600 font-medium mb-6 md:mb-10 max-w-xl text-center leading-relaxed px-4"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            Track receipts, AI OCR processing, and automated expense management
-            all in one place.
-          </motion.p>
-
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6, duration: 0.6 }}
-          >
-            <Button
-              size="lg"
-              onClick={() => setShowCreateModal(true)}
-              className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white"
-            >
-              <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
-              <Receipt className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
-              SUBMIT EXPENSE
-            </Button>
-          </motion.div>
-
-          {/* Industrial Process Steps */}
-          <div className="mt-8 md:mt-12 grid grid-cols-3 gap-2 md:gap-6 max-w-2xl w-full">
-            {EMPTY_STATE_STEPS.map((step, index) => (
-              <motion.div
-                key={step.num}
-                className="relative group"
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7 + index * 0.1, duration: 0.6 }}
-              >
-                <div className="flex flex-col items-center p-2 md:p-4 bg-white border-2 border-gray-200 rounded-lg md:rounded-xl hover:border-construction-blue transition-all shadow-construction hover:shadow-construction-lg">
-                  <div className="flex items-center justify-center w-8 h-8 md:w-12 md:h-12 rounded-lg bg-construction-blue/10 border-2 border-construction-blue/20 mb-2 md:mb-3 group-hover:scale-110 transition-transform">
-                    <step.icon className="h-4 w-4 md:h-6 md:w-6 text-construction-blue" />
-                  </div>
-                  <div className="text-lg md:text-2xl font-black text-construction-blue mb-0.5 md:mb-1">
-                    {step.num}
-                  </div>
-                  <p className="text-[10px] md:text-sm font-bold text-gray-600 text-center">
-                    {step.label}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+      <>
+        <EmptyStateCard
+          icon={Receipt}
+          title="SUBMIT YOUR FIRST EXPENSE"
+          description="Track receipts, AI OCR processing, and automated expense management all in one place."
+          buttonText="SUBMIT EXPENSE"
+          onButtonClick={() => setShowCreateModal(true)}
+          steps={EMPTY_STATE_STEPS}
+          showButton={true}
+        />
 
         {/* Create Expense Modal */}
         {showCreateModal && (
@@ -301,7 +208,7 @@ export function ExpensesList({
             companyId={companyId}
           />
         )}
-      </div>
+      </>
     );
   }
 

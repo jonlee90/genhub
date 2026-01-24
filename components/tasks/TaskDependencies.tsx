@@ -75,7 +75,7 @@ export function TaskDependencies({
               {dependencies.map((dep) => (
                 <div
                   key={dep.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-muted/50 dark:bg-gray-800/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     {getStatusDisplay(dep.depends_on.status)}
@@ -89,8 +89,8 @@ export function TaskDependencies({
                       variant="secondary"
                       className={cn(
                         dep.depends_on.status === "completed"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
+                          : "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400"
                       )}
                     >
                       {dep.depends_on.status === "completed" ? "Completed" : "Pending"}
@@ -155,7 +155,7 @@ export function TaskDependencies({
               {dependents.map((dep) => (
                 <div
                   key={dep.id}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  className="flex items-center justify-between p-3 bg-muted/50 dark:bg-gray-800/50 rounded-lg"
                 >
                   <div className="flex items-center gap-3">
                     {getStatusDisplay(dep.task.status)}
@@ -169,8 +169,8 @@ export function TaskDependencies({
                       variant="secondary"
                       className={cn(
                         dep.task.status === "blocked"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-slate-100 text-slate-700"
+                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                       )}
                     >
                       {dep.task.status === "blocked" ? "Waiting" : dep.task.status}

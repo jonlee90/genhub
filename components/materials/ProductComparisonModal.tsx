@@ -123,7 +123,7 @@ export function ProductComparisonModal({
             return (
               <div key={product.id} className="space-y-4">
                 {/* Product Image */}
-                <div className="relative w-full aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-200">
+                <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700">
                   {product.imageUrl ? (
                     <Image
                       src={product.imageUrl}
@@ -133,7 +133,7 @@ export function ProductComparisonModal({
                     />
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <Package className="h-20 w-20 text-gray-400" />
+                      <Package className="h-20 w-20 text-gray-400 dark:text-gray-500" />
                     </div>
                   )}
                 </div>
@@ -154,7 +154,7 @@ export function ProductComparisonModal({
                   </h3>
 
                   {/* SKU */}
-                  <p className="text-xs text-gray-600">SKU: {product.sku}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">SKU: {product.sku}</p>
 
                   {/* Stock Status */}
                   <Badge
@@ -179,13 +179,13 @@ export function ProductComparisonModal({
                           "bg-construction-red/5 border-construction-red",
                         !isLowestPrice &&
                           !isHighestPrice &&
-                          "bg-gray-50 border-gray-200",
+                          "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700",
                       )}
                     >
                       <div className="text-2xl font-black text-construction-blue">
                         {formatPrice(product.price)}
                       </div>
-                      <div className="text-xs text-gray-600">per unit</div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400">per unit</div>
                       {isLowestPrice && (
                         <Badge className="mt-2 bg-construction-green text-white font-bold">
                           Lowest Price
@@ -203,7 +203,7 @@ export function ProductComparisonModal({
                   {product.specifications &&
                     Object.keys(product.specifications).length > 0 && (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-gray-700 uppercase">
+                        <h4 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase">
                           Specifications
                         </h4>
                         <div className="space-y-1">
@@ -211,10 +211,10 @@ export function ProductComparisonModal({
                             .slice(0, 5)
                             .map(([key, value]) => (
                               <div key={key} className="text-xs">
-                                <span className="font-semibold text-gray-700">
+                                <span className="font-semibold text-gray-700 dark:text-gray-300">
                                   {key}:
                                 </span>{" "}
-                                <span className="text-gray-600">
+                                <span className="text-gray-600 dark:text-gray-400">
                                   {String(value)}
                                 </span>
                               </div>

@@ -34,9 +34,9 @@ export function TaskDependenciesSection({
   dependents,
 }: TaskDependenciesSectionProps) {
   return (
-    <Card className="border-2 border-gray-200">
+    <Card className="border-2 border-gray-200 dark:border-gray-700">
       <CardContent className="p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
           Task Dependencies
         </h2>
         <TaskDependencies

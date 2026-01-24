@@ -77,10 +77,10 @@ export function ModelUploadModal({
           setUploadProgress((prev) => Math.min(prev + 10, 90));
         }, 200);
 
-        const result = await uploadCompanyDefaultModel(
+        const result = await uploadCompanyDefaultModel({
           formData,
           projectTypeConfigId,
-        );
+        });
 
         clearInterval(progressInterval);
         setUploadProgress(100);
@@ -136,7 +136,7 @@ export function ModelUploadModal({
           onClick={onClose}
           variant="outline"
           disabled={isPending}
-          className="border-2 border-gray-300"
+          className="border-2 border-gray-300 dark:border-gray-600"
         >
           Cancel
         </Button>,
@@ -162,9 +162,9 @@ export function ModelUploadModal({
     >
       <div className="space-y-6">
         {/* Instructions */}
-        <div className="bg-blue-50 border-l-4 border-construction-blue p-4 rounded-lg">
+        <div className="bg-blue-50 dark:bg-gray-800 border-l-4 border-construction-blue p-4 rounded-lg">
           <h4 className="font-bold text-construction-blue mb-2">Upload Requirements</h4>
-          <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
+          <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
             <li>File format: IFC (.ifc)</li>
             <li>Maximum file size: {MAX_FILE_SIZE_MB}MB</li>
             <li>Model will be converted to XKT format automatically</li>
@@ -189,12 +189,12 @@ export function ModelUploadModal({
         {isPending && uploadProgress > 0 && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="font-semibold text-gray-700">Uploading...</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">Uploading...</span>
               <span className="font-mono text-construction-blue">
                 {uploadProgress}%
               </span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-construction-blue transition-all duration-300 ease-out"
                 style={{ width: `${uploadProgress}%` }}
@@ -205,24 +205,24 @@ export function ModelUploadModal({
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border-l-4 border-[#DC2626] p-4 rounded-lg">
+          <div className="bg-red-50 dark:bg-gray-800 border-l-4 border-[#DC2626] p-4 rounded-lg">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-[#DC2626] shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-[#DC2626]">Upload Error</p>
-                <p className="text-sm text-gray-600 mt-1">{error}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{error}</p>
               </div>
             </div>
           </div>
         )}
 
         {/* Warning */}
-        <div className="bg-yellow-50 border-l-4 border-[#FFB627] p-4 rounded-lg">
+        <div className="bg-yellow-50 dark:bg-gray-800 border-l-4 border-[#FFB627] p-4 rounded-lg">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-[#FFB627] shrink-0 mt-0.5" />
             <div>
               <p className="font-semibold text-[#FFB627]">Important</p>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 Uploading a custom model will replace the system default for all{" "}
                 <strong>new</strong> {projectTypeName} projects. Existing
                 projects will not be affected.

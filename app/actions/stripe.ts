@@ -4,8 +4,21 @@ import { stripe } from '@/utils/stripe';
 import { headers } from 'next/headers';
 import { createSupabaseAdminClient } from '@/utils/supabase/server';
 import { auth } from '@/lib/auth';
+import { z } from 'zod';
 
 const supabaseAdmin = await createSupabaseAdminClient();
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const createPortalSessionSchema = z.object({
+  customerId: z.string().min(1, 'Customer ID is required'),
+});
+
+const refundSchema = z.object({
+  subscriptionId: z.string().min(1, 'Subscription ID is required'),
+});
 
 export async function getStripeCustomerId() {
 	const session = await auth();
@@ -33,14 +46,19 @@ export async function getStripeCustomerId() {
 	}
 }
 
-export async function createPortalSession(customerId: string) {
+export async function createPortalSession(input: unknown) {
+	// Validate input
+	const validation = createPortalSessionSchema.safeParse(input);
+	if (!validation.success) {
+		console.error('[createPortalSession] Validation failed:', validation.error);
+		throw new Error('Invalid customer ID');
+	}
+
+	const { customerId } = validation.data;
+
 	// Check if payments are enabled
 	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
 		throw new Error('Payments are currently disabled');
-	}
-
-	if (!customerId) {
-		throw new Error('Customer ID is required');
 	}
 
 	try {
@@ -61,7 +79,16 @@ export async function createPortalSession(customerId: string) {
 }
 
 
-export async function refund(subscriptionId: string) {
+export async function refund(input: unknown) {
+	// Validate input
+	const validation = refundSchema.safeParse(input);
+	if (!validation.success) {
+		console.error('[refund] Validation failed:', validation.error);
+		throw new Error('Invalid subscription ID');
+	}
+
+	const { subscriptionId } = validation.data;
+
 	// Check if payments are enabled
 	if (process.env.NEXT_PUBLIC_PAYMENTS_ENABLED !== 'true') {
 		throw new Error('Payments are currently disabled');

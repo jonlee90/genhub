@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { m as motion, AnimatePresence } from 'framer-motion';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Settings from 'lucide-react/icons/settings';
@@ -8,11 +9,16 @@ import Map from 'lucide-react/icons/map';
 import { Button } from '@/components/ui/button';
 import { PhaseStation } from './PhaseStation';
 import { PhaseDetailPanel } from './PhaseDetailPanel';
-import { ManagePhasesModal } from './ManagePhasesModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 import type { TasksRow } from '@/types/db/tables/tasks';
+
+// B-003: Dynamic import for heavy ManagePhasesModal component (-20KB from initial bundle)
+const ManagePhasesModal = dynamic(() => import('./ManagePhasesModal').then((mod) => ({ default: mod.ManagePhasesModal })), {
+  ssr: false,
+  loading: () => null,
+});
 
 type Phase = ProjectPhasesRow;
 type Task = TasksRow;

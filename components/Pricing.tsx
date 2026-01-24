@@ -30,14 +30,14 @@ export default function Pricing() {
 
 				{/* Billing Toggle */}
 				<div className="flex justify-center items-center gap-4 mb-12">
-					<span className={`text-sm ${!isYearly ? 'text-[#5059FE] font-semibold' : 'text-gray-500'}`}>Monthly</span>
+					<span className={`text-sm ${!isYearly ? 'text-[#5059FE] font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>Monthly</span>
 					<button
 						onClick={() => setIsYearly(!isYearly)}
 						className="relative inline-flex h-6 w-11 items-center rounded-full bg-[#5059FE] hover:bg-[#4048ed] transition-all duration-300"
 					>
 						<span className={`inline-block h-4 w-4 transform rounded-full bg-[var(--background)] shadow-md transition-all duration-300 ease-in-out hover:scale-110 ${isYearly ? 'translate-x-6' : 'translate-x-1'}`} />
 					</button>
-					<span className={`text-sm ${isYearly ? 'text-[#5059FE] font-semibold' : 'text-gray-500'}`}>Yearly</span>
+					<span className={`text-sm ${isYearly ? 'text-[#5059FE] font-semibold' : 'text-gray-500 dark:text-gray-400'}`}>Yearly</span>
 				</div>
 
 				<div className="grid md:grid-cols-3 gap-8">
@@ -82,9 +82,9 @@ export default function Pricing() {
 									</div>
 								)}
 								<h3 className="text-xl font-bold mb-4">{plan.name}</h3>
-								<p className="text-sm text-gray-600 mb-4">{plan.description}</p>
+								<p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{plan.description}</p>
 								<p className="text-4xl font-bold mb-6">
-									${price}<span className="text-gray-500 text-base">/{period}</span>
+									${price}<span className="text-gray-500 dark:text-gray-400 text-base">/{period}</span>
 								</p>
 								<CheckoutButton priceId={currentPriceId} productId={plan.productId} />
 								<ul className="space-y-3 mt-8">

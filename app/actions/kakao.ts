@@ -4,11 +4,24 @@ import { revalidatePath } from 'next/cache';
 import { getUserContext } from '@/lib/auth-context';
 import type { KakaoConnection } from '@/types/kakao.types';
 import { KakaoService } from '@/lib/services/kakao';
+import { z } from 'zod';
 
 // ============================================
 // Helper Functions
 // ============================================
 // HIGH-2 FIX: Using shared cached getUserContext from @/lib/auth-context
+
+// ============================================
+// Validation Schemas
+// ============================================
+
+const getKakaoConnectionSchema = z.object({
+  userId: z.string().uuid().optional(),
+});
+
+const updateTwoWaySyncSchema = z.object({
+  enabled: z.boolean(),
+});
 
 // ============================================
 // Server Actions
@@ -18,11 +31,22 @@ import { KakaoService } from '@/lib/services/kakao';
  * Get user's KakaoTalk connection status
  */
 export async function getKakaoConnection(
-  userId?: string
+  input?: unknown
 ): Promise<{ success: boolean; connection?: KakaoConnection; error?: string }> {
   console.log('[kakao-actions] Getting KakaoTalk connection...');
 
   try {
+    // Validate input if provided
+    let userId: string | undefined;
+    if (input !== undefined) {
+      const validation = getKakaoConnectionSchema.safeParse(input);
+      if (!validation.success) {
+        console.error('[kakao-actions] Validation failed:', validation.error);
+        return { success: false, error: 'Invalid input parameters' };
+      }
+      userId = validation.data.userId;
+    }
+
     const userContext = await getUserContext();
     if ('error' in userContext) {
       return { success: false, error: userContext.error };
@@ -60,8 +84,16 @@ export async function getKakaoConnection(
  * Update two-way sync setting for KakaoTalk connection
  */
 export async function updateTwoWaySync(
-  enabled: boolean
+  input: unknown
 ): Promise<{ success: boolean; error?: string }> {
+  const validation = updateTwoWaySyncSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[kakao-actions] Validation failed:', validation.error);
+    return { success: false, error: 'Invalid input: enabled must be a boolean' };
+  }
+
+  const { enabled } = validation.data;
+
   console.log('[kakao-actions] Updating two-way sync setting to:', enabled);
 
   try {

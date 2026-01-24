@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import {
   LayoutDashboard,
@@ -24,7 +24,8 @@ import {
 import { cn } from "@/lib/utils";
 import { m as motion, AnimatePresence } from "framer-motion";
 import UserMenu from "@/components/user/UserMenu";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { SlideMenuThemeToggle } from "@/components/app/SlideMenu/SlideMenuThemeToggle";
+import { useTheme } from "@/lib/context/ThemeContext";
 import type { Session } from "next-auth";
 
 // Debug: Aceternity UI enhanced sidebar with construction theme
@@ -66,6 +67,12 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {},
   );
+  const { preference, setPreference } = useTheme();
+
+  // Toggle between light and dark only (2-state)
+  const handleThemeToggle = useCallback(() => {
+    setPreference(preference === "light" ? "dark" : "light");
+  }, [preference, setPreference]);
 
   // Combine navigation with owner navigation if applicable
   const allNavigation = useMemo(
@@ -620,7 +627,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                           whileTap={{ scale: 0.95 }}
                           className="relative"
                         >
-                          <ThemeToggle />
+                          <SlideMenuThemeToggle preference={preference} onToggle={handleThemeToggle} />
                         </motion.div>
 
                         {/* User Menu - Modern glass card */}
@@ -1109,7 +1116,7 @@ export function Sidebar({ isOwner = false, session }: SidebarProps) {
                     whileTap={{ scale: 0.95 }}
                     className="relative"
                   >
-                    <ThemeToggle />
+                    <SlideMenuThemeToggle preference={preference} onToggle={handleThemeToggle} />
                   </motion.div>
 
                   {/* User Menu - Modern glass card */}

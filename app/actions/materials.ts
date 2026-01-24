@@ -1123,25 +1123,27 @@ export async function getMaterialsByMarker(markerId: string) {
 
     const supabase = await createClient();
 
-    // Verify marker access by checking project access
-    const { data: marker, error: markerError } = await supabase
-      .from("spatial_markers")
-      .select("id, project_id")
-      .eq("id", markerId)
-      .single();
+    // P-005 FIX: Parallelize 3 validation queries instead of sequential
+    const [markerResult, companyUserResult] = await Promise.all([
+      supabase
+        .from("spatial_markers")
+        .select("id, project_id")
+        .eq("id", markerId)
+        .single(),
+      supabase
+        .from("company_users")
+        .select("company_id")
+        .eq("user_id", session.user.id)
+        .eq("status", "active")
+        .single(),
+    ]);
 
+    const { data: marker, error: markerError } = markerResult;
     if (markerError || !marker) {
       return { success: false, error: "Spatial marker not found" };
     }
 
-    // Get user's company to verify project access
-    const { data: companyUser } = await supabase
-      .from("company_users")
-      .select("company_id")
-      .eq("user_id", session.user.id)
-      .eq("status", "active")
-      .single();
-
+    const { data: companyUser } = companyUserResult;
     if (!companyUser) {
       return { success: false, error: "No active company found" };
     }
@@ -1699,23 +1701,34 @@ export async function getMaterialSummaryStats() {
 
     let priceIncreasesLast7Days = 0;
 
-    if (materialsWithPrices) {
-      await Promise.all(
-        materialsWithPrices.map(async (material: any) => {
-          const { data: oldPrice } = await supabase
-            .from("material_price_history")
-            .select("price")
-            .eq("material_id", material.id)
-            .lte("recorded_at", sevenDaysAgo.toISOString())
-            .order("recorded_at", { ascending: false })
-            .limit(1)
-            .single();
+    if (materialsWithPrices && materialsWithPrices.length > 0) {
+      // P-001 FIX: Batch query all price histories in parallel instead of sequential loop
+      const materialIds = materialsWithPrices.map((m: any) => m.id);
 
-          if (oldPrice && oldPrice.price < material.unit_price) {
-            priceIncreasesLast7Days++;
+      const { data: allOldPrices } = await supabase
+        .from("material_price_history")
+        .select("material_id, price")
+        .in("material_id", materialIds)
+        .lte("recorded_at", sevenDaysAgo.toISOString())
+        .order("recorded_at", { ascending: false });
+
+      // Build map: material_id -> oldest price
+      const oldPriceMap = new Map<string, number>();
+      if (allOldPrices) {
+        for (const record of allOldPrices) {
+          if (!oldPriceMap.has(record.material_id)) {
+            oldPriceMap.set(record.material_id, record.price);
           }
-        }),
-      );
+        }
+      }
+
+      // Count increases in memory
+      for (const material of materialsWithPrices) {
+        const oldPrice = oldPriceMap.get(material.id);
+        if (oldPrice && oldPrice < material.unit_price) {
+          priceIncreasesLast7Days++;
+        }
+      }
     }
 
     const stats: MaterialSummaryStats = {

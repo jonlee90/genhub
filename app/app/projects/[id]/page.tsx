@@ -61,7 +61,7 @@ export default async function ProjectDetailPage({
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Blueprint Grid Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0">
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.05] z-0">
         <div className="absolute inset-0" style={BLUEPRINT_BACKGROUND_STYLE} />
       </div>
 
@@ -78,7 +78,7 @@ export default async function ProjectDetailPage({
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-2 text-construction-blue hover:bg-construction-blue/10 font-semibold group"
+                className="gap-2 text-construction-blue hover:bg-construction-blue/10 dark:hover:bg-construction-blue/20 font-semibold group"
               >
                 <ChevronLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 All Projects

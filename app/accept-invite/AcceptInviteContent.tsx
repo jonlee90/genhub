@@ -55,21 +55,21 @@ export function AcceptInviteContent({
   // If there's an initial error (invalid token, etc.), show error state
   if (initialError) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
+          className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
         >
           <div className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center">
+            <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center">
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">
+              <h1 className="text-2xl font-black text-gray-900 dark:text-gray-100">
                 Invalid Invitation
               </h1>
-              <p className="text-gray-600 mt-2">{initialError}</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">{initialError}</p>
             </div>
             <Button
               onClick={() => router.push("/")}
@@ -129,11 +129,11 @@ export function AcceptInviteContent({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
+        className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
       >
         {/* Success State - Email Sent */}
         {success && authMethod === "email" && (
@@ -142,20 +142,20 @@ export function AcceptInviteContent({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200 }}
-              className="mx-auto w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center"
+              className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
             >
               <Mail className="w-8 h-8 text-construction-blue" />
             </motion.div>
             <div>
-              <h1 className="text-2xl font-black text-gray-900">
+              <h1 className="text-2xl font-black text-gray-900 dark:text-gray-100">
                 Check Your Email
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
                 We've sent a magic link to <strong>{invitation.email}</strong>.
                 Click the link in the email to complete your invitation.
               </p>
             </div>
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 text-sm text-gray-600">
+            <div className="bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400">
               <p className="font-medium">Didn't receive the email?</p>
               <p className="mt-1">
                 Check your spam folder or try signing in again.
@@ -178,10 +178,10 @@ export function AcceptInviteContent({
                 <HardHat className="w-8 h-8 text-white" />
               </motion.div>
               <div>
-                <h1 className="text-3xl font-black text-gray-900">
+                <h1 className="text-3xl font-black text-gray-900 dark:text-gray-100">
                   Join GenHub
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
                   Accept your team invitation
                 </p>
               </div>
@@ -196,39 +196,39 @@ export function AcceptInviteContent({
             )}
 
             {/* Invitation Details */}
-            <div className="bg-gradient-to-br from-construction-blue/5 to-blue-50 rounded-xl border-2 border-construction-blue/20 p-4 mb-6 space-y-3">
+            <div className="bg-gradient-to-br from-construction-blue/5 to-blue-50 dark:from-construction-blue/10 dark:to-blue-950 rounded-xl border-2 border-construction-blue/20 dark:border-construction-blue/30 p-4 mb-6 space-y-3">
               <h2 className="font-black text-construction-blue text-sm uppercase tracking-wide">
                 Invitation Details
               </h2>
 
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600 font-medium">Email:</span>
-                  <span className="text-gray-900 font-bold">
+                  <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">Email:</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-bold">
                     {invitation.email}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <User className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600 font-medium">Name:</span>
-                  <span className="text-gray-900 font-bold">
+                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">Name:</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-bold">
                     {invitation.name}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <Building2 className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600 font-medium">Company:</span>
-                  <span className="text-gray-900 font-bold">
+                  <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">Company:</span>
+                  <span className="text-gray-900 dark:text-gray-100 font-bold">
                     {invitation.companyName}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
-                  <UserCog className="w-4 h-4 text-gray-500" />
-                  <span className="text-gray-600 font-medium">Role:</span>
+                  <UserCog className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  <span className="text-gray-600 dark:text-gray-400 font-medium">Role:</span>
                   <Badge className={cn("font-bold", roleInfo.color)}>
                     {roleInfo.label}
                   </Badge>
@@ -238,7 +238,7 @@ export function AcceptInviteContent({
 
             {/* Sign-in Options */}
             <div className="space-y-4">
-              <p className="text-sm text-center text-gray-600 font-medium">
+              <p className="text-sm text-center text-gray-600 dark:text-gray-400 font-medium">
                 Sign in to accept your invitation
               </p>
 
@@ -247,7 +247,7 @@ export function AcceptInviteContent({
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isAccepting}
-                className="w-full h-12 text-base font-bold bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-300 shadow-construction hover:shadow-construction-lg transition-all"
+                className="w-full h-12 text-base font-bold bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-2 border-gray-300 dark:border-gray-600 shadow-construction hover:shadow-construction-lg transition-all"
               >
                 {isAccepting && authMethod !== "email" && (
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -288,7 +288,7 @@ export function AcceptInviteContent({
               </Button>
 
               {/* Footer */}
-              <p className="text-xs text-center text-gray-500 pt-4 border-t">
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-4 border-t dark:border-gray-700">
                 By signing in, you agree to join {invitation.companyName} on
                 GenHub
               </p>

@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
-  outputFileTracingRoot: '/var/www/html', // Specify workspace root for monorepo
+  ...(process.env.DOCKER_ENV === 'true' && {
+    outputFileTracingRoot: '/var/www/html', // Specify workspace root for monorepo
+  }),
   experimental: {
     optimizePackageImports: [
       'lucide-react',

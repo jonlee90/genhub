@@ -130,7 +130,7 @@ export function MaterialsPageClient({
         <header
           className={`
             fixed top-0 left-0 right-0 z-30
-            bg-white/95 backdrop-blur-sm border-b border-gray-200
+            bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700
             px-4 py-3 space-y-3
             transition-all duration-200 ease-out
             will-change-transform
@@ -184,7 +184,7 @@ export function MaterialsPageClient({
                     <h1 className="text-3xl font-black tracking-tighter text-construction-blue leading-none">
                       MATERIALS
                     </h1>
-                    <p className="text-sm font-semibold text-gray-600">
+                    <p className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                       Product Search & Tracking
                     </p>
                   </div>
@@ -201,7 +201,7 @@ export function MaterialsPageClient({
                     trackedCount={trackedMaterials.length}
                   />
                 ) : (
-                  <div className="text-sm text-gray-500 text-center py-4">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
                     Unable to load summary stats
                   </div>
                 )}
@@ -253,13 +253,13 @@ export function MaterialsPageClient({
             {/* Empty state */}
             {initialMaterials.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <Package className="w-8 h-8 text-gray-400" />
+                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <Package className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
                   No materials linked yet
                 </h3>
-                <p className="text-sm text-gray-500 mb-4 max-w-xs">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">
                   Search and link materials to your tasks to start tracking
                 </p>
               </div>
@@ -299,7 +299,7 @@ export function MaterialsPageClient({
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
               MATERIALS
             </h1>
-            <p className="text-sm md:text-lg font-semibold text-gray-600">
+            <p className="text-sm md:text-lg font-semibold text-gray-600 dark:text-gray-400">
               Home Depot Product Search & Procurement Management
             </p>
           </div>
@@ -316,7 +316,7 @@ export function MaterialsPageClient({
               trackedCount={trackedMaterials.length}
             />
           ) : (
-            <div className="text-sm text-gray-500 text-center py-4">
+            <div className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
               Unable to load summary stats
             </div>
           )}
@@ -360,7 +360,7 @@ export function MaterialsPageClient({
       </div>
 
       {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent" />
+      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
     </div>
   );
 }

@@ -17,6 +17,7 @@ const TaskModal = dynamic(
 import { PullToRefresh, type PullToRefreshHandle } from "@/components/mobile/PullToRefresh";
 import { BlueprintBackground } from "@/components/shared";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
+import { EmptyStateCard } from "@/components/ui/EmptyStateCard";
 import { useIsMobile } from "@/lib/hooks/useMediaQuery";
 import { useBottomNav } from "@/lib/contexts/BottomNavContext";
 import { ClipboardList } from "lucide-react";
@@ -291,137 +292,150 @@ function TasksPageContent({
               />
             </div>
 
-            {/* Task Summary on Mobile */}
-            {filteredTasks.length > 0 && useMemo(() => {
-              const now = new Date();
-              const completed = filteredTasks.filter(
-                (t) => t.status === "completed",
-              ).length;
-              const blocked = filteredTasks.filter((t) => t.status === "blocked").length;
-              const inProgress = filteredTasks.filter(
-                (t) => t.status === "in_progress",
-              ).length;
-              const overdue = filteredTasks.filter((t) => {
-                if (!t.due_date || t.status === "completed") return false;
-                return new Date(t.due_date) < now;
-              }).length;
-
-              const totalPlannedCost = filteredTasks.reduce(
-                (sum, t) => sum + (Number(t.planned_cost) || 0),
-                0,
-              );
-              const totalActualCost = filteredTasks.reduce(
-                (sum, t) => sum + (Number(t.actual_cost) || 0),
-                0,
-              );
-              const budgetVariance = totalPlannedCost - totalActualCost;
-              const budgetUtilization =
-                totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
-
-              const unassignedCount = filteredTasks.filter((t) => !t.assignee_id).length;
-
-              const assigneeCounts: Record<
-                string,
-                { id: string; name: string; avatar_url: string | null; count: number }
-              > = {};
-              filteredTasks.forEach((task) => {
-                if (task.assignee) {
-                  const key = task.assignee.id;
-                  if (!assigneeCounts[key]) {
-                    assigneeCounts[key] = {
-                      id: task.assignee.id,
-                      name: task.assignee.name,
-                      avatar_url: task.assignee.avatar_url,
-                      count: 0,
-                    };
-                  }
-                  assigneeCounts[key].count++;
-                }
-              });
-              const topAssignees = Object.values(assigneeCounts)
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 3)
-                .map((a) => ({
-                  id: a.id,
-                  name: a.name,
-                  avatar_url: a.avatar_url,
-                  taskCount: a.count,
-                }));
-
-              const tasksWithMaterials = filteredTasks.filter(
-                (t) => t.materialStats && t.materialStats.count > 0,
-              ).length;
-              const totalMaterialCost = filteredTasks.reduce(
-                (sum, t) => sum + (t.materialStats?.totalCost || 0),
-                0,
-              );
-
-              const projectBudget = projectFilter === "all"
-                ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
-                : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
-
-              return (
-                <div className="my-3">
-                  <ProjectTaskSummary
-                    taskStats={{
-                      total: filteredTasks.length,
-                      completed,
-                      inProgress,
-                      blocked,
-                      overdue,
-                      totalPlannedCost,
-                      totalActualCost,
-                      budgetVariance,
-                      budgetUtilization,
-                      unassignedCount,
-                      topAssignees,
-                      tasksWithMaterials,
-                      totalMaterialCost,
-                    }}
-                    projectBudget={projectBudget}
-                  />
+            {/* Empty state - show when no tasks exist */}
+            {filteredTasks.length === 0 ? (
+              tasks.length === 0 ? (
+                // No tasks exist at all - show full construction-themed empty state
+                <EmptyStateCard
+                  icon={ClipboardList}
+                  title="CREATE YOUR FIRST TASK"
+                  description="Start organizing your construction work. Track progress, assign team members, and manage deadlines."
+                  buttonText="CREATE TASK"
+                  onButtonClick={() => openCreate()}
+                  showButton={true}
+                />
+              ) : (
+                // Tasks exist but filters produced no results - show simple no results state
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                    <ClipboardList className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                    No tasks found
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">
+                    Try adjusting your filters
+                  </p>
                 </div>
-              );
-            }, [filteredTasks, projectFilter, projects])}
+              )
+            ) : (
+              <>
+                {/* Task Summary on Mobile */}
+                {useMemo(() => {
+                  const now = new Date();
+                  const completed = filteredTasks.filter(
+                    (t) => t.status === "completed",
+                  ).length;
+                  const blocked = filteredTasks.filter((t) => t.status === "blocked").length;
+                  const inProgress = filteredTasks.filter(
+                    (t) => t.status === "in_progress",
+                  ).length;
+                  const overdue = filteredTasks.filter((t) => {
+                    if (!t.due_date || t.status === "completed") return false;
+                    return new Date(t.due_date) < now;
+                  }).length;
 
-            {/* Task Board - will use list view on mobile */}
-            <TaskBoard
-              initialTasks={filteredTasks}
-              taskDependencies={taskDependencies}
-              projects={projects}
-              teamMembers={teamMembers}
-              initialView="list"
-              externalProjectFilter={projectFilter}
-              onExternalProjectFilterChange={setProjectFilter}
-              hideFilters
-              // Mobile search/filter props
-              mobileSearchQuery={searchQuery}
-              onMobileSearchChange={setSearchQuery}
-              mobileStatusFilter={statusFilter}
-              onMobileStatusChange={setStatusFilter}
-              mobileStatusTabs={tabsWithCounts}
-              mobileActiveFilterCount={activeFilterCount}
-              onMobileFilterClick={() => setShowFilterSheet(true)}
-              assignees={assignees}
-              userRole={userRole}
-              taskTypes={taskTypes}
-            />
+                  const totalPlannedCost = filteredTasks.reduce(
+                    (sum, t) => sum + (Number(t.planned_cost) || 0),
+                    0,
+                  );
+                  const totalActualCost = filteredTasks.reduce(
+                    (sum, t) => sum + (Number(t.actual_cost) || 0),
+                    0,
+                  );
+                  const budgetVariance = totalPlannedCost - totalActualCost;
+                  const budgetUtilization =
+                    totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
 
-            {/* Empty state */}
-            {filteredTasks.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                  <ClipboardList className="w-8 h-8 text-gray-400 dark:text-gray-600" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
-                  No tasks found
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">
-                  {searchQuery || statusFilter !== "all" || projectFilter !== "all"
-                    ? "Try adjusting your filters"
-                    : "Create your first task to get started"}
-                </p>
-              </div>
+                  const unassignedCount = filteredTasks.filter((t) => !t.assignee_id).length;
+
+                  const assigneeCounts: Record<
+                    string,
+                    { id: string; name: string; avatar_url: string | null; count: number }
+                  > = {};
+                  filteredTasks.forEach((task) => {
+                    if (task.assignee) {
+                      const key = task.assignee.id;
+                      if (!assigneeCounts[key]) {
+                        assigneeCounts[key] = {
+                          id: task.assignee.id,
+                          name: task.assignee.name,
+                          avatar_url: task.assignee.avatar_url,
+                          count: 0,
+                        };
+                      }
+                      assigneeCounts[key].count++;
+                    }
+                  });
+                  const topAssignees = Object.values(assigneeCounts)
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 3)
+                    .map((a) => ({
+                      id: a.id,
+                      name: a.name,
+                      avatar_url: a.avatar_url,
+                      taskCount: a.count,
+                    }));
+
+                  const tasksWithMaterials = filteredTasks.filter(
+                    (t) => t.materialStats && t.materialStats.count > 0,
+                  ).length;
+                  const totalMaterialCost = filteredTasks.reduce(
+                    (sum, t) => sum + (t.materialStats?.totalCost || 0),
+                    0,
+                  );
+
+                  const projectBudget = projectFilter === "all"
+                    ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
+                    : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
+
+                  return (
+                    <div className="my-3">
+                      <ProjectTaskSummary
+                        taskStats={{
+                          total: filteredTasks.length,
+                          completed,
+                          inProgress,
+                          blocked,
+                          overdue,
+                          totalPlannedCost,
+                          totalActualCost,
+                          budgetVariance,
+                          budgetUtilization,
+                          unassignedCount,
+                          topAssignees,
+                          tasksWithMaterials,
+                          totalMaterialCost,
+                        }}
+                        projectBudget={projectBudget}
+                      />
+                    </div>
+                  );
+                }, [filteredTasks, projectFilter, projects])}
+
+                {/* Task Board - will use list view on mobile */}
+                <TaskBoard
+                  initialTasks={filteredTasks}
+                  taskDependencies={taskDependencies}
+                  projects={projects}
+                  teamMembers={teamMembers}
+                  initialView="list"
+                  externalProjectFilter={projectFilter}
+                  onExternalProjectFilterChange={setProjectFilter}
+                  hideFilters
+                  // Mobile search/filter props
+                  mobileSearchQuery={searchQuery}
+                  onMobileSearchChange={setSearchQuery}
+                  mobileStatusFilter={statusFilter}
+                  onMobileStatusChange={setStatusFilter}
+                  mobileStatusTabs={tabsWithCounts}
+                  mobileActiveFilterCount={activeFilterCount}
+                  onMobileFilterClick={() => setShowFilterSheet(true)}
+                  assignees={assignees}
+                  userRole={userRole}
+                  taskTypes={taskTypes}
+                />
+              </>
             )}
           </div>
         </PullToRefresh>
@@ -544,114 +558,142 @@ function TasksPageContent({
         </div>
       </div>
 
-      {/* Task Summary - at very top after header */}
-      {useMemo(() => {
-        if (!taskMetrics.filteredTasks.length) return null;
-
-        const now = new Date();
-        const completed = taskMetrics.filteredTasks.filter(
-          (t) => t.status === "completed",
-        ).length;
-        const blocked = taskMetrics.filteredTasks.filter((t) => t.status === "blocked").length;
-        const inProgress = taskMetrics.filteredTasks.filter(
-          (t) => t.status === "in_progress",
-        ).length;
-        const overdue = taskMetrics.filteredTasks.filter((t) => {
-          if (!t.due_date || t.status === "completed") return false;
-          return new Date(t.due_date) < now;
-        }).length;
-
-        const totalPlannedCost = taskMetrics.filteredTasks.reduce(
-          (sum, t) => sum + (Number(t.planned_cost) || 0),
-          0,
-        );
-        const totalActualCost = taskMetrics.filteredTasks.reduce(
-          (sum, t) => sum + (Number(t.actual_cost) || 0),
-          0,
-        );
-        const budgetVariance = totalPlannedCost - totalActualCost;
-        const budgetUtilization =
-          totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
-
-        const unassignedCount = taskMetrics.filteredTasks.filter((t) => !t.assignee_id).length;
-
-        const assigneeCounts: Record<
-          string,
-          { id: string; name: string; avatar_url: string | null; count: number }
-        > = {};
-        taskMetrics.filteredTasks.forEach((task) => {
-          if (task.assignee) {
-            const key = task.assignee.id;
-            if (!assigneeCounts[key]) {
-              assigneeCounts[key] = {
-                id: task.assignee.id,
-                name: task.assignee.name,
-                avatar_url: task.assignee.avatar_url,
-                count: 0,
-              };
-            }
-            assigneeCounts[key].count++;
-          }
-        });
-        const topAssignees = Object.values(assigneeCounts)
-          .sort((a, b) => b.count - a.count)
-          .slice(0, 3)
-          .map((a) => ({
-            id: a.id,
-            name: a.name,
-            avatar_url: a.avatar_url,
-            taskCount: a.count,
-          }));
-
-        const tasksWithMaterials = taskMetrics.filteredTasks.filter(
-          (t) => t.materialStats && t.materialStats.count > 0,
-        ).length;
-        const totalMaterialCost = taskMetrics.filteredTasks.reduce(
-          (sum, t) => sum + (t.materialStats?.totalCost || 0),
-          0,
-        );
-
-        const projectBudget = projectFilter === "all"
-          ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
-          : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
-
-        return (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <ProjectTaskSummary
-              taskStats={{
-                total: taskMetrics.filteredTasks.length,
-                completed,
-                inProgress,
-                blocked,
-                overdue,
-                totalPlannedCost,
-                totalActualCost,
-                budgetVariance,
-                budgetUtilization,
-                unassignedCount,
-                topAssignees,
-                tasksWithMaterials,
-                totalMaterialCost,
-              }}
-              projectBudget={projectBudget}
-            />
+      {/* Empty state or Task Board */}
+      {filteredTasks.length === 0 ? (
+        tasks.length === 0 ? (
+          // No tasks exist at all - show full construction-themed empty state
+          <EmptyStateCard
+            icon={ClipboardList}
+            title="CREATE YOUR FIRST TASK"
+            description="Start organizing your construction work. Track progress, assign team members, and manage deadlines."
+            buttonText="CREATE TASK"
+            onButtonClick={() => openCreate()}
+            showButton={true}
+          />
+        ) : (
+          // Tasks exist but filters produced no results - show simple no results state
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+              <ClipboardList className="w-8 h-8 text-gray-400 dark:text-gray-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+              No tasks found
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">
+              Try adjusting your filters
+            </p>
           </div>
-        );
-      }, [taskMetrics, projectFilter, projects])}
+        )
+      ) : (
+        <>
+          {/* Task Summary - at very top after header */}
+          {useMemo(() => {
+            const now = new Date();
+            const completed = taskMetrics.filteredTasks.filter(
+              (t) => t.status === "completed",
+            ).length;
+            const blocked = taskMetrics.filteredTasks.filter((t) => t.status === "blocked").length;
+            const inProgress = taskMetrics.filteredTasks.filter(
+              (t) => t.status === "in_progress",
+            ).length;
+            const overdue = taskMetrics.filteredTasks.filter((t) => {
+              if (!t.due_date || t.status === "completed") return false;
+              return new Date(t.due_date) < now;
+            }).length;
 
-      {/* Task Board with external project filter */}
-      <TaskBoard
-        initialTasks={tasks}
-        taskDependencies={taskDependencies}
-        projects={projects}
-        teamMembers={teamMembers}
-        initialView={initialView}
-        externalProjectFilter={projectFilter}
-        onExternalProjectFilterChange={setProjectFilter}
-        assignees={assignees}
-        userRole={userRole}
-        taskTypes={taskTypes}
-      />
+            const totalPlannedCost = taskMetrics.filteredTasks.reduce(
+              (sum, t) => sum + (Number(t.planned_cost) || 0),
+              0,
+            );
+            const totalActualCost = taskMetrics.filteredTasks.reduce(
+              (sum, t) => sum + (Number(t.actual_cost) || 0),
+              0,
+            );
+            const budgetVariance = totalPlannedCost - totalActualCost;
+            const budgetUtilization =
+              totalPlannedCost > 0 ? (totalActualCost / totalPlannedCost) * 100 : 0;
+
+            const unassignedCount = taskMetrics.filteredTasks.filter((t) => !t.assignee_id).length;
+
+            const assigneeCounts: Record<
+              string,
+              { id: string; name: string; avatar_url: string | null; count: number }
+            > = {};
+            taskMetrics.filteredTasks.forEach((task) => {
+              if (task.assignee) {
+                const key = task.assignee.id;
+                if (!assigneeCounts[key]) {
+                  assigneeCounts[key] = {
+                    id: task.assignee.id,
+                    name: task.assignee.name,
+                    avatar_url: task.assignee.avatar_url,
+                    count: 0,
+                  };
+                }
+                assigneeCounts[key].count++;
+              }
+            });
+            const topAssignees = Object.values(assigneeCounts)
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 3)
+              .map((a) => ({
+                id: a.id,
+                name: a.name,
+                avatar_url: a.avatar_url,
+                taskCount: a.count,
+              }));
+
+            const tasksWithMaterials = taskMetrics.filteredTasks.filter(
+              (t) => t.materialStats && t.materialStats.count > 0,
+            ).length;
+            const totalMaterialCost = taskMetrics.filteredTasks.reduce(
+              (sum, t) => sum + (t.materialStats?.totalCost || 0),
+              0,
+            );
+
+            const projectBudget = projectFilter === "all"
+              ? projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0)
+              : projects.find(p => p.id === projectFilter) ? Number(projects.find(p => p.id === projectFilter)?.budget) || 0 : 0;
+
+            return (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <ProjectTaskSummary
+                  taskStats={{
+                    total: taskMetrics.filteredTasks.length,
+                    completed,
+                    inProgress,
+                    blocked,
+                    overdue,
+                    totalPlannedCost,
+                    totalActualCost,
+                    budgetVariance,
+                    budgetUtilization,
+                    unassignedCount,
+                    topAssignees,
+                    tasksWithMaterials,
+                    totalMaterialCost,
+                  }}
+                  projectBudget={projectBudget}
+                />
+              </div>
+            );
+          }, [taskMetrics, projectFilter, projects])}
+
+          {/* Task Board with external project filter */}
+          <TaskBoard
+            initialTasks={tasks}
+            taskDependencies={taskDependencies}
+            projects={projects}
+            teamMembers={teamMembers}
+            initialView={initialView}
+            externalProjectFilter={projectFilter}
+            onExternalProjectFilterChange={setProjectFilter}
+            assignees={assignees}
+            userRole={userRole}
+            taskTypes={taskTypes}
+          />
+        </>
+      )}
 
       {/* Decorative bottom border */}
       <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />

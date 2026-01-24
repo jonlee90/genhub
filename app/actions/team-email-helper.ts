@@ -5,14 +5,35 @@
  */
 
 import { send } from '@/lib/mail';
+import { z } from 'zod';
+
+// ============================================
+// Validation Schema
+// ============================================
+
+const sendTeamInvitationEmailSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  name: z.string().min(1, 'Name is required').max(200),
+  invitationLink: z.string().url('Invalid invitation link'),
+  inviterName: z.string().min(1).max(200).optional().default('A team member'),
+  companyName: z.string().min(1).max(200).optional().default('your company'),
+});
 
 export async function sendTeamInvitationEmail(
-  email: string,
-  name: string,
-  invitationLink: string,
-  inviterName: string = 'A team member',
-  companyName: string = 'your company'
+  input: unknown
 ): Promise<{ success: boolean; error?: string }> {
+  // Validate input
+  const validation = sendTeamInvitationEmailSchema.safeParse(input);
+  if (!validation.success) {
+    console.error('[TEAM_INVITE] Validation failed:', validation.error);
+    return {
+      success: false,
+      error: 'Invalid input: ' + validation.error.issues[0]?.message,
+    };
+  }
+
+  const { email, name, invitationLink, inviterName, companyName } = validation.data;
+
   console.log('[TEAM_INVITE] Attempting to send invitation email');
   console.log('[TEAM_INVITE] Recipient:', email);
   console.log('[TEAM_INVITE] Invitation link:', invitationLink);

@@ -64,7 +64,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
           <span className="text-gray-400">/</span>
           <Link
             href={`/app/projects/${task.project_id}`}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-construction-blue transition-colors font-medium group"
+            className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-construction-blue transition-colors font-medium group"
           >
             <FolderOpen className="h-4 w-4 group-hover:scale-110 transition-transform" />
             {project.name}

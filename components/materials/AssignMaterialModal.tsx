@@ -265,12 +265,12 @@ export function AssignMaterialModal({
     >
       <div className="space-y-6">
         {/* Product Summary */}
-        <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-4">
+        <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h3 className="font-bold text-construction-blue mb-2">
             {product.name}
           </h3>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">SKU: {product.sku}</span>
+            <span className="text-gray-600 dark:text-gray-400">SKU: {product.sku}</span>
             <span className="font-bold text-construction-blue">
               {formatPrice(product.price)} / unit
             </span>
@@ -283,7 +283,7 @@ export function AssignMaterialModal({
           <div className="space-y-2">
             <Label
               htmlFor="project"
-              className="text-sm font-bold text-gray-700"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
             >
               Project *
             </Label>
@@ -303,7 +303,7 @@ export function AssignMaterialModal({
 
           {/* Phase Selection */}
           <div className="space-y-2">
-            <Label htmlFor="phase" className="text-sm font-bold text-gray-700">
+            <Label htmlFor="phase" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               Phase *
             </Label>
             <Select
@@ -336,7 +336,7 @@ export function AssignMaterialModal({
 
           {/* Task Selection */}
           <div className="space-y-2">
-            <Label htmlFor="task" className="text-sm font-bold text-gray-700">
+            <Label htmlFor="task" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               Task *
             </Label>
             <Select
@@ -371,7 +371,7 @@ export function AssignMaterialModal({
           <div className="space-y-2">
             <Label
               htmlFor="quantity"
-              className="text-sm font-bold text-gray-700"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
             >
               Quantity *
             </Label>
@@ -391,7 +391,7 @@ export function AssignMaterialModal({
           <div className="space-y-2">
             <Label
               htmlFor="purchaser"
-              className="text-sm font-bold text-gray-700"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
             >
               Who Will Purchase? *
             </Label>
@@ -415,12 +415,12 @@ export function AssignMaterialModal({
           {/* Cost Summary */}
           <div className="bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg p-4">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-gray-700">Total Cost:</span>
+              <span className="font-bold text-gray-700 dark:text-gray-300">Total Cost:</span>
               <span className="text-2xl font-black text-construction-blue">
                 {formatPrice(totalCost)}
               </span>
             </div>
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
               {quantity} × {formatPrice(product.price)} per unit
             </p>
           </div>
@@ -436,7 +436,7 @@ export function AssignMaterialModal({
                     ? "Out of Stock"
                     : "Special Order"}
                 </p>
-                <p className="text-xs text-gray-600 mt-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                   {product.stockStatus === "out_of_stock"
                     ? "This product is currently out of stock. You can still assign it, but procurement may be delayed."
                     : "This product requires special ordering. Lead time may be extended."}

@@ -72,7 +72,7 @@ export function TaskReceiptUpload({
     <div className="space-y-3">
       {/* Label */}
       {showLabel && (
-        <Label className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <Label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
           <FileText className="h-4 w-4 text-construction-blue" />
           Receipt Photo {compact ? "" : "(Optional)"}
         </Label>
@@ -88,7 +88,7 @@ export function TaskReceiptUpload({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "relative border-2 border-gray-200 rounded-lg overflow-hidden bg-gray-50",
+              "relative border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-gray-50 dark:bg-gray-950",
               compact ? "h-32" : "h-48",
             )}
           >
@@ -124,7 +124,7 @@ export function TaskReceiptUpload({
             {/* Processing Overlay */}
             {isProcessing && (
               <div className="absolute inset-0 bg-construction-blue/10 backdrop-blur-sm flex items-center justify-center">
-                <div className="bg-white rounded-lg px-4 py-2 shadow-lg flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-900 rounded-lg px-4 py-2 shadow-lg flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-construction-blue" />
                   <span className="text-sm font-semibold text-construction-blue">Processing...</span>
                 </div>
@@ -150,9 +150,9 @@ export function TaskReceiptUpload({
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
               className={cn(
-                "relative border-2 border-dashed border-gray-300 rounded-lg transition-all group",
-                "hover:border-construction-blue hover:bg-construction-blue/5",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:bg-transparent",
+                "relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg transition-all group",
+                "hover:border-construction-blue hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent",
                 compact ? "p-4" : "p-6 sm:p-8",
               )}
             >
@@ -167,7 +167,7 @@ export function TaskReceiptUpload({
               />
               <div className="flex flex-col items-center gap-2">
                 <div className={cn(
-                  "p-2 sm:p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors",
+                  "p-2 sm:p-3 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover:bg-construction-blue/10 transition-colors",
                   compact && "p-2",
                 )}>
                   <Upload className={cn(
@@ -177,13 +177,13 @@ export function TaskReceiptUpload({
                 </div>
                 <div className="text-center">
                   <p className={cn(
-                    "font-bold text-gray-900",
+                    "font-bold text-gray-900 dark:text-gray-100",
                     compact ? "text-xs" : "text-sm",
                   )}>
                     Upload File
                   </p>
                   <p className={cn(
-                    "text-gray-600",
+                    "text-gray-600 dark:text-gray-400",
                     compact ? "text-[10px]" : "text-xs sm:text-sm",
                   )}>
                     From gallery
@@ -198,9 +198,9 @@ export function TaskReceiptUpload({
               onClick={() => cameraInputRef.current?.click()}
               disabled={disabled}
               className={cn(
-                "relative border-2 border-dashed border-gray-300 rounded-lg transition-all group",
-                "hover:border-construction-blue hover:bg-construction-blue/5",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:bg-transparent",
+                "relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg transition-all group",
+                "hover:border-construction-blue hover:bg-construction-blue/5 dark:hover:bg-construction-blue/10",
+                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent",
                 compact ? "p-4" : "p-6 sm:p-8",
               )}
             >
@@ -216,7 +216,7 @@ export function TaskReceiptUpload({
               />
               <div className="flex flex-col items-center gap-2">
                 <div className={cn(
-                  "p-2 sm:p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors",
+                  "p-2 sm:p-3 bg-gray-100 dark:bg-gray-800 rounded-lg group-hover:bg-construction-blue/10 transition-colors",
                   compact && "p-2",
                 )}>
                   <Camera className={cn(
@@ -226,13 +226,13 @@ export function TaskReceiptUpload({
                 </div>
                 <div className="text-center">
                   <p className={cn(
-                    "font-bold text-gray-900",
+                    "font-bold text-gray-900 dark:text-gray-100",
                     compact ? "text-xs" : "text-sm",
                   )}>
                     Take Photo
                   </p>
                   <p className={cn(
-                    "text-gray-600",
+                    "text-gray-600 dark:text-gray-400",
                     compact ? "text-[10px]" : "text-xs sm:text-sm",
                   )}>
                     Use camera
@@ -250,7 +250,7 @@ export function TaskReceiptUpload({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-xs text-gray-500 italic"
+          className="text-xs text-gray-500 dark:text-gray-400 italic"
         >
           Attach photos of receipts, purchase orders, or invoices for documentation.
         </motion.p>

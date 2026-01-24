@@ -506,6 +506,7 @@ export function CreateProjectForm({
         ) : (
           <TouchButton
             type="submit"
+            form="project-form"
             variant="primary"
             size="lg"
             loading={isPending}
@@ -556,7 +557,7 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="name"
-                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
               >
                 <Sparkles className="h-4 w-4 text-construction-blue" />
                 Project Name <span className="text-red-500">*</span>
@@ -584,7 +585,7 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="description"
-                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
               >
                 <FileText className="h-4 w-4 text-gray-400" />
                 Description
@@ -595,7 +596,7 @@ export function CreateProjectForm({
                 placeholder="Brief description of the project scope..."
                 rows={2}
                 disabled={isPending}
-                className="border-gray-200 resize-none text-sm rounded-xl min-h-[72px]"
+                className="border-gray-200 dark:border-gray-700 resize-none text-sm rounded-xl min-h-[72px]"
                 value={formValues.description}
                 onChange={(e) =>
                   setFormValues({ ...formValues, description: e.target.value })
@@ -604,8 +605,8 @@ export function CreateProjectForm({
             </div>
 
             {/* Client Information Section */}
-            <div className="pt-4 border-t border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+              <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                 <Users className="w-4 h-4 text-construction-blue" />
                 Client Information
               </h4>
@@ -615,7 +616,7 @@ export function CreateProjectForm({
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="client_name"
-                    className="text-sm font-medium text-gray-700"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
                   >
                     Client Name <span className="text-red-500">*</span>
                   </Label>
@@ -716,7 +717,7 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="address"
-                className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
               >
                 <MapPin className="h-4 w-4 text-gray-400" />
                 Street Address <span className="text-red-500">*</span>
@@ -760,7 +761,7 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="state"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   State
                 </Label>
@@ -816,7 +817,7 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="start_date"
-                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
                 >
                   <Calendar className="h-4 w-4 text-gray-400" />
                   Start Date <span className="text-red-500">*</span>
@@ -828,14 +829,14 @@ export function CreateProjectForm({
                   required
                   disabled={isPending}
                   className={cn(
-                    "block w-full h-12 px-4 text-sm bg-white text-gray-900",
+                    "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
                     "border rounded-xl transition-all",
                     touchedFields.has("start_date") &&
                       validationErrors.start_date
                       ? "border-red-500 focus:ring-red-500/20"
-                      : "border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20",
+                      : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
-                    "disabled:bg-gray-50 disabled:text-gray-500",
+                    "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
                   value={formValues.start_date}
                   onChange={(e) =>
@@ -855,7 +856,7 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="end_date"
-                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
                 >
                   <Calendar className="h-4 w-4 text-gray-400" />
                   Expected End Date
@@ -866,13 +867,13 @@ export function CreateProjectForm({
                   type="date"
                   disabled={isPending}
                   className={cn(
-                    "block w-full h-12 px-4 text-sm bg-white text-gray-900",
+                    "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
                     "border rounded-xl transition-all",
                     touchedFields.has("end_date") && validationErrors.end_date
                       ? "border-red-500 focus:ring-red-500/20"
-                      : "border-gray-200 focus:border-construction-blue focus:ring-construction-blue/20",
+                      : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
-                    "disabled:bg-gray-50 disabled:text-gray-500",
+                    "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
                   value={formValues.end_date}
                   onChange={(e) =>
@@ -894,7 +895,7 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="budget"
-                  className="text-sm font-medium text-gray-700 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
                 >
                   <DollarSign className="h-4 w-4 text-gray-400" />
                   Budget
@@ -933,7 +934,7 @@ export function CreateProjectForm({
                   <h4 className="font-semibold text-sm text-construction-blue">
                     Ready to Create
                   </h4>
-                  <p className="text-xs text-gray-600 mt-0.5">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                     Your project will be created with automatic phase setup and
                     health tracking.
                   </p>

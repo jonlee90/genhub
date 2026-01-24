@@ -1,0 +1,3 @@
+TRUNCATE tasks CASCADE;
+TRUNCATE project_phases CASCADE;
+TRUNCATE projects CASCADE;

@@ -1,11 +1,5 @@
 import { TeamPageClient } from "@/components/team/TeamPageClient";
 import { StatCard } from "@/components/team/StatCard";
-import Users from "lucide-react/icons/users";
-import UserCog from "lucide-react/icons/user-cog";
-import HardHat from "lucide-react/icons/hard-hat";
-import Hammer from "lucide-react/icons/hammer";
-import UserPlus from "lucide-react/icons/user-plus";
-import Shield from "lucide-react/icons/shield";
 import { getTeamPageData } from "@/lib/team";
 
 const BLUEPRINT_BACKGROUND_STYLE = {
@@ -67,42 +61,42 @@ export default async function TeamPage() {
       {stats.total > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-4">
           <StatCard
-            icon={Users}
+            icon="users"
             label="Total"
             sublabel="Team Members"
             value={stats.total}
             colorClass="blue"
           />
           <StatCard
-            icon={UserCog}
+            icon="user-cog"
             label="Active"
             sublabel="On Duty"
             value={stats.active}
             colorClass="green"
           />
           <StatCard
-            icon={UserPlus}
+            icon="user-plus"
             label="Pending"
             sublabel="Invited"
             value={stats.invited}
             colorClass="accent"
           />
           <StatCard
-            icon={Shield}
+            icon="shield"
             label="Admins"
             sublabel="GC Admins"
             value={stats.admins}
             colorClass="blue"
           />
           <StatCard
-            icon={HardHat}
+            icon="hard-hat"
             label="Managers"
             sublabel="Project Mgrs"
             value={stats.projectManagers}
             colorClass="accent"
           />
           <StatCard
-            icon={Hammer}
+            icon="hammer"
             label="Crew"
             sublabel="Field Crew"
             value={stats.fieldWorkers}

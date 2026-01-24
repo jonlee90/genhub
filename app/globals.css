@@ -472,3 +472,22 @@ textarea:focus {
 .content-visibility-auto {
   content-visibility: auto;
 }
+
+/* ================================================================
+   Safari Backdrop-Filter Fallback - SlideMenu Glassmorphism
+   ================================================================ */
+
+/* Safari backdrop-filter fallback */
+@supports not (backdrop-filter: blur(20px)) {
+  .glass-panel {
+    background: rgb(255, 255, 255) !important;
+  }
+  .dark .glass-panel {
+    background: rgb(17, 24, 39) !important;
+  }
+}
+
+.glass-panel {
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+}

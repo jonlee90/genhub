@@ -69,25 +69,25 @@ export function ChatNotificationPreferences() {
   return (
     <div className="space-y-3 md:space-y-4">
       {/* Push Notifications Card */}
-      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 transition-colors">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 dark:active:bg-gray-700 transition-colors">
         <div className="p-4 md:p-5">
           <div className="flex items-start justify-between gap-4">
             {/* Left: Icon + Content */}
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
               {/* Icon - 44px touch target */}
-              <div className="p-2.5 bg-construction-blue/10 rounded-xl border-2 border-construction-blue/20 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                <Bell className="h-5 w-5 text-construction-blue" />
+              <div className="p-2.5 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-xl border-2 border-construction-blue/20 dark:border-construction-blue/40 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Bell className="h-5 w-5 text-construction-blue dark:text-blue-400" />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <h3 className="text-base md:text-lg font-bold text-construction-blue">
+                  <h3 className="text-base md:text-lg font-bold text-construction-blue dark:text-blue-400">
                     Push Notifications
                   </h3>
                   {getStatusBadge()}
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Receive real-time alerts even when app is closed
                 </p>
 
@@ -130,22 +130,22 @@ export function ChatNotificationPreferences() {
       </div>
 
       {/* Email Notifications Card */}
-      <div className="bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 transition-colors">
+      <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-construction overflow-hidden active:bg-gray-50 dark:active:bg-gray-700 transition-colors">
         <div className="p-4 md:p-5">
           <div className="flex items-start justify-between gap-4">
             {/* Left: Icon + Content */}
             <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
               {/* Icon - 44px touch target */}
-              <div className="p-2.5 bg-construction-blue/10 rounded-xl border-2 border-construction-blue/20 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                <Mail className="h-5 w-5 text-construction-blue" />
+              <div className="p-2.5 bg-construction-blue/10 dark:bg-construction-blue/20 rounded-xl border-2 border-construction-blue/20 dark:border-construction-blue/40 shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Mail className="h-5 w-5 text-construction-blue dark:text-blue-400" />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0 pt-0.5">
-                <h3 className="text-base md:text-lg font-bold text-construction-blue mb-1.5">
+                <h3 className="text-base md:text-lg font-bold text-construction-blue dark:text-blue-400 mb-1.5">
                   Email Notifications
                 </h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                   Daily summaries and important updates via email
                 </p>
               </div>
@@ -173,12 +173,12 @@ export function ChatNotificationPreferences() {
       </div>
 
       {/* Info Banner - More compact on mobile */}
-      <div className="flex items-start gap-3 p-3 md:p-4 bg-construction-blue/5 rounded-xl border border-construction-blue/10">
-        <div className="p-1.5 bg-construction-blue rounded-lg shrink-0">
+      <div className="flex items-start gap-3 p-3 md:p-4 bg-construction-blue/5 dark:bg-construction-blue/10 rounded-xl border border-construction-blue/10 dark:border-construction-blue/20">
+        <div className="p-1.5 bg-construction-blue dark:bg-blue-600 rounded-lg shrink-0">
           <Info className="h-4 w-4 text-white" />
         </div>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          <span className="font-semibold text-construction-blue">Note:</span>{" "}
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+          <span className="font-semibold text-construction-blue dark:text-blue-400">Note:</span>{" "}
           In-app notifications are always enabled for critical job site
           communications.
         </p>

@@ -100,6 +100,43 @@ export function SlideMenu({ isOpen, onClose, session }: SlideMenuProps) {
     };
   }, [isOpen, onClose]);
 
+  // Focus trap - trap Tab key within menu when open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleTabKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      const focusableElements = document.querySelectorAll(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const menuElements = Array.from(focusableElements).filter((el) =>
+        el.closest('[role="dialog"]')
+      );
+
+      if (menuElements.length === 0) return;
+
+      const firstElement = menuElements[0] as HTMLElement;
+      const lastElement = menuElements[menuElements.length - 1] as HTMLElement;
+
+      // Shift+Tab on first element → focus last
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      }
+      // Tab on last element → focus first
+      else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleTabKey);
+    return () => {
+      document.removeEventListener("keydown", handleTabKey);
+    };
+  }, [isOpen]);
+
   return (
     <AnimatePresence>
       {isOpen && (

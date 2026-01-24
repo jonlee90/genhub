@@ -181,7 +181,7 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
 
   // Required queries (always execute)
   phase2Queries.push(getProjectFiles(id));
-  phase2Queries.push(getProjectPhotosWithReceipts(id));
+  phase2Queries.push(getProjectPhotosWithReceipts({ projectId: id }));
   phase2Queries.push(getProjectTeamCostSummary(id));
   phase2Queries.push(
     supabase.rpc("get_project_detail_with_stats", {

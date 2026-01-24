@@ -9,19 +9,21 @@
  * - Memoized filter/sort/stats calculations
  * - Extracted reusable components (EmptyState, NoResultsState, ResultsCount)
  * - Reduced framer-motion usage to essential animations only
+ * - B-002: Dynamic import for CreateProjectModal (-40KB from initial bundle)
  */
 
 import { useState, useCallback, useMemo, useEffect, useRef, memo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { m as motion } from 'framer-motion';
 import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
 import { BlueprintBackground, PortfolioSummary, type PortfolioSummaryStats } from '@/components/shared';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
 import { useBottomNav } from '@/lib/contexts/BottomNavContext';
-import { CreateProjectModal } from './CreateProjectModal';
 import { ProjectCard } from './ProjectCard';
 import { ProjectFilters } from './ProjectFilters';
 import { Button } from '@/components/ui/button';
+import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Building2 from 'lucide-react/icons/building-2';
 import FolderKanban from 'lucide-react/icons/folder-kanban';
@@ -33,6 +35,12 @@ import ChevronRight from 'lucide-react/icons/chevron-right';
 import type { ProjectWithStats } from '@/app/actions/projects';
 import type { ProjectTypeConfigsRow } from '@/types/db/tables/projects';
 import { getProjectsWithStats } from '@/app/actions/projects';
+
+// B-002: Dynamic import for heavy CreateProjectModal component (-40KB from initial bundle)
+const CreateProjectModal = dynamic(() => import('./CreateProjectModal').then((mod) => ({ default: mod.CreateProjectModal })), {
+  ssr: false,
+  loading: () => null,
+});
 
 // ============================================
 // Extracted Components for Better Performance
@@ -64,78 +72,6 @@ const ResultsCount = memo(function ResultsCount({
   );
 });
 
-/**
- * Empty state when no projects exist - memoized
- */
-const EmptyState = memo(function EmptyState({
-  canCreate,
-  onCreateClick,
-}: {
-  canCreate: boolean;
-  onCreateClick: () => void;
-}) {
-  return (
-    <div className="flex-1 p-4 md:p-8">
-      <div className="relative">
-        <div className="hidden md:block absolute inset-0 border-4 border-construction-blue/10 rounded-2xl transform rotate-1" />
-        <div className="hidden md:block absolute inset-0 border-4 border-construction-accent/10 rounded-2xl transform -rotate-1" />
-
-        <div className="relative flex flex-col items-center justify-center py-12 md:py-24 px-4 md:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-xl md:rounded-2xl border-2 border-gray-200 dark:border-gray-700 shadow-construction-lg">
-          <motion.div
-            className="relative z-10"
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.6, type: 'spring', stiffness: 200 }}
-          >
-            <div className="relative p-5 md:p-8 bg-gradient-to-br from-construction-blue to-blue-700 rounded-2xl md:rounded-3xl shadow-construction-xl">
-              <FolderKanban className="h-12 w-12 md:h-20 md:w-20 text-white" />
-              <div className="absolute -top-1 -right-1 md:-top-2 md:-right-2 w-4 h-4 md:w-6 md:h-6 bg-construction-accent dark:bg-construction-accent rounded-full animate-pulse" />
-            </div>
-          </motion.div>
-
-          <motion.h2
-            className="text-2xl sm:text-3xl md:text-5xl font-black text-center mb-3 md:mb-4 mt-6 bg-gradient-to-r from-construction-blue via-construction-blue to-blue-700 dark:from-construction-blue dark:via-construction-blue dark:to-construction-blue bg-clip-text text-transparent leading-tight"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            BUILD YOUR
-            <br />
-            FIRST PROJECT
-          </motion.h2>
-
-          <motion.p
-            className="text-sm md:text-lg text-gray-600 dark:text-gray-400 font-medium mb-6 md:mb-10 max-w-xl text-center leading-relaxed px-4"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            Launch your construction command center. Track progress, manage teams, and deliver
-            projects.
-          </motion.p>
-
-          {canCreate && (
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, duration: 0.6 }}
-            >
-              <Button
-                size="lg"
-                onClick={onCreateClick}
-                className="relative h-12 md:h-16 px-6 md:px-10 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-xl hover:shadow-2xl transition-all group overflow-hidden text-sm md:text-lg font-black text-white"
-              >
-                <div className="absolute inset-0 bg-construction-accent opacity-0 group-hover:opacity-20 transition-opacity" />
-                <FolderKanban className="mr-2 md:mr-3 h-5 w-5 md:h-6 md:w-6 group-hover:rotate-12 transition-transform" />
-                START PROJECT
-              </Button>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
 
 /**
  * No results state when filters return empty - memoized
@@ -581,7 +517,14 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
   if (projects.length === 0) {
     return (
       <>
-        <EmptyState canCreate={canCreate} onCreateClick={() => setShowCreateModal(true)} />
+        <EmptyStateCard
+          icon={FolderKanban}
+          title="BUILD YOUR\nFIRST PROJECT"
+          description="Launch your construction command center. Track progress, manage teams, and deliver projects."
+          buttonText="START PROJECT"
+          onButtonClick={() => setShowCreateModal(true)}
+          showButton={canCreate}
+        />
         <CreateProjectModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}

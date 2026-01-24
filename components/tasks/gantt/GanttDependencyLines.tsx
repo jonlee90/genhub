@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { createDependencyPath } from "./gantt-utils";
 import type { GanttDependencyLinesProps, DependencyLine } from "./gantt-types";
 
@@ -8,9 +8,11 @@ import type { GanttDependencyLinesProps, DependencyLine } from "./gantt-types";
 const DependencyPath = React.memo(function DependencyPath({
   line,
   hoveredTaskId,
+  isDarkMode,
 }: {
   line: DependencyLine;
   hoveredTaskId: string | null;
+  isDarkMode: boolean;
 }) {
   const isHighlighted =
     line.isHighlighted ||
@@ -30,10 +32,13 @@ const DependencyPath = React.memo(function DependencyPath({
     return Math.sqrt(dx * dx + dy * dy) * 1.2;
   }, [line.fromX, line.fromY, line.toX, line.toY]);
 
+  // Use dark-mode aware color for dependency lines
+  const lineColor = isHighlighted ? "var(--construction-blue)" : (isDarkMode ? "#6B7280" : "#A0AEC0");
+
   return (
     <path
       d={pathD}
-      stroke={isHighlighted ? "var(--construction-blue)" : "#7A7A7A"}
+      stroke={lineColor}
       strokeWidth={isHighlighted ? 3 : 2}
       fill="none"
       markerEnd={isHighlighted ? "url(#arrow-head-highlight)" : "url(#arrow-head)"}
@@ -49,7 +54,25 @@ const DependencyPath = React.memo(function DependencyPath({
 });
 
 export const GanttDependencyLines = React.memo(function GanttDependencyLines({ lines, hoveredTaskId }: GanttDependencyLinesProps) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Detect dark mode
+  useEffect(() => {
+    // Check if dark mode is enabled
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+
+    // Watch for theme changes
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
+
   if (lines.length === 0) return null;
+
+  const arrowColor = isDarkMode ? "#6B7280" : "#A0AEC0";
 
   return (
     <svg className="absolute inset-0 pointer-events-none z-5" style={{ overflow: "visible" }}>
@@ -63,7 +86,7 @@ export const GanttDependencyLines = React.memo(function GanttDependencyLines({ l
           refY="3.5"
           orient="auto"
         >
-          <polygon points="0 0, 10 3.5, 0 7" fill="#7A7A7A" className="opacity-70" />
+          <polygon points="0 0, 10 3.5, 0 7" fill={arrowColor} opacity={0.7} />
         </marker>
 
         {/* Highlighted arrow marker */}
@@ -85,6 +108,7 @@ export const GanttDependencyLines = React.memo(function GanttDependencyLines({ l
           key={line.id}
           line={line}
           hoveredTaskId={hoveredTaskId}
+          isDarkMode={isDarkMode}
         />
       ))}
     </svg>

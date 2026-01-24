@@ -177,11 +177,15 @@ export function BaseModal({
           }}
           aria-hidden="true"
         >
-          {/* Animated shimmer effect */}
+          {/* Animated shimmer effect with dark mode support */}
           <div
             className="h-full w-full opacity-40"
             style={{
-              background: `linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.4) 50%, transparent 100%)`,
+              background: `linear-gradient(90deg, transparent 0%, ${
+                typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
+                  ? 'rgba(255, 255, 255, 0.2)'
+                  : 'rgba(255, 255, 255, 0.4)'
+              } 50%, transparent 100%)`,
               backgroundSize: '200% 100%',
               animation: 'shimmer 3s infinite',
             }}
@@ -238,8 +242,8 @@ export function BaseModal({
           className={cn(
             'flex-1 overflow-y-auto overflow-x-hidden',
             'px-6 py-4',
-            // Custom scrollbar styling
-            'scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100',
+            // Custom scrollbar styling with dark mode support
+            'scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800',
             contentClassName
           )}
           style={{

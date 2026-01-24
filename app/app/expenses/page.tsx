@@ -90,8 +90,8 @@ export default async function ExpensesPage({
         </div>
       </div>
 
-      {/* Expense Summary Cards */}
-      <ExpenseSummary analytics={analytics} />
+      {/* Expense Summary Cards - only show when expenses exist */}
+      {expenses.length > 0 && <ExpenseSummary analytics={analytics} />}
 
       {/* Expenses List with Filters */}
       <Suspense fallback={<ExpensesListSkeleton />}>
