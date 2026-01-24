@@ -8,497 +8,125 @@
 
 | Rule | Violation | Consequence |
 |------|-----------|-------------|
-| No Supabase in `'use client'` | `createClient`/`@/utils/supabase/*` in client | `Module not found: 'child_process'` |
+| No Supabase in `'use client'` | `createClient` in client | `Module not found: 'child_process'` |
 | ResponsiveModal only | `<Dialog` from Radix | Inconsistent mobile UX |
-| Lucide icons only | `heroicons`/`fontawesome` | Bundle bloat |
-| 44px touch targets | `min-h-[44px]` missing on interactive | Failed accessibility |
-| Server Actions for DB | Direct DB in components | Security/architecture violation |
+| Lucide icons only | heroicons/fontawesome | Bundle bloat |
+| 44px touch targets | Missing on interactive | Failed accessibility |
+| Server Actions for DB | Direct DB in components | Security violation |
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Layer            │ DB Access │ Responsibilities             │
-├─────────────────────────────────────────────────────────────┤
-│ 'use client'     │ ❌ NEVER  │ UI, interactions, local state │
-│ Server Actions   │ ✅ YES    │ Mutations, queries, auth      │
-│ Server Components│ ✅ YES    │ Data fetching, SSR            │
-└─────────────────────────────────────────────────────────────┘
+'use client'     → ❌ NO DB  → UI, interactions, local state
+Server Actions   → ✅ YES DB → Mutations, queries, auth
+Server Components→ ✅ YES DB → Data fetching, SSR
 ```
 
 ---
 
 ## PROJECT
 
-**App:** GenHub - Construction PWA for field workers and general contractors
 **Stack:** Next.js 16, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
-**Priorities:** Correctness > Consistency > Token efficiency > Speed
+**Design:** Primary `#001B51`, Accent `#3C3C3C`, 44px touch, `dvh` not `vh`
 
-### Design System
+---
 
-| Element | Value |
-|---------|-------|
-| Primary | `#001B51` |
-| Accent | `#3C3C3C` |
-| Icons | Lucide only |
-| Modals | `ResponsiveModal` component |
-| Touch targets | 44px minimum |
-| Mobile viewport | 375px baseline, `dvh` not `vh` |
+## SKILLS (Auto-Loaded)
 
-### Personas
+| Skill | Rules Applied |
+|-------|---------------|
+| `vercel-react-best-practices` | `async-*`, `bundle-*`, `server-*`, `rerender-*`, `rendering-*` |
+| `postgres-best-practices` | `query-*`, `security-*`, `schema-*`, `data-*` |
 
-| Persona | Role | Primary Goals |
-|---------|------|---------------|
-| **GC** | General Contractor | Manage company, projects, subs, finances |
-| **PM** | Project Manager | Track phases, tasks, timelines, reports |
-| **Foreman** | Site Supervisor | Coordinate crews, tasks, report issues |
-| **Worker** | Field Worker | Complete tasks, log materials, expenses |
-| **Sub** | Subcontractor | Submit bids, complete work, invoice |
-| **Client** | Project Client | View progress, approve changes |
+**By File Pattern:**
+```
+*.tsx            → rendering-*, rerender-*, bundle-*
+app/actions/*.ts → query-*, security-*, data-*
+app/**/page.tsx  → async-*, server-*
+hooks/**/*.ts    → rerender-*, advanced-*
+```
 
 ---
 
 ## MCP TOOLS
 
-### Architecture
+| Tool | Purpose |
+|------|---------|
+| **Serena** | `find_symbol`, `read_memory`, `search_for_pattern` |
+| **Memory MCP** | Decisions, active tasks, bug patterns |
+| **Context7** | `resolve-library-id` → `query-docs` |
+| **Supabase MCP** | `list_tables`, `execute_sql`, `apply_migration` |
 
-| Tool | Purpose | Primary Use |
-|------|---------|-------------|
-| **Serena** | Code knowledge | `find_symbol`, `read_memory`, `search_for_pattern` |
-| **Memory MCP** | Session state | Decisions, active tasks, bug patterns |
-| **Context7** | Library docs | `resolve-library-id` → `query-docs` |
-| **Supabase MCP** | Database ops | `list_tables`, `execute_sql`, `apply_migration` |
-
-### Serena Memories (Load by Context)
-
-```
-ALWAYS LOAD:
-├── genhub-database-schema     # Table structures, relationships
-├── genhub-server-actions      # Action patterns, signatures
-└── genhub-component-patterns  # UI patterns, ResponsiveModal
-
-LOAD BY TASK:
-├── genhub-common-gotchas      # Known issues, workarounds
-└── genhub-architectural-decisions  # Why decisions were made
-```
-
-### Session Workflow
-
-```
-START:
-1. mcp__memory__read_graph() → Check ActiveTask
-2. Load relevant Serena memories (see above)
-3. mcp__supabase__list_tables (if DB work)
-
-DURING:
-- Context7 before external library code
-- Update Memory MCP after decisions/bugs found
-
-END:
-- Update ActiveTask with progress
-- Trigger learning check (if significant task)
-```
+**Session:** `mcp__memory__read_graph()` → Load Serena memories → Check `ActiveTask`
 
 ---
 
-## WORKFLOW: PLANNING VS IMPLEMENTATION
+## AGENT DISPATCH
 
-### Feature Planning → `/kc:spec`
+| Task Type | Agent |
+|-----------|-------|
+| Server Action, API, RLS | `backend-engineer` |
+| Components, styling, forms | `frontend-engineer` |
+| Post-implementation review | **OpenCode GPT-5.2** |
 
-```
-/kc:spec {feature-name}
+**Flow:** Parse → TodoWrite → Dispatch → Validate → Handoff → Report
 
-Output: .claude/specs/{feature}/
-├── requirements.md   # User stories (EARS format)
-├── design.md         # Schema, actions, components
-└── tasks.md          # Agent assignments
-
-Approval gates between each phase.
-```
-
-### Task Implementation → `/kc:impl` or Direct
-
-```
-WITH SPEC:
-/kc:impl {task-id}  → Reads spec, delegates to agents
-
-WITHOUT SPEC (direct task list):
-1. Parse & categorize tasks
-2. TodoWrite for tracking
-3. Delegate to appropriate agent(s)
-4. Verify build
-```
+**Dispatch:**
+- Same domain → Single agent
+- Mixed independent → Parallel agents
+- Mixed dependent → Sequential: backend → frontend → OpenCode
 
 ---
 
-## AGENT SYSTEM
+## OPENCODE HANDOFF
 
-### Core Agents (Implementation)
-
-| Agent | Authority | Budget | Never |
-|-------|-----------|--------|-------|
-| `backend-engineer` | DB, Server Actions, API, RLS | 90k | UI components |
-| `frontend-engineer` | Components, styling, forms | 90k | DB access |
-| `code-reviewer` | Review, testing, bug fixes | 60k | New features |
-
-### Orchestration Agents
-
-| Agent | Purpose | Budget |
-|-------|---------|--------|
-| `kiro-orchestrator` | Multi-agent workflow coordination from specs | 50k |
-| `qa-auditor` | Post-implementation validation, acceptance testing | 30k |
-| `learning-extractor` | Extract patterns/gotchas, update memories | 20k |
-
-### Planning Agents (No Implementation)
-
-| Agent | Purpose |
-|-------|---------|
-| `spec-writer` | Requirements → Design → Tasks |
-| `frontend-architect` | UI/UX planning, component architecture |
-| `supabase-schema-architect` | Schema design, migration planning |
-| `ai-sdk-v5-expert` | Vercel AI SDK integration guidance |
-
-### Quick Decision Flow
-
-| Task Type | Agent | Notes |
-|-----------|-------|-------|
-| UI component, styling, forms | frontend-engineer | Never DB |
-| Server Action, API route | backend-engineer | Never UI |
-| Schema change, migration, RLS | backend-engineer | Security review after |
-| Bug fix in component | frontend-engineer | Unless needs DB |
-| Bug fix in action/API | backend-engineer | |
-| Review/validation/testing | **OpenCode GPT-5.2** | Handoff after task complete |
-| Both UI + DB needed | Sequential: backend → frontend → **OpenCode** | |
-
-### Orchestration Flags
-
-| Flag | Effect |
-|------|--------|
-| `ORCHESTRATED=true` | Skip build/sync; return status only |
-| `SKIP_BUILD=true` | Don't run build step |
-
----
-
-## TASK EXECUTION
-
-### Multi-Task Processing
+**When:** New component, multi-file fix, refactoring
+**Skip:** Single-line fix, config change, type-only
 
 ```
-Step 1: PARSE & CATEGORIZE
-- Extract individual tasks from prompt
-- Classify: backend | frontend | both | review
-- Identify dependencies
-- Flag cross-boundary tasks
-
-Step 2: TRACK WITH TodoWrite
-TodoWrite([
-  { content: "Task 1", status: "pending", activeForm: "Working on Task 1" },
-  { content: "Task 2", status: "pending", activeForm: "Working on Task 2" },
-])
-
-Step 3: DISPATCH
-┌─────────────────────────────────────────┐
-│ All same domain     → Single agent      │
-│ Mixed, independent  → Parallel agents   │
-│ Mixed, dependent    → Sequential agents │
-│ Has spec file       → /kc:impl          │
-└─────────────────────────────────────────┘
-
-Step 4: VERIFY & REPORT
-- Mark TodoWrite: in_progress → completed
-- Run build verification
-- Collect outputs, summarize for user
-```
-
-### Preflight Check (Complex Tasks)
-
-| Scenario | Strategy |
-|----------|----------|
-| All same domain | Single agent with full task list |
-| Mixed domains, independent | Parallel: multiple Task calls in one message |
-| Mixed domains, dependent | Sequential: backend → frontend → **OpenCode handoff** |
-| Complex feature with spec | Use `/kc:impl` instead |
-
-**Step 3.5: OpenCode Handoff (After Implementation)**
-```
-After completing implementation tasks:
-1. Run npx tsc --noEmit && npm run lint
-2. Create handoff file: .claude/handoffs/claude-to-opencode-{timestamp}.md
+1. Validate: npx tsc --noEmit && npm run lint
+2. Create: .claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md
 3. Notify user: "Handoff created for OpenCode review"
 ```
 
-**Step 4: Track & Report**
-- Mark TodoWrite items `in_progress` → `completed`
-- If budget hit: complete current, report remaining
-- Collect agent outputs, summarize for user
-Before major implementations, verify:
-- [ ] Spec files exist at expected paths (if referenced)
-- [ ] No type conflicts with existing schema
-- [ ] Agent boundaries won't be violated
-- [ ] MCP tools accessible (Serena, Supabase)
-
----
-
-## STANDARDIZED OUTPUT
-
-### Agent Audit Log Format
-
-All agents must return this structure:
-
-```
-## Task Complete
-
-| Type | Agents |
-|------|--------|
-| **With budgets** | backend-engineer(90k), frontend-engineer(90k), performance-engineer(60k) |
-| **Planning-only** | frontend-architect, supabase-schema-architect, ai-sdk-v5-expert |
-| **External (OpenCode)** | code-reviewer, refactor-specialist, component-scanner, tailwind-optimizer |
-
----
-
-## OPENCODE HANDOFF (Post-Task)
-
-After completing any significant task, create a handoff for OpenCode GPT-5.2-Codex:
-
-### When to Handoff
-
-| Task Type | Handoff Required |
-|-----------|------------------|
-| New component/feature | YES |
-| Bug fix (multi-file) | YES |
-| Refactoring | YES |
-| Single-line fix | NO |
-| Config change | NO |
-| Type-only change | NO |
-
-### Handoff Protocol
-
-**Step 1:** Complete implementation and run initial validation
-```bash
-npx tsc --noEmit && npm run lint
-```
-
-**Step 2:** Create handoff file at `.claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md`
-
-**Step 3:** Use template from `.claude/handoffs/README.md`
-
-### What OpenCode Will Do
-
-1. **Validate** - Run full test suite (tsc, lint, build)
-2. **Reusability Scan** - Check for patterns to extract
-3. **Duplication Check** - Verify no code repetition
-4. **Tailwind Optimization** - Clean up classes
-5. **HTML Structure** - Simplify div soup
-6. **Debug** - Ensure 100% working
-
-### OpenCode Response
-
-OpenCode creates response at `.claude/handoffs/opencode-to-claude-{YYYYMMDD-HHMM}.md` with:
-- Validation results
-- Refactoring changes made
-- New reusable components created
-- Remaining issues (if any)
-**Status:** ✓ completed | ✗ failed | ⚠️ partial (N/M)
-
-**Tasks:**
-- [x] Task 1 description
-- [x] Task 2 description
-- [ ] Task 3 (remaining)
-
-**Files Changed:**
-- `path/to/file.ts` - Description
-- `path/to/file.tsx` - Description
-
-**Build:** ✓ pass | ✗ fail (details)
-
-**Handoff:** (if needed)
-→ {agent}: {reason}
-Interface: { input: Type, output: { data?: T, error?: string } }
-```
-
-### Verification Checklist
-
-| Check | Command |
-|-------|---------|
-| TypeScript | `npm run build 2>&1 \| grep -E "error\|Error" -A 3` |
-| Security (new tables) | `mcp__supabase__get_advisors("security")` |
-| Performance | `mcp__supabase__get_advisors("performance")` |
+| Agent | Responsibilities |
+|-------|------------------|
+| `code-reviewer` | Validate, reusability scan, debug |
+| `refactor-specialist` | Deep refactoring, pattern extraction |
+| `component-scanner` | Module analysis |
+| `tailwind-optimizer` | HTML/CSS cleanup |
 
 ---
 
 ## TOKEN DISCIPLINE
 
-| Rule | Implementation |
-|------|----------------|
-| Search first | `find_symbol`, Grep/Glob before full reads |
+| Rule | How |
+|------|-----|
+| Search first | `find_symbol`, Grep/Glob before reads |
 | Targeted reads | `offset`+`limit` for files >200 lines |
-| Skip verification | Don't re-read after Edit with unique `old_string` |
-| Batch edits | Combine adjacent changes into single Edit |
-| Parallel calls | Group independent reads/searches in one message |
-| No file creation | Use Serena memories, not new `.md` files |
+| Batch edits | Combine adjacent changes |
+| Parallel calls | Group independent operations |
 
 ---
 
 ## STOP CONDITIONS
 
-Halt and request guidance if:
-- Task violates agent authority boundaries
-- Required context missing from Serena/Memory MCP
+- Agent boundary violation
+- Context missing from Serena/Memory MCP
 - Build fails 2x on same error
 - Security advisor returns critical
-- Approaching token budget (report progress)
-- Spec files missing or ambiguous
 
 ---
 
-## CONTINUOUS LEARNING
-
-### Trigger Conditions
-
-Run learning check for significant tasks only:
-- ✅ Multi-step implementations
-- ✅ Error resolution after 2+ attempts
-- ✅ User corrections to approach
-- ✅ New architectural decisions
-- ✅ Performance optimizations
-
-Skip for: Typo fixes, single-line changes, simple renames, config tweaks
-
-### Post-Task Checklist
-
-| Question | If Yes → Action |
-|----------|-----------------|
-| New gotcha discovered? | Serena: `write_memory('genhub-common-gotchas', ...)` |
-| Reusable pattern found? | Serena: `write_memory('genhub-component-patterns', ...)` |
-| Architectural decision made? | Memory: `add_observations('key-decisions', [...])` |
-| Bug pattern encountered? | Memory: `create_entities({ entityType: "BugPattern" })` |
-| User corrected approach? | Document in relevant memory |
-
-### Learning Entry Format
-
-```markdown
-## [Pattern Name] (YYYY-MM-DD)
-**What:** Clear description
-**When:** Trigger conditions
-**Why:** Problem prevented / value provided
-**How:** Solution steps or code
-**Source:** Task name
-```
-
-**Note:** CLAUDE.md updates are NEVER automatic. Suggest changes to user for manual review.
-
----
-
-## QUICK REFERENCE
-
-### Common Imports
-
-```typescript
-// Server Actions
-import { auth } from '@/auth'
-import { createClient } from '@/utils/supabase/server'
-
-// Client Components
-import { ResponsiveModal } from '@/components/ui/ResponsiveModal'
-import { Check, X, Plus } from 'lucide-react'
-
-// Types
-import type { Task, Project } from '@/types/db/core'
-```
-
-### Server Action Pattern
-
-```typescript
-'use server'
-import { auth } from '@/auth'
-import { createClient } from '@/utils/supabase/server'
-import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
-
-const schema = z.object({ /* fields */ })
-
-export async function createEntity(input: unknown) {
-  const session = await auth()
-  if (!session?.user?.id) return { error: 'Not authenticated' }
-
-  const parsed = schema.safeParse(input)
-  if (!parsed.success) return { error: parsed.error.format() }
-
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('table')
-    .insert({ ...parsed.data, user_id: session.user.id })
-    .select()
-    .single()
-
-  if (error) return { error: error.message }
-  revalidatePath('/app/route')
-  return { data }
-}
-```
-
-### Touch Button Pattern
-
-```tsx
-<button className="
-  w-full h-14 px-6 bg-[#001B51] text-white font-semibold
-  rounded-xl flex items-center justify-center gap-2
-  active:scale-[0.98] active:bg-[#001B51]/90
-  transition-all duration-150 disabled:opacity-50
-">
-  <Check className="w-5 h-5" /> Save
-</button>
-```
-
-### ResponsiveModal Usage
-
-```tsx
-import { ResponsiveModal } from '@/components/ui/ResponsiveModal'
-
-<ResponsiveModal
-  isOpen={isOpen}
-  onClose={() => setIsOpen(false)}
-  icon={Building2}
-  title="Title"
-  rightActions={<Button>Confirm</Button>}
->
-  {children}
-</ResponsiveModal>
-```
-
----
-
-## SKILLS & COMMANDS
-
-### Commands
+## COMMANDS
 
 | Command | Purpose |
 |---------|---------|
 | `/kc:spec {feature}` | Create requirements → design → tasks |
 | `/kc:impl {task-id}` | Execute task from spec |
-| `/kc:build` | Build verification |
-| `/kc:docs` | Documentation lookup |
-
-### Skills
-
-| Skill | Trigger |
-|-------|---------|
-| `task-orchestrator` | Multi-agent coordination |
-| `feature-implementation-kiro` | Implement from spec files |
-| `preflight-repo-check` | Pre-implementation validation |
-| `post-task-learning` | Extract learnings after tasks |
-| `refactor-code` | Component consolidation |
-| `refactor-to-shared-ui-component` | Extract shared UI patterns |
-| `supabase-table-rls-policy-generator` | Generate RLS policies |
-| `a11y-pass` | Accessibility audit and fixes |
-| `vercel-react-best-practices` | React/Next.js patterns |
-| `mobile-pwa-design` | Mobile-first patterns |
 
 ---
 
 ## INITIALIZATION
 
-When starting work on this project:
-
-1. Call `init` tool from next-devtools-mcp (automatic)
-2. Load Serena memories: `genhub-database-schema`, `genhub-server-actions`, `genhub-component-patterns`
-3. Check Memory MCP for `ActiveTask`
-4. If new feature: suggest `/kc:spec` first
+1. Load Serena: `genhub-database-schema`, `genhub-server-actions`, `genhub-component-patterns`
+2. Check Memory MCP for `ActiveTask`
+3. If new feature: suggest `/kc:spec`
