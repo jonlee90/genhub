@@ -13,6 +13,8 @@ import { m as motion } from "framer-motion";
 import { createProject } from "@/app/actions/projects";
 import { getPhaseTemplates } from "@/app/actions/phase-templates";
 import { getProjectTypes } from "@/app/actions/project-types";
+import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { createProjectValidation } from "@/lib/validation/client-validation";
 import { MobileInput } from "@/components/mobile/MobileInput";
 import { TouchButton } from "@/components/mobile/TouchButton";
 import { Label } from "@/components/ui/label";
@@ -53,19 +55,6 @@ const FORM_STEPS = ["Type", "Details", "Location", "Timeline"];
 
 type FormState = CreateProjectFormState;
 
-// Client-side validation errors
-type ValidationErrors = {
-  name?: string;
-  client_name?: string;
-  client_email?: string;
-  client_phone?: string;
-  address?: string;
-  zip_code?: string;
-  start_date?: string;
-  end_date?: string;
-  budget?: string;
-};
-
 interface CreateProjectFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -83,11 +72,7 @@ export function CreateProjectForm({
 }: CreateProjectFormProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
-  const [projectType, setProjectType] = useState<string>("residential");
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
-    {},
-  );
-  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+  const [projectType, setProjectType] = useState<string>("");
   const [success, setSuccess] = useState(false);
 
   // Project type configs (for mapping to phase templates)
@@ -101,23 +86,33 @@ export function CreateProjectForm({
   const [phaseTemplates, setPhaseTemplates] = useState<PhaseTemplate[]>([]);
   const [phaseTemplatesLoading, setPhaseTemplatesLoading] = useState(false);
 
-  // Track all form values across steps
-  // Performance optimization: Lazy state initialization to avoid object recreation on every render
-  const [formValues, setFormValues] = useState(() => ({
-    project_type: "residential",
-    name: "",
-    description: "",
-    client_name: "",
-    client_email: "",
-    client_phone: "",
-    address: "",
-    city: "",
-    state: "",
-    zip_code: "",
-    start_date: "",
-    end_date: "",
-    budget: "",
-  }));
+  // Use React Hook Form with native validation
+  const {
+    register,
+    formState: { errors },
+    watch,
+    setValue,
+    trigger,
+  } = useValidatedForm({
+    defaultValues: {
+      project_type: "",
+      name: "",
+      description: "",
+      client_name: "",
+      client_email: "",
+      client_phone: "",
+      address: "",
+      city: "",
+      state: "",
+      zip_code: "",
+      start_date: "",
+      end_date: "",
+      budget: "",
+    },
+  });
+
+  // Watch all form values
+  const formValues = watch();
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (prevState, formData) => {
@@ -142,200 +137,42 @@ export function CreateProjectForm({
     }
   }, [state.success, state.project, router, isModal, onSuccess]);
 
-  // Validation functions
-  const validateEmail = (email: string): string | undefined => {
-    if (!email) return undefined;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return "Please enter a valid email address";
-    }
-    return undefined;
-  };
-
-  const validatePhone = (phone: string): string | undefined => {
-    if (!phone) return undefined;
-    const digits = extractPhoneDigits(phone);
-    if (digits.length > 0 && digits.length !== 10) {
-      return "Phone number must be 10 digits";
-    }
-    return undefined;
-  };
-
-  const validateZipCode = (zip: string): string | undefined => {
-    if (!zip) return undefined;
-    const zipRegex = /^\d{5}(-\d{4})?$/;
-    if (!zipRegex.test(zip)) {
-      return "Please enter a valid ZIP code";
-    }
-    return undefined;
-  };
-
-  const validateBudget = (budget: string): string | undefined => {
-    if (!budget) return undefined;
-    const num = parseFloat(budget);
-    if (isNaN(num)) return "Budget must be a valid number";
-    if (num < 0) return "Budget must be positive";
-    return undefined;
-  };
-
-  const validateEndDate = (
-    startDate: string,
-    endDate: string,
-  ): string | undefined => {
-    if (!endDate || !startDate) return undefined;
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (end <= start) return "End date must be after start date";
-    return undefined;
-  };
-
-  const validateField = useCallback(
-    (fieldName: string, value: string): string | undefined => {
-      switch (fieldName) {
-        case "name":
-          if (!value || value.trim().length === 0)
-            return "Project name is required";
-          if (value.length > 200) return "Must be less than 200 characters";
-          return undefined;
-        case "client_name":
-          if (!value || value.trim().length === 0)
-            return "Client name is required";
-          if (value.length > 200) return "Must be less than 200 characters";
-          return undefined;
-        case "client_email":
-          return validateEmail(value);
-        case "client_phone":
-          return validatePhone(value);
-        case "address":
-          if (!value || value.trim().length === 0) return "Address is required";
-          return undefined;
-        case "zip_code":
-          return validateZipCode(value);
-        case "start_date":
-          if (!value) return "Start date is required";
-          return undefined;
-        case "end_date":
-          return validateEndDate(formValues.start_date, value);
-        case "budget":
-          return validateBudget(value);
-        default:
-          return undefined;
-      }
-    },
-    [formValues.start_date],
-  );
-
-  const validateCurrentStep = useCallback((): boolean => {
-    const errors: ValidationErrors = {};
-    let hasErrors = false;
+  // Validate current step before continuing
+  const validateCurrentStep = useCallback(async (): Promise<boolean> => {
+    let fieldsToValidate: string[] = [];
 
     if (currentStep === 1) {
-      const nameError = validateField("name", formValues.name);
-      if (nameError) {
-        errors.name = nameError;
-        hasErrors = true;
-      }
-
-      const clientNameError = validateField(
-        "client_name",
-        formValues.client_name,
-      );
-      if (clientNameError) {
-        errors.client_name = clientNameError;
-        hasErrors = true;
-      }
-
-      const emailError = validateField("client_email", formValues.client_email);
-      if (emailError) {
-        errors.client_email = emailError;
-        hasErrors = true;
-      }
-
-      const phoneError = validateField("client_phone", formValues.client_phone);
-      if (phoneError) {
-        errors.client_phone = phoneError;
-        hasErrors = true;
-      }
+      fieldsToValidate = ["name", "client_name", "client_email", "client_phone"];
+    } else if (currentStep === 2) {
+      fieldsToValidate = ["address", "zip_code"];
+    } else if (currentStep === 3) {
+      fieldsToValidate = ["start_date", "end_date", "budget"];
     }
 
-    if (currentStep === 2) {
-      const addressError = validateField("address", formValues.address);
-      if (addressError) {
-        errors.address = addressError;
-        hasErrors = true;
-      }
+    const result = await trigger(fieldsToValidate as any);
+    return result;
+  }, [currentStep, trigger]);
 
-      const zipError = validateField("zip_code", formValues.zip_code);
-      if (zipError) {
-        errors.zip_code = zipError;
-        hasErrors = true;
-      }
-    }
-
-    if (currentStep === 3) {
-      const startDateError = validateField("start_date", formValues.start_date);
-      if (startDateError) {
-        errors.start_date = startDateError;
-        hasErrors = true;
-      }
-
-      const endDateError = validateField("end_date", formValues.end_date);
-      if (endDateError) {
-        errors.end_date = endDateError;
-        hasErrors = true;
-      }
-
-      const budgetError = validateField("budget", formValues.budget);
-      if (budgetError) {
-        errors.budget = budgetError;
-        hasErrors = true;
-      }
-    }
-
-    setValidationErrors(errors);
-    return !hasErrors;
-  }, [currentStep, formValues, validateField]);
-
-  // Performance optimization: Memoize event handlers to prevent recreation on every render
-  const handleFieldBlur = useCallback(
-    (fieldName: string, value: string) => {
-      setTouchedFields((prev) => new Set(prev).add(fieldName));
-      const error = validateField(fieldName, value);
-      setValidationErrors((prev) => ({ ...prev, [fieldName]: error }));
-    },
-    [validateField],
-  );
-
-  const handleNext = useCallback(() => {
-      const isValid = validateCurrentStep();
+  const handleNext = useCallback(async () => {
+      const isValid = await validateCurrentStep();
       if (!isValid) return;
 
       if (currentStep < FORM_STEPS.length - 1) {
-        const form = document.getElementById("project-form") as HTMLFormElement;
-        if (form) {
-          const formData = new FormData(form);
-          const newValues = { ...formValues };
-          formData.forEach((value, key) => {
-            newValues[key as keyof typeof formValues] = value as string;
-          });
-          setFormValues(newValues);
-        }
         setCurrentStep(currentStep + 1);
       }
     },
-    [currentStep, formValues, validateCurrentStep],
+    [currentStep, validateCurrentStep],
   );
 
   const handlePrevious = useCallback(() => {
     if (currentStep > 0) {
-      setValidationErrors({});
       setCurrentStep(currentStep - 1);
     }
   }, [currentStep]);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent<HTMLFormElement>) => {
-      const isValid = validateCurrentStep();
+    async (e: React.FormEvent<HTMLFormElement>) => {
+      const isValid = await validateCurrentStep();
       if (!isValid) {
         e.preventDefault();
       }
@@ -393,24 +230,8 @@ export function CreateProjectForm({
     const fetchPhaseTemplates = async () => {
       if (!formValues.project_type) return;
 
-      // Map the project type to config name for lookup
-      const typeNameMapping: Record<string, string> = {
-        residential: "Residential",
-        restaurant: "Restaurant",
-        cafe: "Cafe",
-        commercial_office: "Commercial Office",
-        industrial: "Industrial",
-      };
-      const configName = typeNameMapping[formValues.project_type];
-      const configId =
-        projectTypeConfigsRef.current[configName] ||
-        projectTypeConfigsRef.current[formValues.project_type];
-
-      if (!configId) {
-        // Config not found yet, skip fetching
-        setPhaseTemplates([]);
-        return;
-      }
+      // formValues.project_type is already the project type config ID
+      const configId = formValues.project_type;
 
       setPhaseTemplatesLoading(true);
       try {
@@ -433,9 +254,9 @@ export function CreateProjectForm({
   const handleProjectTypeChange = useCallback(
     (value: string) => {
       setProjectType(value);
-      setFormValues({ ...formValues, project_type: value });
+      setValue("project_type", value);
     },
-    [formValues],
+    [setValue],
   );
 
   // Dynamic modal title based on step
@@ -459,6 +280,23 @@ export function CreateProjectForm({
     return subtitles[currentStep];
   }, [currentStep]);
 
+  // Project type badge for header (shown from step 2 onwards)
+  const projectTypeBadge = useMemo(() => {
+    if (currentStep === 0) return undefined;
+
+    // Look up project type name from the database configs by ID
+    const selectedType = projectTypeConfigs.find(
+      (pt) => pt.id === formValues.project_type
+    );
+    const displayName = selectedType?.name || formValues.project_type;
+
+    return (
+      <span className="px-3 py-1 text-xs font-medium bg-construction-blue/10 text-construction-blue dark:bg-construction-blue/20 dark:text-construction-blue rounded-full">
+        {displayName}
+      </span>
+    );
+  }, [currentStep, formValues.project_type, projectTypeConfigs]);
+
   // Determine navigation handlers and labels based on current step
   const shouldShowBack = currentStep > 0;
   const isLastStep = currentStep === FORM_STEPS.length - 1;
@@ -469,6 +307,7 @@ export function CreateProjectForm({
       onClose={onClose}
       icon={FolderKanban}
       title={modalTitle}
+      badges={projectTypeBadge}
       currentStep={currentStep + 1}
       totalSteps={FORM_STEPS.length}
       theme="default"
@@ -538,19 +377,11 @@ export function CreateProjectForm({
                 Project Name <span className="text-red-500">*</span>
               </Label>
               <MobileInput
+                {...register("name", createProjectValidation.name)}
                 id="name"
-                name="name"
                 placeholder="e.g., Smith Residence Renovation"
-                required
                 disabled={isPending}
-                error={
-                  touchedFields.has("name") ? validationErrors.name : undefined
-                }
-                value={formValues.name}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, name: e.target.value })
-                }
-                onBlur={(e) => handleFieldBlur("name", e.target.value)}
+                error={errors.name?.message}
                 inputMode="text"
                 enterKeyHint="next"
               />
@@ -566,17 +397,19 @@ export function CreateProjectForm({
                 Description
               </Label>
               <Textarea
+                {...register("description", createProjectValidation.description)}
                 id="description"
-                name="description"
                 placeholder="Brief description of the project scope..."
                 rows={2}
                 disabled={isPending}
                 className="border-gray-200 dark:border-gray-700 resize-none text-sm rounded-xl min-h-[72px]"
-                value={formValues.description}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, description: e.target.value })
-                }
               />
+              {errors.description && (
+                <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {errors.description.message}
+                </p>
+              )}
             </div>
 
             {/* Client Information Section */}
@@ -596,26 +429,11 @@ export function CreateProjectForm({
                     Client Name <span className="text-red-500">*</span>
                   </Label>
                   <MobileInput
+                    {...register("client_name", createProjectValidation.client_name)}
                     id="client_name"
-                    name="client_name"
                     placeholder="e.g., John Smith"
-                    required
                     disabled={isPending}
-                    error={
-                      touchedFields.has("client_name")
-                        ? validationErrors.client_name
-                        : undefined
-                    }
-                    value={formValues.client_name}
-                    onChange={(e) =>
-                      setFormValues({
-                        ...formValues,
-                        client_name: e.target.value,
-                      })
-                    }
-                    onBlur={(e) =>
-                      handleFieldBlur("client_name", e.target.value)
-                    }
+                    error={errors.client_name?.message}
                     inputMode="text"
                     enterKeyHint="next"
                   />
@@ -624,52 +442,30 @@ export function CreateProjectForm({
                 {/* Email & Phone - Side by side */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <MobileInput
+                    {...register("client_email", createProjectValidation.client_email)}
                     id="client_email"
-                    name="client_email"
                     type="email"
                     label="Email"
                     placeholder="client@example.com"
                     disabled={isPending}
-                    error={
-                      touchedFields.has("client_email")
-                        ? validationErrors.client_email
-                        : undefined
-                    }
-                    value={formValues.client_email}
-                    onChange={(e) =>
-                      setFormValues({
-                        ...formValues,
-                        client_email: e.target.value,
-                      })
-                    }
-                    onBlur={(e) =>
-                      handleFieldBlur("client_email", e.target.value)
-                    }
+                    error={errors.client_email?.message}
                     inputMode="email"
                     enterKeyHint="next"
                   />
                   <MobileInput
+                    {...register("client_phone", {
+                      ...createProjectValidation.client_phone,
+                      onChange: (e) => {
+                        const formatted = formatPhoneNumber(e.target.value);
+                        setValue("client_phone", formatted);
+                      }
+                    })}
                     id="client_phone"
-                    name="client_phone"
                     type="tel"
                     label="Phone"
                     placeholder="(555) 123-4567"
                     disabled={isPending}
-                    error={
-                      touchedFields.has("client_phone")
-                        ? validationErrors.client_phone
-                        : undefined
-                    }
-                    value={formValues.client_phone}
-                    onChange={(e) =>
-                      setFormValues({
-                        ...formValues,
-                        client_phone: formatPhoneNumber(e.target.value),
-                      })
-                    }
-                    onBlur={(e) =>
-                      handleFieldBlur("client_phone", e.target.value)
-                    }
+                    error={errors.client_phone?.message}
                     inputMode="tel"
                     enterKeyHint="next"
                   />
@@ -698,21 +494,11 @@ export function CreateProjectForm({
                 Street Address <span className="text-red-500">*</span>
               </Label>
               <MobileInput
+                {...register("address", createProjectValidation.address)}
                 id="address"
-                name="address"
                 placeholder="123 Main Street"
-                required
                 disabled={isPending}
-                error={
-                  touchedFields.has("address")
-                    ? validationErrors.address
-                    : undefined
-                }
-                value={formValues.address}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, address: e.target.value })
-                }
-                onBlur={(e) => handleFieldBlur("address", e.target.value)}
+                error={errors.address?.message}
                 inputMode="text"
                 enterKeyHint="next"
               />
@@ -721,15 +507,12 @@ export function CreateProjectForm({
             {/* City & State */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <MobileInput
+                {...register("city", createProjectValidation.city)}
                 id="city"
-                name="city"
                 label="City"
                 placeholder="City"
                 disabled={isPending}
-                value={formValues.city}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, city: e.target.value })
-                }
+                error={errors.city?.message}
                 inputMode="text"
                 enterKeyHint="next"
               />
@@ -746,9 +529,7 @@ export function CreateProjectForm({
                   placeholder="Select state"
                   disabled={isPending}
                   value={formValues.state}
-                  onValueChange={(value) =>
-                    setFormValues({ ...formValues, state: value })
-                  }
+                  onValueChange={(value) => setValue("state", value)}
                 />
               </div>
             </div>
@@ -756,21 +537,12 @@ export function CreateProjectForm({
             {/* ZIP Code */}
             <div className="sm:w-1/2">
               <MobileInput
+                {...register("zip_code", createProjectValidation.zip_code)}
                 id="zip_code"
-                name="zip_code"
                 label="ZIP Code"
                 placeholder="12345"
                 disabled={isPending}
-                error={
-                  touchedFields.has("zip_code")
-                    ? validationErrors.zip_code
-                    : undefined
-                }
-                value={formValues.zip_code}
-                onChange={(e) =>
-                  setFormValues({ ...formValues, zip_code: e.target.value })
-                }
-                onBlur={(e) => handleFieldBlur("zip_code", e.target.value)}
+                error={errors.zip_code?.message}
                 inputMode="numeric"
                 enterKeyHint="next"
               />
@@ -798,34 +570,26 @@ export function CreateProjectForm({
                   Start Date <span className="text-red-500">*</span>
                 </Label>
                 <input
+                  {...register("start_date", createProjectValidation.start_date)}
                   id="start_date"
-                  name="start_date"
                   type="date"
-                  required
                   disabled={isPending}
                   className={cn(
                     "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
                     "border rounded-xl transition-all",
-                    touchedFields.has("start_date") &&
-                      validationErrors.start_date
+                    errors.start_date
                       ? "border-red-500 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
                     "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
-                  value={formValues.start_date}
-                  onChange={(e) =>
-                    setFormValues({ ...formValues, start_date: e.target.value })
-                  }
-                  onBlur={(e) => handleFieldBlur("start_date", e.target.value)}
                 />
-                {touchedFields.has("start_date") &&
-                  validationErrors.start_date && (
-                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {validationErrors.start_date}
-                    </p>
-                  )}
+                {errors.start_date && (
+                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {errors.start_date.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -837,29 +601,24 @@ export function CreateProjectForm({
                   Expected End Date
                 </Label>
                 <input
+                  {...register("end_date", createProjectValidation.end_date)}
                   id="end_date"
-                  name="end_date"
                   type="date"
                   disabled={isPending}
                   className={cn(
                     "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
                     "border rounded-xl transition-all",
-                    touchedFields.has("end_date") && validationErrors.end_date
+                    errors.end_date
                       ? "border-red-500 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
                     "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
-                  value={formValues.end_date}
-                  onChange={(e) =>
-                    setFormValues({ ...formValues, end_date: e.target.value })
-                  }
-                  onBlur={(e) => handleFieldBlur("end_date", e.target.value)}
                 />
-                {touchedFields.has("end_date") && validationErrors.end_date && (
+                {errors.end_date && (
                   <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
                     <AlertCircle className="w-3 h-3" />
-                    {validationErrors.end_date}
+                    {errors.end_date.message}
                   </p>
                 )}
               </div>
@@ -876,21 +635,12 @@ export function CreateProjectForm({
                   Budget
                 </Label>
                 <MobileInput
+                  {...register("budget", createProjectValidation.budget)}
                   id="budget"
-                  name="budget"
                   type="number"
                   placeholder="50000"
                   disabled={isPending}
-                  error={
-                    touchedFields.has("budget")
-                      ? validationErrors.budget
-                      : undefined
-                  }
-                  value={formValues.budget}
-                  onChange={(e) =>
-                    setFormValues({ ...formValues, budget: e.target.value })
-                  }
-                  onBlur={(e) => handleFieldBlur("budget", e.target.value)}
+                  error={errors.budget?.message}
                   inputMode="decimal"
                   min={0}
                   step={0.01}

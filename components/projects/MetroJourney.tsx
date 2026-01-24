@@ -1,24 +1,30 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
-import { m as motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Settings from 'lucide-react/icons/settings';
-import Map from 'lucide-react/icons/map';
-import { Button } from '@/components/ui/button';
-import { PhaseStation } from './PhaseStation';
-import { PhaseDetailPanel } from './PhaseDetailPanel';
-import { Card, CardContent } from '@/components/ui/card';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import type { ProjectPhasesRow } from '@/types/db/tables/projects';
-import type { TasksRow } from '@/types/db/tables/tasks';
+import Settings from "lucide-react/icons/settings";
+import Map from "lucide-react/icons/map";
+import { Button } from "@/components/ui/button";
+import { PhaseStation } from "./PhaseStation";
+import { PhaseDetailPanel } from "./PhaseDetailPanel";
+import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import type { ProjectPhasesRow } from "@/types/db/tables/projects";
+import type { TasksRow } from "@/types/db/tables/tasks";
 
 // B-003: Dynamic import for heavy ManagePhasesModal component (-20KB from initial bundle)
-const ManagePhasesModal = dynamic(() => import('./ManagePhasesModal').then((mod) => ({ default: mod.ManagePhasesModal })), {
-  ssr: false,
-  loading: () => null,
-});
+const ManagePhasesModal = dynamic(
+  () =>
+    import("./ManagePhasesModal").then((mod) => ({
+      default: mod.ManagePhasesModal,
+    })),
+  {
+    ssr: false,
+    loading: () => null,
+  },
+);
 
 type Phase = ProjectPhasesRow;
 type Task = TasksRow;
@@ -61,9 +67,9 @@ export function MetroJourney({
   projectId,
   projects = [],
   teamMembers = [],
-  onModalOpen
+  onModalOpen,
 }: MetroJourneyProps) {
-  console.log('[MetroJourney] Rendering with phases:', phases.length);
+  console.log("[MetroJourney] Rendering with phases:", phases.length);
 
   const [selectedPhaseId, setSelectedPhaseId] = useState<string | null>(null);
   const [showLeftFade, setShowLeftFade] = useState(false);
@@ -74,25 +80,25 @@ export function MetroJourney({
   // Performance optimization: Memoize computed values to prevent recalculation on every render
   const selectedPhase = useMemo(
     () => phases.find((p) => p.id === selectedPhaseId),
-    [phases, selectedPhaseId]
+    [phases, selectedPhaseId],
   );
   const selectedPhaseTasks = useMemo(
     () => tasks.filter((t) => t.phase_id === selectedPhaseId),
-    [tasks, selectedPhaseId]
+    [tasks, selectedPhaseId],
   );
   const selectedPhaseStats = useMemo(
     () => phaseStats.find((s) => s.phaseId === selectedPhaseId),
-    [phaseStats, selectedPhaseId]
+    [phaseStats, selectedPhaseId],
   );
 
   // Find current phase (first non-completed phase)
   const currentPhaseIndex = useMemo(
-    () => phases.findIndex((p) => p.status !== 'completed'),
-    [phases]
+    () => phases.findIndex((p) => p.status !== "completed"),
+    [phases],
   );
   const currentPhaseId = useMemo(
-    () => currentPhaseIndex >= 0 ? phases[currentPhaseIndex].id : null,
-    [currentPhaseIndex, phases]
+    () => (currentPhaseIndex >= 0 ? phases[currentPhaseIndex].id : null),
+    [currentPhaseIndex, phases],
   );
 
   // Performance optimization: Memoize event handlers to prevent recreation on every render
@@ -109,13 +115,17 @@ export function MetroJourney({
     if (currentPhaseId && scrollContainerRef.current) {
       const currentElement = document.getElementById(`phase-${currentPhaseId}`);
       if (currentElement) {
-        currentElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        currentElement.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
       }
     }
   }, [currentPhaseId]);
 
   return (
-    <Card className="overflow-hidden border-2 border-gray-200 shadow-construction">
+    <Card className="overflow-hidden border-2 border-gray-200 dark:border-gray-700 shadow-construction">
       <CardContent className="pt-6 pb-6">
         {/* Clean header section */}
         <div className="mb-6">
@@ -125,8 +135,12 @@ export function MetroJourney({
                 <Map className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-construction-blue">Project Journey</h3>
-                <p className="text-xs text-gray-500 font-medium">Track progress through each phase</p>
+                <h3 className="text-xl font-bold text-construction-blue">
+                  Project Journey
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  Track progress through each phase
+                </p>
               </div>
             </div>
 
@@ -148,20 +162,20 @@ export function MetroJourney({
               {/* Clean track line */}
               <div className="absolute top-8 left-0 right-0 h-1 flex px-4">
                 {phases.map((phase, index) => {
-                  const isCompleted = phase.status === 'completed';
-                  const isInProgress = phase.status === 'in_progress';
+                  const isCompleted = phase.status === "completed";
+                  const isInProgress = phase.status === "in_progress";
                   const isLast = index === phases.length - 1;
 
                   return (
                     <div
                       key={`line-${phase.id}`}
                       className="flex-1 flex items-center"
-                      style={{ minWidth: '180px' }}
+                      style={{ minWidth: "180px" }}
                     >
                       {!isLast && (
                         <div className="relative flex-1 h-1">
                           {/* Background track */}
-                          <div className="absolute inset-0 bg-gray-200 rounded-full" />
+                          <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full" />
 
                           {/* Progress fill */}
                           {isCompleted && (
@@ -172,9 +186,9 @@ export function MetroJourney({
                               transition={{
                                 delay: index * 0.1,
                                 duration: 0.5,
-                                ease: 'easeOut',
+                                ease: "easeOut",
                               }}
-                              style={{ transformOrigin: 'left' }}
+                              style={{ transformOrigin: "left" }}
                             />
                           )}
 
@@ -186,9 +200,9 @@ export function MetroJourney({
                               transition={{
                                 delay: index * 0.1,
                                 duration: 0.5,
-                                ease: 'easeOut',
+                                ease: "easeOut",
                               }}
-                              style={{ transformOrigin: 'left' }}
+                              style={{ transformOrigin: "left" }}
                             />
                           )}
                         </div>
@@ -210,13 +224,13 @@ export function MetroJourney({
                       key={phase.id}
                       id={`phase-${phase.id}`}
                       className="flex-1"
-                      style={{ minWidth: '180px' }}
+                      style={{ minWidth: "180px" }}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
                         delay: index * 0.1,
                         duration: 0.4,
-                        ease: 'easeOut',
+                        ease: "easeOut",
                       }}
                     >
                       <PhaseStation
@@ -225,7 +239,12 @@ export function MetroJourney({
                         isCurrent={isCurrent}
                         isSelected={isSelected}
                         onClick={() => {
-                          console.log('[PhaseStation] Clicked:', phase.name, 'isSelected:', isSelected);
+                          console.log(
+                            "[PhaseStation] Clicked:",
+                            phase.name,
+                            "isSelected:",
+                            isSelected,
+                          );
                           setSelectedPhaseId(isSelected ? null : phase.id);
                         }}
                       />
@@ -252,25 +271,25 @@ export function MetroJourney({
             ref={scrollContainerRef}
             onScroll={handleScroll}
             className="relative overflow-x-auto pb-6 px-2 snap-x snap-mandatory scrollbar-hide"
-            style={{ WebkitOverflowScrolling: 'touch' }}
+            style={{ WebkitOverflowScrolling: "touch" }}
           >
             <div className="relative min-w-max">
               {/* Horizontal track for mobile */}
               <div className="absolute top-7 left-0 right-0 h-1 flex">
                 {phases.map((phase, index) => {
-                  const isCompleted = phase.status === 'completed';
-                  const isInProgress = phase.status === 'in_progress';
+                  const isCompleted = phase.status === "completed";
+                  const isInProgress = phase.status === "in_progress";
                   const isLast = index === phases.length - 1;
 
                   return (
                     <div
                       key={`line-mobile-${phase.id}`}
                       className="flex items-center"
-                      style={{ width: '110px' }}
+                      style={{ width: "110px" }}
                     >
                       {!isLast && (
                         <div className="relative w-full h-1">
-                          <div className="absolute inset-0 bg-gray-200 rounded-full" />
+                          <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full" />
 
                           {isCompleted && (
                             <motion.div
@@ -278,7 +297,7 @@ export function MetroJourney({
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 1 }}
                               transition={{ delay: index * 0.1, duration: 0.5 }}
-                              style={{ transformOrigin: 'left' }}
+                              style={{ transformOrigin: "left" }}
                             />
                           )}
 
@@ -288,7 +307,7 @@ export function MetroJourney({
                               initial={{ scaleX: 0 }}
                               animate={{ scaleX: 0.5 }}
                               transition={{ delay: index * 0.1, duration: 0.5 }}
-                              style={{ transformOrigin: 'left' }}
+                              style={{ transformOrigin: "left" }}
                             />
                           )}
                         </div>
@@ -310,13 +329,13 @@ export function MetroJourney({
                       key={phase.id}
                       id={`phase-mobile-${phase.id}`}
                       className="snap-center flex-shrink-0"
-                      style={{ width: '110px' }}
+                      style={{ width: "110px" }}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{
                         delay: index * 0.1,
                         duration: 0.4,
-                        ease: 'easeOut',
+                        ease: "easeOut",
                       }}
                     >
                       <PhaseStation
@@ -325,7 +344,12 @@ export function MetroJourney({
                         isCurrent={isCurrent}
                         isSelected={isSelected}
                         onClick={() => {
-                          console.log('[PhaseStation] Clicked:', phase.name, 'isSelected:', isSelected);
+                          console.log(
+                            "[PhaseStation] Clicked:",
+                            phase.name,
+                            "isSelected:",
+                            isSelected,
+                          );
                           setSelectedPhaseId(isSelected ? null : phase.id);
                         }}
                       />
@@ -342,7 +366,7 @@ export function MetroJourney({
           {selectedPhase && selectedPhaseStats && (
             <motion.div
               key={selectedPhase.id}
-              className="mt-6 pt-6 border-t-2 border-gray-200"
+              className="mt-6 pt-6 border-t-2 border-gray-200 dark:border-gray-700"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

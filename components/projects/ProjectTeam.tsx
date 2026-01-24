@@ -39,32 +39,38 @@ interface ProjectTeamProps {
 const ROLE_CONFIG = {
   admin: {
     label: "Admin",
-    color: "bg-purple-100 text-purple-800 border-purple-200",
+    color:
+      "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-900/40",
     borderColor: "border-l-purple-500",
   },
   project_manager: {
     label: "Project Manager",
-    color: "bg-construction-blue/10 text-construction-blue border-construction-blue/20",
+    color:
+      "bg-construction-blue/10 text-construction-blue border-construction-blue/20 dark:bg-construction-blue/15 dark:text-blue-300 dark:border-construction-blue/40",
     borderColor: "border-l-[var(--construction-blue)]",
   },
   foreman: {
     label: "Foreman",
-    color: "bg-[#059669]/10 text-[#059669] border-[#059669]/30",
+    color:
+      "bg-[#059669]/10 text-[#059669] border-[#059669]/30 dark:bg-[#059669]/20 dark:text-[#34D399] dark:border-[#059669]/50",
     borderColor: "border-l-[#059669]",
   },
   field_worker: {
     label: "Field Worker",
-    color: "bg-gray-100 text-gray-700 border-gray-200",
+    color:
+      "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700",
     borderColor: "border-l-gray-400",
   },
   subcontractor: {
     label: "Subcontractor",
-    color: "bg-amber-100 text-amber-800 border-amber-200",
+    color:
+      "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/40",
     borderColor: "border-l-amber-500",
   },
   client: {
     label: "Client",
-    color: "bg-pink-100 text-pink-800 border-pink-200",
+    color:
+      "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-950/30 dark:text-pink-300 dark:border-pink-900/40",
     borderColor: "border-l-pink-500",
   },
 };
@@ -142,14 +148,16 @@ export function ProjectTeam({
             "text-left",
             activeTab === "members"
               ? "border-construction-blue bg-construction-blue/5 shadow-sm"
-              : "border-gray-200 bg-white",
+              : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900",
           )}
         >
           <div className="flex items-center justify-between mb-2">
             <Users
               className={cn(
                 "h-5 w-5",
-                activeTab === "members" ? "text-construction-blue" : "text-gray-400",
+                activeTab === "members"
+                  ? "text-construction-blue"
+                  : "text-gray-400",
               )}
             />
             <ChevronRight
@@ -164,7 +172,9 @@ export function ProjectTeam({
           <div
             className={cn(
               "text-2xl font-black",
-              activeTab === "members" ? "text-construction-blue" : "text-gray-700",
+              activeTab === "members"
+                ? "text-construction-blue"
+                : "text-gray-700",
             )}
           >
             {teamMembers.length}
@@ -179,8 +189,8 @@ export function ProjectTeam({
             "active:scale-[0.98]",
             "text-left",
             activeTab === "subcontractors"
-              ? "border-amber-500 bg-amber-50 shadow-sm"
-              : "border-gray-200 bg-white",
+              ? "border-amber-500 bg-amber-50 dark:bg-amber-950/20 shadow-sm"
+              : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900",
           )}
         >
           <div className="flex items-center justify-between mb-2">
@@ -220,7 +230,7 @@ export function ProjectTeam({
       {/* Content Card */}
       <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b-2 border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div className="p-4 border-b-2 border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               {activeTab === "members" ? (
@@ -285,17 +295,17 @@ export function ProjectTeam({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="divide-y divide-gray-100"
+              className="divide-y divide-gray-100 dark:divide-gray-800"
             >
               {teamMembers.length === 0 ? (
                 <div className="text-center py-12 px-4">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                    <Users className="h-8 w-8 text-gray-400" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-700 mb-2">
+                  <h4 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-2">
                     No team members yet
                   </h4>
-                  <p className="text-gray-500 mb-6 text-sm max-w-[280px] mx-auto">
+                  <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm max-w-[280px] mx-auto">
                     Add team members to collaborate on this project
                   </p>
                   <button
@@ -324,7 +334,8 @@ export function ProjectTeam({
                     member.role as keyof typeof ROLE_CONFIG
                   ] || {
                     label: member.role,
-                    color: "bg-gray-100 text-gray-800 border-gray-200",
+                    color:
+                      "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700",
                     borderColor: "border-l-gray-400",
                   };
 
@@ -338,7 +349,7 @@ export function ProjectTeam({
                         "flex items-center gap-3 p-4",
                         "border-l-4",
                         roleConfig.borderColor,
-                        "active:bg-gray-50 transition-colors",
+                        "active:bg-gray-50 dark:active:bg-gray-800 transition-colors",
                       )}
                     >
                       <Avatar className="h-12 w-12 border-2 border-gray-200 dark:border-gray-700 flex-shrink-0">
@@ -415,17 +426,17 @@ export function ProjectTeam({
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
-              className="divide-y divide-gray-100"
+              className="divide-y divide-gray-100 dark:divide-gray-800"
             >
               {subcontractors.length === 0 ? (
                 <div className="text-center py-12 px-4">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center">
                     <HardHat className="h-8 w-8 text-amber-500" />
                   </div>
-                  <h4 className="text-lg font-bold text-gray-700 mb-2">
+                  <h4 className="text-lg font-bold text-gray-700 dark:text-gray-100 mb-2">
                     No subcontractors yet
                   </h4>
-                  <p className="text-gray-500 mb-6 text-sm max-w-[280px] mx-auto">
+                  <p className="text-gray-500 dark:text-gray-400 mb-6 text-sm max-w-[280px] mx-auto">
                     Add subcontractors to work on this project
                   </p>
                   <button
@@ -458,7 +469,7 @@ export function ProjectTeam({
                       className={cn(
                         "flex items-center gap-3 p-4",
                         "border-l-4 border-l-amber-500",
-                        "active:bg-gray-50 transition-colors",
+                        "active:bg-gray-50 dark:active:bg-gray-800 transition-colors",
                       )}
                     >
                       <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">

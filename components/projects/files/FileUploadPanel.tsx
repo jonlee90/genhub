@@ -34,7 +34,7 @@ export function FileUploadPanel({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             className={cn(
-              "relative rounded-lg overflow-hidden border-2 border-gray-200",
+              "relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700",
               containerClassName,
             )}
           >
@@ -72,10 +72,10 @@ export function FileUploadPanel({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: "auto" }}
-          className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg"
+          className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-lg"
         >
-          <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-600">{error}</p>
+          <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
         </motion.div>
       )}
     </>

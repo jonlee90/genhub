@@ -121,7 +121,7 @@ export function BaseModal({
           // Desktop: Centered modal styles - let Radix UI handle centering
           !isMobile && [
             "rounded-2xl",
-            "max-h-[90vh]",
+            "max-h-[95vh]",
             MODAL_MAX_WIDTHS[maxWidth],
           ],
           className,
@@ -232,7 +232,7 @@ export function BaseModal({
             contentClassName,
           )}
           style={{
-            maxHeight: isMobile ? "calc(90vh - 280px)" : "calc(90vh - 280px)",
+            maxHeight: isMobile ? "calc(90vh - 140px)" : "calc(95vh - 140px)",
           }}
         >
           {/* Key prop for form remounting */}

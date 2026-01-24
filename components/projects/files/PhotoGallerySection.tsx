@@ -156,14 +156,14 @@ export function PhotoGallerySection({
   if (photos.length === 0) {
     return (
       <>
-        <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+        <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900">
           <div className="p-4 bg-construction-blue/10 rounded-full mb-4">
             <ImageIcon className="h-12 w-12 text-construction-blue" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 mb-2">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
             No Photos Yet
           </h3>
-          <p className="text-sm text-gray-500 mb-6 text-center max-w-sm">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm">
             Start documenting site progress, safety conditions, and inspections
             by uploading your first photo.
           </p>
@@ -207,7 +207,7 @@ export function PhotoGallerySection({
           />
           <label
             htmlFor="select-all-photos"
-            className="text-sm text-gray-600 cursor-pointer"
+            className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer"
           >
             {selectedIds.size > 0
               ? `${selectedIds.size} of ${photos.length} selected`
@@ -236,7 +236,7 @@ export function PhotoGallerySection({
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
               className={cn(
-                "relative group rounded-lg overflow-hidden border-2 aspect-square bg-gray-100",
+                "relative group rounded-lg overflow-hidden border-2 aspect-square bg-gray-100 dark:bg-gray-800",
                 selectedIds.has(photo.id)
                   ? "border-construction-blue ring-2 ring-[var(--construction-blue)]/30"
                   : "border-gray-200 hover:border-gray-300",
@@ -260,7 +260,7 @@ export function PhotoGallerySection({
                 <Checkbox
                   checked={selectedIds.has(photo.id)}
                   onCheckedChange={() => onSelectToggle(photo.id)}
-                  className="bg-white shadow-md border-gray-300 data-[state=checked]:bg-construction-blue"
+                  className="bg-white dark:bg-gray-900 shadow-md border-gray-300 dark:border-gray-700 data-[state=checked]:bg-construction-blue"
                 />
               </div>
 
@@ -365,7 +365,7 @@ export function PhotoGallerySection({
               {/* Client visible indicator */}
               {photo.client_visible && (
                 <div className="absolute bottom-2 left-2 z-10">
-                  <div className="px-1.5 py-0.5 bg-white/90 rounded text-[10px] font-medium text-gray-700">
+                  <div className="px-1.5 py-0.5 bg-white/90 dark:bg-gray-900/80 rounded text-[10px] font-medium text-gray-700 dark:text-gray-200">
                     Client
                   </div>
                 </div>

@@ -15,24 +15,24 @@
  * - This eliminates duplicate fetches on page load (was causing 2-4 unnecessary POST requests)
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { m as motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback } from "react";
+import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Image from 'lucide-react/icons/image';
-import FileText from 'lucide-react/icons/file-text';
-import Folder from 'lucide-react/icons/folder';
-import Loader2 from 'lucide-react/icons/loader-2';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { SearchFilterPanel } from './SearchFilterPanel';
-import { BulkActionToolbar } from './BulkActionToolbar';
-import { PhotoGallerySection } from './PhotoGallerySection';
-import { DocumentsSection } from './DocumentsSection';
-import { getProjectFiles } from '@/app/actions/project-files';
-import { getProjectPhotosWithReceipts } from '@/app/actions/project-photos';
-import { toast } from 'sonner';
+import Image from "lucide-react/icons/image";
+import FileText from "lucide-react/icons/file-text";
+import Folder from "lucide-react/icons/folder";
+import Loader2 from "lucide-react/icons/loader-2";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { SearchFilterPanel } from "./SearchFilterPanel";
+import { BulkActionToolbar } from "./BulkActionToolbar";
+import { PhotoGallerySection } from "./PhotoGallerySection";
+import { DocumentsSection } from "./DocumentsSection";
+import { getProjectFiles } from "@/app/actions/project-files";
+import { getProjectPhotosWithReceipts } from "@/app/actions/project-photos";
+import { toast } from "sonner";
 
 interface ProjectFilesTabProps {
   projectId: string;
@@ -42,7 +42,7 @@ interface ProjectFilesTabProps {
   onPrimaryPhotoChange?: () => void;
 }
 
-type TabView = 'photos' | 'documents' | 'all';
+type TabView = "photos" | "documents" | "all";
 
 export function ProjectFilesTab({
   projectId,
@@ -51,20 +51,30 @@ export function ProjectFilesTab({
   currentImageUrl,
   onPrimaryPhotoChange,
 }: ProjectFilesTabProps) {
-  console.log('[ProjectFilesTab] Rendering for project:', projectId, 'currentImageUrl:', currentImageUrl);
+  console.log(
+    "[ProjectFilesTab] Rendering for project:",
+    projectId,
+    "currentImageUrl:",
+    currentImageUrl,
+  );
 
   // Track current primary photo locally for optimistic UI
-  const [localImageUrl, setLocalImageUrl] = useState<string | null | undefined>(currentImageUrl);
+  const [localImageUrl, setLocalImageUrl] = useState<string | null | undefined>(
+    currentImageUrl,
+  );
 
   // Performance optimization: Memoize handler for when primary photo changes
-  const handleSetPrimary = useCallback((url: string | null) => {
-    console.log('[ProjectFilesTab] Primary photo changed to:', url);
-    setLocalImageUrl(url);
-    onPrimaryPhotoChange?.();
-  }, [onPrimaryPhotoChange]);
+  const handleSetPrimary = useCallback(
+    (url: string | null) => {
+      console.log("[ProjectFilesTab] Primary photo changed to:", url);
+      setLocalImageUrl(url);
+      onPrimaryPhotoChange?.();
+    },
+    [onPrimaryPhotoChange],
+  );
 
   // Tab state
-  const [activeView, setActiveView] = useState<TabView>('photos');
+  const [activeView, setActiveView] = useState<TabView>("photos");
 
   // Data state - Use initialData from server, track if filters have been applied
   const [files, setFiles] = useState(initialFiles);
@@ -82,7 +92,7 @@ export function ProjectFilesTab({
   // Filter state
   // Performance optimization: Lazy initialization for filter object
   const [filters, setFilters] = useState(() => ({
-    search: '',
+    search: "",
     category: [],
     dateFrom: undefined,
     dateTo: undefined,
@@ -95,15 +105,16 @@ export function ProjectFilesTab({
   // Performance optimization: Wrap fetchData in useCallback to prevent re-creation
   // Only fetch when explicitly called (user action: filter change, upload, delete)
   const fetchData = useCallback(async () => {
-    console.log('[ProjectFilesTab] Fetching data with filters:', filters);
+    console.log("[ProjectFilesTab] Fetching data with filters:", filters);
     setLoading(true);
 
     try {
-      if (activeView === 'photos' || activeView === 'all') {
+      if (activeView === "photos" || activeView === "all") {
         const result = await getProjectPhotosWithReceipts({
           projectId,
           filters: {
-            category: filters.category.length > 0 ? filters.category : undefined,
+            category:
+              filters.category.length > 0 ? filters.category : undefined,
             search: filters.search || undefined,
             dateFrom: filters.dateFrom,
             dateTo: filters.dateTo,
@@ -119,13 +130,14 @@ export function ProjectFilesTab({
         }
       }
 
-      if (activeView === 'documents' || activeView === 'all') {
+      if (activeView === "documents" || activeView === "all") {
         const result = await getProjectFiles(projectId, {
           category: filters.category.length > 0 ? filters.category : undefined,
           search: filters.search || undefined,
           dateFrom: filters.dateFrom,
           dateTo: filters.dateTo,
-          uploadedBy: filters.uploadedBy.length > 0 ? filters.uploadedBy : undefined,
+          uploadedBy:
+            filters.uploadedBy.length > 0 ? filters.uploadedBy : undefined,
           fileType: filters.fileType.length > 0 ? filters.fileType : undefined,
         });
 
@@ -136,8 +148,8 @@ export function ProjectFilesTab({
         }
       }
     } catch (error) {
-      console.error('[ProjectFilesTab] Fetch error:', error);
-      toast.error('Failed to load files');
+      console.error("[ProjectFilesTab] Fetch error:", error);
+      toast.error("Failed to load files");
     } finally {
       setLoading(false);
     }
@@ -155,7 +167,7 @@ export function ProjectFilesTab({
   }, [fetchData, hasAppliedFilters]);
 
   const handleFilterChange = (newFilters: any) => {
-    console.log('[ProjectFilesTab] Filters changed:', newFilters);
+    console.log("[ProjectFilesTab] Filters changed:", newFilters);
     setFilters(newFilters);
     setHasAppliedFilters(true); // Mark that filters have been applied
     setSelectedIds(new Set()); // Clear selection on filter change
@@ -163,7 +175,7 @@ export function ProjectFilesTab({
 
   const handleClearFilters = () => {
     setFilters({
-      search: '',
+      search: "",
       category: [],
       dateFrom: undefined,
       dateTo: undefined,
@@ -197,11 +209,11 @@ export function ProjectFilesTab({
 
   const handleSelectAll = () => {
     const allIds =
-      activeView === 'photos'
+      activeView === "photos"
         ? photos.map((p) => p.id)
-        : activeView === 'documents'
-        ? files.map((f) => f.id)
-        : [...photos.map((p) => p.id), ...files.map((f) => f.id)];
+        : activeView === "documents"
+          ? files.map((f) => f.id)
+          : [...photos.map((p) => p.id), ...files.map((f) => f.id)];
 
     setSelectedIds(new Set(allIds));
   };
@@ -210,29 +222,29 @@ export function ProjectFilesTab({
     setSelectedIds(new Set());
   };
 
-  const handleBulkAction = async (action: 'download' | 'delete' | 'move') => {
-    console.log('[ProjectFilesTab] Bulk action:', action, selectedIds.size);
+  const handleBulkAction = async (action: "download" | "delete" | "move") => {
+    console.log("[ProjectFilesTab] Bulk action:", action, selectedIds.size);
     // Action handlers will be implemented in components
   };
 
   return (
     <div className="space-y-6">
       {/* Debug: Sub-navigation */}
-      <div className="flex items-center gap-2 border-b border-gray-200">
+      <div className="flex items-center gap-2 border-b border-gray-200 dark:border-gray-700">
         <Button
           variant="ghost"
-          onClick={() => handleTabChange('photos')}
+          onClick={() => handleTabChange("photos")}
           className={cn(
-            'relative px-4 py-2 rounded-none border-b-2 transition-colors',
-            activeView === 'photos'
-              ? 'border-construction-blue text-construction-blue'
-              : 'border-transparent text-gray-600 hover:text-construction-blue'
+            "relative px-4 py-2 rounded-none border-b-2 transition-colors",
+            activeView === "photos"
+              ? "border-construction-blue text-construction-blue"
+              : "border-transparent text-gray-600 hover:text-construction-blue",
           )}
         >
           <Image className="h-4 w-4 mr-2" aria-hidden="true" />
           Photos
           {photos.length > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+            <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-xs">
               {photos.length}
             </span>
           )}
@@ -240,18 +252,18 @@ export function ProjectFilesTab({
 
         <Button
           variant="ghost"
-          onClick={() => handleTabChange('documents')}
+          onClick={() => handleTabChange("documents")}
           className={cn(
-            'relative px-4 py-2 rounded-none border-b-2 transition-colors',
-            activeView === 'documents'
-              ? 'border-construction-blue text-construction-blue'
-              : 'border-transparent text-gray-600 hover:text-construction-blue'
+            "relative px-4 py-2 rounded-none border-b-2 transition-colors",
+            activeView === "documents"
+              ? "border-construction-blue text-construction-blue"
+              : "border-transparent text-gray-600 hover:text-construction-blue",
           )}
         >
           <FileText className="h-4 w-4 mr-2" />
           Documents
           {files.length > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+            <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-xs">
               {files.length}
             </span>
           )}
@@ -259,18 +271,18 @@ export function ProjectFilesTab({
 
         <Button
           variant="ghost"
-          onClick={() => handleTabChange('all')}
+          onClick={() => handleTabChange("all")}
           className={cn(
-            'relative px-4 py-2 rounded-none border-b-2 transition-colors',
-            activeView === 'all'
-              ? 'border-construction-blue text-construction-blue'
-              : 'border-transparent text-gray-600 hover:text-construction-blue'
+            "relative px-4 py-2 rounded-none border-b-2 transition-colors",
+            activeView === "all"
+              ? "border-construction-blue text-construction-blue"
+              : "border-transparent text-gray-600 hover:text-construction-blue",
           )}
         >
           <Folder className="h-4 w-4 mr-2" />
           All Files
-          {(photos.length + files.length) > 0 && (
-            <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+          {photos.length + files.length > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full text-xs">
               {photos.length + files.length}
             </span>
           )}
@@ -290,9 +302,9 @@ export function ProjectFilesTab({
         {selectedIds.size > 0 && (
           <BulkActionToolbar
             selectedCount={selectedIds.size}
-            onDownload={() => handleBulkAction('download')}
-            onDelete={() => handleBulkAction('delete')}
-            onMove={() => handleBulkAction('move')}
+            onDownload={() => handleBulkAction("download")}
+            onDelete={() => handleBulkAction("delete")}
+            onMove={() => handleBulkAction("move")}
             onClear={handleClearSelection}
           />
         )}
@@ -301,13 +313,13 @@ export function ProjectFilesTab({
       {/* Debug: Content sections */}
       <div className="relative">
         {loading && (
-          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm flex items-center justify-center z-10">
             <Loader2 className="h-6 w-6 text-construction-blue animate-spin" />
           </div>
         )}
 
         <AnimatePresence mode="wait">
-          {activeView === 'photos' && (
+          {activeView === "photos" && (
             <motion.div
               key="photos"
               initial={{ opacity: 0, y: 10 }}
@@ -327,7 +339,7 @@ export function ProjectFilesTab({
             </motion.div>
           )}
 
-          {activeView === 'documents' && (
+          {activeView === "documents" && (
             <motion.div
               key="documents"
               initial={{ opacity: 0, y: 10 }}
@@ -345,7 +357,7 @@ export function ProjectFilesTab({
             </motion.div>
           )}
 
-          {activeView === 'all' && (
+          {activeView === "all" && (
             <motion.div
               key="all"
               initial={{ opacity: 0, y: 10 }}

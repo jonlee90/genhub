@@ -1,10 +1,14 @@
 "use client";
 
-import { useMemo, useState, useTransition, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { createExpenseValidation } from "@/lib/validation/client-validation";
+import { Controller } from "react-hook-form";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -42,32 +46,43 @@ export function CreateExpenseModal({
   taskContext,
   companyId,
 }: CreateExpenseModalProps) {
-  // Initialize with task context if provided
-  const [selectedProject, setSelectedProject] = useState<string>(
-    taskContext?.projectId || "",
-  );
-
   // Vendor options state
   const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
   const [vendorLoading, setVendorLoading] = useState(false);
   const [vendorError, setVendorError] = useState<string | null>(null);
-  const [selectedTask, setSelectedTask] = useState<string>(
-    taskContext?.taskId || "",
-  );
-  const [description, setDescription] = useState("");
-  const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<string>("materials");
-  const [expenseDate, setExpenseDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [vendorName, setVendorName] = useState("");
   const [, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // Use validated form hook with native validation
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    canSubmit,
+    isSubmitting,
+    setValue,
+    watch,
+  } = useValidatedForm({
+    defaultValues: {
+      project_id: taskContext?.projectId || "",
+      task_id: taskContext?.taskId || undefined,
+      description: "",
+      amount: 0,
+      category: "materials" as const,
+      expense_date: new Date().toISOString().split("T")[0],
+      vendor_name: "",
+    },
+  });
+
+  // Watch values for derived state
+  const selectedProject = watch("project_id");
+  const selectedTask = watch("task_id");
+  const vendorName = watch("vendor_name");
 
   // Filter tasks for selected project
   const projectTasks = useMemo(
@@ -157,66 +172,38 @@ export function CreateExpenseModal({
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
-  const handleSubmit = () => {
-    if (
-      !selectedProject ||
-      !description ||
-      !amount ||
-      parseFloat(amount) <= 0
-    ) {
+  const onSubmit = handleSubmit(async (data) => {
+    // In a real implementation, upload the receipt to storage first
+    // const receiptUrl = await uploadReceiptToStorage(receiptFile);
+
+    const result = await createExpense({
+      project_id: data.project_id,
+      task_id:
+        data.task_id && data.task_id !== "no-task" ? data.task_id : undefined,
+      description: data.description,
+      amount: data.amount,
+      category: data.category,
+      expense_date: data.expense_date,
+      vendor_name: data.vendor_name || undefined,
+      receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
+    });
+
+    if (result.success) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields with valid values.",
+        title: "Expense Added Successfully",
+        description: taskContext
+          ? `Expense added to task: ${taskContext.taskTitle}`
+          : "Your expense has been added and is now under review.",
+      });
+      onClose();
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to submit expense",
         variant: "destructive",
       });
-      return;
     }
-
-    startTransition(async () => {
-      // In a real implementation, upload the receipt to storage first
-      // const receiptUrl = await uploadReceiptToStorage(receiptFile);
-
-      const result = await createExpense({
-        project_id: selectedProject,
-        task_id:
-          selectedTask && selectedTask !== "no-task" ? selectedTask : undefined,
-        description,
-        amount: parseFloat(amount),
-        category: category as
-          | "materials"
-          | "labor"
-          | "equipment"
-          | "permits"
-          | "transportation"
-          | "meals"
-          | "lodging"
-          | "other",
-        expense_date: expenseDate,
-        vendor_name: vendorName || undefined,
-        receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
-      });
-
-      if (result.success) {
-        toast({
-          title: "Expense Added Successfully",
-          description: taskContext
-            ? `Expense added to task: ${taskContext.taskTitle}`
-            : "Your expense has been added and is now under review.",
-        });
-        onClose();
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to submit expense",
-          variant: "destructive",
-        });
-      }
-    });
-  };
-
-  // Validation state for submit button
-  const isValid =
-    selectedProject && description && amount && parseFloat(amount) > 0;
+  });
 
   return (
     <ResponsiveModal
@@ -229,9 +216,9 @@ export function CreateExpenseModal({
       showNavigation={true}
       onBack={taskContext ? onClose : undefined}
       backLabel="Back to Task"
-      onContinue={handleSubmit}
-      continueLabel={isPending ? (taskContext ? "Adding..." : "Submitting...") : (taskContext ? "Add Expense" : "Submit Expense")}
-      continueDisabled={isPending || !isValid}
+      onContinue={onSubmit}
+      continueLabel={isSubmitting ? (taskContext ? "Adding..." : "Submitting...") : (taskContext ? "Add Expense" : "Submit Expense")}
+      continueDisabled={!canSubmit || isSubmitting}
     >
       <div className="space-y-6">
         {/* Task Context Info Banner - Positioned at top of form */}
@@ -364,73 +351,92 @@ export function CreateExpenseModal({
             <div className="space-y-2">
               <Label
                 htmlFor="project"
-                className="text-sm font-bold text-gray-700"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
               >
                 Project *
               </Label>
-              <Select
-                value={selectedProject}
-                onValueChange={setSelectedProject}
-                disabled={!!taskContext}
-              >
-                <SelectTrigger
-                  id="project"
-                  className={`border-2 ${taskContext ? "bg-gray-50 cursor-not-allowed opacity-60" : ""}`}
-                >
-                  <SelectValue placeholder="Select a project" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
-                      {project.name}
-                      <span className="text-gray-500 text-sm ml-2">
-                        ({taskCountPerProject[project.id]} tasks)
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="project_id"
+                control={control}
+                rules={createExpenseValidation.project_id}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={!!taskContext}
+                  >
+                    <SelectTrigger
+                      id="project"
+                      className={`border-2 ${taskContext ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
+                    >
+                      <SelectValue placeholder="Select a project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id}>
+                          {project.name}
+                          <span className="text-gray-500 text-sm ml-2">
+                            ({taskCountPerProject[project.id]} tasks)
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {taskContext && (
-                <p className="text-xs text-gray-500 italic">
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Locked: Pre-filled from task context
+                </p>
+              )}
+              {errors.project_id && (
+                <p className="text-sm text-red-600 font-medium">
+                  {errors.project_id.message}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="task" className="text-sm font-bold text-gray-700">
+              <Label htmlFor="task" className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 Task {taskContext ? "*" : "(Optional)"}
               </Label>
-              <Select
-                value={selectedTask}
-                onValueChange={setSelectedTask}
-                disabled={!selectedProject || !!taskContext}
-              >
-                <SelectTrigger
-                  id="task"
-                  className={`border-2 ${taskContext ? "bg-gray-50 cursor-not-allowed opacity-60" : ""}`}
-                >
-                  <SelectValue placeholder="Select a task" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="no-task">No task</SelectItem>
-                  {projectTasks.map((task) => {
-                    const taskTypeLabel = task.task_type
-                      ? getTaskTypeDisplayConfig(task.task_type as any).label
-                      : "Work";
-                    return (
-                      <SelectItem key={task.id} value={task.id}>
-                        {task.title}
-                        <span className="text-gray-500 text-sm ml-2">
-                          [{taskTypeLabel}]
-                        </span>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="task_id"
+                control={control}
+                rules={createExpenseValidation.task_id}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                    disabled={!selectedProject || !!taskContext}
+                  >
+                    <SelectTrigger
+                      id="task"
+                      className={`border-2 ${taskContext ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
+                    >
+                      <SelectValue placeholder="Select a task" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="no-task">No task</SelectItem>
+                      {projectTasks.map((task) => {
+                        const taskTypeLabel = task.task_type
+                          ? getTaskTypeDisplayConfig(task.task_type as any).label
+                          : "Work";
+                        return (
+                          <SelectItem key={task.id} value={task.id}>
+                            {task.title}
+                            <span className="text-gray-500 text-sm ml-2">
+                              [{taskTypeLabel}]
+                            </span>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {taskContext && (
-                <p className="text-xs text-gray-500 italic">
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Locked: Pre-filled from task context
                 </p>
               )}
@@ -438,98 +444,112 @@ export function CreateExpenseModal({
           </div>
 
           {/* Description */}
-          <FormField label="Description *" htmlFor="description">
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              Description *
+            </Label>
             <Textarea
               id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
               className="border-2"
               placeholder="e.g., Lumber for framing, electrical supplies, etc."
               rows={3}
+              {...register("description", createExpenseValidation.description)}
             />
-          </FormField>
+            {errors.description && (
+              <p className="text-sm text-red-600 font-medium">
+                {errors.description.message}
+              </p>
+            )}
+          </div>
 
           {/* Amount, Category, Date */}
           <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label
-                htmlFor="amount"
-                className="text-sm font-bold text-gray-700"
-              >
-                Amount *
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="border-2"
-                placeholder="0.00"
-              />
-            </div>
+            <Controller
+              name="amount"
+              control={control}
+              rules={createExpenseValidation.amount}
+              render={({ field }) => (
+                <CurrencyInput
+                  {...field}
+                  label="Amount *"
+                  error={errors.amount?.message}
+                  placeholder="0.00"
+                  onValueChange={(value) => field.onChange(parseFloat(value || "0"))}
+                  value={field.value?.toString() || ""}
+                />
+              )}
+            />
 
             <div className="space-y-2">
               <Label
                 htmlFor="category"
-                className="text-sm font-bold text-gray-700"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
               >
                 Category *
               </Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger id="category" className="border-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="materials">Materials</SelectItem>
-                  <SelectItem value="labor">Labor</SelectItem>
-                  <SelectItem value="equipment">Equipment</SelectItem>
-                  <SelectItem value="permits">Permits</SelectItem>
-                  <SelectItem value="transportation">Transportation</SelectItem>
-                  <SelectItem value="meals">Meals</SelectItem>
-                  <SelectItem value="lodging">Lodging</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
+              <Controller
+                name="category"
+                control={control}
+                rules={createExpenseValidation.category}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="category" className="border-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="materials">Materials</SelectItem>
+                      <SelectItem value="labor">Labor</SelectItem>
+                      <SelectItem value="equipment">Equipment</SelectItem>
+                      <SelectItem value="permits">Permits</SelectItem>
+                      <SelectItem value="transportation">Transportation</SelectItem>
+                      <SelectItem value="meals">Meals</SelectItem>
+                      <SelectItem value="lodging">Lodging</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date" className="text-sm font-bold text-gray-700">
+              <Label htmlFor="date" className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 Date *
               </Label>
               <Input
                 id="date"
                 type="date"
-                value={expenseDate}
-                onChange={(e) => setExpenseDate(e.target.value)}
                 className="border-2"
+                {...register("expense_date", createExpenseValidation.expense_date)}
               />
+              {errors.expense_date && (
+                <p className="text-sm text-red-600 font-medium">
+                  {errors.expense_date.message}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Vendor Name - VendorCombobox or fallback Input */}
           <div className="space-y-2">
-            <Label htmlFor="vendor" className="text-sm font-bold text-gray-700">
+            <Label htmlFor="vendor" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               Vendor Name (Optional)
             </Label>
             {companyId ? (
               <VendorCombobox
                 options={vendorOptions}
-                value={vendorName}
-                onChange={setVendorName}
+                value={vendorName || ""}
+                onChange={(value) => setValue("vendor_name", value)}
                 placeholder="Select or enter vendor..."
                 loading={vendorLoading}
                 error={vendorError}
-                disabled={isPending}
+                disabled={isSubmitting}
               />
             ) : (
               <Input
                 id="vendor"
-                value={vendorName}
-                onChange={(e) => setVendorName(e.target.value)}
                 className="border-2"
                 placeholder="e.g., Home Depot, Lowe's, etc."
+                {...register("vendor_name", createExpenseValidation.vendor_name)}
               />
             )}
           </div>

@@ -314,6 +314,11 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
   const [currentPage, setCurrentPage] = useState(1);
   const [isPending, startTransition] = useTransition();
 
+  // Sync projects state when initialProjects prop changes (after router.refresh())
+  useEffect(() => {
+    setProjects(initialProjects);
+  }, [initialProjects]);
+
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -519,7 +524,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
       <>
         <EmptyStateCard
           icon={FolderKanban}
-          title="BUILD YOUR\nFIRST PROJECT"
+          title="BUILD YOUR FIRST PROJECT"
           description="Launch your construction command center. Track progress, manage teams, and deliver projects."
           buttonText="START PROJECT"
           onButtonClick={() => setShowCreateModal(true)}

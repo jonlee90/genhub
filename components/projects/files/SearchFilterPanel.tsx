@@ -6,51 +6,50 @@
  * - Bottom sheet filter panel (mobile)
  */
 
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Search from 'lucide-react/icons/search';
-import Filter from 'lucide-react/icons/filter';
-import X from 'lucide-react/icons/x';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-
+import Search from "lucide-react/icons/search";
+import Filter from "lucide-react/icons/filter";
+import X from "lucide-react/icons/x";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SearchFilterPanelProps {
   filters: any;
   onFilterChange: (filters: any) => void;
   onClear: () => void;
-  viewType: 'photos' | 'documents' | 'all';
+  viewType: "photos" | "documents" | "all";
 }
 
 const DOCUMENT_CATEGORIES = [
-  { value: 'contracts', label: 'Contracts & Agreements' },
-  { value: 'permits', label: 'Permits & Approvals' },
-  { value: 'drawings', label: 'Drawings & Blueprints' },
-  { value: 'reports', label: 'Reports' },
-  { value: 'financial', label: 'Financial' },
-  { value: 'safety', label: 'Safety & Compliance' },
-  { value: 'meeting_notes', label: 'Meeting Notes' },
-  { value: 'specifications', label: 'Specifications' },
-  { value: 'general', label: 'General' },
+  { value: "contracts", label: "Contracts & Agreements" },
+  { value: "permits", label: "Permits & Approvals" },
+  { value: "drawings", label: "Drawings & Blueprints" },
+  { value: "reports", label: "Reports" },
+  { value: "financial", label: "Financial" },
+  { value: "safety", label: "Safety & Compliance" },
+  { value: "meeting_notes", label: "Meeting Notes" },
+  { value: "specifications", label: "Specifications" },
+  { value: "general", label: "General" },
 ];
 
 const PHOTO_CATEGORIES = [
-  { value: 'site_progress', label: 'Site Progress' },
-  { value: 'safety_documentation', label: 'Safety Documentation' },
-  { value: 'permits_approvals', label: 'Permits & Approvals' },
-  { value: 'inspection_reports', label: 'Inspection Reports' },
-  { value: 'material_receipts', label: 'Material Receipts' },
-  { value: 'change_orders', label: 'Change Orders' },
-  { value: 'defects_issues', label: 'Defects/Issues' },
-  { value: 'before_after', label: 'Before/After' },
-  { value: 'task_receipts', label: 'Task Receipts' },
-  { value: 'expense_receipts', label: 'Expense Receipts' },
-  { value: 'general', label: 'General' },
+  { value: "site_progress", label: "Site Progress" },
+  { value: "safety_documentation", label: "Safety Documentation" },
+  { value: "permits_approvals", label: "Permits & Approvals" },
+  { value: "inspection_reports", label: "Inspection Reports" },
+  { value: "material_receipts", label: "Material Receipts" },
+  { value: "change_orders", label: "Change Orders" },
+  { value: "defects_issues", label: "Defects/Issues" },
+  { value: "before_after", label: "Before/After" },
+  { value: "task_receipts", label: "Task Receipts" },
+  { value: "expense_receipts", label: "Expense Receipts" },
+  { value: "general", label: "General" },
 ];
 
 export function SearchFilterPanel({
@@ -59,10 +58,10 @@ export function SearchFilterPanel({
   onClear,
   viewType,
 }: SearchFilterPanelProps) {
-  console.log('[SearchFilterPanel] Rendering with filters:', filters);
+  console.log("[SearchFilterPanel] Rendering with filters:", filters);
 
   const [showFilters, setShowFilters] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(filters.search || '');
+  const [searchTerm, setSearchTerm] = useState(filters.search || "");
 
   // Debounce search
   useEffect(() => {
@@ -76,8 +75,8 @@ export function SearchFilterPanel({
 
   // Performance optimization: Memoize computed values to prevent recalculation on every render
   const categories = useMemo(
-    () => viewType === 'documents' ? DOCUMENT_CATEGORIES : PHOTO_CATEGORIES,
-    [viewType]
+    () => (viewType === "documents" ? DOCUMENT_CATEGORIES : PHOTO_CATEGORIES),
+    [viewType],
   );
 
   const activeFilterCount = useMemo(() => {
@@ -89,14 +88,21 @@ export function SearchFilterPanel({
       filters.fileType.length > 0,
       filters.source.length > 0,
     ].filter(Boolean).length;
-  }, [filters.category.length, filters.dateFrom, filters.dateTo, filters.uploadedBy.length, filters.fileType.length, filters.source.length]);
+  }, [
+    filters.category.length,
+    filters.dateFrom,
+    filters.dateTo,
+    filters.uploadedBy.length,
+    filters.fileType.length,
+    filters.source.length,
+  ]);
 
   return (
     <div className="space-y-4">
       {/* Debug: Search bar */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 dark:text-gray-400" />
           <Input
             placeholder="Search files..."
             value={searchTerm}
@@ -108,7 +114,9 @@ export function SearchFilterPanel({
         <Button
           variant="outline"
           onClick={() => setShowFilters(!showFilters)}
-          className={cn(showFilters && 'bg-construction-blue/10 border-construction-blue')}
+          className={cn(
+            showFilters && "bg-construction-blue/10 border-construction-blue",
+          )}
         >
           <Filter className="h-4 w-4 mr-2" />
           Filters
@@ -129,23 +137,33 @@ export function SearchFilterPanel({
 
       {/* Debug: Advanced filters (collapsible) */}
       {showFilters && (
-        <div className="border-2 border-gray-200 rounded-lg p-4 space-y-4 bg-gray-50">
+        <div className="border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
           {/* Category filter */}
           <div className="space-y-2">
-            <Label className="text-xs font-bold text-gray-500 uppercase">Category</Label>
+            <Label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">
+              Category
+            </Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {categories.map((cat) => (
-                <label key={cat.value} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={cat.value}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <Checkbox
                     checked={filters.category.includes(cat.value)}
-                    onCheckedChange={(checked: boolean | 'indeterminate') => {
-                      const newCategories = checked === true
-                        ? [...filters.category, cat.value]
-                        : filters.category.filter((c: string) => c !== cat.value);
+                    onCheckedChange={(checked: boolean | "indeterminate") => {
+                      const newCategories =
+                        checked === true
+                          ? [...filters.category, cat.value]
+                          : filters.category.filter(
+                              (c: string) => c !== cat.value,
+                            );
                       onFilterChange({ ...filters, category: newCategories });
                     }}
                   />
-                  <span className="text-sm text-gray-700">{cat.label}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {cat.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -154,63 +172,88 @@ export function SearchFilterPanel({
           {/* Date range */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-gray-500 uppercase">From Date</Label>
+              <Label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">
+                From Date
+              </Label>
               <Input
                 type="date"
-                value={filters.dateFrom || ''}
-                onChange={(e) => onFilterChange({ ...filters, dateFrom: e.target.value })}
+                value={filters.dateFrom || ""}
+                onChange={(e) =>
+                  onFilterChange({ ...filters, dateFrom: e.target.value })
+                }
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-gray-500 uppercase">To Date</Label>
+              <Label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">
+                To Date
+              </Label>
               <Input
                 type="date"
-                value={filters.dateTo || ''}
-                onChange={(e) => onFilterChange({ ...filters, dateTo: e.target.value })}
+                value={filters.dateTo || ""}
+                onChange={(e) =>
+                  onFilterChange({ ...filters, dateTo: e.target.value })
+                }
               />
             </div>
           </div>
 
           {/* Source filter (photos only) */}
-          {viewType === 'photos' && (
+          {viewType === "photos" && (
             <div className="space-y-2">
-              <Label className="text-xs font-bold text-gray-500 uppercase">Source</Label>
+              <Label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase">
+                Source
+              </Label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox
-                    checked={filters.source.includes('upload')}
-                    onCheckedChange={(checked: boolean | 'indeterminate') => {
-                      const newSources = checked === true
-                        ? [...filters.source, 'upload']
-                        : filters.source.filter((s: string) => s !== 'upload');
+                    checked={filters.source.includes("upload")}
+                    onCheckedChange={(checked: boolean | "indeterminate") => {
+                      const newSources =
+                        checked === true
+                          ? [...filters.source, "upload"]
+                          : filters.source.filter(
+                              (s: string) => s !== "upload",
+                            );
                       onFilterChange({ ...filters, source: newSources });
                     }}
                   />
-                  <span className="text-sm text-gray-700">Direct Uploads</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Direct Uploads
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox
-                    checked={filters.source.includes('task_receipt')}
-                    onCheckedChange={(checked: boolean | 'indeterminate') => {
-                      const newSources = checked === true
-                        ? [...filters.source, 'task_receipt']
-                        : filters.source.filter((s: string) => s !== 'task_receipt');
+                    checked={filters.source.includes("task_receipt")}
+                    onCheckedChange={(checked: boolean | "indeterminate") => {
+                      const newSources =
+                        checked === true
+                          ? [...filters.source, "task_receipt"]
+                          : filters.source.filter(
+                              (s: string) => s !== "task_receipt",
+                            );
                       onFilterChange({ ...filters, source: newSources });
                     }}
                   />
-                  <span className="text-sm text-gray-700">Task Receipts</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Task Receipts
+                  </span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <Checkbox
-                    checked={filters.source.includes('expense_receipt')}
-                    onCheckedChange={(checked: boolean | 'indeterminate') => {
-                      const newSources = checked === true
-                        ? [...filters.source, 'expense_receipt']
-                        : filters.source.filter((s: string) => s !== 'expense_receipt');
+                    checked={filters.source.includes("expense_receipt")}
+                    onCheckedChange={(checked: boolean | "indeterminate") => {
+                      const newSources =
+                        checked === true
+                          ? [...filters.source, "expense_receipt"]
+                          : filters.source.filter(
+                              (s: string) => s !== "expense_receipt",
+                            );
                       onFilterChange({ ...filters, source: newSources });
                     }}
                   />
-                  <span className="text-sm text-gray-700">Expense Receipts</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Expense Receipts
+                  </span>
                 </label>
               </div>
             </div>

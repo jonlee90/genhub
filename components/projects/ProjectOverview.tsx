@@ -8,9 +8,14 @@ import Mail from "lucide-react/icons/mail";
 import Phone from "lucide-react/icons/phone";
 import { m as motion } from "framer-motion";
 // Vercel: bundle-dynamic-imports - Lazy load MetroJourney (369 lines, heavy animations)
-const MetroJourney = dynamic(() => import("./MetroJourney").then(mod => ({ default: mod.MetroJourney })), {
-  loading: () => <div className="h-[400px] animate-pulse bg-gray-100 rounded-xl" />,
-});
+const MetroJourney = dynamic(
+  () => import("./MetroJourney").then((mod) => ({ default: mod.MetroJourney })),
+  {
+    loading: () => (
+      <div className="h-[400px] animate-pulse bg-gray-100 dark:bg-gray-800 rounded-xl" />
+    ),
+  },
+);
 import { ProjectExpenseSummary } from "./ProjectExpenseSummary";
 import { ProjectTaskSummary } from "./ProjectTaskSummary";
 import { InfoCard } from "./InfoCard";
@@ -71,7 +76,7 @@ export function ProjectOverview({
     : initialExpenseStats;
   const taskStats = statsFetched ? statsData?.taskStats : initialTaskStats;
   const teamCostSummaries = teamFetched
-    ? teamData?.teamCostSummaries ?? []
+    ? (teamData?.teamCostSummaries ?? [])
     : initialTeamCostSummaries;
 
   // Performance optimization: Memoize computed values to prevent unnecessary recalculations
@@ -112,23 +117,23 @@ export function ProjectOverview({
   const clientFooterContent = useMemo(
     () =>
       project.created_at || project.updated_at ? (
-        <div className="border-t-2 border-gray-100 pt-4 mt-4 space-y-3 col-span-full">
+        <div className="border-t-2 border-gray-100 dark:border-gray-800 pt-4 mt-4 space-y-3 col-span-full">
           {project.created_at && (
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Created
               </div>
-              <div className="text-xs font-medium text-gray-600">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 {formatDate(project.created_at, { includeYear: true })}
               </div>
             </div>
           )}
           {project.updated_at && (
             <div className="flex items-center justify-between">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              <div className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Last Updated
               </div>
-              <div className="text-xs font-medium text-gray-600">
+              <div className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 {formatDate(project.updated_at, { includeYear: true })}
               </div>
             </div>
@@ -154,7 +159,16 @@ export function ProjectOverview({
             phaseStats={phaseTaskStats}
             projectId={project.id}
             projects={projects}
-            teamMembers={(teamMembers || []).filter((m): m is { id: string; name: string; email: string; avatar_url: string | null } => !!m.name)}
+            teamMembers={(teamMembers || []).filter(
+              (
+                m,
+              ): m is {
+                id: string;
+                name: string;
+                email: string;
+                avatar_url: string | null;
+              } => !!m.name,
+            )}
             onModalOpen={onModalOpen}
           />
         </motion.div>

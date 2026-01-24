@@ -150,7 +150,7 @@ export function FileVersionHistory({
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 Loading version history...
               </p>
             </div>
@@ -160,10 +160,12 @@ export function FileVersionHistory({
         {/* Error state */}
         {!loading && error && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="p-3 bg-red-100 rounded-full mb-3">
-              <FileText className="h-6 w-6 text-red-600" />
+            <div className="p-3 bg-red-100 dark:bg-red-950/40 rounded-full mb-3">
+              <FileText className="h-6 w-6 text-red-600 dark:text-red-400" />
             </div>
-            <p className="text-sm text-red-600 font-medium mb-2">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 font-medium mb-2">
+              {error}
+            </p>
             <Button variant="outline" onClick={fetchVersionHistory} size="sm">
               Try Again
             </Button>
@@ -173,13 +175,13 @@ export function FileVersionHistory({
         {/* Empty state */}
         {!loading && !error && versions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="p-3 bg-gray-100 rounded-full mb-3">
-              <Clock className="h-6 w-6 text-gray-400" />
+            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-full mb-3">
+              <Clock className="h-6 w-6 text-gray-400 dark:text-gray-500" />
             </div>
-            <p className="text-sm text-gray-600 font-medium">
+            <p className="text-sm text-gray-600 dark:text-gray-300 font-medium">
               No version history
             </p>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               This is the only version of this file
             </p>
           </div>
@@ -201,7 +203,7 @@ export function FileVersionHistory({
                     "border-2 rounded-lg p-4 transition-all duration-200",
                     isCurrent
                       ? "border-construction-blue/30 bg-construction-blue/5"
-                      : "border-gray-200 bg-white hover:border-gray-300",
+                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600",
                   )}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -214,13 +216,13 @@ export function FileVersionHistory({
                             "inline-flex items-center px-2 py-1 rounded text-xs font-bold",
                             isCurrent
                               ? "bg-construction-blue text-white"
-                              : "bg-gray-200 text-gray-700",
+                              : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-200",
                           )}
                         >
                           v{version.version_number}
                         </span>
                         {isCurrent && (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">
+                          <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded text-xs font-bold">
                             <CheckCircle2 className="h-3 w-3" />
                             CURRENT
                           </span>
@@ -228,23 +230,27 @@ export function FileVersionHistory({
                       </div>
 
                       {/* Filename */}
-                      <p className="text-sm font-medium text-gray-900 truncate mb-1">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
                         {version.filename}
                       </p>
 
                       {/* Metadata */}
-                      <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
                         <span className="inline-flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {formatDate(version.created_at)}
                         </span>
                         {version.uploader?.name && (
                           <>
-                            <span className="text-gray-300">|</span>
+                            <span className="text-gray-300 dark:text-gray-700">
+                              |
+                            </span>
                             <span>{version.uploader.name}</span>
                           </>
                         )}
-                        <span className="text-gray-300">|</span>
+                        <span className="text-gray-300 dark:text-gray-700">
+                          |
+                        </span>
                         <span>{formatFileSize(version.file_size)}</span>
                       </div>
                     </div>
@@ -285,8 +291,8 @@ export function FileVersionHistory({
 
         {/* Footer info */}
         {!loading && !error && versions.length > 1 && (
-          <div className="pt-3 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
+          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
               {versions.length} version{versions.length !== 1 ? "s" : ""}{" "}
               available. Restoring a version will create a new version with that
               content.

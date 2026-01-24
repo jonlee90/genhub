@@ -8,77 +8,77 @@
  * - File validation: max 50MB per file
  */
 
-'use client';
+"use client";
 
-import { useState, useRef, useCallback } from 'react';
-import { m as motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useCallback } from "react";
+import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Upload from 'lucide-react/icons/upload';
-import X from 'lucide-react/icons/x';
-import Loader2 from 'lucide-react/icons/loader-2';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import FileText from 'lucide-react/icons/file-text';
-import File from 'lucide-react/icons/file';
-import Image from 'lucide-react/icons/image';
-import Archive from 'lucide-react/icons/archive';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { CategorySelector } from './CategorySelector';
-import { toast } from 'sonner';
+import Upload from "lucide-react/icons/upload";
+import X from "lucide-react/icons/x";
+import Loader2 from "lucide-react/icons/loader-2";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import FileText from "lucide-react/icons/file-text";
+import File from "lucide-react/icons/file";
+import Image from "lucide-react/icons/image";
+import Archive from "lucide-react/icons/archive";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CategorySelector } from "./CategorySelector";
+import { toast } from "sonner";
 
 // Validation constants
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_EXTENSIONS = [
-  '.pdf',
-  '.doc',
-  '.docx',
-  '.xls',
-  '.xlsx',
-  '.ppt',
-  '.pptx',
-  '.txt',
-  '.csv',
-  '.dwg',
-  '.dxf',
-  '.svg',
-  '.jpg',
-  '.jpeg',
-  '.png',
-  '.gif',
-  '.webp',
-  '.zip',
-  '.rar',
-  '.7z',
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".txt",
+  ".csv",
+  ".dwg",
+  ".dxf",
+  ".svg",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".gif",
+  ".webp",
+  ".zip",
+  ".rar",
+  ".7z",
 ];
 const ALLOWED_MIME_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain',
-  'text/csv',
-  'image/vnd.dwg',
-  'image/vnd.dxf',
-  'image/svg+xml',
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'application/zip',
-  'application/x-rar-compressed',
-  'application/x-7z-compressed',
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "text/plain",
+  "text/csv",
+  "image/vnd.dwg",
+  "image/vnd.dxf",
+  "image/svg+xml",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/zip",
+  "application/x-rar-compressed",
+  "application/x-7z-compressed",
 ];
 const MAX_CONCURRENT_UPLOADS = 3;
 
 interface FileQueueItem {
   file: File;
   id: string;
-  status: 'pending' | 'uploading' | 'success' | 'error';
+  status: "pending" | "uploading" | "success" | "error";
   progress: number;
   error?: string;
 }
@@ -97,9 +97,20 @@ function getFileIcon(file: File) {
   const type = file.type;
   const name = file.name.toLowerCase();
 
-  if (type === 'application/pdf' || name.endsWith('.pdf')) return FileText;
-  if (type.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'].some(ext => name.endsWith(ext))) return Image;
-  if (type.includes('zip') || type.includes('rar') || ['.zip', '.rar', '.7z'].some(ext => name.endsWith(ext))) return Archive;
+  if (type === "application/pdf" || name.endsWith(".pdf")) return FileText;
+  if (
+    type.startsWith("image/") ||
+    [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"].some((ext) =>
+      name.endsWith(ext),
+    )
+  )
+    return Image;
+  if (
+    type.includes("zip") ||
+    type.includes("rar") ||
+    [".zip", ".rar", ".7z"].some((ext) => name.endsWith(ext))
+  )
+    return Archive;
   return File;
 }
 
@@ -107,7 +118,7 @@ function getFileIcon(file: File) {
  * Validate file for upload
  */
 function validateFile(file: File): { valid: boolean; error?: string } {
-  console.log('[validateFile] Checking:', file.name, file.type, file.size);
+  console.log("[validateFile] Checking:", file.name, file.type, file.size);
 
   // Check file size
   if (file.size > MAX_FILE_SIZE) {
@@ -118,16 +129,17 @@ function validateFile(file: File): { valid: boolean; error?: string } {
   }
 
   // Check extension
-  const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+  const ext = "." + file.name.split(".").pop()?.toLowerCase();
   const hasValidExt = ALLOWED_EXTENSIONS.includes(ext);
 
   // Check MIME type (some browsers don't report accurate MIME types)
-  const hasValidMime = ALLOWED_MIME_TYPES.includes(file.type) || file.type === '';
+  const hasValidMime =
+    ALLOWED_MIME_TYPES.includes(file.type) || file.type === "";
 
   if (!hasValidExt && !hasValidMime) {
     return {
       valid: false,
-      error: 'File type not allowed',
+      error: "File type not allowed",
     };
   }
 
@@ -149,10 +161,10 @@ export function ProjectFileUploader({
   onComplete,
   onCancel,
 }: ProjectFileUploaderProps) {
-  console.log('[ProjectFileUploader] Rendering for project:', projectId);
+  console.log("[ProjectFileUploader] Rendering for project:", projectId);
 
   const [queue, setQueue] = useState<FileQueueItem[]>([]);
-  const [category, setCategory] = useState(defaultCategory || 'general');
+  const [category, setCategory] = useState(defaultCategory || "general");
   const [clientVisible, setClientVisible] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -166,7 +178,7 @@ export function ProjectFileUploader({
     (files: FileList | null) => {
       if (!files || files.length === 0) return;
 
-      console.log('[ProjectFileUploader] Files selected:', files.length);
+      console.log("[ProjectFileUploader] Files selected:", files.length);
 
       const newItems: FileQueueItem[] = [];
 
@@ -182,7 +194,7 @@ export function ProjectFileUploader({
         newItems.push({
           file,
           id: `${file.name}-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          status: 'pending',
+          status: "pending",
           progress: 0,
         });
       }
@@ -196,22 +208,27 @@ export function ProjectFileUploader({
       // Start uploading
       processQueue([...queue, ...newItems]);
     },
-    [queue]
+    [queue],
   );
 
   /**
    * Process upload queue with concurrency limit
    */
   const processQueue = async (items: FileQueueItem[]) => {
-    console.log('[ProjectFileUploader] Processing queue, items:', items.length);
+    console.log("[ProjectFileUploader] Processing queue, items:", items.length);
 
     const pending = items.filter(
-      (item) => item.status === 'pending' && !uploadingRef.current.has(item.id)
+      (item) => item.status === "pending" && !uploadingRef.current.has(item.id),
     );
     const currentUploading = uploadingRef.current.size;
     const slotsAvailable = MAX_CONCURRENT_UPLOADS - currentUploading;
 
-    console.log('[ProjectFileUploader] Slots available:', slotsAvailable, 'Pending:', pending.length);
+    console.log(
+      "[ProjectFileUploader] Slots available:",
+      slotsAvailable,
+      "Pending:",
+      pending.length,
+    );
 
     const toUpload = pending.slice(0, slotsAvailable);
 
@@ -224,61 +241,72 @@ export function ProjectFileUploader({
    * Upload a single file
    */
   const uploadFile = async (item: FileQueueItem) => {
-    console.log('[ProjectFileUploader] Starting upload:', item.file.name);
+    console.log("[ProjectFileUploader] Starting upload:", item.file.name);
     uploadingRef.current.add(item.id);
 
     // Update status to uploading
     setQueue((prev) =>
-      prev.map((qi) => (qi.id === item.id ? { ...qi, status: 'uploading' as const } : qi))
+      prev.map((qi) =>
+        qi.id === item.id ? { ...qi, status: "uploading" as const } : qi,
+      ),
     );
 
     try {
       const formData = new FormData();
-      formData.append('file', item.file);
-      formData.append('projectId', projectId);
-      formData.append('category', category);
-      formData.append('clientVisible', clientVisible.toString());
+      formData.append("file", item.file);
+      formData.append("projectId", projectId);
+      formData.append("category", category);
+      formData.append("clientVisible", clientVisible.toString());
 
       // Simulate progress (since fetch doesn't support progress tracking)
       const progressInterval = setInterval(() => {
         setQueue((prev) =>
           prev.map((qi) =>
-            qi.id === item.id && qi.status === 'uploading'
+            qi.id === item.id && qi.status === "uploading"
               ? { ...qi, progress: Math.min(qi.progress + 10, 90) }
-              : qi
-          )
+              : qi,
+          ),
         );
       }, 200);
 
-      const response = await fetch('/api/project-files/upload', {
-        method: 'POST',
+      const response = await fetch("/api/project-files/upload", {
+        method: "POST",
         body: formData,
       });
 
       clearInterval(progressInterval);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
-        throw new Error(errorData.error || 'Upload failed');
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Upload failed" }));
+        throw new Error(errorData.error || "Upload failed");
       }
 
       // Success
-      console.log('[ProjectFileUploader] Upload success:', item.file.name);
+      console.log("[ProjectFileUploader] Upload success:", item.file.name);
       setQueue((prev) =>
         prev.map((qi) =>
-          qi.id === item.id ? { ...qi, status: 'success' as const, progress: 100 } : qi
-        )
+          qi.id === item.id
+            ? { ...qi, status: "success" as const, progress: 100 }
+            : qi,
+        ),
       );
     } catch (err) {
-      console.error('[ProjectFileUploader] Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      console.error("[ProjectFileUploader] Upload error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Upload failed";
 
       setQueue((prev) =>
         prev.map((qi) =>
           qi.id === item.id
-            ? { ...qi, status: 'error' as const, progress: 0, error: errorMessage }
-            : qi
-        )
+            ? {
+                ...qi,
+                status: "error" as const,
+                progress: 0,
+                error: errorMessage,
+              }
+            : qi,
+        ),
       );
     } finally {
       uploadingRef.current.delete(item.id);
@@ -286,21 +314,30 @@ export function ProjectFileUploader({
       // Check for more items to upload
       setQueue((prev) => {
         const pendingItems = prev.filter(
-          (qi) => qi.status === 'pending' && !uploadingRef.current.has(qi.id)
+          (qi) => qi.status === "pending" && !uploadingRef.current.has(qi.id),
         );
-        if (pendingItems.length > 0 && uploadingRef.current.size < MAX_CONCURRENT_UPLOADS) {
+        if (
+          pendingItems.length > 0 &&
+          uploadingRef.current.size < MAX_CONCURRENT_UPLOADS
+        ) {
           // Schedule next batch
           setTimeout(() => processQueue(prev), 100);
         }
 
         // Check if all done
-        const allDone = prev.every((qi) => qi.status === 'success' || qi.status === 'error');
+        const allDone = prev.every(
+          (qi) => qi.status === "success" || qi.status === "error",
+        );
         if (allDone && prev.length > 0) {
-          const successCount = prev.filter((qi) => qi.status === 'success').length;
-          const errorCount = prev.filter((qi) => qi.status === 'error').length;
+          const successCount = prev.filter(
+            (qi) => qi.status === "success",
+          ).length;
+          const errorCount = prev.filter((qi) => qi.status === "error").length;
 
           if (errorCount === 0) {
-            toast.success(`${successCount} file${successCount !== 1 ? 's' : ''} uploaded successfully`);
+            toast.success(
+              `${successCount} file${successCount !== 1 ? "s" : ""} uploaded successfully`,
+            );
             setTimeout(() => onComplete(), 1000);
           } else if (successCount > 0) {
             toast.warning(`${successCount} uploaded, ${errorCount} failed`);
@@ -316,7 +353,7 @@ export function ProjectFileUploader({
    * Remove item from queue
    */
   const removeFromQueue = (itemId: string) => {
-    console.log('[ProjectFileUploader] Removing from queue:', itemId);
+    console.log("[ProjectFileUploader] Removing from queue:", itemId);
     setQueue((prev) => prev.filter((qi) => qi.id !== itemId));
   };
 
@@ -340,7 +377,7 @@ export function ProjectFileUploader({
   };
 
   const hasQueueItems = queue.length > 0;
-  const hasActiveUploads = queue.some((q) => q.status === 'uploading');
+  const hasActiveUploads = queue.some((q) => q.status === "uploading");
 
   return (
     <div className="space-y-4">
@@ -349,17 +386,21 @@ export function ProjectFileUploader({
         ref={fileInputRef}
         type="file"
         multiple
-        accept={ALLOWED_EXTENSIONS.join(',')}
+        accept={ALLOWED_EXTENSIONS.join(",")}
         onChange={(e) => {
           handleFilesSelect(e.target.files);
-          e.target.value = ''; // Reset for same file selection
+          e.target.value = ""; // Reset for same file selection
         }}
         className="hidden"
       />
 
       {/* Category selector - only show before uploads start */}
       {!hasActiveUploads && (
-        <CategorySelector type="document" value={category} onChange={setCategory} />
+        <CategorySelector
+          type="document"
+          value={category}
+          onChange={setCategory}
+        />
       )}
 
       {/* Client visible checkbox - only show before uploads start */}
@@ -368,13 +409,13 @@ export function ProjectFileUploader({
           <Checkbox
             id="client-visible-files"
             checked={clientVisible}
-            onCheckedChange={(checked: boolean | 'indeterminate') =>
+            onCheckedChange={(checked: boolean | "indeterminate") =>
               setClientVisible(checked === true)
             }
           />
           <label
             htmlFor="client-visible-files"
-            className="text-sm text-gray-700 cursor-pointer select-none"
+            className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
           >
             Visible to client in portal
           </label>
@@ -386,7 +427,7 @@ export function ProjectFileUploader({
         {hasQueueItems && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="space-y-2 max-h-80 overflow-y-auto pr-1"
           >
@@ -400,22 +441,30 @@ export function ProjectFileUploader({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20 }}
                   className={cn(
-                    'border-2 rounded-lg p-3',
-                    item.status === 'success' && 'border-green-200 bg-green-50',
-                    item.status === 'error' && 'border-red-200 bg-red-50',
-                    item.status === 'pending' && 'border-gray-200 bg-gray-50',
-                    item.status === 'uploading' && 'border-construction-blue/30 bg-construction-blue/5'
+                    "border-2 rounded-lg p-3",
+                    item.status === "success" &&
+                      "border-green-200 bg-green-50 dark:border-green-900/40 dark:bg-green-950/30",
+                    item.status === "error" &&
+                      "border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/30",
+                    item.status === "pending" &&
+                      "border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-900",
+                    item.status === "uploading" &&
+                      "border-construction-blue/30 bg-construction-blue/5",
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {/* File icon */}
                     <div
                       className={cn(
-                        'flex-shrink-0 p-2 rounded-lg',
-                        item.status === 'success' && 'bg-green-100 text-green-600',
-                        item.status === 'error' && 'bg-red-100 text-red-600',
-                        item.status === 'pending' && 'bg-gray-200 text-gray-500',
-                        item.status === 'uploading' && 'bg-construction-blue/10 text-construction-blue'
+                        "flex-shrink-0 p-2 rounded-lg",
+                        item.status === "success" &&
+                          "bg-green-100 text-green-600 dark:bg-green-950/30 dark:text-green-400",
+                        item.status === "error" &&
+                          "bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400",
+                        item.status === "pending" &&
+                          "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400",
+                        item.status === "uploading" &&
+                          "bg-construction-blue/10 text-construction-blue",
                       )}
                     >
                       <FileIcon className="h-5 w-5" />
@@ -423,25 +472,29 @@ export function ProjectFileUploader({
 
                     {/* File info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{item.file.name}</p>
-                      <p className="text-xs text-gray-500">{formatFileSize(item.file.size)}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {item.file.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatFileSize(item.file.size)}
+                      </p>
                     </div>
 
                     {/* Status indicator */}
                     <div className="flex-shrink-0">
-                      {item.status === 'success' && (
+                      {item.status === "success" && (
                         <CheckCircle2 className="h-5 w-5 text-green-600" />
                       )}
-                      {item.status === 'error' && (
+                      {item.status === "error" && (
                         <AlertCircle className="h-5 w-5 text-red-600" />
                       )}
-                      {item.status === 'uploading' && (
+                      {item.status === "uploading" && (
                         <Loader2 className="h-5 w-5 text-construction-blue animate-spin" />
                       )}
-                      {item.status === 'pending' && (
+                      {item.status === "pending" && (
                         <button
                           onClick={() => removeFromQueue(item.id)}
-                          className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                          className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 transition-colors"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -450,9 +503,9 @@ export function ProjectFileUploader({
                   </div>
 
                   {/* Progress bar */}
-                  {item.status === 'uploading' && (
+                  {item.status === "uploading" && (
                     <div className="mt-2">
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                      <div className="w-full bg-gray-200 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
                         <motion.div
                           className="h-full bg-construction-blue"
                           initial={{ width: 0 }}
@@ -460,13 +513,17 @@ export function ProjectFileUploader({
                           transition={{ duration: 0.3 }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 text-right">{item.progress}%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
+                        {item.progress}%
+                      </p>
                     </div>
                   )}
 
                   {/* Error message */}
-                  {item.status === 'error' && item.error && (
-                    <p className="text-xs text-red-600 mt-2">{item.error}</p>
+                  {item.status === "error" && item.error && (
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-2">
+                      {item.error}
+                    </p>
                   )}
                 </motion.div>
               );
@@ -483,35 +540,53 @@ export function ProjectFileUploader({
           onDragLeave={handleDragLeave}
           onClick={() => fileInputRef.current?.click()}
           className={cn(
-            'border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer',
+            "border-2 border-dashed rounded-lg p-8 transition-all duration-200 cursor-pointer",
             isDragOver
-              ? 'border-construction-blue bg-construction-blue/5 scale-[1.01]'
-              : 'border-gray-300 hover:border-construction-blue hover:bg-gray-50',
-            hasQueueItems && 'p-4'
+              ? "border-construction-blue bg-construction-blue/5 scale-[1.01]"
+              : "border-gray-300 dark:border-gray-700 hover:border-construction-blue hover:bg-gray-50 dark:hover:bg-gray-900",
+            hasQueueItems && "p-4",
           )}
         >
           <div className="flex flex-col items-center gap-3">
             {/* Icon */}
             <div
               className={cn(
-                'p-3 rounded-full transition-colors',
-                isDragOver ? 'bg-construction-blue/10' : 'bg-gray-100'
+                "p-3 rounded-full transition-colors",
+                isDragOver
+                  ? "bg-construction-blue/10"
+                  : "bg-gray-100 dark:bg-gray-800",
               )}
             >
               <Upload
                 className={cn(
-                  'w-6 h-6 transition-colors',
-                  isDragOver ? 'text-construction-blue' : 'text-gray-400'
+                  "w-6 h-6 transition-colors",
+                  isDragOver
+                    ? "text-construction-blue"
+                    : "text-gray-400 dark:text-gray-500",
                 )}
               />
             </div>
 
             {/* Text */}
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-900">
-                {hasQueueItems ? 'Add more files' : 'Click to upload or drag and drop'}
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {hasQueueItems
+                  ? "Add more files"
+                  : "Click to upload or drag and drop"}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                PDF, Word, Excel, CAD, Images, Archives - Max 50MB per file
+              </p>
+            </div>
+
+            {/* Text */}
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                {hasQueueItems
+                  ? "Add more files"
+                  : "Click to upload or drag and drop"}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 PDF, Word, Excel, CAD, Images, Archives - Max 50MB per file
               </p>
             </div>

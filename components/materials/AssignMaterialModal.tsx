@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { assignMaterialValidation } from "@/lib/validation/client-validation";
+import { Controller } from "react-hook-form";
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -55,26 +58,47 @@ export function AssignMaterialModal({
   projects,
   onClose,
 }: AssignMaterialModalProps) {
-  const [selectedProject, setSelectedProject] = useState<string>("");
-  const [selectedPhase, setSelectedPhase] = useState<string>("");
-  const [selectedTask, setSelectedTask] = useState<string>("");
-  const [quantity, setQuantity] = useState("1");
   const [purchaserType, setPurchaserType] = useState<
     "gc" | "pm" | "subcontractor"
   >("gc");
   const [phases, setPhases] = useState<Phase[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isPending, startTransition] = useTransition();
   const [isLoadingPhases, setIsLoadingPhases] = useState(false);
   const [isLoadingTasks, setIsLoadingTasks] = useState(false);
   const { toast } = useToast();
+
+  // Use validated form hook with native validation
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors },
+    canSubmit,
+    isSubmitting,
+    watch,
+    setValue,
+  } = useValidatedForm({
+    defaultValues: {
+      project_id: "",
+      phase_id: undefined,
+      task_id: undefined,
+      quantity: 1,
+      purchaser_type: "gc" as const,
+    },
+  });
+
+  // Watch values for derived state
+  const selectedProject = watch("project_id");
+  const selectedPhase = watch("phase_id");
+  const selectedTask = watch("task_id");
+  const quantity = watch("quantity");
 
   // Load phases when project is selected
   useEffect(() => {
     if (selectedProject) {
       setIsLoadingPhases(true);
-      setSelectedPhase("");
-      setSelectedTask("");
+      setValue("phase_id", undefined);
+      setValue("task_id", undefined);
       setTasks([]);
 
       getProjectPhases(selectedProject)
@@ -110,7 +134,7 @@ export function AssignMaterialModal({
   useEffect(() => {
     if (selectedPhase) {
       setIsLoadingTasks(true);
-      setSelectedTask("");
+      setValue("task_id", undefined);
 
       getPhaseTasks(selectedPhase)
         .then((result) => {
@@ -141,88 +165,79 @@ export function AssignMaterialModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPhase]);
 
-  const handleAssign = () => {
-    // Validate all fields including empty placeholder
-    if (
-      !selectedProject ||
-      !selectedTask ||
-      selectedTask === "_empty" ||
-      !quantity ||
-      parseFloat(quantity) <= 0
-    ) {
+  const onSubmit = handleSubmit(async (data) => {
+    // Validate task_id is not empty placeholder
+    if (!data.task_id || data.task_id === "_empty") {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields with valid values.",
+        description: "Please select a valid task.",
         variant: "destructive",
       });
       return;
     }
 
-    startTransition(async () => {
-      // Ensure the product is a plain object for serialization
-      // Server Actions serialize objects - ensure all properties are preserved
-      const plainProduct = {
-        id: product.id,
-        sku: product.sku,
-        name: product.name,
-        description: product.description,
-        category: product.category,
-        manufacturer: product.manufacturer,
-        price: product.price,
-        unitOfMeasure: product.unitOfMeasure,
-        imageUrl: product.imageUrl,
-        productUrl: product.productUrl,
-        stockStatus: product.stockStatus,
-        stockQuantity: product.stockQuantity,
-        leadTimeDays: product.leadTimeDays,
-        specifications: product.specifications,
-        rating: product.rating,
-        reviewCount: product.reviewCount,
-      };
+    // Ensure the product is a plain object for serialization
+    const plainProduct = {
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      description: product.description,
+      category: product.category,
+      manufacturer: product.manufacturer,
+      price: product.price,
+      unitOfMeasure: product.unitOfMeasure,
+      imageUrl: product.imageUrl,
+      productUrl: product.productUrl,
+      stockStatus: product.stockStatus,
+      stockQuantity: product.stockQuantity,
+      leadTimeDays: product.leadTimeDays,
+      specifications: product.specifications,
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+    };
 
-      // First, create the material from Home Depot product
-      const materialResult = await createMaterialFromHomeDepot(plainProduct);
+    // First, create the material from Home Depot product
+    const materialResult = await createMaterialFromHomeDepot(plainProduct);
 
-      if (!materialResult.success || !materialResult.data) {
-        toast({
-          title: "Error",
-          description:
-            materialResult.error || "Failed to add material to catalog",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const materialId = materialResult.data.id;
-
-      // Then assign it to the task
-      const assignResult = await assignMaterialToTask({
-        material_id: materialId,
-        task_id: selectedTask,
-        project_id: selectedProject,
-        quantity: parseFloat(quantity),
-        unit_cost: product.price,
-        purchaser_type: purchaserType,
+    if (!materialResult.success || !materialResult.data) {
+      toast({
+        title: "Error",
+        description:
+          materialResult.error || "Failed to add material to catalog",
+        variant: "destructive",
       });
+      return;
+    }
 
-      if (assignResult.success) {
-        toast({
-          title: "Material Assigned",
-          description: `${product.name} has been assigned to the task.`,
-        });
-        onClose();
-      } else {
-        toast({
-          title: "Error",
-          description:
-            assignResult.error || "Failed to assign material to task",
-          variant: "destructive",
-        });
-      }
+    const materialId = materialResult.data.id;
+
+    // Then assign it to the task
+    const assignResult = await assignMaterialToTask({
+      material_id: materialId,
+      task_id: data.task_id,
+      project_id: data.project_id,
+      quantity: data.quantity,
+      unit_cost: product.price,
+      purchaser_type: purchaserType,
     });
-  };
 
-  const totalCost = parseFloat(quantity || "0") * product.price;
+    if (assignResult.success) {
+      toast({
+        title: "Material Assigned",
+        description: `${product.name} has been assigned to the task.`,
+      });
+      onClose();
+    } else {
+      toast({
+        title: "Error",
+        description:
+          assignResult.error || "Failed to assign material to task",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const totalCost = (quantity || 0) * product.price;
 
   const formatPrice = (price: number) => priceFormatter.format(price);
 
@@ -235,16 +250,13 @@ export function AssignMaterialModal({
       maxWidth="2xl"
       showNavigation={true}
       onBack={onClose}
-      onContinue={handleAssign}
+      onContinue={onSubmit}
       backLabel="Cancel"
-      continueLabel={isPending ? "Assigning..." : "Assign Material"}
+      continueLabel={isSubmitting ? "Assigning..." : "Assign Material"}
       continueDisabled={
-        isPending ||
-        !selectedProject ||
-        !selectedTask ||
-        selectedTask === "_empty" ||
-        !quantity ||
-        parseFloat(quantity) <= 0
+        !canSubmit ||
+        isSubmitting ||
+        selectedTask === "_empty"
       }
     >
       <div className="space-y-6">
@@ -271,18 +283,30 @@ export function AssignMaterialModal({
             >
               Project *
             </Label>
-            <Select value={selectedProject} onValueChange={setSelectedProject}>
-              <SelectTrigger id="project" className="border-2">
-                <SelectValue placeholder="Select a project" />
-              </SelectTrigger>
-              <SelectContent>
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="project_id"
+              control={control}
+              rules={assignMaterialValidation.project_id}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="project" className="border-2 min-h-[44px]">
+                    <SelectValue placeholder="Select a project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        {project.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.project_id && (
+              <p className="text-sm text-red-600 font-medium">
+                {errors.project_id.message}
+              </p>
+            )}
           </div>
 
           {/* Phase Selection */}
@@ -290,32 +314,39 @@ export function AssignMaterialModal({
             <Label htmlFor="phase" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               Phase *
             </Label>
-            <Select
-              value={selectedPhase}
-              onValueChange={setSelectedPhase}
-              disabled={!selectedProject || isLoadingPhases}
-            >
-              <SelectTrigger id="phase" className="border-2">
-                <SelectValue
-                  placeholder={
-                    isLoadingPhases ? "Loading phases..." : "Select a phase"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {phases.length > 0 ? (
-                  phases.map((phase) => (
-                    <SelectItem key={phase.id} value={phase.id}>
-                      {phase.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="_empty" disabled>
-                    No phases available for this project
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="phase_id"
+              control={control}
+              rules={assignMaterialValidation.phase_id}
+              render={({ field }) => (
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                  disabled={!selectedProject || isLoadingPhases}
+                >
+                  <SelectTrigger id="phase" className="border-2 min-h-[44px]">
+                    <SelectValue
+                      placeholder={
+                        isLoadingPhases ? "Loading phases..." : "Select a phase"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {phases.length > 0 ? (
+                      phases.map((phase) => (
+                        <SelectItem key={phase.id} value={phase.id}>
+                          {phase.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="_empty" disabled>
+                        No phases available for this project
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           {/* Task Selection */}
@@ -323,32 +354,39 @@ export function AssignMaterialModal({
             <Label htmlFor="task" className="text-sm font-bold text-gray-700 dark:text-gray-300">
               Task *
             </Label>
-            <Select
-              value={selectedTask}
-              onValueChange={setSelectedTask}
-              disabled={!selectedPhase || isLoadingTasks}
-            >
-              <SelectTrigger id="task" className="border-2">
-                <SelectValue
-                  placeholder={
-                    isLoadingTasks ? "Loading tasks..." : "Select a task"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {tasks.length > 0 ? (
-                  tasks.map((task) => (
-                    <SelectItem key={task.id} value={task.id}>
-                      {task.title}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="_empty" disabled>
-                    No tasks available in this phase
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+            <Controller
+              name="task_id"
+              control={control}
+              rules={assignMaterialValidation.task_id}
+              render={({ field }) => (
+                <Select
+                  value={field.value || ""}
+                  onValueChange={field.onChange}
+                  disabled={!selectedPhase || isLoadingTasks}
+                >
+                  <SelectTrigger id="task" className="border-2 min-h-[44px]">
+                    <SelectValue
+                      placeholder={
+                        isLoadingTasks ? "Loading tasks..." : "Select a task"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tasks.length > 0 ? (
+                      tasks.map((task) => (
+                        <SelectItem key={task.id} value={task.id}>
+                          {task.title}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="_empty" disabled>
+                        No tasks available in this phase
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           {/* Quantity */}
@@ -362,13 +400,17 @@ export function AssignMaterialModal({
             <Input
               id="quantity"
               type="number"
-              min="0.01"
-              step="0.01"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              className="border-2"
+              min="1"
+              step="1"
+              className="border-2 min-h-[44px]"
               placeholder="Enter quantity"
+              {...register("quantity", { ...assignMaterialValidation.quantity, valueAsNumber: true })}
             />
+            {errors.quantity && (
+              <p className="text-sm text-red-600 font-medium">
+                {errors.quantity.message}
+              </p>
+            )}
           </div>
 
           {/* Purchaser Type */}

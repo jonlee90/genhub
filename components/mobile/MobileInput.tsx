@@ -14,7 +14,7 @@
  * - Focus ring with construction-blue
  */
 
-import { forwardRef, useId } from 'react';
+import { forwardRef, memo, useId } from 'react';
 import { cn } from '@/lib/utils';
 
 interface MobileInputProps
@@ -35,23 +35,24 @@ interface MobileInputProps
   containerClassName?: string;
 }
 
-export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
-  (
-    {
-      label,
-      error,
-      hint,
-      inputMode = 'text',
-      enterKeyHint,
-      fullWidth = true,
-      className,
-      containerClassName,
-      id,
-      disabled,
-      ...props
-    },
-    ref
-  ) => {
+export const MobileInput = memo(
+  forwardRef<HTMLInputElement, MobileInputProps>(
+    (
+      {
+        label,
+        error,
+        hint,
+        inputMode = 'text',
+        enterKeyHint,
+        fullWidth = true,
+        className,
+        containerClassName,
+        id,
+        disabled,
+        ...props
+      },
+      ref
+    ) => {
     // Generate unique ID for accessibility
     const generatedId = useId();
     const inputId = id || generatedId;
@@ -149,7 +150,7 @@ export const MobileInput = forwardRef<HTMLInputElement, MobileInputProps>(
         )}
       </div>
     );
-  }
+  })
 );
 
 MobileInput.displayName = 'MobileInput';

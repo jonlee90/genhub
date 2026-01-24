@@ -118,18 +118,18 @@ export function FilePreviewModal({
     >
       <div className="space-y-4">
         {/* Preview area */}
-        <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50">
+        <div className="relative rounded-lg overflow-hidden border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           {/* PDF Preview */}
           {isPDF && (
             <div className="relative">
               {previewLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
                   <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
                 </div>
               )}
               <iframe
                 src={`${file.file_url}#toolbar=0&navpanes=0`}
-                className="w-full h-[400px] bg-white"
+                className="w-full h-[400px] bg-white dark:bg-gray-900"
                 title={`Preview of ${file.filename}`}
                 onLoad={() => setPreviewLoading(false)}
               />
@@ -140,7 +140,7 @@ export function FilePreviewModal({
           {isImage && (
             <div className="relative flex items-center justify-center p-4 min-h-[200px]">
               {previewLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 z-10">
                   <Loader2 className="h-8 w-8 text-construction-blue animate-spin" />
                 </div>
               )}
@@ -158,13 +158,13 @@ export function FilePreviewModal({
           {/* Non-previewable files */}
           {!canPreview && (
             <div className="flex flex-col items-center justify-center py-12 px-4">
-              <div className="p-4 bg-gray-200 rounded-2xl mb-4">
-                <FileText className="h-12 w-12 text-gray-400" />
+              <div className="p-4 bg-gray-200 dark:bg-gray-800 rounded-2xl mb-4">
+                <FileText className="h-12 w-12 text-gray-400 dark:text-gray-500" />
               </div>
-              <p className="text-sm text-gray-600 mb-1 font-medium">
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-1 font-medium">
                 Preview not available
               </p>
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
                 This file type cannot be previewed in the browser
               </p>
               <Button
@@ -180,36 +180,36 @@ export function FilePreviewModal({
         </div>
 
         {/* File details grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
           <div>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide mb-1">
               Category
             </p>
-            <p className="text-sm text-gray-900 font-medium">
+            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
               {formatCategory(file.category)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide mb-1">
               Size
             </p>
-            <p className="text-sm text-gray-900 font-medium">
+            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
               {formatFileSize(file.file_size)}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide mb-1">
               Uploaded By
             </p>
-            <p className="text-sm text-gray-900 font-medium">
+            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
               {file.uploader?.name || "Unknown"}
             </p>
           </div>
           <div>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wide mb-1">
               Date
             </p>
-            <p className="text-sm text-gray-900 font-medium">
+            <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
               {new Date(file.created_at).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",
@@ -220,29 +220,29 @@ export function FilePreviewModal({
         </div>
 
         {/* Additional info row */}
-        <div className="flex items-center gap-4 text-sm text-gray-500">
+        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
           {file.version_number && file.version_number > 1 && (
             <span className="px-2 py-1 bg-construction-blue/10 text-construction-blue rounded font-bold text-xs">
               Version {file.version_number}
             </span>
           )}
           {file.client_visible && (
-            <span className="px-2 py-1 bg-green-100 text-green-700 rounded font-bold text-xs">
+            <span className="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 rounded font-bold text-xs">
               Client Visible
             </span>
           )}
-          <span className="text-xs text-gray-400 ml-auto">
+          <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
             Type: {file.file_type || "Unknown"}
           </span>
         </div>
 
         {/* Delete action */}
-        <div className="pt-4 border-t border-gray-200">
+        <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           <Button
             variant="outline"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold"
+            className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-900/40 dark:text-red-300 dark:hover:bg-red-950/30 font-bold"
           >
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin mr-2" />

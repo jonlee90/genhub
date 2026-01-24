@@ -109,7 +109,7 @@ export function DocumentsSection({
   // Empty state
   if (files.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gradient-to-b from-gray-50 to-white">
+      <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         {/* Icon container with industrial feel */}
         <div className="relative mb-6">
           <div className="absolute inset-0 bg-construction-blue/10 rounded-full blur-xl" />
@@ -118,10 +118,10 @@ export function DocumentsSection({
           </div>
         </div>
 
-        <h3 className="text-lg font-bold text-gray-900 mb-2 tracking-tight">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 tracking-tight">
           No Documents Yet
         </h3>
-        <p className="text-sm text-gray-500 mb-6 text-center max-w-sm leading-relaxed">
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 text-center max-w-sm leading-relaxed">
           Upload contracts, permits, drawings, and other project documents to
           keep everything organized in one place.
         </p>
@@ -155,7 +155,7 @@ export function DocumentsSection({
   return (
     <div className="space-y-4">
       {/* Header with select all and upload */}
-      <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+      <div className="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <Checkbox
             checked={
@@ -167,9 +167,11 @@ export function DocumentsSection({
           />
           <label
             htmlFor="select-all-files"
-            className="text-sm text-gray-600 cursor-pointer select-none"
+            className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer select-none"
           >
-            <span className="font-medium text-gray-900">{files.length}</span>{" "}
+            <span className="font-medium text-gray-900 dark:text-gray-100">
+              {files.length}
+            </span>{" "}
             {files.length === 1 ? "document" : "documents"}
             {selectedIds.size > 0 && (
               <span className="ml-2 text-construction-blue">

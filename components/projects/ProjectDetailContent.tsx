@@ -47,7 +47,10 @@ const TaskModal = dynamic(
   { ssr: false },
 );
 
-import type { ProjectDetailProps, ProjectSimple } from "@/types/components/projects";
+import type {
+  ProjectDetailProps,
+  ProjectSimple,
+} from "@/types/components/projects";
 import type {
   TaskWithRelations,
   TeamMember as TaskBoardTeamMember,
@@ -124,7 +127,8 @@ const STATUS_CONFIG = {
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-red-50 text-red-700 border-red-300",
+    color:
+      "bg-red-50 text-red-700 border-red-300 dark:bg-red-950/30 dark:text-red-300 dark:border-red-900/40",
     dotColor: "bg-red-500",
   },
 };
@@ -155,7 +159,11 @@ export function ProjectDetailContent({
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Lazy-load modal data (projects + team members) when needed
-  const { data: modalData, fetchData: fetchModalData, isLoading } = useModalData();
+  const {
+    data: modalData,
+    fetchData: fetchModalData,
+    isLoading,
+  } = useModalData();
 
   // Handler for when primary photo changes - refresh to get updated project data
   const handlePrimaryPhotoChange = useCallback(() => {
@@ -730,9 +738,7 @@ export function ProjectDetailContent({
             />
           )}
 
-          {activeTab === "settings" && (
-            <ProjectSettings project={project} />
-          )}
+          {activeTab === "settings" && <ProjectSettings project={project} />}
         </motion.div>
 
         {/* Task modal - rendered via context */}

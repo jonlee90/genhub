@@ -6,15 +6,15 @@ import {
   uploadSubcontractorDocument,
 } from "@/app/actions/subcontractors";
 import type { TradeType } from "@/types/db/enums";
-import {
-  formatPhoneNumber,
-  extractPhoneDigits,
-} from "@/lib/hooks/usePhoneMask";
+import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { addSubcontractorValidation } from "@/lib/validation/client-validation";
+import { Controller } from "react-hook-form";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { PhoneInput } from "@/components/ui/PhoneInput";
 import {
   Select,
   SelectContent,
@@ -70,12 +70,9 @@ export function AddSubcontractorModal({
   onClose,
   companyId,
 }: AddSubcontractorModalProps) {
-  const [selectedTrade, setSelectedTrade] = useState<TradeType>("general");
-  const [rating, setRating] = useState(0);
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
   const [isUploadingDocs, setIsUploadingDocs] = useState(false);
-  const [phoneValue, setPhoneValue] = useState("");
 
   // State to capture form metadata for document upload
   const [capturedFormData, setCapturedFormData] = useState<{
@@ -84,6 +81,33 @@ export function AddSubcontractorModal({
     insuranceProvider?: string;
     insuranceExpiry?: string;
   }>({});
+
+  // Use validated form hook with native validation
+  const {
+    register,
+    control,
+    handleSubmit: createHandleSubmit,
+    formState: { errors },
+    canSubmit,
+    isSubmitting,
+    reset,
+    watch,
+  } = useValidatedForm({
+    defaultValues: {
+      company_name: "",
+      contact_name: "",
+      email: "",
+      phone: "",
+      trade_type: "general" as TradeType,
+      address: "",
+      license_number: "",
+      insurance_provider: "",
+      rating: 0,
+      notes: "",
+    },
+  });
+
+  const rating = watch("rating") || 0;
 
   // Use useActionState hook for form submission
   const [state, formAction, isPending] = useActionState(
@@ -211,14 +235,12 @@ export function AddSubcontractorModal({
   ]);
 
   const handleClose = useCallback(() => {
-    setSelectedTrade("general");
-    setRating(0);
+    reset();
     setLicenseFile(null);
     setInsuranceFile(null);
     setIsUploadingDocs(false);
-    setPhoneValue("");
     onClose();
-  }, [onClose]);
+  }, [onClose, reset]);
 
   const handleLicenseFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -305,23 +327,22 @@ export function AddSubcontractorModal({
         <div className="space-y-2">
           <Label
             htmlFor="company_name"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <Building2 className="h-4 w-4 text-construction-blue" />
             Company Name <span className="text-red-600">*</span>
           </Label>
           <Input
             id="company_name"
-            name="company_name"
             type="text"
             placeholder="ABC Construction LLC"
-            required
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            {...register("company_name", addSubcontractorValidation.company_name)}
           />
-          {state?.fieldErrors?.company_name && (
+          {errors.company_name && (
             <p className="text-sm text-red-600 font-medium">
-              {state.fieldErrors.company_name[0]}
+              {errors.company_name.message}
             </p>
           )}
         </div>
@@ -329,37 +350,40 @@ export function AddSubcontractorModal({
         {/* Trade Specialization - Required */}
         <div className="space-y-2">
           <Label
-            htmlFor="trade_specialization"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            htmlFor="trade_type"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <FileText className="h-4 w-4 text-construction-blue" />
             Trade Specialization <span className="text-red-600">*</span>
           </Label>
-          <Select
-            value={selectedTrade}
-            onValueChange={(value) => setSelectedTrade(value as TradeType)}
-            disabled={isPending || state?.success || isUploadingDocs}
-          >
-            <SelectTrigger className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue">
-              <SelectValue placeholder="Select trade" />
-            </SelectTrigger>
-            <SelectContent>
-              {TRADE_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {/* Hidden input for form submission - Radix Select doesn't submit values natively */}
-          <input
-            type="hidden"
-            name="trade_specialization"
-            value={selectedTrade}
+          <Controller
+            name="trade_type"
+            control={control}
+            rules={addSubcontractorValidation.trade_type}
+            render={({ field }) => (
+              <Select
+                value={field.value}
+                onValueChange={field.onChange}
+                disabled={isPending || state?.success || isUploadingDocs}
+              >
+                <SelectTrigger className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue">
+                  <SelectValue placeholder="Select trade" />
+                </SelectTrigger>
+                <SelectContent>
+                  {TRADE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           />
-          {(state?.fieldErrors as any)?.trade_specialization && (
+          {/* Hidden input for form submission */}
+          <input type="hidden" name="trade_specialization" value={watch("trade_type")} />
+          {errors.trade_type && (
             <p className="text-sm text-red-600 font-medium">
-              {(state!.fieldErrors as any).trade_specialization[0]}
+              {errors.trade_type.message}
             </p>
           )}
         </div>
@@ -368,48 +392,46 @@ export function AddSubcontractorModal({
         <div className="space-y-2">
           <Label
             htmlFor="contact_name"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <User className="h-4 w-4 text-construction-blue" />
             Contact Name <span className="text-red-600">*</span>
           </Label>
           <Input
             id="contact_name"
-            name="contact_name"
             type="text"
             placeholder="John Doe"
-            required
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            {...register("contact_name", addSubcontractorValidation.contact_name)}
           />
-          {state?.fieldErrors?.contact_name && (
+          {errors.contact_name && (
             <p className="text-sm text-red-600 font-medium">
-              {state.fieldErrors.contact_name[0]}
+              {errors.contact_name.message}
             </p>
           )}
         </div>
 
-        {/* Email - Required */}
+        {/* Email - Optional */}
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <Mail className="h-4 w-4 text-construction-blue" />
-            Email <span className="text-red-600">*</span>
+            Email
           </Label>
           <Input
             id="email"
-            name="email"
             type="email"
             placeholder="john@abcconstruction.com"
-            required
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            {...register("email", addSubcontractorValidation.email)}
           />
-          {state?.fieldErrors?.email && (
+          {errors.email && (
             <p className="text-sm text-red-600 font-medium">
-              {state.fieldErrors.email[0]}
+              {errors.email.message}
             </p>
           )}
         </div>
@@ -418,20 +440,16 @@ export function AddSubcontractorModal({
         <div className="space-y-2">
           <Label
             htmlFor="phone"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <Phone className="h-4 w-4 text-construction-blue" />
             Phone
           </Label>
-          <Input
+          <PhoneInput
             id="phone"
-            name="phone"
-            type="tel"
-            placeholder="(555) 123-4567"
-            value={phoneValue}
-            onChange={(e) => setPhoneValue(formatPhoneNumber(e.target.value))}
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+            error={errors.phone?.message}
+            {...register("phone", addSubcontractorValidation.phone)}
           />
         </div>
 
@@ -439,19 +457,24 @@ export function AddSubcontractorModal({
         <div className="space-y-2">
           <Label
             htmlFor="address"
-            className="text-gray-900 font-semibold flex items-center gap-2"
+            className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <MapPin className="h-4 w-4 text-construction-blue" />
             Address
           </Label>
           <Textarea
             id="address"
-            name="address"
             placeholder="123 Main Street, City, State ZIP"
             rows={2}
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
+            className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
+            {...register("address", addSubcontractorValidation.address)}
           />
+          {errors.address && (
+            <p className="text-sm text-red-600 font-medium">
+              {errors.address.message}
+            </p>
+          )}
         </div>
 
         {/* License Section */}
@@ -471,11 +494,11 @@ export function AddSubcontractorModal({
               </Label>
               <Input
                 id="license_number"
-                name="license_number"
                 type="text"
                 placeholder="LIC-123456"
                 disabled={isPending || state?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+                {...register("license_number", addSubcontractorValidation.license_number)}
               />
             </div>
 
@@ -551,11 +574,11 @@ export function AddSubcontractorModal({
               </Label>
               <Input
                 id="insurance_provider"
-                name="insurance_provider"
                 type="text"
                 placeholder="ABC Insurance Co."
                 disabled={isPending || state?.success || isUploadingDocs}
                 className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+                {...register("insurance_provider", addSubcontractorValidation.insurance_provider)}
               />
             </div>
 
@@ -617,64 +640,76 @@ export function AddSubcontractorModal({
 
         {/* Performance Rating */}
         <div className="space-y-2">
-          <Label className="text-gray-900 font-semibold flex items-center gap-2">
+          <Label className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2">
             <Star className="h-4 w-4 text-construction-blue" />
             Performance Rating
           </Label>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setRating(i)}
-                disabled={isPending || state?.success || isUploadingDocs}
-                className="focus:outline-none"
-              >
-                <Star
-                  className={`h-8 w-8 transition-colors ${
-                    i <= rating
-                      ? "fill-construction-yellow text-construction-yellow"
-                      : "text-gray-300 hover:text-construction-yellow"
-                  }`}
-                />
-              </button>
-            ))}
-            <span className="text-sm text-gray-600 ml-2">
-              {rating > 0 ? `${rating}/5` : "Not rated"}
-            </span>
-          </div>
-          <input type="hidden" name="performance_rating" value={rating} />
+          <Controller
+            name="rating"
+            control={control}
+            rules={addSubcontractorValidation.rating}
+            render={({ field }) => (
+              <div className="flex items-center gap-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => field.onChange(i)}
+                    disabled={isPending || state?.success || isUploadingDocs}
+                    className="focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center active:scale-95 transition-transform"
+                  >
+                    <Star
+                      className={`h-8 w-8 transition-colors ${
+                        i <= (field.value || 0)
+                          ? "fill-construction-yellow text-construction-yellow"
+                          : "text-gray-300 hover:text-construction-yellow dark:hover:text-construction-yellow"
+                      }`}
+                    />
+                  </button>
+                ))}
+                <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
+                  {(field.value || 0) > 0 ? `${field.value}/5` : "Not rated"}
+                </span>
+                <input type="hidden" name="performance_rating" value={field.value || 0} />
+              </div>
+            )}
+          />
         </div>
 
         {/* Notes */}
         <div className="space-y-2">
-          <Label htmlFor="notes" className="text-gray-900 font-semibold">
+          <Label htmlFor="notes" className="text-gray-900 dark:text-gray-100 font-semibold">
             Notes
           </Label>
           <Textarea
             id="notes"
-            name="notes"
             placeholder="Any additional notes or comments..."
             rows={3}
             disabled={isPending || state?.success || isUploadingDocs}
-            className="border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
+            className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors resize-none"
+            {...register("notes", addSubcontractorValidation.notes)}
           />
+          {errors.notes && (
+            <p className="text-sm text-red-600 font-medium">
+              {errors.notes.message}
+            </p>
+          )}
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200 dark:border-gray-700">
           <Button
             type="button"
             variant="outline"
             onClick={handleClose}
             disabled={isPending || isUploadingDocs}
-            className="border-2 border-gray-300 hover:bg-gray-50"
+            className="border-2 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px]"
           >
             Cancel
           </Button>
           <Button
             type="submit"
-            disabled={isPending || state?.success || isUploadingDocs}
-            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50"
+            disabled={!canSubmit || isPending || state?.success || isUploadingDocs}
+            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50 min-h-[44px] active:scale-95"
           >
             {isPending ? (
               <>

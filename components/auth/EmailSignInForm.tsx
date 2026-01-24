@@ -6,17 +6,26 @@
  * Email magic link sign-in form with validation and success/error states.
  * Uses Nodemailer provider for sending magic links.
  *
- * Debug: States - idle, loading, success, error
+ * Features:
+ * - Zod validation via useValidatedForm hook
+ * - MobileInput for email field
+ * - Success/error state management
  */
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { m as motion, AnimatePresence } from "framer-motion";
+import { useValidatedForm } from "@/hooks/useValidatedForm";
+import { emailSignInValidation } from "@/lib/validation/client-validation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { MobileInput } from "@/components/mobile/MobileInput";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Mail, AlertCircle, ArrowLeft } from "lucide-react";
+
+// Type for email sign-in form data
+interface EmailSignInFormData {
+  email: string;
+}
 
 interface EmailSignInFormProps {
   callbackUrl?: string;
@@ -29,32 +38,35 @@ export function EmailSignInForm({
   callbackUrl = "/app",
   defaultEmail = "",
 }: EmailSignInFormProps) {
-  const [email, setEmail] = useState(defaultEmail);
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // Debug: Validate email format
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
+  // Use validated form hook with native validation
+  const {
+    register,
+    handleSubmit: createHandleSubmit,
+    formState: { errors },
+    canSubmit,
+    watch,
+    reset,
+  } = useValidatedForm({
+    defaultValues: {
+      email: defaultEmail,
+    },
+  });
 
-  // Debug: Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("[EmailSignInForm] Submitting email:", email);
+  const email = watch("email");
 
-    if (!isValidEmail(email)) {
-      setErrorMessage("Please enter a valid email address");
-      setFormState("error");
-      return;
-    }
+  // Handle form submission
+  const handleSubmit = createHandleSubmit(async (data: EmailSignInFormData) => {
+    console.log("[EmailSignInForm] Submitting email:", data.email);
 
     setFormState("loading");
     setErrorMessage("");
 
     try {
       const result = await signIn("nodemailer", {
-        email,
+        email: data.email,
         callbackUrl,
         redirect: false,
       });
@@ -72,12 +84,13 @@ export function EmailSignInForm({
       setErrorMessage("An unexpected error occurred. Please try again.");
       setFormState("error");
     }
-  };
+  });
 
-  // Debug: Reset form to try again
+  // Reset form to try again
   const handleReset = () => {
     setFormState("idle");
     setErrorMessage("");
+    reset();
   };
 
   // Success state - email sent
@@ -139,27 +152,22 @@ export function EmailSignInForm({
       </AnimatePresence>
 
       {/* Email Input */}
-      <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-900 dark:text-gray-100 font-medium">
-          Email Address
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={formState === "loading"}
-          className="h-12 text-base border-2 focus:border-construction-blue focus:ring-construction-blue/20 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
-          required
-        />
-      </div>
+      <MobileInput
+        {...register("email", emailSignInValidation.email)}
+        label="Email Address"
+        type="email"
+        inputMode="email"
+        enterKeyHint="send"
+        placeholder="you@example.com"
+        error={errors.email?.message}
+        disabled={formState === "loading"}
+      />
 
       {/* Submit Button */}
       <Button
         type="submit"
-        disabled={formState === "loading" || !email}
-        className="w-full h-12 text-base font-bold bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-600 shadow-construction hover:shadow-construction-lg transition-all"
+        disabled={!canSubmit || formState === "loading"}
+        className="w-full h-12 text-base font-bold bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-600 shadow-construction hover:shadow-construction-lg transition-all min-h-[44px]"
       >
         {formState === "loading" ? (
           <>

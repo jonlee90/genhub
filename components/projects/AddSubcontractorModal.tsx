@@ -30,27 +30,86 @@ interface Subcontractor {
 
 // Trade specialization display config
 const TRADE_LABELS: Record<string, { label: string; color: string }> = {
-  general: { label: "General", color: "bg-gray-100 text-gray-700" },
-  electrical: { label: "Electrical", color: "bg-yellow-100 text-yellow-800" },
-  plumbing: { label: "Plumbing", color: "bg-blue-100 text-blue-800" },
-  hvac: { label: "HVAC", color: "bg-cyan-100 text-cyan-800" },
-  carpentry: { label: "Carpentry", color: "bg-amber-100 text-amber-800" },
-  masonry: { label: "Masonry", color: "bg-stone-100 text-stone-800" },
-  roofing: { label: "Roofing", color: "bg-red-100 text-red-800" },
-  flooring: { label: "Flooring", color: "bg-orange-100 text-orange-800" },
-  painting: { label: "Painting", color: "bg-purple-100 text-purple-800" },
-  drywall: { label: "Drywall", color: "bg-slate-100 text-slate-800" },
-  concrete: { label: "Concrete", color: "bg-zinc-100 text-zinc-800" },
-  landscaping: { label: "Landscaping", color: "bg-green-100 text-green-800" },
-  demolition: { label: "Demolition", color: "bg-rose-100 text-rose-800" },
-  steel_work: { label: "Steel Work", color: "bg-indigo-100 text-indigo-800" },
-  glass_glazing: { label: "Glass/Glazing", color: "bg-sky-100 text-sky-800" },
+  general: {
+    label: "General",
+    color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200",
+  },
+  electrical: {
+    label: "Electrical",
+    color:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300",
+  },
+  plumbing: {
+    label: "Plumbing",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-300",
+  },
+  hvac: {
+    label: "HVAC",
+    color: "bg-cyan-100 text-cyan-800 dark:bg-cyan-950/40 dark:text-cyan-300",
+  },
+  carpentry: {
+    label: "Carpentry",
+    color:
+      "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  },
+  masonry: {
+    label: "Masonry",
+    color:
+      "bg-stone-100 text-stone-800 dark:bg-stone-900/50 dark:text-stone-200",
+  },
+  roofing: {
+    label: "Roofing",
+    color: "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300",
+  },
+  flooring: {
+    label: "Flooring",
+    color:
+      "bg-orange-100 text-orange-800 dark:bg-orange-950/40 dark:text-orange-300",
+  },
+  painting: {
+    label: "Painting",
+    color:
+      "bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300",
+  },
+  drywall: {
+    label: "Drywall",
+    color:
+      "bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200",
+  },
+  concrete: {
+    label: "Concrete",
+    color: "bg-zinc-100 text-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-200",
+  },
+  landscaping: {
+    label: "Landscaping",
+    color:
+      "bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-300",
+  },
+  demolition: {
+    label: "Demolition",
+    color: "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300",
+  },
+  steel_work: {
+    label: "Steel Work",
+    color:
+      "bg-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-300",
+  },
+  glass_glazing: {
+    label: "Glass/Glazing",
+    color: "bg-sky-100 text-sky-800 dark:bg-sky-950/40 dark:text-sky-300",
+  },
   fire_protection: {
     label: "Fire Protection",
-    color: "bg-red-100 text-red-800",
+    color: "bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-300",
   },
-  insulation: { label: "Insulation", color: "bg-teal-100 text-teal-800" },
-  other: { label: "Other", color: "bg-gray-100 text-gray-700" },
+  insulation: {
+    label: "Insulation",
+    color: "bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300",
+  },
+  other: {
+    label: "Other",
+    color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200",
+  },
 };
 
 interface AddSubcontractorModalProps {
@@ -199,7 +258,9 @@ export function AddSubcontractorModal({
       onBack={() => onOpenChange(false)}
       backLabel="Cancel"
       onContinue={handleSubmit}
-      continueLabel={submitting ? "Adding..." : success ? "Added!" : "Add to Project"}
+      continueLabel={
+        submitting ? "Adding..." : success ? "Added!" : "Add to Project"
+      }
       continueDisabled={submitting || !selectedId || loading || success}
     >
       <div className="space-y-4">
@@ -207,12 +268,12 @@ export function AddSubcontractorModal({
         <div className="space-y-2">
           <Label
             htmlFor="search-sub"
-            className="font-bold text-gray-700 text-base"
+            className="font-bold text-gray-700 dark:text-gray-300 text-base"
           >
             Search Subcontractors
           </Label>
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-gray-500" />
             <Input
               id="search-sub"
               placeholder="Search by company, contact, or trade..."
@@ -220,7 +281,7 @@ export function AddSubcontractorModal({
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
                 "pl-12 h-14 text-base",
-                "border-2 border-gray-200",
+                "border-2 border-gray-200 dark:border-gray-700",
                 "focus:border-construction-blue focus:ring-1 focus:ring-[var(--construction-blue)]",
                 "rounded-xl",
               )}
@@ -231,35 +292,35 @@ export function AddSubcontractorModal({
 
         {/* Subcontractor list */}
         <div className="space-y-2">
-          <Label className="font-bold text-gray-700 text-base">
+          <Label className="font-bold text-gray-700 dark:text-gray-300 text-base">
             Select Subcontractor
           </Label>
-          <div className="border-2 border-gray-200 rounded-xl max-h-[320px] overflow-y-auto bg-gray-50">
+          <div className="border-2 border-gray-200 dark:border-gray-700 rounded-xl max-h-[320px] overflow-y-auto bg-gray-50 dark:bg-gray-800">
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
-                <span className="mt-3 text-base text-gray-600">
+                <span className="mt-3 text-base text-gray-600 dark:text-gray-400">
                   Loading subcontractors...
                 </span>
               </div>
             ) : filteredSubcontractors.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <AlertCircle className="h-8 w-8 text-gray-400" />
+                <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                  <AlertCircle className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                 </div>
-                <p className="text-base font-medium text-gray-600">
+                <p className="text-base font-medium text-gray-600 dark:text-gray-300">
                   {searchQuery
                     ? "No subcontractors match your search"
                     : "No available subcontractors"}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                   {searchQuery
                     ? "Try a different search term"
                     : "All subcontractors are already assigned to this project"}
                 </p>
               </div>
             ) : (
-              <div className="divide-y-2 divide-gray-200">
+              <div className="divide-y-2 divide-gray-200 dark:divide-gray-700">
                 <AnimatePresence>
                   {filteredSubcontractors.map((sub, index) => {
                     const tradeConfig =
@@ -285,7 +346,7 @@ export function AddSubcontractorModal({
                           "min-h-[72px]",
                           selectedId === sub.id
                             ? "bg-construction-blue/10 border-l-4 border-l-[var(--construction-blue)]"
-                            : "bg-gray-50 hover:bg-white active:bg-gray-100",
+                            : "bg-gray-50 dark:bg-gray-800 hover:bg-white dark:hover:bg-gray-700 active:bg-gray-100 dark:active:bg-gray-700",
                         )}
                       >
                         {/* Avatar */}
@@ -304,7 +365,7 @@ export function AddSubcontractorModal({
                         {/* Content */}
                         <div className="flex-1 min-w-0 text-left">
                           <div className="flex items-start justify-between gap-2">
-                            <p className="font-bold text-gray-900 text-base truncate">
+                            <p className="font-bold text-gray-900 dark:text-gray-100 text-base truncate">
                               {sub.company_name}
                             </p>
                             {selectedId === sub.id && (
@@ -314,7 +375,7 @@ export function AddSubcontractorModal({
                             )}
                           </div>
 
-                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5 mt-0.5">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate flex items-center gap-1.5 mt-0.5">
                             <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
                             {sub.contact_name}
                           </p>
@@ -329,7 +390,7 @@ export function AddSubcontractorModal({
                               {tradeConfig.label}
                             </Badge>
                             {sub.phone && (
-                              <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <Phone className="h-3 w-3" />
                                 {sub.phone}
                               </span>

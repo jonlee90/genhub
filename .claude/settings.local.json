@@ -213,7 +213,16 @@
       "Bash(while read file)",
       "Bash(do if ! grep -q \"dark:\" \"$file\")",
       "Bash(then echo \"$file\" fi done)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "Bash(npx bundlephobia react-hook-form@7.71.1 @hookform/resolvers@3.10.0)",
+      "Bash(npm run test:*)",
+      "mcp__plugin_playwright_playwright__browser_console_messages",
+      "mcp__plugin_playwright_playwright__browser_type",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_press_key",
+      "Bash(npm uninstall:*)",
+      "mcp__next-devtools__browser_eval"
     ],
     "deny": [],
     "ask": []

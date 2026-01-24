@@ -224,7 +224,7 @@ export function ProjectPhotoUploader({
           />
           <label
             htmlFor="client-visible"
-            className="text-sm text-gray-700 cursor-pointer select-none"
+            className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none"
           >
             Visible to client in portal
           </label>
@@ -249,14 +249,14 @@ export function ProjectPhotoUploader({
             "border-2 border-dashed rounded-lg p-8 transition-colors",
             isDragOver
               ? "border-construction-blue bg-construction-blue/5"
-              : "border-gray-300 hover:border-construction-blue hover:bg-gray-50",
+              : "border-gray-300 dark:border-gray-700 hover:border-construction-blue hover:bg-gray-50 dark:hover:bg-gray-900",
             "cursor-pointer",
           )}
         >
           <div className="flex flex-col items-center gap-4">
             {/* Icon */}
-            <div className="p-4 bg-gray-100 rounded-full">
-              <ImagePlus className="w-8 h-8 text-gray-400" />
+            <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-full">
+              <ImagePlus className="w-8 h-8 text-gray-400 dark:text-gray-500" />
             </div>
 
             {/* Buttons */}
@@ -283,10 +283,10 @@ export function ProjectPhotoUploader({
               </Button>
             </div>
 
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
               or drag and drop your photo here
             </p>
-            <p className="text-xs text-gray-400 text-center">
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
               JPEG, PNG, WebP - Max 10MB
             </p>
           </div>
