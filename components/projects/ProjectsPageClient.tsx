@@ -118,9 +118,11 @@ const MobileNoResultsState = memo(function MobileNoResultsState({
 const ProjectGrid = memo(function ProjectGrid({
   projects,
   isMobile,
+  projectTypes,
 }: {
   projects: ProjectWithStats[];
   isMobile: boolean;
+  projectTypes?: ProjectTypeConfigsRow[];
 }) {
   return (
     <div
@@ -140,7 +142,7 @@ const ProjectGrid = memo(function ProjectGrid({
             animationFillMode: 'both',
           }}
         >
-          <ProjectCard project={project} />
+          <ProjectCard project={project} projectTypes={projectTypes} />
         </div>
       ))}
     </div>
@@ -518,8 +520,8 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
   return (
     <>
       {isMobile ? (
-        <div className="flex flex-col h-full">
-          <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
+        <div className="flex flex-col min-h-screen overflow-y-auto">
+          <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh}>
             <div className="p-4">
               <BlueprintBackground />
 
@@ -560,6 +562,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
                 sortBy={sortBy}
                 onSortChange={setSortBy}
                 projects={projects}
+                projectTypes={projectTypes}
               />
 
               {/* Project cards */}
@@ -567,7 +570,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
                 <MobileNoResultsState onClearFilters={clearFilters} />
               ) : (
                 <>
-                  <ProjectGrid projects={filteredProjects} isMobile={true} />
+                  <ProjectGrid projects={filteredProjects} isMobile={true} projectTypes={projectTypes} />
 
                   {/* Pagination */}
                   <Pagination
@@ -636,6 +639,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
             sortBy={sortBy}
             onSortChange={setSortBy}
             projects={projects}
+            projectTypes={projectTypes}
           />
 
           {/* Project grid or empty state */}
@@ -643,7 +647,7 @@ export function ProjectsPageClient({ projects: initialProjects, totalCount, role
             <NoResultsState onClearFilters={clearFilters} />
           ) : (
             <>
-              <ProjectGrid projects={filteredProjects} isMobile={false} />
+              <ProjectGrid projects={filteredProjects} isMobile={false} projectTypes={projectTypes} />
 
               {/* Pagination */}
               <Pagination
