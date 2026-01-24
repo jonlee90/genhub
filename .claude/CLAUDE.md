@@ -99,6 +99,46 @@ END:
 
 ---
 
+## SKILLS & BEST PRACTICES
+
+### Auto-Loaded Skills
+
+| Skill | Source | Purpose |
+|-------|--------|---------|
+| `vercel-react-best-practices` | `.claude/skills/` | React/Next.js performance patterns |
+| `postgres-best-practices` | `~/.claude/skills/` | Supabase query optimization, RLS |
+
+### Rule Application by File Pattern
+
+```
+*.tsx (components)      → rendering-*, rerender-*, bundle-*
+app/actions/*.ts        → query-*, security-*, data-*
+app/**/page.tsx         → async-*, server-*
+lib/**/*.ts             → js-*, query-*
+hooks/**/*.ts           → rerender-*, advanced-*
+```
+
+### Rule Priority Levels
+
+| Priority | Categories | Action |
+|----------|------------|--------|
+| **CRITICAL** | `async-*`, `bundle-*`, `query-*`, `security-*` | Always apply |
+| **HIGH** | `server-*`, `schema-*` | Apply for server code |
+| **MEDIUM** | `rerender-*`, `rendering-*`, `client-*` | Apply for components |
+| **LOW** | `js-*`, `advanced-*` | Apply when refactoring |
+
+### Key Rules Quick Reference
+
+| Rule | What It Prevents |
+|------|------------------|
+| `bundle-barrel-imports` | Import from barrel files causing bundle bloat |
+| `async-parallel` | Sequential awaits that could be parallel |
+| `query-select-columns` | `select('*')` fetching unnecessary data |
+| `security-no-client-db` | Supabase in client components |
+| `rerender-memo` | Expensive components re-rendering unnecessarily |
+
+---
+
 ## WORKFLOW: PLANNING VS IMPLEMENTATION
 
 ### Feature Planning → `/kc:spec`
@@ -217,14 +257,6 @@ Step 4: VERIFY & REPORT
 | Mixed domains, dependent | Sequential: backend → frontend → **OpenCode handoff** |
 | Complex feature with spec | Use `/kc:impl` instead |
 
-**Step 3.5: OpenCode Handoff (After Implementation)**
-```
-After completing implementation tasks:
-1. Run npx tsc --noEmit && npm run lint
-2. Create handoff file: .claude/handoffs/claude-to-opencode-{timestamp}.md
-3. Notify user: "Handoff created for OpenCode review"
-```
-
 **Step 4: Track & Report**
 - Mark TodoWrite items `in_progress` → `completed`
 - If budget hit: complete current, report remaining
@@ -237,65 +269,65 @@ Before major implementations, verify:
 
 ---
 
-## STANDARDIZED OUTPUT
-
-### Agent Audit Log Format
-
-All agents must return this structure:
-
-```
-## Task Complete
-
-| Type | Agents |
-|------|--------|
-| **With budgets** | backend-engineer(90k), frontend-engineer(90k), performance-engineer(60k) |
-| **Planning-only** | frontend-architect, supabase-schema-architect, ai-sdk-v5-expert |
-| **External (OpenCode)** | code-reviewer, refactor-specialist, component-scanner, tailwind-optimizer |
-
----
-
 ## OPENCODE HANDOFF (Post-Task)
 
-After completing any significant task, create a handoff for OpenCode GPT-5.2-Codex:
+After completing any significant task, create a handoff for OpenCode GPT-5.2-Codex.
 
 ### When to Handoff
 
-| Task Type | Handoff Required |
-|-----------|------------------|
-| New component/feature | YES |
-| Bug fix (multi-file) | YES |
-| Refactoring | YES |
+| Change Type | Handoff? |
+|-------------|----------|
+| New component/feature | **YES** |
+| Multi-file bug fix | **YES** |
+| Refactoring | **YES** |
 | Single-line fix | NO |
-| Config change | NO |
-| Type-only change | NO |
+| Config/type-only change | NO |
 
 ### Handoff Protocol
 
-**Step 1:** Complete implementation and run initial validation
-```bash
-npx tsc --noEmit && npm run lint
+```
+1. Complete implementation
+2. Validate: npx tsc --noEmit && npm run lint
+3. Create: .claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md
+4. Use template from: .claude/handoffs/README.md
+5. Notify user: "Handoff created for OpenCode review"
 ```
 
-**Step 2:** Create handoff file at `.claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md`
+### OpenCode Agents & Skills
 
-**Step 3:** Use template from `.claude/handoffs/README.md`
+| Agent | Skills Loaded | Responsibilities |
+|-------|---------------|------------------|
+| `code-reviewer` | vercel-react, postgres | Validate, reusability scan, debug |
+| `refactor-specialist` | vercel-react, postgres | Deep refactoring, pattern extraction |
+| `component-scanner` | vercel-react | Module analysis, extraction opportunities |
+| `tailwind-optimizer` | vercel-react | HTML cleanup, class optimization |
 
-### What OpenCode Will Do
+### OpenCode Responsibilities
 
-1. **Validate** - Run full test suite (tsc, lint, build)
-2. **Reusability Scan** - Check for patterns to extract
-3. **Duplication Check** - Verify no code repetition
-4. **Tailwind Optimization** - Clean up classes
-5. **HTML Structure** - Simplify div soup
+1. **Validate** - tsc, lint, build
+2. **Reusability Scan** - Extract patterns to shared components
+3. **Duplication Check** - Consolidate repeated code
+4. **Tailwind Optimization** - Remove redundant classes
+5. **HTML Cleanup** - Flatten unnecessary nesting
 6. **Debug** - Ensure 100% working
 
-### OpenCode Response
+### Verification Checklist
 
-OpenCode creates response at `.claude/handoffs/opencode-to-claude-{YYYYMMDD-HHMM}.md` with:
-- Validation results
-- Refactoring changes made
-- New reusable components created
-- Remaining issues (if any)
+| Check | Command |
+|-------|---------|
+| TypeScript | `npm run build 2>&1 \| grep -E "error\|Error" -A 3` |
+| Security | `mcp__supabase__get_advisors("security")` |
+| Performance | `mcp__supabase__get_advisors("performance")` |
+
+---
+
+## STANDARDIZED OUTPUT
+
+### Agent Completion Format
+
+All agents return this structure:
+
+```
 **Status:** ✓ completed | ✗ failed | ⚠️ partial (N/M)
 
 **Tasks:**
@@ -305,22 +337,11 @@ OpenCode creates response at `.claude/handoffs/opencode-to-claude-{YYYYMMDD-HHMM
 
 **Files Changed:**
 - `path/to/file.ts` - Description
-- `path/to/file.tsx` - Description
 
 **Build:** ✓ pass | ✗ fail (details)
 
-**Handoff:** (if needed)
-→ {agent}: {reason}
-Interface: { input: Type, output: { data?: T, error?: string } }
+**Handoff:** (if needed) → {agent}: {reason}
 ```
-
-### Verification Checklist
-
-| Check | Command |
-|-------|---------|
-| TypeScript | `npm run build 2>&1 \| grep -E "error\|Error" -A 3` |
-| Security (new tables) | `mcp__supabase__get_advisors("security")` |
-| Performance | `mcp__supabase__get_advisors("performance")` |
 
 ---
 
@@ -477,20 +498,35 @@ import { ResponsiveModal } from '@/components/ui/ResponsiveModal'
 | `/kc:build` | Build verification |
 | `/kc:docs` | Documentation lookup |
 
-### Skills
+### Skills (Claude Code)
 
 | Skill | Trigger |
 |-------|---------|
+| `vercel-react-best-practices` | Auto-load: React/Next.js patterns |
+| `postgres-best-practices` | Auto-load: Supabase query patterns |
 | `task-orchestrator` | Multi-agent coordination |
 | `feature-implementation-kiro` | Implement from spec files |
 | `preflight-repo-check` | Pre-implementation validation |
 | `post-task-learning` | Extract learnings after tasks |
 | `refactor-code` | Component consolidation |
-| `refactor-to-shared-ui-component` | Extract shared UI patterns |
-| `supabase-table-rls-policy-generator` | Generate RLS policies |
-| `a11y-pass` | Accessibility audit and fixes |
-| `vercel-react-best-practices` | React/Next.js patterns |
 | `mobile-pwa-design` | Mobile-first patterns |
+
+### Skills (OpenCode)
+
+| Skill | Agent | Purpose |
+|-------|-------|---------|
+| `component-refactor-scanner` | component-scanner | HTML/Tailwind issues |
+| `reusable-code-detector` | code-reviewer | Pattern extraction |
+
+### File Locations
+
+```
+Claude Skills:    .claude/skills/
+OpenCode Agents:  .opencode/agents/
+OpenCode Skills:  .opencode/skill/
+Handoffs:         .claude/handoffs/
+Rule Mappings:    .opencode/rules/agent-rule-mappings.md
+```
 
 ---
 
