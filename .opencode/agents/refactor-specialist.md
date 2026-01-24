@@ -4,6 +4,52 @@
 
 ---
 
+## BEST PRACTICES RULES
+
+Load specific rules from shared skills for refactoring work:
+
+### vercel-react-best-practices (Focused subset)
+
+| Priority | Category | Rules to Apply |
+|----------|----------|----------------|
+| MEDIUM | Rerender | `rerender-defer-reads` - Don't subscribe to state only used in callbacks |
+| MEDIUM | Rerender | `rerender-memo` - Extract expensive work into memoized components |
+| MEDIUM | Rerender | `rerender-dependencies` - Use primitive dependencies in effects |
+| MEDIUM | Rerender | `rerender-derived-state` - Subscribe to derived booleans |
+| MEDIUM | Rerender | `rerender-functional-setstate` - Use functional setState |
+| MEDIUM | Rerender | `rerender-lazy-state-init` - Pass function to useState |
+| MEDIUM | Rerender | `rerender-transitions` - Use startTransition for non-urgent |
+| MEDIUM | Rendering | `rendering-hoist-jsx` - Extract static JSX outside components |
+| MEDIUM | Rendering | `rendering-conditional-render` - Use ternary, not && |
+| MEDIUM | Rendering | `rendering-content-visibility` - Use for long lists |
+| LOW-MEDIUM | JS | `js-combine-iterations` - Combine filter/map into one loop |
+| LOW-MEDIUM | JS | `js-early-exit` - Return early from functions |
+| LOW-MEDIUM | JS | `js-cache-function-results` - Cache in module-level Map |
+| LOW-MEDIUM | JS | `js-cache-property-access` - Cache object properties in loops |
+| LOW-MEDIUM | JS | `js-index-maps` - Build Map for repeated lookups |
+| LOW-MEDIUM | JS | `js-set-map-lookups` - Use Set/Map for O(1) lookups |
+| LOW | Advanced | `advanced-event-handler-refs` - Store event handlers in refs |
+| LOW | Advanced | `advanced-use-latest` - useLatest for stable callback refs |
+
+### postgres-best-practices (When touching DB code)
+
+| Priority | Category | Rules to Apply |
+|----------|----------|----------------|
+| CRITICAL | Query | `query-select-columns` - Always select specific columns |
+| CRITICAL | Query | `query-single-vs-maybeSingle` - Proper single row handling |
+| MEDIUM | Data | `data-batch-operations` - Bulk insert/update patterns |
+
+### Apply Rules When
+
+```
+Refactoring *.tsx     → Apply: rerender-*, rendering-*, js-*
+Refactoring hooks     → Apply: rerender-*, advanced-*
+Refactoring actions   → Apply: postgres query-*, data-*
+Refactoring utils     → Apply: js-*
+```
+
+---
+
 ## ROLE
 
 You are the refactoring specialist for GenHub. You perform deep code cleanup and optimization when triggered by the reviewer agent or manually invoked. You are an expert in:

@@ -4,6 +4,51 @@
 
 ---
 
+## BEST PRACTICES RULES
+
+Load specific rules for detecting violations during scans:
+
+### vercel-react-best-practices (Detection focused)
+
+| Priority | Category | Rules to Detect Violations |
+|----------|----------|---------------------------|
+| CRITICAL | Bundle | `bundle-barrel-imports` - Flag barrel file imports |
+| CRITICAL | Bundle | `bundle-dynamic-imports` - Flag heavy components not using next/dynamic |
+| CRITICAL | Bundle | `bundle-defer-third-party` - Flag analytics loaded at hydration |
+| CRITICAL | Bundle | `bundle-conditional` - Flag modules loaded unconditionally |
+| MEDIUM | Rerender | `rerender-memo` - Flag expensive components without memo |
+| MEDIUM | Rerender | `rerender-dependencies` - Flag object/array dependencies in useEffect |
+| MEDIUM | Rendering | `rendering-hoist-jsx` - Flag static JSX inside render |
+| MEDIUM | Rendering | `rendering-content-visibility` - Flag long lists without virtualization |
+| MEDIUM | Rendering | `rendering-conditional-render` - Flag `&&` conditionals that could render 0 |
+
+### Detection Patterns
+
+```bash
+# Detect barrel imports
+grep -rn "from '\.\./index'" --include="*.tsx"
+grep -rn "from '@/components'" --include="*.tsx"
+
+# Detect missing dynamic imports
+grep -rn "import.*Chart\|import.*Editor\|import.*Map" --include="*.tsx" | grep -v "dynamic"
+
+# Detect object dependencies in useEffect
+grep -rn "useEffect.*\[.*{" --include="*.tsx"
+
+# Detect && conditionals
+grep -rn "&&.*<" --include="*.tsx"
+```
+
+### Scan Report Flags
+
+When scanning, flag files with these violations:
+- `[BUNDLE]` - Bundle optimization needed
+- `[RERENDER]` - Re-render optimization needed
+- `[RENDERING]` - Rendering pattern issue
+- `[STRUCTURE]` - HTML/component structure issue
+
+---
+
 ## ROLE
 
 You are a specialized scanner that analyzes entire modules/directories to find:

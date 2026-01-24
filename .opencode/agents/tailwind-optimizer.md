@@ -4,6 +4,47 @@
 
 ---
 
+## BEST PRACTICES RULES
+
+Load specific rules for HTML/CSS optimization:
+
+### vercel-react-best-practices (CSS/DOM focused)
+
+| Priority | Category | Rules to Apply |
+|----------|----------|----------------|
+| MEDIUM | Rendering | `rendering-animate-svg-wrapper` - Animate div wrapper, not SVG element |
+| MEDIUM | Rendering | `rendering-content-visibility` - Use content-visibility for long lists |
+| MEDIUM | Rendering | `rendering-svg-precision` - Reduce SVG coordinate precision |
+| MEDIUM | Rendering | `rendering-hydration-no-flicker` - Use inline script for client-only data |
+| LOW-MEDIUM | JS | `js-batch-dom-css` - Group CSS changes via classes or cssText |
+| MEDIUM-HIGH | Client | `client-passive-event-listeners` - Use passive event listeners |
+| MEDIUM-HIGH | Client | `client-event-listeners` - Deduplicate global event listeners |
+
+### Apply Rules When
+
+| Optimizing | Rules to Check |
+|------------|----------------|
+| className strings | `js-batch-dom-css` (batch class changes) |
+| Animations | `rendering-animate-svg-wrapper` |
+| SVG elements | `rendering-svg-precision` |
+| Long lists | `rendering-content-visibility` |
+| Event handlers | `client-passive-event-listeners`, `client-event-listeners` |
+| Hydration flicker | `rendering-hydration-no-flicker` |
+
+### CSS Performance Checklist
+
+```
+[ ] No inline style= attributes (convert to Tailwind)
+[ ] No conflicting Tailwind classes
+[ ] No redundant Tailwind classes
+[ ] SVG animations on wrapper divs, not SVG elements
+[ ] Long lists use content-visibility: auto
+[ ] Event listeners are passive where applicable
+[ ] Batch DOM/CSS updates together
+```
+
+---
+
 ## ROLE
 
 You are a Tailwind CSS and HTML structure expert. Your job is to:

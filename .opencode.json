@@ -70,16 +70,44 @@
   "skills": {
     "discovery": [
       ".opencode/skill/",
-      ".claude/skills/"
+      ".claude/skills/",
+      "~/.claude/skills/"
     ],
     "autoLoad": [
-      "vercel-react-best-practices"
-    ]
+      "vercel-react-best-practices",
+      "postgres-best-practices"
+    ],
+    "agentMappings": {
+      "reviewer": {
+        "skills": ["vercel-react-best-practices", "postgres-best-practices"],
+        "ruleCategories": ["async-*", "bundle-*", "server-*", "client-*", "rerender-*", "rendering-*", "js-*", "advanced-*", "query-*", "security-*", "conn-*", "schema-*", "data-*"]
+      },
+      "refactor": {
+        "skills": ["vercel-react-best-practices", "postgres-best-practices"],
+        "ruleCategories": ["rerender-*", "rendering-*", "js-*", "advanced-*", "query-*", "data-*"]
+      },
+      "component-scanner": {
+        "skills": ["vercel-react-best-practices"],
+        "ruleCategories": ["bundle-*", "rerender-*", "rendering-*"]
+      },
+      "tailwind-optimizer": {
+        "skills": ["vercel-react-best-practices"],
+        "ruleCategories": ["rendering-*", "js-batch-dom-css", "client-passive-event-listeners", "client-event-listeners"]
+      }
+    },
+    "filePatternRules": {
+      "*.tsx": ["rendering-*", "rerender-*", "bundle-*"],
+      "app/actions/*.ts": ["query-*", "security-*", "data-*"],
+      "app/**/page.tsx": ["async-*", "server-*"],
+      "lib/**/*.ts": ["js-*", "query-*"],
+      "hooks/**/*.ts": ["rerender-*", "advanced-*"]
+    }
   },
 
   "rules": [
     "AGENTS.md",
-    ".opencode/rules/genhub-patterns.md"
+    ".opencode/rules/genhub-patterns.md",
+    ".opencode/rules/agent-rule-mappings.md"
   ],
 
   "commands": {

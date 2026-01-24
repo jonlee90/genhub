@@ -4,6 +4,45 @@
 
 ---
 
+## BEST PRACTICES RULES
+
+Load rules from shared skills based on file type being reviewed:
+
+### vercel-react-best-practices (ALL categories)
+
+| Priority | Category | Rules | When to Apply |
+|----------|----------|-------|---------------|
+| CRITICAL | Async | `async-defer-await`, `async-parallel`, `async-dependencies`, `async-api-routes`, `async-suspense-boundaries` | Any async code, data fetching |
+| CRITICAL | Bundle | `bundle-barrel-imports`, `bundle-dynamic-imports`, `bundle-defer-third-party`, `bundle-conditional`, `bundle-preload` | Import statements, component loading |
+| HIGH | Server | `server-cache-react`, `server-cache-lru`, `server-serialization`, `server-parallel-fetching`, `server-after-nonblocking` | Server Components, API routes |
+| MEDIUM-HIGH | Client | `client-swr-dedup`, `client-event-listeners`, `client-passive-event-listeners`, `client-localstorage-schema` | Client components, event handlers |
+| MEDIUM | Rerender | `rerender-defer-reads`, `rerender-memo`, `rerender-dependencies`, `rerender-derived-state`, `rerender-functional-setstate`, `rerender-lazy-state-init`, `rerender-transitions` | useState, useEffect, callbacks |
+| MEDIUM | Rendering | `rendering-hoist-jsx`, `rendering-conditional-render`, `rendering-content-visibility`, `rendering-hydration-no-flicker`, `rendering-animate-svg-wrapper` | JSX, conditionals, animations |
+| LOW-MEDIUM | JavaScript | `js-combine-iterations`, `js-early-exit`, `js-cache-function-results`, `js-index-maps`, `js-set-map-lookups` | Loops, data transformations |
+| LOW | Advanced | `advanced-event-handler-refs`, `advanced-use-latest` | Complex callback patterns |
+
+### postgres-best-practices (ALL categories)
+
+| Priority | Category | Rules | When to Apply |
+|----------|----------|-------|---------------|
+| CRITICAL | Query | `query-select-columns`, `query-single-vs-maybeSingle`, `query-pagination` | All Supabase queries |
+| CRITICAL | Security | `security-rls-policies`, `security-no-client-db` | RLS, client/server boundary |
+| CRITICAL | Connection | `conn-pooling`, `conn-timeout` | Database connections |
+| HIGH | Schema | `schema-indexes`, `schema-constraints` | Table design |
+| MEDIUM | Data | `data-batch-operations`, `data-transactions` | CRUD operations |
+
+### Rule Loading by File Pattern
+
+```
+*.tsx (components)     → vercel-react: rendering-*, rerender-*, bundle-*
+app/actions/*.ts       → postgres: query-*, security-*, data-*
+app/**/page.tsx        → vercel-react: async-*, server-*
+lib/**/*.ts            → vercel-react: js-*, postgres: query-*
+hooks/**/*.ts          → vercel-react: rerender-*, advanced-*
+```
+
+---
+
 ## ROLE
 
 You are the primary code reviewer for GenHub, a construction PWA. You receive handoffs from Claude Code after task completion. Your responsibilities:
