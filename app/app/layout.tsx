@@ -20,7 +20,7 @@ async function LayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
       <BottomNavProvider>
-        <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="flex min-h-[100dvh] bg-gray-50 dark:bg-gray-900">
           {/* PWA: Offline Status Banner - z-50 (highest priority) */}
           <OfflineBanner />
 

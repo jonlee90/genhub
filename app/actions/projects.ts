@@ -433,6 +433,17 @@ export async function createProject(formData: FormData) {
     // Don't fail project creation if default model fails
   }
 
+  // Refresh materialized view to update dashboard KPIs immediately
+  try {
+    await supabase.rpc("refresh_dashboard_kpis");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[createProject] ✅ Refreshed dashboard KPIs materialized view");
+    }
+  } catch (refreshError) {
+    console.error("[createProject] Failed to refresh dashboard KPIs:", refreshError);
+    // Don't fail project creation if refresh fails - view will refresh on schedule
+  }
+
   // Revalidate projects list and related caches
   revalidatePath("/app/projects");
   revalidatePath("/app");
@@ -590,6 +601,17 @@ export async function updateProjectStatus(
   if (updateError) {
     console.error("Error updating project status:", updateError);
     return { error: "Failed to update project status. Please try again." };
+  }
+
+  // Refresh materialized view to update dashboard KPIs immediately
+  try {
+    await supabase.rpc("refresh_dashboard_kpis");
+    if (process.env.NODE_ENV === "development") {
+      console.log("[updateProjectStatus] ✅ Refreshed dashboard KPIs materialized view");
+    }
+  } catch (refreshError) {
+    console.error("[updateProjectStatus] Failed to refresh dashboard KPIs:", refreshError);
+    // Don't fail project update if refresh fails - view will refresh on schedule
   }
 
   // Revalidate paths and related caches

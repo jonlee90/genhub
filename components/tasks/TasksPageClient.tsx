@@ -366,7 +366,7 @@ function TasksPageContent({
       <div className="flex flex-col h-full">
           {/* Task list with pull-to-refresh */}
           <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
-          <div className="pt-4 px-4 pb-safe-nav">
+          <div className="p-4">
           <BlueprintBackground />
 
             <div className="relative mb-4">

@@ -426,6 +426,20 @@ export async function invalidateDashboardCache(
   }
 
   console.log("[invalidateDashboardCache] Invalidating dashboard cache tags");
+
+  // Refresh materialized view to update dashboard KPIs immediately
+  try {
+    const userContext = await getUserContext();
+    if (!("error" in userContext)) {
+      const { supabase } = userContext;
+      await supabase.rpc("refresh_dashboard_kpis");
+      console.log("[invalidateDashboardCache] ✅ Refreshed dashboard KPIs materialized view");
+    }
+  } catch (refreshError) {
+    console.error("[invalidateDashboardCache] Failed to refresh dashboard KPIs:", refreshError);
+    // Don't fail cache invalidation if refresh fails - view will refresh on schedule
+  }
+
   revalidateTag("dashboard", "max");
   revalidateTag("dashboard-kpis", "max");
 

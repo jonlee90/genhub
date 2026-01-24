@@ -112,10 +112,13 @@ export function BottomNavigation({ session }: BottomNavigationProps) {
       {/* Bottom Navigation Bar - Fixed at bottom, hidden on desktop */}
       <nav
         className={cn(
-          "fixed bottom-0 left-0 right-0 z-40 md:hidden",
+          "fixed left-0 right-0 z-40 md:hidden",
           "bg-white dark:bg-gray-950 border-t border-gray-200 dark:border-gray-800 shadow-construction-lg",
-          "safe-bottom", // Apply safe area bottom padding
         )}
+        style={{
+          bottom: 0,
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
       >
         {/* Top accent line - construction blue */}
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-construction-blue via-construction-accent to-construction-blue" />
