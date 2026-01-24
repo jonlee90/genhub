@@ -19,10 +19,19 @@
  */
 
 import { useState, useMemo } from 'react';
-import type { LucideIcon } from 'lucide-react';
+import { Building2, Users, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SearchInput } from '@/components/mobile/SearchInput';
+
+// Icon map for server-to-client serialization
+const ICON_MAP = {
+  building2: Building2,
+  users: Users,
+  mail: Mail,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
 
 interface Column<T> {
   /** Field key */
@@ -53,7 +62,7 @@ interface OwnerDataTableProps<T> {
 
   /** Empty state config */
   emptyState: {
-    icon: LucideIcon;
+    iconName: IconName;
     title: string;
     description: string;
   };
@@ -143,14 +152,15 @@ function CardSkeletonGrid({ CardSkeleton }: { CardSkeleton?: React.ComponentType
 }
 
 function EmptyState({
-  icon: Icon,
+  iconName,
   title,
   description,
 }: {
-  icon: LucideIcon;
+  iconName: IconName;
   title: string;
   description: string;
 }) {
+  const Icon = ICON_MAP[iconName];
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">

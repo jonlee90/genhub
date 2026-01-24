@@ -1,5 +1,4 @@
 import { getAllCompanies, getOwnerDashboardStats } from '@/app/actions/owner';
-import { Building2 } from 'lucide-react';
 import { OwnerPageHeader } from '@/components/owner/OwnerPageHeader';
 import { OwnerStatsGrid } from '@/components/owner/OwnerStatsGrid';
 import { OwnerDataTable } from '@/components/owner/OwnerDataTable';
@@ -88,7 +87,7 @@ export default async function OwnerCompaniesPage() {
         searchable
         searchKeys={['name', 'email', 'address']}
         emptyState={{
-          icon: Building2,
+          iconName: 'building2',
           title: 'No Companies Yet',
           description: 'Companies will appear here once admins accept their invitations.',
         }}
