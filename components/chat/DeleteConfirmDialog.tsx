@@ -17,13 +17,11 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 // Performance optimization: Direct imports instead of barrel file
 import Trash2 from "lucide-react/icons/trash-2";
-import X from "lucide-react/icons/x";
 import AlertTriangle from "lucide-react/icons/alert-triangle";
 import Loader2 from "lucide-react/icons/loader-2";
 import { deleteMessage } from "@/app/actions/chat";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
@@ -73,38 +71,12 @@ export function DeleteConfirmDialog({
       maxWidth="sm"
       closeOnBackdropClick={!isDeleting}
       closeOnEscape={!isDeleting}
-      rightActions={
-        <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isDeleting}
-            className="font-semibold"
-          >
-            <X className="mr-2 h-4 w-4" />
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold"
-          >
-            {isDeleting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </>
-            )}
-          </Button>
-        </>
-      }
+      showNavigation={true}
+      onBack={onCancel}
+      onContinue={handleDelete}
+      backLabel="Cancel"
+      continueLabel={isDeleting ? "Deleting..." : "Delete"}
+      continueDisabled={isDeleting}
     >
       <div className="space-y-4">
         <p className="text-sm text-gray-700 leading-relaxed">

@@ -216,36 +216,12 @@ export function MarkerCreationModal({
       title={`Add ${config.label}`}
       icon={Icon}
       maxWidth="lg"
-      rightActions={
-        <>
-          <button
-            type="button"
-            onClick={handleClose}
-            disabled={isPending}
-            className={cn(
-              "px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg",
-              "hover:bg-gray-50 transition-colors font-medium text-sm",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-            )}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isPending || !title.trim()}
-            className={cn(
-              "px-4 py-2 bg-construction-blue text-white rounded-lg",
-              "hover:bg-construction-blue/90 transition-colors font-medium text-sm",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-              "flex items-center gap-2",
-            )}
-          >
-            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isPending ? "Creating..." : "Create"}
-          </button>
-        </>
-      }
+      showNavigation={true}
+      onBack={handleClose}
+      backLabel="Cancel"
+      onContinue={handleSubmit}
+      continueLabel={isPending ? "Creating..." : "Create"}
+      continueDisabled={isPending || !title.trim()}
     >
       <div className="space-y-6">
         {/* 3D Position Display */}

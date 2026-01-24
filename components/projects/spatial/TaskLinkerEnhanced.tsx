@@ -20,7 +20,6 @@ import Plus from "lucide-react/icons/plus";
 import { cn } from "@/lib/utils";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { updateTask } from "@/app/actions/tasks";
 import { createTaskAtLocation } from "@/app/actions/spatial";
@@ -166,23 +165,12 @@ function CreateTaskMode({
       title="Create Task at Location"
       icon={Plus}
       maxWidth="lg"
-      rightActions={
-        <>
-          <Button variant="outline" onClick={handleClose} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={isPending || !title.trim()}>
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Creating...
-              </>
-            ) : (
-              "Create Task"
-            )}
-          </Button>
-        </>
-      }
+      showNavigation={true}
+      onBack={handleClose}
+      backLabel="Cancel"
+      onContinue={handleSubmit}
+      continueLabel={isPending ? "Creating..." : "Create Task"}
+      continueDisabled={isPending || !title.trim()}
     >
       <div className="space-y-5">
         {/* 3D Position */}

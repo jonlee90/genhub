@@ -226,7 +226,7 @@ export function BaseModal({
         <div
           className={cn(
             "flex-1 overflow-y-auto overflow-x-hidden",
-            "px-6 py-4",
+            "px-6 py-4 pb-20",
             // Custom scrollbar styling with dark mode support
             "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800",
             contentClassName,
@@ -241,38 +241,29 @@ export function BaseModal({
 
         {/* Fixed Navigation Bar - Bottom corners */}
         {showNavigation && (onBack || onContinue) && (
-          <div
-            className={cn(
-              'flex items-center justify-between gap-3',
-              'px-6 pb-4',
-              footerClassName
-            )}
-          >
+          <>
             {/* Back Button - Hidden on step 1 */}
-            {onBack && (!currentStep || currentStep > 1) ? (
+            {onBack && (!currentStep || currentStep > 1) && (
               <button
                 onClick={onBack}
                 className={cn(
-                  'h-11 px-4 min-h-[44px] rounded-lg',
-                  'bg-gray-100 dark:bg-gray-800',
-                  'flex items-center gap-2',
-                  'font-medium text-gray-700 dark:text-gray-200',
-                  'transition-all duration-150',
-                  'hover:bg-gray-200 dark:hover:bg-gray-700',
-                  'active:scale-95',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400'
+                  "absolute bottom-0 left-0",
+                  "h-11 px-4 min-h-[44px] rounded-lg",
+                  "bg-gray-100 dark:bg-gray-800",
+                  "flex items-center gap-2",
+                  "font-medium text-gray-700 dark:text-gray-200",
+                  "transition-all duration-150",
+                  "hover:bg-gray-200 dark:hover:bg-gray-700",
+                  "active:scale-95",
+                  "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400",
+                  "ml-6 mb-4",
                 )}
                 aria-label={backLabel}
               >
                 <ArrowLeft className="w-5 h-5" />
                 <span>{backLabel}</span>
               </button>
-            ) : (
-              <div className="flex-shrink-0" />
             )}
-
-            {/* Spacer */}
-            <div className="flex-1" />
 
             {/* Continue Button - Always at bottom right */}
             {onContinue && (
@@ -280,23 +271,25 @@ export function BaseModal({
                 onClick={onContinue}
                 disabled={continueDisabled}
                 className={cn(
-                  'h-11 px-6 min-h-[44px] rounded-lg',
-                  'flex items-center gap-2',
-                  'font-semibold text-white',
-                  'transition-all duration-150',
-                  'shadow-md',
+                  "absolute bottom-0 right-0",
+                  "h-11 px-6 min-h-[44px] rounded-lg",
+                  "flex items-center gap-2",
+                  "font-semibold text-white",
+                  "transition-all duration-150",
+                  "shadow-md",
                   continueDisabled
-                    ? 'opacity-50 cursor-not-allowed'
-                    : 'hover:shadow-lg active:scale-95',
-                  'focus:outline-none focus:ring-2 focus:ring-offset-2',
-                  'disabled:active:scale-100'
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:shadow-lg active:scale-95",
+                  "focus:outline-none focus:ring-2 focus:ring-offset-2",
+                  "disabled:active:scale-100",
+                  "mr-6 mb-4",
                 )}
                 style={{
                   background: continueDisabled
-                    ? '#9CA3AF'
+                    ? "#9CA3AF"
                     : `linear-gradient(135deg, ${theme.gradientFrom} 0%, ${theme.gradientTo} 100%)`,
                   // @ts-ignore - CSS custom property
-                  '--tw-ring-color': theme.ring,
+                  "--tw-ring-color": theme.ring,
                 }}
                 aria-label={continueLabel}
               >
@@ -304,7 +297,7 @@ export function BaseModal({
                 <ArrowRight className="w-5 h-5" />
               </button>
             )}
-          </div>
+          </>
         )}
       </DialogContent>
     </Dialog>

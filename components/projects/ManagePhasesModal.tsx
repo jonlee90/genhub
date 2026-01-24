@@ -5,12 +5,9 @@ import { useRouter } from "next/navigation";
 import { m as motion, AnimatePresence } from "framer-motion";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Layers from "lucide-react/icons/layers";
-import Plus from "lucide-react/icons/plus";
 import Edit from "lucide-react/icons/edit";
 import Trash2 from "lucide-react/icons/trash-2";
-import Loader2 from "lucide-react/icons/loader-2";
 import AlertTriangle from "lucide-react/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/icons/check-circle-2";
 import AlertCircle from "lucide-react/icons/alert-circle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -209,91 +206,49 @@ export function ManagePhasesModal({
     }
   };
 
-  const renderLeftActions = () => {
-    if (mode !== "list") {
-      return (
-        <Button variant="ghost" onClick={handleBackToList} disabled={isPending}>
-          Back
-        </Button>
-      );
-    }
-    return null;
-  };
-
-  const renderRightActions = () => {
+  const getContinueLabel = (): string => {
     switch (mode) {
       case "list":
-        return (
-          <Button
-            onClick={() => setMode("create")}
-            className="bg-construction-blue hover:bg-blue-700"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Phase
-          </Button>
-        );
+        return "Add Phase";
       case "create":
-        return (
-          <Button
-            onClick={handleCreatePhase}
-            disabled={isPending || !phaseName.trim()}
-            className="bg-construction-blue hover:bg-blue-700"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Create Phase
-              </>
-            )}
-          </Button>
-        );
+        return isPending ? "Creating..." : "Create Phase";
       case "edit":
-        return (
-          <Button
-            onClick={handleUpdatePhase}
-            disabled={isPending || !phaseName.trim()}
-            className="bg-construction-blue hover:bg-blue-700"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        );
+        return isPending ? "Saving..." : "Save Changes";
       case "delete":
-        return (
-          <Button
-            onClick={handleDeletePhase}
-            disabled={isPending}
-            variant="destructive"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Phase
-              </>
-            )}
-          </Button>
-        );
+        return isPending ? "Deleting..." : "Delete Phase";
+      default:
+        return "Continue";
     }
   };
+
+  const getContinueDisabled = (): boolean => {
+    switch (mode) {
+      case "create":
+      case "edit":
+        return isPending || !phaseName.trim();
+      case "delete":
+        return isPending;
+      default:
+        return false;
+    }
+  };
+
+  const handleContinueAction = useCallback(() => {
+    switch (mode) {
+      case "list":
+        setMode("create");
+        break;
+      case "create":
+        handleCreatePhase();
+        break;
+      case "edit":
+        handleUpdatePhase();
+        break;
+      case "delete":
+        handleDeletePhase();
+        break;
+    }
+  }, [mode, handleCreatePhase, handleUpdatePhase, handleDeletePhase]);
 
   return (
     <ResponsiveModal
@@ -303,8 +258,12 @@ export function ManagePhasesModal({
       title={getModalTitle()}
       theme="default"
       maxWidth="2xl"
-      leftActions={renderLeftActions()}
-      rightActions={renderRightActions()}
+      showNavigation={true}
+      onBack={mode !== "list" ? handleBackToList : undefined}
+      backLabel="Back"
+      onContinue={handleContinueAction}
+      continueLabel={getContinueLabel()}
+      continueDisabled={getContinueDisabled()}
     >
       <AnimatePresence mode="wait">
         {/* Error Message */}

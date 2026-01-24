@@ -289,7 +289,7 @@ function BottomSheetModalContent({
             <div
               className={cn(
                 "flex-1 overflow-y-auto overflow-x-hidden",
-                "px-5 py-4",
+                "px-5 py-4 pb-20",
                 // Custom scrollbar styling
                 "scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800",
                 contentClassName,

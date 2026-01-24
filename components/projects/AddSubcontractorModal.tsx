@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -196,47 +195,12 @@ export function AddSubcontractorModal({
       icon={HardHat}
       title="Add Subcontractor"
       maxWidth="lg"
-      leftActions={
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={submitting}
-          className="font-bold h-12 px-6 text-base active:scale-[0.98] transition-transform"
-        >
-          Cancel
-        </Button>
-      }
-      rightActions={
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={submitting || !selectedId || loading || success}
-          className={cn(
-            "bg-construction-blue hover:bg-construction-blue/90 text-white font-bold gap-2",
-            "h-12 px-6 text-base",
-            "active:scale-[0.98] active:bg-construction-blue/80",
-            "transition-all duration-150",
-          )}
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Adding...
-            </>
-          ) : success ? (
-            <>
-              <Check className="h-5 w-5" />
-              Added!
-            </>
-          ) : (
-            <>
-              <HardHat className="h-5 w-5" />
-              Add to Project
-            </>
-          )}
-        </Button>
-      }
+      showNavigation={true}
+      onBack={() => onOpenChange(false)}
+      backLabel="Cancel"
+      onContinue={handleSubmit}
+      continueLabel={submitting ? "Adding..." : success ? "Added!" : "Add to Project"}
+      continueDisabled={submitting || !selectedId || loading || success}
     >
       <div className="space-y-4">
         {/* Search input */}

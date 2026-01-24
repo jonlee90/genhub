@@ -105,52 +105,17 @@ export function MarkerFilterSheet({
   const allSelected = localSelection.size === MARKER_CATEGORIES.length;
   const noneSelected = localSelection.size === 0;
 
-  // Footer actions
-  const leftActions = (
-    <button
-      onClick={handleClearAll}
-      disabled={noneSelected}
-      className={cn(
-        "min-h-[44px] px-4 rounded-xl",
-        "text-sm font-semibold",
-        "transition-all duration-150",
-        "active:scale-[0.98]",
-        noneSelected
-          ? "text-gray-400 cursor-not-allowed"
-          : "text-gray-700 hover:bg-gray-100 active:bg-gray-200",
-      )}
-      aria-label="Clear all filter selections"
-    >
-      Clear All
-    </button>
-  );
-
-  const rightActions = (
-    <button
-      onClick={handleApply}
-      className={cn(
-        "min-h-[44px] px-6 rounded-xl",
-        "bg-construction-blue text-white",
-        "text-sm font-semibold",
-        "transition-all duration-150",
-        "active:scale-[0.98] active:bg-construction-blue/90",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-      )}
-      aria-label="Apply selected filters"
-    >
-      Apply
-    </button>
-  );
-
   return (
     <ResponsiveModal
       isOpen={isOpen}
       onClose={onClose}
       icon={Filter}
       title="Filter Markers"
-      leftActions={leftActions}
-      rightActions={rightActions}
-      showFooter
+      showNavigation={true}
+      onBack={noneSelected ? undefined : handleClearAll}
+      backLabel="Clear All"
+      onContinue={handleApply}
+      continueLabel="Apply"
       snapPoints={["half"]}
       initialSnapPoint="half"
       ariaLabel="Filter markers by category"

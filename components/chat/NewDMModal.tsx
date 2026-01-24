@@ -92,7 +92,6 @@ export function NewDMModal({ open, onClose, companyUsers }: NewDMModalProps) {
       icon={MessageCircle}
       theme="default"
       maxWidth="md"
-      showFooter={false}
       closeOnBackdropClick={!isCreating}
       ariaLabel="New direct message modal"
     >

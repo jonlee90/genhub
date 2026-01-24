@@ -141,7 +141,6 @@ export function DocumentsSection({
           title="Upload Documents"
           icon={Upload}
           maxWidth="lg"
-          showFooter={false}
         >
           <ProjectFileUploader
             projectId={projectId}
@@ -226,7 +225,6 @@ export function DocumentsSection({
         title="Upload Documents"
         icon={Upload}
         maxWidth="lg"
-        showFooter={false}
       >
         <ProjectFileUploader
           projectId={projectId}

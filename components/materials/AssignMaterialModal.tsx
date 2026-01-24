@@ -7,8 +7,7 @@ const priceFormatter = new Intl.NumberFormat("en-US", {
   currency: "USD",
   minimumFractionDigits: 2,
 });
-import { BaseModal } from "@/components/ui/BaseModal";
-import { Button } from "@/components/ui/button";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -18,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Package, AlertCircle } from "lucide-react";
+import { Package, AlertCircle } from "lucide-react";
 import {
   assignMaterialToTask,
   createMaterialFromHomeDepot,
@@ -228,39 +227,24 @@ export function AssignMaterialModal({
   const formatPrice = (price: number) => priceFormatter.format(price);
 
   return (
-    <BaseModal
+    <ResponsiveModal
       isOpen={true}
       onClose={onClose}
       icon={Package}
       title="Assign Material to Task"
       maxWidth="2xl"
-      leftActions={
-        <Button variant="outline" onClick={onClose} disabled={isPending}>
-          Cancel
-        </Button>
-      }
-      rightActions={
-        <Button
-          onClick={handleAssign}
-          disabled={
-            isPending ||
-            !selectedProject ||
-            !selectedTask ||
-            selectedTask === "_empty" ||
-            !quantity ||
-            parseFloat(quantity) <= 0
-          }
-          className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Assigning...
-            </>
-          ) : (
-            "Assign Material"
-          )}
-        </Button>
+      showNavigation={true}
+      onBack={onClose}
+      onContinue={handleAssign}
+      backLabel="Cancel"
+      continueLabel={isPending ? "Assigning..." : "Assign Material"}
+      continueDisabled={
+        isPending ||
+        !selectedProject ||
+        !selectedTask ||
+        selectedTask === "_empty" ||
+        !quantity ||
+        parseFloat(quantity) <= 0
       }
     >
       <div className="space-y-6">
@@ -446,6 +430,6 @@ export function AssignMaterialModal({
           )}
         </div>
       </div>
-    </BaseModal>
+    </ResponsiveModal>
   );
 }

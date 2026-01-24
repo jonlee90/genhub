@@ -182,7 +182,6 @@ export function PhotoGallerySection({
           onClose={() => setShowUploader(false)}
           title="Upload Photo"
           icon={Upload}
-          showFooter={false}
         >
           <ProjectPhotoUploader
             projectId={projectId}
@@ -382,7 +381,6 @@ export function PhotoGallerySection({
         onClose={() => setShowUploader(false)}
         title="Upload Photo"
         icon={Upload}
-        showFooter={false}
       >
         <ProjectPhotoUploader
           projectId={projectId}

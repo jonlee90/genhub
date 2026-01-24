@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BaseModal } from "@/components/ui/BaseModal";
+import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 
 const priceFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -80,28 +80,18 @@ export function ProductComparisonModal({
 
   return (
     <>
-      <BaseModal
+      <ResponsiveModal
         isOpen={true}
         onClose={onClose}
         icon={BarChart}
         title="Product Comparison"
         maxWidth="4xl"
-        leftActions={
-          <Button
-            variant="outline"
-            onClick={() => {
-              onClearSelection();
-              onClose();
-            }}
-          >
-            Clear Selection
-          </Button>
-        }
-        rightActions={
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        }
+        showNavigation={true}
+        onBack={() => {
+          onClearSelection();
+          onClose();
+        }}
+        backLabel="Clear Selection"
       >
         <div
           className="grid gap-4"
@@ -235,7 +225,7 @@ export function ProductComparisonModal({
             );
           })}
         </div>
-      </BaseModal>
+      </ResponsiveModal>
 
       {/* Assign Material Modal */}
       {selectedProduct && (

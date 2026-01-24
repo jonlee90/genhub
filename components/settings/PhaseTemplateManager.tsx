@@ -528,25 +528,15 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
         icon={Layers}
         title="Create Phase Template"
         maxWidth="md"
-        leftActions={
-          <Button
-            variant="outline"
-            onClick={() => setShowCreateModal(false)}
-            className="border-2 font-semibold"
-          >
-            Cancel
-          </Button>
-        }
-        rightActions={
-          <Button
-            type="submit"
-            form="create-phase-form"
-            className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Phase
-          </Button>
-        }
+        formKey="create-phase-form"
+        showNavigation={true}
+        onBack={() => setShowCreateModal(false)}
+        backLabel="Cancel"
+        onContinue={() => {
+          const form = document.getElementById("create-phase-form") as HTMLFormElement;
+          form?.requestSubmit();
+        }}
+        continueLabel="Create Phase"
       >
         <form
           id="create-phase-form"
@@ -612,25 +602,15 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
           icon={Pencil}
           title="Edit Phase Template"
           maxWidth="md"
-          leftActions={
-            <Button
-              variant="outline"
-              onClick={() => setEditingPhase(null)}
-              className="border-2 font-semibold"
-            >
-              Cancel
-            </Button>
-          }
-          rightActions={
-            <Button
-              type="submit"
-              form="edit-phase-form"
-              className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Save Changes
-            </Button>
-          }
+          formKey="edit-phase-form"
+          showNavigation={true}
+          onBack={() => setEditingPhase(null)}
+          backLabel="Cancel"
+          onContinue={() => {
+            const form = document.getElementById("edit-phase-form") as HTMLFormElement;
+            form?.requestSubmit();
+          }}
+          continueLabel="Save Changes"
         >
           <form
             id="edit-phase-form"

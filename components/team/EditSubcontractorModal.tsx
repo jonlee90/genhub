@@ -205,7 +205,6 @@ export function EditSubcontractorModal({
       icon={Pencil}
       title="Edit Subcontractor"
       maxWidth="3xl"
-      showFooter={false}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Success Message */}

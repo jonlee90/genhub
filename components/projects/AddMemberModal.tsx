@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -205,37 +204,12 @@ export function AddMemberModal({
       icon={UserPlus}
       title="Add Team Member"
       maxWidth="lg"
-      leftActions={
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={submitting}
-          className="font-bold"
-        >
-          Cancel
-        </Button>
-      }
-      rightActions={
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={submitting || !selectedUserId || loading || success}
-          className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold gap-2"
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Adding...
-            </>
-          ) : (
-            <>
-              <UserPlus className="h-4 w-4" />
-              Add Member
-            </>
-          )}
-        </Button>
-      }
+      showNavigation={true}
+      onBack={() => onOpenChange(false)}
+      backLabel="Cancel"
+      onContinue={handleSubmit}
+      continueLabel={submitting ? "Adding..." : "Add Member"}
+      continueDisabled={submitting || !selectedUserId || loading || success}
     >
       <div className="space-y-4">
         {/* Debug: Search input */}

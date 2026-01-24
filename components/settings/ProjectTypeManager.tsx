@@ -294,40 +294,16 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
         title="Create Project Type"
         maxWidth="md"
         ariaLabel="Create project type dialog"
-        leftActions={
-          <Button
-            variant="outline"
-            onClick={() => setShowCreateModal(false)}
-            disabled={isSubmitting}
-            className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 transition-all duration-300"
-          >
-            Cancel
-          </Button>
-        }
-        rightActions={
-          <Button
-            type="submit"
-            form="create-project-type-form"
-            disabled={isSubmitting}
-            className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700 transition-all duration-300 shadow-sm focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
-            aria-busy={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2
-                  className="mr-2 h-4 w-4 animate-spin"
-                  aria-hidden="true"
-                />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-                Create Type
-              </>
-            )}
-          </Button>
-        }
+        formKey="create-project-type-form"
+        showNavigation={true}
+        onBack={() => setShowCreateModal(false)}
+        backLabel="Cancel"
+        onContinue={() => {
+          const form = document.getElementById("create-project-type-form") as HTMLFormElement;
+          form?.requestSubmit();
+        }}
+        continueLabel={isSubmitting ? "Creating..." : "Create Type"}
+        continueDisabled={isSubmitting}
       >
         <form
           id="create-project-type-form"
@@ -440,40 +416,16 @@ export const ProjectTypeManager = memo(function ProjectTypeManager({
           title="Edit Project Type"
           maxWidth="md"
           ariaLabel={`Edit ${editingType.name} project type`}
-          leftActions={
-            <Button
-              variant="outline"
-              onClick={() => setEditingType(null)}
-              disabled={isSubmitting}
-              className="border-2 focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2 transition-all duration-300"
-            >
-              Cancel
-            </Button>
-          }
-          rightActions={
-            <Button
-              type="submit"
-              form="edit-project-type-form"
-              disabled={isSubmitting}
-              className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700 transition-all duration-300 shadow-sm focus-visible:ring-2 focus-visible:ring-construction-blue focus-visible:ring-offset-2"
-              aria-busy={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2
-                    className="mr-2 h-4 w-4 animate-spin"
-                    aria-hidden="true"
-                  />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" aria-hidden="true" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          }
+          formKey="edit-project-type-form"
+          showNavigation={true}
+          onBack={() => setEditingType(null)}
+          backLabel="Cancel"
+          onContinue={() => {
+            const form = document.getElementById("edit-project-type-form") as HTMLFormElement;
+            form?.requestSubmit();
+          }}
+          continueLabel={isSubmitting ? "Saving..." : "Save Changes"}
+          continueDisabled={isSubmitting}
         >
           <form
             id="edit-project-type-form"

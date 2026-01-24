@@ -129,35 +129,12 @@ export function ModelUploadModal({
       theme="default"
       closeOnBackdropClick={!isPending}
       closeOnEscape={!isPending}
-      rightActions={[
-        <Button
-          key="cancel"
-          onClick={onClose}
-          variant="outline"
-          disabled={isPending}
-          className="border-2 border-gray-300 dark:border-gray-600"
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="upload"
-          onClick={handleUpload}
-          disabled={!selectedFile || isPending}
-          className="bg-construction-blue hover:bg-construction-blue/90 text-white"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Uploading... {uploadProgress}%
-            </>
-          ) : (
-            <>
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Model
-            </>
-          )}
-        </Button>,
-      ]}
+      showNavigation={true}
+      onBack={onClose}
+      backLabel="Cancel"
+      onContinue={handleUpload}
+      continueLabel={isPending ? `Uploading... ${uploadProgress}%` : "Upload Model"}
+      continueDisabled={!selectedFile || isPending}
     >
       <div className="space-y-6">
         {/* Instructions */}

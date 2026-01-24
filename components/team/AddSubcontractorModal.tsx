@@ -279,7 +279,6 @@ export function AddSubcontractorModal({
       icon={HardHat}
       title="Add Subcontractor"
       maxWidth="3xl"
-      showFooter={false}
     >
       <form action={formAction} className="space-y-6">
         {/* Success Message */}

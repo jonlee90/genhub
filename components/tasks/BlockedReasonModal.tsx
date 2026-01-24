@@ -23,8 +23,8 @@ export function BlockedReasonModal({
   const [reason, setReason] = useState("");
   const { error, setError, clearError } = useActionWithError();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
     if (!reason.trim()) {
       setError("Please enter a reason for blocking this task");
@@ -50,7 +50,12 @@ export function BlockedReasonModal({
       title="Block Task"
       theme="high"
       maxWidth="md"
-      showFooter={false}
+      showNavigation={true}
+      onBack={handleClose}
+      onContinue={handleSubmit}
+      backLabel="Cancel"
+      continueLabel="Block Task"
+      continueDisabled={!reason.trim()}
     >
       <form onSubmit={handleSubmit}>
         <div className="space-y-4">
@@ -74,18 +79,6 @@ export function BlockedReasonModal({
 
           {/* Error Banner */}
           {error && <ErrorBanner error={error} onDismiss={clearError} />}
-        </div>
-
-        <div className="flex justify-end gap-3 pt-6">
-          <Button type="button" variant="outline" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            className="bg-construction-red hover:bg-construction-red/90 text-white font-bold"
-          >
-            Block Task
-          </Button>
         </div>
       </form>
     </ResponsiveModal>

@@ -232,7 +232,6 @@ export function MarkerListSheet({
       icon={MapPin}
       title="Markers"
       theme="default"
-      showFooter={false}
       enableDragToDismiss
       closeOnBackdropClick
       closeOnEscape

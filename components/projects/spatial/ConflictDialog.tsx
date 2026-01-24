@@ -94,6 +94,12 @@ export function ConflictDialog({
       }
       maxWidth="2xl"
       theme="warning"
+      showNavigation={true}
+      onBack={onClose}
+      onContinue={handleResolveAll}
+      backLabel="Cancel"
+      continueLabel="Resolve All Conflicts"
+      continueDisabled={conflicts.some((c) => !resolutions.has(c.conflictType))}
     >
       <div className="space-y-4">
         {/* Info banner */}
@@ -116,31 +122,6 @@ export function ConflictDialog({
               }
             />
           ))}
-        </div>
-
-        {/* Actions */}
-        <div className="flex items-center justify-end gap-2 pt-4 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className={cn(
-              "px-4 py-2 border-2 border-gray-300 text-gray-700 rounded-lg",
-              "hover:bg-gray-50 transition-colors font-medium text-sm",
-            )}
-          >
-            Cancel
-          </button>
-
-          <button
-            onClick={handleResolveAll}
-            disabled={conflicts.some((c) => !resolutions.has(c.conflictType))}
-            className={cn(
-              "px-4 py-2 bg-construction-blue text-white rounded-lg",
-              "hover:bg-construction-blue/90 transition-colors font-medium text-sm",
-              "disabled:opacity-50 disabled:cursor-not-allowed",
-            )}
-          >
-            Resolve All Conflicts
-          </button>
         </div>
       </div>
     </ResponsiveModal>

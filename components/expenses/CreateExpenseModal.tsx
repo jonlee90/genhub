@@ -22,7 +22,6 @@ import {
   FileText,
   Sparkles,
   Info,
-  ArrowLeft,
 } from "lucide-react";
 import {
   createExpense,
@@ -227,38 +226,12 @@ export function CreateExpenseModal({
       title={taskContext ? "Add Expense" : "Submit Expense"}
       theme="default"
       maxWidth="3xl"
-      leftActions={
-        taskContext ? (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={onClose}
-            disabled={isPending}
-            className="h-10 px-4 font-medium text-construction-blue hover:bg-construction-blue/10 hover:text-construction-blue transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Task
-          </Button>
-        ) : undefined
-      }
-      rightActions={
-        <Button
-          onClick={handleSubmit}
-          disabled={isPending || !isValid}
-          className="h-10 px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {taskContext ? "Adding..." : "Submitting..."}
-            </>
-          ) : taskContext ? (
-            "Add Expense"
-          ) : (
-            "Submit Expense"
-          )}
-        </Button>
-      }
+      showNavigation={true}
+      onBack={taskContext ? onClose : undefined}
+      backLabel="Back to Task"
+      onContinue={handleSubmit}
+      continueLabel={isPending ? (taskContext ? "Adding..." : "Submitting...") : (taskContext ? "Add Expense" : "Submit Expense")}
+      continueDisabled={isPending || !isValid}
     >
       <div className="space-y-6">
         {/* Task Context Info Banner - Positioned at top of form */}

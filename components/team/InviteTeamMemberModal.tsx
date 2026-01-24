@@ -125,7 +125,6 @@ export function InviteTeamMemberModal({
       icon={UserPlus}
       title="Invite Team Member"
       maxWidth="2xl"
-      showFooter={false}
     >
       <form action={formAction} className="space-y-6">
         {/* Success Message with Shareable Link */}

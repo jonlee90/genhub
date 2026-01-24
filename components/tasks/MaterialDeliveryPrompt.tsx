@@ -2,12 +2,9 @@
 
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Truck } from "lucide-react";
 import { DollarSign } from "lucide-react";
-import { AlertTriangle } from "lucide-react";
-import { Package } from "lucide-react";
 import { createExpenseFromMaterial } from "@/app/actions/expenses";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { ErrorBanner, SuccessBanner } from "@/components/shared/ErrorBanner";
@@ -132,37 +129,12 @@ export function MaterialDeliveryPrompt({
       icon={Truck}
       title="Material Delivered"
       maxWidth="md"
-      leftActions={
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleDismiss}
-          disabled={isCreating}
-          className="w-full sm:w-auto border-2"
-        >
-          Skip for Now
-        </Button>
-      }
-      rightActions={
-        <Button
-          type="button"
-          onClick={handleCreateExpense}
-          disabled={isCreating}
-          className="w-full sm:w-auto bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-        >
-          {isCreating ? (
-            <>
-              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              Creating Expense...
-            </>
-          ) : (
-            <>
-              <DollarSign className="mr-2 h-4 w-4" />
-              Create Expense
-            </>
-          )}
-        </Button>
-      }
+      showNavigation={true}
+      onBack={handleDismiss}
+      backLabel="Skip for Now"
+      onContinue={handleCreateExpense}
+      continueLabel={isCreating ? "Creating Expense..." : "Create Expense"}
+      continueDisabled={isCreating}
     >
       {/* Material Details */}
       <div className="space-y-4">

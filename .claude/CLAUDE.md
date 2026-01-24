@@ -65,36 +65,34 @@ hooks/**/*.ts    → rerender-*, advanced-*
 |-----------|-------|
 | Server Action, API, RLS | `backend-engineer` |
 | Components, styling, forms | `frontend-engineer` |
-| Post-implementation review | **OpenCode GPT-5.2** |
+| Post-implementation review | `code-reviewer` |
 
-**Flow:** Parse → TodoWrite → Dispatch → Validate → Handoff → Report
+**Flow:** Parse → TodoWrite → Dispatch → Validate → Review → Report
 
 **Dispatch:**
 - Same domain → Single agent
 - Mixed independent → Parallel agents
-- Mixed dependent → Sequential: backend → frontend → OpenCode
+- Mixed dependent → Sequential: backend → frontend → code-reviewer
 
-**NO .md FILES:** Never create reports, audits, or documentation files unless explicitly requested (handoffs excluded)
+**NO .md FILES:** Never create reports, audits, or documentation files unless explicitly requested
 
 ---
 
-## OPENCODE HANDOFF
+## CODE REVIEW
 
 **When:** New component, multi-file fix, refactoring
 **Skip:** Single-line fix, config change, type-only
 
 ```
 1. Validate: npx tsc --noEmit && npm run lint
-2. Create: .claude/handoffs/claude-to-opencode-{YYYYMMDD-HHMM}.md
-3. Notify user: "Handoff created for OpenCode review"
+2. Run code-reviewer agent for quality, security, and pattern checks
 ```
 
-| Agent | Responsibilities |
-|-------|------------------|
-| `code-reviewer` | Validate, reusability scan, debug |
-| `refactor-specialist` | Deep refactoring, pattern extraction |
-| `component-scanner` | Module analysis |
-| `tailwind-optimizer` | HTML/CSS cleanup |
+**Responsibilities:**
+- Validate implementation against GenHub patterns
+- Reusability scan and component analysis
+- Security review (RLS, input validation)
+- Debug and fix identified issues
 
 ---
 

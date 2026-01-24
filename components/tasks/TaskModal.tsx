@@ -472,17 +472,10 @@ function TaskModalForm({
         maxWidth="2xl"
         snapPoints={["half", "full"]}
         initialSnapPoint="half"
-        rightActions={
-          <Button
-            type="button"
-            disabled={!formState.taskType}
-            onClick={() => formState.setCurrentStep(2)}
-            className="h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-construction-blue/90 active:scale-[0.98] transition-transform"
-          >
-            Next
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        }
+        showNavigation={true}
+        onContinue={() => formState.setCurrentStep(2)}
+        continueLabel="Next"
+        continueDisabled={!formState.taskType}
       >
         <TaskTypeSelectionStep
           selectedType={formState.taskType}
@@ -565,71 +558,16 @@ function TaskModalForm({
       snapPoints={["half", "full"]}
       initialSnapPoint="full"
       formKey={mode === "edit" && task ? `edit-${task.id}` : "create"}
-      leftActions={
-        mode === "create" ? (
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => formState.setCurrentStep(1)}
-            disabled={isPending}
-            className="h-10 min-h-[44px] px-4 active:scale-[0.98] transition-transform"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        ) : (
-          <div className="flex items-center gap-2">
-            {(userRole === "admin" || userRole === "project_manager") && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isPending || isDeleting}
-                className="h-10 min-h-[44px] px-3 text-red-600 hover:text-red-700 hover:bg-red-50 active:scale-[0.98] transition-transform"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-            {task?.creator && (
-              <CreatorBadge
-                creatorName={task.creator.name}
-                createdAt={task.created_at}
-                variant="default"
-              />
-            )}
-          </div>
-        )
-      }
-      rightActions={
-        <Button
-          type="submit"
-          form="task-form"
-          disabled={
-            isPending || !formState.selectedProjectId || !formState.title.trim()
-          }
-          className="h-10 min-h-[44px] px-6 font-semibold text-white bg-construction-blue hover:bg-blue-700 active:scale-[0.98] transition-transform"
-        >
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {mode === "create" ? "Creating..." : "Saving..."}
-            </>
-          ) : (
-            <>
-              {mode === "create" ? (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Task
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </>
-          )}
-        </Button>
+      showNavigation={true}
+      onBack={mode === "create" ? () => formState.setCurrentStep(1) : undefined}
+      onContinue={() => {
+        const form = document.getElementById("task-form") as HTMLFormElement;
+        if (form) form.requestSubmit();
+      }}
+      backLabel="Back"
+      continueLabel={mode === "create" ? "Add Task" : "Save Changes"}
+      continueDisabled={
+        isPending || !formState.selectedProjectId || !formState.title.trim()
       }
     >
       <form id="task-form" onSubmit={handleSubmit}>

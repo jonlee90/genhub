@@ -608,25 +608,15 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
         icon={ListChecks}
         title="Create Task Template"
         maxWidth="lg"
-        leftActions={
-          <Button
-            variant="outline"
-            onClick={() => setShowCreateModal(false)}
-            className="border-2 font-semibold"
-          >
-            Cancel
-          </Button>
-        }
-        rightActions={
-          <Button
-            type="submit"
-            form="create-task-template-form"
-            className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Create Task Template
-          </Button>
-        }
+        formKey="create-task-template-form"
+        showNavigation={true}
+        onBack={() => setShowCreateModal(false)}
+        backLabel="Cancel"
+        onContinue={() => {
+          const form = document.getElementById("create-task-template-form") as HTMLFormElement;
+          form?.requestSubmit();
+        }}
+        continueLabel="Create Task Template"
       >
         <form
           id="create-task-template-form"
@@ -788,25 +778,15 @@ export const TaskTemplateManager = memo(function TaskTemplateManager({
           icon={Edit}
           title="Edit Task Template"
           maxWidth="lg"
-          leftActions={
-            <Button
-              variant="outline"
-              onClick={() => setEditingTask(null)}
-              className="border-2 font-semibold"
-            >
-              Cancel
-            </Button>
-          }
-          rightActions={
-            <Button
-              type="submit"
-              form="edit-task-template-form"
-              className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Save Changes
-            </Button>
-          }
+          formKey="edit-task-template-form"
+          showNavigation={true}
+          onBack={() => setEditingTask(null)}
+          backLabel="Cancel"
+          onContinue={() => {
+            const form = document.getElementById("edit-task-template-form") as HTMLFormElement;
+            form?.requestSubmit();
+          }}
+          continueLabel="Save Changes"
         >
           <form
             id="edit-task-template-form"

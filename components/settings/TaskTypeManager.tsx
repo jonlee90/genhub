@@ -341,36 +341,16 @@ export const TaskTypeManager = memo(function TaskTypeManager({
         icon={Hammer}
         title="Create Task Type"
         maxWidth="md"
-        leftActions={
-          <Button
-            variant="outline"
-            onClick={() => setShowCreateModal(false)}
-            disabled={isPending}
-            className="border-2 font-semibold"
-          >
-            Cancel
-          </Button>
-        }
-        rightActions={
-          <Button
-            type="submit"
-            form="create-task-type-form"
-            disabled={isPending}
-            className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Plus className="mr-2 h-4 w-4" />
-                Create Task Type
-              </>
-            )}
-          </Button>
-        }
+        formKey="create-task-type-form"
+        showNavigation={true}
+        onBack={() => setShowCreateModal(false)}
+        backLabel="Cancel"
+        onContinue={() => {
+          const form = document.getElementById("create-task-type-form") as HTMLFormElement;
+          form?.requestSubmit();
+        }}
+        continueLabel={isPending ? "Creating..." : "Create Task Type"}
+        continueDisabled={isPending}
       >
         <form
           id="create-task-type-form"
@@ -483,36 +463,16 @@ export const TaskTypeManager = memo(function TaskTypeManager({
           icon={Pencil}
           title="Edit Task Type"
           maxWidth="md"
-          leftActions={
-            <Button
-              variant="outline"
-              onClick={() => setEditingType(null)}
-              disabled={isPending}
-              className="border-2 font-semibold"
-            >
-              Cancel
-            </Button>
-          }
-          rightActions={
-            <Button
-              type="submit"
-              form="edit-task-type-form"
-              disabled={isPending}
-              className="h-10 px-6 font-bold text-white bg-construction-blue hover:bg-blue-700 shadow-sm"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          }
+          formKey="edit-task-type-form"
+          showNavigation={true}
+          onBack={() => setEditingType(null)}
+          backLabel="Cancel"
+          onContinue={() => {
+            const form = document.getElementById("edit-task-type-form") as HTMLFormElement;
+            form?.requestSubmit();
+          }}
+          continueLabel={isPending ? "Saving..." : "Save Changes"}
+          continueDisabled={isPending}
         >
           {/* Editable form for all task types */}
           <form

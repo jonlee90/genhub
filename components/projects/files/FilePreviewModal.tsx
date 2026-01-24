@@ -9,9 +9,8 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Download from "lucide-react/icons/download";
 import Trash2 from "lucide-react/icons/trash-2";
 import FileText from "lucide-react/icons/file-text";
 import ExternalLink from "lucide-react/icons/external-link";
@@ -72,12 +71,12 @@ export function FilePreviewModal({
   const isImage = file.file_type?.startsWith("image/");
   const canPreview = isPDF || isImage;
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     console.log("[FilePreviewModal] Downloading file:", file.id);
     window.open(file.file_url, "_blank");
-  };
+  }, [file.id, file.file_url]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (
       !confirm(`Delete "${file.filename}"?\n\nThis action cannot be undone.`)
     ) {
@@ -102,7 +101,7 @@ export function FilePreviewModal({
       toast.error("Failed to delete file");
       setIsDeleting(false);
     }
-  };
+  }, [file.id, file.filename, onDelete]);
 
   return (
     <ResponsiveModal
@@ -111,32 +110,11 @@ export function FilePreviewModal({
       title={file.filename}
       icon={FileText}
       maxWidth="2xl"
-      rightActions={
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={handleDownload}
-            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            DOWNLOAD
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="font-bold"
-          >
-            {isDeleting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <Trash2 className="h-4 w-4 mr-2" />
-                DELETE
-              </>
-            )}
-          </Button>
-        </div>
-      }
+      showNavigation={true}
+      onBack={onClose}
+      backLabel="Close"
+      onContinue={handleDownload}
+      continueLabel="Download"
     >
       <div className="space-y-4">
         {/* Preview area */}
@@ -256,6 +234,23 @@ export function FilePreviewModal({
           <span className="text-xs text-gray-400 ml-auto">
             Type: {file.file_type || "Unknown"}
           </span>
+        </div>
+
+        {/* Delete action */}
+        <div className="pt-4 border-t border-gray-200">
+          <Button
+            variant="outline"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 font-bold"
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Trash2 className="h-4 w-4 mr-2" />
+            )}
+            {isDeleting ? "Deleting..." : "Delete File"}
+          </Button>
         </div>
       </div>
     </ResponsiveModal>

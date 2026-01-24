@@ -1,8 +1,7 @@
 "use client";
 
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
-import { Eye, X } from "lucide-react";
+import { Eye } from "lucide-react";
 import { SpatialViewer } from "@/components/projects/spatial/SpatialViewer";
 
 interface ModelPreviewModalProps {
@@ -26,7 +25,9 @@ export function ModelPreviewModal({
       theme="default"
       closeOnBackdropClick={true}
       closeOnEscape={true}
-      showFooter={false}
+      showNavigation={true}
+      onBack={onClose}
+      backLabel="Close Preview"
     >
       <div className="space-y-4">
         {/* Info Banner */}
@@ -78,18 +79,6 @@ export function ModelPreviewModal({
             </p>
             <p className="text-sm font-bold text-construction-blue">Live</p>
           </div>
-        </div>
-
-        {/* Close Button */}
-        <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            onClick={onClose}
-            variant="outline"
-            className="border-2 border-gray-300 dark:border-gray-600"
-          >
-            <X className="w-4 h-4 mr-2" />
-            Close Preview
-          </Button>
         </div>
       </div>
     </ResponsiveModal>

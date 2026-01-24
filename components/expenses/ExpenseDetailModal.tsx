@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useCallback } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Receipt,
   CheckCircle2,
   XCircle,
-  Loader2,
   FileText,
   Image as ImageIcon,
   AlertCircle,
@@ -186,6 +183,51 @@ export function ExpenseDetailModal({
   // Can delete if status is 'submitted' (user's own expense before approval)
   const canDelete = expense.status === "submitted";
 
+  // Compute navigation state based on modal mode
+  const getBackHandler = useCallback(() => {
+    if (showReviewForm) {
+      setShowReviewForm(false);
+      setReviewAction(null);
+      setReviewNotes("");
+    } else if (showDeleteConfirm) {
+      setShowDeleteConfirm(false);
+    } else {
+      onClose();
+    }
+  }, [showReviewForm, showDeleteConfirm, onClose]);
+
+  const getContinueHandler = useCallback(() => {
+    if (showReviewForm && reviewAction) {
+      handleSubmitReview();
+    } else if (showDeleteConfirm) {
+      handleDelete();
+    } else if (canReview) {
+      // Default to approve when in review mode
+      handleReview("approve");
+    }
+  }, [showReviewForm, reviewAction, showDeleteConfirm, canReview]);
+
+  const getContinueLabel = (): string => {
+    if (showReviewForm && reviewAction) {
+      if (isPending) return "Processing...";
+      return `Confirm ${reviewAction === "approve" ? "Approval" : "Rejection"}`;
+    }
+    if (showDeleteConfirm) {
+      return isPending ? "Deleting..." : "Delete Permanently";
+    }
+    if (canReview) {
+      return "Approve";
+    }
+    return "Close";
+  };
+
+  const getBackLabel = (): string => {
+    if (showReviewForm || showDeleteConfirm) {
+      return "Cancel";
+    }
+    return "Close";
+  };
+
   return (
     <ResponsiveModal
       isOpen={true}
@@ -202,154 +244,12 @@ export function ExpenseDetailModal({
       }
       theme="default"
       maxWidth="4xl"
-      leftActions={
-        <>
-          {/* Review Notes Input (in footer when reviewing) */}
-          {showReviewForm && reviewAction && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex-1 space-y-2"
-            >
-              <Label
-                htmlFor="notes"
-                className={cn(
-                  "text-sm font-bold",
-                  reviewAction === "approve"
-                    ? "text-construction-green"
-                    : "text-construction-red",
-                )}
-              >
-                {reviewAction === "approve"
-                  ? "Approval Notes (Optional)"
-                  : "Rejection Notes (Optional)"}
-              </Label>
-              <Textarea
-                id="notes"
-                value={reviewNotes}
-                onChange={(e) => setReviewNotes(e.target.value)}
-                className={cn(
-                  "border-2 min-h-[80px] resize-none",
-                  reviewAction === "approve"
-                    ? "border-construction-green/30 focus:border-construction-green"
-                    : "border-construction-red/30 focus:border-construction-red",
-                )}
-                placeholder={
-                  reviewAction === "approve"
-                    ? "Add any approval notes..."
-                    : "Provide a reason for rejection..."
-                }
-                rows={2}
-              />
-            </motion.div>
-          )}
-
-          {/* Standard buttons when not in review mode */}
-          {!showReviewForm && (
-            <>
-              <Button variant="outline" onClick={onClose}>
-                Close
-              </Button>
-              {canDelete && !showDeleteConfirm && (
-                <Button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  variant="outline"
-                  className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              )}
-            </>
-          )}
-
-          {/* Show Cancel button when in review or delete mode */}
-          {(showReviewForm || showDeleteConfirm) && (
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (showReviewForm) {
-                  setShowReviewForm(false);
-                  setReviewAction(null);
-                  setReviewNotes("");
-                } else {
-                  setShowDeleteConfirm(false);
-                }
-              }}
-              disabled={isPending}
-              className="ml-auto"
-            >
-              Cancel
-            </Button>
-          )}
-        </>
-      }
-      rightActions={
-        <>
-          {/* Initial review buttons */}
-          {canReview && !showReviewForm && !showDeleteConfirm && (
-            <>
-              <Button
-                onClick={() => handleReview("reject")}
-                variant="outline"
-                className="border-construction-red text-construction-red hover:bg-construction-red hover:text-white font-bold"
-              >
-                <XCircle className="h-4 w-4 mr-2" />
-                Reject
-              </Button>
-              <Button
-                onClick={() => handleReview("approve")}
-                className="bg-construction-green hover:bg-construction-green/90 text-white font-bold"
-              >
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Approve
-              </Button>
-            </>
-          )}
-          {/* Confirm review action button */}
-          {showReviewForm && reviewAction && (
-            <Button
-              onClick={handleSubmitReview}
-              disabled={isPending}
-              className={cn(
-                "text-white font-bold",
-                reviewAction === "approve"
-                  ? "bg-construction-green hover:bg-construction-green/90"
-                  : "bg-construction-red hover:bg-construction-red/90",
-              )}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                `Confirm ${reviewAction === "approve" ? "Approval" : "Rejection"}`
-              )}
-            </Button>
-          )}
-          {/* Confirm delete button */}
-          {showDeleteConfirm && (
-            <Button
-              onClick={handleDelete}
-              disabled={isPending}
-              className="bg-construction-red hover:bg-construction-red/90 text-white font-bold"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete Permanently
-                </>
-              )}
-            </Button>
-          )}
-        </>
-      }
+      showNavigation={true}
+      onBack={getBackHandler}
+      backLabel={getBackLabel()}
+      onContinue={canReview || showReviewForm || showDeleteConfirm ? getContinueHandler : undefined}
+      continueLabel={getContinueLabel()}
+      continueDisabled={isPending}
     >
       <div className="space-y-6">
         {/* Receipt Image */}
@@ -497,6 +397,19 @@ export function ExpenseDetailModal({
               </div>
             )}
         </div>
+
+        {/* Delete Expense Action - only for submitted expenses */}
+        {canDelete && !showDeleteConfirm && (
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Expense
+            </button>
+          </div>
+        )}
 
         {/* Delete Confirmation */}
         {showDeleteConfirm && (
