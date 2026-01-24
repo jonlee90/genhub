@@ -212,7 +212,8 @@
       "Bash(fi)",
       "Bash(while read file)",
       "Bash(do if ! grep -q \"dark:\" \"$file\")",
-      "Bash(then echo \"$file\" fi done)"
+      "Bash(then echo \"$file\" fi done)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []
