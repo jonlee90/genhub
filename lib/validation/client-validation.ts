@@ -196,8 +196,8 @@ export const addSubcontractorValidation = {
  */
 export const assignMaterialValidation = {
   project_id: { required: 'Please select a project' },
-  phase_id: { required: false },
-  task_id: { required: false },
+  phase_id: { required: 'Please select a phase' },
+  task_id: { required: 'Please select a task' },
   quantity: {
     required: 'Quantity is required',
     min: { value: 1, message: 'Quantity must be at least 1' },

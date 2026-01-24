@@ -208,6 +208,20 @@ export function MaterialsPageClient({
               </ErrorBoundary>
             </div>
 
+
+            {/* Search Section - ref for header visibility */}
+            <div ref={searchSectionRef} className="mb-5">
+              <MaterialsSearch projects={projects} />
+            </div>
+
+            {/* Tracked Materials Carousel */}
+            <div className="mb-5">
+              <ErrorBoundary>
+                <TrackedMaterialsCarousel materials={trackedMaterials} />
+              </ErrorBoundary>
+            </div>
+
+
             {/* Project Filters - Sticky on Mobile */}
             <div className="mb-5">
               <FilterBar
@@ -227,18 +241,6 @@ export function MaterialsPageClient({
                   },
                 ]}
               />
-            </div>
-
-            {/* Search Section - ref for header visibility */}
-            <div ref={searchSectionRef} className="mb-5">
-              <MaterialsSearch projects={projects} />
-            </div>
-
-            {/* Tracked Materials Carousel */}
-            <div className="mb-5">
-              <ErrorBoundary>
-                <TrackedMaterialsCarousel materials={trackedMaterials} />
-              </ErrorBoundary>
             </div>
 
             {/* Materials List */}
@@ -322,6 +324,16 @@ export function MaterialsPageClient({
           )}
         </ErrorBoundary>
 
+
+
+        {/* Materials Search Interface */}
+        <MaterialsSearch projects={projects} />
+
+        {/* TrackedMaterialsCarousel - horizontal scroll */}
+        <ErrorBoundary>
+          <TrackedMaterialsCarousel materials={trackedMaterials} />
+        </ErrorBoundary>
+
         {/* Project Filters */}
         <FilterBar
           searchConfig={{
@@ -340,14 +352,6 @@ export function MaterialsPageClient({
             },
           ]}
         />
-
-        {/* Materials Search Interface */}
-        <MaterialsSearch projects={projects} />
-
-        {/* TrackedMaterialsCarousel - horizontal scroll */}
-        <ErrorBoundary>
-          <TrackedMaterialsCarousel materials={trackedMaterials} />
-        </ErrorBoundary>
 
         {/* MaterialsList - paginated grid */}
         <ErrorBoundary>

@@ -37,6 +37,19 @@ const authConfig = {
 			}
 			return session
 		},
+		async redirect({ url, baseUrl }) {
+			// Allow callback URLs with query parameters (like admin-invite/signup?token=xxx)
+			// If url starts with baseUrl, it's a relative redirect - allow it
+			if (url.startsWith(baseUrl)) {
+				return url;
+			}
+			// If url is a relative path, prepend baseUrl
+			if (url.startsWith('/')) {
+				return `${baseUrl}${url}`;
+			}
+			// Otherwise, redirect to baseUrl (safety fallback)
+			return baseUrl;
+		},
 	},
 } satisfies NextAuthConfig
 
