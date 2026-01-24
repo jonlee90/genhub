@@ -14,8 +14,17 @@
  * - Responsive: smaller text on mobile (<768px)
  */
 
-import type { LucideIcon } from 'lucide-react';
+import { Building2, Mail, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+// Icon map for server-to-client serialization
+const ICON_MAP = {
+  building2: Building2,
+  mail: Mail,
+  users: Users,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
 
 interface OwnerPageHeaderProps {
   /** Page title (e.g., "COMPANIES") */
@@ -24,8 +33,8 @@ interface OwnerPageHeaderProps {
   /** Subtitle description */
   subtitle: string;
 
-  /** Optional Lucide icon */
-  icon?: LucideIcon;
+  /** Optional icon name (e.g., "building2", "mail") */
+  iconName?: IconName;
 
   /** Optional right-side action button */
   action?: React.ReactNode;
@@ -37,10 +46,11 @@ interface OwnerPageHeaderProps {
 export function OwnerPageHeader({
   title,
   subtitle,
-  icon: Icon,
+  iconName,
   action,
   className,
 }: OwnerPageHeaderProps) {
+  const Icon = iconName ? ICON_MAP[iconName] : null;
   return (
     <div
       className={cn(

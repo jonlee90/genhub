@@ -13,9 +13,20 @@
  * - Gap spacing: 12px mobile (gap-3), 16px desktop (gap-4)
  */
 
-import type { LucideIcon } from 'lucide-react';
+import { Building2, Mail, Users, FolderKanban, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { KPICard } from '@/components/dashboard/KPICard';
+
+// Icon map for server-to-client serialization
+const ICON_MAP = {
+  building2: Building2,
+  mail: Mail,
+  users: Users,
+  folderKanban: FolderKanban,
+  checkCircle: CheckCircle,
+} as const;
+
+type IconName = keyof typeof ICON_MAP;
 
 interface OwnerStat {
   /** Stat title */
@@ -24,8 +35,8 @@ interface OwnerStat {
   /** Stat value */
   value: string | number;
 
-  /** Lucide icon */
-  icon: LucideIcon;
+  /** Icon name (e.g., "building2", "mail") */
+  iconName: IconName;
 
   /** Visual variant */
   variant: 'default' | 'success' | 'warning' | 'danger';
@@ -107,18 +118,21 @@ export function OwnerStatsGrid({
         className
       )}
     >
-      {stats.map((stat) => (
-        <KPICard
-          key={stat.title}
-          title={stat.title}
-          value={stat.value}
-          icon={stat.icon}
-          variant={stat.variant}
-          href={stat.href}
-          subtitle={stat.subtitle}
-          trend={stat.trend}
-        />
-      ))}
+      {stats.map((stat) => {
+        const Icon = ICON_MAP[stat.iconName];
+        return (
+          <KPICard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            icon={Icon}
+            variant={stat.variant}
+            href={stat.href}
+            subtitle={stat.subtitle}
+            trend={stat.trend}
+          />
+        );
+      })}
     </div>
   );
 }

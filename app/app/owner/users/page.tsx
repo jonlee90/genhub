@@ -1,5 +1,4 @@
 import { getAllUsers } from "@/app/actions/owner";
-import { Users, Mail, CheckCircle } from "lucide-react";
 import { OwnerPageHeader } from "@/components/owner/OwnerPageHeader";
 import { OwnerStatsGrid } from "@/components/owner/OwnerStatsGrid";
 import { OwnerUsersClient } from "@/components/owner/OwnerUsersClient";
@@ -43,19 +42,19 @@ export default async function OwnerUsersPage() {
     {
       title: "Total Users",
       value: users.length,
-      icon: Users,
+      iconName: "users" as const,
       variant: "default" as const,
     },
     {
       title: "Active",
       value: activeUsers,
-      icon: CheckCircle,
+      iconName: "checkCircle" as const,
       variant: "success" as const,
     },
     {
       title: "Invited",
       value: invitedUsers,
-      icon: Mail,
+      iconName: "mail" as const,
       variant: "warning" as const,
     },
   ];
@@ -66,7 +65,7 @@ export default async function OwnerUsersPage() {
       <OwnerPageHeader
         title="USERS"
         subtitle="All users across all companies"
-        icon={Users}
+        iconName="users"
       />
 
       {/* Stats Grid */}

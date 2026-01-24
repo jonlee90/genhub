@@ -1,5 +1,5 @@
 import { getAllCompanies, getOwnerDashboardStats } from '@/app/actions/owner';
-import { Building2, Users, FolderKanban, Mail } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { OwnerPageHeader } from '@/components/owner/OwnerPageHeader';
 import { OwnerStatsGrid } from '@/components/owner/OwnerStatsGrid';
 import { OwnerDataTable } from '@/components/owner/OwnerDataTable';
@@ -39,25 +39,25 @@ export default async function OwnerCompaniesPage() {
         {
           title: 'Companies',
           value: stats.totalCompanies,
-          icon: Building2,
+          iconName: 'building2' as const,
           variant: 'default' as const,
         },
         {
           title: 'Users',
           value: stats.totalUsers,
-          icon: Users,
+          iconName: 'users' as const,
           variant: 'success' as const,
         },
         {
           title: 'Projects',
           value: stats.totalProjects,
-          icon: FolderKanban,
+          iconName: 'folderKanban' as const,
           variant: 'default' as const,
         },
         {
           title: 'Pending Invites',
           value: stats.pendingInvitations,
-          icon: Mail,
+          iconName: 'mail' as const,
           variant: 'warning' as const,
         },
       ]
@@ -69,7 +69,7 @@ export default async function OwnerCompaniesPage() {
       <OwnerPageHeader
         title="COMPANIES"
         subtitle="All registered companies on GenHub"
-        icon={Building2}
+        iconName="building2"
       />
 
       {/* Stats Grid */}

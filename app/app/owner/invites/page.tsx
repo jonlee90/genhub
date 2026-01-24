@@ -1,6 +1,5 @@
 import { getPendingAdminInvitations } from '@/app/actions/owner';
 import { OwnerInvitesClient } from '@/components/owner/OwnerInvitesClient';
-import { Mail } from 'lucide-react';
 import { OwnerPageHeader } from '@/components/owner/OwnerPageHeader';
 import { OwnerStatsGrid } from '@/components/owner/OwnerStatsGrid';
 
@@ -34,7 +33,7 @@ export default async function OwnerInvitesPage() {
     {
       title: "Pending Invitations",
       value: invitations.length,
-      icon: Mail,
+      iconName: "mail" as const,
       variant: "warning" as const,
     },
   ];
@@ -45,7 +44,7 @@ export default async function OwnerInvitesPage() {
       <OwnerPageHeader
         title="INVITATIONS"
         subtitle="Invite new company admins to join GenHub"
-        icon={Mail}
+        iconName="mail"
       />
 
       {/* Stats Grid */}
