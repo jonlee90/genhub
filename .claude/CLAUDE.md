@@ -135,25 +135,37 @@ WITHOUT SPEC (direct task list):
 
 | Agent | Authority | Budget | Never |
 |-------|-----------|--------|-------|
-| `backend-engineer` | DB, Server Actions, API, RLS | 90k | UI components |
-| `frontend-engineer` | Components, styling, forms | 90k | DB access |
-| `code-reviewer` | Review, testing, bug fixes | 60k | New features |
+| `backend-engineer` | DB, Server Actions, API, RLS | 70k | UI components |
+| `frontend-engineer` | Components, styling, forms | 80k | DB access |
 
-### Support Agents
+> Budgets align with delegation-matrix.md for optimal context usage
 
-| Agent | Purpose | Budget |
-|-------|---------|--------|
-| `qa-auditor` | Post-implementation validation, acceptance testing | 30k |
-| `learning-extractor` | Extract patterns/gotchas, update memories | 20k |
+### Audit & Quality Agents
 
-### Planning Agents (No Implementation)
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| `qa-auditor` | Post-implementation validation | After agents complete work |
+| `code-reviewer` | Review, testing, bug fixes | Post-implementation (60k) |
+| `performance-auditor` | Read-only perf analysis | Before releases, slow pages |
+| `db-optimization-agent` | DB query/index audit | Periodic audits, slow queries |
+| `learning-extractor` | Extract patterns to memory | After significant tasks |
 
-| Agent | Purpose |
-|-------|---------|
-| `spec-writer` | Requirements → Design → Tasks |
-| `frontend-architect` | UI/UX planning, component architecture |
-| `supabase-schema-architect` | Schema design, migration planning |
-| `ai-sdk-v5-expert` | Vercel AI SDK integration guidance |
+### Performance Agents
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| `performance-engineer` | Query tuning, Core Web Vitals, caching | Slow pages, LCP/FID/CLS issues |
+
+### Planning Agents (Research Only, No Code)
+
+| Agent | Purpose | When to Use |
+|-------|---------|-------------|
+| `spec-writer` | Requirements → Design → Tasks | New feature planning |
+| `frontend-architect` | UI/UX planning, Aceternity research | Complex UI before implementation |
+| `supabase-schema-architect` | Schema design, migration planning | DB schema changes |
+| `ai-sdk-v5-expert` | Vercel AI SDK v5 guidance | AI features, streaming, tool calling |
+| `Explore` | Codebase exploration | Understanding patterns, finding files |
+| `Plan` | Implementation planning | Designing complex implementations |
 
 ### Quick Decision Flow
 
@@ -166,6 +178,24 @@ WITHOUT SPEC (direct task list):
 | Bug fix in action/API | backend-engineer | |
 | Review/validation/testing | code-reviewer | Post-implementation |
 | Both UI + DB needed | Sequential: backend → frontend → review | |
+| Performance issues | performance-engineer | Query tuning, Core Web Vitals |
+| DB slow queries | db-optimization-agent | Read-only audit first |
+| Complex UI planning | frontend-architect | Research before implementation |
+| New feature design | spec-writer | Requirements → Design → Tasks |
+| Codebase questions | Explore | Finding patterns, understanding code |
+
+### Proactive Agent Usage
+
+Use these agents BEFORE user asks:
+
+| Trigger | Agent | Action |
+|---------|-------|--------|
+| Major release | performance-auditor | Run `/audit/performance-report.md` |
+| Slow page reported | db-optimization-agent | Analyze queries, indexes |
+| Multi-step task done | learning-extractor | Extract patterns/gotchas |
+| Complex UI feature | frontend-architect | Research Aceternity, plan architecture |
+| New DB table | supabase-schema-architect | Design schema, RLS policies |
+| AI feature request | ai-sdk-v5-expert | Plan v5 implementation |
 
 ### Orchestration Flags
 
@@ -264,6 +294,24 @@ Interface: { input: Type, output: { data?: T, error?: string } }
 | Batch edits | Combine adjacent changes into single Edit |
 | Parallel calls | Group independent reads/searches in one message |
 | No file creation | Use Serena memories, not new `.md` files |
+| Use Explore agent | For open-ended codebase questions |
+| Use Plan agent | For complex implementation design |
+
+### Context Window Optimization
+
+```
+SWEET SPOT USAGE:
+├── Start of context  → CLAUDE.md, Serena memories (high priority)
+├── Middle of context → Implementation details, code
+└── End of context    → User's current request (highest attention)
+
+AGENT DELEGATION:
+├── Explore agent → Offload codebase exploration to subagent
+├── Plan agent    → Offload implementation planning
+└── Core agents   → Offload actual implementation
+```
+
+> Delegate to agents early to keep main context focused on orchestration
 
 ---
 
