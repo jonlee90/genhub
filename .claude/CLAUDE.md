@@ -139,11 +139,10 @@ WITHOUT SPEC (direct task list):
 | `frontend-engineer` | Components, styling, forms | 90k | DB access |
 | `code-reviewer` | Review, testing, bug fixes | 60k | New features |
 
-### Orchestration Agents
+### Support Agents
 
 | Agent | Purpose | Budget |
 |-------|---------|--------|
-| `kiro-orchestrator` | Multi-agent workflow coordination from specs | 50k |
 | `qa-auditor` | Post-implementation validation, acceptance testing | 30k |
 | `learning-extractor` | Extract patterns/gotchas, update memories | 20k |
 
