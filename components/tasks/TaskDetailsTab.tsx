@@ -3,12 +3,12 @@
 // Phase 4 - Task Details Tab (read-only task information display)
 // Shows all task metadata: title, description, status, priority, dates, assignee, phase, location, costs
 
-import { Calendar } from "lucide-react";
-import { User } from "lucide-react";
-import { MapPin } from "lucide-react";
-import { DollarSign } from "lucide-react";
-import { Flag } from "lucide-react";
-import { Clock } from "lucide-react";
+import Calendar from "lucide-react/icons/calendar";
+import User from "lucide-react/icons/user";
+import MapPin from "lucide-react/icons/map-pin";
+import DollarSign from "lucide-react/icons/dollar-sign";
+import Flag from "lucide-react/icons/flag";
+import Clock from "lucide-react/icons/clock";
 import { cn, formatPercent, formatDate } from "@/lib/utils";
 import {
   TASK_STATUS_CONFIG,

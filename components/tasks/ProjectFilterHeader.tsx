@@ -1,8 +1,8 @@
 "use client";
 
-import { FolderKanban } from "lucide-react";
-import { Clock } from "lucide-react";
-import { ClipboardList } from "lucide-react";
+import FolderKanban from "lucide-react/icons/folder-kanban";
+import Clock from "lucide-react/icons/clock";
+import ClipboardList from "lucide-react/icons/clipboard-list";
 import { cn } from "@/lib/utils";
 import { getDateIndicator } from "@/lib/date-utils";
 import {

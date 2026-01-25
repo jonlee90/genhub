@@ -20,7 +20,7 @@ import { BottomSheet } from "@/components/ui/bottom-sheet";
 import { EmptyStateCard } from "@/components/ui/EmptyStateCard";
 import { useIsMobile } from "@/lib/hooks/useMediaQuery";
 import { useBottomNav } from "@/lib/contexts/BottomNavContext";
-import { ClipboardList } from "lucide-react";
+import ClipboardList from "lucide-react/icons/clipboard-list";
 import { getProjectAssignees, type AssigneeOption } from "@/app/actions/tasks";
 import type {
   TaskWithRelations,

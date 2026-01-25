@@ -11,10 +11,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Package } from "lucide-react";
-import { Search } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { AlertCircle } from "lucide-react";
+import Package from "lucide-react/icons/package";
+import Search from "lucide-react/icons/search";
+import Loader2 from "lucide-react/icons/loader-2";
+import AlertCircle from "lucide-react/icons/alert-circle";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { TaskMaterialSearch } from ".//TaskMaterialSearch";

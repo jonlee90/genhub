@@ -2,11 +2,11 @@
 
 import { useRef, useState } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { Upload } from "lucide-react";
-import { Camera } from "lucide-react";
-import { X } from "lucide-react";
-import { FileText } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import Upload from "lucide-react/icons/upload";
+import Camera from "lucide-react/icons/camera";
+import X from "lucide-react/icons/x";
+import FileText from "lucide-react/icons/file-text";
+import Loader2 from "lucide-react/icons/loader-2";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";

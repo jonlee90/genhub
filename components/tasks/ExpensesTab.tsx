@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Receipt } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { ExternalLink } from "lucide-react";
+import Receipt from "lucide-react/icons/receipt";
+import Loader2 from "lucide-react/icons/loader-2";
+import ExternalLink from "lucide-react/icons/external-link";
 import { cn, formatDate } from "@/lib/utils";
 import { getTaskExpenses } from "@/app/actions/expenses";
 import { useActionWithError } from "@/hooks/useActionWithError";

@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { Receipt, Plus, Clock, CheckCircle2, XCircle } from "lucide-react";
+import Receipt from "lucide-react/icons/receipt";
+import Plus from "lucide-react/icons/plus";
+import Clock from "lucide-react/icons/clock";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import XCircle from "lucide-react/icons/x-circle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

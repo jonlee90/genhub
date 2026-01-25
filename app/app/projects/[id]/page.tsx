@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import ChevronLeft from "lucide-react/icons/chevron-left";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ProjectDetailContent } from "@/components/projects/ProjectDetailContent";
@@ -20,10 +20,9 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  // Defer-await pattern: Start the fetch without awaiting
-  // This allows Next.js to deduplicate the call with the page component
-  const dataPromise = getProjectDetailData(id);
-  const data = await dataPromise;
+  // React.cache() deduplication: getProjectDetailData is wrapped with React.cache()
+  // so multiple calls within the same request are deduplicated
+  const data = await getProjectDetailData(id);
 
   if (!data?.project) {
     return { title: "Project Not Found | GenHub" };

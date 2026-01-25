@@ -5,7 +5,7 @@ import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { AlertCircle } from "lucide-react";
+import AlertCircle from "lucide-react/icons/alert-circle";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
 

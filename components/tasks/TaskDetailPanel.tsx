@@ -4,8 +4,8 @@
 // Main panel component with tab navigation for task details, materials, expenses, attachments, activity
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import X from "lucide-react/icons/x";
+import Loader2 from "lucide-react/icons/loader-2";
 import { cn } from "@/lib/utils";
 import { getTaskDetails } from "@/app/actions/tasks";
 import { TaskDetailsTab } from ".//TaskDetailsTab";

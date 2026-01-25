@@ -9,7 +9,10 @@
 
 import { useMemo, memo } from "react";
 import { m as motion } from "framer-motion";
-import { Check, Loader2, AlertTriangle, Hammer } from "lucide-react";
+import Check from "lucide-react/icons/check";
+import Loader2 from "lucide-react/icons/loader-2";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
+import Hammer from "lucide-react/icons/hammer";
 import { cn } from "@/lib/utils";
 import { TASK_TYPE_ICON_MAP } from "@/lib/config/task-type-display";
 import type { TaskType } from "@/types/db/enums";

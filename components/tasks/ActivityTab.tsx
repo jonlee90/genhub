@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Activity } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { Clock } from "lucide-react";
-import { User } from "lucide-react";
+import Activity from "lucide-react/icons/activity";
+import Loader2 from "lucide-react/icons/loader-2";
+import Clock from "lucide-react/icons/clock";
+import User from "lucide-react/icons/user";
 import { cn } from "@/lib/utils";
 import { getTaskActivity } from "@/app/actions/tasks";
 import { useActionWithError } from "@/hooks/useActionWithError";

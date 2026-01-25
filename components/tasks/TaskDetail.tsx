@@ -26,7 +26,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Activity, Ban, Calendar, Clock, FileText, Trash2 } from "lucide-react";
+import Activity from "lucide-react/icons/activity";
+import Ban from "lucide-react/icons/ban";
+import Calendar from "lucide-react/icons/calendar";
+import Clock from "lucide-react/icons/clock";
+import FileText from "lucide-react/icons/file-text";
+import Trash2 from "lucide-react/icons/trash-2";
 import { TaskDetailsSection } from "./detail/TaskDetailsSection";
 import { TaskApprovalSection } from "./detail/TaskApprovalSection";
 import { TaskDependenciesSection } from "./detail/TaskDependenciesSection";

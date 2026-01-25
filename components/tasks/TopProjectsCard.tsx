@@ -2,12 +2,12 @@
 
 import { useMemo } from "react";
 import Image from "next/image";
-import { Building2 } from "lucide-react";
-import { Trophy } from "lucide-react";
-import { TrendingUp } from "lucide-react";
-import { CheckCircle2 } from "lucide-react";
-import { Target } from "lucide-react";
-import { Users } from "lucide-react";
+import Building2 from "lucide-react/icons/building-2";
+import Trophy from "lucide-react/icons/trophy";
+import TrendingUp from "lucide-react/icons/trending-up";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Target from "lucide-react/icons/target";
+import Users from "lucide-react/icons/users";
 import { formatPercentWhole } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 

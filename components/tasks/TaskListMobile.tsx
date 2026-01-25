@@ -3,9 +3,9 @@
 import { useState, useCallback } from "react";
 import { SwipeableCard } from "@/components/mobile/SwipeableCard";
 import { TaskCard } from ".//TaskCard";
-import { FolderKanban } from "lucide-react";
-import { Check } from "lucide-react";
-import { Trash2 } from "lucide-react";
+import FolderKanban from "lucide-react/icons/folder-kanban";
+import Check from "lucide-react/icons/check";
+import Trash2 from "lucide-react/icons/trash-2";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
 import type { TaskWithRelations, Phase } from "@/types/db/task";

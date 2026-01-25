@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Clock } from "lucide-react";
+import Clock from "lucide-react/icons/clock";
 import { cn, formatDate } from "@/lib/utils";
 import { getDateIndicator } from "@/lib/date-utils";
 import type { GanttTaskBarProps } from "./gantt-types";

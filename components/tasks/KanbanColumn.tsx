@@ -7,7 +7,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { TaskCard } from "./TaskCard";
 import { cn } from "@/lib/utils";
 import { m as motion } from "framer-motion";
-import { HardHat } from "lucide-react";
+import HardHat from "lucide-react/icons/hard-hat";
 import type { TaskStatus } from "@/types/db/enums";
 import type { TaskWithRelations } from "@/types/db/task";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";

@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import { useState, useEffect, useCallback } from "react";
-import { Paperclip } from "lucide-react";
-import { FileText } from "lucide-react";
-import { Image as ImageIcon } from "lucide-react";
-import { Loader2 } from "lucide-react";
-import { Download } from "lucide-react";
+import Paperclip from "lucide-react/icons/paperclip";
+import FileText from "lucide-react/icons/file-text";
+import ImageIcon from "lucide-react/icons/image";
+import Loader2 from "lucide-react/icons/loader-2";
+import Download from "lucide-react/icons/download";
 import { cn } from "@/lib/utils";
 import { getTaskAttachments } from "@/app/actions/tasks";
 import { useActionWithError } from "@/hooks/useActionWithError";

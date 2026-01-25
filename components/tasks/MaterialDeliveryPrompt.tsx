@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Truck } from "lucide-react";
-import { DollarSign } from "lucide-react";
+import Truck from "lucide-react/icons/truck";
+import DollarSign from "lucide-react/icons/dollar-sign";
 import { createExpenseFromMaterial } from "@/app/actions/expenses";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { ErrorBanner, SuccessBanner } from "@/components/shared/ErrorBanner";

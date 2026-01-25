@@ -14,12 +14,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
-import { ChevronLeft } from "lucide-react";
-import { ChevronRight } from "lucide-react";
-import { Package } from "lucide-react";
-import { AlertCircle } from "lucide-react";
-import { Plus } from "lucide-react";
+import Loader2 from "lucide-react/icons/loader-2";
+import ChevronLeft from "lucide-react/icons/chevron-left";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import Package from "lucide-react/icons/package";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import Plus from "lucide-react/icons/plus";
 import { m as motion, AnimatePresence } from "framer-motion";
 import { createTask } from "@/app/actions/tasks";
 import { useFormSubmit } from "@/hooks/use-form-submit";

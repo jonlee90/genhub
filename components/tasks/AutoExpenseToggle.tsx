@@ -1,11 +1,11 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
-import { Receipt } from "lucide-react";
-import { DollarSign } from "lucide-react";
-import { Tag } from "lucide-react";
-import { Building2 } from "lucide-react";
-import { Calendar } from "lucide-react";
+import Receipt from "lucide-react/icons/receipt";
+import DollarSign from "lucide-react/icons/dollar-sign";
+import Tag from "lucide-react/icons/tag";
+import Building2 from "lucide-react/icons/building-2";
+import Calendar from "lucide-react/icons/calendar";
 import { cn } from "@/lib/utils";
 import { formatDate, formatBudgetFull } from "@/lib/utils";
 import {

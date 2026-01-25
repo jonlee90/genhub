@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check } from "lucide-react";
-import { X } from "lucide-react";
-import { Users } from "lucide-react";
-import { Building2 } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import Check from "lucide-react/icons/check";
+import X from "lucide-react/icons/x";
+import Users from "lucide-react/icons/users";
+import Building2 from "lucide-react/icons/building-2";
+import ChevronDown from "lucide-react/icons/chevron-down";
 import { Button } from "@/components/ui/button";
 import {
   Popover,

@@ -4,7 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Wrench } from "lucide-react";
+import Wrench from "lucide-react/icons/wrench";
 import type { TaskProject, TeamMember } from "@/types/db/task";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 

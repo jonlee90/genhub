@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import { Calendar, CalendarDays, CalendarRange } from "lucide-react";
+import Calendar from "lucide-react/icons/calendar";
+import CalendarDays from "lucide-react/icons/calendar-days";
+import CalendarRange from "lucide-react/icons/calendar-range";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { TimeScale } from "./gantt-types";

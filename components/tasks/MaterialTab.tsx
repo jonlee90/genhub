@@ -4,8 +4,8 @@
 // Fetches and displays material assignments with status badges and cost totals
 
 import { useState, useEffect } from "react";
-import { Package } from "lucide-react";
-import { Loader2 } from "lucide-react";
+import Package from "lucide-react/icons/package";
+import Loader2 from "lucide-react/icons/loader-2";
 import { cn } from "@/lib/utils";
 import { getTaskMaterials } from "@/app/actions/materials";
 import { useActionWithError } from "@/hooks/useActionWithError";

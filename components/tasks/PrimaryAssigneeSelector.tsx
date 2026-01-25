@@ -1,8 +1,8 @@
 "use client";
 
-import { Star } from "lucide-react";
-import { Building2 } from "lucide-react";
-import { Users } from "lucide-react";
+import Star from "lucide-react/icons/star";
+import Building2 from "lucide-react/icons/building-2";
+import Users from "lucide-react/icons/users";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, getInitials } from "@/lib/utils";
 

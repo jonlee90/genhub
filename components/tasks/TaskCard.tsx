@@ -6,16 +6,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Calendar,
-  AlertTriangle,
-  Ban,
-  Package,
-  Pencil,
-  Layers as LayersIcon,
-  Box,
-  Receipt,
-} from "lucide-react";
+import Calendar from "lucide-react/icons/calendar";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
+import Ban from "lucide-react/icons/ban";
+import Package from "lucide-react/icons/package";
+import Pencil from "lucide-react/icons/pencil";
+import Layers from "lucide-react/icons/layers";
+import Box from "lucide-react/icons/box";
+import Receipt from "lucide-react/icons/receipt";
 import { cn, formatDate } from "@/lib/utils";
 import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
 import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
@@ -245,7 +243,7 @@ export const TaskCard = React.memo(
                         <div className="flex items-center gap-1.5">
                           {/* Stacked layers icon for materials */}
                           <div className="relative">
-                            <LayersIcon className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
+                            <Layers className="w-3.5 h-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.5)]" />
                           </div>
 
                           {/* Count badge */}
