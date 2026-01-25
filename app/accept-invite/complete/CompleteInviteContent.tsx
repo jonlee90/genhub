@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export function CompleteInviteContent({ success, error, message }: CompleteInvit
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
@@ -58,7 +58,7 @@ export function CompleteInviteContent({ success, error, message }: CompleteInvit
               </Button>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     );
   }
@@ -67,20 +67,20 @@ export function CompleteInviteContent({ success, error, message }: CompleteInvit
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full bg-white rounded-2xl shadow-construction-lg border-2 border-gray-200 p-8"
         >
           <div className="text-center space-y-4">
-            <motion.div
+            <m.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: 'spring', stiffness: 200 }}
               className="mx-auto w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center"
             >
               <CheckCircle className="w-8 h-8 text-green-600" />
-            </motion.div>
+            </m.div>
             <div>
               <h1 className="text-2xl font-black text-gray-900">Welcome Aboard!</h1>
               <p className="text-gray-600 mt-2">
@@ -92,7 +92,7 @@ export function CompleteInviteContent({ success, error, message }: CompleteInvit
               Redirecting to dashboard...
             </div>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     );
   }

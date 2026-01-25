@@ -2,7 +2,7 @@ import { getAllCompanies, getOwnerDashboardStats } from '@/app/actions/owner';
 import { OwnerPageHeader } from '@/components/owner/OwnerPageHeader';
 import { OwnerStatsGrid } from '@/components/owner/OwnerStatsGrid';
 import { OwnerDataTable } from '@/components/owner/OwnerDataTable';
-import { CompanyCard } from '@/components/owner/CompanyCard';
+import { CompanyCardAdapter } from '@/components/owner/CompanyCard';
 
 /**
  * Owner Companies Page
@@ -91,7 +91,7 @@ export default async function OwnerCompaniesPage() {
           title: 'No Companies Yet',
           description: 'Companies will appear here once admins accept their invitations.',
         }}
-        renderCard={(company) => <CompanyCard key={company.id} company={company} />}
+        CardComponent={CompanyCardAdapter}
       />
 
       {/* Decorative bottom border */}

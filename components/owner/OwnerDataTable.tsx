@@ -20,7 +20,7 @@
 
 import { useState, useMemo } from 'react';
 import { Building2, Users, Mail } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { SearchInput } from '@/components/mobile/SearchInput';
 
@@ -79,8 +79,8 @@ interface OwnerDataTableProps<T> {
   /** Row click handler */
   onRowClick?: (item: T) => void;
 
-  /** Mobile card renderer */
-  renderCard?: (item: T) => React.ReactNode;
+  /** Mobile card component */
+  CardComponent?: React.ComponentType<{ item: T }>;
 
   /** Card skeleton component (for mobile loading state) */
   CardSkeleton?: React.ComponentType;
@@ -209,7 +209,7 @@ export function OwnerDataTable<T extends Record<string, any>>({
   searchKeys = [],
   isLoading = false,
   onRowClick,
-  renderCard,
+  CardComponent,
   CardSkeleton,
   className,
 }: OwnerDataTableProps<T>) {
@@ -325,19 +325,19 @@ export function OwnerDataTable<T extends Record<string, any>>({
           </div>
 
           {/* Mobile Card Grid (<768px) */}
-          {renderCard && (
-            <motion.div
+          {CardComponent && (
+            <m.div
               className="md:hidden grid grid-cols-1 gap-3"
               variants={containerVariants}
               initial="hidden"
               animate="visible"
             >
               {filteredData.map((item) => (
-                <motion.div key={String(item[keyField])} variants={cardVariants}>
-                  {renderCard(item)}
-                </motion.div>
+                <m.div key={String(item[keyField])} variants={cardVariants}>
+                  <CardComponent item={item} />
+                </m.div>
               ))}
-            </motion.div>
+            </m.div>
           )}
         </>
       )}

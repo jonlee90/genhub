@@ -110,6 +110,14 @@ export function CompanyCard({ company, onClick, className }: CompanyCardProps) {
   );
 }
 
+/**
+ * Wrapper for use with OwnerDataTable CardComponent prop
+ * Adapts the { item } prop signature to CompanyCard's { company } prop
+ */
+export function CompanyCardAdapter({ item }: { item: Company }) {
+  return <CompanyCard company={item} />;
+}
+
 export function CompanyCardSkeleton() {
   return (
     <CardSurface className="p-5 animate-pulse">
