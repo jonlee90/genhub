@@ -138,7 +138,9 @@ grep -rn ": any\|as any" --include="*.ts" --include="*.tsx" | head -20
 ### ORCHESTRATED=true
 ```
 Status: ✓ approved | ✗ issues found | ⚠️ partial
-Files: [N] | Critical: [N] | High: [N] | Handoffs: {if any}
+Files: [N] | Critical: [N] | High: [N]
+Skills: [rules checked]
+Handoffs: {if any}
 ```
 
 ### Full Mode
@@ -146,7 +148,7 @@ Files: [N] | Critical: [N] | High: [N] | Handoffs: {if any}
 ## Code Review Complete
 
 **Status:** ✓ APPROVE | ⚠️ FIX ISSUES | ✗ REJECT
-**Mode:** {mode} | **Skills:** {loaded skills}
+**Mode:** {mode}
 **Files:** [N] | **Routes Tested:** [N]
 
 **Tests:** TypeScript: ✓/✗ | Build: ✓/✗ | Runtime: ✓/✗/⏭️
@@ -157,6 +159,7 @@ Files: [N] | Critical: [N] | High: [N] | Handoffs: {if any}
 ### High (SHOULD FIX)
 - `file.ts:15` - {issue} → {fix}
 
+**Skills Applied:** bundle-barrel-imports, rerender-memo (rules checked during review)
 **Handoffs:** → {agent}: {reason}
 ```
 
