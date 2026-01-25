@@ -1,0 +1,248 @@
+# RAG Agent Configuration
+# Self-improving codebase optimizer for GenHub
+
+# ============================================================================
+# INDEXING CONFIGURATION
+# ============================================================================
+indexing:
+  # Hierarchical chunking strategy
+  parent_chunk_strategy: "markdown_headers"  # H1, H2, H3
+  child_chunk_size: 500  # tokens
+  child_chunk_overlap: 100  # tokens
+  merge_threshold: 2000  # chars - merge small sections
+  split_threshold: 10000  # chars - split large sections
+
+  # Data sources to index
+  # MVP: Server actions + project instructions only
+  sources:
+    # Project codebase (file-based only)
+    codebase:
+      path: "../../.."
+      patterns:
+        # MVP: Server Actions ONLY for initial test
+        - "app/actions/*.ts"
+      exclude:
+        - "node_modules/**"
+        - ".next/**"
+        - ".git/**"
+        - "dist/**"
+        - "build/**"
+        - ".venv/**"
+        - "**/.venv/**"
+        - ".claude/skills/**"  # Exclude all skills for now - too large
+        - "**/*.lock"
+        - "**/*.log"
+      priority: 0  # P0 - Critical
+
+# ============================================================================
+# RETRIEVAL CONFIGURATION
+# ============================================================================
+retrieval:
+  # Vector database
+  vector_db: "qdrant"
+  qdrant_path: "../../../.qdrant_data"  # Points to project root .qdrant_data
+  collection_name: "genhub_rag"
+
+  # Embedding models
+  dense_model: "all-MiniLM-L6-v2"  # Lightweight: 384-dimensional, 22MB model
+  sparse_model: "bm25"
+
+  # Search parameters
+  top_k: 10
+  top_k_parent: 3  # Parents to retrieve per child match
+  rerank: true
+  rerank_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+  # Confidence thresholds
+  confidence_threshold: 0.7
+  parent_confidence_boost: 0.1  # Boost parent relevance
+
+  # Hybrid search weights
+  dense_weight: 0.7
+  sparse_weight: 0.3
+
+# ============================================================================
+# SYNTHESIS CONFIGURATION
+# ============================================================================
+synthesis:
+  max_output_tokens: 2000
+  format: "claude_code_optimized"
+
+  # Output structure
+  include_file_refs: true
+  include_blocking_rules: true
+  include_skill_mapping: true
+
+  # Context prioritization
+  priority_order:
+    - "blocking_rules"
+    - "skill_patterns"
+    - "code_locations"
+    - "solution_approach"
+    - "verification"
+
+# ============================================================================
+# INVOCATION CONFIGURATION
+# ============================================================================
+invocation:
+  # Manual command
+  manual_command: "/rag"
+
+  # Auto-trigger settings
+  auto_trigger:
+    enabled: true
+    complexity_threshold: 0.7  # Trigger when > threshold
+
+    # Indicators that suggest need for RAG
+    indicators:
+      - "how do I"
+      - "implement"
+      - "debug"
+      - "fix"
+      - "optimize"
+      - "architecture"
+      - "pattern"
+      - "best practice"
+      - "refactor"
+      - "performance"
+
+    # Multi-file detection
+    multi_file_threshold: 3  # Trigger if query spans 3+ files
+
+    # Complexity signals
+    complexity_signals:
+      - multi_step: 0.3      # Multiple steps mentioned
+      - cross_cutting: 0.4   # Affects multiple modules
+      - architectural: 0.5   # Architecture decisions
+      - unfamiliar: 0.4      # Unknown codebase areas
+
+# ============================================================================
+# OPTIMIZATION CONFIGURATION
+# ============================================================================
+optimization:
+  # Mode: conservative | moderate | aggressive
+  mode: "aggressive"
+
+  # Architecture alignment targets
+  targets:
+    server_components:
+      enabled: true
+      description: "Rewrite client components with data fetching to Server Components"
+
+    server_actions:
+      enabled: true
+      description: "Move all DB operations to Server Actions"
+
+    barrel_imports:
+      enabled: true
+      description: "Eliminate barrel files, use direct imports"
+
+    dynamic_imports:
+      enabled: true
+      description: "Add dynamic() for heavy components"
+
+    url_state:
+      enabled: true
+      description: "Replace client state with URL state where possible"
+
+    rls_policies:
+      enabled: true
+      description: "Generate RLS policies for unprotected tables"
+
+  # Safety settings
+  safety:
+    git_branch_per_batch: true
+    require_build_pass: true
+    require_tests_pass: true
+    auto_rollback: true
+    max_files_per_batch: 10
+
+  # Validation
+  validation:
+    run_build: true
+    run_lint: true
+    run_typecheck: true
+    run_tests: true
+    benchmark_before_after: true
+
+# ============================================================================
+# LLM CONFIGURATION
+# ============================================================================
+llm:
+  provider: "anthropic"
+  model: "claude-sonnet-4-20250514"
+  temperature: 0.1
+
+  # Fallback for clarification
+  clarification_model: "claude-3-haiku-20240307"
+  clarification_temperature: 0.3
+
+# ============================================================================
+# SKILL MAPPING
+# ============================================================================
+skill_mapping:
+  # File pattern → Required skills
+  patterns:
+    "*.tsx":
+      skills: ["vercel-react-best-practices"]
+      rules: ["bundle-*", "rerender-*", "rendering-*"]
+
+    "*.jsx":
+      skills: ["vercel-react-best-practices"]
+      rules: ["bundle-*", "rerender-*", "rendering-*"]
+
+    "app/actions/*.ts":
+      skills: ["postgres-best-practices:postgres-best-practices"]
+      rules: ["query-*", "security-*"]
+
+    "components/**/*.tsx":
+      skills: ["vercel-react-best-practices", "a11y-pass"]
+      rules: ["bundle-*", "rerender-*", "touch-*", "aria-*"]
+
+    "supabase/migrations/*":
+      skills: ["postgres-best-practices:postgres-best-practices"]
+      rules: ["schema-*", "security-*"]
+
+# ============================================================================
+# BLOCKING RULES
+# ============================================================================
+blocking_rules:
+  - id: "no-supabase-client"
+    pattern: "createClient.*use client"
+    message: "No Supabase in 'use client' components"
+    severity: "error"
+
+  - id: "server-actions-only"
+    pattern: "supabase.*from.*component"
+    message: "Use Server Actions for DB operations"
+    severity: "error"
+
+  - id: "responsive-modal"
+    pattern: "<Dialog"
+    message: "Use ResponsiveModal instead of Dialog"
+    severity: "error"
+
+  - id: "lucide-icons"
+    pattern: "heroicons|fontawesome"
+    message: "Use Lucide icons only"
+    severity: "error"
+
+  - id: "touch-targets"
+    pattern: "min-h-\\[(?!44px)"
+    message: "Touch targets must be 44px minimum"
+    severity: "warning"
+
+# ============================================================================
+# LOGGING & MONITORING
+# ============================================================================
+logging:
+  level: "INFO"
+  file: ".rag_agent.log"
+  max_size_mb: 10
+  backup_count: 3
+
+monitoring:
+  track_queries: true
+  track_accuracy: true
+  track_optimizations: true
+  report_interval: "daily"
