@@ -1,144 +1,131 @@
 # CLAUDE.md - GenHub PWA
 
-> Construction project management for general contractors | Mobile-first PWA
+> Construction PWA for general contractors | Mobile-first | Next.js 16 + React 19 + Supabase
 
 ---
 
-## 🚨 TIER 1: BLOCKING RULES (Build/Task Failure)
-
-These rules WILL fail builds or cause task rejection. No exceptions.
-
-| Rule | Detection | Consequence |
-|------|-----------|-------------|
-| No Supabase in `'use client'` | `createClient`/`@/utils/supabase/*` | Build fails: `Module not found: 'child_process'` |
-| Server Actions for DB | Direct DB in client components | **REJECT**: Security violation |
-| ResponsiveModal only | `<Dialog` from Radix | **REJECT**: Use `ResponsiveModal` instead |
-| Lucide icons only | `heroicons`/`fontawesome` | **REJECT**: Bundle bloat |
-| 44px touch targets | Missing `min-h-[44px]` on interactive | **FIX BEFORE COMPLETING** |
+## BEFORE YOU CODE (Read Every Time)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ Layer            │ DB Access │ Responsibilities             │
-├─────────────────────────────────────────────────────────────┤
-│ 'use client'     │ ❌ NEVER  │ UI, interactions, local state │
-│ Server Actions   │ ✅ YES    │ Mutations, queries, auth      │
-│ Server Components│ ✅ YES    │ Data fetching, SSR            │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│  1. WHAT am I changing?                                                │
+│     └─ .tsx/.jsx file? → Load vercel-react-best-practices skill FIRST  │
+│     └─ Server Action?  → Load postgres-best-practices skill FIRST      │
+│     └─ Database?       → Delegate to backend-engineer                  │
+│                                                                        │
+│  2. WHO should do this?                                                │
+│     └─ UI only         → frontend-engineer                             │
+│     └─ DB/Auth only    → backend-engineer                              │
+│     └─ Both            → backend-engineer THEN frontend-engineer       │
+│                                                                        │
+│  3. WHAT must I report?                                                │
+│     └─ Skills Applied: [list rules used]                               │
+│     └─ Mobile Checks:  ✓ 44px | ✓ active | ✓ dark                      │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ⚠️ TIER 2: MANDATORY WORKFLOWS (Must Execute)
+## 🚨 BLOCKING RULES (Will Fail Build/Task)
 
-Skip these = incomplete task. Report violations in output.
+| Rule | How To Detect | Result |
+|------|---------------|--------|
+| No Supabase in `'use client'` | `createClient` or `@/utils/supabase/*` in client component | Build error |
+| Server Actions for DB | Direct DB calls in components | **REJECT** |
+| ResponsiveModal only | `<Dialog` from Radix | **REJECT** |
+| Lucide icons only | heroicons/fontawesome imports | **REJECT** |
+| 44px touch targets | Missing `min-h-[44px]` on buttons/links | **FIX** |
+| **Skills loaded** | React change without `vercel-react-best-practices` | **STOP** |
 
-| Trigger | Required Action | Report In Output |
-|---------|-----------------|------------------|
-| **Any React/TSX change** | Read & apply `vercel-react-best-practices` skill | `Skills: [rules applied]` |
-| **Any component** | Verify 44px touch, active states, dark mode | `Mobile: ✓/✗` |
-| **Session start** | Load Serena memories | `Context: ✓` |
-| **Data fetching** | Use Server Components or Server Actions | Architecture check |
-
-### React Changes Pre-Flight (MANDATORY)
-
-Before writing/editing any `.tsx` file:
-1. **LOAD**: Read `vercel-react-best-practices` skill
-2. **IDENTIFY**: Which rules apply? (imports → `bundle-*`, state → `rerender-*`, async → `async-*`)
-3. **APPLY**: Use patterns from skill during implementation
-4. **REPORT**: List specific rules in output: `Skills Applied: bundle-barrel-imports, rerender-memo`
+```
+DB ACCESS RULES:
+'use client'      → ❌ NEVER (UI only)
+Server Actions    → ✅ YES (mutations, queries)
+Server Components → ✅ YES (data fetching, SSR)
+```
 
 ---
 
-## PROJECT
+## SKILL → FILE MAPPING (Mandatory)
 
-**App:** GenHub - Construction PWA for field workers and GCs
-**Stack:** Next.js 16, React 19, Supabase (MCP), Tailwind, Lucide, Aceternity UI
-**Priorities:** Correctness > Consistency > Token efficiency > Speed
+| File Pattern | Required Skill | Key Rules |
+|--------------|----------------|-----------|
+| `*.tsx`, `*.jsx` | `vercel-react-best-practices` | `bundle-*`, `rerender-*`, `rendering-*` |
+| `app/actions/*.ts` | `postgres-best-practices` | `query-*`, `security-*` |
+| `components/**/*.tsx` | `vercel-react-best-practices` + `a11y-pass` | Touch, ARIA, contrast |
+| `supabase/migrations/*` | `postgres-best-practices` | `schema-*`, `security-*` |
 
-**Design Tokens:** Primary `#001B51` | Accent `#3C3C3C` | Touch 44px min | Viewport 375px, `dvh` not `vh`
+**Before editing any file, check this table and load the required skill.**
+
+---
+
+## AGENT DISPATCH
+
+| Task | Agent | Skill Required |
+|------|-------|----------------|
+| UI component, styling, forms | `frontend-engineer` | vercel-react-best-practices |
+| Server Action, API route | `backend-engineer` | postgres-best-practices |
+| Schema, migration, RLS | `backend-engineer` | postgres-best-practices |
+| Review/testing | `code-reviewer` | By file pattern |
+| UI + DB feature | `backend-engineer` → `frontend-engineer` → `code-reviewer` | Sequential |
+
+---
+
+## OUTPUT FORMAT (All Agents)
+
+```markdown
+## Task Complete
+
+**Status:** ✓ completed | ✗ failed | ⚠️ partial (N/M)
+**Files:** `path/file.ts` - description
+
+**Skills Applied:** bundle-barrel-imports, rerender-memo, async-parallel
+**Mobile Checks:** ✓ 44px | ✓ active states | ✓ dark mode | ✓ safe areas
+
+**Build:** ✓ pass | ✗ fail
+**Handoff:** → {agent}: {reason}
+```
+
+---
+
+## DESIGN TOKENS
+
+| Token | Value |
+|-------|-------|
+| Primary | `#001B51` |
+| Accent | `#3C3C3C` |
+| Touch target | 44px min (`min-h-[44px] min-w-[44px]`) |
+| Viewport | `dvh` not `vh` |
+| Safe area | `pb-[env(safe-area-inset-bottom)]` |
+| Icons | Lucide only |
+| Modals | `ResponsiveModal` only |
 
 ---
 
 ## MCP TOOLS
 
-| Tool | Purpose | Use |
-|------|---------|-----|
-| **Serena** | Code knowledge | `find_symbol`, `read_memory`, `search_for_pattern` |
-| **Memory MCP** | Session state | Decisions, active tasks |
-| **Context7** | Library docs | `resolve-library-id` → `query-docs` |
-| **Supabase MCP** | Database ops | `list_tables`, `execute_sql`, `apply_migration` |
-
-**Serena Memories:** Always: `genhub-database-schema`, `genhub-server-actions`, `genhub-component-patterns`
-
-**Session Flow:**
-- **START:** `mcp__memory__read_graph()` → Load Serena memories
-- **REACT CHANGES:** Load `vercel-react-best-practices` FIRST
-- **END:** Update ActiveTask | Learning check (if significant)
-
----
-
-## AGENT SYSTEM
-
-> Configs in `.claude/agents/*.md`
-
-| Task Type | Agent | Notes |
-|-----------|-------|-------|
-| UI component, styling, forms | frontend-engineer | Never DB |
-| Server Action, API route | backend-engineer | Never UI |
-| Schema change, migration, RLS | backend-engineer | Security review after |
-| Review/validation/testing | code-reviewer | Post-implementation |
-| Both UI + DB needed | Sequential: backend → frontend → review | |
-| Performance issues | performance-engineer | |
-| Complex UI planning | frontend-architect | Research before impl |
-| New feature design | spec-writer | |
-| Codebase questions | Explore | |
-
----
-
-## STANDARDIZED OUTPUT
-
-All agents return:
-```
-## Task Complete
-
-**Status:** ✓ completed | ✗ failed | ⚠️ partial (N/M)
-**Tasks:** [x] completed [-] remaining
-**Files Changed:** `path/file.ts` - description
-
-**Skills Applied:** [list specific rules from vercel-react-best-practices if React work]
-**Mobile Checks:** ✓ 44px | ✓ active states | ✓ dark mode | ✓ safe areas
-
-**Build:** ✓ pass | ✗ fail
-**Handoff:** → {agent}: {reason} (if needed)
-```
-
----
-
-## TOKEN DISCIPLINE
-
-| Rule | Implementation |
-|------|----------------|
-| Search first | `find_symbol`, Grep/Glob before full reads |
-| Targeted reads | `offset`+`limit` for files >200 lines |
-| Skip verification | Don't re-read after Edit with unique `old_string` |
-| Batch edits | Combine adjacent changes into single Edit |
-| Delegate early | Use Explore/Plan agents to offload work |
+| Tool | When |
+|------|------|
+| **Serena** `read_memory` | Load `genhub-component-patterns`, `genhub-server-actions`, `genhub-database-schema` |
+| **Serena** `find_symbol` | Find existing patterns before writing |
+| **Context7** | External library docs |
+| **Supabase MCP** | Schema ops (backend-engineer only) |
+| **Memory MCP** | Track decisions, active tasks |
 
 ---
 
 ## STOP CONDITIONS
 
-Halt and request guidance if:
-- Task violates agent authority boundaries
-- Required context missing from Serena/Memory MCP
+Halt and ask for guidance:
 - Build fails 2x on same error
+- Task crosses agent boundary (UI ↔ DB)
 - Security advisor returns critical
-- Approaching token budget (report progress)
-- **React/TSX change without loading `vercel-react-best-practices` skill first (BLOCKING)**
+- **React/TSX change without loading skill first**
+- Token budget >70% (report progress)
 
 ---
 
-## QUICK REFERENCE
+## IMPORTS CHEAT SHEET
 
 ```typescript
 // Server Actions
@@ -159,15 +146,6 @@ import type { Task, Project } from '@/types/db/core'
 
 | Command | Purpose |
 |---------|---------|
-| `/kc:spec {feature}` | Create requirements → design → tasks |
+| `/kc:spec {feature}` | Create spec: requirements → design → tasks |
 | `/kc:impl {task-id}` | Execute task from spec |
-| `/kc:build` | Build verification |
-
----
-
-## INITIALIZATION
-
-1. Load Serena memories: `genhub-database-schema`, `genhub-server-actions`, `genhub-component-patterns`
-2. Check Memory MCP for `ActiveTask`
-3. If React work: Load `vercel-react-best-practices` skill
-4. If new feature: suggest `/kc:spec` first
+| `/kc:build` | Verify build passes |

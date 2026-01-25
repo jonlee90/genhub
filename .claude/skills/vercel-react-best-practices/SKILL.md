@@ -1,6 +1,6 @@
 ---
 name: vercel-react-best-practices
-description: React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.
+description: React and Next.js performance optimization guidelines. MUST be loaded before any React/TSX changes.
 license: MIT
 metadata:
   author: vercel
@@ -9,20 +9,69 @@ metadata:
 
 # Vercel React Best Practices
 
-Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 45 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
+> 45 rules across 8 categories | Load before ANY React change
 
-## When to Apply (MANDATORY)
+---
+
+## QUICK DECISION: What Are You Doing?
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  Adding imports?                                                    │
+│  └─ Use bundle-barrel-imports (direct imports, no index.ts)         │
+│  └─ Use bundle-dynamic-imports for heavy components                 │
+│                                                                     │
+│  Managing state?                                                    │
+│  └─ Use rerender-memo for expensive components                      │
+│  └─ Use rerender-functional-setstate for callbacks                  │
+│  └─ Use rerender-defer-reads (don't subscribe to callback-only state)│
+│                                                                     │
+│  Fetching data?                                                     │
+│  └─ Use async-parallel (Promise.all for independent fetches)        │
+│  └─ Use async-suspense-boundaries for streaming                     │
+│  └─ Use server-parallel-fetching (restructure components)           │
+│                                                                     │
+│  Rendering lists?                                                   │
+│  └─ Use rendering-content-visibility for long lists                 │
+│  └─ Use rerender-memo to prevent re-renders                         │
+│                                                                     │
+│  Conditional rendering?                                             │
+│  └─ Use rendering-conditional-render (ternary, NOT &&)              │
+│                                                                     │
+│  Report which rules you applied in "Skills Applied:" output         │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## MANDATORY USAGE
 
 You MUST apply these rules when:
 - Writing new React components or Next.js pages
 - Implementing data fetching (client or server-side)
 - Reviewing code for performance issues
 - Refactoring existing React/Next.js code
-- Optimizing bundle size or load times
 
-**Report which rules you applied in your output under "Skills Applied:"**
+**Output Requirement:** Report rules applied under `**Skills Applied:**`
 
-## Rule Categories by Priority
+---
+
+## TASK → RULE MAPPING
+
+| What You're Doing | Apply These Rules | Priority |
+|-------------------|-------------------|----------|
+| **Adding imports** | `bundle-barrel-imports`, `bundle-dynamic-imports` | CRITICAL |
+| **Creating component** | `bundle-barrel-imports`, `rendering-conditional-render` | CRITICAL |
+| **State management** | `rerender-memo`, `rerender-defer-reads`, `rerender-functional-setstate` | MEDIUM |
+| **Data fetching** | `async-parallel`, `async-suspense-boundaries`, `server-parallel-fetching` | CRITICAL |
+| **Event handlers** | `rerender-functional-setstate`, `advanced-event-handler-refs` | MEDIUM |
+| **Lists/arrays** | `rendering-content-visibility`, `rerender-memo`, `js-combine-iterations` | MEDIUM |
+| **Third-party libs** | `bundle-defer-third-party`, `bundle-conditional` | CRITICAL |
+| **Server components** | `server-cache-react`, `server-serialization` | HIGH |
+
+---
+
+## RULE CATEGORIES BY PRIORITY
 
 | Priority | Category | Impact | Prefix |
 |----------|----------|--------|--------|
@@ -35,93 +84,113 @@ You MUST apply these rules when:
 | 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
 | 8 | Advanced Patterns | LOW | `advanced-` |
 
-## Quick Reference
+---
 
-### 1. Eliminating Waterfalls (CRITICAL)
+## CRITICAL RULES (Always Check)
 
-- `async-defer-await` - Move await into branches where actually used
-- `async-parallel` - Use Promise.all() for independent operations
-- `async-dependencies` - Use better-all for partial dependencies
-- `async-api-routes` - Start promises early, await late in API routes
-- `async-suspense-boundaries` - Use Suspense to stream content
+### 1. Bundle Size (CRITICAL)
 
-### 2. Bundle Size Optimization (CRITICAL)
+**bundle-barrel-imports** - Import directly, avoid barrel files
+```typescript
+// ❌ BAD
+import { Button, Input } from '@/components/ui'
 
-- `bundle-barrel-imports` - Import directly, avoid barrel files
-- `bundle-dynamic-imports` - Use next/dynamic for heavy components
-- `bundle-defer-third-party` - Load analytics/logging after hydration
-- `bundle-conditional` - Load modules only when feature is activated
-- `bundle-preload` - Preload on hover/focus for perceived speed
+// ✅ GOOD
+import { Button } from '@/components/ui/Button'
+import { Input } from '@/components/ui/Input'
+```
 
-### 3. Server-Side Performance (HIGH)
+**bundle-dynamic-imports** - Use next/dynamic for heavy components
+```typescript
+// ❌ BAD
+import HeavyChart from '@/components/HeavyChart'
 
-- `server-cache-react` - Use React.cache() for per-request deduplication
-- `server-cache-lru` - Use LRU cache for cross-request caching
-- `server-serialization` - Minimize data passed to client components
-- `server-parallel-fetching` - Restructure components to parallelize fetches
-- `server-after-nonblocking` - Use after() for non-blocking operations
+// ✅ GOOD
+const HeavyChart = dynamic(() => import('@/components/HeavyChart'), {
+  loading: () => <Skeleton />
+})
+```
 
-### 4. Client-Side Data Fetching (MEDIUM-HIGH)
+### 2. Async Waterfalls (CRITICAL)
 
-- `client-swr-dedup` - Use SWR for automatic request deduplication
-- `client-event-listeners` - Deduplicate global event listeners
+**async-parallel** - Use Promise.all for independent operations
+```typescript
+// ❌ BAD (waterfall)
+const user = await getUser()
+const posts = await getPosts()
 
-### 5. Re-render Optimization (MEDIUM)
+// ✅ GOOD (parallel)
+const [user, posts] = await Promise.all([getUser(), getPosts()])
+```
 
-- `rerender-defer-reads` - Don't subscribe to state only used in callbacks
-- `rerender-memo` - Extract expensive work into memoized components
-- `rerender-dependencies` - Use primitive dependencies in effects
-- `rerender-derived-state` - Subscribe to derived booleans, not raw values
-- `rerender-functional-setstate` - Use functional setState for stable callbacks
-- `rerender-lazy-state-init` - Pass function to useState for expensive values
-- `rerender-transitions` - Use startTransition for non-urgent updates
+### 3. Rendering (HIGH)
 
-### 6. Rendering Performance (MEDIUM)
+**rendering-conditional-render** - Use ternary, not &&
+```typescript
+// ❌ BAD (can render 0 or false)
+{count && <Badge count={count} />}
 
-- `rendering-animate-svg-wrapper` - Animate div wrapper, not SVG element
-- `rendering-content-visibility` - Use content-visibility for long lists
-- `rendering-hoist-jsx` - Extract static JSX outside components
-- `rendering-svg-precision` - Reduce SVG coordinate precision
-- `rendering-hydration-no-flicker` - Use inline script for client-only data
-- `rendering-activity` - Use Activity component for show/hide
-- `rendering-conditional-render` - Use ternary, not && for conditionals
+// ✅ GOOD
+{count > 0 ? <Badge count={count} /> : null}
+```
 
-### 7. JavaScript Performance (LOW-MEDIUM)
+**rerender-memo** - Memoize expensive components
+```typescript
+// ✅ GOOD
+const TaskList = memo(function TaskList({ tasks }: Props) {
+  return tasks.map(t => <TaskItem key={t.id} task={t} />)
+})
+```
 
-- `js-batch-dom-css` - Group CSS changes via classes or cssText
-- `js-index-maps` - Build Map for repeated lookups
-- `js-cache-property-access` - Cache object properties in loops
-- `js-cache-function-results` - Cache function results in module-level Map
-- `js-cache-storage` - Cache localStorage/sessionStorage reads
-- `js-combine-iterations` - Combine multiple filter/map into one loop
-- `js-length-check-first` - Check array length before expensive comparison
+---
+
+## QUICK REFERENCE
+
+### Eliminating Waterfalls (CRITICAL)
+- `async-defer-await` - Move await into branches where used
+- `async-parallel` - Promise.all() for independent operations
+- `async-suspense-boundaries` - Stream content with Suspense
+
+### Bundle Size (CRITICAL)
+- `bundle-barrel-imports` - Direct imports, avoid index.ts
+- `bundle-dynamic-imports` - next/dynamic for heavy components
+- `bundle-defer-third-party` - Load analytics after hydration
+
+### Server-Side (HIGH)
+- `server-cache-react` - React.cache() for deduplication
+- `server-serialization` - Minimize data to client
+- `server-parallel-fetching` - Restructure for parallel fetches
+
+### Re-render Optimization (MEDIUM)
+- `rerender-memo` - Memoize expensive components
+- `rerender-defer-reads` - Don't subscribe to callback-only state
+- `rerender-functional-setstate` - Stable callbacks with functional updates
+- `rerender-transitions` - startTransition for non-urgent updates
+
+### Rendering Performance (MEDIUM)
+- `rendering-conditional-render` - Ternary over &&
+- `rendering-content-visibility` - content-visibility for long lists
+- `rendering-hoist-jsx` - Static JSX outside components
+
+### JavaScript (LOW-MEDIUM)
+- `js-combine-iterations` - Single loop vs filter/map chain
+- `js-set-map-lookups` - O(1) lookups with Set/Map
 - `js-early-exit` - Return early from functions
-- `js-hoist-regexp` - Hoist RegExp creation outside loops
-- `js-min-max-loop` - Use loop for min/max instead of sort
-- `js-set-map-lookups` - Use Set/Map for O(1) lookups
-- `js-tosorted-immutable` - Use toSorted() for immutability
 
-### 8. Advanced Patterns (LOW)
+---
 
-- `advanced-event-handler-refs` - Store event handlers in refs
-- `advanced-use-latest` - useLatest for stable callback refs
+## EXAMPLE OUTPUT
 
-## How to Use
-
-Read individual rule files for detailed explanations and code examples:
-
-```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
-rules/_sections.md
+```markdown
+**Skills Applied:** bundle-barrel-imports (direct imports from @/components/ui/Button), rerender-memo (memoized TaskList component), rendering-conditional-render (used ternary for empty state), async-parallel (Promise.all for user and tasks fetch)
 ```
 
-Each rule file contains:
-- Brief explanation of why it matters
-- Incorrect code example with explanation
-- Correct code example with explanation
-- Additional context and references
+---
 
-## Full Compiled Document
+## FULL RULE REFERENCE
 
-For the complete guide with all rules expanded: `AGENTS.md`
+For detailed explanations with code examples, see:
+- `rules/async-parallel.md`
+- `rules/bundle-barrel-imports.md`
+- `rules/_sections.md`
+- Complete guide: `AGENTS.md`
