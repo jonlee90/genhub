@@ -100,9 +100,19 @@ FOR each task:
   1. Mark TodoWrite: in_progress
   2. Check authority (STOP if DB/auth)
   3. Check hard rules (STOP if violation)
-  4. Implement using genhub-patterns
-  5. Verify: 44px targets, active states, dark mode variants, no Supabase
-  6. Mark TodoWrite: completed
+
+  4. PRE-FLIGHT (MANDATORY for .tsx files):
+     a. Read `vercel-react-best-practices` skill (or recall if already loaded)
+     b. Identify applicable rules:
+        - Imports → bundle-barrel-imports, bundle-dynamic-imports
+        - State management → rerender-memo, rerender-defer-reads
+        - Async/data → async-parallel, async-suspense-boundaries
+        - Rendering → rendering-conditional-render, rendering-hoist-jsx
+     c. Note which rules will be applied
+
+  5. Implement using genhub-patterns + vercel rules
+  6. Verify: 44px targets, active states, dark mode variants, no Supabase
+  7. Mark TodoWrite: completed
 
 AFTER all tasks (if MODE=FULL):
   npm run build 2>&1 | grep -E "error|Error" -A 3
@@ -117,6 +127,7 @@ AFTER all tasks (if MODE=FULL):
 | Task needs DB/auth | HANDOFF: backend-engineer with interface |
 | Build fails 2x same error | Stop, summarize, request help |
 | Token budget >70k | Wrap up, report remaining |
+| **TSX edit without skill loaded** | **STOP: Load `vercel-react-best-practices` first** |
 
 ---
 
@@ -127,6 +138,7 @@ AFTER all tasks (if MODE=FULL):
 Status: ✓ completed | ✗ failed | ⚠️ partial (N/M)
 Tasks: [completed tasks]
 Files: {paths}
+Skills: [vercel rules applied]
 Issues: {if any}
 ```
 
@@ -143,6 +155,7 @@ Issues: {if any}
 **Files Changed:**
 - `path/file.tsx` - Description
 
+**Skills Applied:** bundle-barrel-imports, rerender-memo (list specific rules used)
 **Mobile Checks:** ✓ 44px | ✓ active states | ✓ dark mode | ✓ safe areas
 
 **Build:** ✓ pass | ✗ fail
