@@ -151,7 +151,7 @@ This document provides a comprehensive, actionable implementation plan for the P
   - Implement `updateProjectType(formData)` - Updates existing project type
   - Implement `deleteProjectType(id)` - Deletes project type after checking for usage
   - All actions use `getUserContext()` helper to get user, company, role
-  - All actions enforce gc_admin role check
+  - All actions enforce admin role check
   - All actions validate input with Zod
   - All actions call `revalidatePath('/app/settings')`
   - **References**: Requirements §1 (Project Type Management), Design API section
@@ -167,7 +167,7 @@ This document provides a comprehensive, actionable implementation plan for the P
   - Implement `updateTaskType(formData)` - Updates existing task type
   - Implement `deleteTaskType(id)` - Soft deletes (sets is_active = false)
   - All actions use `getUserContext()` helper
-  - All actions enforce gc_admin role check
+  - All actions enforce admin role check
   - All actions validate input with Zod
   - All actions call `revalidatePath('/app/settings')`
   - **References**: Requirements §2 (Task Type Management), Design API section
@@ -184,7 +184,7 @@ This document provides a comprehensive, actionable implementation plan for the P
   - Implement `deletePhaseTemplate(id)` - Deletes phase template (cascades to task templates)
   - Implement `reorderPhaseTemplates(projectTypeConfigId, orderedIds)` - Updates order_index for drag-and-drop
   - All actions use `getUserContext()` helper
-  - All actions enforce gc_admin role check
+  - All actions enforce admin role check
   - **References**: Requirements §3 (Phase Template Management), Design API section
   - **Files to create**: `app/actions/phase-templates.ts`
   - **Acceptance criteria**: CRUD + reordering work, nested task templates loaded
@@ -199,7 +199,7 @@ This document provides a comprehensive, actionable implementation plan for the P
   - Implement `deleteTaskTemplate(id)` - Deletes task template
   - Implement `reorderTaskTemplates(phaseTemplateId, orderedIds)` - Updates order_index
   - All actions use `getUserContext()` helper
-  - All actions enforce gc_admin role check
+  - All actions enforce admin role check
   - **References**: Requirements §4 (Task Template Management), Design API section
   - **Files to create**: `app/actions/task-templates.ts`
   - **Acceptance criteria**: CRUD + reordering work
@@ -211,7 +211,7 @@ This document provides a comprehensive, actionable implementation plan for the P
   - Implement `updatePhase(phaseId, formData)` - Updates project phase
   - Implement `deletePhase(phaseId, taskHandling)` - Deletes phase with task handling options
   - taskHandling options: 'move' (move tasks to another phase) or 'delete' (delete tasks)
-  - Enforce gc_admin or project_manager role check
+  - Enforce admin or project_manager role check
   - Update Metro Journey display to reflect changes
   - **References**: Requirements §5 (Phase CRUD within Projects)
   - **Files to modify**: `app/actions/phases.ts`
@@ -224,13 +224,13 @@ This document provides a comprehensive, actionable implementation plan for the P
 ### 3.1 Create Settings page tab navigation
 - [ ] **Add Project Configuration tab to Settings page**
   - Modify `app/app/settings/page.tsx`
-  - Add role check: Only show "Project Configuration" section if user is gc_admin
+  - Add role check: Only show "Project Configuration" section if user is admin
   - Add `SettingsSectionHeader` with `Wrench` icon, title "Project Configuration"
   - Add `ProjectConfigurationSection` component (creates tabs for Project Types, Task Types, Phase Templates, Task Templates)
   - Use standard page layout (blueprint grid, industrial header)
   - **References**: Requirements §6 (Settings Page Integration), Design UI Layout
   - **Files to modify**: `app/app/settings/page.tsx`
-  - **Acceptance criteria**: Section visible only to gc_admin, follows standard layout
+  - **Acceptance criteria**: Section visible only to admin, follows standard layout
 
 ### 3.2 Create ProjectConfigurationSection component
 - [ ] **Create tabbed navigation for configuration**
@@ -543,7 +543,7 @@ This document provides a comprehensive, actionable implementation plan for the P
 ### 7.4 Add phase management to project detail page
 - [ ] **Enable GC/PM to add/edit/delete phases within project**
   - Modify `components/projects/ProjectDetailContent.tsx` (or project detail page)
-  - Add "Manage Phases" button (visible to gc_admin and project_manager only)
+  - Add "Manage Phases" button (visible to admin and project_manager only)
   - Opens dialog with list of current project phases
   - Add "Add Phase" button (calls `createPhase()` server action)
   - Each phase has Edit (calls `updatePhase()`) and Delete (calls `deletePhase()`) buttons
@@ -665,7 +665,7 @@ This document provides a comprehensive, actionable implementation plan for the P
 - ✅ All 4 tables created with proper RLS policies
 - ✅ Seeding function creates defaults for all companies
 - ✅ All CRUD server actions implemented and working
-- ✅ Settings page shows Project Configuration section (gc_admin only)
+- ✅ Settings page shows Project Configuration section (admin only)
 - ✅ Can create/edit/delete project types, task types, phase templates, task templates
 - ✅ Drag-and-drop reordering works for phases and tasks
 - ✅ Project creation applies templates automatically

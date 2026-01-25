@@ -316,7 +316,7 @@ export async function getProjectAssignees(
       .select(
         `
         user_id,
-        user_profiles!inner (
+        public_user_profiles:user_profiles!company_users_user_profile_fkey (
           id,
           name,
           email,
@@ -347,7 +347,7 @@ export async function getProjectAssignees(
   }
 
   companyUsers?.forEach((cu) => {
-    const user = cu.user_profiles as unknown as {
+    const user = cu.public_user_profiles as unknown as {
       id: string;
       name: string;
       email: string;

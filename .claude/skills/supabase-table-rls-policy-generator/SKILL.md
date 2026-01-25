@@ -121,7 +121,7 @@ mcp__supabase__get_advisors("security")
 ```sql
 next_auth.uid()                              -- Current user UUID
 public.get_user_company_id(next_auth.uid())  -- User's active company
-public.is_user_gc_admin(next_auth.uid())     -- Is GC Admin?
+public.is_user_admin(next_auth.uid())        -- Is Admin?
 ```
 
 ## Output Format

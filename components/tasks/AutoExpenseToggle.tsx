@@ -6,6 +6,7 @@ import DollarSign from "lucide-react/icons/dollar-sign";
 import Tag from "lucide-react/icons/tag";
 import Building2 from "lucide-react/icons/building-2";
 import Calendar from "lucide-react/icons/calendar";
+import ChevronDown from "lucide-react/icons/chevron-down";
 import { cn } from "@/lib/utils";
 import { formatDate, formatBudgetFull } from "@/lib/utils";
 import {
@@ -153,7 +154,7 @@ export function AutoExpenseToggle({
                 <Tag className="w-4 h-4 text-green-600" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                <div className="text-[10px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-1">
                   Category
                 </div>
                 <Select
@@ -164,8 +165,9 @@ export function AutoExpenseToggle({
                   }}
                   disabled={disabled}
                 >
-                  <SelectTrigger className="h-8 w-full border-0 bg-transparent p-0 text-sm font-medium text-gray-900 dark:text-gray-100 hover:bg-white/50 dark:hover:bg-gray-800/50 focus:ring-1 focus:ring-green-300">
+                  <SelectTrigger className="h-9 w-full min-h-[44px] border-2 border-green-200 dark:border-green-700 bg-white dark:bg-gray-800 rounded-lg px-3 text-sm font-medium text-gray-900 dark:text-gray-100 hover:border-green-300 dark:hover:border-green-600 focus:ring-2 focus:ring-green-300 dark:focus:ring-green-600 transition-colors">
                     <SelectValue />
+                    <ChevronDown className="w-4 h-4 text-green-600 dark:text-green-500 ml-auto shrink-0" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="materials">Materials</SelectItem>

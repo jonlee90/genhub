@@ -102,10 +102,10 @@ export function AssigneeMultiSelect({
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between h-11 border-gray-200"
+            className="w-full justify-between h-11 border-gray-200 dark:border-gray-700"
             disabled={disabled || loading}
           >
-            <span className="text-gray-500">
+            <span className="text-gray-500 dark:text-gray-400">
               {selectedAssignees.length === 0
                 ? "Select assignees..."
                 : `${selectedAssignees.length} selected`}
@@ -117,21 +117,21 @@ export function AssigneeMultiSelect({
           <div className="max-h-64 overflow-y-auto">
             {users.length > 0 && (
               <div>
-                <div className="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-50 flex items-center gap-2">
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 flex items-center gap-2">
                   <Users className="h-3 w-3" /> Team Members
                 </div>
                 {users.map((option) => (
                   <div
                     key={`user-${option.id}`}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => toggleAssignee(option)}
                   >
                     <div
                       className={cn(
                         "w-4 h-4 border rounded flex items-center justify-center",
                         isSelected(option)
-                          ? "bg-blue-600 border-blue-600"
-                          : "border-gray-300",
+                          ? "bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500"
+                          : "border-gray-300 dark:border-gray-600",
                       )}
                     >
                       {isSelected(option) && (
@@ -144,28 +144,28 @@ export function AssigneeMultiSelect({
                         {getInitials(option.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm">{option.name}</span>
+                    <span className="text-sm dark:text-gray-200">{option.name}</span>
                   </div>
                 ))}
               </div>
             )}
             {subcontractors.length > 0 && (
               <div>
-                <div className="px-3 py-2 text-xs font-semibold text-gray-500 bg-gray-50 flex items-center gap-2">
+                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 flex items-center gap-2">
                   <Building2 className="h-3 w-3" /> Subcontractors
                 </div>
                 {subcontractors.map((option) => (
                   <div
                     key={`sub-${option.id}`}
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100"
+                    className="flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
                     onClick={() => toggleAssignee(option)}
                   >
                     <div
                       className={cn(
                         "w-4 h-4 border rounded flex items-center justify-center",
                         isSelected(option)
-                          ? "bg-blue-600 border-blue-600"
-                          : "border-gray-300",
+                          ? "bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500"
+                          : "border-gray-300 dark:border-gray-600",
                       )}
                     >
                       {isSelected(option) && (
@@ -178,9 +178,9 @@ export function AssigneeMultiSelect({
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="text-sm">{option.name}</span>
+                      <span className="text-sm dark:text-gray-200">{option.name}</span>
                       {option.company_name && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           {option.company_name}
                         </span>
                       )}
@@ -190,7 +190,7 @@ export function AssigneeMultiSelect({
               </div>
             )}
             {options.length === 0 && !loading && (
-              <div className="px-3 py-4 text-sm text-gray-500 text-center">
+              <div className="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                 No team members assigned to this project
               </div>
             )}
@@ -222,7 +222,7 @@ export function AssigneeMultiSelect({
                 onClick={() =>
                   removeAssignee({ id: option.id, type: option.type })
                 }
-                className="hover:bg-gray-300 rounded p-0.5"
+                className="hover:bg-gray-300 dark:hover:bg-gray-600 rounded p-0.5"
               >
                 <X className="h-3 w-3" />
               </button>

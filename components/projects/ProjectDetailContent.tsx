@@ -99,7 +99,6 @@ function TaskModalRenderer({
       preselectedProjectId={projectId}
       onSuccess={onSuccess}
       tasks={tasks}
-      assignees={[]} // No assignees filter needed in project context
       userRole={null}
       isLoadingData={isLoadingModalData}
     />

@@ -331,11 +331,11 @@ WITH CHECK/USING (
 ```
 
 **Validation:**
-- ✅ Only `gc_admin` role can INSERT/UPDATE/DELETE
+- ✅ Only `admin` role can INSERT/UPDATE/DELETE
 - ✅ All authenticated users can SELECT (read-only)
 - ✅ Server actions check role in `getUserContext()` helper:
   ```typescript
-  if (companyUser.role !== 'gc_admin') {
+  if (companyUser.role !== 'admin') {
     return { error: 'Insufficient permissions. Only GC Admin can manage...' };
   }
   ```
@@ -344,7 +344,7 @@ WITH CHECK/USING (
 
 | Role | SELECT | INSERT | UPDATE | DELETE |
 |------|--------|--------|--------|--------|
-| gc_admin | ✅ | ✅ | ✅ | ✅ |
+| admin | ✅ | ✅ | ✅ | ✅ |
 | project_manager | ✅ | ❌ | ❌ | ❌ |
 | foreman | ✅ | ❌ | ❌ | ❌ |
 | field_worker | ✅ | ❌ | ❌ | ❌ |
@@ -439,7 +439,7 @@ FOR SELECT USING (
 - ✅ DELETE: `is_user_gc_admin(next_auth.uid())`
 
 **Helper Function:** `is_user_gc_admin(p_user_id uuid) RETURNS boolean`
-- Checks `company_users.role = 'gc_admin'` AND `status = 'active'`
+- Checks `company_users.role = 'admin'` AND `status = 'active'`
 
 ---
 

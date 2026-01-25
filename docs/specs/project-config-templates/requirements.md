@@ -85,7 +85,7 @@ Currently, project types and phase/task templates are hardcoded in `lib/default-
 
 #### Acceptance Criteria
 
-1. WHEN user views a project detail page THEN the system SHALL display an option to manage phases (visible to gc_admin and project_manager only)
+1. WHEN user views a project detail page THEN the system SHALL display an option to manage phases (visible to admin and project_manager only)
 2. WHEN user clicks "Add Phase" in project detail THEN the system SHALL display a form to create a new phase with name, description, and order position
 3. WHEN user edits a phase within a project THEN the system SHALL update that specific phase instance
 4. WHEN user deletes a phase from a project THEN the system SHALL prompt for confirmation and handle tasks in that phase
@@ -100,9 +100,9 @@ Currently, project types and phase/task templates are hardcoded in `lib/default-
 
 #### Acceptance Criteria
 
-1. WHEN user navigates to Settings page THEN the system SHALL display a "Project Configuration" section (visible to gc_admin only)
+1. WHEN user navigates to Settings page THEN the system SHALL display a "Project Configuration" section (visible to admin only)
 2. WHEN user expands Project Configuration THEN the system SHALL display tabs/sections for: Project Types, Task Types, Phase Templates, Task Templates
-3. WHEN user lacks gc_admin role THEN the system SHALL hide the Project Configuration section
+3. WHEN user lacks admin role THEN the system SHALL hide the Project Configuration section
 4. WHEN user makes changes to any template THEN the system SHALL display a success toast notification
 5. WHEN user encounters an error THEN the system SHALL display an error message with details
 
@@ -132,8 +132,8 @@ Currently, project types and phase/task templates are hardcoded in `lib/default-
 
 ### Security
 
-1. All template management operations SHALL require gc_admin role
-2. Phase CRUD within projects SHALL require gc_admin or project_manager role
+1. All template management operations SHALL require admin role
+2. Phase CRUD within projects SHALL require admin or project_manager role
 3. Templates SHALL be company-scoped with RLS policies preventing cross-company access
 4. All input SHALL be validated using Zod schemas before database operations
 

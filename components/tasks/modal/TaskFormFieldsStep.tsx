@@ -3,14 +3,11 @@
  *
  * Renders all task form fields based on task type configuration:
  * - Basic fields: Title, Description, Project, Phase, Priority
+ * - Assignee fields: Multi-select assignees, Primary assignee (edit mode)
  * - Date fields: Start Date, Due Date
  * - Cost fields: Planned Cost, Actual Cost
  * - Status (edit mode only)
  * - Approval workflow section
- * - Receipt upload
- * - Auto-expense settings
- * - Materials section
- * - Expenses section
  */
 "use client";
 
@@ -30,6 +27,7 @@ import {
   Check,
   RotateCcw,
   XCircle,
+  User,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -50,6 +48,12 @@ import {
 } from "@/lib/config/task-colors";
 import type { TaskType } from "@/types/db/enums";
 import type { FieldConfig } from "@/lib/config/task-type-fields";
+import { AssigneeMultiSelect } from "../AssigneeMultiSelect";
+import {
+  PrimaryAssigneeSelector,
+  type AssigneeOption,
+} from "../PrimaryAssigneeSelector";
+import type { TaskAssignee } from "@/app/actions/tasks";
 
 interface Project {
   id: string;
@@ -99,6 +103,22 @@ interface TaskFormFieldsStepProps {
 
   // Projects
   projects: Project[];
+
+  // Assignees
+  selectedAssignees?: TaskAssignee[];
+  onAssigneesChange?: (assignees: TaskAssignee[]) => void;
+  primaryAssigneeId?: string | null;
+  onPrimaryAssigneeChange?: (id: string | null) => void;
+  assigneeOptions?: AssigneeOption[];
+  assignees?: Array<{
+    id: string;
+    type: "user" | "subcontractor";
+    name: string;
+    email?: string;
+    avatar_url?: string | null;
+    company_name?: string;
+  }>;
+  showPrimarySelector?: boolean;
 
   // Disabled state
   disabled?: boolean;
@@ -150,6 +170,13 @@ export function TaskFormFieldsStep({
   status,
   onStatusChange,
   projects,
+  selectedAssignees = [],
+  onAssigneesChange,
+  primaryAssigneeId,
+  onPrimaryAssigneeChange,
+  assigneeOptions = [],
+  assignees,
+  showPrimarySelector = false,
   disabled,
   approvalStatus,
   approvalNotes,
@@ -287,7 +314,7 @@ export function TaskFormFieldsStep({
                 variant="outline"
                 onClick={() => onApprovalAction("revision_requested")}
                 disabled={isApprovalPending}
-                className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                className="border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30"
               >
                 <RotateCcw className="mr-1 h-4 w-4" />
                 Request Revision
@@ -298,7 +325,7 @@ export function TaskFormFieldsStep({
                 variant="outline"
                 onClick={() => onApprovalAction("rejected")}
                 disabled={isApprovalPending}
-                className="border-red-300 text-red-700 hover:bg-red-50"
+                className="border-red-300 dark:border-red-700 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
               >
                 <XCircle className="mr-1 h-4 w-4" />
                 Reject
@@ -308,7 +335,7 @@ export function TaskFormFieldsStep({
 
           {/* Show previous approval info if exists */}
           {approvedBy && approvedAt && (
-            <div className="mt-3 pt-3 border-t border-amber-200 text-xs text-amber-700">
+            <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-900/40 text-xs text-amber-700 dark:text-amber-300">
               Last updated: {new Date(approvedAt).toLocaleDateString()}
               {approvalNotesHistory && (
                 <p className="mt-1 italic">"{approvalNotesHistory}"</p>
@@ -485,6 +512,36 @@ export function TaskFormFieldsStep({
         </Select>
       </div>
 
+      {/* Assignees - Multi-select */}
+      {onAssigneesChange && (
+        <div className="space-y-2">
+          <Label
+            htmlFor="assignee"
+            className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
+          >
+            <User className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            Assignees
+          </Label>
+          <AssigneeMultiSelect
+            projectId={selectedProjectId}
+            selectedAssignees={selectedAssignees}
+            onChange={onAssigneesChange}
+            disabled={disabled}
+            assignees={assignees}
+          />
+        </div>
+      )}
+
+      {/* Primary Assignee Selector - Only when multiple assignees */}
+      {showPrimarySelector && assigneeOptions.length > 1 && onPrimaryAssigneeChange && (
+        <PrimaryAssigneeSelector
+          assignees={assigneeOptions}
+          primaryId={primaryAssigneeId || null}
+          onPrimaryChange={onPrimaryAssigneeChange}
+          disabled={disabled}
+        />
+      )}
+
       {/* Date Range Row */}
       <div
         className={cn(
@@ -506,7 +563,7 @@ export function TaskFormFieldsStep({
               value={startDate}
               onChange={(e) => handleStartDateChange(e.target.value)}
               disabled={disabled}
-              className="h-11 border-gray-200 dark:border-gray-700"
+              className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
             />
           </div>
         )}
@@ -522,7 +579,7 @@ export function TaskFormFieldsStep({
             onChange={(e) => onDueDateChange(e.target.value)}
             disabled={disabled}
             min={startDate || undefined}
-            className="h-11 border-gray-200 dark:border-gray-700"
+            className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
           />
         </div>
       </div>
@@ -552,9 +609,9 @@ export function TaskFormFieldsStep({
               placeholder="0.00"
               disabled={disabled}
               className={cn(
-                "h-11 border-gray-200 dark:border-gray-700",
+                "h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500",
                 taskType === "purchase" &&
-                  "border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500",
+                  "border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500 dark:border-emerald-700 dark:focus:ring-emerald-500/20 dark:focus:border-emerald-500",
               )}
             />
           </div>
@@ -574,7 +631,7 @@ export function TaskFormFieldsStep({
                 onChange={(e) => onActualCostChange(e.target.value)}
                 placeholder="0.00"
                 disabled={disabled}
-                className="h-11 border-gray-200 dark:border-gray-700"
+                className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
               />
             </div>
           )}

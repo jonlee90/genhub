@@ -7,7 +7,7 @@ Maps relevant rules from shared skills to each OpenCode agent for contextual loa
 | Skill | Location | Source |
 |-------|----------|--------|
 | vercel-react-best-practices | `.claude/skills/vercel-react-best-practices/` | Project |
-| postgres-best-practices | User-level (`~/.claude/skills/`) | Supabase |
+| postgres-best-practices:postgres-best-practices | User-level (`~/.claude/skills/`) | Supabase |
 
 ---
 
@@ -29,7 +29,7 @@ js-*              # JavaScript performance
 advanced-*        # Advanced patterns
 ```
 
-**postgres-best-practices (ALL - for DB code review):**
+**postgres-best-practices:postgres-best-practices (ALL - for DB code review):**
 ```
 query-*           # Query performance
 conn-*            # Connection management
@@ -76,7 +76,7 @@ advanced-*        # Advanced patterns (LOW)
   - advanced-use-latest
 ```
 
-**postgres-best-practices:**
+**postgres-best-practices:postgres-best-practices:**
 ```
 query-*           # Query optimization
   - query-select-columns
@@ -110,7 +110,7 @@ rendering-*       # Rendering patterns (MEDIUM)
   - rendering-conditional-render
 ```
 
-**postgres-best-practices:**
+**postgres-best-practices:postgres-best-practices:**
 ```
 (Not applicable - focuses on UI components)
 ```
@@ -137,7 +137,7 @@ client-*          # Event handling (MEDIUM-HIGH)
   - client-event-listeners
 ```
 
-**postgres-best-practices:**
+**postgres-best-practices:postgres-best-practices:**
 ```
 (Not applicable - focuses on HTML/CSS)
 ```
@@ -156,7 +156,7 @@ client-*          # Event handling (MEDIUM-HIGH)
       ".claude/skills/"
     ],
     "agentMappings": {
-      "reviewer": ["vercel-react-best-practices", "postgres-best-practices"],
+      "reviewer": ["vercel-react-best-practices", "postgres-best-practices:postgres-best-practices"],
       "refactor": ["vercel-react-best-practices"],
       "component-scanner": ["vercel-react-best-practices"],
       "tailwind-optimizer": ["vercel-react-best-practices"]

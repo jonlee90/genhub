@@ -18,6 +18,21 @@ export interface GanttTask extends Omit<TaskRow, "due_date"> {
     email: string;
     avatar_url: string | null;
   } | null;
+  assignees?: Array<{
+    id: string;
+    user_id: string | null;
+    subcontractor_id: string | null;
+    user?: {
+      id: string;
+      name: string;
+      avatar_url: string | null;
+    } | null;
+    subcontractor?: {
+      id: string;
+      contact_name: string;
+      company_name: string;
+    } | null;
+  }>;
   project?: {
     id: string;
     name: string;

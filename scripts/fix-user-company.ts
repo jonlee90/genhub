@@ -100,7 +100,7 @@ async function fixUserCompany() {
       .insert({
         user_id: user.id,
         company_id: newCompany.id,
-        role: 'gc_admin',
+        role: 'admin',
         status: 'active'
       })
       .select()

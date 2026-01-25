@@ -79,74 +79,36 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
         tabIndex={0}
         onKeyDown={handleKeyDown}
       >
-        {/* Assignee avatar - only show on larger mobile/desktop */}
-        {task.assignee && !isMobile ? (
-          <Avatar className={cn(isMobile ? "h-6 w-6" : "h-7 w-7", "shrink-0")}>
-            <AvatarImage src={task.assignee.avatar_url || undefined} />
-            <AvatarFallback className="text-xs bg-construction-blue text-white">
-              {task.assignee.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        ) : null}
-
-        {/* Task title and phase */}
+        {/* Task title and phase - Two-row layout for all sizes */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          {isMobile ? (
-            <>
-              {/* Mobile: Line 1 - Icon, Phase/Project */}
-              <div className="flex items-center gap-1.5 mb-0.5">
-                {/* Task type icon */}
-                {taskTypeInfo && (
-                  <taskTypeInfo.icon
-                    className="shrink-0 h-3 w-3"
-                    style={{ color: taskTypeInfo.color }}
-                    strokeWidth={2}
-                    aria-label={taskTypeInfo.name}
-                  />
-                )}
-                {/* Phase or Project name - center with flex-1 */}
-                {(showProjectInsteadOfPhase ? task.project?.name : task.phase?.name) && (
-                  <span className="text-gray-500 dark:text-gray-400 text-[10px] truncate flex-1 text-center">
-                    {showProjectInsteadOfPhase ? task.project?.name : task.phase?.name}
-                  </span>
-                )}
-              </div>
-              {/* Mobile: Line 2 - Task title */}
-              <span className="text-gray-900 dark:text-gray-100 truncate text-xs font-medium">
-                {task.title}
+          {/* Line 1 - Icon, Phase/Project */}
+          <div className="flex items-center gap-1.5 mb-0.5">
+            {/* Task type icon */}
+            {taskTypeInfo && (
+              <taskTypeInfo.icon
+                className={cn("shrink-0", isMobile ? "h-3 w-3" : "h-3.5 w-3.5")}
+                style={{ color: taskTypeInfo.color }}
+                strokeWidth={2}
+                aria-label={taskTypeInfo.name}
+              />
+            )}
+            {/* Phase or Project name */}
+            {(showProjectInsteadOfPhase ? task.project?.name : task.phase?.name) && (
+              <span className={cn(
+                "text-gray-500 dark:text-gray-400 truncate flex-1",
+                isMobile ? "text-[10px]" : "text-xs"
+              )}>
+                {showProjectInsteadOfPhase ? task.project?.name : task.phase?.name}
               </span>
-            </>
-          ) : (
-            <>
-              {/* Desktop: Original layout */}
-              <div className="flex items-center gap-1.5">
-                {/* Task type icon */}
-                {taskTypeInfo && (
-                  <taskTypeInfo.icon
-                    className="shrink-0 h-3.5 w-3.5"
-                    style={{ color: taskTypeInfo.color }}
-                    strokeWidth={2}
-                    aria-label={taskTypeInfo.name}
-                  />
-                )}
-                {/* Task title with phase */}
-                <span className="text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0 text-sm font-semibold">
-                  {task.title}
-                  {task.phase?.name && (
-                    <span className="text-gray-400 dark:text-gray-500 text-[10px] ml-1.5">
-                      ({task.phase.name})
-                    </span>
-                  )}
-                </span>
-              </div>
-              {/* Project name - secondary line */}
-              {task.project ? (
-                <span className="text-gray-500 dark:text-gray-400 truncate text-xs mt-0.5">
-                  {task.project.name}
-                </span>
-              ) : null}
-            </>
-          )}
+            )}
+          </div>
+          {/* Line 2 - Task title */}
+          <span className={cn(
+            "text-gray-900 dark:text-gray-100 truncate font-medium",
+            isMobile ? "text-xs" : "text-sm"
+          )}>
+            {task.title}
+          </span>
         </div>
       </div>
 

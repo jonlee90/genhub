@@ -3,8 +3,7 @@
  *
  * Reduced from 1,499 lines to ~200 lines by extracting step components:
  * - TaskTypeSelectionStep: Type selection (create mode)
- * - TaskFormFieldsStep: Form fields (basic, dates, costs)
- * - TaskAssigneeStep: Assignee selection
+ * - TaskFormFieldsStep: Form fields (basic, dates, assignees, costs)
  * - TaskMaterialsExtrasStep: Materials, receipts, expenses
  *
  * Uses useTaskFormState hook for centralized state management.
@@ -261,6 +260,9 @@ function TaskModalForm({
     await fetchExpenses();
   };
 
+  // Check if an auto-created expense exists (description starts with "Task expense:")
+  const hasAutoExpense = expenses.some(e => e.description?.startsWith("Task expense:"));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -354,7 +356,7 @@ function TaskModalForm({
             mode === "edit" &&
             formState.autoExpenseEnabled &&
             task?.id &&
-            expenses.length === 0 &&
+            !hasAutoExpense &&
             formState.actualCost &&
             parseFloat(formState.actualCost) > 0
           ) {
@@ -562,7 +564,7 @@ function TaskModalForm({
           {/* Error/Success Messages */}
           <TaskModalStatusAlerts error={error} success={success} mode={mode} />
 
-          {/* Step 2: Form Fields */}
+          {/* Step 2: Form Fields (includes Assignees) */}
           <TaskFormFieldsStep
             mode={mode}
             taskType={formState.taskType}
@@ -588,20 +590,6 @@ function TaskModalForm({
             status={formState.status}
             onStatusChange={formState.setStatus}
             projects={projects}
-            disabled={isPending}
-            approvalStatus={task?.approval_status}
-            approvalNotes={formState.approvalNotes}
-            onApprovalNotesChange={formState.setApprovalNotes}
-            onApprovalAction={handleApprovalAction}
-            isApprovalPending={isApprovalPending}
-            approvedBy={task?.approved_by}
-            approvedAt={task?.approved_at}
-            approvalNotesHistory={task?.approval_notes}
-          />
-
-          {/* Step 3: Assignees */}
-          <TaskAssigneeStep
-            projectId={formState.selectedProjectId}
             selectedAssignees={formState.selectedAssignees}
             onAssigneesChange={formState.setSelectedAssignees}
             primaryAssigneeId={formState.primaryAssigneeId}
@@ -614,9 +602,17 @@ function TaskModalForm({
               assigneeOptions.length > 1
             }
             disabled={isPending}
+            approvalStatus={task?.approval_status}
+            approvalNotes={formState.approvalNotes}
+            onApprovalNotesChange={formState.setApprovalNotes}
+            onApprovalAction={handleApprovalAction}
+            isApprovalPending={isApprovalPending}
+            approvedBy={task?.approved_by}
+            approvedAt={task?.approved_at}
+            approvalNotesHistory={task?.approval_notes}
           />
 
-          {/* Step 4: Materials, Receipt, Expenses */}
+          {/* Step 3: Materials, Receipt, Expenses */}
           <TaskMaterialsExtrasStep
             mode={mode}
             taskType={formState.taskType}
@@ -637,6 +633,7 @@ function TaskModalForm({
             primaryAssigneeName={primaryAssigneeName}
             expenseCategory={expenseCategory}
             onExpenseCategoryChange={setExpenseCategory}
+            hasAutoExpense={hasAutoExpense}
             showExpenses={mode === "edit"}
             expenses={expenses}
             expensesLoading={expensesLoading}
@@ -663,6 +660,10 @@ function TaskModalForm({
 /**
  * Main modal component - handles open/close and passes props to form
  * Wrapper that ensures form is remounted with fresh state on task change
+ *
+ * Uses key prop to remount component when task changes (React best practice).
+ * This avoids useEffect anti-pattern for syncing props to state.
+ * See: https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes
  */
 export function TaskModal({
   isOpen,
@@ -682,8 +683,13 @@ export function TaskModal({
 }: TaskModalProps) {
   if (!isOpen) return null;
 
+  // Use stable key to force remount when task changes
+  // This resets all form state to initial values from props
+  const formKey = mode === 'edit' && task ? `edit-${task.id}` : 'create';
+
   return (
     <TaskModalForm
+      key={formKey}
       mode={mode}
       task={task}
       projects={projects}

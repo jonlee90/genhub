@@ -47,7 +47,7 @@ describe('Tasks RLS Policies', () => {
 
     // Add user to companies
     await adminClient.from('company_users').insert([
-      { user_id: testUser1Id, company_id: testCompany1Id, role: 'gc_admin' },
+      { user_id: testUser1Id, company_id: testCompany1Id, role: 'admin' },
       { user_id: testUser1Id, company_id: testCompany2Id, role: 'worker' },
     ]);
 

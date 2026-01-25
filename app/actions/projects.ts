@@ -754,6 +754,7 @@ export async function addProjectTeamMember(
       code: insertError.code,
       message: insertError.message,
       details: insertError.details,
+      hint: insertError.hint,
     });
     return { error: "Failed to add team member. Please try again." };
   }
@@ -1641,7 +1642,7 @@ export async function getTeamMembersForModal(): Promise<{
     .from("company_users")
     .select(`
       user_id,
-      user_profiles!inner (
+      user_profiles:user_profiles!company_users_user_profile_fkey (
         id,
         name,
         email,

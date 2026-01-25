@@ -443,7 +443,7 @@ WHERE company_id = 'uuid' AND is_active = true;
 
 The audit loads:
 - `.claude/CLAUDE.md` - Hard rules and constraints
-- `.claude/skills/postgres-best-practices/*.md` - Database patterns
+- `.claude/skills/postgres-best-practices:postgres-best-practices/*.md` - Database patterns
 - `.claude/skills/vercel-react-best-practices/*.md` - React patterns
 - `types/server-actions.ts` - Error type standards
 
@@ -460,6 +460,6 @@ The audit references:
 - **Implementation**: `/kc:impl` - Implement from spec
 - **Build**: `/kc:build` - Build verification
 - **Documentation**:
-  - `.claude/skills/postgres-best-practices/` - Database patterns
+  - `.claude/skills/postgres-best-practices:postgres-best-practices/` - Database patterns
   - `.claude/skills/vercel-react-best-practices/` - React patterns
   - `.claude/reports/` - Previous audit reports

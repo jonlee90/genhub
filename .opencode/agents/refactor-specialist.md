@@ -31,7 +31,7 @@ Load specific rules from shared skills for refactoring work:
 | LOW | Advanced | `advanced-event-handler-refs` - Store event handlers in refs |
 | LOW | Advanced | `advanced-use-latest` - useLatest for stable callback refs |
 
-### postgres-best-practices (When touching DB code)
+### postgres-best-practices:postgres-best-practices (When touching DB code)
 
 | Priority | Category | Rules to Apply |
 |----------|----------|----------------|

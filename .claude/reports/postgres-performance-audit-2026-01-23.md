@@ -2,7 +2,7 @@
 
 **Date:** 2026-01-23
 **Database:** GenHub PWA (Supabase)
-**Auditor:** Claude Code - postgres-best-practices
+**Auditor:** Claude Code - postgres-best-practices:postgres-best-practices
 **Total Tables:** 44
 
 ---

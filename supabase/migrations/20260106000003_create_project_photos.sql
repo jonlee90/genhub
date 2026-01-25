@@ -58,7 +58,7 @@ USING (
   company_id = public.get_user_company_id(next_auth.uid())
   AND (
     uploaded_by = next_auth.uid()
-    OR public.is_user_gc_admin(next_auth.uid())
+    OR public.is_user_admin(next_auth.uid())
   )
 );
 
@@ -68,6 +68,6 @@ USING (
   company_id = public.get_user_company_id(next_auth.uid())
   AND (
     uploaded_by = next_auth.uid()
-    OR public.is_user_gc_admin(next_auth.uid())
+    OR public.is_user_admin(next_auth.uid())
   )
 );

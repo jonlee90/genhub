@@ -156,32 +156,21 @@ export function PhaseDetailPanel({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
-            <div className="p-2 bg-construction-blue rounded-lg">
-              <ListTodo className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h4 className="text-lg font-bold text-construction-blue">
-                {phase.name} Tasks
-              </h4>
+          <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700 w-full">
 
-              {phase.notes && (
-                <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                  {phase.notes}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-3 mb-2">
-              <span
-                className={cn(
-                  "text-sm font-semibold px-2.5 py-1 rounded-md",
-                  phaseStatus.color,
-                )}
-              >
-                {phaseStatus.label}
-              </span>
-            </div>
+            {/* Add task button Section */}
+            <TaskModalTrigger
+              projects={projects}
+              teamMembers={teamMembers}
+              taskTypes={taskTypes}
+              preselectedProjectId={projectId}
+              preselectedPhaseId={phase.id}
+              variant="default"
+              size="sm"
+              label="Add Task"
+              className="w-full bg-construction-blue hover:bg-construction-blue/90 text-white font-bold shadow-construction min-h-[44px] transition-all"
+              onOpen={onModalOpen}
+            />
           </div>
           <Button
             variant="ghost"
@@ -582,21 +571,6 @@ export function PhaseDetailPanel({
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
       >
-        {/* Section Header */}
-        <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
-          <TaskModalTrigger
-            projects={projects}
-            teamMembers={teamMembers}
-            taskTypes={taskTypes}
-            preselectedProjectId={projectId}
-            preselectedPhaseId={phase.id}
-            variant="default"
-            size="default"
-            label="Add New Task"
-            className="w-full bg-construction-blue hover:bg-construction-blue/90 text-white font-bold shadow-construction h-11 transition-all"
-            onOpen={onModalOpen}
-          />
-        </div>
 
         {/* Task List with Fixed Height and Scroll */}
         {transformedTasks.length === 0 ? (

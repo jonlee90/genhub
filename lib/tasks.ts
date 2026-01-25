@@ -92,7 +92,7 @@ export const getTasksPageData = cache(async function getTasksPageData(
       .select(
         `
         user_id,
-        user_profiles!inner (
+        user_profiles:user_profiles!company_users_user_profile_fkey (
           id,
           name,
           email,
@@ -413,7 +413,7 @@ export const getTaskDetailData = cache(async function getTaskDetailData(
     .select(
       `
       user_id,
-      user_profiles!inner (
+      user_profiles:user_profiles!company_users_user_profile_fkey (
         id,
         name,
         email,

@@ -12,8 +12,8 @@ import HardHat from 'lucide-react/icons/hard-hat';
 import { SubcontractorCard } from './SubcontractorCard';
 
 // Dynamic import for heavy modal component
-const AddSubcontractorModal = dynamic(
-  () => import('./AddSubcontractorModal').then((m) => ({ default: m.AddSubcontractorModal })),
+const SubcontractorModal = dynamic(
+  () => import('./SubcontractorModal').then((m) => ({ default: m.SubcontractorModal })),
   { ssr: false }
 );
 
@@ -31,10 +31,31 @@ export function SubcontractorList({
   companyId,
 }: SubcontractorListProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSubcontractor, setEditingSubcontractor] = useState<SubcontractorsRow | null>(null);
 
   // Check if user can add/edit subcontractors
   const canManage = currentUserRole === 'admin' || currentUserRole === 'project_manager';
+
+  // Modal handlers
+  const handleAdd = () => {
+    setModalMode('create');
+    setEditingSubcontractor(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (subcontractor: SubcontractorsRow) => {
+    setModalMode('edit');
+    setEditingSubcontractor(subcontractor);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalMode('create');
+    setEditingSubcontractor(null);
+  };
 
   // Filter subcontractors based on search query
   const filteredSubcontractors = useMemo(() => {
@@ -74,8 +95,8 @@ export function SubcontractorList({
 
         {canManage && (
           <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg"
+            onClick={handleAdd}
+            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg min-h-[44px]"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Subcontractor
@@ -91,7 +112,7 @@ export function SubcontractorList({
           placeholder="Search by company, trade, contact, or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+          className="pl-10 border-2 border-gray-300 focus:border-construction-blue focus:ring-construction-blue transition-colors min-h-[44px]"
         />
       </div>
 
@@ -114,8 +135,8 @@ export function SubcontractorList({
             </p>
             {canManage && !searchQuery && (
               <Button
-                onClick={() => setIsAddModalOpen(true)}
-                className="mt-4 bg-construction-blue hover:bg-construction-blue/90 text-white"
+                onClick={handleAdd}
+                className="mt-4 bg-construction-blue hover:bg-construction-blue/90 text-white min-h-[44px]"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Subcontractor
@@ -131,15 +152,18 @@ export function SubcontractorList({
               subcontractor={subcontractor}
               canManage={canManage}
               isGCAdmin={currentUserRole === 'admin'}
+              onEdit={handleEdit}
             />
           ))}
         </div>
       )}
 
-      {/* Add Subcontractor Modal */}
-      <AddSubcontractorModal
-        isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+      {/* Unified Subcontractor Modal */}
+      <SubcontractorModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        mode={modalMode}
+        subcontractor={editingSubcontractor || undefined}
         companyId={companyId}
       />
     </div>

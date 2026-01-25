@@ -153,7 +153,7 @@ async function setupTestData() {
         .insert({
           company_id: companyId,
           user_id: user.id,
-          role: 'gc_admin',
+          role: 'admin',
           status: 'active',
           activated_at: new Date().toISOString()
         });
@@ -162,17 +162,17 @@ async function setupTestData() {
         console.log(`❌ Error linking user to company: ${linkError.message}`);
         return false;
       }
-      console.log('✅ User linked to company as GC Admin');
+      console.log('✅ User linked to company as Admin');
     } else {
       console.log(`✅ User already linked (Role: ${existingLink.role}, Status: ${existingLink.status})`);
 
-      // Update to gc_admin if needed
-      if (existingLink.role !== 'gc_admin' || existingLink.status !== 'active') {
-        console.log('📝 Updating to GC Admin with active status...');
+      // Update to admin if needed
+      if (existingLink.role !== 'admin' || existingLink.status !== 'active') {
+        console.log('📝 Updating to Admin with active status...');
         const { error: updateError } = await supabase
           .from('company_users')
           .update({
-            role: 'gc_admin',
+            role: 'admin',
             status: 'active',
             activated_at: new Date().toISOString()
           })

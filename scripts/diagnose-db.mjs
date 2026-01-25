@@ -168,7 +168,7 @@ async function checkCompanyUsers() {
       console.log('  📝 You need to create:');
       console.log('     1. A company record');
       console.log('     2. A company_users record linking your user to the company');
-      console.log('     3. The user must have role: "gc_admin" or "project_manager"');
+      console.log('     3. The user must have role: "admin" or "project_manager"');
       console.log('     4. The user must have status: "active"');
       return false;
     }
@@ -179,12 +179,12 @@ async function checkCompanyUsers() {
     });
 
     const hasAdminOrPM = companyUsers.some(
-      cu => cu.role === 'gc_admin' || cu.role === 'project_manager'
+      cu => cu.role === 'admin' || cu.role === 'project_manager'
     );
 
     if (!hasAdminOrPM) {
-      console.log('\n  ⚠️  No GC Admin or Project Manager found!');
-      console.log('  📝 At least one user needs role "gc_admin" or "project_manager" to create projects');
+      console.log('\n  ⚠️  No Admin or Project Manager found!');
+      console.log('  📝 At least one user needs role "admin" or "project_manager" to create projects');
       return false;
     }
 

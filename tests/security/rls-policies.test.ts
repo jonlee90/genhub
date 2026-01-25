@@ -57,7 +57,7 @@ describe('Spatial Viewer RLS Policies', () => {
     // Create company_users
     await adminClient.from('company_users').insert([
       { user_id: testUser1Id, company_id: testCompany1Id, role: 'worker' },
-      { user_id: testUser2Id, company_id: testCompany1Id, role: 'gc_admin' },
+      { user_id: testUser2Id, company_id: testCompany1Id, role: 'admin' },
       { user_id: testUser3Id, company_id: testCompany2Id, role: 'worker' },
       { user_id: testUser4Id, company_id: testCompany1Id, role: 'client' },
     ])

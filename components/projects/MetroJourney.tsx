@@ -17,9 +17,7 @@ import type { TasksRow } from "@/types/db/tables/tasks";
 // B-003: Dynamic import for heavy ManagePhasesModal component (-20KB from initial bundle)
 const ManagePhasesModal = dynamic(
   () =>
-    import("./ManagePhasesModal").then((mod) => ({
-      default: mod.ManagePhasesModal,
-    })),
+    import("./ManagePhasesModal").then((mod) => mod.ManagePhasesModal),
   {
     ssr: false,
     loading: () => null,

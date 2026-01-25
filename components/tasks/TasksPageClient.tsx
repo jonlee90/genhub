@@ -65,6 +65,41 @@ const TaskModalRenderer = memo(function TaskModalRenderer({
   onSuccess: () => void
 }) {
   const { isOpen, mode, selectedTask, close } = useTaskModal();
+  const [taskAssignees, setTaskAssignees] = useState<AssigneeOption[]>([]);
+  const [loadingAssignees, setLoadingAssignees] = useState(false);
+
+  // Fetch assignees for the task's project when editing (if not already loaded)
+  useEffect(() => {
+    if (!isOpen || mode !== "edit" || !selectedTask?.project_id) {
+      setTaskAssignees([]);
+      return;
+    }
+
+    // If assignees already loaded for this project (from page filter), use them
+    if (assignees.length > 0) {
+      setTaskAssignees(assignees);
+      return;
+    }
+
+    // Otherwise, fetch assignees for the task's project
+    let cancelled = false;
+    setLoadingAssignees(true);
+
+    getProjectAssignees(selectedTask.project_id).then((result) => {
+      if (cancelled) return;
+
+      if (result.success && result.data) {
+        setTaskAssignees(result.data);
+      } else {
+        setTaskAssignees([]);
+      }
+      setLoadingAssignees(false);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, mode, selectedTask?.project_id, assignees]);
 
   if (!isOpen) return null;
 
@@ -77,8 +112,9 @@ const TaskModalRenderer = memo(function TaskModalRenderer({
       projects={projects}
       teamMembers={teamMembers}
       onSuccess={onSuccess}
-      assignees={assignees}
+      assignees={mode === "edit" ? taskAssignees : assignees}
       taskTypes={taskTypes}
+      isLoadingData={loadingAssignees}
     />
   );
 });
@@ -640,7 +676,7 @@ function TasksPageContent({
 // External wrapper component that provides TaskModalContext
 export function TasksPageClient(props: TasksPageClientProps) {
   return (
-    <TaskModalProvider>
+    <TaskModalProvider tasks={props.tasks}>
       <TasksPageContent {...props} />
     </TaskModalProvider>
   );

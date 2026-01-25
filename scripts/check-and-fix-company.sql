@@ -41,11 +41,11 @@ BEGIN
 
     RAISE NOTICE 'Company created with ID: %', v_company_id;
 
-    -- Link user to company as GC Admin
+    -- Link user to company as Admin
     INSERT INTO public.company_users (user_id, company_id, role, status, joined_at)
-    VALUES (v_user_id, v_company_id, 'gc_admin', 'active', now());
+    VALUES (v_user_id, v_company_id, 'admin', 'active', now());
 
-    RAISE NOTICE 'User linked to company as GC Admin';
+    RAISE NOTICE 'User linked to company as Admin';
   ELSE
     RAISE NOTICE 'All users already have companies!';
   END IF;

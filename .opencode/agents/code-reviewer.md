@@ -22,7 +22,7 @@ Primary code reviewer for GenHub. Receives handoffs from Claude Code after task 
 | Skill | Categories |
 |-------|------------|
 | vercel-react-best-practices | `async-*`, `bundle-*`, `server-*`, `client-*`, `rerender-*`, `rendering-*`, `js-*`, `advanced-*` |
-| postgres-best-practices | `query-*`, `security-*`, `conn-*`, `schema-*`, `data-*` |
+| postgres-best-practices:postgres-best-practices | `query-*`, `security-*`, `conn-*`, `schema-*`, `data-*` |
 
 **File Pattern Rules:**
 ```

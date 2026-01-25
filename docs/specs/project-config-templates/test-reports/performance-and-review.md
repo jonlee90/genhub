@@ -293,7 +293,7 @@ async function getUserContext() {
   }
 
   // Only GC Admin can manage project types
-  if (companyUser.role !== 'gc_admin') {
+  if (companyUser.role !== 'admin') {
     return { error: 'Insufficient permissions. Only GC Admin can manage project types.' };
   }
 
@@ -304,7 +304,7 @@ async function getUserContext() {
 **Security Checks:**
 1. ✅ Authentication verified (session exists)
 2. ✅ Company membership verified (active status)
-3. ✅ Role authorization (gc_admin only)
+3. ✅ Role authorization (admin only)
 4. ✅ Company ownership verified on updates/deletes
 
 **Result:** ✅ **PASS** - Authorization is properly implemented.

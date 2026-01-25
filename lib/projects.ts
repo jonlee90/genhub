@@ -548,6 +548,11 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
       };
     }
 
+    // Update project's health_score with the calculated value from RPC
+    if (typeof statsProject.calculated_health_score === "number") {
+      (project as any).health_score = statsProject.calculated_health_score;
+    }
+
     // Attach material and expense stats to tasks
     if (project.tasks && Array.isArray(project.tasks)) {
       project.tasks.forEach((task) => {

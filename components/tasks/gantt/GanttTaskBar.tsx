@@ -3,7 +3,8 @@
 import React, { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import Clock from "lucide-react/icons/clock";
-import { cn, formatDate } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn, formatDate, getInitials } from "@/lib/utils";
 import { getDateIndicator } from "@/lib/date-utils";
 import type { GanttTaskBarProps } from "./gantt-types";
 import { STATUS_STYLES } from "./gantt-types";
@@ -114,14 +115,74 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         />
       )}
 
-      {/* Task title and remaining days indicator */}
+      {/* Task title and indicators */}
       <div className={cn(
         "absolute inset-0 flex items-center gap-1.5 font-semibold text-white z-10",
         isMobile ? "px-1.5 text-[10px]" : "px-2.5 text-xs"
       )}>
+        {/* Multi-assignee avatars (stacked) */}
+        {task.assignees && task.assignees.length > 0 ? (
+          <div className="flex items-center shrink-0 -space-x-1.5">
+            {task.assignees.slice(0, 3).map((assignee, index) => {
+              const name = assignee.user?.name || assignee.subcontractor?.contact_name || "?";
+              const avatarUrl = assignee.user?.avatar_url || null;
+              return (
+                <Avatar
+                  key={`${assignee.user_id || assignee.subcontractor_id}-${index}`}
+                  className={cn(
+                    "shrink-0 border-2 border-white/50 ring-1 ring-white/30",
+                    isMobile ? "h-4 w-4" : "h-5 w-5"
+                  )}
+                >
+                  <AvatarImage src={avatarUrl || undefined} />
+                  <AvatarFallback className={cn(
+                    assignee.user ? "bg-construction-blue" : "bg-orange-600",
+                    "text-white font-bold",
+                    isMobile ? "text-[8px]" : "text-[9px]"
+                  )}>
+                    {getInitials(name)}
+                  </AvatarFallback>
+                </Avatar>
+              );
+            })}
+            {task.assignees.length > 3 ? (
+              <div className={cn(
+                "flex items-center justify-center shrink-0 rounded-full bg-white/90 dark:bg-gray-900/90 border-2 border-white/50 font-bold text-gray-700 dark:text-gray-300",
+                isMobile ? "h-4 w-4 text-[8px]" : "h-5 w-5 text-[9px]"
+              )}>
+                +{task.assignees.length - 3}
+              </div>
+            ) : null}
+          </div>
+        ) : task.assignee ? (
+          <Avatar className={cn(
+            "shrink-0 border-2 border-white/30",
+            isMobile ? "h-4 w-4" : "h-5 w-5"
+          )}>
+            <AvatarImage src={task.assignee.avatar_url || undefined} />
+            <AvatarFallback className={cn(
+              "bg-white/20 text-white font-bold",
+              isMobile ? "text-[8px]" : "text-[9px]"
+            )}>
+              {getInitials(task.assignee.name)}
+            </AvatarFallback>
+          </Avatar>
+        ) : null}
+
+        {/* Completed label */}
+        {task.status === "completed" && (
+          <span className={cn(
+            "shrink-0 px-1.5 py-0.5 rounded bg-white/90 dark:bg-gray-900/90 text-green-600 dark:text-green-400 font-bold uppercase",
+            isMobile ? "text-[8px]" : "text-[9px]"
+          )}>
+            Done
+          </span>
+        )}
+
         <span className="truncate min-w-0">
           {task.title}
         </span>
+
         {/* Remaining days indicator */}
         {(() => {
           const dateIndicator = getDateIndicator(task.due_date);

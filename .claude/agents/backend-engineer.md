@@ -5,10 +5,10 @@ tools: Read, Edit, Write, Glob, Grep, Bash, mcp__supabase__list_tables, mcp__sup
 model: sonnet
 color: blue
 skills:
-  autoLoad: [genhub-patterns, postgres-best-practices]
+  autoLoad: [genhub-patterns, postgres-best-practices:postgres-best-practices]
   filePatterns:
-    "app/actions/*.ts": postgres-best-practices
-    "supabase/migrations/*.sql": postgres-best-practices
+    "app/actions/*.ts": postgres-best-practices:postgres-best-practices
+    "supabase/migrations/*.sql": postgres-best-practices:postgres-best-practices
   ruleCategories: [query-*, security-*, conn-*, schema-*, data-*]
 ---
 
@@ -26,7 +26,7 @@ skills:
 │     └─ NO  → STOP. Handoff to frontend-engineer                 │
 │     └─ YES → Continue                                           │
 │                                                                 │
-│  2. Load skill: postgres-best-practices                         │
+│  2. Load skill: postgres-best-practices:postgres-best-practices                         │
 │     └─ Read SKILL.md or recall if already loaded                │
 │     └─ Identify rules: queries→query-*, security→security-*     │
 │                                                                 │
@@ -78,7 +78,7 @@ CREATE POLICY "company_read" ON public.{table}
 -- Mutations enforced in Server Actions with getUserContext()
 ```
 
-**Auth Helpers:** `next_auth.uid()`, `public.get_user_company_id()`, `public.is_user_gc_admin()`
+**Auth Helpers:** `next_auth.uid()`, `public.get_user_company_id()`, `public.is_user_admin()`
 
 ---
 
@@ -160,7 +160,7 @@ FOR each task:
   3. Check blocking rules → STOP if violation
 
   4. SKILL PRE-FLIGHT (MANDATORY):
-     └─ Load postgres-best-practices
+     └─ Load postgres-best-practices:postgres-best-practices
      └─ Identify applicable rules from table above
      └─ Note rules you will apply
 
@@ -197,7 +197,7 @@ AFTER all tasks (if not ORCHESTRATED):
 | Security advisor returns critical | Pause and report |
 | Build fails 2x | Stop, summarize |
 | Token budget >70k | Wrap up, report remaining |
-| **Action edit without skill** | **STOP:** Load `postgres-best-practices` first |
+| **Action edit without skill** | **STOP:** Load `postgres-best-practices:postgres-best-practices` first |
 
 ---
 

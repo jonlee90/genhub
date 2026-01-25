@@ -48,25 +48,25 @@ interface AddSubcontractorFormProps {
 }
 
 const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
-  { value: "general", label: "General" },
-  { value: "electrical", label: "Electrical" },
-  { value: "plumbing", label: "Plumbing" },
-  { value: "hvac", label: "HVAC" },
   { value: "carpentry", label: "Carpentry" },
-  { value: "masonry", label: "Masonry" },
-  { value: "roofing", label: "Roofing" },
-  { value: "flooring", label: "Flooring" },
-  { value: "painting", label: "Painting" },
-  { value: "drywall", label: "Drywall" },
   { value: "concrete", label: "Concrete" },
-  { value: "landscaping", label: "Landscaping" },
   { value: "demolition", label: "Demolition" },
-  { value: "steel_work", label: "Steel Work" },
-  { value: "glass_glazing", label: "Glass & Glazing" },
+  { value: "drywall", label: "Drywall" },
+  { value: "electrical", label: "Electrical" },
   { value: "fire_protection", label: "Fire Protection" },
-  { value: "insulation", label: "Insulation" },
+  { value: "flooring", label: "Flooring" },
   { value: "framing", label: "Framing" },
+  { value: "general", label: "General" },
+  { value: "glass_glazing", label: "Glass & Glazing" },
+  { value: "hvac", label: "HVAC" },
+  { value: "insulation", label: "Insulation" },
+  { value: "landscaping", label: "Landscaping" },
+  { value: "masonry", label: "Masonry" },
   { value: "other", label: "Other" },
+  { value: "painting", label: "Painting" },
+  { value: "plumbing", label: "Plumbing" },
+  { value: "roofing", label: "Roofing" },
+  { value: "steel_work", label: "Steel Work" },
 ];
 
 export function AddSubcontractorForm({

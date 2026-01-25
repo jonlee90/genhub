@@ -79,7 +79,7 @@ All marker operations now include:
 // Before update, check permissions
 const canUpdate =
   existingMarker.created_by === userId ||
-  role === 'gc_admin' ||
+  role === 'admin' ||
   role === 'pm';
 
 if (!canUpdate) {
@@ -232,8 +232,8 @@ Shows friendly message when feature is disabled:
 **Function:** `canUserAccessFeature(flag, role): Promise<boolean>`
 
 ```typescript
-const canAccess = await canUserAccessFeature('spatial_viewer_beta', 'gc_admin')
-// true for gc_admin/pm, false for workers/clients
+const canAccess = await canUserAccessFeature('spatial_viewer_beta', 'admin')
+// true for admin/pm, false for workers/clients
 ```
 
 ---

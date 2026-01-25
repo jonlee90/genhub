@@ -74,7 +74,7 @@ export async function getProjectAssignees(projectId: string): Promise<{
       .select(
         `
         user_id,
-        user_profiles!inner (
+        user_profiles:user_profiles!company_users_user_profile_fkey (
           id,
           name,
           email,

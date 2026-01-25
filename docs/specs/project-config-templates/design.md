@@ -107,7 +107,7 @@ The Project Configuration & Template Management feature enables GC Admin users t
    - Maintains backward compatibility with existing task_type enum
 
 3. **Settings Page** (`app/app/settings/page.tsx`)
-   - New "Project Configuration" section for gc_admin users
+   - New "Project Configuration" section for admin users
    - Follows existing section header pattern
    - Uses existing UI components (Card, Dialog, Table)
 
@@ -652,7 +652,7 @@ async function getUserContext() {
   }
 
   // Only GC Admin can manage project types
-  if (companyUser.role !== 'gc_admin') {
+  if (companyUser.role !== 'admin') {
     return { error: 'Insufficient permissions. Only GC Admin can manage project types.' };
   }
 
@@ -1175,7 +1175,7 @@ export async function reorderPhaseTemplates(
 
 ### Settings Page Layout
 
-The Project Configuration section will be added to the existing Settings page, visible only to gc_admin users.
+The Project Configuration section will be added to the existing Settings page, visible only to admin users.
 
 ```tsx
 // app/app/settings/page.tsx (Updated)
@@ -1198,7 +1198,7 @@ export default async function SettingsPage() {
     .eq('status', 'active')
     .single();
 
-  const isGcAdmin = companyUser?.role === 'gc_admin';
+  const isGcAdmin = companyUser?.role === 'admin';
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
@@ -2162,7 +2162,7 @@ test.describe('Project Configuration Settings', () => {
 ### Security Considerations
 
 1. **RLS Enforcement**: All tables have company-scoped RLS policies
-2. **Role-Based Access**: Only `gc_admin` can modify templates (enforced in Server Actions AND RLS)
+2. **Role-Based Access**: Only `admin` can modify templates (enforced in Server Actions AND RLS)
 3. **Input Validation**: Zod schemas validate all input before database operations
 4. **SQL Injection Prevention**: Parameterized queries via Supabase client
 

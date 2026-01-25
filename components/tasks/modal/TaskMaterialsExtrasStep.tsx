@@ -53,6 +53,7 @@ interface TaskMaterialsExtrasStepProps {
   primaryAssigneeName: string | null;
   expenseCategory: string;
   onExpenseCategoryChange: (category: string) => void;
+  hasAutoExpense?: boolean;
 
   // Expenses section (edit mode)
   showExpenses?: boolean;
@@ -88,6 +89,7 @@ export function TaskMaterialsExtrasStep({
   primaryAssigneeName,
   expenseCategory,
   onExpenseCategoryChange,
+  hasAutoExpense = false,
   showExpenses = false,
   expenses = [],
   expensesLoading = false,
@@ -123,21 +125,12 @@ export function TaskMaterialsExtrasStep({
         </div>
       )}
 
-      {/* Receipt Photo Upload - For all task types */}
-      <TaskReceiptUpload
-        receiptUrl={receiptUrl}
-        onReceiptChange={onReceiptChange}
-        disabled={disabled}
-        showLabel={true}
-        compact={false}
-      />
-
-      {/* Auto-Expense Section - Edit mode with actual cost > 0 */}
-      {showAutoExpense && actualCost && actualCost > 0 && (
+      {/* Auto-Expense Section - Edit mode with actual cost > 0 and no auto-expense exists */}
+      {showAutoExpense && !hasAutoExpense && (actualCost ?? 0) > 0 && (
         <AutoExpenseToggle
           enabled={autoExpenseEnabled}
           onToggle={onAutoExpenseToggle}
-          actualCost={actualCost}
+          actualCost={actualCost!}
           taskTitle={taskTitle}
           vendorName={primaryAssigneeName}
           category={expenseCategory}
@@ -169,6 +162,15 @@ export function TaskMaterialsExtrasStep({
             )}
           </div>
         )}
+
+      {/* Receipt Photo Upload - For all task types (moved to bottom) */}
+      <TaskReceiptUpload
+        receiptUrl={receiptUrl}
+        onReceiptChange={onReceiptChange}
+        disabled={disabled}
+        showLabel={true}
+        compact={false}
+      />
     </div>
   );
 }

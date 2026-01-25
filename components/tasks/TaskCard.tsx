@@ -15,7 +15,10 @@ import Layers from "lucide-react/icons/layers";
 import Box from "lucide-react/icons/box";
 import Receipt from "lucide-react/icons/receipt";
 import { cn, formatDate } from "@/lib/utils";
-import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
+import {
+  TASK_PRIORITY_CONFIG,
+  TASK_STATUS_CONFIG,
+} from "@/lib/config/task-colors";
 import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
 import type { TaskType } from "@/types/db/enums";
@@ -111,6 +114,7 @@ export const TaskCard = React.memo(
     const shouldShowEditIndicator = showEditIndicator ?? !!phases;
 
     const priorityConfig = TASK_PRIORITY_CONFIG[task.priority];
+    const statusConfig = TASK_STATUS_CONFIG[task.status];
 
     const hasMaterials = task.materialStats && task.materialStats.count > 0;
     const hasExpenses = expenseStats && expenseStats.count > 0;
@@ -185,8 +189,9 @@ export const TaskCard = React.memo(
               </Badge>
             </div>
 
-            {/* Task Type Badge - Industrial Construction Theme */}
-            <div className="mb-2">
+            {/* Task Type and Status Badges - Industrial Construction Theme */}
+            <div className="mb-2 flex items-center gap-2 flex-wrap">
+              {/* Task Type Badge */}
               <div
                 className={cn(
                   "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md shadow-sm border-2",
@@ -212,6 +217,17 @@ export const TaskCard = React.memo(
                   {taskTypeInfo.name}
                 </span>
               </div>
+
+              {/* Status Badge */}
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[10px] font-bold px-2.5 py-1 border-2",
+                  statusConfig.badgeColor,
+                )}
+              >
+                {statusConfig.label}
+              </Badge>
             </div>
 
             {/* Title and Material Badge */}
@@ -371,15 +387,45 @@ export const TaskCard = React.memo(
                   )}
                 </div>
 
-                {/* Assignee */}
-                {task.assignee && (
+                {/* Multi-assignee avatars (stacked) or single assignee */}
+                {(task as any).assignees && (task as any).assignees.length > 0 ? (
+                  <div className="flex items-center shrink-0 -space-x-2">
+                    {(task as any).assignees.slice(0, 3).map((assignee: any, index: number) => {
+                      const name = assignee.user?.name || assignee.subcontractor?.contact_name || "?";
+                      const avatarUrl = assignee.user?.avatar_url || null;
+                      return (
+                        <Avatar
+                          key={`${assignee.user_id || assignee.subcontractor_id}-${index}`}
+                          className="h-6 w-6 border-2 border-white dark:border-gray-800 ring-1 ring-gray-200 dark:ring-gray-700"
+                        >
+                          <AvatarImage src={avatarUrl || undefined} />
+                          <AvatarFallback
+                            className={cn(
+                              "text-xs font-bold",
+                              assignee.user
+                                ? "bg-construction-blue text-white"
+                                : "bg-orange-600 text-white"
+                            )}
+                          >
+                            {getInitials(name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      );
+                    })}
+                    {(task as any).assignees.length > 3 ? (
+                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 text-[10px] font-bold text-gray-700 dark:text-gray-300">
+                        +{(task as any).assignees.length - 3}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : task.assignee ? (
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={task.assignee.avatar_url || undefined} />
                     <AvatarFallback className="text-xs">
                       {getInitials(task.assignee.name)}
                     </AvatarFallback>
                   </Avatar>
-                )}
+                ) : null}
               </div>
 
               {/* Blocked Reason */}
@@ -397,6 +443,16 @@ export const TaskCard = React.memo(
   (prevProps, nextProps) => {
     // Custom comparison: only re-render if these specific props changed
     // Returns true if props are equal (skip re-render), false if different (re-render)
+
+    // Compare assignees array if present (check length and IDs)
+    const prevAssignees = (prevProps.task as any).assignees;
+    const nextAssignees = (nextProps.task as any).assignees;
+    const assigneesEqual =
+      prevAssignees?.length === nextAssignees?.length &&
+      prevAssignees?.every((a: any, i: number) =>
+        a.id === nextAssignees?.[i]?.id
+      );
+
     return (
       prevProps.task.id === nextProps.task.id &&
       prevProps.task.status === nextProps.task.status &&
@@ -409,7 +465,9 @@ export const TaskCard = React.memo(
       prevProps.expenseStats?.totalAmount ===
         nextProps.expenseStats?.totalAmount &&
       // Compare taskTypes (check if both undefined or same reference)
-      prevProps.taskTypes === nextProps.taskTypes
+      prevProps.taskTypes === nextProps.taskTypes &&
+      // Compare assignees (rerender-memo optimization)
+      (assigneesEqual || (!prevAssignees && !nextAssignees))
     );
   },
 );

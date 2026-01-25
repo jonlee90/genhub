@@ -346,7 +346,7 @@ CREATE POLICY "Manage 3D models" ON projects_3d_models
       JOIN company_users ON company_users.company_id = projects.company_id
       WHERE projects.id = projects_3d_models.project_id
         AND company_users.user_id = next_auth.uid()
-        AND company_users.role IN ('gc_admin', 'project_manager')
+        AND company_users.role IN ('admin', 'project_manager')
     )
   );
 
@@ -464,7 +464,7 @@ CREATE POLICY "Update spatial markers" ON spatial_markers
       JOIN company_users ON company_users.company_id = projects.company_id
       WHERE projects.id = spatial_markers.project_id
         AND company_users.user_id = next_auth.uid()
-        AND company_users.role IN ('gc_admin', 'project_manager')
+        AND company_users.role IN ('admin', 'project_manager')
     )
   );
 
@@ -2090,7 +2090,7 @@ CREATE POLICY "Update spatial markers" ON spatial_markers
       JOIN company_users ON company_users.company_id = projects.company_id
       WHERE projects.id = spatial_markers.project_id
         AND company_users.user_id = next_auth.uid()
-        AND company_users.role IN ('gc_admin', 'project_manager')
+        AND company_users.role IN ('admin', 'project_manager')
     )
   );
 

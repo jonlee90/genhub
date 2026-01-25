@@ -376,10 +376,10 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="name"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
               >
-                <Sparkles className="h-4 w-4 text-construction-blue" />
-                Project Name <span className="text-red-500">*</span>
+                <Sparkles className="h-4 w-4 text-construction-blue dark:text-construction-blue" />
+                Project Name <span className="text-red-500 dark:text-red-400">*</span>
               </Label>
               <MobileInput
                 {...register("name", createProjectValidation.name)}
@@ -396,9 +396,9 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="description"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
               >
-                <FileText className="h-4 w-4 text-gray-400" />
+                <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 Description
               </Label>
               <Textarea
@@ -407,10 +407,10 @@ export function CreateProjectForm({
                 placeholder="Brief description of the project scope..."
                 rows={2}
                 disabled={isPending}
-                className="border-gray-200 dark:border-gray-700 resize-none text-sm rounded-xl min-h-[72px]"
+                className="border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500 resize-none text-sm rounded-xl min-h-[72px]"
               />
               {errors.description && (
-                <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
                   <AlertCircle className="w-3 h-3" />
                   {errors.description.message}
                 </p>
@@ -420,7 +420,7 @@ export function CreateProjectForm({
             {/* Client Information Section */}
             <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                <Users className="w-4 h-4 text-construction-blue" />
+                <Users className="w-4 h-4 text-construction-blue dark:text-construction-blue" />
                 Client Information
               </h4>
 
@@ -429,9 +429,9 @@ export function CreateProjectForm({
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="client_name"
-                    className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    className="text-sm font-medium text-gray-700 dark:text-gray-200"
                   >
-                    Client Name <span className="text-red-500">*</span>
+                    Client Name <span className="text-red-500 dark:text-red-400">*</span>
                   </Label>
                   <MobileInput
                     {...register("client_name", createProjectValidation.client_name)}
@@ -493,10 +493,10 @@ export function CreateProjectForm({
             <div className="space-y-1.5">
               <Label
                 htmlFor="address"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
               >
-                <MapPin className="h-4 w-4 text-gray-400" />
-                Street Address <span className="text-red-500">*</span>
+                <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                Street Address <span className="text-red-500 dark:text-red-400">*</span>
               </Label>
               <MobileInput
                 {...register("address", createProjectValidation.address)}
@@ -524,7 +524,7 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="state"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-200"
                 >
                   State
                 </Label>
@@ -569,10 +569,10 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="start_date"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
                 >
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  Start Date <span className="text-red-500">*</span>
+                  <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                  Start Date <span className="text-red-500 dark:text-red-400">*</span>
                 </Label>
                 <input
                   {...register("start_date", createProjectValidation.start_date)}
@@ -581,16 +581,16 @@ export function CreateProjectForm({
                   disabled={isPending}
                   className={cn(
                     "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
-                    "border rounded-xl transition-all",
+                    "border rounded-xl transition-all [color-scheme:light] dark:[color-scheme:dark]",
                     errors.start_date
-                      ? "border-red-500 focus:ring-red-500/20"
+                      ? "border-red-500 dark:border-red-600 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
                     "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
                 />
                 {errors.start_date && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.start_date.message}
                   </p>
@@ -600,9 +600,9 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="end_date"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
                 >
-                  <Calendar className="h-4 w-4 text-gray-400" />
+                  <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   Expected End Date
                 </Label>
                 <input
@@ -612,16 +612,16 @@ export function CreateProjectForm({
                   disabled={isPending}
                   className={cn(
                     "block w-full h-12 px-4 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
-                    "border rounded-xl transition-all",
+                    "border rounded-xl transition-all [color-scheme:light] dark:[color-scheme:dark]",
                     errors.end_date
-                      ? "border-red-500 focus:ring-red-500/20"
+                      ? "border-red-500 dark:border-red-600 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20",
                     "focus:outline-none focus:ring-2",
                     "disabled:bg-gray-50 dark:disabled:bg-gray-900 disabled:text-gray-500 dark:disabled:text-gray-400",
                   )}
                 />
                 {errors.end_date && (
-                  <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
                     <AlertCircle className="w-3 h-3" />
                     {errors.end_date.message}
                   </p>
@@ -634,9 +634,9 @@ export function CreateProjectForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="budget"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-1.5"
+                  className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
                 >
-                  <DollarSign className="h-4 w-4 text-gray-400" />
+                  <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   Budget
                 </Label>
                 <MobileInput
@@ -655,13 +655,13 @@ export function CreateProjectForm({
             </div>
 
             {/* Ready to Create */}
-            <div className="mt-6 p-4 bg-construction-blue/5 border border-construction-blue/20 rounded-xl">
+            <div className="mt-6 p-4 bg-construction-blue/5 dark:bg-construction-blue/10 border border-construction-blue/20 dark:border-construction-blue/30 rounded-xl">
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-construction-blue rounded-lg shrink-0">
-                  <Check className="w-4 h-4 text-white" />
+                <div className="p-2 bg-construction-blue dark:bg-construction-blue rounded-lg shrink-0">
+                  <Check className="w-4 h-4 text-white dark:text-white" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm text-construction-blue">
+                  <h4 className="font-semibold text-sm text-construction-blue dark:text-construction-blue">
                     Ready to Create
                   </h4>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">

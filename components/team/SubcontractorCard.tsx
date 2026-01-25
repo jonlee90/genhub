@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import dynamic from 'next/dynamic';
 import type { SubcontractorsRow } from '@/types/db/tables/companies';
 import type { TradeType } from '@/types/db/enums';
 import { Badge } from '@/components/ui/badge';
@@ -39,18 +38,13 @@ import Shield from 'lucide-react/icons/shield';
 import { toast } from 'sonner';
 import { deactivateSubcontractor } from '@/app/actions/subcontractors';
 
-// Dynamic import for heavy modal component
-const EditSubcontractorModal = dynamic(
-  () => import('./EditSubcontractorModal').then((m) => ({ default: m.EditSubcontractorModal })),
-  { ssr: false }
-);
-
 type Subcontractor = SubcontractorsRow;
 
 interface SubcontractorCardProps {
   subcontractor: Subcontractor;
   canManage: boolean;
   isGCAdmin: boolean;
+  onEdit: (subcontractor: Subcontractor) => void;
 }
 
 // Trade badge color mapping
@@ -99,10 +93,9 @@ const TRADE_LABELS: Record<TradeType, string> = {
   other: 'Other',
 };
 
-export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: SubcontractorCardProps) {
+export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit }: SubcontractorCardProps) {
   const [isPending, startTransition] = useTransition();
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Check if dates are expiring (within 30 days) or expired
   const checkExpiryStatus = (expiryDate: string | null): 'valid' | 'expiring' | 'expired' => {
@@ -189,7 +182,7 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 hover:bg-gray-100"
+                  className="min-h-[44px] min-w-[44px] p-0 hover:bg-gray-100"
                   disabled={isPending}
                   aria-label={`Actions for ${subcontractor.company_name}`}
                 >
@@ -200,11 +193,9 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
                 <DropdownMenuLabel className="font-bold text-gray-900">Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => {
-                    setEditModalOpen(true);
-                  }}
+                  onClick={() => onEdit(subcontractor)}
                   disabled={isPending}
-                  className="cursor-pointer"
+                  className="cursor-pointer min-h-[44px]"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Details
@@ -215,7 +206,7 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
                     <DropdownMenuItem
                       onClick={() => setDeactivateDialogOpen(true)}
                       disabled={isPending}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer min-h-[44px]"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Deactivate
@@ -343,22 +334,13 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin }: Subco
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeactivate} className="bg-red-600 hover:bg-red-700 text-white">
+            <AlertDialogCancel className="min-h-[44px]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeactivate} className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]">
               Deactivate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Edit Subcontractor Modal */}
-      <EditSubcontractorModal
-        isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-        }}
-        subcontractor={subcontractor}
-      />
     </>
   );
 }

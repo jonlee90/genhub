@@ -8,7 +8,7 @@ skills:
   autoLoad: [genhub-patterns]
   filePatterns:
     "*.tsx": [vercel-react-best-practices, a11y-pass]
-    "app/actions/*.ts": [postgres-best-practices]
+    "app/actions/*.ts": [postgres-best-practices:postgres-best-practices]
     "components/**/*.tsx": [vercel-react-best-practices, a11y-pass]
   modeSkills:
     PERFORMANCE: [vercel-react-best-practices]
@@ -96,7 +96,7 @@ TIER 3 - External: Context7 resolve-library-id → query-docs
 | mode=A11Y OR `components/` | a11y-pass | Touch targets, ARIA, contrast |
 | mode=PERFORMANCE | vercel + postgres skills | Waterfalls, N+1, bundles |
 | mode=REFACTOR OR duplicates | refactor-code | Pattern extraction, DRY |
-| `app/actions/*.ts` | postgres-best-practices | Query optimization, security |
+| `app/actions/*.ts` | postgres-best-practices:postgres-best-practices | Query optimization, security |
 
 ---
 

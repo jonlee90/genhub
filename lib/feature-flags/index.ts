@@ -174,12 +174,12 @@ export function getFeatureFlagConfig(flag: FeatureFlag): FeatureFlagConfig {
  * Check if user has access to feature (considers role + flag)
  *
  * @param flag - Feature flag name
- * @param userRole - User role (client, worker, pm, gc_admin)
+ * @param userRole - User role (client, worker, pm, admin)
  * @returns boolean
  */
 export async function canUserAccessFeature(
   flag: FeatureFlag,
-  userRole: 'client' | 'worker' | 'pm' | 'gc_admin'
+  userRole: 'client' | 'worker' | 'pm' | 'admin'
 ): Promise<boolean> {
   const flagEnabled = await isFeatureEnabled(flag)
   if (!flagEnabled) return false
@@ -189,9 +189,9 @@ export async function canUserAccessFeature(
     return userRole === 'client'
   }
 
-  // GC admin and PM have access to beta features
+  // Admin and PM have access to beta features
   if (flag === 'spatial_viewer_beta') {
-    return userRole === 'gc_admin' || userRole === 'pm'
+    return userRole === 'admin' || userRole === 'pm'
   }
 
   return true

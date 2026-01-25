@@ -10,7 +10,7 @@
 ┌────────────────────────────────────────────────────────────────────────┐
 │  1. WHAT am I changing?                                                │
 │     └─ .tsx/.jsx file? → Load vercel-react-best-practices skill FIRST  │
-│     └─ Server Action?  → Load postgres-best-practices skill FIRST      │
+│     └─ Server Action?  → Load postgres-best-practices:postgres-best-practices skill FIRST      │
 │     └─ Database?       → Delegate to backend-engineer                  │
 │                                                                        │
 │  2. WHO should do this?                                                │
@@ -51,9 +51,9 @@ Server Components → ✅ YES (data fetching, SSR)
 | File Pattern | Required Skill | Key Rules |
 |--------------|----------------|-----------|
 | `*.tsx`, `*.jsx` | `vercel-react-best-practices` | `bundle-*`, `rerender-*`, `rendering-*` |
-| `app/actions/*.ts` | `postgres-best-practices` | `query-*`, `security-*` |
+| `app/actions/*.ts` | `postgres-best-practices:postgres-best-practices` | `query-*`, `security-*` |
 | `components/**/*.tsx` | `vercel-react-best-practices` + `a11y-pass` | Touch, ARIA, contrast |
-| `supabase/migrations/*` | `postgres-best-practices` | `schema-*`, `security-*` |
+| `supabase/migrations/*` | `postgres-best-practices:postgres-best-practices` | `schema-*`, `security-*` |
 
 **Before editing any file, check this table and load the required skill.**
 
@@ -64,8 +64,8 @@ Server Components → ✅ YES (data fetching, SSR)
 | Task | Agent | Skill Required |
 |------|-------|----------------|
 | UI component, styling, forms | `frontend-engineer` | vercel-react-best-practices |
-| Server Action, API route | `backend-engineer` | postgres-best-practices |
-| Schema, migration, RLS | `backend-engineer` | postgres-best-practices |
+| Server Action, API route | `backend-engineer` | postgres-best-practices:postgres-best-practices |
+| Schema, migration, RLS | `backend-engineer` | postgres-best-practices:postgres-best-practices |
 | Review/testing | `code-reviewer` | By file pattern |
 | UI + DB feature | `backend-engineer` → `frontend-engineer` → `code-reviewer` | Sequential |
 
