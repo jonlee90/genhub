@@ -47,6 +47,7 @@ const TABLE_GROUPS: Record<string, string[]> = {
     'marker_content',
     'model_elements',
     'default_marker_configs',
+    'projects_3d_models',
   ],
   users: [
     'user_profiles',

@@ -30,6 +30,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   m as motion,
   AnimatePresence,
@@ -98,8 +99,17 @@ function BottomSheetModalContent({
   const [isDragging, setIsDragging] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  // Track if component is mounted (for SSR safety with portal)
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // Lock body scroll while open
   useEffect(() => {
+    if (!isOpen) return;
+
     const scrollY = window.scrollY;
     document.body.style.overflow = "hidden";
     document.body.style.position = "fixed";
@@ -113,7 +123,7 @@ function BottomSheetModalContent({
       document.body.style.width = "";
       window.scrollTo(0, scrollY);
     };
-  }, []);
+  }, [isOpen]);
 
   // Handle ESC key
   useEffect(() => {
@@ -192,7 +202,10 @@ function BottomSheetModalContent({
     }
   }, [closeOnBackdropClick, onClose]);
 
-  return (
+  // Don't render until mounted (SSR safety) or if not open
+  if (!isMounted) return null;
+
+  const modalContent = (
     <AnimatePresence mode="wait">
       {isOpen && (
         <>
@@ -366,6 +379,9 @@ function BottomSheetModalContent({
       )}
     </AnimatePresence>
   );
+
+  // Render modal via portal to escape stacking contexts
+  return createPortal(modalContent, document.body);
 }
 
 // Export main component as BottomSheetModal

@@ -81,6 +81,7 @@ const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
   { value: "glass_glazing", label: "Glass & Glazing" },
   { value: "fire_protection", label: "Fire Protection" },
   { value: "insulation", label: "Insulation" },
+  { value: "framing", label: "Framing" },
   { value: "other", label: "Other" },
 ];
 

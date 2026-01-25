@@ -188,6 +188,15 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
       p_project_id: id,
     }),
   );
+  // Fetch active task types for this company (for modal)
+  phase2Queries.push(
+    supabase
+      .from("task_type_configs")
+      .select("*")
+      .eq("company_id", companyUser.company_id)
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
+  );
 
   // Optional queries (only execute if IDs exist)
   const optionalQueries: Array<PromiseLike<any>> = [];
@@ -311,6 +320,7 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
     ReturnType<typeof getProjectTeamCostSummary>
   >;
   const statsResult = requiredResults[3] as { data: any };
+  const taskTypesResult = requiredResults[4] as { data: any[] };
 
   // Extract optional results with safe defaults
   let optionalIndex = 0;
@@ -599,5 +609,6 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
     projectFiles,
     projectPhotos,
     teamCostSummaries,
+    taskTypes: taskTypesResult.data || [],
   };
 });

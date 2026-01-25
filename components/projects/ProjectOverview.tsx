@@ -43,6 +43,7 @@ export function ProjectOverview({
   expenseStats: initialExpenseStats,
   taskStats: initialTaskStats,
   teamCostSummaries: initialTeamCostSummaries = [],
+  taskTypes = [],
   onModalOpen,
 }: ProjectOverviewProps) {
   // Performance optimization: Deferred loading for non-critical data
@@ -169,6 +170,7 @@ export function ProjectOverview({
                 avatar_url: string | null;
               } => !!m.name,
             )}
+            taskTypes={taskTypes}
             onModalOpen={onModalOpen}
           />
         </motion.div>

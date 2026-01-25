@@ -50,8 +50,9 @@ export function GanttChart({
   onTaskDateChange,
   className,
   taskTypes,
+  showProjectInsteadOfPhase = false,
 }: GanttChartProps) {
-  const [timeScale, setTimeScale] = useState<TimeScale>("week");
+  const [timeScale, setTimeScale] = useState<TimeScale>("day");
   const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -107,14 +108,14 @@ export function GanttChart({
     setIsDraggingScroll(false);
   }, []);
 
-  // Sort tasks by: 1) phases, 2) to-do status, 3) priority (high to low)
+  // Sort tasks by: 1) phase order, 2) due date (closest first), 3) status, 4) priority (high to low)
   const sortedTasks = useMemo(() => {
-    const phaseOrder: Record<string, number> = {
-      "initiation": 1,
-      "pre-construction": 2,
-      "procurement": 3,
-      "construction": 4,
-      "post-construction": 5,
+    const statusOrder: Record<string, number> = {
+      todo: 1,
+      in_progress: 2,
+      review: 3,
+      blocked: 4,
+      completed: 5,
     };
 
     const priorityOrder: Record<string, number> = {
@@ -125,38 +126,29 @@ export function GanttChart({
     };
 
     return [...tasks].sort((a, b) => {
-      // 1. Sort by phase (custom order: initiation, pre-construction, procurement, construction, post-construction, others, null)
-      const phaseA = a.phase?.name?.toLowerCase() || "";
-      const phaseB = b.phase?.name?.toLowerCase() || "";
+      // 1. Sort by phase order_index (tasks without phase go to end)
+      const phaseOrderA = a.phase?.order_index ?? 999;
+      const phaseOrderB = b.phase?.order_index ?? 999;
 
-      if (phaseA !== phaseB) {
-        // Handle null/empty phases (go to end)
-        if (!phaseA) return 1;
-        if (!phaseB) return -1;
-
-        // Get phase order values (0 if not in predefined order)
-        const orderA = phaseOrder[phaseA] || 999;
-        const orderB = phaseOrder[phaseB] || 999;
-
-        // If both have defined order, sort by order
-        if (orderA !== orderB) {
-          return orderA - orderB;
-        }
-
-        // If both are "other" phases (999), sort alphabetically
-        if (orderA === 999 && orderB === 999) {
-          return phaseA.localeCompare(phaseB);
-        }
+      if (phaseOrderA !== phaseOrderB) {
+        return phaseOrderA - phaseOrderB;
       }
 
-      // 2. Sort by to-do status (to-do tasks first)
-      const isToDoA = a.status === "todo" ? 1 : 0;
-      const isToDoB = b.status === "todo" ? 1 : 0;
-      if (isToDoA !== isToDoB) {
-        return isToDoB - isToDoA;
+      // 2. Sort by due date (closest first, null dates go to end)
+      if (a.due_date !== b.due_date) {
+        if (!a.due_date) return 1;
+        if (!b.due_date) return -1;
+        return new Date(a.due_date).getTime() - new Date(b.due_date).getTime();
       }
 
-      // 3. Sort by priority (high to low)
+      // 3. Sort by status (todo first, completed last)
+      const statusA = statusOrder[a.status || "todo"] || 1;
+      const statusB = statusOrder[b.status || "todo"] || 1;
+      if (statusA !== statusB) {
+        return statusA - statusB;
+      }
+
+      // 4. Sort by priority (high to low)
       const priorityA = priorityOrder[a.priority || "low"] || 1;
       const priorityB = priorityOrder[b.priority || "low"] || 1;
       return priorityB - priorityA;
@@ -308,9 +300,7 @@ export function GanttChart({
           <div
             className="relative bg-white dark:bg-gray-900"
             style={{
-              width: totalWidth,
-              // Prevent mobile touch dragging on inner content
-              ...(isMobile && { touchAction: 'pan-x' })
+              width: totalWidth
             }}
           >
             {/* Header */}
@@ -344,6 +334,7 @@ export function GanttChart({
                       onClick={onTaskClick}
                       isMobile={isMobile}
                       taskTypes={taskTypes}
+                      showProjectInsteadOfPhase={showProjectInsteadOfPhase}
                     />
                   );
                 })}
@@ -355,7 +346,7 @@ export function GanttChart({
       );
 
   return (
-    <div className={cn("w-full min-w-0 bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden", className)}>
+    <div className={cn(" bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction overflow-hidden", className)}>
       {/* Header with time scale toggle */}
       <div className="flex items-center justify-between p-2 sm:p-4 border-b-2 border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-white dark:to-gray-900">
 

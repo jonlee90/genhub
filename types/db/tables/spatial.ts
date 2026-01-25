@@ -7,11 +7,6 @@ import type { Database } from '../../database.types';
 // Spatial Domain Types
 // ============================================
 
-// projects_3d_models
-export type Projects3dModelsRow = Database['public']['Tables']['projects_3d_models']['Row'];
-export type Projects3dModelsInsert = Database['public']['Tables']['projects_3d_models']['Insert'];
-export type Projects3dModelsUpdate = Database['public']['Tables']['projects_3d_models']['Update'];
-
 // spatial_markers
 export type SpatialMarkersRow = Database['public']['Tables']['spatial_markers']['Row'];
 export type SpatialMarkersInsert = Database['public']['Tables']['spatial_markers']['Insert'];
@@ -31,3 +26,8 @@ export type ModelElementsUpdate = Database['public']['Tables']['model_elements']
 export type DefaultMarkerConfigsRow = Database['public']['Tables']['default_marker_configs']['Row'];
 export type DefaultMarkerConfigsInsert = Database['public']['Tables']['default_marker_configs']['Insert'];
 export type DefaultMarkerConfigsUpdate = Database['public']['Tables']['default_marker_configs']['Update'];
+
+// projects_3d_models
+export type Projects3dModelsRow = Database['public']['Tables']['projects_3d_models']['Row'];
+export type Projects3dModelsInsert = Database['public']['Tables']['projects_3d_models']['Insert'];
+export type Projects3dModelsUpdate = Database['public']['Tables']['projects_3d_models']['Update'];

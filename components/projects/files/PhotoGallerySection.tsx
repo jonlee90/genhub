@@ -327,8 +327,8 @@ export function PhotoGallerySection({
                       className={cn(
                         "flex items-center justify-center w-8 h-8 min-w-[44px] min-h-[44px] rounded-full transition-colors",
                         isPrimaryPhoto(photo)
-                          ? "bg-construction-blue text-white"
-                          : "bg-white/20 hover:bg-white/30 text-white",
+                          ? "bg-amber-500 text-white hover:bg-amber-600 dark:bg-amber-500/80 dark:hover:bg-amber-400/80"
+                          : "bg-white/20 hover:bg-white/30 dark:bg-gray-900/40 dark:hover:bg-gray-900/60 text-white",
                       )}
                       aria-label={
                         isPrimaryPhoto(photo)

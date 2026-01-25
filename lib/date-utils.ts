@@ -146,9 +146,9 @@ export function getDateIndicator(
       ...(options?.includeDaysLeft && { daysLeft }),
     };
   } else {
-    // Past date - show formatted date or absolute days
+    // Past date - show formatted date or negative days
     return {
-      display: options?.showPastAsDate ? formatDate(dateString) : String(Math.abs(daysLeft)),
+      display: options?.showPastAsDate ? formatDate(dateString) : String(daysLeft),
       colorClass: "text-red-500",
       ...(options?.includeDaysLeft && { daysLeft }),
     };

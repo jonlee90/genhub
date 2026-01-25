@@ -151,6 +151,7 @@ export function ProjectDetailContent({
   projectFiles = [],
   projectPhotos = [],
   teamCostSummaries = [],
+  taskTypes = [],
 }: ProjectDetailContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
@@ -690,6 +691,7 @@ export function ProjectDetailContent({
               expenseStats={expenseStats}
               taskStats={taskStats}
               teamCostSummaries={teamCostSummaries}
+              taskTypes={taskTypes}
               onModalOpen={handleModalOpen}
             />
           )}

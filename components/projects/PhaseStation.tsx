@@ -163,8 +163,8 @@ export function PhaseStation({
               'w-14 h-14 md:w-16 md:h-16',
               isCompleted && 'bg-[#059669] border-[#059669] text-white shadow-lg shadow-[#059669]/20',
               isInProgress && 'bg-construction-blue border-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/20',
-              !isCompleted && !isInProgress && 'bg-white border-gray-300 text-gray-500 shadow-md',
-              isSelected && 'ring-3 ring-[var(--construction-blue)]/30 ring-offset-2'
+              !isCompleted && !isInProgress && 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 shadow-md',
+              isSelected && 'ring-3 ring-[var(--construction-blue)]/30 ring-offset-2 dark:ring-offset-gray-900'
             )}
             animate={isCurrent && !isCompleted ? {
               boxShadow: [
@@ -189,13 +189,13 @@ export function PhaseStation({
 
           {/* Clean warning indicators */}
           {hasBlockers && !isCompleted && (
-            <div className="absolute -top-1 -right-1 bg-[#DC2626] rounded-full p-1 shadow-md border-2 border-white">
+            <div className="absolute -top-1 -right-1 bg-[#DC2626] rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800">
               <Ban className="w-3 h-3 text-white" />
             </div>
           )}
 
           {hasOverdue && !hasBlockers && !isCompleted && (
-            <div className="absolute -top-1 -right-1 bg-[#FFB627] rounded-full p-1 shadow-md border-2 border-white">
+            <div className="absolute -top-1 -right-1 bg-[#FFB627] rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800">
               <AlertTriangle className="w-3 h-3 text-white" />
             </div>
           )}

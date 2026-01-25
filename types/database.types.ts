@@ -2895,6 +2895,7 @@ export type Database = {
         | "glass_glazing"
         | "fire_protection"
         | "insulation"
+        | "framing"
         | "other"
       user_role:
         | "admin"
@@ -3174,6 +3175,7 @@ export const Constants = {
         "glass_glazing",
         "fire_protection",
         "insulation",
+        "framing",
         "other",
       ],
       user_role: [

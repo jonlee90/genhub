@@ -304,7 +304,7 @@ export function ManagePhasesModal({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 mb-4"
+            className="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl text-red-700 dark:text-red-300 mb-4"
           >
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <span className="text-sm font-medium">{error}</span>
@@ -424,13 +424,13 @@ export function ManagePhasesModal({
             exit={{ opacity: 0, x: -20 }}
             className="space-y-4"
           >
-            <div className="flex items-center gap-3 p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
-              <AlertTriangle className="h-6 w-6 text-amber-600 flex-shrink-0" />
+            <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950 border-2 border-amber-200 dark:border-amber-800 rounded-xl">
+              <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400 flex-shrink-0" />
               <div>
-                <p className="font-bold text-amber-900">
+                <p className="font-bold text-amber-900 dark:text-amber-200">
                   Delete "{selectedPhase.name}"?
                 </p>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                   This action cannot be undone. Choose how to handle tasks in
                   this phase.
                 </p>

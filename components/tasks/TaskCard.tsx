@@ -274,7 +274,8 @@ export const TaskCard = React.memo(
                     // Tasks page context - show project / phase
                     <>
                       {task.project?.name}
-                      {phase && ` / ${phase.name}`}
+                      {task.project?.name && phase?.name && " / "}
+                      {phase?.name}
                     </>
                   )}
                 </p>

@@ -2,9 +2,7 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getDateIndicator } from "@/lib/date-utils";
 import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
@@ -21,6 +19,8 @@ interface GanttTaskRowProps {
   onClick: (task: GanttTask) => void;
   isMobile?: boolean;
   taskTypes?: TaskTypeConfigsRow[];
+  /** Show project name instead of phase name (for /app/tasks page) */
+  showProjectInsteadOfPhase?: boolean;
 }
 
 export const GanttTaskRow = React.memo(function GanttTaskRow({
@@ -33,6 +33,7 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
   onClick,
   isMobile = false,
   taskTypes,
+  showProjectInsteadOfPhase = false,
 }: GanttTaskRowProps) {
   const { sidebarWidth, rowHeight } = config;
   const isHovered = hoveredTaskId === task.id;
@@ -90,52 +91,62 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
 
         {/* Task title and phase */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          {/* Title row with icon and days left */}
-          <div className="flex items-center gap-1.5">
-            {/* Task type icon - extracted from IIFE for better performance */}
-            {taskTypeInfo && (
-              <taskTypeInfo.icon
-                className={cn(
-                  "shrink-0",
-                  isMobile ? "h-3 w-3" : "h-3.5 w-3.5"
+          {isMobile ? (
+            <>
+              {/* Mobile: Line 1 - Icon, Phase/Project */}
+              <div className="flex items-center gap-1.5 mb-0.5">
+                {/* Task type icon */}
+                {taskTypeInfo && (
+                  <taskTypeInfo.icon
+                    className="shrink-0 h-3 w-3"
+                    style={{ color: taskTypeInfo.color }}
+                    strokeWidth={2}
+                    aria-label={taskTypeInfo.name}
+                  />
                 )}
-                style={{ color: taskTypeInfo.color }}
-                strokeWidth={2}
-                aria-label={taskTypeInfo.name}
-              />
-            )}
-            {/* Task title */}
-            <span className={cn(
-              "font-semibold text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0",
-              isMobile ? "text-xs" : "text-sm"
-            )}>
-              {task.title}
-            </span>
-            {/* Days left indicator */}
-            {(() => {
-              const dateIndicator = getDateIndicator(task.due_date);
-              if (!dateIndicator) return null;
-              return (
-                <span className={cn(
-                  "flex items-center gap-0.5 shrink-0 font-semibold",
-                  dateIndicator.colorClass,
-                  isMobile ? "text-[10px]" : "text-xs"
-                )}>
-                  <Clock className={cn(isMobile ? "w-2.5 h-2.5" : "w-3 h-3")} />
-                  {dateIndicator.display}
+                {/* Phase or Project name - center with flex-1 */}
+                {(showProjectInsteadOfPhase ? task.project?.name : task.phase?.name) && (
+                  <span className="text-gray-500 dark:text-gray-400 text-[10px] truncate flex-1 text-center">
+                    {showProjectInsteadOfPhase ? task.project?.name : task.phase?.name}
+                  </span>
+                )}
+              </div>
+              {/* Mobile: Line 2 - Task title */}
+              <span className="text-gray-900 dark:text-gray-100 truncate text-xs font-medium">
+                {task.title}
+              </span>
+            </>
+          ) : (
+            <>
+              {/* Desktop: Original layout */}
+              <div className="flex items-center gap-1.5">
+                {/* Task type icon */}
+                {taskTypeInfo && (
+                  <taskTypeInfo.icon
+                    className="shrink-0 h-3.5 w-3.5"
+                    style={{ color: taskTypeInfo.color }}
+                    strokeWidth={2}
+                    aria-label={taskTypeInfo.name}
+                  />
+                )}
+                {/* Task title with phase */}
+                <span className="text-gray-900 dark:text-gray-100 truncate flex-1 min-w-0 text-sm font-semibold">
+                  {task.title}
+                  {task.phase?.name && (
+                    <span className="text-gray-400 dark:text-gray-500 text-[10px] ml-1.5">
+                      ({task.phase.name})
+                    </span>
+                  )}
                 </span>
-              );
-            })()}
-          </div>
-          {/* Project name - secondary line */}
-          {task.project ? (
-            <span className={cn(
-              "text-gray-500 dark:text-gray-400 truncate",
-              isMobile ? "text-[10px] mt-0.5" : "text-xs mt-0.5"
-            )}>
-              {task.project.name}
-            </span>
-          ) : null}
+              </div>
+              {/* Project name - secondary line */}
+              {task.project ? (
+                <span className="text-gray-500 dark:text-gray-400 truncate text-xs mt-0.5">
+                  {task.project.name}
+                </span>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
 

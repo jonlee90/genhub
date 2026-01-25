@@ -25,6 +25,7 @@ export interface GanttTask extends Omit<TaskRow, "due_date"> {
   phase?: {
     id: string;
     name: string;
+    order_index?: number;
   } | null;
   // Calculated fields for Gantt positioning
   startDate: Date;
@@ -98,6 +99,8 @@ export interface GanttChartProps {
   onTaskDateChange: (taskId: string, newStartDate: string, newDueDate: string) => Promise<void>;
   className?: string;
   taskTypes?: TaskTypeConfigsRow[];
+  /** Show project name instead of phase name (for /app/tasks page) */
+  showProjectInsteadOfPhase?: boolean;
 }
 
 // Props for GanttTaskBar component
@@ -170,13 +173,13 @@ export const MOBILE_TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
   day: {
     cellWidth: 28,
     headerFormat: "dd",       // "15"
-    groupFormat: "MMM yy",    // "Jan 25"
+    groupFormat: "MMM yyyy",  // "Jan 2025"
     snapUnit: "day",
   },
   week: {
     cellWidth: 80,
     headerFormat: "M/d",      // "1/15"
-    groupFormat: "MMM yy",    // "Jan 25"
+    groupFormat: "MMM yyyy",  // "Jan 2025"
     snapUnit: "week",
   },
   month: {

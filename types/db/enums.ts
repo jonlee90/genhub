@@ -20,15 +20,14 @@ export type PhotoCategory = 'site_progress' | 'safety_documentation' | 'permits_
 export type ProcurementStatus = 'needed' | 'ordered' | 'delivered' | 'installed';
 export type ProjectStatus = 'active' | 'on_hold' | 'completed' | 'archived' | 'planning' | 'in_progress';
 export type ProjectType = 'residential' | 'restaurant' | 'cafe' | 'commercial_office' | 'industrial';
-export type ProjectTypeOld = 'residential' | 'restaurant_cafe' | 'commercial_office' | 'industrial' | 'restaurant' | 'cafe';
 export type PurchaserType = 'gc' | 'pm' | 'subcontractor';
 export type SpatialMarkerStatus = 'open' | 'in_progress' | 'resolved' | 'closed';
 export type SpatialMarkerType = 'issue' | 'note' | 'photo' | 'inspection' | 'rfi' | 'safety' | 'material' | 'progress';
 export type SpatialProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed';
-export type TaskType = string;
-export type TradeType = 'general' | 'electrical' | 'plumbing' | 'hvac' | 'carpentry' | 'masonry' | 'roofing' | 'flooring' | 'painting' | 'drywall' | 'concrete' | 'landscaping' | 'demolition' | 'steel_work' | 'glass_glazing' | 'fire_protection' | 'insulation' | 'other';
+export type TaskType = string; // Task types are now dynamic (stored in task_type_configs table)
+export type TradeType = 'general' | 'electrical' | 'plumbing' | 'hvac' | 'carpentry' | 'masonry' | 'roofing' | 'flooring' | 'painting' | 'drywall' | 'concrete' | 'landscaping' | 'demolition' | 'steel_work' | 'glass_glazing' | 'fire_protection' | 'insulation' | 'framing' | 'other';
 export type UserRole = 'admin' | 'project_manager' | 'foreman' | 'field_worker' | 'subcontractor' | 'client';
 
 // Re-export generic Enums helper for complex queries

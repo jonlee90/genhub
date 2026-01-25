@@ -2,44 +2,24 @@
 
 import { useState, useTransition, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import X from "lucide-react/icons/x";
 import CheckCircle2 from "lucide-react/icons/check-circle-2";
-import Clock from "lucide-react/icons/clock";
-import AlertTriangle from "lucide-react/icons/alert-triangle";
-import Ban from "lucide-react/icons/ban";
 import Calendar from "lucide-react/icons/calendar";
 import ListTodo from "lucide-react/icons/list-todo";
 import Target from "lucide-react/icons/target";
 import TrendingUp from "lucide-react/icons/trending-up";
+import AlertTriangle from "lucide-react/icons/alert-triangle";
 import Zap from "lucide-react/icons/zap";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { isTaskOverdue, formatDate } from "@/lib/date-utils";
 import { TaskModalTrigger } from "@/components/tasks/TaskModalTrigger";
-import { toast } from "sonner";
+import { useTaskModal } from "@/components/tasks/TaskModalContext";
+import { TaskCard } from "@/components/tasks/TaskCard";
 import { m as motion } from "framer-motion";
 import { cn, formatPercentWhole } from "@/lib/utils";
-import {
-  TASK_STATUS_CONFIG,
-  TASK_PRIORITY_CONFIG,
-} from "@/lib/config/task-colors";
+import type { TaskWithRelations } from "@/types/db/task";
 import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 import type { TasksRow } from "@/types/db/tables/tasks";
-
-// B-001: Dynamic import for heavy TaskModal component (-50KB from initial bundle)
-const TaskModal = dynamic(
-  () =>
-    import("@/components/tasks/TaskModal").then((mod) => ({
-      default: mod.TaskModal,
-    })),
-  {
-    ssr: false,
-    loading: () => null,
-  },
-);
 
 type Phase = ProjectPhasesRow;
 type Task = TasksRow & {
@@ -59,6 +39,25 @@ type Task = TasksRow & {
     } | null;
   }>;
 };
+
+// Transform PhaseDetailPanel tasks to TaskCard format
+function transformToTaskWithRelations(task: Task): TaskWithRelations {
+  // Get first assignee for TaskCard (which expects single assignee)
+  const firstAssignee = task.assignees?.[0];
+  const assignee = firstAssignee
+    ? {
+        id: firstAssignee.user?.id || firstAssignee.id,
+        name: firstAssignee.user?.name || firstAssignee.subcontractor?.contact_name || "Unknown",
+        email: "", // TaskCard doesn't display email
+        avatar_url: firstAssignee.user?.avatar_url || null,
+      }
+    : undefined;
+
+  return {
+    ...task,
+    assignee,
+  };
+}
 
 interface PhaseStats {
   phaseId: string;
@@ -89,17 +88,9 @@ interface PhaseDetailPanelProps {
     email: string;
     avatar_url: string | null;
   }>;
+  taskTypes?: any[]; // TaskTypeConfigsRow[]
   onModalOpen?: () => void;
 }
-
-// Status icon mapping (icons are component-specific, colors come from shared config)
-const STATUS_ICONS = {
-  todo: Clock,
-  in_progress: Clock,
-  review: Clock,
-  blocked: Ban,
-  completed: CheckCircle2,
-};
 
 export function PhaseDetailPanel({
   phase,
@@ -109,11 +100,12 @@ export function PhaseDetailPanel({
   onClose,
   projects = [],
   teamMembers = [],
+  taskTypes = [],
   onModalOpen,
 }: PhaseDetailPanelProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const { openEdit } = useTaskModal();
 
   // Performance optimization: Memoize computed values
   const statusConfig = useMemo(
@@ -128,6 +120,21 @@ export function PhaseDetailPanel({
   const phaseStatus = useMemo(
     () => statusConfig[phase.status as keyof typeof statusConfig],
     [phase.status, statusConfig],
+  );
+
+  // Transform tasks for TaskCard component
+  const transformedTasks = useMemo(
+    () => tasks.map(transformToTaskWithRelations),
+    [tasks],
+  );
+
+  // Handle task card click
+  const handleTaskClick = useCallback(
+    (task: TaskWithRelations) => {
+      onModalOpen?.();
+      openEdit(task as any);
+    },
+    [onModalOpen, openEdit],
   );
 
   const progressPercentageRaw = useMemo(
@@ -180,9 +187,9 @@ export function PhaseDetailPanel({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="flex-shrink-0 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </Button>
         </motion.div>
 
@@ -270,11 +277,11 @@ export function PhaseDetailPanel({
           transition={{ delay: 0.6 }}
         >
           {/* Header Strip */}
-          <div className="h-1.5 bg-gradient-to-r from-[var(--construction-blue)] via-[var(--construction-blue)]/80 to-[#059669]" />
+          <div className="md:h-1.5 md:bg-gradient-to-r from-[var(--construction-blue)] via-[var(--construction-blue)]/80 to-[#059669]" />
 
-          <div className="p-4">
+          <div className="md:p-4">
             {/* Top Section: Arc Gauge + Stats */}
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               {/* Arc Progress Gauge */}
               <div className="relative flex-shrink-0">
                 <svg
@@ -287,9 +294,13 @@ export function PhaseDetailPanel({
                   <path
                     d="M 8 44 A 32 32 0 0 1 72 44"
                     fill="none"
-                    stroke="#E5E7EB"
+                    stroke="#D1D5DB"
                     strokeWidth="6"
                     strokeLinecap="round"
+                    opacity="1"
+                    style={{
+                      colorScheme: 'light',
+                    }}
                   />
                   {/* Progress arc - animated */}
                   <motion.path
@@ -386,7 +397,7 @@ export function PhaseDetailPanel({
 
             {/* Task Distribution Bar */}
             <motion.div
-              className="mt-4"
+              className="hidden md:block mt-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
@@ -401,7 +412,7 @@ export function PhaseDetailPanel({
               </div>
 
               {stats.totalTasks > 0 ? (
-                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden flex">
+                <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden flex">
                   {/* Completed segment */}
                   {stats.completedTasks > 0 && (
                     <motion.div
@@ -455,7 +466,7 @@ export function PhaseDetailPanel({
                   )}
                 </div>
               ) : (
-                <div className="h-2.5 bg-gray-100 rounded-full" />
+                <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full" />
               )}
 
               {/* Legend */}
@@ -494,7 +505,7 @@ export function PhaseDetailPanel({
             {/* Contextual Insight Banner */}
             <motion.div
               className={cn(
-                "mt-4 p-2.5 rounded-lg flex items-center gap-2",
+                "md:mt-4 p-2.5 rounded-lg flex items-center gap-2",
                 progressPercentageRaw === 100
                   ? "bg-[#059669]/10 border border-[#059669]/20 dark:bg-[#059669]/20 dark:border-[#059669]/40"
                   : progressPercentageRaw >= 75
@@ -576,6 +587,7 @@ export function PhaseDetailPanel({
           <TaskModalTrigger
             projects={projects}
             teamMembers={teamMembers}
+            taskTypes={taskTypes}
             preselectedProjectId={projectId}
             preselectedPhaseId={phase.id}
             variant="default"
@@ -587,7 +599,7 @@ export function PhaseDetailPanel({
         </div>
 
         {/* Task List with Fixed Height and Scroll */}
-        {tasks.length === 0 ? (
+        {transformedTasks.length === 0 ? (
           <motion.div
             className="text-center py-16 bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-800 dark:to-gray-900/50 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-700"
             initial={{ opacity: 0, scale: 0.95 }}
@@ -606,170 +618,17 @@ export function PhaseDetailPanel({
           </motion.div>
         ) : (
           <div className="space-y-2.5 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-            {tasks.map((task) => {
-              const statusConfig =
-                TASK_STATUS_CONFIG[
-                  task.status as keyof typeof TASK_STATUS_CONFIG
-                ];
-              const priorityConfig =
-                TASK_PRIORITY_CONFIG[
-                  task.priority as keyof typeof TASK_PRIORITY_CONFIG
-                ];
-              const StatusIcon =
-                STATUS_ICONS[task.status as keyof typeof STATUS_ICONS];
-              const isOverdue = isTaskOverdue(task.due_date, task.status);
-
-              return (
-                <div
-                  key={task.id}
-                  role="button"
-                  tabIndex={0}
-                  className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:border-construction-blue/40 dark:hover:border-construction-blue/30 hover:shadow-construction hover:-translate-y-0.5 transition-all duration-200 cursor-pointer group"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onModalOpen?.();
-                    setEditingTask(task);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      onModalOpen?.();
-                      setEditingTask(task);
-                    }
-                  }}
-                >
-                  <div className="flex items-start gap-3.5">
-                    {/* Status Icon */}
-                    <div
-                      className={cn(
-                        "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all",
-                        task.status === "completed" &&
-                          "bg-emerald-50 dark:bg-emerald-950 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900",
-                        task.status === "blocked" &&
-                          "bg-red-50 dark:bg-red-950 group-hover:bg-red-100 dark:group-hover:bg-red-900",
-                        task.status === "in_progress" &&
-                          "bg-blue-50 dark:bg-blue-950 group-hover:bg-blue-100 dark:group-hover:bg-blue-900",
-                        task.status === "todo" &&
-                          "bg-gray-50 dark:bg-gray-950 group-hover:bg-gray-100 dark:group-hover:bg-gray-900",
-                        task.status === "review" &&
-                          "bg-amber-50 dark:bg-amber-950 group-hover:bg-amber-100 dark:group-hover:bg-amber-900",
-                      )}
-                    >
-                      <StatusIcon
-                        className={cn("h-5 w-5", statusConfig.iconColor)}
-                      />
-                    </div>
-
-                    {/* Task Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 group-hover:text-construction-blue transition-colors mb-2.5 leading-snug">
-                        {task.title}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-xs font-bold border-2",
-                            statusConfig.badgeColor,
-                          )}
-                        >
-                          {statusConfig.label}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-xs font-bold border-2",
-                            priorityConfig.badgeColor,
-                          )}
-                        >
-                          {priorityConfig.label.toUpperCase()}
-                        </Badge>
-                        {/* Assignee Avatars */}
-                        {task.assignees && task.assignees.length > 0 && (
-                          <div className="flex -space-x-1.5 ml-auto">
-                            {task.assignees.slice(0, 3).map((a) => {
-                              const name =
-                                a.user?.name ||
-                                a.subcontractor?.contact_name ||
-                                "?";
-                              const isUser = !!a.user_id;
-                              return (
-                                <Avatar
-                                  key={a.id}
-                                  className="h-6 w-6 border-2 border-white"
-                                >
-                                  <AvatarImage
-                                    src={a.user?.avatar_url || undefined}
-                                  />
-                                  <AvatarFallback
-                                    className={cn(
-                                      "text-[9px] text-white",
-                                      isUser
-                                        ? "bg-construction-blue"
-                                        : "bg-orange-600",
-                                    )}
-                                  >
-                                    {name
-                                      .split(" ")
-                                      .map((n: string) => n[0])
-                                      .join("")
-                                      .toUpperCase()
-                                      .slice(0, 2)}
-                                  </AvatarFallback>
-                                </Avatar>
-                              );
-                            })}
-                            {task.assignees.length > 3 && (
-                              <div className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center">
-                                <span className="text-[9px] font-bold text-gray-600 dark:text-gray-400">
-                                  +{task.assignees.length - 3}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Due Date */}
-                    {task.due_date && (
-                      <div
-                        className={cn(
-                          "flex-shrink-0 flex flex-col items-end gap-1",
-                          isOverdue
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-gray-600 dark:text-gray-400",
-                        )}
-                      >
-                        <Calendar className="h-4 w-4" />
-                        <span className="text-xs font-bold tabular-nums leading-none">
-                          {formatDate(task.due_date)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {transformedTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onTaskClick={handleTaskClick}
+                showEditIndicator={true}
+              />
+            ))}
           </div>
         )}
       </motion.div>
-
-      {/* Edit Task Modal */}
-      {editingTask && (
-        <TaskModal
-          isOpen={true}
-          onClose={() => setEditingTask(null)}
-          mode="edit"
-          task={editingTask}
-          projects={projects}
-          teamMembers={teamMembers}
-          onSuccess={() => {
-            setEditingTask(null);
-            router.refresh();
-          }}
-        />
-      )}
 
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {

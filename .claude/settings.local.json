@@ -224,7 +224,8 @@
       "Bash(npm uninstall:*)",
       "mcp__next-devtools__browser_eval",
       "Bash(chmod:*)",
-      "mcp__playwright__browser_resize"
+      "mcp__playwright__browser_resize",
+      "Bash(npm run db:gen-types:*)"
     ],
     "deny": [],
     "ask": []

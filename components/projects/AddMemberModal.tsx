@@ -204,11 +204,13 @@ export function AddMemberModal({
       icon={UserPlus}
       title="Add Team Member"
       maxWidth="lg"
+      snapPoints={["half", "full"]}
+      initialSnapPoint="full"
       showNavigation={true}
       onBack={() => onOpenChange(false)}
       backLabel="Cancel"
       onContinue={handleSubmit}
-      continueLabel={submitting ? "Adding..." : "Add Member"}
+      continueLabel={submitting ? "Adding..." : success ? "Added!" : "Add Member"}
       continueDisabled={submitting || !selectedUserId || loading || success}
     >
       <div className="space-y-4">

@@ -2,7 +2,9 @@
 
 import React, { useCallback, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { Clock } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
+import { getDateIndicator } from "@/lib/date-utils";
 import type { GanttTaskBarProps } from "./gantt-types";
 import { STATUS_STYLES } from "./gantt-types";
 
@@ -112,21 +114,32 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         />
       )}
 
-      {/* Task title and duration badge - clean white text */}
+      {/* Task title and remaining days indicator */}
       <div className={cn(
         "absolute inset-0 flex items-center gap-1.5 font-semibold text-white z-10",
         isMobile ? "px-1.5 text-[10px]" : "px-2.5 text-xs"
       )}>
-        <span className="truncate flex-1 min-w-0">
+        <span className="truncate min-w-0">
           {task.title}
         </span>
-        {/* Duration days badge */}
-        <span className={cn(
-          "shrink-0 px-1.5 py-0.5 rounded bg-white/20 font-semibold",
-          isMobile ? "text-[9px]" : "text-[10px]"
-        )}>
-          {task.durationDays}d
-        </span>
+        {/* Remaining days indicator */}
+        {(() => {
+          const dateIndicator = getDateIndicator(task.due_date);
+          if (!dateIndicator) return null;
+          return (
+            <span className={cn(
+              "flex items-center gap-0.5 shrink-0 px-1.5 py-0.5 rounded font-semibold",
+              isMobile ? "text-[9px]" : "text-[10px]",
+              // Use white/dark background with colored text for visibility on colored bars
+              dateIndicator.colorClass.includes("text-red") && "bg-white/90 dark:bg-gray-900/90 text-red-600 dark:text-red-400",
+              dateIndicator.colorClass.includes("text-amber") && "bg-white/90 dark:bg-gray-900/90 text-amber-600 dark:text-amber-400",
+              dateIndicator.colorClass.includes("text-gray") && "bg-white/90 dark:bg-gray-900/90 text-gray-600 dark:text-gray-300"
+            )}>
+              <Clock className={cn(isMobile ? "w-2.5 h-2.5" : "w-3 h-3")} />
+              {dateIndicator.display}
+            </span>
+          );
+        })()}
       </div>
 
       {/* Resize handles (visual only for now) - hide on mobile, subtle styling */}

@@ -139,6 +139,7 @@ export interface ProjectDetailProps {
   projectFiles?: ProjectFilesRow[];
   projectPhotos?: UnifiedPhoto[];
   teamCostSummaries?: TeamCostSummary[];
+  taskTypes?: any[]; // TaskTypeConfigsRow[]
 }
 
 export interface ProjectOverviewProps {
@@ -149,6 +150,7 @@ export interface ProjectOverviewProps {
   expenseStats?: ExpenseStats;
   taskStats?: TaskStats;
   teamCostSummaries?: TeamCostSummary[];
+  taskTypes?: any[]; // TaskTypeConfigsRow[]
   onModalOpen?: () => void;
 }
 

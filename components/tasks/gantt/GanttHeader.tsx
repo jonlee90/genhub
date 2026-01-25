@@ -33,7 +33,10 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
             {dateGroups.map((group, index) => (
               <div
                 key={index}
-                className="absolute border-r border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gradient-to-b from-white dark:from-gray-900 to-gray-50/50 dark:to-gray-800/50"
+                className={cn(
+                  "absolute border-r border-gray-200 dark:border-gray-700 flex items-center bg-gradient-to-b from-white dark:from-gray-900 to-gray-50/50 dark:to-gray-800/50",
+                  isMobile ? "justify-start pl-2" : "justify-center"
+                )}
                 style={{
                   left: group.startX,
                   width: group.width,
@@ -41,7 +44,7 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
                 }}
               >
                 <span className={cn(
-                  "font-black text-construction-blue tracking-wider uppercase drop-shadow-sm",
+                  "font-black text-construction-blue dark:text-blue-400 tracking-wider uppercase drop-shadow-sm",
                   isMobile ? "text-[10px]" : "text-sm"
                 )}>
                   {group.label}
@@ -74,7 +77,7 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
                 >
                   <span className={cn(
                     "font-bold tracking-wide",
-                    cell.isToday ? "text-construction-blue" : "text-gray-600 dark:text-gray-300",
+                    cell.isToday ? "text-construction-blue dark:text-blue-400" : "text-gray-600 dark:text-gray-300",
                     isMobile ? "text-[9px]" : "text-xs"
                   )}>
                     {labelParts[0]}
@@ -82,7 +85,7 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
                   {!isMobile ? (
                     <span className={cn(
                       "font-black",
-                      cell.isToday ? "text-construction-blue text-base" : "text-gray-800 dark:text-gray-200 text-sm"
+                      cell.isToday ? "text-construction-blue dark:text-blue-400 text-base" : "text-gray-800 dark:text-gray-200 text-sm"
                     )}>
                       {labelParts[1]}
                     </span>

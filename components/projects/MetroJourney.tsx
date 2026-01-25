@@ -57,6 +57,7 @@ interface MetroJourneyProps {
     email: string;
     avatar_url: string | null;
   }>;
+  taskTypes?: any[]; // TaskTypeConfigsRow[]
   onModalOpen?: () => void;
 }
 
@@ -67,6 +68,7 @@ export function MetroJourney({
   projectId,
   projects = [],
   teamMembers = [],
+  taskTypes = [],
   onModalOpen,
 }: MetroJourneyProps) {
   console.log("[MetroJourney] Rendering with phases:", phases.length);
@@ -380,6 +382,7 @@ export function MetroJourney({
                 onClose={() => setSelectedPhaseId(null)}
                 projects={projects}
                 teamMembers={teamMembers}
+                taskTypes={taskTypes}
                 onModalOpen={onModalOpen}
               />
             </motion.div>

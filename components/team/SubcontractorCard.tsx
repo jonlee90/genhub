@@ -71,6 +71,7 @@ const TRADE_COLORS: Record<TradeType, string> = {
   glass_glazing: 'bg-cyan-600 text-white border-cyan-600',
   fire_protection: 'bg-red-600 text-white border-red-600',
   insulation: 'bg-yellow-700 text-white border-yellow-700',
+  framing: 'bg-amber-600 text-white border-amber-600',
   general: 'bg-construction-blue text-white border-construction-blue',
   other: 'bg-gray-400 text-white border-gray-400',
 };
@@ -93,6 +94,7 @@ const TRADE_LABELS: Record<TradeType, string> = {
   glass_glazing: 'Glass & Glazing',
   fire_protection: 'Fire Protection',
   insulation: 'Insulation',
+  framing: 'Framing',
   general: 'General',
   other: 'Other',
 };

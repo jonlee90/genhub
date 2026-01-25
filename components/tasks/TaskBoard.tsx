@@ -421,6 +421,7 @@ export function TaskBoard({
             onTaskClick={handleTaskClick}
             onTaskDateChange={handleTaskDateChange}
             taskTypes={taskTypes}
+            showProjectInsteadOfPhase={!isProjectContext}
           />
         </div>
       )}

@@ -106,6 +106,10 @@ const TRADE_LABELS: Record<string, { label: string; color: string }> = {
     label: "Insulation",
     color: "bg-teal-100 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300",
   },
+  framing: {
+    label: "Framing",
+    color: "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300",
+  },
   other: {
     label: "Other",
     color: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-200",
@@ -254,6 +258,8 @@ export function AddSubcontractorModal({
       icon={HardHat}
       title="Add Subcontractor"
       maxWidth="lg"
+      snapPoints={["half", "full"]}
+      initialSnapPoint="full"
       showNavigation={true}
       onBack={() => onOpenChange(false)}
       backLabel="Cancel"

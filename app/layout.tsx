@@ -4,7 +4,6 @@ import config from "@/config";
 import "./globals.css";
 import { GoogleTagManager } from '@next/third-parties/google'
 import { OpenPanelComponent } from '@openpanel/nextjs';
-import { Toaster } from 'sonner';
 import FooterWrapper from "@/components/ui/FooterWrapper";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
 import { MotionProvider } from "@/components/providers/MotionProvider";
@@ -99,7 +98,6 @@ export default function RootLayout({
         className="antialiased min-h-screen flex flex-col bg-white dark:bg-gray-950"
       >
         <MotionProvider>
-          <Toaster position="top-center" richColors />
           <main className="flex-grow">
             {children}
           </main>
