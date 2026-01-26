@@ -133,21 +133,31 @@ export function MessageList({
     onMessageUpdate: handleMessageUpdate,
   });
 
-  const rowVirtualizer = useVirtualizer({
-    count: messages.length,
-    getScrollElement: () => scrollContainerRef.current,
-    estimateSize: (index) => {
+  // OPTIMIZED: Memoize estimateSize callback to prevent recreating on every render
+  const estimateSize = useCallback(
+    (index: number) => {
       const message = messages[index];
       if (message?.deleted_at) return 60; // Deleted messages are shorter
       if (message?.reply_to) return 120; // Messages with replies are taller
       return 80; // Default message height
     },
+    [messages]
+  );
+
+  const rowVirtualizer = useVirtualizer({
+    count: messages.length,
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize,
     overscan: 10,
   });
 
+  // OPTIMIZED: Only recompute visible IDs when virtualItems or message count changes
+  // This prevents unnecessary recalculations when messages array reference changes but content is the same
+  const virtualItems = rowVirtualizer.getVirtualItems();
+  const messagesLength = messages.length;
+
   const visibleMessageIds = useMemo(() => {
-    const ids = rowVirtualizer
-      .getVirtualItems()
+    const ids = virtualItems
       .map((virtualItem) => messages[virtualItem.index])
       .filter((message): message is OptimisticMessage => Boolean(message))
       .filter((message) => !message.deleted_at)
@@ -156,7 +166,8 @@ export function MessageList({
       .map((message) => message.id);
 
     return Array.from(new Set(ids));
-  }, [messages, rowVirtualizer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [virtualItems.length, messagesLength]);
 
   const { reactionsMap, replyCountsMap, attachmentsMap, refreshMetadata } =
     useMessageMetadata({ roomId: chatRoomId, messageIds: visibleMessageIds });
@@ -166,6 +177,14 @@ export function MessageList({
       await refreshMetadata([messageId]);
     },
     [refreshMetadata],
+  );
+
+  // OPTIMIZED: Memoize onReply callback to prevent MessageItem re-renders
+  const handleReply = useCallback(
+    (msg: MessageWithSender) => {
+      onReply?.(msg);
+    },
+    [onReply],
   );
 
   // Debug: Expose optimistic UI functions to parent
@@ -351,7 +370,7 @@ export function MessageList({
                 >
                   <MessageItem
                     message={message}
-                    onReply={onReply}
+                    onReply={handleReply}
                     reactions={reactionsMap[message.id]}
                     replyCount={replyCountsMap[message.id]}
                     attachments={attachmentsMap[message.id]}

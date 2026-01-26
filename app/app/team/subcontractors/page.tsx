@@ -1,20 +1,10 @@
-import { SubcontractorList } from "@/components/team/SubcontractorList";
-import { StatCard } from "@/components/team/StatCard";
 import { getSubcontractorsPageData } from "@/lib/team";
+import { SubcontractorsPageClient } from "@/components/team/SubcontractorsPageClient";
 
 export const metadata = {
   title: "Subcontractors | GenHub",
-  description: "Manage your subcontractor directory",
+  description: "Manage your construction subcontractors",
 };
-
-const BLUEPRINT_BACKGROUND_STYLE = {
-  backgroundImage: `
-    linear-gradient(to right, currentColor 1px, transparent 1px),
-    linear-gradient(to bottom, currentColor 1px, transparent 1px)
-  `,
-  backgroundSize: "40px 40px",
-  color: "var(--construction-blue)",
-} as const;
 
 export default async function SubcontractorsPage() {
   const data = await getSubcontractorsPageData();
@@ -46,72 +36,11 @@ export default async function SubcontractorsPage() {
   const { subcontractors, stats, role, companyId } = data;
 
   return (
-    <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
-      {/* Blueprint Grid Background */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03]">
-        <div className="absolute inset-0" style={BLUEPRINT_BACKGROUND_STYLE} />
-      </div>
-
-      {/* Industrial Header with Blueprint Aesthetic */}
-      <div className="relative">
-        {/* Construction border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-construction-blue" />
-
-        <div className="flex items-start justify-between pt-2 md:pt-4">
-          <div className="space-y-1 md:space-y-3">
-            {/* Main Title - Heavy Industrial Typography */}
-            <h1 className="text-2xl md:text-5xl font-black tracking-tighter text-construction-blue leading-none">
-              SUBCONTRACTORS
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      {/* Industrial Stats Dashboard */}
-      {stats.total > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <StatCard
-            icon="hard-hat"
-            label="Total"
-            sublabel="Subcontractors"
-            value={stats.total}
-            colorClass="blue"
-          />
-          <StatCard
-            icon="briefcase"
-            label="Active"
-            sublabel="Active Status"
-            value={stats.active}
-            colorClass="green"
-          />
-          <StatCard
-            icon="alert-triangle"
-            label="Warning"
-            sublabel="Expiring Licenses"
-            value={stats.expiringLicenses}
-            colorClass="yellow"
-          />
-          <StatCard
-            icon="shield"
-            label="Alert"
-            sublabel="Expiring Insurance"
-            value={stats.expiringInsurance}
-            colorClass="red"
-          />
-        </div>
-      )}
-
-      {/* Subcontractor List */}
-      <div className="relative">
-        <SubcontractorList
-          subcontractors={subcontractors}
-          currentUserRole={role}
-          companyId={companyId}
-        />
-      </div>
-
-      {/* Decorative bottom border */}
-      <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
-    </div>
+    <SubcontractorsPageClient
+      initialSubcontractors={subcontractors}
+      stats={stats}
+      role={role}
+      companyId={companyId}
+    />
   );
 }

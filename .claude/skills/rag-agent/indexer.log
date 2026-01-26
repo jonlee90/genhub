@@ -1,0 +1,14 @@
+2026-01-25 03:55:51,100 - rag-indexer - INFO - Project root: /Users/jonathanlee/Desktop/genhub/.claude/skills/rag-agent
+2026-01-25 03:55:51,101 - rag-indexer - INFO - Loading embedding model: all-MiniLM-L6-v2
+2026-01-25 03:55:51,101 - sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Created collection: genhub_rag
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Starting RAG indexing pipeline (streaming mode)...
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Indexing main codebase at: /Users/jonathanlee/Desktop/genhub/.claude/skills/rag-agent/../../..
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Path exists: True, is_dir: True
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Starting directory scan at: /Users/jonathanlee/Desktop/genhub/.claude/skills/rag-agent/../../..
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Patterns: ['app/actions/*.ts']
+2026-01-25 03:55:52,852 - rag-indexer - INFO - Exclude: ['node_modules/**', '.next/**', '.git/**', 'dist/**', 'build/**', '.venv/**', '**/.venv/**', '.claude/skills/**', '**/*.lock', '**/*.log']
+2026-01-25 03:55:52,856 - rag-indexer - INFO - Chunked app/actions/push.ts: 1 parents, 1 children
+2026-01-25 03:55:52,857 - rag-indexer - INFO - Chunked app/actions/accept-admin-invite.ts: 1 parents, 1 children
+2026-01-25 03:55:52,857 - rag-indexer - INFO - Chunked app/actions/tasks-status.ts: 1 parents, 1 children
+2026-01-25 03:55:52,858 - rag-indexer - INFO - Chunked app/actions/stripe.ts: 1 parents, 1 children

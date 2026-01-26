@@ -31,16 +31,25 @@ export function ChatRoomList({ rooms, activeRoomId, onRoomSelect, totalUnread, c
   // Debug: State for New DM Modal
   const [showNewDMModal, setShowNewDMModal] = useState(false);
 
+  // OPTIMIZED: Create stable sort key that only changes when room order actually changes
+  // This prevents unnecessary re-sorts when unread counts change but order doesn't
+  const sortKey = useMemo(() => {
+    return rooms
+      .map((r) => `${r.id}:${r.last_message?.created_at || r.updated_at || r.created_at}`)
+      .join(',');
+  }, [rooms]);
+
   // Debug: Sort rooms by most recent activity
   const sortedRooms = useMemo(() => {
     const sorted = [...rooms].sort((a, b) => {
-      const aTime = a.last_message?.created_at || a.created_at;
-      const bTime = b.last_message?.created_at || b.created_at;
+      const aTime = a.last_message?.created_at || a.updated_at || a.created_at;
+      const bTime = b.last_message?.created_at || b.updated_at || b.created_at;
       return new Date(bTime).getTime() - new Date(aTime).getTime();
     });
     console.log('[ChatRoomList] Sorted rooms by activity');
     return sorted;
-  }, [rooms]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortKey]);
 
   // Debug: Separate project and DM rooms
   const projectRooms = sortedRooms.filter((r) => r.type === 'project');

@@ -27,6 +27,19 @@ import Pencil from "lucide-react/icons/pencil";
 import Package from "lucide-react/icons/package";
 import Hammer from "lucide-react/icons/hammer";
 import ListChecks from "lucide-react/icons/list-checks";
+// Icon imports for PHASE_TEMPLATE_ICONS
+import Rocket from "lucide-react/icons/rocket";
+import FileText from "lucide-react/icons/file-text";
+import ShoppingCart from "lucide-react/icons/shopping-cart";
+import FolderKanban from "lucide-react/icons/folder-kanban";
+import Sparkles from "lucide-react/icons/sparkles";
+import Calendar from "lucide-react/icons/calendar";
+import HardHat from "lucide-react/icons/hard-hat";
+import Wrench from "lucide-react/icons/wrench";
+import ClipboardCheck from "lucide-react/icons/clipboard-check";
+import Truck from "lucide-react/icons/truck";
+import Flag from "lucide-react/icons/flag";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { TemplateCard, type TemplateBadge } from "@/components/ui/TemplateCard";
@@ -63,6 +76,28 @@ import {
 import {
   type ProjectTypeWithCount,
 } from "@/app/actions/project-types";
+
+/**
+ * Available icons for phase templates
+ * Construction and project management themed
+ */
+export const PHASE_TEMPLATE_ICONS: Record<string, LucideIcon> = {
+  Rocket,          // Initiation/Planning
+  FileText,        // Design/Documentation
+  ShoppingCart,    // Procurement
+  FolderKanban,    // Project Management/Execution
+  CheckCircle2,    // Completion/Closeout
+  Layers,          // General (default)
+  Sparkles,        // General
+  Calendar,        // Scheduling
+  HardHat,         // Construction
+  Hammer,          // Work
+  Wrench,          // Installation/Maintenance
+  ClipboardCheck,  // Inspection/Approval
+  Package,         // Materials
+  Truck,           // Delivery/Logistics
+  Flag,            // Milestone
+};
 
 /**
  * Task type configuration for badge display
@@ -166,6 +201,12 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
 }: SortablePhaseItemProps) {
   const taskCount = phase.task_templates?.length || 0;
 
+  // Get icon from phase template or fallback to Layers (rendering-conditional-render)
+  // Following bundle-barrel-imports: direct icon imports above
+  const PhaseIcon = phase.icon_name
+    ? (PHASE_TEMPLATE_ICONS[phase.icon_name as keyof typeof PHASE_TEMPLATE_ICONS] || Layers)
+    : Layers;
+
   // Build badges for the card
   const badges: TemplateBadge[] = taskCount > 0
     ? [{
@@ -179,7 +220,7 @@ const SortablePhaseItem = React.memo(function SortablePhaseItem({
       id={phase.id}
       title={phase.name}
       description={phase.description || undefined}
-      icon={Layers}
+      icon={PhaseIcon}
       badges={badges}
       expandable
       onEdit={onEdit}
@@ -591,6 +632,37 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
               Help your team understand the purpose of this phase
             </p>
           </div>
+
+          {/* Icon selector */}
+          <div className="space-y-2">
+            <Label
+              htmlFor="create-icon"
+              className="text-sm font-bold text-gray-900 dark:text-gray-100"
+            >
+              Icon
+            </Label>
+            <Select name="icon_name" defaultValue="Layers">
+              <SelectTrigger
+                id="create-icon"
+                className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue min-h-[44px]"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(PHASE_TEMPLATE_ICONS).map(([iconName, Icon]) => (
+                  <SelectItem key={iconName} value={iconName}>
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                      <span>{iconName}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Visual icon displayed for this phase
+            </p>
+          </div>
         </form>
       </ResponsiveModal>
 
@@ -651,6 +723,34 @@ export const PhaseTemplateManager = memo(function PhaseTemplateManager({
                 maxLength={500}
                 className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue resize-none"
               />
+            </div>
+
+            {/* Icon selector */}
+            <div className="space-y-2">
+              <Label
+                htmlFor="edit-icon"
+                className="text-sm font-bold text-gray-900 dark:text-gray-100"
+              >
+                Icon
+              </Label>
+              <Select name="icon_name" defaultValue={editingPhase.icon_name || "Layers"}>
+                <SelectTrigger
+                  id="edit-icon"
+                  className="border-2 border-gray-200 dark:border-gray-700 focus:border-construction-blue min-h-[44px]"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(PHASE_TEMPLATE_ICONS).map(([iconName, Icon]) => (
+                    <SelectItem key={iconName} value={iconName}>
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-4 w-4" aria-hidden="true" />
+                        <span>{iconName}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Active toggle */}

@@ -32,18 +32,21 @@ export const ChatRoomItem = memo(function ChatRoomItem({
   // Debug: Check if room is muted
   const isMuted = room.muted_until && new Date(room.muted_until) > new Date();
 
+  // OPTIMIZED: Use stable animation based on room.id instead of index
+  // This prevents animation jank when room order changes
   return (
     <motion.button
       onClick={onSelect}
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{
-        delay: index * 0.05,
+        delay: Math.min(index * 0.05, 0.3), // Cap delay at 300ms
         type: "spring",
         stiffness: 300,
         damping: 25,
       }}
       whileTap={{ scale: 0.98 }}
+      layoutId={`room-${room.id}`}
       className={cn(
         "w-full flex items-start gap-3 p-3 transition-all relative group",
         "hover:bg-gradient-to-r hover:from-construction-blue/5 dark:hover:from-construction-blue/10 hover:to-transparent",

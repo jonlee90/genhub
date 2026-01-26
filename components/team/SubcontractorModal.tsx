@@ -80,18 +80,18 @@ type Subcontractor = SubcontractorsRow;
 interface SubcontractorModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
-  subcontractor?: Subcontractor;
+  subcontractor: Subcontractor | null;
   companyId: string;
 }
 
 export function SubcontractorModal({
   isOpen,
   onClose,
-  mode,
   subcontractor,
   companyId,
 }: SubcontractorModalProps) {
+  // Infer mode from subcontractor prop
+  const mode = subcontractor ? 'edit' : 'create';
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -228,7 +228,7 @@ export function SubcontractorModal({
       ariaLabel={mode === 'create' ? "Add Subcontractor" : "Edit Subcontractor"}
       maxWidth="3xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {/* Success Message */}
         {isSuccess ? <SuccessAlert /> : null}
 

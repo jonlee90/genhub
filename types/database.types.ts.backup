@@ -178,13 +178,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_rooms_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "chat_rooms_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -266,13 +259,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "company_default_models_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "company_default_models_model_id_fkey"
             columns: ["model_id"]
             isOneToOne: false
@@ -335,13 +321,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "company_users_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "company_users_user_profile_fkey"
@@ -641,13 +620,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "expenses_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "expenses_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
@@ -704,13 +676,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "file_audit_log_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
         ]
       }
@@ -972,13 +937,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "material_price_history_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "material_price_history_material_id_fkey"
             columns: ["material_id"]
             isOneToOne: false
@@ -1058,13 +1016,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "materials_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
         ]
       }
@@ -1329,7 +1280,6 @@ export type Database = {
           company_id: string
           created_at: string | null
           description: string | null
-          icon_name: string | null
           id: string
           is_active: boolean | null
           name: string
@@ -1341,7 +1291,6 @@ export type Database = {
           company_id: string
           created_at?: string | null
           description?: string | null
-          icon_name?: string | null
           id?: string
           is_active?: boolean | null
           name: string
@@ -1353,7 +1302,6 @@ export type Database = {
           company_id?: string
           created_at?: string | null
           description?: string | null
-          icon_name?: string | null
           id?: string
           is_active?: boolean | null
           name?: string
@@ -1368,13 +1316,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "phase_templates_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "phase_templates_project_type_config_id_fkey"
@@ -1455,13 +1396,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "project_files_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "project_files_parent_file_id_fkey"
             columns: ["parent_file_id"]
             isOneToOne: false
@@ -1482,7 +1416,6 @@ export type Database = {
           completed_at: string | null
           completion_percentage: number | null
           created_at: string
-          icon_name: string | null
           id: string
           name: string
           notes: string | null
@@ -1496,7 +1429,6 @@ export type Database = {
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string
-          icon_name?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -1510,7 +1442,6 @@ export type Database = {
           completed_at?: string | null
           completion_percentage?: number | null
           created_at?: string
-          icon_name?: string | null
           id?: string
           name?: string
           notes?: string | null
@@ -1586,13 +1517,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_photos_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "project_photos_project_id_fkey"
@@ -1696,13 +1620,6 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "project_type_configs_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
         ]
       }
       projects: {
@@ -1797,13 +1714,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "projects_project_type_config_id_fkey"
@@ -2184,13 +2094,6 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "subcontractors_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
         ]
       }
       task_activity: {
@@ -2384,13 +2287,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "task_templates_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "task_templates_phase_template_id_fkey"
             columns: ["phase_template_id"]
             isOneToOne: false
@@ -2443,13 +2339,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_type_configs_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
         ]
       }
@@ -2609,13 +2498,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "team_invitations_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
-          },
-          {
             foreignKeyName: "team_invitations_invited_by_fkey"
             columns: ["invited_by"]
             isOneToOne: false
@@ -2659,13 +2541,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tracked_materials_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "mv_dashboard_kpis"
-            referencedColumns: ["company_id"]
           },
           {
             foreignKeyName: "tracked_materials_material_id_fkey"
@@ -2742,16 +2617,20 @@ export type Database = {
           total_tasks: number | null
           unassigned_tasks: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Functions: {
       acquire_dm_lock: {
         Args: { user1_id: string; user2_id: string }
-        Returns: number
-      }
-      calculate_project_health_score: {
-        Args: { p_project_id: string }
         Returns: number
       }
       find_dm_room: {
@@ -2781,22 +2660,6 @@ export type Database = {
           amount: number
           category: string
         }[]
-      }
-      get_message_with_details: {
-        Args: { p_message_id: string }
-        Returns: Json
-      }
-      get_next_phase_template_order_index: {
-        Args: { p_company_id: string; p_project_type_config_id: string }
-        Returns: number
-      }
-      get_next_project_type_order_index: {
-        Args: { p_company_id: string }
-        Returns: number
-      }
-      get_next_task_template_order_index: {
-        Args: { p_company_id: string; p_phase_template_id: string }
-        Returns: number
       }
       get_project_detail_with_stats: {
         Args: { p_project_id: string }
@@ -2898,10 +2761,6 @@ export type Database = {
       is_user_gc_admin: { Args: { p_user_id: string }; Returns: boolean }
       is_user_owner: { Args: { p_user_id: string }; Returns: boolean }
       refresh_dashboard_kpis: { Args: never; Returns: undefined }
-      seed_company_templates: {
-        Args: { company_id_param: string }
-        Returns: undefined
-      }
     }
     Enums: {
       activity_action:
@@ -3036,8 +2895,8 @@ export type Database = {
         | "glass_glazing"
         | "fire_protection"
         | "insulation"
-        | "other"
         | "framing"
+        | "other"
       user_role:
         | "admin"
         | "project_manager"
@@ -3316,8 +3175,8 @@ export const Constants = {
         "glass_glazing",
         "fire_protection",
         "insulation",
-        "other",
         "framing",
+        "other",
       ],
       user_role: [
         "admin",

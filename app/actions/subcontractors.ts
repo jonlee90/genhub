@@ -51,7 +51,8 @@ const createSubcontractorSchema = z.object({
   email: z
     .string()
     .email("Invalid email address")
-    .transform((v) => v.toLowerCase().trim()),
+    .transform((v) => v.toLowerCase().trim())
+    .optional(),
   phone: z
     .string()
     .optional()
@@ -60,7 +61,9 @@ const createSubcontractorSchema = z.object({
     .string()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
-  trade_specialization: z.enum(tradeTypeValues).optional().default("general"),
+  trade_specialization: z.enum(tradeTypeValues, {
+    errorMap: () => ({ message: "Please select a trade specialization" }),
+  }),
   license_number: z
     .string()
     .optional()
@@ -172,10 +175,10 @@ export async function createSubcontractor(formData: FormData) {
   const rawData = {
     company_name: formData.get("company_name"),
     contact_name: formData.get("contact_name"),
-    email: formData.get("email"),
+    email: formData.get("email") || undefined,
     phone: formData.get("phone") || undefined,
     address: formData.get("address") || undefined,
-    trade_specialization: formData.get("trade_specialization") || "general",
+    trade_specialization: formData.get("trade_specialization"),
     license_number: formData.get("license_number") || undefined,
     license_expiry: formData.get("license_expiry") || undefined,
     insurance_provider: formData.get("insurance_provider") || undefined,
@@ -196,33 +199,35 @@ export async function createSubcontractor(formData: FormData) {
   const data = validation.data;
 
   try {
-    // Check if subcontractor with same email already exists in this company
-    const { data: existingSubcontractor, error: checkError } = await supabase
-      .from("subcontractors")
-      .select("id, company_name, email, is_active")
-      .eq("company_id", companyId)
-      .eq("email", data.email)
-      .maybeSingle();
+    // Check if subcontractor with same email already exists in this company (only if email provided)
+    if (data.email) {
+      const { data: existingSubcontractor, error: checkError } = await supabase
+        .from("subcontractors")
+        .select("id, company_name, email, is_active")
+        .eq("company_id", companyId)
+        .eq("email", data.email)
+        .maybeSingle();
 
-    if (checkError) {
-      console.error("Error checking existing subcontractor:", checkError);
-      return {
-        success: false,
-        error: "Failed to check existing subcontractor. Please try again.",
-      };
-    }
-
-    if (existingSubcontractor) {
-      if (existingSubcontractor.is_active) {
+      if (checkError) {
+        console.error("Error checking existing subcontractor:", checkError);
         return {
           success: false,
-          error: `A subcontractor with email ${data.email} already exists in your company.`,
+          error: "Failed to check existing subcontractor. Please try again.",
         };
-      } else {
-        return {
-          success: false,
-          error: `A deactivated subcontractor with email ${data.email} exists. Please contact support to reactivate.`,
-        };
+      }
+
+      if (existingSubcontractor) {
+        if (existingSubcontractor.is_active) {
+          return {
+            success: false,
+            error: `A subcontractor with email ${data.email} already exists in your company.`,
+          };
+        } else {
+          return {
+            success: false,
+            error: `A deactivated subcontractor with email ${data.email} exists. Please contact support to reactivate.`,
+          };
+        }
       }
     }
 

@@ -7,10 +7,10 @@
 indexing:
   # Hierarchical chunking strategy
   parent_chunk_strategy: "markdown_headers"  # H1, H2, H3
-  child_chunk_size: 500  # tokens
-  child_chunk_overlap: 100  # tokens
-  merge_threshold: 2000  # chars - merge small sections
-  split_threshold: 10000  # chars - split large sections
+  child_chunk_size: 1000  # tokens - increased for better context
+  child_chunk_overlap: 200  # tokens - increased overlap for continuity
+  merge_threshold: 1000  # chars - more aggressive merging
+  split_threshold: 8000  # chars - split sooner for quality
 
   # Data sources to index
   # MVP: Server actions + project instructions only
@@ -44,14 +44,14 @@ retrieval:
   collection_name: "genhub_rag"
 
   # Embedding models
-  dense_model: "all-MiniLM-L6-v2"  # Lightweight: 384-dimensional, 22MB model
+  dense_model: "all-MiniLM-L6-v2"  # Lightweight: 384-dimensional, proven stable
   sparse_model: "bm25"
 
   # Search parameters
-  top_k: 10
-  top_k_parent: 3  # Parents to retrieve per child match
+  top_k: 20  # More results for better coverage
+  top_k_parent: 5  # More parents for context
   rerank: true
-  rerank_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  rerank_model: "cross-encoder/mmarco-mMiniLMv2-L12-H384-v1"  # More powerful reranker
 
   # Confidence thresholds
   confidence_threshold: 0.7
@@ -65,7 +65,7 @@ retrieval:
 # SYNTHESIS CONFIGURATION
 # ============================================================================
 synthesis:
-  max_output_tokens: 2000
+  max_output_tokens: 4000  # More comprehensive responses
   format: "claude_code_optimized"
 
   # Output structure
@@ -170,7 +170,7 @@ optimization:
 # ============================================================================
 llm:
   provider: "anthropic"
-  model: "claude-sonnet-4-20250514"
+  model: "claude-opus-4-5-20251101"
   temperature: 0.1
 
   # Fallback for clarification

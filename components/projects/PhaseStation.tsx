@@ -14,11 +14,21 @@ import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import Sparkles from 'lucide-react/icons/sparkles';
 import Calendar from 'lucide-react/icons/calendar';
 import ListTodo from 'lucide-react/icons/list-todo';
+// Additional icons for PHASE_ICONS map
+import Layers from 'lucide-react/icons/layers';
+import HardHat from 'lucide-react/icons/hard-hat';
+import Hammer from 'lucide-react/icons/hammer';
+import Wrench from 'lucide-react/icons/wrench';
+import ClipboardCheck from 'lucide-react/icons/clipboard-check';
+import Package from 'lucide-react/icons/package';
+import Truck from 'lucide-react/icons/truck';
+import Flag from 'lucide-react/icons/flag';
+import type { LucideIcon } from 'lucide-react';
 import { AnimatedTooltip } from '@/components/ui/aceternity/animated-tooltip';
 import { cn, formatPercentWhole } from '@/lib/utils';
 import type { ProjectPhasesRow } from '@/types/db/tables/projects';
 
-type Phase = ProjectPhasesRow;
+type Phase = ProjectPhasesRow & { icon_name?: string | null };
 
 interface PhaseStats {
   phaseId: string;
@@ -36,14 +46,47 @@ interface PhaseStationProps {
   onClick: () => void;
 }
 
+// Icon map for phase templates (must match PHASE_TEMPLATE_ICONS)
+const PHASE_ICONS: Record<string, LucideIcon> = {
+  Rocket,
+  FileText,
+  ShoppingCart,
+  FolderKanban,
+  CheckCircle2,
+  Layers,
+  Sparkles,
+  Calendar,
+  HardHat,
+  Hammer,
+  Wrench,
+  ClipboardCheck,
+  Package,
+  Truck,
+  Flag,
+};
+
 // Map phase names to construction-themed icons
-const getPhaseIcon = (phaseName: string) => {
+const getPhaseIcon = (phaseName: string, iconName?: string | null) => {
+  // Priority 1: Use stored icon_name if valid
+  if (iconName && iconName in PHASE_ICONS) {
+    return PHASE_ICONS[iconName];
+  }
+
+  // Priority 2: Fallback to keyword-based matching for new standard phases
   const name = phaseName.toLowerCase();
+  if (name.includes('site') && name.includes('set')) return ClipboardCheck; // "Site set up"
+  if (name.includes('framing')) return Layers;
+  if (name.includes('mep') || name.includes('rough')) return Wrench; // "MEP Rough In"
+  if (name.includes('fire') || name.includes('safety')) return HardHat; // "Fire life and safety"
+  if (name.includes('finishes') || name.includes('finish')) return Rocket;
+
+  // Legacy phase names (fallback for older projects)
   if (name.includes('initiation') || name.includes('planning')) return Rocket;
   if (name.includes('pre-construction') || name.includes('design')) return FileText;
   if (name.includes('procurement')) return ShoppingCart;
   if (name.includes('post') || name.includes('closeout') || name.includes('completion')) return CheckCircle2;
   if (name.includes('construction') || name.includes('execution')) return FolderKanban;
+
   return Sparkles; // Default icon
 };
 
@@ -65,7 +108,7 @@ export function PhaseStation({
   const isInProgress = phase.status === 'in_progress';
   const hasBlockers = (stats?.blockedTasks || 0) > 0;
   const hasOverdue = (stats?.overdueTasks || 0) > 0;
-  const PhaseIcon = getPhaseIcon(phase.name);
+  const PhaseIcon = getPhaseIcon(phase.name, phase.icon_name);
 
   // Performance optimization: Memoize tooltip content to avoid recreating JSX on every render
   const tooltipContent = useMemo(() => (
@@ -153,7 +196,7 @@ export function PhaseStation({
         <div className="relative">
           {/* Subtle glow for active phase */}
           {isCurrent && !isCompleted && (
-            <div className="absolute inset-0 rounded-full bg-construction-blue/20 blur-xl -z-10" />
+            <div className="absolute inset-0 rounded-full bg-construction-blue/20 blur-xl -z-10 animate-glow-pulse" />
           )}
 
           <motion.div

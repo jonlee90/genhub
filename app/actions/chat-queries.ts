@@ -312,18 +312,7 @@ export async function getMessages(
     if (msg.reply_to_id) replyToIds.add(msg.reply_to_id);
   });
 
-  // Fetch user profiles for all senders
-  const { data: userProfiles, error: profilesError } = await supabase
-    .from('user_profiles')
-    .select('id, name, email, avatar_url')
-    .in('id', Array.from(senderIds)) as { data: any[] | null; error: any };
-
-  if (profilesError) {
-    console.error('[getMessages] Error fetching user profiles:', profilesError);
-    // Don't fail if profiles fail, just continue without them
-  }
-
-  // Fetch reply-to messages if any
+  // OPTIMIZED: Fetch reply messages first to get all sender IDs, then batch fetch all profiles
   let replyToMessages: any[] = [];
   if (replyToIds.size > 0) {
     const { data: replies, error: repliesError } = await supabase
@@ -335,24 +324,31 @@ export async function getMessages(
       console.error('[getMessages] Error fetching reply messages:', repliesError);
     } else {
       replyToMessages = replies || [];
-
-      // Add reply senders to profiles if not already fetched
-      const replySenderIds = replyToMessages
-        .map((r: any) => r.sender_id)
-        .filter(id => id && !senderIds.has(id));
-
-      if (replySenderIds.length > 0) {
-        const { data: replyProfiles } = await supabase
-          .from('user_profiles')
-          .select('id, name, avatar_url')
-          .in('id', replySenderIds) as { data: any[] | null; error: any };
-
-        if (replyProfiles) {
-          userProfiles?.push(...replyProfiles);
-        }
-      }
+      // Add reply senders to the set for batch fetching
+      replyToMessages.forEach((r: any) => {
+        if (r.sender_id) senderIds.add(r.sender_id);
+      });
     }
   }
+
+  // OPTIMIZED: Single batch fetch for ALL user profiles (senders + reply senders)
+  // This combines what was previously 2-3 sequential queries into 1
+  let userProfiles: any[] = [];
+  if (senderIds.size > 0) {
+    const { data: profiles, error: profilesError } = await supabase
+      .from('user_profiles')
+      .select('id, name, email, avatar_url')
+      .in('id', Array.from(senderIds)) as { data: any[] | null; error: any };
+
+    if (profilesError) {
+      console.error('[getMessages] Error fetching user profiles:', profilesError);
+      // Don't fail if profiles fail, just continue without them
+    } else {
+      userProfiles = profiles || [];
+    }
+  }
+
+  console.log('[getMessages] Fetched', userProfiles.length, 'profiles for', senderIds.size, 'unique senders (optimized batch)');
 
   // Create lookup maps
   const profilesMap = new Map(userProfiles?.map((p: any) => [p.id, p]) || []);
@@ -473,8 +469,60 @@ export async function getCompanyUsers(): Promise<{
 }
 
 /**
- * Get a single message by ID with full sender info
+ * Get a single message by ID with full sender info (OPTIMIZED via RPC)
+ * Uses get_message_with_details RPC function to combine 5 queries into 1
  * Used by real-time hook to fetch complete message data after INSERT event
+ */
+export async function getMessageWithDetailsRpc(
+  messageId: string
+): Promise<{
+  success?: boolean;
+  message?: MessageWithSender;
+  error?: string;
+}> {
+  // Validate input
+  const validation = getMessageByIdSchema.safeParse({ messageId });
+  if (!validation.success) {
+    console.error('[getMessageWithDetailsRpc] Validation failed:', validation.error);
+    return { error: 'Invalid message ID' };
+  }
+
+  console.log('[getMessageWithDetailsRpc] Fetching message via RPC:', messageId);
+
+  // Get user context
+  const userContext = await getUserContext();
+  if ('error' in userContext) {
+    return { error: userContext.error };
+  }
+
+  const { supabase } = userContext;
+
+  // Use optimized RPC function (1 query instead of 5)
+  const { data, error } = await (supabase.rpc as any)('get_message_with_details', {
+    p_message_id: messageId,
+  });
+
+  if (error) {
+    console.error('[getMessageWithDetailsRpc] RPC error:', error);
+    return { error: 'Failed to load message' };
+  }
+
+  if (!data) {
+    console.error('[getMessageWithDetailsRpc] Message not found');
+    return { error: 'Message not found' };
+  }
+
+  console.log('[getMessageWithDetailsRpc] Message fetched successfully via RPC');
+
+  return {
+    success: true,
+    message: data as MessageWithSender,
+  };
+}
+
+/**
+ * Get a single message by ID with full sender info (Legacy - for backward compatibility)
+ * @deprecated Use getMessageWithDetailsRpc for better performance
  */
 export async function getMessageById(
   input: unknown

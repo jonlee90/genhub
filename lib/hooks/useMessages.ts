@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getBrowserClient } from '@/utils/supabase/browser';
-import { getMessageById } from '@/app/actions/chat-queries';
+import { getMessageWithDetailsRpc } from '@/app/actions/chat-queries';
 import type { MessageWithSender } from '@/types/db/chat';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -70,11 +70,19 @@ export function useMessages({
   }, [messages]);
 
   // Debug: Handle INSERT event - new message arrived
+  // OPTIMIZED: Uses RPC function to fetch message with all details in 1 query
   const handleInsert = useCallback(
     async (payload: RealtimePostgresChangesPayload<{ [key: string]: unknown }>) => {
       console.log('[useMessages] INSERT event received:', payload);
 
-      const newRecord = payload.new as { id: string; chat_room_id: string; sender_id: string };
+      const newRecord = payload.new as {
+        id: string;
+        chat_room_id: string;
+        sender_id: string;
+        content?: string;
+        created_at?: string;
+        reply_to_id?: string | null;
+      };
 
       if (!newRecord || !newRecord.id) {
         console.warn('[useMessages] Invalid INSERT payload');
@@ -95,12 +103,12 @@ export function useMessages({
         return;
       }
 
-      // Debug: Fetch full message with sender info
-      console.log('[useMessages] Fetching full message:', newRecord.id);
-      const result = await getMessageById(newRecord.id);
+      // OPTIMIZED: Use single RPC call instead of 5 sequential queries
+      console.log('[useMessages] Fetching full message via RPC:', newRecord.id);
+      const result = await getMessageWithDetailsRpc(newRecord.id);
 
       if (result.message) {
-        console.log('[useMessages] Got full message, adding to state');
+        console.log('[useMessages] Got full message from RPC, adding to state');
 
         setMessages((prev) => {
           // Double-check it doesn't exist (race condition protection)

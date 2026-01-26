@@ -7,7 +7,7 @@
 
 import { Controller } from "react-hook-form";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { MobileInput } from "@/components/mobile/MobileInput";
 import {
   Select,
   SelectContent,
@@ -18,8 +18,9 @@ import {
 import { addSubcontractorValidation } from "@/lib/validation/client-validation";
 import type { TradeType } from "@/types/db/enums";
 import Building2 from "lucide-react/icons/building-2";
-import FileText from "lucide-react/icons/file-text";
+import Briefcase from "lucide-react/icons/briefcase";
 import User from "lucide-react/icons/user";
+import AlertCircle from "lucide-react/icons/alert-circle";
 
 const TRADE_OPTIONS: { value: TradeType; label: string }[] = [
   { value: "carpentry", label: "Carpentry" },
@@ -59,42 +60,33 @@ export function BasicInfoSection({
   return (
     <>
       {/* Company Name - Required */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label
           htmlFor="company_name"
-          className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
+          className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
         >
-          <div className="h-8 w-8 rounded-md bg-construction-blue/10 flex items-center justify-center">
-            <Building2 className="h-4 w-4 text-construction-blue" />
-          </div>
-          Company Name <span className="text-red-600">*</span>
+          <Building2 className="h-4 w-4 text-construction-blue dark:text-construction-blue" />
+          Company Name <span className="text-red-500 dark:text-red-400">*</span>
         </Label>
-        <Input
-          id="company_name"
+        <MobileInput
           {...register("company_name", addSubcontractorValidation.company_name)}
-          type="text"
-          placeholder="ABC Construction LLC"
+          id="company_name"
+          placeholder="e.g., ABC Construction LLC"
           disabled={disabled}
-          aria-required="true"
-          className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+          error={errors.company_name?.message}
+          inputMode="text"
+          enterKeyHint="next"
         />
-        {errors.company_name ? (
-          <p className="text-sm text-red-600 font-medium" role="alert">
-            {errors.company_name.message}
-          </p>
-        ) : null}
       </div>
 
       {/* Trade Specialization - Required */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label
           htmlFor="trade_specialization"
-          className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
+          className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
         >
-          <div className="h-8 w-8 rounded-md bg-construction-blue/10 flex items-center justify-center">
-            <FileText className="h-4 w-4 text-construction-blue" />
-          </div>
-          Trade Specialization <span className="text-red-600">*</span>
+          <Briefcase className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+          Trade Specialization <span className="text-red-500 dark:text-red-400">*</span>
         </Label>
         <Controller
           name="trade_type"
@@ -106,7 +98,10 @@ export function BasicInfoSection({
               onValueChange={field.onChange}
               disabled={disabled}
             >
-              <SelectTrigger aria-required="true" className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue min-h-[44px]">
+              <SelectTrigger
+                aria-required="true"
+                className="h-12 rounded-xl border-gray-200 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue/20 min-h-[44px]"
+              >
                 <SelectValue placeholder="Select trade" />
               </SelectTrigger>
               <SelectContent>
@@ -119,38 +114,32 @@ export function BasicInfoSection({
             </Select>
           )}
         />
-        {errors.trade_type ? (
-          <p className="text-sm text-red-600 font-medium" role="alert">
+        {errors.trade_type && (
+          <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1 mt-1">
+            <AlertCircle className="w-3 h-3" />
             {errors.trade_type.message}
           </p>
-        ) : null}
+        )}
       </div>
 
       {/* Contact Name - Required */}
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label
           htmlFor="contact_name"
-          className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
+          className="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1.5"
         >
-          <div className="h-8 w-8 rounded-md bg-construction-blue/10 flex items-center justify-center">
-            <User className="h-4 w-4 text-construction-blue" />
-          </div>
-          Contact Name <span className="text-red-600">*</span>
+          <User className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+          Contact Name <span className="text-red-500 dark:text-red-400">*</span>
         </Label>
-        <Input
-          id="contact_name"
+        <MobileInput
           {...register("contact_name", addSubcontractorValidation.contact_name)}
-          type="text"
-          placeholder="John Doe"
+          id="contact_name"
+          placeholder="e.g., John Doe"
           disabled={disabled}
-          aria-required="true"
-          className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+          error={errors.contact_name?.message}
+          inputMode="text"
+          enterKeyHint="next"
         />
-        {errors.contact_name ? (
-          <p className="text-sm text-red-600 font-medium" role="alert">
-            {errors.contact_name.message}
-          </p>
-        ) : null}
       </div>
     </>
   );

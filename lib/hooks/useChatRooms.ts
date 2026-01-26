@@ -9,13 +9,40 @@
  * - Re-sort rooms by last message activity
  * - Handle room additions/removals in real-time
  * - FIXED: Stable connection state to prevent flickering
+ * - OPTIMIZED: Debounced room updates to prevent excessive re-renders
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { getBrowserClient } from '@/utils/supabase/browser';
 import { getChatRooms } from '@/app/actions/chat-queries';
 import type { ChatRoomWithUnread } from '@/types/db/chat';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+// Debounce helper for room updates
+function useDebouncedCallback<T extends (...args: unknown[]) => void>(
+  callback: T,
+  delay: number
+): T {
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const callbackRef = useRef(callback);
+
+  // Update callback ref on each render
+  useEffect(() => {
+    callbackRef.current = callback;
+  });
+
+  return useCallback(
+    ((...args: unknown[]) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => {
+        callbackRef.current(...args);
+      }, delay);
+    }) as T,
+    [delay]
+  );
+}
 
 interface UseChatRoomsOptions {
   userId: string;
@@ -136,6 +163,37 @@ export function useChatRooms({
     userIdRef.current = userId;
   }, [userId]);
 
+  // OPTIMIZED: Pending unread updates to batch together
+  const pendingUnreadUpdatesRef = useRef<Map<string, number>>(new Map());
+
+  // OPTIMIZED: Debounced function to flush pending unread updates
+  const flushUnreadUpdates = useDebouncedCallback(() => {
+    const pending = pendingUnreadUpdatesRef.current;
+    if (pending.size === 0) return;
+
+    console.log('[useChatRooms] Flushing', pending.size, 'pending unread updates');
+
+    setRooms((prev) => {
+      let updated = prev.map((room) => {
+        const pendingUnread = pending.get(room.id);
+        if (pendingUnread !== undefined) {
+          return { ...room, unread_count: pendingUnread };
+        }
+        return room;
+      });
+
+      // Sort by most recent activity
+      return updated.sort((a, b) => {
+        const aTime = a.last_message?.created_at || a.updated_at || a.created_at;
+        const bTime = b.last_message?.created_at || b.updated_at || b.created_at;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+    });
+
+    // Clear pending updates
+    pendingUnreadUpdatesRef.current = new Map();
+  }, 100); // 100ms debounce window
+
   const handleNewMessage = useCallback(
     async (payload: RealtimePostgresChangesPayload<{ [key: string]: unknown }>) => {
       console.log('[useChatRooms] New message event:', payload);
@@ -152,9 +210,18 @@ export function useChatRooms({
         return;
       }
 
-      // Debug: Update room state with new message info (using refs to avoid stale closures)
+      // OPTIMIZED: Use functional state update to avoid stale closure issues
+      // and batch rapid updates together
       setRooms((prev) => {
         const currentUserId = userIdRef.current;
+
+        // FIXED: Check if room exists in current state (fixes stale closure issue)
+        const roomExists = prev.some((r) => r.id === newMessage.chat_room_id);
+        if (!roomExists) {
+          console.log('[useChatRooms] Message for unknown room, skipping');
+          return prev;
+        }
+
         const updatedRooms = prev.map((room) => {
           if (room.id === newMessage.chat_room_id) {
             // Debug: Increment unread if message is from someone else
@@ -164,7 +231,12 @@ export function useChatRooms({
               : room.unread_count;
 
             if (incrementUnread) {
-              callbacksRef.current.onUnreadChange?.(room.id, newUnread);
+              // Queue callback to fire after debounce
+              pendingUnreadUpdatesRef.current.set(room.id, newUnread);
+              // Schedule callback notification (debounced)
+              setTimeout(() => {
+                callbacksRef.current.onUnreadChange?.(room.id, newUnread);
+              }, 0);
             }
 
             // Debug: Update last message preview (we don't have sender name here)

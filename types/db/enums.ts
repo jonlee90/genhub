@@ -26,7 +26,8 @@ export type SpatialMarkerType = 'issue' | 'note' | 'photo' | 'inspection' | 'rfi
 export type SpatialProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
 export type TaskStatus = 'todo' | 'in_progress' | 'review' | 'blocked' | 'completed';
-export type TaskType = string; // Task types are now dynamic (stored in task_type_configs table)
+// TaskType was converted from enum to text - now supports custom types from task_type_configs table
+export type TaskType = string;
 export type TradeType = 'general' | 'electrical' | 'plumbing' | 'hvac' | 'carpentry' | 'masonry' | 'roofing' | 'flooring' | 'painting' | 'drywall' | 'concrete' | 'landscaping' | 'demolition' | 'steel_work' | 'glass_glazing' | 'fire_protection' | 'insulation' | 'framing' | 'other';
 export type UserRole = 'admin' | 'project_manager' | 'foreman' | 'field_worker' | 'subcontractor' | 'client';
 

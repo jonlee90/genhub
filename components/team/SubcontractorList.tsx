@@ -162,8 +162,7 @@ export function SubcontractorList({
       <SubcontractorModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        mode={modalMode}
-        subcontractor={editingSubcontractor || undefined}
+        subcontractor={editingSubcontractor || null}
         companyId={companyId}
       />
     </div>

@@ -25,12 +25,14 @@ const createPhaseTemplateSchema = z.object({
   project_type_config_id: z.string().uuid("Invalid project type ID"),
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500).optional(),
+  icon_name: z.string().max(50).optional(),
 });
 
 const updatePhaseTemplateSchema = z.object({
   name: z.string().min(1, "Name is required").max(100).optional(),
   description: z.string().max(500).optional(),
   is_active: z.boolean().optional(),
+  icon_name: z.string().max(50).optional(),
 });
 
 // ============================================
@@ -131,6 +133,7 @@ export async function createPhaseTemplate(formData: FormData): Promise<{
     project_type_config_id: formData.get("project_type_config_id"),
     name: formData.get("name"),
     description: formData.get("description") || undefined,
+    icon_name: formData.get("icon_name") || undefined,
   };
 
   const validation = createPhaseTemplateSchema.safeParse(rawData);
@@ -224,6 +227,7 @@ export async function updatePhaseTemplate(
     name: formData.get("name") || undefined,
     description: formData.get("description") || undefined,
     is_active: formData.get("is_active") === "true",
+    icon_name: formData.get("icon_name") || undefined,
   };
 
   const validation = updatePhaseTemplateSchema.safeParse(rawData);

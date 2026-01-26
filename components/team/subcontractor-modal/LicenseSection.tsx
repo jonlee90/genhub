@@ -6,7 +6,7 @@
  */
 
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { MobileInput } from "@/components/mobile/MobileInput";
 import { addSubcontractorValidation } from "@/lib/validation/client-validation";
 import FileText from "lucide-react/icons/file-text";
 
@@ -22,34 +22,28 @@ export function LicenseSection({
   disabled,
 }: LicenseSectionProps) {
   return (
-    <div className="border-t-2 border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-      <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-        <div className="h-8 w-8 rounded-md bg-construction-blue/10 flex items-center justify-center">
-          <FileText className="h-5 w-5 text-construction-blue" />
-        </div>
+    <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+      <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
+        <FileText className="w-4 h-4 text-construction-blue dark:text-construction-blue" />
         License Information
-      </h3>
+      </h4>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label
           htmlFor="license_number"
-          className="text-gray-900 dark:text-gray-100 font-semibold"
+          className="text-sm font-medium text-gray-700 dark:text-gray-200"
         >
           License Number
         </Label>
-        <Input
-          id="license_number"
+        <MobileInput
           {...register("license_number", addSubcontractorValidation.license_number)}
-          type="text"
-          placeholder="LIC-123456"
+          id="license_number"
+          placeholder="e.g., LIC-123456"
           disabled={disabled}
-          className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+          error={errors.license_number?.message}
+          inputMode="text"
+          enterKeyHint="next"
         />
-        {errors.license_number ? (
-          <p className="text-sm text-red-600 font-medium" role="alert">
-            {errors.license_number.message}
-          </p>
-        ) : null}
       </div>
     </div>
   );

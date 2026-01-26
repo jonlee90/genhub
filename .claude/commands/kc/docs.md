@@ -76,4 +76,3 @@ Created tutorial:
 
 - `agents/technical-documentation-writer.md` - Documentation writer agent
 - `skills/workflow/doc-sync.md` - Documentation synchronization
-- `/kc:sync-docs` - Update documentation indexes

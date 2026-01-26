@@ -107,7 +107,9 @@
       "mcp__playwright__browser_resize",
       "Bash(npm run db:gen-types:*)",
       "Bash(pgrep:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(.venv/bin/python:*)",
+      "Bash(xargs ls:*)"
     ],
     "deny": [],
     "ask": []

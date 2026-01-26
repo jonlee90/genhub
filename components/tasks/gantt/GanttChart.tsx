@@ -307,7 +307,6 @@ export function GanttChart({
             <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
 
             {/* Timeline grid and task rows */}
-            <div className="relative bg-white dark:bg-gray-900" style={{ height: totalHeight }}>
               {/* Grid background */}
               <GanttTimeline config={config} dateCells={dateCells} taskCount={sortedTasks.length} />
 
@@ -340,7 +339,6 @@ export function GanttChart({
                 })}
               </div>
             </div>
-          </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       );
