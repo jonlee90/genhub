@@ -218,19 +218,20 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         {(() => {
           const dateIndicator = getDateIndicator(task.due_date);
           if (!dateIndicator) return null;
-          const isOneDay = taskDurationDays <= 1;
+          // Hide clock icon if task bar takes less than 3 days space (rendering-conditional-render)
+          const showClockIcon = taskDurationDays >= 3;
           return (
             <span className={cn(
               "flex items-center shrink-0 px-1.5 py-0.5 rounded font-semibold",
               isMobile ? "text-[9px]" : "text-[10px]",
               // Center content when no icon, add gap when icon is present
-              isOneDay ? "justify-center" : "gap-0.5",
+              showClockIcon ? "gap-0.5" : "justify-center",
               // Use white/dark background with colored text for visibility on colored bars
               dateIndicator.colorClass.includes("text-red") && "bg-white/90 dark:bg-gray-900/90 text-red-600 dark:text-red-400",
               dateIndicator.colorClass.includes("text-amber") && "bg-white/90 dark:bg-gray-900/90 text-amber-600 dark:text-amber-400",
               dateIndicator.colorClass.includes("text-gray") && "bg-white/90 dark:bg-gray-900/90 text-gray-600 dark:text-gray-300"
             )}>
-              {!isOneDay && <Clock className={cn(isMobile ? "w-2.5 h-2.5" : "w-3 h-3")} />}
+              {showClockIcon ? <Clock className={cn(isMobile ? "w-2.5 h-2.5" : "w-3 h-3")} /> : null}
               {dateIndicator.display}
             </span>
           );
