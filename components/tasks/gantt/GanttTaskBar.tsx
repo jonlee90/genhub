@@ -218,8 +218,10 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         {(() => {
           const dateIndicator = getDateIndicator(task.due_date);
           if (!dateIndicator) return null;
-          // Hide clock icon if task bar takes less than 3 days space (rendering-conditional-render)
-          const showClockIcon = taskDurationDays >= 3;
+          // Hide entire indicator if task bar takes 1 day or less (rendering-conditional-render)
+          if (taskDurationDays <= 1) return null;
+          // Hide clock icon if task bar takes less than 4 days space (rendering-conditional-render)
+          const showClockIcon = taskDurationDays >= 4;
           return (
             <span className={cn(
               "flex items-center shrink-0 px-1.5 py-0.5 rounded font-semibold",
