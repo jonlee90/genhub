@@ -49,6 +49,7 @@ import ChevronRight from "lucide-react/icons/chevron-right";
 import { toast } from "sonner";
 import { getInitials } from "@/lib/utils";
 import { ROLE_CONFIG, STATUS_CONFIG } from "@/lib/team-config";
+import { getDisplayEmail } from "@/lib/team-utils";
 import type { TeamMember } from "@/types/team";
 
 // Dynamic import for heavy modal component
@@ -343,7 +344,7 @@ export function TeamMemberTable({
                         </div>
                       </TableCell>
                       <TableCell className="text-gray-700 dark:text-gray-300">
-                        {member.user_profiles?.email || "No email"}
+                        {getDisplayEmail(member.user_profiles?.email)}
                       </TableCell>
                       <TableCell>
                         <Badge

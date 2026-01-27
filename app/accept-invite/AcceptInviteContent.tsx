@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { type InvitationData } from "@/app/actions/accept-invite";
 import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export function AcceptInviteContent({
   if (initialError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
-        <motion.div
+        <m.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
@@ -78,7 +78,7 @@ export function AcceptInviteContent({
               Return to Home
             </Button>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     );
   }
@@ -130,7 +130,7 @@ export function AcceptInviteContent({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
@@ -138,14 +138,14 @@ export function AcceptInviteContent({
         {/* Success State - Email Sent */}
         {success && authMethod === "email" && (
           <div className="text-center space-y-4">
-            <motion.div
+            <m.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200 }}
               className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
             >
               <Mail className="w-8 h-8 text-construction-blue" />
-            </motion.div>
+            </m.div>
             <div>
               <h1 className="text-2xl font-black text-gray-900 dark:text-gray-100">
                 Check Your Email
@@ -169,14 +169,14 @@ export function AcceptInviteContent({
           <>
             {/* Header */}
             <div className="text-center space-y-4 mb-8">
-              <motion.div
+              <m.div
                 initial={{ rotate: -10 }}
                 animate={{ rotate: 0 }}
                 transition={{ type: "spring", stiffness: 200 }}
                 className="mx-auto w-16 h-16 bg-construction-blue rounded-xl flex items-center justify-center"
               >
                 <HardHat className="w-8 h-8 text-white" />
-              </motion.div>
+              </m.div>
               <div>
                 <h1 className="text-3xl font-black text-gray-900 dark:text-gray-100">
                   Join GenHub
@@ -295,7 +295,7 @@ export function AcceptInviteContent({
             </div>
           </>
         )}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

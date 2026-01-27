@@ -33,10 +33,11 @@ import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import XCircle from 'lucide-react/icons/x-circle';
 import Edit from 'lucide-react/icons/edit';
 import Trash2 from 'lucide-react/icons/trash-2';
+import RotateCcw from 'lucide-react/icons/rotate-ccw';
 import FileText from 'lucide-react/icons/file-text';
 import Shield from 'lucide-react/icons/shield';
 import { toast } from 'sonner';
-import { deactivateSubcontractor } from '@/app/actions/subcontractors';
+import { deactivateSubcontractor, reactivateSubcontractor, deleteSubcontractor } from '@/app/actions/subcontractors';
 
 type Subcontractor = SubcontractorsRow;
 
@@ -45,6 +46,7 @@ interface SubcontractorCardProps {
   canManage: boolean;
   isGCAdmin: boolean;
   onEdit: (subcontractor: Subcontractor) => void;
+  onDeactivate?: () => void;
 }
 
 // Trade badge color mapping
@@ -93,9 +95,10 @@ const TRADE_LABELS: Record<TradeType, string> = {
   other: 'Other',
 };
 
-export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit }: SubcontractorCardProps) {
+export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit, onDeactivate }: SubcontractorCardProps) {
   const [isPending, startTransition] = useTransition();
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   // Check if dates are expiring (within 30 days) or expired
   const checkExpiryStatus = (expiryDate: string | null): 'valid' | 'expiring' | 'expired' => {
@@ -119,6 +122,33 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit 
       const result = await deactivateSubcontractor(subcontractor.id);
       if (result.success) {
         toast.success(result.message);
+        onDeactivate?.();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  const handleReactivate = async () => {
+    startTransition(async () => {
+      const result = await reactivateSubcontractor(subcontractor.id);
+      if (result.success) {
+        toast.success(result.message);
+        onDeactivate?.();
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  const handlePermanentDelete = async () => {
+    setDeleteDialogOpen(false);
+
+    startTransition(async () => {
+      const result = await deleteSubcontractor(subcontractor.id);
+      if (result.success) {
+        toast.success(result.message);
+        onDeactivate?.();
       } else {
         toast.error(result.error);
       }
@@ -175,14 +205,14 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit 
             </Badge>
           </div>
 
-          {/* Action Menu */}
-          {canManage && subcontractor.is_active && (
+          {/* Action Menu - Show for active (canManage) or inactive (isGCAdmin) */}
+          {(canManage && subcontractor.is_active) || (isGCAdmin && !subcontractor.is_active) ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="min-h-[44px] min-w-[44px] p-0 hover:bg-gray-100"
+                  className="min-h-[44px] min-w-[44px] p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
                   disabled={isPending}
                   aria-label={`Actions for ${subcontractor.company_name}`}
                 >
@@ -190,32 +220,59 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit 
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel className="font-bold text-gray-900">Actions</DropdownMenuLabel>
+                <DropdownMenuLabel className="font-bold text-gray-900 dark:text-gray-100">Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() => onEdit(subcontractor)}
-                  disabled={isPending}
-                  className="cursor-pointer min-h-[44px]"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Details
-                </DropdownMenuItem>
-                {isGCAdmin && (
+
+                {/* Active subcontractor actions */}
+                {subcontractor.is_active ? (
                   <>
+                    <DropdownMenuItem
+                      onClick={() => onEdit(subcontractor)}
+                      disabled={isPending}
+                      className="cursor-pointer min-h-[44px]"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Details
+                    </DropdownMenuItem>
+                    {isGCAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeactivateDialogOpen(true)}
+                          disabled={isPending}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 cursor-pointer min-h-[44px]"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Deactivate
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  /* Inactive subcontractor actions (admin only) */
+                  <>
+                    <DropdownMenuItem
+                      onClick={handleReactivate}
+                      disabled={isPending}
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950 cursor-pointer min-h-[44px]"
+                    >
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Reactivate
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => setDeactivateDialogOpen(true)}
+                      onClick={() => setDeleteDialogOpen(true)}
                       disabled={isPending}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer min-h-[44px]"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 cursor-pointer min-h-[44px]"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
-                      Deactivate
+                      Permanently Delete
                     </DropdownMenuItem>
                   </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
-          )}
+          ) : null}
         </div>
 
         {/* Contact Information */}
@@ -337,6 +394,27 @@ export function SubcontractorCard({ subcontractor, canManage, isGCAdmin, onEdit 
             <AlertDialogCancel className="min-h-[44px]">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeactivate} className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]">
               Deactivate
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Permanent Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600">Permanently Delete Subcontractor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete {subcontractor.company_name} and all their data.
+              <span className="block mt-2 font-semibold text-red-600">
+                This action cannot be undone.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-h-[44px]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePermanentDelete} className="bg-red-600 hover:bg-red-700 text-white min-h-[44px]">
+              Delete Forever
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

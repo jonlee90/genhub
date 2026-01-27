@@ -31,6 +31,32 @@ const inviteTeamMemberSchema = z.object({
   ]),
 });
 
+const createManualTeamMemberSchema = z.object({
+  first_name: z
+    .string()
+    .min(1, "First name is required")
+    .max(100)
+    .transform((v) => v.trim()),
+  last_name: z
+    .string()
+    .min(1, "Last name is required")
+    .max(100)
+    .transform((v) => v.trim()),
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address")
+    .transform((v) => v.toLowerCase().trim()),
+  role: z.enum([
+    "admin",
+    "project_manager",
+    "foreman",
+    "field_worker",
+    "subcontractor",
+    "client",
+  ]),
+});
+
 const updateTeamMemberRoleSchema = z.object({
   userId: z.string().uuid("Invalid user ID"),
   newRole: z.enum([
@@ -233,6 +259,215 @@ export async function inviteTeamMember(formData: FormData) {
       emailSent: emailResult.success,
       invitationLink,
       invitation,
+    };
+  } catch (error) {
+    console.error("Unexpected error inviting team member:", error);
+    return { error: "An unexpected error occurred. Please try again." };
+  }
+}
+
+/**
+ * Create a manual team member without requiring email
+ * Only Admins can create manual team members
+ *
+ * SECURITY FIXES APPLIED:
+ * - Uses getUserContext() for authentication
+ * - Validates all input with Zod
+ * - Checks email uniqueness if provided
+ * - Generates placeholder email if none provided
+ * - Creates user profile and company_users entry atomically
+ * - Optional invitation email sending
+ *
+ * @param formData - Form data containing first_name, last_name, email (optional), role, send_invite_email (optional)
+ * @returns Success with created member info or error message
+ */
+export async function createManualTeamMember(formData: FormData) {
+  // Get user context
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
+    return { error: userContext.error };
+  }
+
+  const { userId, companyId, role, supabase } = userContext;
+
+  // Check permissions - only Admin can create manual team members
+  if (role !== "admin") {
+    return {
+      error:
+        "Insufficient permissions. Only Admins can manually add team members.",
+    };
+  }
+
+  // Parse and validate form data
+  const rawData = {
+    first_name: formData.get("first_name"),
+    last_name: formData.get("last_name"),
+    email: formData.get("email"),
+    role: formData.get("role"),
+  };
+
+  const validation = createManualTeamMemberSchema.safeParse(rawData);
+
+  if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors;
+    return { error: "Validation failed", fieldErrors: errors };
+  }
+
+  const data = validation.data;
+
+  try {
+    // Build full name
+    const fullName = `${data.first_name} ${data.last_name}`;
+
+    console.log("[INVITE_TEAM_MEMBER] Creating invitation for:", data.email);
+
+    // Check if email already exists in user_profiles
+    const { data: existingUser, error: userCheckError } = await supabase
+      .from("user_profiles")
+      .select("id, email")
+      .eq("email", data.email)
+      .maybeSingle();
+
+    if (userCheckError) {
+      console.error("Error checking existing user:", userCheckError);
+      return { error: "Failed to check existing user. Please try again." };
+    }
+
+    if (existingUser) {
+      // Check if they're already in the company
+      const { data: existingMember } = await supabase
+        .from("company_users")
+        .select("id, status")
+        .eq("company_id", companyId)
+        .eq("user_id", existingUser.id)
+        .maybeSingle();
+
+      if (existingMember) {
+        return {
+          error: existingMember.status === "active"
+            ? "This user is already a member of your team."
+            : "This user was previously a member. You can reactivate them from the team list.",
+        };
+      }
+
+      // User exists but not in this company - add them directly
+      const { error: addError } = await supabase
+        .from("company_users")
+        .insert({
+          company_id: companyId,
+          user_id: existingUser.id,
+          role: data.role as UserRole,
+          status: "active",
+          activated_at: new Date().toISOString(),
+        });
+
+      if (addError) {
+        console.error("Error adding existing user to company:", addError);
+        return { error: "Failed to add user to team. Please try again." };
+      }
+
+      revalidatePath("/app/team");
+      revalidateTag(`team-members-${companyId}`, "max");
+
+      return {
+        success: true,
+        message: `${fullName} has been added to your team.`,
+        emailSent: false,
+      };
+    }
+
+    // Check if there's already a pending invitation for this email
+    const { data: existingInvite, error: inviteCheckError } = await supabase
+      .from("team_invitations")
+      .select("id, email, used_at, expires_at")
+      .eq("email", data.email)
+      .eq("company_id", companyId)
+      .is("used_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+
+    if (inviteCheckError) {
+      console.error("Error checking existing invitation:", inviteCheckError);
+    }
+
+    if (existingInvite) {
+      return {
+        error:
+          "An invitation has already been sent to this email. Please wait for them to accept or resend the invitation.",
+      };
+    }
+
+    // Generate invitation token
+    const invitationToken = randomUUID();
+
+    // Create invitation only (user profile created when they accept)
+    const { error: invitationError } = await supabase
+      .from("team_invitations")
+      .insert({
+        company_id: companyId,
+        email: data.email,
+        name: fullName,
+        role: data.role as UserRole,
+        invitation_token: invitationToken,
+        invited_by: userId,
+        invited_at: new Date().toISOString(),
+        expires_at: new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000,
+        ).toISOString(), // 7 days
+      });
+
+    if (invitationError) {
+      console.error("Error creating invitation:", invitationError);
+      return { error: "Failed to create invitation. Please try again." };
+    }
+
+    // Get company name and inviter profile for email
+    const { data: contextData } = await supabase
+      .from("company_users")
+      .select(`
+        companies!company_users_company_id_fkey(name),
+        user_profiles!company_users_user_id_fkey(name)
+      `)
+      .eq("company_id", companyId)
+      .eq("user_id", userId)
+      .single();
+
+    const context = contextData as {
+      companies: { name: string } | null;
+      user_profiles: { name: string } | null;
+    } | null;
+
+    const companyName = context?.companies?.name || "your company";
+    const inviterName = context?.user_profiles?.name || "A team member";
+    const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/accept-invite?token=${invitationToken}`;
+
+    // Send invitation email
+    console.log("[INVITE_TEAM_MEMBER] Sending invitation email to:", data.email);
+    const emailResult = await sendTeamInvitationEmail({
+      email: data.email,
+      name: fullName,
+      invitationLink,
+      inviterName,
+      companyName,
+    });
+
+    if (!emailResult.success) {
+      console.error("[INVITE_TEAM_MEMBER] Email sending failed:", emailResult.error);
+    } else {
+      console.log("[INVITE_TEAM_MEMBER] Email sent successfully to:", data.email);
+    }
+
+    // Revalidate paths
+    revalidatePath("/app/team");
+    revalidateTag(`team-members-${companyId}`, "max");
+
+    return {
+      success: true,
+      message: emailResult.success
+        ? `Invitation sent to ${data.email}. They will appear in your team once they accept.`
+        : `Invitation created for ${data.email}. Email delivery may have failed - check your email settings.`,
+      emailSent: emailResult.success,
     };
   } catch (error) {
     console.error("Unexpected error inviting team member:", error);

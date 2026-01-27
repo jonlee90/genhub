@@ -2571,6 +2571,7 @@ export type Database = {
           invited_at: string
           invited_by: string
           name: string
+          role: string
           updated_at: string
           used_at: string | null
         }
@@ -2584,6 +2585,7 @@ export type Database = {
           invited_at?: string
           invited_by: string
           name: string
+          role?: string
           updated_at?: string
           used_at?: string | null
         }
@@ -2597,6 +2599,7 @@ export type Database = {
           invited_at?: string
           invited_by?: string
           name?: string
+          role?: string
           updated_at?: string
           used_at?: string | null
         }

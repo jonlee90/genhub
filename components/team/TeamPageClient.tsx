@@ -4,13 +4,12 @@
  * TeamPageClient - Optimized Team List Page
  *
  * Performance optimizations:
- * - Memoized filter/sort/stats calculations
+ * - Memoized sort/stats calculations
  * - CSS-based stagger animations
  * - Dynamic import for InviteTeamMemberModal
- * - Reduced framer-motion usage
  */
 
-import { useState, useCallback, useMemo, memo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { PullToRefresh } from '@/components/mobile/PullToRefresh';
@@ -19,7 +18,6 @@ import { SwipeableCard } from '@/components/mobile/SwipeableCard';
 import { TeamMemberCard } from './TeamMemberCard';
 import { TeamMemberTable } from './TeamMemberTable';
 import { TeamSummary, type TeamSummaryStats } from './TeamSummary';
-import { TeamFilters } from './TeamFilters';
 import { Button } from '@/components/ui/button';
 import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
 import { useIsMobile } from '@/lib/hooks/useMediaQuery';
@@ -28,8 +26,6 @@ import { deactivateTeamMember } from '@/app/actions/team';
 import Users from 'lucide-react/icons/users';
 import UserMinus from 'lucide-react/icons/user-minus';
 import UserPlus from 'lucide-react/icons/user-plus';
-import ShieldAlert from 'lucide-react/icons/shield-alert';
-import X from 'lucide-react/icons/x';
 import { toast } from 'sonner';
 import type { UserRole } from '@/types/db/enums';
 import type { TeamMember, TeamStats } from '@/types/team';
@@ -39,70 +35,6 @@ const InviteTeamMemberModal = dynamic(
   () => import('./InviteTeamMemberModal').then((m) => ({ default: m.InviteTeamMemberModal })),
   { ssr: false }
 );
-
-// ============================================
-// Extracted Components for Better Performance
-// ============================================
-
-/**
- * No results state when filters return empty - memoized
- */
-const NoResultsState = memo(function NoResultsState({
-  onClearFilters,
-}: {
-  onClearFilters: () => void;
-}) {
-  return (
-    <div className="relative">
-      <div className="absolute inset-0 border-2 border-dashed border-construction-red/20 dark:border-construction-red/30 rounded-xl transform rotate-1" />
-      <div className="relative flex flex-col items-center justify-center py-16 md:py-20 px-4 md:px-8 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-        <div className="mb-4 md:mb-6 p-4 md:p-6 bg-gradient-to-br from-construction-red/10 to-construction-red/5 dark:from-construction-red/20 dark:to-construction-red/10 rounded-2xl border-2 border-construction-red/20 dark:border-construction-red/40">
-          <ShieldAlert className="h-12 w-12 md:h-16 md:w-16 text-construction-red" />
-        </div>
-        <h3 className="text-xl md:text-3xl font-black text-construction-red dark:text-construction-red mb-2 md:mb-3">
-          NO TEAM MEMBERS FOUND
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400 font-medium mb-4 md:mb-8 max-w-md text-center text-sm md:text-lg">
-          No team members match your current filters. Adjust search criteria or clear all filters.
-        </p>
-        <Button
-          size="lg"
-          onClick={onClearFilters}
-          className="h-11 md:h-12 px-6 md:px-8 bg-white dark:bg-gray-900 border-2 border-construction-red hover:bg-construction-red hover:text-white dark:hover:bg-construction-red dark:hover:text-white transition-all shadow-construction font-black group"
-        >
-          <X className="mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
-          CLEAR ALL FILTERS
-        </Button>
-      </div>
-    </div>
-  );
-});
-
-/**
- * Mobile empty filter state - simpler version
- */
-const MobileNoResultsState = memo(function MobileNoResultsState({
-  onClearFilters,
-}: {
-  onClearFilters: () => void;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-        <Users className="w-8 h-8 text-gray-400 dark:text-gray-600" />
-      </div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">No members found</h3>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-xs">Try adjusting your filters</p>
-      <button
-        type="button"
-        onClick={onClearFilters}
-        className="h-11 px-6 rounded-xl font-semibold text-construction-red dark:text-construction-red bg-red-50 dark:bg-construction-red/10 active:bg-red-100 dark:active:bg-construction-red/20 transition-colors"
-      >
-        Clear Filters
-      </button>
-    </div>
-  );
-});
 
 // ============================================
 // Main Component
@@ -121,12 +53,6 @@ export function TeamPageClient({
   companyId,
   stats,
 }: TeamPageClientProps) {
-  // Filter states
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [roleFilter, setRoleFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
-
   // UI states
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [isPending, setIsPending] = useState<string | null>(null);
@@ -171,65 +97,14 @@ export function TeamPageClient({
     // For now, just log - could open a detail modal
   }, []);
 
-  // Filter and sort members - memoized
-  const filteredMembers = useMemo(() => {
-    let filtered = [...members];
-
-    // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (member) =>
-          member.user_profiles?.name?.toLowerCase().includes(query) ||
-          member.user_profiles?.email?.toLowerCase().includes(query) ||
-          member.role.toLowerCase().includes(query)
-      );
-    }
-
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((member) => member.status === statusFilter);
-    }
-
-    // Role filter
-    if (roleFilter !== 'all') {
-      filtered = filtered.filter((member) => member.role === roleFilter);
-    }
-
-    // Sorting
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          const nameA = a.user_profiles?.name || a.user_profiles?.email || '';
-          const nameB = b.user_profiles?.name || b.user_profiles?.email || '';
-          return nameA.localeCompare(nameB);
-        case 'email':
-          const emailA = a.user_profiles?.email || '';
-          const emailB = b.user_profiles?.email || '';
-          return emailA.localeCompare(emailB);
-        case 'role':
-          return a.role.localeCompare(b.role);
-        case 'joined':
-          const dateA = new Date(a.activated_at || a.invited_at || 0).getTime();
-          const dateB = new Date(b.activated_at || b.invited_at || 0).getTime();
-          return dateB - dateA;
-        default:
-          const defaultNameA = a.user_profiles?.name || a.user_profiles?.email || '';
-          const defaultNameB = b.user_profiles?.name || b.user_profiles?.email || '';
-          return defaultNameA.localeCompare(defaultNameB);
-      }
+  // Sort members by name - memoized
+  const sortedMembers = useMemo(() => {
+    return [...members].sort((a, b) => {
+      const nameA = a.user_profiles?.name || a.user_profiles?.email || '';
+      const nameB = b.user_profiles?.name || b.user_profiles?.email || '';
+      return nameA.localeCompare(nameB);
     });
-
-    return filtered;
-  }, [members, searchQuery, statusFilter, roleFilter, sortBy]);
-
-  // Clear all filters
-  const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setStatusFilter('all');
-    setRoleFilter('all');
-    setSortBy('name');
-  }, []);
+  }, [members]);
 
   // Calculate team summary stats - memoized
   const teamSummaryStats = useMemo((): TeamSummaryStats | null => {
@@ -340,25 +215,9 @@ export function TeamPageClient({
                 </div>
               )}
 
-              {/* Filters */}
-              <TeamFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
-                roleFilter={roleFilter}
-                onRoleChange={setRoleFilter}
-                sortBy={sortBy}
-                onSortChange={setSortBy}
-                members={members}
-              />
-
               {/* Team member cards */}
-              {filteredMembers.length === 0 ? (
-                <MobileNoResultsState onClearFilters={clearFilters} />
-              ) : (
-                <div className="space-y-3 pb-32">
-                  {filteredMembers.map((member, index) => (
+              <div className="space-y-3 pb-32">
+                {sortedMembers.map((member, index) => (
                     <div
                       key={member.id}
                       className="animate-in fade-in slide-in-from-bottom-4"
@@ -385,9 +244,8 @@ export function TeamPageClient({
                         />
                       </SwipeableCard>
                     </div>
-                  ))}
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           </PullToRefresh>
         </div>
@@ -427,29 +285,12 @@ export function TeamPageClient({
             </div>
           )}
 
-          {/* Filters */}
-          <TeamFilters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            roleFilter={roleFilter}
-            onRoleChange={setRoleFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            members={members}
+          {/* Team member table */}
+          <TeamMemberTable
+            members={sortedMembers}
+            currentUserRole={currentUserRole}
+            companyId={companyId}
           />
-
-          {/* Team member table or empty state */}
-          {filteredMembers.length === 0 ? (
-            <NoResultsState onClearFilters={clearFilters} />
-          ) : (
-            <TeamMemberTable
-              members={filteredMembers}
-              currentUserRole={currentUserRole}
-              companyId={companyId}
-            />
-          )}
 
           <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
         </div>

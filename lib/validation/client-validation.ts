@@ -141,6 +141,30 @@ export const inviteTeamMemberValidation = {
 };
 
 /**
+ * Manual Team Member addition validation rules
+ */
+export const manualTeamMemberValidation = {
+  first_name: {
+    required: 'First name is required',
+    maxLength: {
+      value: 100,
+      message: 'First name must be less than 100 characters',
+    },
+  },
+  last_name: {
+    required: 'Last name is required',
+    maxLength: {
+      value: 100,
+      message: 'Last name must be less than 100 characters',
+    },
+  },
+  email: optionalEmailValidation,
+  role: {
+    required: 'Please select a role',
+  },
+};
+
+/**
  * Create Project validation rules
  */
 export const createProjectValidation = {

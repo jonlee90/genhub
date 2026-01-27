@@ -86,12 +86,14 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
   canManage,
   isGCAdmin,
   onEdit,
+  onDeactivate,
 }: {
   subcontractors: SubcontractorsRow[];
   isMobile: boolean;
   canManage: boolean;
   isGCAdmin: boolean;
   onEdit: (sub: SubcontractorsRow) => void;
+  onDeactivate: () => void;
 }) {
   return (
     <div
@@ -116,6 +118,7 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
             canManage={canManage}
             isGCAdmin={isGCAdmin}
             onEdit={onEdit}
+            onDeactivate={onDeactivate}
           />
         </div>
       ))}
@@ -272,8 +275,6 @@ export function SubcontractorsPageClient({
   // Filter states
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [tradeFilter, setTradeFilter] = useState<string>('all');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [performanceFilter, setPerformanceFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('name');
 
   // Pagination state
@@ -302,35 +303,6 @@ export function SubcontractorsPageClient({
     router.refresh();
   }, [router]);
 
-  // Helper function to get status
-  const getStatus = useCallback((sub: SubcontractorsRow): string => {
-    if (!sub.is_active) return 'inactive';
-
-    const isExpiringSoon = (expiryDate: string | null): boolean => {
-      if (!expiryDate) return false;
-      const expiry = new Date(expiryDate);
-      const now = new Date();
-      const daysUntilExpiry = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
-    };
-
-    const isExpired = (expiryDate: string | null): boolean => {
-      if (!expiryDate) return false;
-      const expiry = new Date(expiryDate);
-      const now = new Date();
-      return expiry < now;
-    };
-
-    const licenseExpiring = isExpiringSoon(sub.license_expiry);
-    const insuranceExpiring = isExpiringSoon(sub.insurance_expiry);
-    const licenseExpired = isExpired(sub.license_expiry);
-    const insuranceExpired = isExpired(sub.insurance_expiry);
-
-    if (licenseExpired || insuranceExpired) return 'expired';
-    if (licenseExpiring || insuranceExpiring) return 'expiring';
-    return 'active';
-  }, []);
-
   // Filter and sort subcontractors - memoized
   const filteredSubcontractors = useMemo(() => {
     let filtered = [...subcontractors];
@@ -352,23 +324,6 @@ export function SubcontractorsPageClient({
       filtered = filtered.filter((sub) => sub.trade_specialization === tradeFilter);
     }
 
-    // Status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter((sub) => getStatus(sub) === statusFilter);
-    }
-
-    // Performance filter
-    if (performanceFilter !== 'all') {
-      if (performanceFilter === 'unrated') {
-        filtered = filtered.filter((sub) => !sub.performance_rating);
-      } else {
-        const targetRating = parseInt(performanceFilter);
-        filtered = filtered.filter(
-          (sub) => sub.performance_rating && Math.floor(sub.performance_rating) === targetRating
-        );
-      }
-    }
-
     // Sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
@@ -386,7 +341,7 @@ export function SubcontractorsPageClient({
     });
 
     return filtered;
-  }, [subcontractors, searchQuery, tradeFilter, statusFilter, performanceFilter, sortBy, getStatus]);
+  }, [subcontractors, searchQuery, tradeFilter, sortBy]);
 
   // Paginated results - memoized
   const paginatedSubcontractors = useMemo(() => {
@@ -400,14 +355,12 @@ export function SubcontractorsPageClient({
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, tradeFilter, statusFilter, performanceFilter, sortBy]);
+  }, [searchQuery, tradeFilter, sortBy]);
 
   // Clear all filters
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setTradeFilter('all');
-    setStatusFilter('all');
-    setPerformanceFilter('all');
     setSortBy('name');
   }, []);
 
@@ -416,6 +369,11 @@ export function SubcontractorsPageClient({
     setSelectedSubcontractor(sub);
     setShowCreateModal(true);
   }, []);
+
+  // Handle deactivate - refresh to update list
+  const handleDeactivate = useCallback(() => {
+    router.refresh();
+  }, [router]);
 
   // Handle modal close
   const handleModalClose = useCallback(() => {
@@ -496,10 +454,6 @@ export function SubcontractorsPageClient({
                 onSearchChange={setSearchQuery}
                 tradeFilter={tradeFilter}
                 onTradeChange={setTradeFilter}
-                statusFilter={statusFilter}
-                onStatusChange={setStatusFilter}
-                performanceFilter={performanceFilter}
-                onPerformanceChange={setPerformanceFilter}
                 sortBy={sortBy}
                 onSortChange={setSortBy}
                 subcontractors={subcontractors}
@@ -517,6 +471,7 @@ export function SubcontractorsPageClient({
                     canManage={canCreate}
                     isGCAdmin={isGCAdmin}
                     onEdit={handleEdit}
+                    onDeactivate={handleDeactivate}
                   />
 
                   {/* Pagination */}
@@ -571,10 +526,6 @@ export function SubcontractorsPageClient({
             onSearchChange={setSearchQuery}
             tradeFilter={tradeFilter}
             onTradeChange={setTradeFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            performanceFilter={performanceFilter}
-            onPerformanceChange={setPerformanceFilter}
             sortBy={sortBy}
             onSortChange={setSortBy}
             subcontractors={subcontractors}
@@ -591,6 +542,7 @@ export function SubcontractorsPageClient({
                 canManage={canCreate}
                 isGCAdmin={isGCAdmin}
                 onEdit={handleEdit}
+                onDeactivate={handleDeactivate}
               />
 
               {/* Pagination */}

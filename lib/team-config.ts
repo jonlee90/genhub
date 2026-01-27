@@ -62,17 +62,17 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
 export const STATUS_CONFIG: Record<MemberStatus, StatusConfig> = {
   active: {
     label: "Active",
-    color: "bg-green-100 text-green-800 border-green-300",
-    dotColor: "bg-green-500",
+    color: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+    dotColor: "bg-green-500 dark:bg-green-400",
   },
   invited: {
     label: "Invited",
-    color: "bg-yellow-100 text-yellow-800 border-yellow-300",
-    dotColor: "bg-yellow-500",
+    color: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800",
+    dotColor: "bg-yellow-500 dark:bg-yellow-400",
   },
   inactive: {
     label: "Inactive",
-    color: "bg-gray-100 text-gray-800 border-gray-300",
-    dotColor: "bg-gray-400",
+    color: "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700",
+    dotColor: "bg-gray-400 dark:bg-gray-500",
   },
 } as const;

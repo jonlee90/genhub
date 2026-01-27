@@ -17,10 +17,6 @@ interface SubcontractorFiltersProps {
   onSearchChange: (value: string) => void;
   tradeFilter: string;
   onTradeChange: (value: string) => void;
-  statusFilter: string;
-  onStatusChange: (value: string) => void;
-  performanceFilter: string;
-  onPerformanceChange: (value: string) => void;
   sortBy: string;
   onSortChange: (value: string) => void;
   subcontractors: SubcontractorsRow[];
@@ -58,26 +54,6 @@ const TRADE_LABELS: Record<TradeType, string> = {
   other: 'Other',
 };
 
-// Status labels
-const STATUS_LABELS: Record<string, string> = {
-  all: 'All Status',
-  active: 'Active',
-  expiring: 'Expiring Soon',
-  expired: 'Expired',
-  inactive: 'Inactive',
-};
-
-// Performance labels
-const PERFORMANCE_LABELS: Record<string, string> = {
-  all: 'All Ratings',
-  '5': '5 Stars',
-  '4': '4 Stars',
-  '3': '3 Stars',
-  '2': '2 Stars',
-  '1': '1 Star',
-  unrated: 'Unrated',
-};
-
 // Sort labels
 const SORT_LABELS: Record<string, string> = {
   name: 'Name (A-Z)',
@@ -91,10 +67,6 @@ export function SubcontractorFilters({
   onSearchChange,
   tradeFilter,
   onTradeChange,
-  statusFilter,
-  onStatusChange,
-  performanceFilter,
-  onPerformanceChange,
   sortBy,
   onSortChange,
   subcontractors,
@@ -124,20 +96,6 @@ export function SubcontractorFilters({
 
         {/* Filter dropdowns in a scrollable row */}
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
-          {/* Status filter */}
-          <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger className="w-[140px] h-11 flex-shrink-0 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  <span className="font-medium">{label}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           {/* Trade filter */}
           <Select value={tradeFilter} onValueChange={onTradeChange}>
             <SelectTrigger className="w-[140px] h-11 flex-shrink-0 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
@@ -150,20 +108,6 @@ export function SubcontractorFilters({
               {availableTrades.map((trade) => (
                 <SelectItem key={trade} value={trade}>
                   <span className="font-medium">{TRADE_LABELS[trade]}</span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Performance filter */}
-          <Select value={performanceFilter} onValueChange={onPerformanceChange}>
-            <SelectTrigger className="w-[140px] h-11 flex-shrink-0 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.entries(PERFORMANCE_LABELS).map(([value, label]) => (
-                <SelectItem key={value} value={value}>
-                  <span className="font-medium">{label}</span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -202,20 +146,6 @@ export function SubcontractorFilters({
 
       {/* Filter row */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Status filter */}
-        <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-full md:w-[180px] h-11 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                <span className="font-medium">{label}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* Trade filter */}
         <Select value={tradeFilter} onValueChange={onTradeChange}>
           <SelectTrigger className="w-full md:w-[200px] h-11 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
@@ -228,20 +158,6 @@ export function SubcontractorFilters({
             {availableTrades.map((trade) => (
               <SelectItem key={trade} value={trade}>
                 <span className="font-medium">{TRADE_LABELS[trade]}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Performance filter */}
-        <Select value={performanceFilter} onValueChange={onPerformanceChange}>
-          <SelectTrigger className="w-full md:w-[180px] h-11 border-2 border-gray-200 dark:border-gray-700 font-bold hover:border-construction-blue/50 dark:hover:border-construction-blue/70 transition-colors dark:bg-gray-900 dark:text-gray-100">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(PERFORMANCE_LABELS).map(([value, label]) => (
-              <SelectItem key={value} value={value}>
-                <span className="font-medium">{label}</span>
               </SelectItem>
             ))}
           </SelectContent>

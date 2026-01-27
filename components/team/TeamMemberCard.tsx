@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn, getInitials } from "@/lib/utils";
 import { ROLE_CONFIG, STATUS_CONFIG } from "@/lib/team-config";
+import { getDisplayEmail } from "@/lib/team-utils";
 import type { TeamMember } from "@/types/team";
 
 interface TeamMemberCardProps {
@@ -36,7 +37,7 @@ export function TeamMemberCard({
   const RoleIcon = roleConfig.icon;
 
   const name = member.user_profiles?.name || "Unknown";
-  const email = member.user_profiles?.email || "No email";
+  const email = getDisplayEmail(member.user_profiles?.email);
   const avatarUrl = member.user_profiles?.avatar_url;
 
   return (

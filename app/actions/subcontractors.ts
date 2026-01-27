@@ -140,6 +140,10 @@ const deactivateSubcontractorSchema = z.object({
   id: z.string().uuid("Invalid subcontractor ID"),
 });
 
+const deleteSubcontractorSchema = z.object({
+  id: z.string().uuid("Invalid subcontractor ID"),
+});
+
 const uploadDocumentSchema = z.object({
   subcontractor_id: z.string().uuid("Invalid subcontractor ID"),
   document_type: z.enum(["license", "insurance"], {
@@ -541,6 +545,193 @@ export async function deactivateSubcontractor(id: string) {
     };
   } catch (error) {
     console.error("Unexpected error deactivating subcontractor:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
+}
+
+/**
+ * Reactivate an inactive subcontractor
+ * Only Admins can reactivate subcontractors
+ *
+ * @param id - ID of the subcontractor to reactivate
+ * @returns Success or error message
+ */
+export async function reactivateSubcontractor(id: string) {
+  // Get user context
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
+    return { success: false, error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+
+  // Check permissions - only Admin can reactivate
+  if (role !== "admin") {
+    return {
+      success: false,
+      error:
+        "Insufficient permissions. Only Admins can reactivate subcontractors.",
+    };
+  }
+
+  // Validate input
+  const validation = deactivateSubcontractorSchema.safeParse({ id });
+
+  if (!validation.success) {
+    return { success: false, error: "Invalid subcontractor ID" };
+  }
+
+  try {
+    // Check if subcontractor exists and belongs to user's company
+    const { data: existingSubcontractor, error: fetchError } = await supabase
+      .from("subcontractors")
+      .select("id, company_id, company_name, is_active")
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (fetchError || !existingSubcontractor) {
+      console.error("Error fetching subcontractor:", fetchError);
+      return {
+        success: false,
+        error: "Subcontractor not found in your company.",
+      };
+    }
+
+    if (existingSubcontractor.is_active) {
+      return {
+        success: false,
+        error: "This subcontractor is already active.",
+      };
+    }
+
+    // Reactivate subcontractor
+    const { data: reactivatedSubcontractor, error: updateError } =
+      await supabase
+        .from("subcontractors")
+        .update({
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (updateError) {
+      console.error("Error reactivating subcontractor:", updateError);
+      return {
+        success: false,
+        error: "Failed to reactivate subcontractor. Please try again.",
+      };
+    }
+
+    // Revalidate paths
+    revalidatePath("/app/team/subcontractors");
+    revalidateTag(`subcontractors-${companyId}`, "max");
+    revalidateTag(`subcontractor-${id}`, "max");
+
+    return {
+      success: true,
+      message: `Subcontractor ${existingSubcontractor.company_name} reactivated successfully`,
+      data: reactivatedSubcontractor,
+    };
+  } catch (error) {
+    console.error("Unexpected error reactivating subcontractor:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
+}
+
+/**
+ * Permanently delete a subcontractor (hard delete)
+ * Only Admins can permanently delete subcontractors
+ * Subcontractor must be inactive (deactivated) first
+ *
+ * @param id - ID of the subcontractor to delete
+ * @returns Success or error message
+ */
+export async function deleteSubcontractor(id: string) {
+  // Get user context
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
+    return { success: false, error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+
+  // Check permissions - only Admin can permanently delete
+  if (role !== "admin") {
+    return {
+      success: false,
+      error:
+        "Insufficient permissions. Only Admins can permanently delete subcontractors.",
+    };
+  }
+
+  // Validate input
+  const validation = deleteSubcontractorSchema.safeParse({ id });
+
+  if (!validation.success) {
+    return { success: false, error: "Invalid subcontractor ID" };
+  }
+
+  try {
+    // Check if subcontractor exists and belongs to user's company
+    const { data: existingSubcontractor, error: fetchError } = await supabase
+      .from("subcontractors")
+      .select("id, company_id, company_name, is_active")
+      .eq("id", id)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (fetchError || !existingSubcontractor) {
+      console.error("Error fetching subcontractor:", fetchError);
+      return {
+        success: false,
+        error: "Subcontractor not found in your company.",
+      };
+    }
+
+    // Must be inactive before permanent deletion
+    if (existingSubcontractor.is_active) {
+      return {
+        success: false,
+        error:
+          "Cannot permanently delete an active subcontractor. Please deactivate first.",
+      };
+    }
+
+    // Permanently delete the subcontractor
+    const { error: deleteError } = await supabase
+      .from("subcontractors")
+      .delete()
+      .eq("id", id);
+
+    if (deleteError) {
+      console.error("Error deleting subcontractor:", deleteError);
+      return {
+        success: false,
+        error: "Failed to delete subcontractor. Please try again.",
+      };
+    }
+
+    // Revalidate paths
+    revalidatePath("/app/team/subcontractors");
+    revalidateTag(`subcontractors-${companyId}`, "max");
+
+    return {
+      success: true,
+      message: `Subcontractor ${existingSubcontractor.company_name} permanently deleted`,
+    };
+  } catch (error) {
+    console.error("Unexpected error deleting subcontractor:", error);
     return {
       success: false,
       error: "An unexpected error occurred. Please try again.",
