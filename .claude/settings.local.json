@@ -109,7 +109,12 @@
       "Bash(pgrep:*)",
       "Bash(node:*)",
       "Bash(.venv/bin/python:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(xargs:*)",
+      "Bash(for dir in tasks projects chat materials team expenses settings ui forms shared)",
+      "Bash(for dir in app lib hooks types utils)",
+      "Bash(wc:*)",
+      "mcp__plugin_serena_serena__edit_memory"
     ],
     "deny": [],
     "ask": []

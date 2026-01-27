@@ -32,3 +32,12 @@ components/      # UI components (210+)
 ## Design System
 - Primary: `#001B51` | Accent: `#3C3C3C`
 - Success: `#059669` | Error: `#DC2626`
+
+## Knowledge System
+| Document | Purpose |
+|----------|---------|
+| `.claude/docs/architecture-index.md` | File placement, module map |
+| `.claude/docs/dependency-graph.md` | Impact analysis, critical paths |
+| `.claude/docs/context-strategy.md` | What to load when |
+| Serena: `genhub-reuse-registry` | Reusable patterns |
+| Serena: `genhub-duplication-hotspots` | Known duplication areas |

@@ -118,7 +118,7 @@ export function TaskExpensesSection({
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4 text-construction-blue" />
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-            Expenses
+            Expenses <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
             {expenses.length > 0 && (
               <Badge variant="secondary" className="ml-2 text-xs">
                 {expenses.length}

@@ -35,7 +35,8 @@
 | ResponsiveModal only | `<Dialog` from Radix | **REJECT** |
 | Lucide icons only | heroicons/fontawesome imports | **REJECT** |
 | 44px touch targets | Missing `min-h-[44px]` on buttons/links | **FIX** |
-| **Skills loaded** | React change without `vercel-react-best-practices` | **STOP** |
+| Skills loaded | React change without `vercel-react-best-practices` | **STOP** |
+| No report files | Creating `.claude/reports/*.md` | **REJECT** |
 
 ```
 DB ACCESS RULES:
@@ -102,11 +103,23 @@ Server Components → ✅ YES (data fetching, SSR)
 
 ---
 
+## KNOWLEDGE SYSTEM
+
+| Resource | When to Load |
+|----------|--------------|
+| `.claude/docs/architecture-index.md` | File placement, module map |
+| `.claude/docs/dependency-graph.md` | Refactors, impact analysis |
+| `.claude/docs/context-strategy.md` | Deciding what context to load |
+| Serena: `genhub-reuse-registry` | Before creating components/patterns |
+| Serena: `genhub-duplication-hotspots` | Before creating new patterns |
+
+---
+
 ## MCP TOOLS
 
 | Tool | When |
 |------|------|
-| **Serena** `read_memory` | Load `genhub-component-patterns`, `genhub-server-actions`, `genhub-database-schema` |
+| **Serena** `read_memory` | Load `genhub-reuse-registry`, `genhub-component-patterns`, `genhub-server-actions` |
 | **Serena** `find_symbol` | Find existing patterns before writing |
 | **Context7** | External library docs |
 | **Supabase MCP** | Schema ops (backend-engineer only) |

@@ -8,10 +8,13 @@ interface GanttTimelineProps {
   config: GanttConfig;
   dateCells: DateCell[];
   taskCount: number;
+  totalWidth: number;
 }
 
-export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCells, taskCount }: GanttTimelineProps) {
+export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCells, taskCount, totalWidth }: GanttTimelineProps) {
   const { rowHeight, sidebarWidth } = config;
+  // Calculate the grid width (chart area without sidebar)
+  const gridWidth = totalWidth - sidebarWidth;
   const totalHeight = taskCount * rowHeight;
   const todayX = getTodayPosition(config);
   const isMobile = sidebarWidth <= 140;
@@ -33,7 +36,6 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
 
   // Define colors based on dark mode
   const colors = {
-    background: isDarkMode ? '#111827' : '#FFFFFF',
     weekend: isDarkMode ? '#1f2937' : '#F3F4F6',
     line: isDarkMode ? '#374151' : '#E5E7EB',
   };
@@ -57,9 +59,10 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
 
   return (
     <svg
-      className="absolute inset-0 pointer-events-none"
+      className="absolute top-0 pointer-events-none"
       style={{
         left: sidebarWidth,
+        width: gridWidth,
         height: totalHeight,
       }}
     >
@@ -80,8 +83,14 @@ export const GanttTimeline = React.memo(function GanttTimeline({ config, dateCel
         </marker>
       </defs>
 
-      {/* Solid background - themed */}
-      <rect width="100%" height="100%" fill={colors.background} />
+      {/* Solid background for the bar area - provides consistent base for grid lines */}
+      <rect
+        x={0}
+        y={0}
+        width="100%"
+        height={totalHeight}
+        fill={isDarkMode ? '#111827' : '#ffffff'}
+      />
 
       {/* Weekend shading */}
       {weekendRects.map((rect, index) => (

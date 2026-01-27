@@ -508,8 +508,7 @@ function TaskModalForm({
 
   const approvalBadge = mode === "edit" &&
     task?.task_type === "approval" &&
-    task.approval_status &&
-    formState.config.styling.headerBadge === "approval_status" && (
+    task.approval_status ? (
       <span
         className={cn(
           "px-2.5 py-1 rounded-full text-xs font-semibold",
@@ -523,7 +522,7 @@ function TaskModalForm({
       >
         {task.approval_status.replace("_", " ").toUpperCase()}
       </span>
-    );
+    ) : undefined;
 
   const selectedProject = projects.find(
     (p) => p.id === formState.selectedProjectId,

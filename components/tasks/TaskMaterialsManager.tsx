@@ -85,6 +85,7 @@ export function TaskMaterialsManager({
   );
   const [materials, setMaterials] = useState<MaterialAssignment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasLoadedInitially, setHasLoadedInitially] = useState(false);
   const { error, setError, clearError } = useActionWithError();
 
   // Load materials when in edit mode
@@ -105,6 +106,7 @@ export function TaskMaterialsManager({
     }
 
     setIsLoading(false);
+    setHasLoadedInitially(true);
   }, [taskId, setError]);
 
   // Initial load - call loadMaterials on mount in edit mode
@@ -115,6 +117,13 @@ export function TaskMaterialsManager({
       loadMaterials();
     }
   }, [mode, taskId, loadMaterials]);
+
+  // Switch to search tab if no materials on initial load
+  useEffect(() => {
+    if (mode === "edit" && hasLoadedInitially && materials.length === 0) {
+      setActiveTab("search");
+    }
+  }, [mode, hasLoadedInitially, materials.length]);
 
   // Handle material added callback
   const handleMaterialAdded = useCallback(() => {

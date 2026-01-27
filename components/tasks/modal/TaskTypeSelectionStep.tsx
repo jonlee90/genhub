@@ -1,15 +1,14 @@
 /**
  * TaskTypeSelectionStep - Step 1 in create task flow
  *
- * Displays task type selector and handles type selection with default value application.
+ * Displays task type selector and handles type selection.
  * Only shown in create mode.
  */
 'use client';
 
-import React, { useCallback, memo } from 'react';
+import React, { memo } from 'react';
 import { m as motion } from 'framer-motion';
 import { TaskTypeSelector } from '../TaskTypeSelector';
-import { getTaskTypeConfig } from '@/lib/config/task-type-fields';
 import type { TaskType } from '@/types/db/enums';
 import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
@@ -25,32 +24,13 @@ interface TaskTypeSelectionStepProps {
 
 /**
  * Task type selection step for create mode
- * Applies task type defaults when a type is selected
  */
 function TaskTypeSelectionStepInner({
   selectedType,
   onTypeSelect,
-  onPriorityChange,
-  onStartDateChange,
   disabled,
   prefetchedTaskTypes,
 }: TaskTypeSelectionStepProps) {
-  const handleTypeSelect = useCallback((type: TaskType) => {
-    onTypeSelect(type);
-
-    // Apply task type defaults
-    const cfg = getTaskTypeConfig(type);
-
-    // Apply default priority
-    if (cfg.defaults.priority && onPriorityChange) {
-      onPriorityChange(cfg.defaults.priority);
-    }
-
-    // Apply default start date
-    if (cfg.defaults.startDate === 'today' && onStartDateChange) {
-      onStartDateChange(new Date().toISOString().split('T')[0]);
-    }
-  }, [onTypeSelect, onPriorityChange, onStartDateChange]);
 
   return (
     <motion.div
@@ -61,7 +41,7 @@ function TaskTypeSelectionStepInner({
     >
       <TaskTypeSelector
         selectedType={selectedType}
-        onSelect={handleTypeSelect}
+        onSelect={onTypeSelect}
         disabled={disabled}
         prefetchedTaskTypes={prefetchedTaskTypes}
       />

@@ -51,10 +51,10 @@ export function useTaskFormState({
     return null;
   });
 
-  // Get field visibility config based on task type
+  // Get field config (simplified - no visibility control)
   const config = useMemo(() => {
-    return getTaskTypeConfig(taskType);
-  }, [taskType]);
+    return getTaskTypeConfig();
+  }, []);
 
   // Basic form fields
   const [selectedProjectId, setSelectedProjectId] = useState(() => {
@@ -79,8 +79,7 @@ export function useTaskFormState({
 
   const [priority, setPriority] = useState<string>(() => {
     if (mode === 'edit' && task) return task.priority;
-    const cfg = getTaskTypeConfig(taskType);
-    return cfg.defaults.priority || 'medium';
+    return 'medium';
   });
 
   const [phaseId, setPhaseId] = useState(() => {
@@ -91,10 +90,6 @@ export function useTaskFormState({
   const [startDate, setStartDate] = useState(() => {
     if (mode === 'edit' && task && task.start_date) {
       return task.start_date.split('T')[0];
-    }
-    const cfg = getTaskTypeConfig(taskType);
-    if (cfg.defaults.startDate === 'today') {
-      return new Date().toISOString().split('T')[0];
     }
     return '';
   });

@@ -100,6 +100,7 @@ Ambiguous if:
 |----------|--------|-------------|
 | P0 | Skills | vercel-react-best-practices, postgres-best-practices:postgres-best-practices |
 | P0 | CLAUDE.md | Project-specific rules and patterns |
+| P0 | `.claude/docs/` | Architecture index, dependency graph, context strategy |
 | P1 | Codebase | Indexed project files |
 | P1 | Serena Memories | genhub-* patterns and conventions |
 | P2 | External Docs | Next.js, React, Supabase official docs |
@@ -271,25 +272,40 @@ Before modifying files:
 
 ---
 
-## 10. Integration with Serena Memories
+## 10. Integration with Knowledge System
 
-### Required Memories
+### Static Docs (Load First)
+| Document | Purpose | Load When |
+|----------|---------|-----------|
+| `.claude/docs/architecture-index.md` | Module map, file placement | Adding new files |
+| `.claude/docs/dependency-graph.md` | Critical paths, impact tables | Refactoring |
+| `.claude/docs/context-strategy.md` | What to load when | Any task (reference) |
+
+### Serena Memories
 | Memory Name | Content | Load When |
 |-------------|---------|-----------|
+| `genhub-reuse-registry` | Reusable components, hooks, patterns | Before creating components |
+| `genhub-duplication-hotspots` | Known duplication areas | Before creating patterns |
 | `genhub-component-patterns` | UI patterns, ResponsiveModal usage | Component work |
 | `genhub-server-actions` | Action patterns, error handling | Server Action work |
 | `genhub-database-schema` | Tables, relations, RLS | Database work |
 | `genhub-common-gotchas` | Known issues, workarounds | Debug/troubleshoot |
 
-### Memory Loading Protocol
+### Context Loading Protocol
 ```typescript
-// Before starting task, load relevant memories:
-// 1. Identify task type (UI, DB, Auth, etc.)
-// 2. Load corresponding memories via Serena read_memory
-// 3. Incorporate patterns into solution
+// Before starting task:
+// 1. Check .claude/docs/context-strategy.md for what to load
+// 2. Load static docs for file placement/impact analysis
+// 3. Load Serena memories for patterns
 
-// Example invocation:
-// mcp__plugin_serena_serena__read_memory({ name: "genhub-component-patterns" })
+// Example for adding a component:
+// 1. Read .claude/docs/architecture-index.md (file placement)
+// 2. Load genhub-reuse-registry (existing patterns)
+// 3. Check genhub-duplication-hotspots (avoid duplication)
+
+// Example for refactoring:
+// 1. Read .claude/docs/dependency-graph.md (impact analysis)
+// 2. Use Serena find_referencing_symbols (all consumers)
 ```
 
 ### Memory Update Protocol

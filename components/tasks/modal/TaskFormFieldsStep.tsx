@@ -41,7 +41,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { isFieldVisible } from "@/lib/config/task-type-fields";
 import {
   TASK_STATUS_CONFIG,
   TASK_PRIORITY_CONFIG,
@@ -246,8 +245,8 @@ export function TaskFormFieldsStep({
         </div>
       )}
 
-      {/* Approval Status Section - Conditional rendering based on task type */}
-      {isFieldVisible(taskType, "approvalWorkflow", mode) && approvalStatus && (
+      {/* Approval Status Section - Only shown when task has approval status */}
+      {approvalStatus && (
         <div className="p-4 rounded-xl border-2 border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/20">
           <div className="flex items-center gap-2 mb-3">
             <ClipboardList className="w-5 h-5 text-amber-600" />
@@ -392,14 +391,7 @@ export function TaskFormFieldsStep({
       </div>
 
       {/* Status & Phase Row */}
-      <div
-        className={cn(
-          "grid gap-4",
-          isFieldVisible(taskType, "phase", mode)
-            ? "grid-cols-1 sm:grid-cols-2"
-            : "grid-cols-1",
-        )}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Status field - Edit mode only */}
         {mode === "edit" && (
           <div className="space-y-2">
@@ -441,40 +433,38 @@ export function TaskFormFieldsStep({
           </div>
         )}
 
-        {/* Phase field - Hidden for admin tasks */}
-        {isFieldVisible(taskType, "phase", mode) && (
-          <div className="space-y-2">
-            <Label
-              htmlFor="phase"
-              className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
+        {/* Phase field - Always visible */}
+        <div className="space-y-2">
+          <Label
+            htmlFor="phase"
+            className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"
+          >
+            <Layers className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            Phase
+          </Label>
+          <Select
+            value={phaseId}
+            onValueChange={onPhaseChange}
+            disabled={disabled || !selectedProjectId}
+          >
+            <SelectTrigger
+              id="phase"
+              className="h-11 border-gray-200 dark:border-gray-700"
             >
-              <Layers className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-              Phase
-            </Label>
-            <Select
-              value={phaseId}
-              onValueChange={onPhaseChange}
-              disabled={disabled || !selectedProjectId}
-            >
-              <SelectTrigger
-                id="phase"
-                className="h-11 border-gray-200 dark:border-gray-700"
-              >
-                <SelectValue placeholder="Select phase" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No phase</SelectItem>
-                {phases
-                  .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
-                  .map((phase) => (
-                    <SelectItem key={phase.id} value={phase.id}>
-                      {phase.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+              <SelectValue placeholder="Select phase" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">No phase</SelectItem>
+              {phases
+                .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0))
+                .map((phase) => (
+                  <SelectItem key={phase.id} value={phase.id}>
+                    {phase.name}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Priority - Always visible */}
@@ -542,32 +532,24 @@ export function TaskFormFieldsStep({
         />
       )}
 
-      {/* Date Range Row */}
-      <div
-        className={cn(
-          "grid gap-4",
-          isFieldVisible(taskType, "startDate", mode)
-            ? "grid-cols-1 sm:grid-cols-2"
-            : "grid-cols-1",
-        )}
-      >
-        {/* Start Date - Hidden for admin tasks */}
-        {isFieldVisible(taskType, "startDate", mode) && (
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-              Start Date
-            </Label>
-            <Input
-              type="date"
-              value={startDate}
-              onChange={(e) => handleStartDateChange(e.target.value)}
-              disabled={disabled}
-              className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
-            />
-          </div>
-        )}
+      {/* Date Range Row - Always visible */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Start Date */}
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            Start Date
+          </Label>
+          <Input
+            type="date"
+            value={startDate}
+            onChange={(e) => handleStartDateChange(e.target.value)}
+            disabled={disabled}
+            className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 [color-scheme:light] dark:[color-scheme:dark]"
+          />
+        </div>
 
+        {/* Due Date */}
         <div className="space-y-2">
           <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
             <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
@@ -584,59 +566,46 @@ export function TaskFormFieldsStep({
         </div>
       </div>
 
-      {/* Costs Row - Conditional rendering and dynamic labels */}
-      {isFieldVisible(taskType, "plannedCost", mode) && (
-        <div
-          className={cn(
-            "grid gap-4",
-            isFieldVisible(taskType, "actualCost", mode)
-              ? "grid-cols-1 sm:grid-cols-2"
-              : "grid-cols-1",
-          )}
-        >
-          {/* Planned Cost with dynamic label */}
+      {/* Costs Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Planned Cost */}
+        <div className="space-y-2">
+          <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+            <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+            {config.labels.plannedCost}
+          </Label>
+          <Input
+            type="number"
+            min="0"
+            step="0.01"
+            value={plannedCost}
+            onChange={(e) => onPlannedCostChange(e.target.value)}
+            placeholder="0.00"
+            disabled={disabled}
+            className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
+          />
+        </div>
+
+        {/* Actual Cost - Edit mode only */}
+        {mode === "edit" && (
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-              {config.labels.plannedCost}
+              <DollarSign className={cn("h-4 w-4", theme.iconColor)} />
+              Actual Cost
             </Label>
             <Input
               type="number"
               min="0"
               step="0.01"
-              value={plannedCost}
-              onChange={(e) => onPlannedCostChange(e.target.value)}
+              value={actualCost}
+              onChange={(e) => onActualCostChange(e.target.value)}
               placeholder="0.00"
               disabled={disabled}
-              className={cn(
-                "h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500",
-                taskType === "purchase" &&
-                  "border-emerald-300 focus:ring-emerald-500/20 focus:border-emerald-500 dark:border-emerald-700 dark:focus:ring-emerald-500/20 dark:focus:border-emerald-500",
-              )}
+              className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
             />
           </div>
-
-          {/* Actual Cost - Edit mode only */}
-          {isFieldVisible(taskType, "actualCost", mode) && (
-            <div className="space-y-2">
-              <Label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                <DollarSign className={cn("h-4 w-4", theme.iconColor)} />
-                Actual Cost
-              </Label>
-              <Input
-                type="number"
-                min="0"
-                step="0.01"
-                value={actualCost}
-                onChange={(e) => onActualCostChange(e.target.value)}
-                placeholder="0.00"
-                disabled={disabled}
-                className="h-11 border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500"
-              />
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </motion.div>
   );
 }

@@ -26,7 +26,6 @@ import {
   calculateDependencyLines,
   generateDateGroups,
   generateDateCells,
-  calculateTotalWidth,
 } from "./gantt-utils";
 import type {
   GanttChartProps,
@@ -52,7 +51,7 @@ export function GanttChart({
   taskTypes,
   showProjectInsteadOfPhase = false,
 }: GanttChartProps) {
-  const [timeScale, setTimeScale] = useState<TimeScale>("day");
+  const [timeScale, setTimeScale] = useState<TimeScale>("week");
   const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -219,7 +218,10 @@ export function GanttChart({
     [dependencies, taskPositions]
   );
 
-  const totalWidth = calculateTotalWidth(config);
+  // Calculate total width based on actual dateCells count to ensure alignment
+  // between header columns and grid lines (fixes mismatch in week/month views)
+  const gridWidth = dateCells.length * config.cellWidth;
+  const totalWidth = config.sidebarWidth + gridWidth;
   const totalHeight = sortedTasks.length * config.rowHeight;
 
   // Drag and drop handlers
@@ -306,9 +308,10 @@ export function GanttChart({
             {/* Header */}
             <GanttHeader config={config} dateGroups={dateGroups} sortedTasksLength={sortedTasks.length} dateCells={dateCells} />
 
-            {/* Timeline grid and task rows */}
+            {/* Task area - grid and rows share same positioning context */}
+            <div className="relative">
               {/* Grid background */}
-              <GanttTimeline config={config} dateCells={dateCells} taskCount={sortedTasks.length} />
+              <GanttTimeline config={config} dateCells={dateCells} taskCount={sortedTasks.length} totalWidth={totalWidth} />
 
               {/* Dependency lines */}
               <div className="absolute inset-0" style={{ left: config.sidebarWidth }}>
@@ -316,29 +319,28 @@ export function GanttChart({
               </div>
 
               {/* Task rows */}
-              <div className="relative">
-                {sortedTasks.map((task, index) => {
-                  const position = taskPositions.get(task.id);
-                  if (!position) return null;
+              {sortedTasks.map((task, index) => {
+                const position = taskPositions.get(task.id);
+                if (!position) return null;
 
-                  return (
-                    <GanttTaskRow
-                      key={task.id}
-                      task={task}
-                      position={position}
-                      config={config}
-                      isDragging={activeTaskId === task.id}
-                      hoveredTaskId={hoveredTaskId}
-                      onHover={setHoveredTaskId}
-                      onClick={onTaskClick}
-                      isMobile={isMobile}
-                      taskTypes={taskTypes}
-                      showProjectInsteadOfPhase={showProjectInsteadOfPhase}
-                    />
-                  );
-                })}
-              </div>
+                return (
+                  <GanttTaskRow
+                    key={task.id}
+                    task={task}
+                    position={position}
+                    config={config}
+                    isDragging={activeTaskId === task.id}
+                    hoveredTaskId={hoveredTaskId}
+                    onHover={setHoveredTaskId}
+                    onClick={onTaskClick}
+                    isMobile={isMobile}
+                    taskTypes={taskTypes}
+                    showProjectInsteadOfPhase={showProjectInsteadOfPhase}
+                  />
+                );
+              })}
             </div>
+          </div>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
       );

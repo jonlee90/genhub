@@ -18,7 +18,6 @@ import {
 import { TaskReceiptUpload } from "../TaskReceiptUpload";
 import { AutoExpenseToggle } from "../AutoExpenseToggle";
 import { TaskExpensesSection, type TaskExpense } from "../TaskExpensesSection";
-import { isFieldVisible } from "@/lib/config/task-type-fields";
 import type { TaskType } from "@/types/db/enums";
 import type { AssigneeOption } from "../PrimaryAssigneeSelector";
 
@@ -101,31 +100,7 @@ export function TaskMaterialsExtrasStep({
 }: TaskMaterialsExtrasStepProps) {
   return (
     <div className="space-y-5">
-      {/* Materials Section - Conditional rendering with emphasis */}
-      {isFieldVisible(taskType, "materialsSection", mode) && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
-            <Package className="h-4 w-4 text-construction-blue" />
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              Materials
-            </h3>
-            <p className="text-xs ml-auto text-gray-500 dark:text-gray-400">
-              {mode === "create"
-                ? `${tempMaterials.length} material${tempMaterials.length !== 1 ? "s" : ""} selected`
-                : "Search & manage task materials"}
-            </p>
-          </div>
-          <TaskMaterialsManager
-            taskId={taskId}
-            projectId={projectId}
-            mode={mode}
-            tempMaterials={tempMaterials}
-            onTempMaterialsChange={onTempMaterialsChange}
-          />
-        </div>
-      )}
-
-      {/* Auto-Expense Section - Edit mode with actual cost > 0 and no auto-expense exists */}
+      {/* Auto-Expense Section - Edit mode with actual cost > 0 and no auto-expense exists (moved to top) */}
       {showAutoExpense && !hasAutoExpense && (actualCost ?? 0) > 0 && (
         <AutoExpenseToggle
           enabled={autoExpenseEnabled}
@@ -140,28 +115,48 @@ export function TaskMaterialsExtrasStep({
       )}
 
       {/* Expenses Section - Edit mode only */}
-      {showExpenses &&
-        isFieldVisible(taskType, "expensesSection", mode) &&
-        taskId && (
-          <div className="space-y-2">
-            {expensesLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : (
-              <TaskExpensesSection
-                taskId={taskId}
-                taskTitle={taskTitle}
-                projectId={projectId}
-                projectName={projectName}
-                expenses={expenses}
-                projects={projects}
-                tasks={tasks}
-                onExpenseAdded={onExpenseAdded}
-              />
-            )}
-          </div>
-        )}
+      {showExpenses && taskId && (
+        <div className="space-y-2">
+          {expensesLoading ? (
+            <div className="flex items-center justify-center py-4">
+              <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <TaskExpensesSection
+              taskId={taskId}
+              taskTitle={taskTitle}
+              projectId={projectId}
+              projectName={projectName}
+              expenses={expenses}
+              projects={projects}
+              tasks={tasks}
+              onExpenseAdded={onExpenseAdded}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Materials Section - Always visible */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+          <Package className="h-4 w-4 text-construction-blue" />
+          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+            Materials <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
+          </h3>
+          <p className="text-xs ml-auto text-gray-500 dark:text-gray-400">
+            {mode === "create"
+              ? `${tempMaterials.length} material${tempMaterials.length !== 1 ? "s" : ""} selected`
+              : "Search & manage task materials"}
+          </p>
+        </div>
+        <TaskMaterialsManager
+          taskId={taskId}
+          projectId={projectId}
+          mode={mode}
+          tempMaterials={tempMaterials}
+          onTempMaterialsChange={onTempMaterialsChange}
+        />
+      </div>
 
       {/* Receipt Photo Upload - For all task types (moved to bottom) */}
       <TaskReceiptUpload

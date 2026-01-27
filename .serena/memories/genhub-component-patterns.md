@@ -12,10 +12,14 @@ import { createClient } from '@supabase/supabase-js'
 import { getProjects } from '@/app/actions/projects'
 ```
 
-### Always BaseModal
+### Always ResponsiveModal
 ```typescript
-<BaseModal isOpen={open} onClose={() => setOpen(false)} title="Edit" icon={Edit}>
+// ResponsiveModal auto-switches desktop (dialog) / mobile (bottom sheet)
+<ResponsiveModal open={open} onOpenChange={setOpen} title="Edit" icon={Edit}>
+  {children}
+</ResponsiveModal>
 ```
+> See full patterns: Serena memory `genhub-reuse-registry`
 
 ## Key Components (210+)
 
@@ -37,3 +41,8 @@ interface ListProps { entities: T[]; onSelect?: (e: T) => void }
 - Colors: `#001B51` primary, `#3C3C3C` accent
 - Icons: Lucide only (w-4/w-5/w-6)
 - Spacing: `p-4 md:p-6`
+
+## Cross-References
+- Reusable patterns: Serena memory `genhub-reuse-registry`
+- Duplication hotspots: Serena memory `genhub-duplication-hotspots`
+- Architecture: `.claude/docs/architecture-index.md`

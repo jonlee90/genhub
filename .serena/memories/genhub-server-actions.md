@@ -25,4 +25,7 @@ if ('error' in ctx) return ctx;
 Promise<{ data?: T; error?: string }>
 ```
 
-## Deep dive: `.claude/docs/indexes/actions.md`
+## Cross-References
+- Critical paths: `.claude/docs/dependency-graph.md`
+- File placement: `.claude/docs/architecture-index.md`
+- Context strategy: `.claude/docs/context-strategy.md`
