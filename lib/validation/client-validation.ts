@@ -180,7 +180,7 @@ export const addSubcontractorValidation = {
   contact_name: requiredStringValidation,
   email: optionalEmailValidation,
   phone: phoneValidation,
-  trade_type: { required: 'Please select a trade type' },
+  trade_specialization: { required: 'Please select a trade type' },
   address: optionalStringValidation,
   license_number: optionalStringValidation,
   insurance_provider: optionalStringValidation,

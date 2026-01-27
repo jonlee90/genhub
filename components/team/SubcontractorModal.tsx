@@ -36,7 +36,7 @@
  * - All interactive elements meet 44px minimum in both dimensions
  */
 
-import { useState, useTransition, useEffect, useCallback } from "react";
+import { useState, useTransition, useEffect, useCallback, useRef } from "react";
 import { createSubcontractor, updateSubcontractor } from "@/app/actions/subcontractors";
 import type { SubcontractorsRow } from "@/types/db/tables/companies";
 import type { TradeType } from "@/types/db/enums";
@@ -50,7 +50,7 @@ interface SubcontractorFormData {
   contact_name: string;
   email?: string;
   phone?: string;
-  trade_type: TradeType;
+  trade_specialization: TradeType;
   address?: string;
   license_number?: string;
   insurance_provider?: string;
@@ -71,9 +71,8 @@ import { InsuranceSection } from "./subcontractor-modal/InsuranceSection";
 import { PerformanceSection } from "./subcontractor-modal/PerformanceSection";
 import { NotesSection } from "./subcontractor-modal/NotesSection";
 
-// Status alerts and footer
+// Status alerts
 import { SuccessAlert, ErrorAlert } from "./subcontractor-modal/StatusAlerts";
-import { ModalFooter } from "./subcontractor-modal/ModalFooter";
 
 type Subcontractor = SubcontractorsRow;
 
@@ -107,12 +106,13 @@ export function SubcontractorModal({
     watch,
     setValue,
   } = useValidatedForm({
+    mode: 'all', // Validate on mount, blur, and change - ensures edit mode works
     defaultValues: {
       company_name: subcontractor?.company_name || "",
       contact_name: subcontractor?.contact_name || "",
       email: subcontractor?.email || "",
       phone: subcontractor?.phone || "",
-      trade_type: (subcontractor?.trade_specialization || "general") as TradeType,
+      trade_specialization: (subcontractor?.trade_specialization || "general") as TradeType,
       address: subcontractor?.address || "",
       license_number: subcontractor?.license_number || "",
       insurance_provider: subcontractor?.insurance_provider || "",
@@ -123,6 +123,9 @@ export function SubcontractorModal({
 
   const rating = watch("rating") || 0;
 
+  // Form ref for programmatic submission
+  const formRef = useRef<HTMLFormElement>(null);
+
   // Reset form when modal opens or subcontractor changes
   useEffect(() => {
     if (isOpen) {
@@ -132,7 +135,7 @@ export function SubcontractorModal({
         contact_name: subcontractor?.contact_name || "",
         email: subcontractor?.email || "",
         phone: subcontractor?.phone || "",
-        trade_type: (subcontractor?.trade_specialization || "general") as TradeType,
+        trade_specialization: (subcontractor?.trade_specialization || "general") as TradeType,
         address: subcontractor?.address || "",
         license_number: subcontractor?.license_number || "",
         insurance_provider: subcontractor?.insurance_provider || "",
@@ -168,7 +171,7 @@ export function SubcontractorModal({
           formData.append('contact_name', data.contact_name);
           if (data.email) formData.append('email', data.email);
           if (data.phone) formData.append('phone', data.phone);
-          formData.append('trade_specialization', data.trade_type);
+          formData.append('trade_specialization', data.trade_specialization);
           if (data.address) formData.append('address', data.address);
           if (data.license_number) formData.append('license_number', data.license_number);
           if (data.insurance_provider) formData.append('insurance_provider', data.insurance_provider);
@@ -178,18 +181,22 @@ export function SubcontractorModal({
           result = await createSubcontractor(formData);
         } else {
           // Edit mode - use object for updateSubcontractor
+          // Pass null for cleared fields to explicitly clear them in the database
+          // Pass undefined for fields that haven't changed to skip updating them
           result = await updateSubcontractor({
             id: subcontractor!.id,
             company_name: data.company_name,
             contact_name: data.contact_name,
-            email: data.email || undefined,
-            phone: data.phone || undefined,
-            address: data.address || undefined,
-            trade_specialization: data.trade_type,
-            license_number: data.license_number || undefined,
-            insurance_provider: data.insurance_provider || undefined,
-            performance_rating: data.rating && data.rating > 0 ? data.rating : undefined,
-            notes: data.notes || undefined,
+            // For optional fields: empty string means "clear this field" (null),
+            // non-empty means "update to this value"
+            email: data.email?.trim() || null,
+            phone: data.phone?.trim() || null,
+            address: data.address?.trim() || null,
+            trade_specialization: data.trade_specialization,
+            license_number: data.license_number?.trim() || null,
+            insurance_provider: data.insurance_provider?.trim() || null,
+            performance_rating: data.rating && data.rating > 0 ? data.rating : null,
+            notes: data.notes?.trim() || null,
           });
         }
 
@@ -200,10 +207,10 @@ export function SubcontractorModal({
             : "Subcontractor updated successfully!"
           );
 
-          // Close modal after a short delay
+          // Close modal after delay to allow user to see success message
           setTimeout(() => {
             handleClose();
-          }, 1000);
+          }, 2000);
         } else {
           setError(result.error || `Failed to ${mode === 'create' ? 'create' : 'update'} subcontractor`);
           toast.error(result.error || `Failed to ${mode === 'create' ? 'create' : 'update'} subcontractor`);
@@ -219,6 +226,13 @@ export function SubcontractorModal({
   const isFieldDisabled = isPending || isSuccess;
   const isSubmitDisabled = isPending || isSuccess || !canSubmit;
 
+  // Handler for Continue button in modal navigation
+  const handleContinue = useCallback(() => {
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    }
+  }, []);
+
   return (
     <ResponsiveModal
       isOpen={isOpen}
@@ -227,8 +241,14 @@ export function SubcontractorModal({
       title={mode === 'create' ? "Add Subcontractor" : "Edit Subcontractor"}
       ariaLabel={mode === 'create' ? "Add Subcontractor" : "Edit Subcontractor"}
       maxWidth="3xl"
+      showNavigation={true}
+      onBack={handleClose}
+      backLabel="Cancel"
+      onContinue={handleContinue}
+      continueLabel={isPending ? "Saving..." : isSuccess ? "Saved!" : mode === 'create' ? "Add Subcontractor" : "Save Changes"}
+      continueDisabled={isSubmitDisabled}
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
         {/* Success Message */}
         {isSuccess ? <SuccessAlert /> : null}
 
@@ -278,14 +298,6 @@ export function SubcontractorModal({
           register={register}
           errors={errors}
           disabled={isFieldDisabled}
-        />
-
-        {/* Footer Actions */}
-        <ModalFooter
-          onCancel={handleClose}
-          isPending={isPending}
-          isSuccess={isSuccess}
-          canSubmit={!isSubmitDisabled}
         />
       </form>
     </ResponsiveModal>

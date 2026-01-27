@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   createSubcontractor,
@@ -104,7 +104,7 @@ export function AddSubcontractorForm({
       contact_name: "",
       email: "",
       phone: "",
-      trade_type: "general" as TradeType,
+      trade_specialization: "general" as TradeType,
       address: "",
       license_number: "",
       insurance_provider: "",
@@ -114,6 +114,9 @@ export function AddSubcontractorForm({
   });
 
   const rating = watch("rating") || 0;
+
+  // Form ref for programmatic submission
+  const formRef = useRef<HTMLFormElement>(null);
 
   // Use form submit hook
   const { formAction, isPending, result } = useFormSubmit({
@@ -308,6 +311,24 @@ export function AddSubcontractorForm({
     }
   };
 
+  // Handler for Continue button in modal navigation
+  const handleContinue = useCallback(() => {
+    if (formRef.current) {
+      formRef.current.requestSubmit();
+    }
+  }, []);
+
+  // Determine if submit should be disabled
+  const isSubmitDisabled = !canSubmit || isPending || result?.success || isUploadingDocs;
+
+  // Determine continue button label
+  const getContinueLabel = () => {
+    if (isPending) return "Creating...";
+    if (isUploadingDocs) return "Uploading...";
+    if (result?.success) return "Created!";
+    return "Add Subcontractor";
+  };
+
   return (
     <ResponsiveModal
       isOpen={isOpen}
@@ -316,8 +337,14 @@ export function AddSubcontractorForm({
       title="Add Subcontractor"
       maxWidth="3xl"
       theme="default"
+      showNavigation={true}
+      onBack={handleClose}
+      backLabel="Cancel"
+      onContinue={handleContinue}
+      continueLabel={getContinueLabel()}
+      continueDisabled={isSubmitDisabled}
     >
-      <form action={formAction} className="space-y-6">
+      <form ref={formRef} action={formAction} className="space-y-6">
         {/* Success Message */}
         {result?.success && (
           <Alert className="bg-green-50 dark:bg-green-950 border-2 border-green-300 dark:border-green-700 text-green-900 dark:text-green-100">
@@ -365,16 +392,16 @@ export function AddSubcontractorForm({
         {/* Trade Specialization - Required */}
         <div className="space-y-2">
           <Label
-            htmlFor="trade_type"
+            htmlFor="trade_specialization"
             className="text-gray-900 dark:text-gray-100 font-semibold flex items-center gap-2"
           >
             <FileText className="h-4 w-4 text-construction-blue" />
             Trade Specialization <span className="text-red-600">*</span>
           </Label>
           <Controller
-            name="trade_type"
+            name="trade_specialization"
             control={control}
-            rules={addSubcontractorValidation.trade_type}
+            rules={addSubcontractorValidation.trade_specialization}
             render={({ field }) => (
               <Select
                 value={field.value}
@@ -395,10 +422,10 @@ export function AddSubcontractorForm({
             )}
           />
           {/* Hidden input for form submission */}
-          <input type="hidden" name="trade_specialization" value={watch("trade_type")} />
-          {errors.trade_type && (
+          <input type="hidden" name="trade_specialization" value={watch("trade_specialization")} />
+          {errors.trade_specialization && (
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-              {errors.trade_type.message}
+              {errors.trade_specialization.message}
             </p>
           )}
         </div>
@@ -713,41 +740,6 @@ export function AddSubcontractorForm({
           )}
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200 dark:border-gray-700">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isPending || isUploadingDocs}
-            className="border-2 border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 min-h-[44px]"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            disabled={!canSubmit || isPending || result?.success || isUploadingDocs}
-            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-semibold shadow-md transition-all duration-200 hover:shadow-lg disabled:opacity-50 min-h-[44px] active:scale-95"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Creating...
-              </>
-            ) : isUploadingDocs ? (
-              <>
-                <Upload className="h-4 w-4 mr-2 animate-pulse" />
-                Uploading Documents...
-              </>
-            ) : result?.success ? (
-              <>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Created!
-              </>
-            ) : (
-              "Add Subcontractor"
-            )}
-          </Button>
-        </div>
       </form>
     </ResponsiveModal>
   );

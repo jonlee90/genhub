@@ -174,12 +174,12 @@ export function ProjectTeam({
               "text-2xl font-black",
               activeTab === "members"
                 ? "text-construction-blue"
-                : "text-gray-700",
+                : "text-gray-700 dark:text-gray-200",
             )}
           >
             {teamMembers.length}
           </div>
-          <div className="text-sm font-medium text-gray-600">Team Members</div>
+          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">Team Members</div>
         </button>
 
         <button
@@ -216,12 +216,12 @@ export function ProjectTeam({
               "text-2xl font-black",
               activeTab === "subcontractors"
                 ? "text-amber-600"
-                : "text-gray-700",
+                : "text-gray-700 dark:text-gray-200",
             )}
           >
             {subcontractors.length}
           </div>
-          <div className="text-sm font-medium text-gray-600">
+          <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
             Subcontractors
           </div>
         </button>
@@ -238,15 +238,15 @@ export function ProjectTeam({
                   <Users className="h-5 w-5 text-construction-blue" />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                  <HardHat className="h-5 w-5 text-amber-600" />
+                <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center flex-shrink-0">
+                  <HardHat className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
               )}
               <div className="min-w-0">
-                <h3 className="font-bold text-construction-blue text-lg">
+                <h3 className="font-bold text-construction-blue dark:text-blue-400 text-lg">
                   {activeTab === "members" ? "Team Members" : "Subcontractors"}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {activeTab === "members"
                     ? `${teamMembers.length} member${teamMembers.length !== 1 ? "s" : ""}`
                     : `${subcontractors.length} subcontractor${subcontractors.length !== 1 ? "s" : ""}`}
@@ -364,7 +364,7 @@ export function ProjectTeam({
                           {name}
                         </p>
                         {email && (
-                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate flex items-center gap-1.5">
                             <Mail className="h-3.5 w-3.5 flex-shrink-0" />
                             {email}
                           </p>
@@ -382,7 +382,7 @@ export function ProjectTeam({
                           (costs.taskCount > 0 ||
                             costs.taskCosts > 0 ||
                             costs.expenseCosts > 0) && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {costs.taskCount} task
                               {costs.taskCount !== 1 ? "s" : ""} |{" "}
                               {formatCurrency(costs.taskCosts)} costs |{" "}
@@ -399,8 +399,9 @@ export function ProjectTeam({
                         disabled={removingId === member.id}
                         className={cn(
                           "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                          "border-2 border-gray-200",
+                          "border-2 border-gray-200 dark:border-gray-700",
                           "text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50",
+                          "dark:hover:border-red-900/40 dark:hover:bg-red-950/30",
                           "active:scale-[0.95]",
                           "transition-all duration-150",
                           "disabled:opacity-50",
@@ -472,8 +473,8 @@ export function ProjectTeam({
                         "active:bg-gray-50 dark:active:bg-gray-800 transition-colors",
                       )}
                     >
-                      <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <span className="font-bold text-amber-700 text-sm">
+                      <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-950/30 flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-amber-700 dark:text-amber-300 text-sm">
                           {getInitials(companyName)}
                         </span>
                       </div>
@@ -483,13 +484,13 @@ export function ProjectTeam({
                           {companyName}
                         </p>
                         {contactName && (
-                          <p className="text-sm text-gray-600 truncate flex items-center gap-1.5">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 truncate flex items-center gap-1.5">
                             <Building2 className="h-3.5 w-3.5 flex-shrink-0" />
                             {contactName}
                           </p>
                         )}
                         {trade && (
-                          <Badge className="mt-1.5 text-xs font-bold border bg-amber-100 text-amber-800 border-amber-200">
+                          <Badge className="mt-1.5 text-xs font-bold border bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-900/40">
                             {trade
                               .replace(/_/g, " ")
                               .replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -500,7 +501,7 @@ export function ProjectTeam({
                           (costs.taskCount > 0 ||
                             costs.taskCosts > 0 ||
                             costs.expenseCosts > 0) && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               {costs.taskCount} task
                               {costs.taskCount !== 1 ? "s" : ""} |{" "}
                               {formatCurrency(costs.taskCosts)} costs |{" "}
@@ -520,8 +521,9 @@ export function ProjectTeam({
                         disabled={removingId === member.id}
                         className={cn(
                           "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                          "border-2 border-gray-200",
+                          "border-2 border-gray-200 dark:border-gray-700",
                           "text-gray-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50",
+                          "dark:hover:border-red-900/40 dark:hover:bg-red-950/30",
                           "active:scale-[0.95]",
                           "transition-all duration-150",
                           "disabled:opacity-50",

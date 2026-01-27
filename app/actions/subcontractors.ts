@@ -34,6 +34,7 @@ const tradeTypeValues = [
   "glass_glazing",
   "fire_protection",
   "insulation",
+  "framing",
   "other",
 ] as const;
 
@@ -95,33 +96,42 @@ const updateSubcontractorSchema = z.object({
     .max(200)
     .transform((v) => v.trim())
     .optional(),
+  // Email can be string (update), null (clear), or undefined (don't change)
   email: z
     .string()
     .email("Invalid email address")
     .transform((v) => v.toLowerCase().trim())
+    .nullable()
     .optional(),
+  // Phone can be string (update), null (clear), or undefined (don't change)
   phone: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
+  // Address can be string (update), null (clear), or undefined (don't change)
   address: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
   trade_specialization: z.enum(tradeTypeValues).optional(),
   license_number: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
-  license_expiry: z.string().optional(),
+  license_expiry: z.string().nullable().optional(),
   insurance_provider: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
-  insurance_expiry: z.string().optional(),
-  performance_rating: z.number().min(0).max(5).optional(),
+  insurance_expiry: z.string().nullable().optional(),
+  performance_rating: z.number().min(0).max(5).nullable().optional(),
   notes: z
     .string()
+    .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
 });
@@ -301,16 +311,16 @@ export async function updateSubcontractor(data: {
   id: string;
   company_name?: string;
   contact_name?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  email?: string | null;
+  phone?: string | null;
+  address?: string | null;
   trade_specialization?: string;
-  license_number?: string;
-  license_expiry?: string;
-  insurance_provider?: string;
-  insurance_expiry?: string;
-  performance_rating?: number;
-  notes?: string;
+  license_number?: string | null;
+  license_expiry?: string | null;
+  insurance_provider?: string | null;
+  insurance_expiry?: string | null;
+  performance_rating?: number | null;
+  notes?: string | null;
 }) {
   // Get user context
   const userContext = await getUserContext();
@@ -365,34 +375,8 @@ export async function updateSubcontractor(data: {
       };
     }
 
-    // If email is being updated, check for conflicts
-    if (
-      updateFields.email &&
-      updateFields.email !== existingSubcontractor.email
-    ) {
-      const { data: emailConflict, error: emailCheckError } = await supabase
-        .from("subcontractors")
-        .select("id")
-        .eq("company_id", companyId)
-        .eq("email", updateFields.email)
-        .neq("id", id)
-        .maybeSingle();
-
-      if (emailCheckError) {
-        console.error("Error checking email conflict:", emailCheckError);
-        return {
-          success: false,
-          error: "Failed to validate email. Please try again.",
-        };
-      }
-
-      if (emailConflict) {
-        return {
-          success: false,
-          error: `Another subcontractor with email ${updateFields.email} already exists.`,
-        };
-      }
-    }
+    // Note: Email uniqueness is enforced by database constraint
+    // Error code 23505 (unique violation) is handled below on line 415
 
     // Build update object (only include fields that were provided)
     const subcontractorUpdate: SubcontractorUpdate = {

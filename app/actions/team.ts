@@ -182,14 +182,26 @@ export async function inviteTeamMember(formData: FormData) {
 
     const invitationLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/accept-invite?token=${invitationToken}`;
 
-    // Get company name and inviter profile in parallel
-    const [companyResult, inviterResult] = await Promise.all([
-      supabase.from("companies").select("name").eq("id", companyId).single(),
-      supabase.from("user_profiles").select("name").eq("id", userId).single(),
-    ]);
+    // Get company name and inviter profile with single JOIN query
+    // Optimized: 1 query instead of 2 (fixes N+1 pattern)
+    const { data: contextData } = await supabase
+      .from("company_users")
+      .select(`
+        companies!company_users_company_id_fkey(name),
+        user_profiles!company_users_user_id_fkey(name)
+      `)
+      .eq("company_id", companyId)
+      .eq("user_id", userId)
+      .single();
 
-    const { data: company } = companyResult;
-    const { data: inviterProfile } = inviterResult;
+    // Type assertion needed for nested relations (Supabase type inference limitation)
+    const context = contextData as {
+      companies: { name: string } | null;
+      user_profiles: { name: string } | null;
+    } | null;
+
+    const companyName = context?.companies?.name || "your company";
+    const inviterName = context?.user_profiles?.name || "A team member";
 
     // Send invitation email
     console.log("[TEAM_INVITE] Sending invitation email to:", data.email);
@@ -197,8 +209,8 @@ export async function inviteTeamMember(formData: FormData) {
       email: data.email,
       name: data.name,
       invitationLink,
-      inviterName: inviterProfile?.name || "A team member",
-      companyName: company?.name || "your company",
+      inviterName,
+      companyName,
     });
 
     if (!emailResult.success) {

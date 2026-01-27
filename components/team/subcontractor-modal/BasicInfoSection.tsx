@@ -89,9 +89,9 @@ export function BasicInfoSection({
           Trade Specialization <span className="text-red-500 dark:text-red-400">*</span>
         </Label>
         <Controller
-          name="trade_type"
+          name="trade_specialization"
           control={control}
-          rules={addSubcontractorValidation.trade_type}
+          rules={addSubcontractorValidation.trade_specialization}
           render={({ field }) => (
             <Select
               value={field.value}
