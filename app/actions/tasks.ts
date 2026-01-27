@@ -1923,7 +1923,8 @@ export async function getProjectTasks(
       phase:project_phases (
         id,
         name,
-        status
+        status,
+        icon_name
       )
     `,
     )
@@ -2239,7 +2240,8 @@ export async function getTasksByMarker(markerId: string) {
       phase:project_phases (
         id,
         name,
-        status
+        status,
+        icon_name
       )
     `,
     )
@@ -2421,7 +2423,8 @@ export async function getTaskDetails(taskId: string): Promise<
         ),
         phase:project_phases!tasks_phase_id_fkey (
           id,
-          name
+          name,
+          icon_name
         )
       `,
       )

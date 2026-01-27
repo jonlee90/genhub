@@ -8,6 +8,8 @@ import { cn, formatDate, getInitials } from "@/lib/utils";
 import { getDateIndicator } from "@/lib/date-utils";
 import type { GanttTaskBarProps } from "./gantt-types";
 import { STATUS_STYLES } from "./gantt-types";
+import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
+import type { TaskType } from "@/types/db/enums";
 
 export const GanttTaskBar = React.memo(function GanttTaskBar({
   task,
@@ -18,6 +20,7 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
   onHover,
   onClick,
   isMobile = false,
+  taskTypes,
 }: GanttTaskBarProps) {
   // Only enable dragging on desktop
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -27,6 +30,12 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
 
   // Get status-specific styling
   const statusStyle = STATUS_STYLES[task.status];
+
+  // Memoize task type info (rerender-memo)
+  const taskTypeInfo = useMemo(() => {
+    if (!task.task_type) return null;
+    return getTaskTypeInfoWithFallback(task.task_type as TaskType, taskTypes);
+  }, [task.task_type, taskTypes]);
 
   // Mobile: larger touch targets and minimum widths
   const minWidth = isMobile ? 30 : 20;
@@ -190,6 +199,16 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
             Done
           </span>
         )}
+
+        {/* Task type icon (rendering-conditional-render) */}
+        {taskTypeInfo ? (
+          <taskTypeInfo.icon
+            className={cn("shrink-0", isMobile ? "h-3 w-3" : "h-3.5 w-3.5")}
+            style={{ color: taskTypeInfo.color }}
+            strokeWidth={2}
+            aria-label={taskTypeInfo.name}
+          />
+        ) : null}
 
         <span className="truncate min-w-0">
           {task.title}

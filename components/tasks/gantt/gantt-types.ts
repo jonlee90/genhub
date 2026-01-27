@@ -41,6 +41,7 @@ export interface GanttTask extends Omit<TaskRow, "due_date"> {
     id: string;
     name: string;
     order_index?: number;
+    icon_name?: string | null;
   } | null;
   // Calculated fields for Gantt positioning
   startDate: Date;
@@ -128,6 +129,7 @@ export interface GanttTaskBarProps {
   onHover?: (taskId: string | null) => void;
   onClick?: (task: GanttTask) => void;
   isMobile?: boolean;
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 // Props for GanttHeader component
