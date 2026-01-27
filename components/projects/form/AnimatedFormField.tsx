@@ -10,7 +10,8 @@
  */
 
 import { m as motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+// Performance optimization: Direct import instead of barrel file
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
 import { MobileInput } from '@/components/mobile/MobileInput';
 import { cn } from '@/lib/utils';
 import type { ComponentProps } from 'react';

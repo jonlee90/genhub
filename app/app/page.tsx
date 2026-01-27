@@ -28,8 +28,8 @@ async function DashboardPageContent() {
     redirect("/login");
   }
 
-  // Fetch dashboard data and project types in parallel (async-parallel pattern)
-  const { data, error, projectTypes } = await getDashboardPageData();
+  // Fetch dashboard data, project types, and task types in parallel (async-parallel pattern)
+  const { data, error, projectTypes, taskTypes } = await getDashboardPageData();
 
   // Handle error state
   if (error) {
@@ -84,5 +84,12 @@ async function DashboardPageContent() {
   const userName =
     session.user.name || session.user.email?.split("@")[0] || "User";
 
-  return <DashboardContent data={data} userName={userName} projectTypes={projectTypes} />;
+  return (
+    <DashboardContent
+      data={data}
+      userName={userName}
+      projectTypes={projectTypes}
+      taskTypes={taskTypes}
+    />
+  );
 }

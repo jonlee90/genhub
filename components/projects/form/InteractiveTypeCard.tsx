@@ -12,7 +12,9 @@
  */
 
 import { m as motion } from 'framer-motion';
-import { Check, LucideIcon } from 'lucide-react';
+// Performance optimization: Direct import instead of barrel file
+import Check from 'lucide-react/icons/check';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface InteractiveTypeCardProps {

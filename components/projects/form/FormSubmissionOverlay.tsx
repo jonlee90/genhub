@@ -11,7 +11,9 @@
  */
 
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file
+import CheckCircle2 from 'lucide-react/icons/check-circle-2';
+import Loader2 from 'lucide-react/icons/loader-2';
 import { useState, useEffect } from 'react';
 
 interface FormSubmissionOverlayProps {

@@ -15,12 +15,14 @@ import { KPICardsGrid } from "./KPICardsGrid";
 import { WidgetsGrid } from "./WidgetsGrid";
 import type { DashboardData } from "@/types/dashboard";
 import type { ProjectTypeConfigsRow } from "@/types/db/tables/projects";
+import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 export interface DashboardContentProps {
   data: DashboardData;
   userName: string;
   isLoading?: boolean;
   projectTypes?: ProjectTypeConfigsRow[];
+  taskTypes?: TaskTypeConfigsRow[];
 }
 
 /**
@@ -181,6 +183,7 @@ export function DashboardContent({
   userName,
   isLoading = false,
   projectTypes = [],
+  taskTypes = [],
 }: DashboardContentProps) {
   const router = useRouter();
 
@@ -268,6 +271,7 @@ export function DashboardContent({
         mode="create"
         projects={data.quickActionData.projects}
         teamMembers={data.quickActionData.teamMembers}
+        taskTypes={taskTypes}
         onSuccess={handleTaskSuccess}
       />
 

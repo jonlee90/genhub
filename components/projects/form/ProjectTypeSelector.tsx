@@ -12,10 +12,15 @@
 
 import { useMemo, useState, memo } from 'react';
 import { m as motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronRight, Layers, Check, Building2 } from 'lucide-react';
+// Performance optimization: Direct imports instead of barrel file
+import ChevronDown from 'lucide-react/icons/chevron-down';
+import ChevronRight from 'lucide-react/icons/chevron-right';
+import Layers from 'lucide-react/icons/layers';
+import Check from 'lucide-react/icons/check';
+import Building2 from 'lucide-react/icons/building-2';
+import AlertTriangle from 'lucide-react/icons/alert-triangle';
 import { PROJECT_TYPE_ICON_MAP } from '@/lib/config/project-type-display';
 import { cn } from '@/lib/utils';
-import { AlertTriangle } from 'lucide-react';
 import type { PhaseTemplatesRow } from '@/types/db/tables/projects';
 import type { ProjectTypeConfigsRow } from '@/types/db/tables/projects';
 
