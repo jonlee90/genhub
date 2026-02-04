@@ -174,14 +174,22 @@ export async function inviteTeamMember(formData: FormData) {
     // Generate secure invitation token
     const invitationToken = randomUUID();
 
-    // Use INSERT ... ON CONFLICT for atomic operation
-    // This prevents race conditions when multiple admins invite the same email
-    const { data: invitation, error: insertError } = await supabase
+    // Check if invitation already exists for this email in this company
+    const { data: existingInvitation } = await supabase
       .from("team_invitations")
-      .upsert(
-        {
-          company_id: companyId,
-          email: data.email,
+      .select("id")
+      .eq("company_id", companyId)
+      .eq("email", data.email)
+      .maybeSingle();
+
+    let invitation;
+    let insertError;
+
+    if (existingInvitation) {
+      // Update existing invitation with new token
+      const { data: updatedInvitation, error } = await supabase
+        .from("team_invitations")
+        .update({
           name: data.name,
           role: data.role as UserRole,
           invitation_token: invitationToken,
@@ -192,14 +200,34 @@ export async function inviteTeamMember(formData: FormData) {
           ).toISOString(), // 7 days
           used_at: null, // Reset if re-inviting
           updated_at: new Date().toISOString(),
-        },
-        {
-          onConflict: "company_id,email",
-          ignoreDuplicates: false, // Update with new token
-        },
-      )
-      .select()
-      .single();
+        })
+        .eq("id", existingInvitation.id)
+        .select()
+        .single();
+      invitation = updatedInvitation;
+      insertError = error;
+    } else {
+      // Create new invitation
+      const { data: newInvitation, error } = await supabase
+        .from("team_invitations")
+        .insert({
+          company_id: companyId,
+          email: data.email,
+          name: data.name,
+          role: data.role as UserRole,
+          invitation_token: invitationToken,
+          invited_by: userId,
+          invited_at: new Date().toISOString(),
+          expires_at: new Date(
+            Date.now() + 7 * 24 * 60 * 60 * 1000,
+          ).toISOString(), // 7 days
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+      invitation = newInvitation;
+      insertError = error;
+    }
 
     if (insertError) {
       console.error("Error creating invitation:", insertError);
