@@ -114,10 +114,19 @@ export function AcceptInviteContent({
     setError(undefined);
     try {
       // Sign in with email magic link (using nodemailer provider)
-      await signIn("nodemailer", {
+      // redirect: false sends the email directly without redirecting to signin page
+      const result = await signIn("nodemailer", {
         email: invitation.email,
         callbackUrl: `/accept-invite/complete?token=${token}`,
+        redirect: false,
       });
+
+      if (result?.error) {
+        console.error("Email sign-in error:", result.error);
+        setError("Failed to send email. Please try again.");
+        setIsAccepting(false);
+        return;
+      }
 
       setSuccess(true);
       // Note: User will receive an email and click the link to complete sign-in
