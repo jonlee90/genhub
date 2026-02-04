@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone', // Enable for Docker optimization
+  // Redirect www to non-www to fix cookie domain issues
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.gamjathepug.com' }],
+        destination: 'https://gamjathepug.com/:path*',
+        permanent: true,
+      },
+    ];
+  },
   ...(process.env.DOCKER_ENV === 'true' && {
     outputFileTracingRoot: '/var/www/html', // Specify workspace root for monorepo
   }),
