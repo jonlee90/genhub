@@ -113,8 +113,8 @@ export function AcceptInviteContent({
     setIsAccepting(true);
     setError(undefined);
     try {
-      // Sign in with email magic link
-      await signIn("resend", {
+      // Sign in with email magic link (using nodemailer provider)
+      await signIn("nodemailer", {
         email: invitation.email,
         callbackUrl: `/accept-invite/complete?token=${token}`,
       });
