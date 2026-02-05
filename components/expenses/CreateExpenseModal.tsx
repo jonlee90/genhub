@@ -454,14 +454,14 @@ export function CreateExpenseModal({
               name="amount"
               control={control}
               rules={createExpenseValidation.amount}
-              render={({ field }) => (
+              render={({ field: { onChange, value, ...fieldRest } }) => (
                 <CurrencyInput
-                  {...field}
+                  {...fieldRest}
                   label="Amount *"
                   error={errors.amount?.message}
                   placeholder="0.00"
-                  onValueChange={(value) => field.onChange(parseFloat(value || "0"))}
-                  value={field.value?.toString() || ""}
+                  onValueChange={(val) => onChange(val ? parseFloat(val) : 0)}
+                  value={value?.toString() || ""}
                 />
               )}
             />
