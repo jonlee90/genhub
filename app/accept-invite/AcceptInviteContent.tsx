@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import { type InvitationData } from "@/app/actions/accept-invite";
-import { signIn } from "next-auth/react";
+import { checkEmailExists } from "@/app/actions/invite-auth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -49,8 +49,6 @@ export function AcceptInviteContent({
   const router = useRouter();
   const [isAccepting, setIsAccepting] = useState(false);
   const [error, setError] = useState<string | undefined>(initialError);
-  const [success, setSuccess] = useState(false);
-  const [authMethod, setAuthMethod] = useState<"google" | "email" | null>(null);
 
   // If there's an initial error (invalid token, etc.), show error state
   if (initialError) {
@@ -93,46 +91,36 @@ export function AcceptInviteContent({
     color: "bg-gray-500 text-white",
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleAcceptInvitation = async () => {
     setIsAccepting(true);
     setError(undefined);
     try {
-      // Sign in with Google, passing the invitation token as a callback URL parameter
-      await signIn("google", {
-        callbackUrl: `/accept-invite/complete?token=${token}`,
-      });
-    } catch (err) {
-      console.error("Google sign-in error:", err);
-      setError("Failed to sign in with Google. Please try again.");
-      setIsAccepting(false);
-    }
-  };
+      // Check if email exists in the system
+      const result = await checkEmailExists(invitation.email);
 
-  const handleEmailSignIn = async () => {
-    setAuthMethod("email");
-    setIsAccepting(true);
-    setError(undefined);
-    try {
-      // Sign in with email magic link (using nodemailer provider)
-      // redirect: false sends the email directly without redirecting to signin page
-      const result = await signIn("nodemailer", {
-        email: invitation.email,
-        callbackUrl: `/accept-invite/complete?token=${token}`,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        console.error("Email sign-in error:", result.error);
-        setError("Failed to send email. Please try again.");
+      if (!result.success) {
+        setError(result.error);
         setIsAccepting(false);
         return;
       }
 
-      setSuccess(true);
-      // Note: User will receive an email and click the link to complete sign-in
+      // Route based on user existence and password status
+      if (result.exists && result.hasPassword) {
+        // User exists with password -> redirect to login
+        router.push(`/accept-invite/login?token=${token}`);
+      } else if (result.exists && !result.hasPassword) {
+        // User exists but only has Google auth
+        setError(
+          "Account exists with Google sign-in. Please contact your administrator for assistance."
+        );
+        setIsAccepting(false);
+      } else {
+        // New user -> redirect to signup
+        router.push(`/accept-invite/signup?token=${token}`);
+      }
     } catch (err) {
-      console.error("Email sign-in error:", err);
-      setError("Failed to send email. Please try again.");
+      console.error("Accept invitation error:", err);
+      setError("Failed to process invitation. Please try again.");
       setIsAccepting(false);
     }
   };
@@ -144,166 +132,94 @@ export function AcceptInviteContent({
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white dark:bg-gray-900 rounded-2xl shadow-construction-lg border-2 border-gray-200 dark:border-gray-700 p-8"
       >
-        {/* Success State - Email Sent */}
-        {success && authMethod === "email" && (
-          <div className="text-center space-y-4">
-            <m.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="mx-auto w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
-            >
-              <Mail className="w-8 h-8 text-construction-blue" />
-            </m.div>
-            <div>
-              <h1 className="text-2xl font-black text-gray-900 dark:text-gray-100">
-                Check Your Email
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2">
-                We've sent a magic link to <strong>{invitation.email}</strong>.
-                Click the link in the email to complete your invitation.
-              </p>
+        {/* Header */}
+        <div className="text-center space-y-4 mb-8">
+          <m.div
+            initial={{ rotate: -10 }}
+            animate={{ rotate: 0 }}
+            transition={{ type: "spring", stiffness: 200 }}
+            className="mx-auto w-16 h-16 bg-construction-blue rounded-xl flex items-center justify-center"
+          >
+            <HardHat className="w-8 h-8 text-white" />
+          </m.div>
+          <div>
+            <h1 className="text-3xl font-black text-gray-900 dark:text-gray-100">
+              Join GenHub
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">
+              Accept your team invitation
+            </p>
+          </div>
+        </div>
+
+        {/* Error Alert */}
+        {error ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        {/* Invitation Details */}
+        <div className="bg-gradient-to-br from-construction-blue/5 to-blue-50 dark:from-construction-blue/10 dark:to-blue-950 rounded-xl border-2 border-construction-blue/20 dark:border-construction-blue/30 p-4 mb-6 space-y-3">
+          <h2 className="font-black text-construction-blue text-sm uppercase tracking-wide">
+            Invitation Details
+          </h2>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 font-medium">Email:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-bold">
+                {invitation.email}
+              </span>
             </div>
-            <div className="bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4 text-sm text-gray-600 dark:text-gray-400">
-              <p className="font-medium">Didn't receive the email?</p>
-              <p className="mt-1">
-                Check your spam folder or try signing in again.
-              </p>
+
+            <div className="flex items-center gap-2 text-sm">
+              <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 font-medium">Name:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-bold">
+                {invitation.name}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 font-medium">Company:</span>
+              <span className="text-gray-900 dark:text-gray-100 font-bold">
+                {invitation.companyName}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <UserCog className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-gray-600 dark:text-gray-400 font-medium">Role:</span>
+              <Badge className={cn("font-bold", roleInfo.color)}>
+                {roleInfo.label}
+              </Badge>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Form State */}
-        {!success && (
-          <>
-            {/* Header */}
-            <div className="text-center space-y-4 mb-8">
-              <m.div
-                initial={{ rotate: -10 }}
-                animate={{ rotate: 0 }}
-                transition={{ type: "spring", stiffness: 200 }}
-                className="mx-auto w-16 h-16 bg-construction-blue rounded-xl flex items-center justify-center"
-              >
-                <HardHat className="w-8 h-8 text-white" />
-              </m.div>
-              <div>
-                <h1 className="text-3xl font-black text-gray-900 dark:text-gray-100">
-                  Join GenHub
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  Accept your team invitation
-                </p>
-              </div>
-            </div>
+        {/* Accept Invitation Button */}
+        <div className="space-y-4">
+          <Button
+            type="button"
+            onClick={handleAcceptInvitation}
+            disabled={isAccepting}
+            className="w-full min-h-[44px] text-base font-bold bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-600 shadow-construction hover:shadow-construction-lg transition-all active:scale-[0.98]"
+          >
+            {isAccepting ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : null}
+            Accept Invitation
+          </Button>
 
-            {/* Error Alert */}
-            {error && (
-              <Alert variant="destructive" className="mb-6">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Invitation Details */}
-            <div className="bg-gradient-to-br from-construction-blue/5 to-blue-50 dark:from-construction-blue/10 dark:to-blue-950 rounded-xl border-2 border-construction-blue/20 dark:border-construction-blue/30 p-4 mb-6 space-y-3">
-              <h2 className="font-black text-construction-blue text-sm uppercase tracking-wide">
-                Invitation Details
-              </h2>
-
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Email:</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-bold">
-                    {invitation.email}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm">
-                  <User className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Name:</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-bold">
-                    {invitation.name}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm">
-                  <Building2 className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Company:</span>
-                  <span className="text-gray-900 dark:text-gray-100 font-bold">
-                    {invitation.companyName}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 text-sm">
-                  <UserCog className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Role:</span>
-                  <Badge className={cn("font-bold", roleInfo.color)}>
-                    {roleInfo.label}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            {/* Sign-in Options */}
-            <div className="space-y-4">
-              <p className="text-sm text-center text-gray-600 dark:text-gray-400 font-medium">
-                Sign in to accept your invitation
-              </p>
-
-              {/* Google Sign-in */}
-              <Button
-                type="button"
-                onClick={handleGoogleSignIn}
-                disabled={isAccepting}
-                className="w-full h-12 text-base font-bold bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100 border-2 border-gray-300 dark:border-gray-600 shadow-construction hover:shadow-construction-lg transition-all"
-              >
-                {isAccepting && authMethod !== "email" && (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                )}
-                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-                Continue with Google
-              </Button>
-
-              {/* Email Sign-in */}
-              <Button
-                type="button"
-                onClick={handleEmailSignIn}
-                disabled={isAccepting}
-                className="w-full h-12 text-base font-bold bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-600 shadow-construction hover:shadow-construction-lg transition-all"
-              >
-                {isAccepting && authMethod === "email" && (
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                )}
-                <Mail className="w-5 h-5 mr-2" />
-                Continue with Email
-              </Button>
-
-              {/* Footer */}
-              <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-4 border-t dark:border-gray-700">
-                By signing in, you agree to join {invitation.companyName} on
-                GenHub
-              </p>
-            </div>
-          </>
-        )}
+          {/* Footer */}
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-4 border-t dark:border-gray-700">
+            By continuing, you agree to join {invitation.companyName} on GenHub
+          </p>
+        </div>
       </m.div>
     </div>
   );

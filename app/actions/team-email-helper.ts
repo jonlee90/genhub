@@ -78,22 +78,22 @@ export async function sendTeamInvitationEmail(
       overflow: hidden;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .header { 
-      background-color: var(--construction-blue); 
-      color: white; 
-      padding: 40px 30px; 
-      text-align: center; 
+    .header {
+      background-color: #001B51;
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
     }
     .header h1 {
       margin: 0;
       font-size: 28px;
       font-weight: 700;
     }
-    .content { 
-      padding: 40px 30px; 
+    .content {
+      padding: 40px 30px;
     }
     .content h2 {
-      color: var(--construction-blue);
+      color: #001B51;
       margin-top: 0;
       font-size: 24px;
     }
@@ -105,13 +105,13 @@ export async function sendTeamInvitationEmail(
       text-align: center;
       margin: 30px 0;
     }
-    .button { 
-      display: inline-block; 
-      background-color: var(--construction-blue); 
-      color: white !important; 
-      padding: 16px 40px; 
-      text-decoration: none; 
-      border-radius: 6px; 
+    .button {
+      display: inline-block;
+      background-color: #001B51;
+      color: white !important;
+      padding: 16px 40px;
+      text-decoration: none;
+      border-radius: 6px;
       font-weight: 600;
       font-size: 16px;
       transition: background-color 0.2s;

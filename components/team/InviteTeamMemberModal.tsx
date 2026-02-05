@@ -17,7 +17,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import { Controller } from "react-hook-form";
-import { createManualTeamMember } from "@/app/actions/team";
+import { inviteTeamMember } from "@/app/actions/team";
 import type { UserRole } from "@/types/db/enums";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
@@ -256,17 +256,17 @@ export function InviteTeamMemberModal({
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.append("first_name", data.first_name);
-    formData.append("last_name", data.last_name);
+    formData.append("name", `${data.first_name} ${data.last_name}`);
     formData.append("email", data.email);
     formData.append("role", data.role);
 
-    const result = await createManualTeamMember(formData);
+    const result = await inviteTeamMember(formData);
     setIsSubmitting(false);
 
     if (result.success) {
       setServerSuccess({
         message: result.message || "Invitation sent successfully",
+        invitationLink: result.invitationLink,
         emailSent: result.emailSent,
       });
     } else {

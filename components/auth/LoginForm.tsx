@@ -3,18 +3,21 @@
 /**
  * LoginForm Component
  *
- * Main login form combining Google OAuth and Email magic link sign-in.
+ * Main login form combining Google OAuth, Email+Password, and Email magic link sign-in.
  * Construction-themed with error handling for NextAuth error codes.
  *
  * Debug: Displays auth errors from URL params
  */
 
+import { useState } from 'react';
 import { m as motion } from 'framer-motion';
 import Link from 'next/link';
 import { HardHat, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GoogleSignInButton } from './GoogleSignInButton';
 import { EmailSignInForm } from './EmailSignInForm';
+import { PasswordSignInForm } from './PasswordSignInForm';
+import { cn } from '@/lib/utils';
 
 interface LoginFormProps {
   error?: string;
@@ -31,8 +34,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   Default: 'An error occurred during sign-in. Please try again.',
 };
 
+type SignInMethod = 'password' | 'magic-link';
+
 export function LoginForm({ error, callbackUrl = '/app' }: LoginFormProps) {
   console.log('[LoginForm] Rendering with error:', error, 'callbackUrl:', callbackUrl);
+
+  const [signInMethod, setSignInMethod] = useState<SignInMethod>('password');
 
   // Debug: Get user-friendly error message
   const errorMessage = error ? ERROR_MESSAGES[error] || ERROR_MESSAGES.Default : null;
@@ -81,8 +88,40 @@ export function LoginForm({ error, callbackUrl = '/app' }: LoginFormProps) {
         </div>
       </div>
 
-      {/* Email Sign-in */}
-      <EmailSignInForm callbackUrl={callbackUrl} />
+      {/* Sign-in Method Tabs */}
+      <div className="flex gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        <button
+          type="button"
+          onClick={() => setSignInMethod('password')}
+          className={cn(
+            "flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all min-h-[44px]",
+            signInMethod === 'password'
+              ? "bg-white dark:bg-gray-900 text-construction-blue dark:text-blue-400 shadow-sm"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          )}
+        >
+          Password
+        </button>
+        <button
+          type="button"
+          onClick={() => setSignInMethod('magic-link')}
+          className={cn(
+            "flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all min-h-[44px]",
+            signInMethod === 'magic-link'
+              ? "bg-white dark:bg-gray-900 text-construction-blue dark:text-blue-400 shadow-sm"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          )}
+        >
+          Magic Link
+        </button>
+      </div>
+
+      {/* Sign-in Forms */}
+      {signInMethod === 'password' ? (
+        <PasswordSignInForm callbackUrl={callbackUrl} />
+      ) : (
+        <EmailSignInForm callbackUrl={callbackUrl} />
+      )}
 
       {/* Footer Link */}
       <div className="text-center pt-4 border-t border-gray-200 dark:border-gray-700">

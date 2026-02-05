@@ -234,3 +234,41 @@ export const assignMaterialValidation = {
 export const emailSignInValidation = {
   email: emailValidation,
 };
+
+// ============================================================================
+// PASSWORD VALIDATION RULES
+// ============================================================================
+
+/**
+ * Password validation rules for signup forms
+ * Requirements: 8+ chars, uppercase, lowercase, number
+ */
+export const passwordValidation = {
+  required: 'Password is required',
+  minLength: {
+    value: 8,
+    message: 'Password must be at least 8 characters',
+  },
+  validate: {
+    hasUppercase: (v: string) => /[A-Z]/.test(v) || 'Must contain an uppercase letter',
+    hasLowercase: (v: string) => /[a-z]/.test(v) || 'Must contain a lowercase letter',
+    hasNumber: (v: string) => /[0-9]/.test(v) || 'Must contain a number',
+  },
+};
+
+/**
+ * Confirm password validation rules (factory function)
+ * @param getPassword - Function that returns the password value to compare against
+ */
+export const confirmPasswordValidation = (getPassword: () => string) => ({
+  required: 'Please confirm your password',
+  validate: (v: string) => v === getPassword() || 'Passwords do not match',
+});
+
+/**
+ * Invite signup form validation rules
+ */
+export const inviteSignupValidation = {
+  name: requiredStringValidation,
+  password: passwordValidation,
+};
