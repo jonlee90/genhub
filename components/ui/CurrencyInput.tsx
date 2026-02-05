@@ -56,6 +56,7 @@ export const CurrencyInput = memo(
             decimalsLimit={2}
             decimalScale={2}
             allowNegativeValue={false}
+            inputMode="decimal"
             className={cn(
               // Base styles
               'block h-14 px-4 w-full',
