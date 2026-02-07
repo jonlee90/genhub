@@ -726,6 +726,7 @@ export function ProjectDetailContent({
               initialView="kanban"
               projectId={project.id}
               phases={(project.project_phases || []) as Phase[]}
+              taskTypes={taskTypes}
             />
           )}
 

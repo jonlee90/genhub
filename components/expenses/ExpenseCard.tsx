@@ -6,7 +6,6 @@ import {
   Receipt,
   FileText,
   Image as ImageIcon,
-  DollarSign,
   Calendar,
   Building2,
 } from "lucide-react";
@@ -74,11 +73,8 @@ export const ExpenseCard = React.memo(
           {/* Content */}
           <div className="flex-1 p-4 md:p-5 space-y-3 flex flex-col">
             {/* Amount - prominent display */}
-            <div className="flex items-baseline gap-2">
-              <DollarSign className="h-5 w-5 md:h-6 md:w-6 text-construction-blue dark:text-blue-400 shrink-0" />
-              <div className="text-2xl md:text-3xl font-black text-construction-blue dark:text-blue-400 leading-none">
-                {formatCurrency(expense.amount)}
-              </div>
+            <div className="text-2xl md:text-3xl font-black text-construction-blue dark:text-blue-400 leading-none">
+              {formatCurrency(expense.amount)}
             </div>
 
             {/* Description */}

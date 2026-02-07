@@ -15,7 +15,7 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
       <div className="flex h-full">
         {/* Sidebar header */}
         <div
-          className="sticky left-0 z-30 bg-gradient-to-br from-construction-blue via-blue-700 to-blue-800 border-r-2 border-construction-blue flex items-center justify-center shadow-md"
+          className="sticky left-0 z-30 bg-gradient-to-br from-construction-blue via-blue-700 to-blue-800 border-r-2 border-construction-blue flex items-center justify-between shadow-md"
           style={{ width: sidebarWidth, padding: isMobile ? "0 8px" : "0 16px" }}
         >
           <span className={cn(
@@ -23,6 +23,12 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
             isMobile ? "text-xs" : "text-sm"
           )}>
             {sortedTasksLength  + " TASKS"}
+          </span>
+          <span className={cn(
+            "text-white/70 font-bold tracking-wider uppercase",
+            isMobile ? "text-[9px]" : "text-xs"
+          )}>
+            DUE
           </span>
         </div>
 

@@ -115,7 +115,8 @@
       "Bash(for dir in app lib hooks types utils)",
       "Bash(wc:*)",
       "mcp__plugin_serena_serena__edit_memory",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "mcp__playwright__browser_fill_form"
     ],
     "deny": [],
     "ask": []

@@ -71,7 +71,7 @@ export function CreateExpenseModal({
       project_id: taskContext?.projectId || "",
       task_id: taskContext?.taskId || undefined,
       description: "",
-      amount: 0,
+      amount: "",
       category: "materials" as const,
       expense_date: new Date().toISOString().split("T")[0],
       vendor_name: "",
@@ -174,7 +174,7 @@ export function CreateExpenseModal({
       task_id:
         data.task_id && data.task_id !== "no-task" ? data.task_id : undefined,
       description: data.description,
-      amount: data.amount,
+      amount: parseFloat(data.amount) || 0,
       category: data.category,
       expense_date: data.expense_date,
       vendor_name: data.vendor_name || undefined,
@@ -460,8 +460,8 @@ export function CreateExpenseModal({
                   label="Amount *"
                   error={errors.amount?.message}
                   placeholder="0.00"
-                  onValueChange={(val) => onChange(val ? parseFloat(val) : 0)}
-                  value={value?.toString() || ""}
+                  onValueChange={(val) => onChange(val || "")}
+                  value={value || ""}
                 />
               )}
             />

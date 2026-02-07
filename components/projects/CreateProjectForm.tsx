@@ -12,10 +12,12 @@ import { m as motion } from "framer-motion";
 import { createProject } from "@/app/actions/projects";
 import { getPhaseTemplates } from "@/app/actions/phase-templates";
 import { getProjectTypes } from "@/app/actions/project-types";
+import { Controller } from "react-hook-form";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
 import { useFormSubmit } from "@/hooks/use-form-submit";
 import { createProjectValidation } from "@/lib/validation/client-validation";
 import { MobileInput } from "@/components/mobile/MobileInput";
+import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { TouchButton } from "@/components/mobile/TouchButton";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,6 +90,7 @@ export function CreateProjectForm({
   // Use React Hook Form with native validation
   const {
     register,
+    control,
     formState: { errors },
     watch,
     setValue,
@@ -639,17 +642,25 @@ export function CreateProjectForm({
                   <DollarSign className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   Budget
                 </Label>
-                <MobileInput
-                  {...register("budget", createProjectValidation.budget)}
-                  id="budget"
-                  type="number"
-                  placeholder="50000"
-                  disabled={isPending}
-                  error={errors.budget?.message}
-                  inputMode="decimal"
-                  min={0}
-                  step={0.01}
-                  enterKeyHint="done"
+                <Controller
+                  name="budget"
+                  control={control}
+                  rules={createProjectValidation.budget}
+                  render={({ field: { onChange, onBlur, value, ref } }) => (
+                    <>
+                      <input type="hidden" name="budget" value={value || ""} />
+                      <CurrencyInput
+                        ref={ref}
+                        id="budget"
+                        placeholder="50,000.00"
+                        disabled={isPending}
+                        error={errors.budget?.message}
+                        onValueChange={(val) => onChange(val || "")}
+                        onBlur={onBlur}
+                        value={value?.toString() || ""}
+                      />
+                    </>
+                  )}
                 />
               </div>
             </div>

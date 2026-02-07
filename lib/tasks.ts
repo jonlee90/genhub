@@ -117,7 +117,9 @@ export const getTasksPageData = cache(async function getTasksPageData(
           ),
           phase:project_phases (
             id,
-            name
+            name,
+            order_index,
+            icon_name
           )
         `,
         )
@@ -172,7 +174,7 @@ export const getTasksPageData = cache(async function getTasksPageData(
   const taskIds = tasks.map((task: any) => task.id);
 
   // OPTIMIZATION: Run secondary queries in parallel
-  const [assigneesResult, materialStatsResult, expenseStatsResult, dependenciesResult] =
+  const [assigneesResult, taskAssigneesResult, materialStatsResult, expenseStatsResult, dependenciesResult] =
     await Promise.all([
       // Fetch assignee user profiles
       supabase
@@ -182,6 +184,19 @@ export const getTasksPageData = cache(async function getTasksPageData(
           "id",
           tasks.map((t: any) => t.assignee_id).filter((id): id is string => !!id),
         ),
+
+      // Fetch task assignees with nested user/subcontractor data
+      supabase
+        .from("task_assignees")
+        .select(`
+          id,
+          task_id,
+          user_id,
+          subcontractor_id,
+          user:user_profiles!task_assignees_user_id_fkey(id, name, email, avatar_url),
+          subcontractor:subcontractors!task_assignees_subcontractor_id_fkey(id, company_name, contact_name, email)
+        `)
+        .in("task_id", taskIds),
 
       // Fetch material assignment counts and totals for each task
       supabase
@@ -247,6 +262,25 @@ export const getTasksPageData = cache(async function getTasksPageData(
 
     (tasks as any[]).forEach((task: any) => {
       task.assignee = task.assignee_id ? assigneeMap[task.assignee_id] || null : null;
+    });
+  }
+
+  // Attach multi-assignees to tasks
+  const taskAssigneesData = taskAssigneesResult.data || [];
+  if (taskAssigneesData.length > 0) {
+    (tasks as any[]).forEach((task: any) => {
+      const taskAssigns = taskAssigneesData.filter((ta: any) => ta.task_id === task.id);
+      task.assignees = taskAssigns.map((ta: any) => ({
+        id: ta.id,
+        user_id: ta.user_id,
+        subcontractor_id: ta.subcontractor_id,
+        user: ta.user || null,
+        subcontractor: ta.subcontractor || null,
+      }));
+    });
+  } else {
+    (tasks as any[]).forEach((task: any) => {
+      task.assignees = [];
     });
   }
 
