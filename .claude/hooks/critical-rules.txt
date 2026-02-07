@@ -1,0 +1,12 @@
+CRITICAL RULES (re-injected after compaction):
+- DB access: Server Actions ONLY (never in 'use client' components)
+- Modals: ResponsiveModal ONLY (never raw Dialog from Radix)
+- Icons: Lucide ONLY (never heroicons or fontawesome)
+- Touch targets: 44px minimum (min-h-[44px] min-w-[44px])
+- Skills: Load vercel-react-best-practices BEFORE any .tsx/.jsx edit
+- Skills: Load postgres-best-practices BEFORE any Server Action edit
+- Agent boundary: frontend-engineer NEVER touches database
+- Agent boundary: backend-engineer NEVER touches UI components
+- Imports: createClient from @/utils/supabase/server (server-side only)
+- Imports: ResponsiveModal from @/components/ui/ResponsiveModal
+- Design tokens: Primary #001B51, Accent #3C3C3C, dvh not vh

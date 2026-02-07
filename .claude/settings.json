@@ -1,17 +1,15 @@
 {
 	"hooks": {
-		"PostToolUse": [
+		"PreToolUse": [
 			{
-				"matcher": "Write|Edit|MultiEdit",
+				"matcher": "Edit|Write|MultiEdit",
 				"hooks": [
 					{
 						"type": "command",
-						"command": "~/.claude/hooks/formatter.sh"
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protect-files.sh"
 					}
 				]
-			}
-		],
-		"PreToolUse": [
+			},
 			{
 				"matcher": "Bash",
 				"hooks": [
@@ -26,13 +24,30 @@
 				]
 			}
 		],
-		"Notification": [
+		"PostToolUse": [
 			{
-				"matcher": "*",
+				"matcher": "Write|Edit|MultiEdit",
 				"hooks": [
 					{
 						"type": "command",
-						"command": "afplay /System/Library/Sounds/Funk.aiff"
+						"command": "~/.claude/hooks/formatter.sh"
+					},
+					{
+						"type": "command",
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/run-tests-for-file.sh",
+						"async": true,
+						"timeout": 120
+					}
+				]
+			}
+		],
+		"PreCompact": [
+			{
+				"matcher": "",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "cat \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/critical-rules.txt"
 					}
 				]
 			}
@@ -42,8 +57,24 @@
 				"matcher": "",
 				"hooks": [
 					{
+						"type": "prompt",
+						"prompt": "Before stopping, quickly verify: 1) Were all requested changes made? 2) Did we follow the output format (Status, Files, Skills Applied, Mobile Checks, Build)? 3) Are there any TODO items still in_progress? If anything is incomplete, list what remains. $ARGUMENTS",
+						"timeout": 30
+					},
+					{
 						"type": "command",
-						"command": "afplay /System/Library/Sounds/Funk.aiff"
+						"command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
+					}
+				]
+			}
+		],
+		"Notification": [
+			{
+				"matcher": "*",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "afplay /System/Library/Sounds/Funk.aiff 2>/dev/null || true"
 					}
 				]
 			}
