@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, formatBudget } from "@/lib/utils";
 import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
@@ -167,14 +167,26 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             {task.title}
           </span>
         </div>
-        {/* Due date - right aligned (rendering-conditional-render) */}
-        {task.due_date ? (
-          <span className={cn(
-            "shrink-0 text-gray-500 dark:text-gray-400 tabular-nums",
-            isMobile ? "text-[10px]" : "text-xs"
-          )}>
-            {formatDate(task.due_date)}
-          </span>
+        {/* Due date & actual cost - right aligned (rendering-conditional-render) */}
+        {task.due_date || task.actual_cost ? (
+          <div className="shrink-0 text-right">
+            {task.due_date ? (
+              <span className={cn(
+                "block text-gray-500 dark:text-gray-400 tabular-nums",
+                isMobile ? "text-[10px]" : "text-xs"
+              )}>
+                {formatDate(task.due_date)}
+              </span>
+            ) : null}
+            {task.actual_cost ? (
+              <span className={cn(
+                "block text-construction-green font-bold tabular-nums",
+                isMobile ? "text-[9px]" : "text-[11px]"
+              )}>
+                {formatBudget(task.actual_cost)}
+              </span>
+            ) : null}
+          </div>
         ) : null}
       </div>
 

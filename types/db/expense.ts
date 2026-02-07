@@ -84,6 +84,7 @@ export interface ExpensesListProps {
   tasks: ExpenseTask[];
   searchParams: { [key: string]: string | string[] | undefined };
   companyId?: string;
+  userRole?: string | null;
 }
 
 /**

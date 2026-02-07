@@ -53,6 +53,7 @@ interface Expense {
 interface ExpenseDetailModalProps {
   expense: Expense;
   onClose: () => void;
+  userRole?: string | null;
 }
 
 const STATUS_CONFIG = {
@@ -105,6 +106,7 @@ const formatDate = (date: string) => dateFormatter.format(new Date(date));
 export function ExpenseDetailModal({
   expense,
   onClose,
+  userRole,
 }: ExpenseDetailModalProps) {
   const [isPending, startTransition] = useTransition();
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -162,7 +164,9 @@ export function ExpenseDetailModal({
   };
 
   // Can delete if status is 'submitted' (user's own expense before approval)
-  const canDelete = expense.status === "submitted";
+  // Admin can also delete approved expenses
+  const isAdmin = userRole === "admin";
+  const canDelete = expense.status === "submitted" || (isAdmin && expense.status === "approved");
 
   // Compute navigation state based on modal mode
   const getBackHandler = useCallback(() => {

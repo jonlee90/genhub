@@ -239,9 +239,7 @@ async function getDashboardDataImpl(
 
     // Calculate derived metrics
     const totalPlannedBudget = Number(kpiData.total_budget) || 0;
-    const totalActualSpend =
-      (Number(kpiData.total_actual_cost) || 0) +
-      (Number(kpiData.approved_expense_amount) || 0);
+    const totalActualSpend = Number(kpiData.approved_expense_amount) || 0;
     const budgetUtilization =
       totalPlannedBudget > 0
         ? Math.round((totalActualSpend / totalPlannedBudget) * 100)

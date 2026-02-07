@@ -56,6 +56,7 @@ export default async function ProjectDetailPage({
     projectPhotos,
     teamCostSummaries,
     taskTypes,
+    userRole,
   } = data;
 
   return (
@@ -98,6 +99,7 @@ export default async function ProjectDetailPage({
           projectPhotos={projectPhotos || []}
           teamCostSummaries={teamCostSummaries || []}
           taskTypes={taskTypes || []}
+          userRole={userRole}
         />
       </div>
     </div>

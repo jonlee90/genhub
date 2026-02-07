@@ -151,6 +151,7 @@ export function ProjectDetailContent({
   projectPhotos = [],
   teamCostSummaries = [],
   taskTypes = [],
+  userRole,
 }: ProjectDetailContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
@@ -740,7 +741,7 @@ export function ProjectDetailContent({
             />
           )}
 
-          {activeTab === "settings" && <ProjectSettings project={project} />}
+          {activeTab === "settings" && <ProjectSettings project={project} userRole={userRole} />}
         </motion.div>
 
         {/* Task modal - rendered via context */}

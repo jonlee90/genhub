@@ -84,6 +84,7 @@ export const getTasksPageData = cache(async function getTasksPageData(
       `,
       )
       .eq("company_id", companyId)
+      .neq("status", "archived")
       .order("name"),
 
     // Get all team members for this company (for filtering)
@@ -123,7 +124,8 @@ export const getTasksPageData = cache(async function getTasksPageData(
           )
         `,
         )
-        .eq("project.company_id", companyId);
+        .eq("project.company_id", companyId)
+        .neq("project.status", "archived");
 
       // Apply server-side filters
       if (filters?.projectFilter && filters.projectFilter !== "all") {

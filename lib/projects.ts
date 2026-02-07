@@ -615,5 +615,6 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
     projectPhotos,
     teamCostSummaries,
     taskTypes: taskTypesResult.data || [],
+    userRole: companyUser.role,
   };
 });

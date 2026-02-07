@@ -114,8 +114,8 @@ export function TaskMaterialsExtrasStep({
         />
       )}
 
-      {/* Expenses Section - Edit mode only */}
-      {showExpenses && taskId && (
+      {/* Expenses Section - Edit mode only, hidden when auto-expense preview is showing */}
+      {showExpenses && taskId && !(autoExpenseEnabled && showAutoExpense && !hasAutoExpense && (actualCost ?? 0) > 0) && (
         <div className="space-y-2">
           {expensesLoading ? (
             <div className="flex items-center justify-center py-4">

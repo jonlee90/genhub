@@ -101,6 +101,7 @@ export default async function ExpensesPage({
           tasks={tasks}
           searchParams={params}
           companyId={companyId}
+          userRole={companyUser.role}
         />
       </Suspense>
 

@@ -54,6 +54,7 @@ export function ExpensesList({
   tasks,
   searchParams: _searchParams,
   companyId,
+  userRole,
 }: ExpensesListProps) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExpense, setSelectedExpense] =
@@ -302,6 +303,7 @@ export function ExpensesList({
         <ExpenseDetailModal
           expense={selectedExpense}
           onClose={() => setSelectedExpense(null)}
+          userRole={userRole}
         />
       )}
     </div>

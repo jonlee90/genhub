@@ -12,7 +12,6 @@ paths:
 - Use `ResponsiveModal` only -- never raw `<Dialog` from Radix
 - Use Lucide icons only -- never heroicons or fontawesome
 - 44px minimum touch targets: `min-h-[44px] min-w-[44px]` on buttons/links
-- Load `vercel-react-best-practices` skill BEFORE editing
 
 ## Styling
 - Primary: `#001B51`, Accent: `#3C3C3C`

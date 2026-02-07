@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn, formatDate, getInitials } from "@/lib/utils";
 import { getDateIndicator } from "@/lib/date-utils";
 import type { GanttTaskBarProps } from "./gantt-types";
-import { STATUS_STYLES } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
 import type { TaskType } from "@/types/db/enums";
 
@@ -27,9 +26,6 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
     id: task.id,
     disabled: isMobile,
   });
-
-  // Get status-specific styling
-  const statusStyle = STATUS_STYLES[task.status];
 
   // Memoize task type info (rerender-memo)
   const taskTypeInfo = useMemo(() => {
@@ -107,12 +103,9 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
         isMobile
           ? "touch-manipulation active:scale-[0.98] cursor-pointer"
           : "cursor-grab active:cursor-grabbing hover:shadow-md hover:scale-[1.01] hover:-translate-y-px",
-        // Clean background based on priority - removed gradients for simplicity
-        task.priority === "high" && "bg-red-600 dark:bg-red-700 border border-red-700 dark:border-red-600",
-        task.priority === "medium" && "border border-amber-600 dark:border-amber-500 text-amber-600 dark:text-amber-300",
-        task.priority === "low" && "border border-emerald-600 dark:border-emerald-500 text-emerald-600 dark:text-emerald-300",
-        // Status overlay styles
-        statusStyle,
+        // Priority border indicators
+        task.priority === "critical" && "border-2 border-purple-500 dark:border-purple-400",
+        task.priority === "high" && "border-2 border-red-500 dark:border-red-400",
         // Dragging and hover states
         isDragging && "opacity-50 scale-[1.03] shadow-[0_8px_16px_rgba(0,27,81,0.2)] dark:shadow-[0_8px_16px_rgba(0,0,0,0.4)] z-50",
         isHovered && "ring-2 ring-construction-blue/50 dark:ring-construction-blue/60 ring-offset-1 dark:ring-offset-gray-900"
@@ -138,8 +131,7 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
       <div className={cn(
         "absolute inset-0 flex items-center gap-1.5 font-semibold text-white z-10",
         isMobile ? "px-1.5 text-[10px]" : "px-2.5 text-xs",
-        // Center content for 1-day tasks
-        taskDurationDays <= 1 ? "justify-center" : ""
+        "justify-start"
       )}>
         {/* Multi-assignee avatars (stacked) */}
         {task.assignees && task.assignees.length > 0 ? (

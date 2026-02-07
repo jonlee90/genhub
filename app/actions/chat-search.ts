@@ -134,6 +134,7 @@ export async function searchProjects(query: string) {
     .from('projects')
     .select('id, name, status, health_score')
     .eq('company_id', companyId)
+    .neq('status', 'archived')
     .ilike('name', `%${searchQuery}%`)
     .order('name', { ascending: true })
     .limit(10);

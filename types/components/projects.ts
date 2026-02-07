@@ -16,6 +16,7 @@ import type {
   TeamCostSummary,
 } from '@/app/actions/projects';
 import type { UnifiedPhoto } from '@/app/actions/project-photos';
+import type { UserRole } from '@/types/db/enums';
 
 // ============================================
 // Project with Relations
@@ -98,6 +99,7 @@ export interface ProjectDetailProps {
   projectPhotos?: UnifiedPhoto[];
   teamCostSummaries?: TeamCostSummary[];
   taskTypes?: any[]; // TaskTypeConfigsRow[]
+  userRole?: UserRole;
 }
 
 export interface ProjectOverviewProps {

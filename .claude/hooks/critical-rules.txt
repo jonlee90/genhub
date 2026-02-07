@@ -1,12 +1,42 @@
 CRITICAL RULES (re-injected after compaction):
+
+== PROJECT RULES ==
 - DB access: Server Actions ONLY (never in 'use client' components)
 - Modals: ResponsiveModal ONLY (never raw Dialog from Radix)
 - Icons: Lucide ONLY (never heroicons or fontawesome)
 - Touch targets: 44px minimum (min-h-[44px] min-w-[44px])
-- Skills: Load vercel-react-best-practices BEFORE any .tsx/.jsx edit
-- Skills: Load postgres-best-practices BEFORE any Server Action edit
 - Agent boundary: frontend-engineer NEVER touches database
 - Agent boundary: backend-engineer NEVER touches UI components
 - Imports: createClient from @/utils/supabase/server (server-side only)
 - Imports: ResponsiveModal from @/components/ui/ResponsiveModal
 - Design tokens: Primary #001B51, Accent #3C3C3C, dvh not vh
+
+== NEXT.JS / VERCEL BEST PRACTICES ==
+- Server Component serialization: NEVER pass functions or React components as props from Server to Client
+  Use string keys with ICON_MAP pattern: iconName: 'building2' not icon: Building2
+  Use adapter components: CompanyCardAdapter, not renderCard={(item) => ...}
+- Framer Motion: ALWAYS import { m as motion } from 'framer-motion' (NOT import { motion })
+  Wrong import bloats bundle ~30KB and breaks LazyMotion tree-shaking
+- Lucide imports: ALWAYS individual: import { Check, X } from 'lucide-react'
+  NEVER wildcard: import * as Icons (breaks tree-shaking, ~30KB waste)
+- Async waterfalls: ALWAYS use Promise.all() for independent Server Action queries
+  WRONG: const a = await q1(); const b = await q2();
+  RIGHT: const [a, b] = await Promise.all([q1(), q2()])
+- Dynamic imports: Use next/dynamic for components >20KB (charts, viewers, heavy modals)
+  Combine with <Suspense fallback={<Skeleton />}>
+- Conditional rendering: PREFER ternary over && to avoid rendering 0/false
+  WRONG: {count && <Badge />} -- can render "0" in DOM
+  RIGHT: {count > 0 ? <Badge /> : null}
+
+== STYLING ==
+- Viewport heights: Use dvh on mobile (not vh). vh includes browser chrome causing overflow
+- Dark mode: ALWAYS include dark: variant for every color class
+  text-gray-600 dark:text-gray-400 | bg-gray-100 dark:bg-gray-800
+- State completeness: hover: REQUIRES active: + dark:hover: + dark:active:
+  Pattern: hover:bg-blue-50 active:bg-blue-100 dark:hover:bg-blue-900 dark:active:bg-blue-800
+- Safe areas: Include pb-[env(safe-area-inset-bottom)] on fixed bottom elements
+
+== MOBILE PWA ==
+- Text: 16px minimum (text-base) on inputs and body text. Prevents iOS auto-zoom and ensures outdoor readability
+- Animations: NEVER exceed 200ms duration. Anything slower feels laggy on mobile
+- Touch feedback: Tappable elements MUST include active:scale-[0.98] for native press feel

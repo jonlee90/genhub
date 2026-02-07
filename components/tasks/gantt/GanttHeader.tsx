@@ -24,12 +24,20 @@ export const GanttHeader = React.memo(function GanttHeader({ config, dateGroups,
           )}>
             {sortedTasksLength  + " TASKS"}
           </span>
-          <span className={cn(
-            "text-white/70 font-bold tracking-wider uppercase",
-            isMobile ? "text-[9px]" : "text-xs"
-          )}>
-            DUE
-          </span>
+          <div className="text-right">
+            <span className={cn(
+              "block text-white/70 font-bold tracking-wider uppercase",
+              isMobile ? "text-[9px]" : "text-xs"
+            )}>
+              DUE
+            </span>
+            <span className={cn(
+              "block text-white/50 font-bold tracking-wider uppercase",
+              isMobile ? "text-[8px]" : "text-[10px]"
+            )}>
+              COST
+            </span>
+          </div>
         </div>
 
         {/* Timeline header */}

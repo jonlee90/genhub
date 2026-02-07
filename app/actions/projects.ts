@@ -4,7 +4,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
-import { getUserContext } from "@/lib/auth/user-context";
+import { getUserContext, getAdminUserContext, verifyProjectAccess } from "@/lib/auth/user-context";
 import type {
   ProjectsRow,
   ProjectsInsert,
@@ -624,6 +624,46 @@ export async function updateProjectStatus(
   return { success: true, project };
 }
 
+export async function deleteProject(projectId: string) {
+  const adminContext = await getAdminUserContext();
+  if ("error" in adminContext) {
+    return { error: adminContext.error };
+  }
+
+  const { companyId, supabase } = adminContext;
+
+  // Verify project belongs to user's company
+  const accessResult = await verifyProjectAccess(supabase, projectId, companyId);
+  if ("error" in accessResult) {
+    return { error: accessResult.error };
+  }
+
+  // Delete project - CASCADE handles all dependent data
+  const { error: deleteError } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId);
+
+  if (deleteError) {
+    console.error("[deleteProject] Error:", deleteError);
+    return { error: "Failed to delete project. Please try again." };
+  }
+
+  // Refresh materialized view to update dashboard KPIs
+  try {
+    await supabase.rpc("refresh_dashboard_kpis");
+  } catch (refreshError) {
+    // Don't fail deletion if refresh fails
+  }
+
+  revalidatePath("/app/projects");
+  revalidatePath("/app");
+  revalidateTag("projects", "max");
+  revalidateTag("dashboard", "max");
+
+  return { success: true };
+}
+
 export async function addProjectTeamMember(
   projectId: string,
   userId: string,
@@ -1193,7 +1233,8 @@ async function fetchProjectsWithStats(
     const { count, error: countError } = await supabase
       .from("projects")
       .select("id", { count: "exact", head: true })
-      .eq("company_id", companyId);
+      .eq("company_id", companyId)
+      .neq("status", "archived");
 
     if (countError) {
       console.error("[getProjectsWithStats] Count error:", countError);

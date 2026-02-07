@@ -37,8 +37,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { updateProject, updateProjectStatus } from '@/app/actions/projects';
+import { updateProject, updateProjectStatus, deleteProject } from '@/app/actions/projects';
 import type { ProjectsRow } from '@/types/db/tables/projects';
+import type { UserRole } from '@/types/db/enums';
 
 type Project = Partial<ProjectsRow> & {
   id: string;
@@ -53,6 +54,7 @@ type Project = Partial<ProjectsRow> & {
 
 interface ProjectSettingsProps {
   project: Project;
+  userRole?: UserRole;
 }
 
 const PROJECT_STATUSES = [
@@ -62,7 +64,7 @@ const PROJECT_STATUSES = [
   { value: 'archived', label: 'Archived' },
 ];
 
-export function ProjectSettings({ project }: ProjectSettingsProps) {
+export function ProjectSettings({ project, userRole }: ProjectSettingsProps) {
   console.log('[ProjectSettings] Rendering with project:', {
     id: project.id,
     name: project.name,
@@ -73,6 +75,7 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [currentStatus, setCurrentStatus] = useState<'active' | 'on_hold' | 'completed' | 'archived'>(
@@ -127,6 +130,20 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
     if (result?.error) {
       setError(result.error);
       setIsArchiving(false);
+    } else {
+      router.push('/app/projects');
+    }
+  }, [project.id, router]);
+
+  const handleDelete = useCallback(async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    const result = await deleteProject(project.id);
+
+    if (result?.error) {
+      setError(result.error);
+      setIsDeleting(false);
     } else {
       router.push('/app/projects');
     }
@@ -326,6 +343,61 @@ export function ProjectSettings({ project }: ProjectSettingsProps) {
               </AlertDialogContent>
             </AlertDialog>
           </div>
+
+          {userRole === 'admin' && (
+            <div className="flex items-center justify-between p-4 border-2 border-destructive rounded-lg bg-destructive/5 mt-4">
+              <div>
+                <p className="font-medium text-destructive">Permanently delete this project</p>
+                <p className="text-sm text-muted-foreground">
+                  Delete the project and all associated data. This action cannot be undone.
+                </p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    disabled={isDeleting}
+                    className="min-h-[44px] min-w-[44px] active:scale-[0.98]"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    {isDeleting ? 'Deleting...' : 'Delete Project'}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Permanently delete this project?</AlertDialogTitle>
+                    <AlertDialogDescription asChild>
+                      <div className="space-y-3">
+                        <p>
+                          This will permanently delete &quot;{project.name}&quot; and all associated data:
+                        </p>
+                        <ul className="list-disc list-inside text-sm space-y-1">
+                          <li>All phases and tasks</li>
+                          <li>Team assignments</li>
+                          <li>Files and photos</li>
+                          <li>Expenses and material assignments</li>
+                          <li>Chat rooms and messages</li>
+                          <li>3D models and spatial markers</li>
+                        </ul>
+                        <p className="font-medium text-destructive">
+                          This action cannot be undone.
+                        </p>
+                      </div>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete Project
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

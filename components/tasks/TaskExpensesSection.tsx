@@ -113,32 +113,29 @@ export function TaskExpensesSection({
 
   return (
     <div className="space-y-3">
-      {/* Header with totals and add button */}
-      <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2">
-          <Receipt className="h-4 w-4 text-construction-blue" />
-          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-            Expenses <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
-            {expenses.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {expenses.length}
-              </Badge>
-            )}
-          </h3>
-        </div>
+      {/* Header with add button - only shown when no expenses exist */}
+      {expenses.length === 0 && (
+        <div className="flex items-center justify-between pb-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-2">
+            <Receipt className="h-4 w-4 text-construction-blue" />
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
+              Expenses <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
+            </h3>
+          </div>
 
-        <Button
-          type="button"
-          size="sm"
-          onClick={() => {
-            setShowCreateModal(true);
-          }}
-          className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
-        >
-          <Plus className="h-4 w-4 mr-1" />
-          Add Expense
-        </Button>
-      </div>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => {
+              setShowCreateModal(true);
+            }}
+            className="bg-construction-blue hover:bg-construction-blue/90 text-white font-bold"
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Add Expense
+          </Button>
+        </div>
+      )}
 
       {/* Summary row with totals */}
       {expenses.length > 0 && (

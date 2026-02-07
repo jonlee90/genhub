@@ -22,7 +22,7 @@ npm run db:gen-types # Regenerate Supabase types after migration
 | `ResponsiveModal` only (never raw `<Dialog`) | **REJECT** |
 | Lucide icons only (never heroicons/fontawesome) | **REJECT** |
 | 44px touch targets (`min-h-[44px] min-w-[44px]`) | **FIX** |
-| Load skill before editing (see rules/) | **STOP** |
+| Load skill for new components/pages | **RECOMMENDED** |
 
 ## SKILL LOADING
 
