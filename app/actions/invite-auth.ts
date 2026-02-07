@@ -217,10 +217,11 @@ export async function signupWithInvitation(
 
     console.log("[SIGNUP_WITH_INVITATION] Auth user created:", authUser.user.id);
 
-    // Step 2: Create next_auth.users record for NextAuth CredentialsProvider
+    // Step 2: Upsert next_auth.users record for NextAuth CredentialsProvider
     // The CredentialsProvider queries next_auth.users to find users after password validation
     // Note: We use a raw client (untyped) because createAdminClient is typed for public schema only
-    console.log("[SIGNUP_WITH_INVITATION] Creating next_auth user record");
+    // Note: UPSERT on email to handle pre-existing records (e.g. from OAuth or SupabaseAdapter)
+    console.log("[SIGNUP_WITH_INVITATION] Upserting next_auth user record");
     const rawSupabase = createRawClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SECRET_KEY!,
@@ -228,11 +229,14 @@ export async function signupWithInvitation(
     const { error: nextAuthError } = await rawSupabase
       .schema('next_auth')
       .from('users')
-      .insert({
+      .upsert({
         email: invitation.email.toLowerCase(),
         name: validatedData.name,
         emailVerified: new Date().toISOString(),
         image: null,
+      }, {
+        onConflict: 'email',
+        ignoreDuplicates: false,
       });
 
     if (nextAuthError) {
