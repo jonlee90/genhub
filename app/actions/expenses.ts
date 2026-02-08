@@ -98,7 +98,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
         ...validated,
         company_id: userContext.companyId,
         submitted_by: userContext.userId,
-        status: "submitted",
+        status: "approved",
       })
       .select()
       .single();
@@ -137,7 +137,9 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
           }));
 
         if (notifications.length > 0) {
-          await userContext.supabase.from("notifications").insert(notifications);
+          await userContext.supabase
+            .from("notifications")
+            .insert(notifications);
         }
       }
     }
@@ -571,7 +573,9 @@ export async function processReceiptOCR(
         match_confidence_score: item.confidence_score,
       }));
 
-      await userContext.supabase.from("expense_line_items").insert(lineItemsToInsert);
+      await userContext.supabase
+        .from("expense_line_items")
+        .insert(lineItemsToInsert);
     }
 
     revalidatePath(`/app/expenses/${expenseId}`);
@@ -771,7 +775,7 @@ export async function createExpenseFromMaterial(data: {
         category: data.category,
         expense_date: new Date().toISOString().split("T")[0],
         submitted_by: userContext.userId,
-        status: "submitted",
+        status: "approved",
       })
       .select()
       .single();
@@ -1093,25 +1097,23 @@ export async function getVendorOptions(
  * @param role - User role for authorization
  * @returns Combined expenses, projects, and tasks data
  */
-export const getInitialExpensesPageData = cache(async (
-  companyId: string,
-  role: string,
-) => {
-  try {
-    const supabase = await createClient();
+export const getInitialExpensesPageData = cache(
+  async (companyId: string, role: string) => {
+    try {
+      const supabase = await createClient();
 
-    // Fetch projects and expenses in parallel, then fetch tasks for those projects
-    const [projectsResult, expensesResult] = await Promise.all([
-      supabase
-        .from("projects")
-        .select("id, name, status, end_date")
-        .eq("company_id", companyId)
-        .eq("status", "active")
-        .order("name"),
-      supabase
-        .from("expenses")
-        .select(
-          `
+      // Fetch projects and expenses in parallel, then fetch tasks for those projects
+      const [projectsResult, expensesResult] = await Promise.all([
+        supabase
+          .from("projects")
+          .select("id, name, status, end_date")
+          .eq("company_id", companyId)
+          .eq("status", "active")
+          .order("name"),
+        supabase
+          .from("expenses")
+          .select(
+            `
           *,
           project:projects!expenses_project_id_fkey (
             id,
@@ -1122,50 +1124,56 @@ export const getInitialExpensesPageData = cache(async (
             title
           )
         `,
-        )
-        .eq("company_id", companyId)
-        .order("created_at", { ascending: false }),
-    ]);
+          )
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: false }),
+      ]);
 
-    // Fetch tasks for active projects (no waterfall now)
-    const projectIds = projectsResult.data?.map((p) => p.id) || [];
-    type TaskData = { id: string; title: string; project_id: string; task_type: string };
-    let tasksResult: { data: TaskData[] } = { data: [] };
+      // Fetch tasks for active projects (no waterfall now)
+      const projectIds = projectsResult.data?.map((p) => p.id) || [];
+      type TaskData = {
+        id: string;
+        title: string;
+        project_id: string;
+        task_type: string;
+      };
+      let tasksResult: { data: TaskData[] } = { data: [] };
 
-    if (projectIds.length > 0) {
-      const result = await supabase
-        .from("tasks")
-        .select("id, title, project_id, task_type")
-        .in("project_id", projectIds)
-        .order("created_at");
-      tasksResult = { data: (result.data || []) as TaskData[] };
+      if (projectIds.length > 0) {
+        const result = await supabase
+          .from("tasks")
+          .select("id, title, project_id, task_type")
+          .in("project_id", projectIds)
+          .order("created_at");
+        tasksResult = { data: (result.data || []) as TaskData[] };
+      }
+
+      return {
+        success: true,
+        data: {
+          expenses: expensesResult.data || [],
+          projects: (projectsResult.data || []) as any[],
+          tasks: tasksResult.data || [],
+          role,
+          companyId,
+        },
+      };
+    } catch (error) {
+      console.error("[getInitialExpensesPageData] Error:", error);
+      return {
+        success: false,
+        error: "Failed to fetch expenses data",
+        data: {
+          expenses: [],
+          projects: [],
+          tasks: [],
+          role,
+          companyId,
+        },
+      };
     }
-
-    return {
-      success: true,
-      data: {
-        expenses: expensesResult.data || [],
-        projects: (projectsResult.data || []) as any[],
-        tasks: tasksResult.data || [],
-        role,
-        companyId,
-      },
-    };
-  } catch (error) {
-    console.error("[getInitialExpensesPageData] Error:", error);
-    return {
-      success: false,
-      error: "Failed to fetch expenses data",
-      data: {
-        expenses: [],
-        projects: [],
-        tasks: [],
-        role,
-        companyId,
-      },
-    };
-  }
-});
+  },
+);
 
 // ============================================
 // Auto-Expense Creation from Task
@@ -1350,7 +1358,7 @@ export async function createExpenseFromTask(
       expense_date: new Date().toISOString().split("T")[0], // Today's date
       vendor_name: vendorName,
       submitted_by: userContext.userId,
-      status: "submitted",
+      status: "approved",
     };
 
     const { data: expense, error: insertError } = await userContext.supabase
