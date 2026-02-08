@@ -2117,6 +2117,7 @@ export type Database = {
       subcontractors: {
         Row: {
           address: string | null
+          certificate_of_insurance: string | null
           company_id: string
           company_name: string
           contact_name: string
@@ -2136,6 +2137,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          certificate_of_insurance?: string | null
           company_id: string
           company_name: string
           contact_name: string
@@ -2157,6 +2159,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          certificate_of_insurance?: string | null
           company_id?: string
           company_name?: string
           contact_name?: string

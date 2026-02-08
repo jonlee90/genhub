@@ -78,6 +78,7 @@ export function AddSubcontractorForm({
   const router = useRouter();
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
   const [insuranceFile, setInsuranceFile] = useState<File | null>(null);
+  const [coiFile, setCoiFile] = useState<File | null>(null);
   const [isUploadingDocs, setIsUploadingDocs] = useState(false);
 
   // State to capture form metadata for document upload
@@ -138,8 +139,8 @@ export function AddSubcontractorForm({
       }
       return {
         success: false as const,
-        error: result.error || 'Failed to create subcontractor',
-        fieldErrors: 'fieldErrors' in result ? result.fieldErrors : undefined,
+        error: result.error || "Failed to create subcontractor",
+        fieldErrors: "fieldErrors" in result ? result.fieldErrors : undefined,
       };
     },
     successMessage: "Subcontractor created successfully!",
@@ -218,6 +219,21 @@ export function AddSubcontractorForm({
         }
       }
 
+      // Upload COI document if provided
+      if (coiFile && !isCancelled) {
+        setIsUploadingDocs(true);
+        const coiFormData = new FormData();
+        coiFormData.append("subcontractor_id", subcontractorId);
+        coiFormData.append("document_type", "coi");
+        coiFormData.append("file", coiFile);
+
+        const coiResult = await uploadSubcontractorDocument(coiFormData);
+        if (!isCancelled && !coiResult.success) {
+          toast.error(`COI upload failed: ${coiResult.error}`);
+          uploadErrors = true;
+        }
+      }
+
       if (!isCancelled) {
         setIsUploadingDocs(false);
 
@@ -244,17 +260,13 @@ export function AddSubcontractorForm({
     return () => {
       isCancelled = true;
     };
-  }, [
-    result,
-    licenseFile,
-    insuranceFile,
-    capturedFormData,
-  ]);
+  }, [result, licenseFile, insuranceFile, coiFile, capturedFormData]);
 
   const handleClose = useCallback(() => {
     reset();
     setLicenseFile(null);
     setInsuranceFile(null);
+    setCoiFile(null);
     setIsUploadingDocs(false);
     onClose();
   }, [onClose, reset]);
@@ -311,6 +323,31 @@ export function AddSubcontractorForm({
     }
   };
 
+  const handleCoiFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("COI file size must be less than 5MB");
+        e.target.value = "";
+        return;
+      }
+      // Validate file type
+      const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("COI file must be PDF, JPEG, or PNG");
+        e.target.value = "";
+        return;
+      }
+      setCoiFile(file);
+    }
+  };
+
   // Handler for Continue button in modal navigation
   const handleContinue = useCallback(() => {
     if (formRef.current) {
@@ -319,7 +356,8 @@ export function AddSubcontractorForm({
   }, []);
 
   // Determine if submit should be disabled
-  const isSubmitDisabled = !canSubmit || isPending || result?.success || isUploadingDocs;
+  const isSubmitDisabled =
+    !canSubmit || isPending || result?.success || isUploadingDocs;
 
   // Determine continue button label
   const getContinueLabel = () => {
@@ -380,7 +418,10 @@ export function AddSubcontractorForm({
             placeholder="ABC Construction LLC"
             disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
-            {...register("company_name", addSubcontractorValidation.company_name)}
+            {...register(
+              "company_name",
+              addSubcontractorValidation.company_name,
+            )}
           />
           {errors.company_name && (
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">
@@ -422,7 +463,11 @@ export function AddSubcontractorForm({
             )}
           />
           {/* Hidden input for form submission */}
-          <input type="hidden" name="trade_specialization" value={watch("trade_specialization")} />
+          <input
+            type="hidden"
+            name="trade_specialization"
+            value={watch("trade_specialization")}
+          />
           {errors.trade_specialization && (
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">
               {errors.trade_specialization.message}
@@ -445,7 +490,10 @@ export function AddSubcontractorForm({
             placeholder="John Doe"
             disabled={isPending || result?.success || isUploadingDocs}
             className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
-            {...register("contact_name", addSubcontractorValidation.contact_name)}
+            {...register(
+              "contact_name",
+              addSubcontractorValidation.contact_name,
+            )}
           />
           {errors.contact_name && (
             <p className="text-sm text-red-600 dark:text-red-400 font-medium">
@@ -540,7 +588,10 @@ export function AddSubcontractorForm({
                 placeholder="LIC-123456"
                 disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
-                {...register("license_number", addSubcontractorValidation.license_number)}
+                {...register(
+                  "license_number",
+                  addSubcontractorValidation.license_number,
+                )}
               />
             </div>
 
@@ -596,7 +647,9 @@ export function AddSubcontractorForm({
                 {licenseFile.name} ({(licenseFile.size / 1024).toFixed(1)} KB)
               </p>
             )}
-            <p className="text-xs text-gray-500 dark:text-gray-400">PDF, JPEG, or PNG. Max 5MB.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              PDF, JPEG, or PNG. Max 5MB.
+            </p>
           </div>
         </div>
 
@@ -621,7 +674,10 @@ export function AddSubcontractorForm({
                 placeholder="ABC Insurance Co."
                 disabled={isPending || result?.success || isUploadingDocs}
                 className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
-                {...register("insurance_provider", addSubcontractorValidation.insurance_provider)}
+                {...register(
+                  "insurance_provider",
+                  addSubcontractorValidation.insurance_provider,
+                )}
               />
             </div>
 
@@ -678,7 +734,57 @@ export function AddSubcontractorForm({
                 KB)
               </p>
             )}
-            <p className="text-xs text-gray-500 dark:text-gray-400">PDF, JPEG, or PNG. Max 5MB.</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              PDF, JPEG, or PNG. Max 5MB.
+            </p>
+          </div>
+        </div>
+
+        {/* Certificate of Insurance Section */}
+        <div className="border-t-2 border-gray-200 dark:border-gray-700 pt-4 space-y-4">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <Shield className="h-5 w-5 text-construction-blue" />
+            Certificate of Insurance
+          </h3>
+
+          <div className="space-y-2">
+            <Label
+              htmlFor="coi_file"
+              className="text-gray-900 dark:text-gray-100 font-semibold"
+            >
+              COI Document (Optional)
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="coi_file"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleCoiFileChange}
+                disabled={isPending || result?.success || isUploadingDocs}
+                className="border-2 border-gray-300 dark:border-gray-700 focus:border-construction-blue focus:ring-construction-blue transition-colors"
+              />
+              {coiFile && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCoiFile(null)}
+                  disabled={isPending || result?.success || isUploadingDocs}
+                  className="min-h-[44px]"
+                >
+                  <XCircle className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {coiFile && (
+              <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                <CheckCircle2 className="h-4 w-4" />
+                {coiFile.name} ({(coiFile.size / 1024).toFixed(1)} KB)
+              </p>
+            )}
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              PDF, JPEG, or PNG. Max 5MB.
+            </p>
           </div>
         </div>
 
@@ -714,7 +820,11 @@ export function AddSubcontractorForm({
                 <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
                   {(field.value || 0) > 0 ? `${field.value}/5` : "Not rated"}
                 </span>
-                <input type="hidden" name="performance_rating" value={field.value || 0} />
+                <input
+                  type="hidden"
+                  name="performance_rating"
+                  value={field.value || 0}
+                />
               </div>
             )}
           />
@@ -722,7 +832,10 @@ export function AddSubcontractorForm({
 
         {/* Notes */}
         <div className="space-y-2">
-          <Label htmlFor="notes" className="text-gray-900 dark:text-gray-100 font-semibold">
+          <Label
+            htmlFor="notes"
+            className="text-gray-900 dark:text-gray-100 font-semibold"
+          >
             Notes
           </Label>
           <Textarea
@@ -739,7 +852,6 @@ export function AddSubcontractorForm({
             </p>
           )}
         </div>
-
       </form>
     </ResponsiveModal>
   );

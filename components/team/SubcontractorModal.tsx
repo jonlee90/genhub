@@ -37,7 +37,10 @@
  */
 
 import { useState, useTransition, useEffect, useCallback, useRef } from "react";
-import { createSubcontractor, updateSubcontractor } from "@/app/actions/subcontractors";
+import {
+  createSubcontractor,
+  updateSubcontractor,
+} from "@/app/actions/subcontractors";
 import type { SubcontractorsRow } from "@/types/db/tables/companies";
 import type { TradeType } from "@/types/db/enums";
 import { useValidatedForm } from "@/hooks/useValidatedForm";
@@ -68,6 +71,7 @@ import { BasicInfoSection } from "./subcontractor-modal/BasicInfoSection";
 import { ContactSection } from "./subcontractor-modal/ContactSection";
 import { LicenseSection } from "./subcontractor-modal/LicenseSection";
 import { InsuranceSection } from "./subcontractor-modal/InsuranceSection";
+import { COISection } from "./subcontractor-modal/COISection";
 import { PerformanceSection } from "./subcontractor-modal/PerformanceSection";
 import { NotesSection } from "./subcontractor-modal/NotesSection";
 
@@ -90,7 +94,7 @@ export function SubcontractorModal({
   companyId,
 }: SubcontractorModalProps) {
   // Infer mode from subcontractor prop
-  const mode = subcontractor ? 'edit' : 'create';
+  const mode = subcontractor ? "edit" : "create";
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -106,13 +110,14 @@ export function SubcontractorModal({
     watch,
     setValue,
   } = useValidatedForm({
-    mode: 'all', // Validate on mount, blur, and change - ensures edit mode works
+    mode: "all", // Validate on mount, blur, and change - ensures edit mode works
     defaultValues: {
       company_name: subcontractor?.company_name || "",
       contact_name: subcontractor?.contact_name || "",
       email: subcontractor?.email || "",
       phone: subcontractor?.phone || "",
-      trade_specialization: (subcontractor?.trade_specialization || "general") as TradeType,
+      trade_specialization: (subcontractor?.trade_specialization ||
+        "general") as TradeType,
       address: subcontractor?.address || "",
       license_number: subcontractor?.license_number || "",
       insurance_provider: subcontractor?.insurance_provider || "",
@@ -135,7 +140,8 @@ export function SubcontractorModal({
         contact_name: subcontractor?.contact_name || "",
         email: subcontractor?.email || "",
         phone: subcontractor?.phone || "",
-        trade_specialization: (subcontractor?.trade_specialization || "general") as TradeType,
+        trade_specialization: (subcontractor?.trade_specialization ||
+          "general") as TradeType,
         address: subcontractor?.address || "",
         license_number: subcontractor?.license_number || "",
         insurance_provider: subcontractor?.insurance_provider || "",
@@ -157,70 +163,83 @@ export function SubcontractorModal({
     onClose();
   }, [onClose, reset]);
 
-  const handleSubmit = createHandleSubmit(async (data: SubcontractorFormData) => {
-    setError(null);
+  const handleSubmit = createHandleSubmit(
+    async (data: SubcontractorFormData) => {
+      setError(null);
 
-    startTransition(async () => {
-      try {
-        let result;
+      startTransition(async () => {
+        try {
+          let result;
 
-        if (mode === 'create') {
-          // Create mode - use FormData for Server Action
-          const formData = new FormData();
-          formData.append('company_name', data.company_name);
-          formData.append('contact_name', data.contact_name);
-          if (data.email) formData.append('email', data.email);
-          if (data.phone) formData.append('phone', data.phone);
-          formData.append('trade_specialization', data.trade_specialization);
-          if (data.address) formData.append('address', data.address);
-          if (data.license_number) formData.append('license_number', data.license_number);
-          if (data.insurance_provider) formData.append('insurance_provider', data.insurance_provider);
-          if (data.rating && data.rating > 0) formData.append('performance_rating', data.rating.toString());
-          if (data.notes) formData.append('notes', data.notes);
+          if (mode === "create") {
+            // Create mode - use FormData for Server Action
+            const formData = new FormData();
+            formData.append("company_name", data.company_name);
+            formData.append("contact_name", data.contact_name);
+            if (data.email) formData.append("email", data.email);
+            if (data.phone) formData.append("phone", data.phone);
+            formData.append("trade_specialization", data.trade_specialization);
+            if (data.address) formData.append("address", data.address);
+            if (data.license_number)
+              formData.append("license_number", data.license_number);
+            if (data.insurance_provider)
+              formData.append("insurance_provider", data.insurance_provider);
+            if (data.rating && data.rating > 0)
+              formData.append("performance_rating", data.rating.toString());
+            if (data.notes) formData.append("notes", data.notes);
 
-          result = await createSubcontractor(formData);
-        } else {
-          // Edit mode - use object for updateSubcontractor
-          // Pass null for cleared fields to explicitly clear them in the database
-          // Pass undefined for fields that haven't changed to skip updating them
-          result = await updateSubcontractor({
-            id: subcontractor!.id,
-            company_name: data.company_name,
-            contact_name: data.contact_name,
-            // For optional fields: empty string means "clear this field" (null),
-            // non-empty means "update to this value"
-            email: data.email?.trim() || null,
-            phone: data.phone?.trim() || null,
-            address: data.address?.trim() || null,
-            trade_specialization: data.trade_specialization,
-            license_number: data.license_number?.trim() || null,
-            insurance_provider: data.insurance_provider?.trim() || null,
-            performance_rating: data.rating && data.rating > 0 ? data.rating : null,
-            notes: data.notes?.trim() || null,
-          });
+            result = await createSubcontractor(formData);
+          } else {
+            // Edit mode - use object for updateSubcontractor
+            // Pass null for cleared fields to explicitly clear them in the database
+            // Pass undefined for fields that haven't changed to skip updating them
+            result = await updateSubcontractor({
+              id: subcontractor!.id,
+              company_name: data.company_name,
+              contact_name: data.contact_name,
+              // For optional fields: empty string means "clear this field" (null),
+              // non-empty means "update to this value"
+              email: data.email?.trim() || null,
+              phone: data.phone?.trim() || null,
+              address: data.address?.trim() || null,
+              trade_specialization: data.trade_specialization,
+              license_number: data.license_number?.trim() || null,
+              insurance_provider: data.insurance_provider?.trim() || null,
+              performance_rating:
+                data.rating && data.rating > 0 ? data.rating : null,
+              notes: data.notes?.trim() || null,
+            });
+          }
+
+          if (result.success) {
+            setIsSuccess(true);
+            toast.success(
+              mode === "create"
+                ? "Subcontractor created successfully!"
+                : "Subcontractor updated successfully!",
+            );
+
+            // Close modal after delay to allow user to see success message
+            setTimeout(() => {
+              handleClose();
+            }, 2000);
+          } else {
+            setError(
+              result.error ||
+                `Failed to ${mode === "create" ? "create" : "update"} subcontractor`,
+            );
+            toast.error(
+              result.error ||
+                `Failed to ${mode === "create" ? "create" : "update"} subcontractor`,
+            );
+          }
+        } catch {
+          setError("An unexpected error occurred. Please try again.");
+          toast.error("An unexpected error occurred");
         }
-
-        if (result.success) {
-          setIsSuccess(true);
-          toast.success(mode === 'create'
-            ? "Subcontractor created successfully!"
-            : "Subcontractor updated successfully!"
-          );
-
-          // Close modal after delay to allow user to see success message
-          setTimeout(() => {
-            handleClose();
-          }, 2000);
-        } else {
-          setError(result.error || `Failed to ${mode === 'create' ? 'create' : 'update'} subcontractor`);
-          toast.error(result.error || `Failed to ${mode === 'create' ? 'create' : 'update'} subcontractor`);
-        }
-      } catch {
-        setError("An unexpected error occurred. Please try again.");
-        toast.error("An unexpected error occurred");
-      }
-    });
-  });
+      });
+    },
+  );
 
   // Separate disabled states: fields should be editable, but submit requires valid data
   const isFieldDisabled = isPending || isSuccess;
@@ -237,15 +256,23 @@ export function SubcontractorModal({
     <ResponsiveModal
       isOpen={isOpen}
       onClose={handleClose}
-      icon={mode === 'create' ? Plus : Pencil}
-      title={mode === 'create' ? "Add Subcontractor" : "Edit Subcontractor"}
-      ariaLabel={mode === 'create' ? "Add Subcontractor" : "Edit Subcontractor"}
+      icon={mode === "create" ? Plus : Pencil}
+      title={mode === "create" ? "Add Subcontractor" : "Edit Subcontractor"}
+      ariaLabel={mode === "create" ? "Add Subcontractor" : "Edit Subcontractor"}
       maxWidth="3xl"
       showNavigation={true}
       onBack={handleClose}
       backLabel="Cancel"
       onContinue={handleContinue}
-      continueLabel={isPending ? "Saving..." : isSuccess ? "Saved!" : mode === 'create' ? "Add Subcontractor" : "Save Changes"}
+      continueLabel={
+        isPending
+          ? "Saving..."
+          : isSuccess
+            ? "Saved!"
+            : mode === "create"
+              ? "Add Subcontractor"
+              : "Save Changes"
+      }
       continueDisabled={isSubmitDisabled}
     >
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
@@ -282,6 +309,13 @@ export function SubcontractorModal({
         <InsuranceSection
           register={register}
           errors={errors}
+          disabled={isFieldDisabled}
+        />
+
+        {/* Certificate of Insurance Section */}
+        <COISection
+          subcontractorId={subcontractor?.id}
+          existingCoiUrl={subcontractor?.certificate_of_insurance}
           disabled={isFieldDisabled}
         />
 

@@ -207,13 +207,7 @@ export const GanttTaskBar = React.memo(function GanttTaskBar({
           </>
         )}
 
-        <span
-          className={cn(
-            "truncate min-w-0"
-          )}
-        >
-          {task.title}
-        </span>
+        <span className={cn("truncate min-w-0")}>{task.title}</span>
 
         {/* Remaining days indicator - hide for completed tasks */}
         {task.status !== "completed" &&

@@ -55,13 +55,13 @@ export type TaskDependency = TaskDependencyRow;
 // Configuration for Gantt chart rendering
 export interface GanttConfig {
   timeScale: TimeScale;
-  cellWidth: number;       // Pixels per time unit
-  rowHeight: number;       // Height of each task row
-  headerHeight: number;    // Height of time scale header
-  sidebarWidth: number;    // Width of task info sidebar
-  viewStartDate: Date;     // Visible range start
-  viewEndDate: Date;       // Visible range end
-  totalDays: number;       // Total days in view
+  cellWidth: number; // Pixels per time unit
+  rowHeight: number; // Height of each task row
+  headerHeight: number; // Height of time scale header
+  sidebarWidth: number; // Width of task info sidebar
+  viewStartDate: Date; // Visible range start
+  viewEndDate: Date; // Visible range end
+  totalDays: number; // Total days in view
 }
 
 // Time scale specific configuration
@@ -75,11 +75,44 @@ export interface TimeScaleConfig {
 // Position data for a task bar
 export interface TaskPosition {
   id: string;
-  left: number;          // X position from start
-  width: number;         // Bar width in pixels
-  top: number;           // Y position
-  rowIndex: number;      // Row number (for dependency lines)
+  left: number; // X position from start
+  width: number; // Bar width in pixels
+  top: number; // Y position
+  rowIndex: number; // Row number (for dependency lines)
 }
+
+// Phase grouping for Gantt chart
+export interface PhaseGroup {
+  id: string; // phase.id or "__unphased__"
+  name: string; // phase.name or "Other Tasks"
+  iconName: string | null;
+  orderIndex: number;
+  tasks: GanttTask[];
+  isCollapsed: boolean;
+  allCompleted: boolean;
+  summaryStartDate: Date;
+  summaryEndDate: Date;
+}
+
+// Position data for a phase bar
+export interface PhasePosition {
+  phaseId: string;
+  left: number;
+  width: number;
+  top: number;
+  rowIndex: number;
+}
+
+// Row types for Gantt chart
+export type GanttRow =
+  | { type: "phase"; phaseGroup: PhaseGroup; rowIndex: number }
+  | {
+      type: "task";
+      task: GanttTask;
+      rowIndex: number;
+      isFirstInPhase: boolean;
+      isLastInPhase: boolean;
+    };
 
 // Dependency line coordinates
 export interface DependencyLine {
@@ -103,7 +136,7 @@ export interface DateRange {
 export interface DragState {
   taskId: string;
   originalDate: Date;
-  currentOffset: number;  // Pixels dragged
+  currentOffset: number; // Pixels dragged
   snappedDate: Date;
 }
 
@@ -112,7 +145,11 @@ export interface GanttChartProps {
   tasks: GanttTask[];
   dependencies: TaskDependency[];
   onTaskClick: (task: GanttTask) => void;
-  onTaskDateChange: (taskId: string, newStartDate: string, newDueDate: string) => Promise<void>;
+  onTaskDateChange: (
+    taskId: string,
+    newStartDate: string,
+    newDueDate: string,
+  ) => Promise<void>;
   className?: string;
   taskTypes?: TaskTypeConfigsRow[];
   /** Show project name instead of phase name (for /app/tasks page) */
@@ -130,12 +167,18 @@ export interface GanttTaskBarProps {
   onClick?: (task: GanttTask) => void;
   isMobile?: boolean;
   taskTypes?: TaskTypeConfigsRow[];
+  /** Visual nesting under a phase row */
+  isNested?: boolean;
+  /** First task in phase (for bracket connector) */
+  isFirstInPhase?: boolean;
+  /** Last task in phase (for bracket connector) */
+  isLastInPhase?: boolean;
 }
 
 // Props for GanttHeader component
 export interface GanttHeaderProps {
   config: GanttConfig;
-  sortedTasksLength: number;
+  taskCount: number;
   dateGroups: DateGroup[];
   dateCells: DateCell[];
 }
@@ -167,19 +210,19 @@ export interface GanttDependencyLinesProps {
 export const TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
   day: {
     cellWidth: 40,
-    headerFormat: "EEE d",    // "Mon 15"
+    headerFormat: "EEE d", // "Mon 15"
     groupFormat: "MMMM yyyy", // "January 2025"
     snapUnit: "day",
   },
   week: {
     cellWidth: 120,
-    headerFormat: "MMM d",    // "Jan 15"
+    headerFormat: "MMM d", // "Jan 15"
     groupFormat: "MMMM yyyy",
     snapUnit: "week",
   },
   month: {
     cellWidth: 160,
-    headerFormat: "MMMM",     // "January"
+    headerFormat: "MMMM", // "January"
     groupFormat: "yyyy",
     snapUnit: "month",
   },
@@ -189,26 +232,29 @@ export const TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
 export const MOBILE_TIME_SCALE_CONFIGS: Record<TimeScale, TimeScaleConfig> = {
   day: {
     cellWidth: 28,
-    headerFormat: "dd",       // "15"
-    groupFormat: "MMM yyyy",  // "Jan 2025"
+    headerFormat: "dd", // "15"
+    groupFormat: "MMM yyyy", // "Jan 2025"
     snapUnit: "day",
   },
   week: {
     cellWidth: 80,
-    headerFormat: "M/d",      // "1/15"
-    groupFormat: "MMM yyyy",  // "Jan 2025"
+    headerFormat: "M/d", // "1/15"
+    groupFormat: "MMM yyyy", // "Jan 2025"
     snapUnit: "week",
   },
   month: {
     cellWidth: 100,
-    headerFormat: "MMM",      // "Jan"
+    headerFormat: "MMM", // "Jan"
     groupFormat: "yyyy",
     snapUnit: "month",
   },
 };
 
 // Default Gantt configuration (Desktop)
-export const DEFAULT_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+export const DEFAULT_GANTT_CONFIG: Omit<
+  GanttConfig,
+  "viewStartDate" | "viewEndDate" | "totalDays"
+> = {
   timeScale: "week",
   cellWidth: 120,
   rowHeight: 48,
@@ -217,7 +263,10 @@ export const DEFAULT_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndD
 };
 
 // Mobile-optimized Gantt configuration
-export const MOBILE_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+export const MOBILE_GANTT_CONFIG: Omit<
+  GanttConfig,
+  "viewStartDate" | "viewEndDate" | "totalDays"
+> = {
   timeScale: "week",
   cellWidth: 80,
   rowHeight: 44,
@@ -226,7 +275,10 @@ export const MOBILE_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDa
 };
 
 // Tablet-optimized Gantt configuration
-export const TABLET_GANTT_CONFIG: Omit<GanttConfig, "viewStartDate" | "viewEndDate" | "totalDays"> = {
+export const TABLET_GANTT_CONFIG: Omit<
+  GanttConfig,
+  "viewStartDate" | "viewEndDate" | "totalDays"
+> = {
   timeScale: "week",
   cellWidth: 100,
   rowHeight: 46,

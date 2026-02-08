@@ -2,7 +2,6 @@
 
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
-import { put, del } from "@vercel/blob";
 import { getUserContextWithUserClient as getUserContext } from "@/lib/auth-context";
 import type {
   SubcontractorsInsert,
@@ -134,6 +133,7 @@ const updateSubcontractorSchema = z.object({
     .nullable()
     .optional()
     .transform((v) => (v ? v.trim() : v)),
+  certificate_of_insurance: z.string().nullable().optional(),
 });
 
 const deactivateSubcontractorSchema = z.object({
@@ -146,8 +146,8 @@ const deleteSubcontractorSchema = z.object({
 
 const uploadDocumentSchema = z.object({
   subcontractor_id: z.string().uuid("Invalid subcontractor ID"),
-  document_type: z.enum(["license", "insurance"], {
-    message: 'Document type must be "license" or "insurance"',
+  document_type: z.enum(["license", "insurance", "coi"], {
+    message: 'Document type must be "license", "insurance", or "coi"',
   }),
 });
 
@@ -819,7 +819,9 @@ export async function uploadSubcontractorDocument(formData: FormData) {
     // Check if subcontractor exists and belongs to user's company
     const { data: existingSubcontractor, error: fetchError } = await supabase
       .from("subcontractors")
-      .select("id, company_id, company_name, is_active")
+      .select(
+        "id, company_id, company_name, is_active, certificate_of_insurance",
+      )
       .eq("id", subcontractorId)
       .eq("company_id", companyId)
       .maybeSingle();
@@ -839,32 +841,57 @@ export async function uploadSubcontractorDocument(formData: FormData) {
       };
     }
 
-    // TODO: Implement document storage - currently no document_url columns in subcontractors table
-    // const oldDocumentUrl = validatedDocumentType === 'license'
-    //   ? existingSubcontractor.license_document_url
-    //   : existingSubcontractor.insurance_document_url;
+    // Delete old document if it exists
+    const oldDocumentUrl =
+      validatedDocumentType === "coi"
+        ? existingSubcontractor.certificate_of_insurance
+        : null;
 
-    const oldDocumentUrl = null; // Placeholder until document_url columns are added
     if (oldDocumentUrl) {
       try {
-        await del(oldDocumentUrl);
+        // Extract path from URL if it's a Supabase Storage URL
+        const urlPath = oldDocumentUrl.split("/storage/v1/object/public/")[1];
+        if (urlPath) {
+          const [bucket, ...pathParts] = urlPath.split("/");
+          const filePath = pathParts.join("/");
+          await supabase.storage.from(bucket).remove([filePath]);
+        }
       } catch (deleteError) {
         console.warn("Failed to delete old document:", deleteError);
         // Continue anyway - non-critical error
       }
     }
 
-    // Upload file to Vercel Blob
-    const fileName = `subcontractors/${companyId}/${subcontractorId}/${validatedDocumentType}_${Date.now()}_${file.name}`;
+    // Upload file to Supabase Storage
+    const timestamp = Date.now();
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+    const storagePath = `${companyId}/subcontractors/${subcontractorId}/${validatedDocumentType}_${timestamp}_${sanitizedFileName}`;
 
-    let blob;
+    let publicUrl: string;
     try {
-      blob = await put(fileName, file, {
-        access: "public",
-        addRandomSuffix: false,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from("project-files")
+        .upload(storagePath, file, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Error uploading to Supabase Storage:", uploadError);
+        return {
+          success: false,
+          error: "Failed to upload document. Please try again.",
+        };
+      }
+
+      // Get public URL
+      const {
+        data: { publicUrl: url },
+      } = supabase.storage.from("project-files").getPublicUrl(storagePath);
+
+      publicUrl = url;
     } catch (uploadError) {
-      console.error("Error uploading to Vercel Blob:", uploadError);
+      console.error("Error uploading to Supabase Storage:", uploadError);
       return {
         success: false,
         error: "Failed to upload document. Please try again.",
@@ -876,23 +903,25 @@ export async function uploadSubcontractorDocument(formData: FormData) {
       updated_at: new Date().toISOString(),
     };
 
-    // TODO: Store the URL in the dedicated column based on document type
-    // These columns don't exist yet in the subcontractors table
+    // Store the URL in the dedicated column based on document type
     if (validatedDocumentType === "license") {
       const licenseNumber = formData.get("license_number") as string;
       const licenseExpiry = formData.get("license_expiry") as string;
 
-      // updateData.license_document_url = blob.url;
+      // updateData.license_document_url = publicUrl; // TODO: Add this column
       if (licenseNumber) updateData.license_number = licenseNumber.trim();
       if (licenseExpiry) updateData.license_expiry = licenseExpiry;
-    } else {
+    } else if (validatedDocumentType === "insurance") {
       const insuranceProvider = formData.get("insurance_provider") as string;
       const insuranceExpiry = formData.get("insurance_expiry") as string;
 
-      // updateData.insurance_document_url = blob.url;
+      // updateData.insurance_document_url = publicUrl; // TODO: Add this column
       if (insuranceProvider)
         updateData.insurance_provider = insuranceProvider.trim();
       if (insuranceExpiry) updateData.insurance_expiry = insuranceExpiry;
+    } else if (validatedDocumentType === "coi") {
+      // Certificate of Insurance
+      updateData.certificate_of_insurance = publicUrl;
     }
 
     const { data: updatedSubcontractor, error: updateError } = await supabase
@@ -915,16 +944,134 @@ export async function uploadSubcontractorDocument(formData: FormData) {
     revalidateTag(`subcontractors-${companyId}`, "max");
     revalidateTag(`subcontractor-${subcontractorId}`, "max");
 
+    const documentLabel =
+      validatedDocumentType === "license"
+        ? "License"
+        : validatedDocumentType === "insurance"
+          ? "Insurance"
+          : "Certificate of Insurance";
+
     return {
       success: true,
-      message: `${validatedDocumentType === "license" ? "License" : "Insurance"} document uploaded successfully`,
+      message: `${documentLabel} document uploaded successfully`,
       data: {
-        url: blob.url,
+        url: publicUrl,
         subcontractor: updatedSubcontractor,
       },
     };
   } catch (error) {
     console.error("Unexpected error uploading document:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
+}
+
+/**
+ * Delete subcontractor document (COI)
+ * Removes file from storage and clears database reference
+ */
+export async function deleteSubcontractorDocument(
+  subcontractorId: string,
+  documentType: "coi",
+) {
+  // Get user context
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    console.error("User context error:", userContext.error);
+    return { success: false, error: userContext.error };
+  }
+
+  const { companyId, role, supabase } = userContext;
+
+  // Check permissions - only Admin and Project Manager can delete
+  if (role !== "admin" && role !== "project_manager") {
+    return {
+      success: false,
+      error:
+        "Insufficient permissions. Only Admins and Project Managers can delete documents.",
+    };
+  }
+
+  try {
+    // Check if subcontractor exists and belongs to user's company
+    const { data: existingSubcontractor, error: fetchError } = await supabase
+      .from("subcontractors")
+      .select("id, company_id, certificate_of_insurance")
+      .eq("id", subcontractorId)
+      .eq("company_id", companyId)
+      .maybeSingle();
+
+    if (fetchError || !existingSubcontractor) {
+      console.error("Error fetching subcontractor:", fetchError);
+      return {
+        success: false,
+        error: "Subcontractor not found in your company.",
+      };
+    }
+
+    const documentUrl =
+      documentType === "coi"
+        ? existingSubcontractor.certificate_of_insurance
+        : null;
+
+    // Delete file from storage if it exists
+    if (documentUrl) {
+      try {
+        // Extract path from URL if it's a Supabase Storage URL
+        const urlPath = documentUrl.split("/storage/v1/object/public/")[1];
+        if (urlPath) {
+          const [bucket, ...pathParts] = urlPath.split("/");
+          const filePath = pathParts.join("/");
+          const { error: deleteError } = await supabase.storage
+            .from(bucket)
+            .remove([filePath]);
+
+          if (deleteError) {
+            console.warn("Failed to delete file from storage:", deleteError);
+            // Continue anyway - we'll still clear the database reference
+          }
+        }
+      } catch (deleteError) {
+        console.warn("Failed to delete file from storage:", deleteError);
+        // Continue anyway - we'll still clear the database reference
+      }
+    }
+
+    // Update database to clear the document reference
+    const updateData: SubcontractorUpdate = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (documentType === "coi") {
+      updateData.certificate_of_insurance = null;
+    }
+
+    const { error: updateError } = await supabase
+      .from("subcontractors")
+      .update(updateData)
+      .eq("id", subcontractorId);
+
+    if (updateError) {
+      console.error("Error clearing document reference:", updateError);
+      return {
+        success: false,
+        error: "Failed to delete document reference. Please try again.",
+      };
+    }
+
+    // Revalidate paths
+    revalidatePath("/app/team/subcontractors");
+    revalidateTag(`subcontractors-${companyId}`, "max");
+    revalidateTag(`subcontractor-${subcontractorId}`, "max");
+
+    return {
+      success: true,
+      message: "Certificate of Insurance deleted successfully",
+    };
+  } catch (error) {
+    console.error("Unexpected error deleting document:", error);
     return {
       success: false,
       error: "An unexpected error occurred. Please try again.",

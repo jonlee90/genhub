@@ -27,12 +27,18 @@ import type {
   DateGroup,
   DateCell,
   TIME_SCALE_CONFIGS,
+  PhaseGroup,
+  PhasePosition,
+  GanttRow,
 } from "./gantt-types";
 
 /**
  * Calculate the date range for the Gantt chart based on tasks
  */
-export function calculateDateRange(tasks: GanttTask[], padding: number = 10): DateRange {
+export function calculateDateRange(
+  tasks: GanttTask[],
+  padding: number = 10,
+): DateRange {
   if (tasks.length === 0) {
     const today = new Date();
     return {
@@ -46,7 +52,7 @@ export function calculateDateRange(tasks: GanttTask[], padding: number = 10): Da
   const maxDate = max(dates);
 
   return {
-    start: addDays(startOfDay(minDate), -padding /2),
+    start: addDays(startOfDay(minDate), -padding / 2),
     end: addDays(endOfDay(maxDate), padding),
   };
 }
@@ -57,7 +63,7 @@ export function calculateDateRange(tasks: GanttTask[], padding: number = 10): Da
 export function getTaskPosition(
   task: GanttTask,
   config: GanttConfig,
-  rowIndex: number
+  rowIndex: number,
 ): TaskPosition {
   const { viewStartDate, cellWidth, rowHeight, timeScale } = config;
 
@@ -112,7 +118,7 @@ export function snapToDate(date: Date, timeScale: TimeScale): Date {
 export function pixelsToDateOffset(
   pixels: number,
   cellWidth: number,
-  timeScale: TimeScale
+  timeScale: TimeScale,
 ): number {
   const cells = pixels / cellWidth;
 
@@ -133,7 +139,7 @@ export function pixelsToDateOffset(
  */
 export function generateDateGroups(
   config: GanttConfig,
-  timeScaleConfig: typeof TIME_SCALE_CONFIGS[TimeScale]
+  timeScaleConfig: (typeof TIME_SCALE_CONFIGS)[TimeScale],
 ): DateGroup[] {
   const { viewStartDate, viewEndDate, timeScale, cellWidth } = config;
   const groups: DateGroup[] = [];
@@ -147,11 +153,15 @@ export function generateDateGroups(
       const monthStart = startOfMonth(currentDate);
       const monthEnd = endOfMonth(currentDate);
 
-      const groupStart = monthStart < viewStartDate ? viewStartDate : monthStart;
+      const groupStart =
+        monthStart < viewStartDate ? viewStartDate : monthStart;
       const groupEnd = monthEnd > viewEndDate ? viewEndDate : monthEnd;
 
       const daysInGroup = differenceInCalendarDays(groupEnd, groupStart) + 1;
-      const width = timeScale === "day" ? daysInGroup * cellWidth : (daysInGroup / 7) * cellWidth;
+      const width =
+        timeScale === "day"
+          ? daysInGroup * cellWidth
+          : (daysInGroup / 7) * cellWidth;
 
       groups.push({
         label: format(currentDate, timeScaleConfig.groupFormat),
@@ -193,7 +203,7 @@ export function generateDateGroups(
  */
 export function generateDateCells(
   config: GanttConfig,
-  timeScaleConfig: typeof TIME_SCALE_CONFIGS[TimeScale]
+  timeScaleConfig: (typeof TIME_SCALE_CONFIGS)[TimeScale],
 ): DateCell[] {
   const { viewStartDate, viewEndDate, timeScale, cellWidth } = config;
   const cells: DateCell[] = [];
@@ -233,7 +243,7 @@ export function generateDateCells(
 export function calculateDependencyLines(
   dependencies: TaskDependency[],
   taskPositions: Map<string, TaskPosition>,
-  hoveredTaskId: string | null
+  hoveredTaskId: string | null,
 ): DependencyLine[] {
   const lines: DependencyLine[] = [];
 
@@ -275,7 +285,7 @@ export function createDependencyPath(
   fromX: number,
   fromY: number,
   toX: number,
-  toY: number
+  toY: number,
 ): string {
   const midX = (fromX + toX) / 2;
 
@@ -366,8 +376,8 @@ export function transformTasksForGantt(tasks: TaskInput[]): GanttTask[] {
     const startDate = task.start_date
       ? startOfDay(new Date(task.start_date))
       : task.created_at
-      ? startOfDay(new Date(task.created_at))
-      : addDays(endDate, -7);
+        ? startOfDay(new Date(task.created_at))
+        : addDays(endDate, -7);
 
     const durationDays = differenceInCalendarDays(endDate, startDate);
 
@@ -392,4 +402,143 @@ export function getOptimalTimeScale(tasks: GanttTask[]): TimeScale {
   if (daySpan <= 14) return "day";
   if (daySpan <= 60) return "week";
   return "month";
+}
+
+/**
+ * Group tasks by phase and compute summary information
+ */
+export function groupTasksByPhase(
+  sortedTasks: GanttTask[],
+  collapsedPhaseIds: Set<string>,
+): PhaseGroup[] {
+  // Group tasks by phase ID
+  const phaseMap = new Map<string, GanttTask[]>();
+
+  for (const task of sortedTasks) {
+    const phaseId = task.phase?.id || "__unphased__";
+    const existing = phaseMap.get(phaseId);
+    if (existing) {
+      existing.push(task);
+    } else {
+      phaseMap.set(phaseId, [task]);
+    }
+  }
+
+  // Convert to PhaseGroup array
+  const phaseGroups: PhaseGroup[] = [];
+
+  phaseMap.forEach((tasks, phaseId) => {
+    const firstTask = tasks[0];
+    const isUnphased = phaseId === "__unphased__";
+
+    // Compute summary dates
+    const taskStartDates = tasks.map((t) => t.startDate);
+    const taskEndDates = tasks.map((t) => t.endDate);
+    const summaryStartDate = min(taskStartDates);
+    const summaryEndDate = max(taskEndDates);
+
+    // Check if all tasks are completed
+    const allCompleted = tasks.every((t) => t.status === "completed");
+
+    // Collapse state is controlled by collapsedPhaseIds Set
+    const isCollapsed = collapsedPhaseIds.has(phaseId);
+
+    phaseGroups.push({
+      id: phaseId,
+      name: isUnphased
+        ? "Other Tasks"
+        : firstTask.phase?.name || "Unknown Phase",
+      iconName: isUnphased ? null : firstTask.phase?.icon_name || null,
+      orderIndex: isUnphased ? 999 : (firstTask.phase?.order_index ?? 999),
+      tasks,
+      isCollapsed,
+      allCompleted,
+      summaryStartDate,
+      summaryEndDate,
+    });
+  });
+
+  // Sort by orderIndex, unphased at end
+  return phaseGroups.sort((a, b) => a.orderIndex - b.orderIndex);
+}
+
+/**
+ * Build flat list of GanttRow items from phase groups
+ */
+export function buildGanttRows(phaseGroups: PhaseGroup[]): GanttRow[] {
+  const rows: GanttRow[] = [];
+  let currentRowIndex = 0;
+
+  for (const phaseGroup of phaseGroups) {
+    // Add phase header row
+    rows.push({
+      type: "phase",
+      phaseGroup,
+      rowIndex: currentRowIndex,
+    });
+    currentRowIndex++;
+
+    // Add task rows if not collapsed
+    if (!phaseGroup.isCollapsed) {
+      phaseGroup.tasks.forEach((task, taskIndex) => {
+        const isFirstInPhase = taskIndex === 0;
+        const isLastInPhase = taskIndex === phaseGroup.tasks.length - 1;
+        rows.push({
+          type: "task",
+          task,
+          rowIndex: currentRowIndex,
+          isFirstInPhase,
+          isLastInPhase,
+        });
+        currentRowIndex++;
+      });
+    }
+  }
+
+  return rows;
+}
+
+/**
+ * Calculate phase position on the timeline
+ */
+export function getPhasePosition(
+  phaseGroup: PhaseGroup,
+  config: GanttConfig,
+  rowIndex: number,
+): PhasePosition {
+  const { viewStartDate, cellWidth, rowHeight, timeScale } = config;
+
+  // Calculate days from start
+  const daysFromStart = differenceInCalendarDays(
+    phaseGroup.summaryStartDate,
+    viewStartDate,
+  );
+  const phaseDuration = differenceInCalendarDays(
+    phaseGroup.summaryEndDate,
+    phaseGroup.summaryStartDate,
+  );
+
+  // Convert to pixels based on time scale
+  let left: number;
+  let width: number;
+
+  if (timeScale === "day") {
+    left = daysFromStart * cellWidth;
+    width = Math.max(phaseDuration * cellWidth, cellWidth);
+  } else if (timeScale === "week") {
+    left = (daysFromStart / 7) * cellWidth;
+    width = Math.max((phaseDuration / 7) * cellWidth, cellWidth / 2);
+  } else {
+    // month
+    left = (daysFromStart / 30) * cellWidth;
+    width = Math.max((phaseDuration / 30) * cellWidth, cellWidth / 2);
+  }
+
+  return {
+    phaseId: phaseGroup.id,
+    left: Math.round(left),
+    width: Math.round(width),
+    top: rowIndex * rowHeight,
+    rowIndex,
+  };
 }
