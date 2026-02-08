@@ -2,7 +2,7 @@
 
 import React, { useCallback, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn, formatDate, formatBudget } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
@@ -45,7 +45,10 @@ const PHASE_ICONS: Record<string, LucideIcon> = {
 };
 
 // Get phase icon based on icon_name or phase name (rerender-memo optimization)
-const getPhaseIcon = (phaseName: string, iconName?: string | null): LucideIcon => {
+const getPhaseIcon = (
+  phaseName: string,
+  iconName?: string | null,
+): LucideIcon => {
   // Priority 1: Use stored icon_name if valid
   if (iconName && iconName in PHASE_ICONS) {
     return PHASE_ICONS[iconName];
@@ -53,16 +56,23 @@ const getPhaseIcon = (phaseName: string, iconName?: string | null): LucideIcon =
 
   // Priority 2: Fallback to keyword-based matching
   const name = phaseName.toLowerCase();
-  if (name.includes('site') && name.includes('set')) return ClipboardCheck;
-  if (name.includes('framing')) return Layers;
-  if (name.includes('mep') || name.includes('rough')) return Wrench;
-  if (name.includes('fire') || name.includes('safety')) return HardHat;
-  if (name.includes('finishes') || name.includes('finish')) return Rocket;
-  if (name.includes('initiation') || name.includes('planning')) return Rocket;
-  if (name.includes('pre-construction') || name.includes('design')) return FileText;
-  if (name.includes('procurement')) return ShoppingCart;
-  if (name.includes('post') || name.includes('closeout') || name.includes('completion')) return CheckCircle2;
-  if (name.includes('construction') || name.includes('execution')) return FolderKanban;
+  if (name.includes("site") && name.includes("set")) return ClipboardCheck;
+  if (name.includes("framing")) return Layers;
+  if (name.includes("mep") || name.includes("rough")) return Wrench;
+  if (name.includes("fire") || name.includes("safety")) return HardHat;
+  if (name.includes("finishes") || name.includes("finish")) return Rocket;
+  if (name.includes("initiation") || name.includes("planning")) return Rocket;
+  if (name.includes("pre-construction") || name.includes("design"))
+    return FileText;
+  if (name.includes("procurement")) return ShoppingCart;
+  if (
+    name.includes("post") ||
+    name.includes("closeout") ||
+    name.includes("completion")
+  )
+    return CheckCircle2;
+  if (name.includes("construction") || name.includes("execution"))
+    return FolderKanban;
 
   return Layers; // Default fallback
 };
@@ -100,12 +110,15 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
   const handleClick = useCallback(() => onClick(task), [onClick, task]);
 
   // Memoize keyboard handler
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onClick(task);
-    }
-  }, [onClick, task]);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onClick(task);
+      }
+    },
+    [onClick, task],
+  );
 
   // Memoize phase icon (rerender-memo)
   const PhaseIcon = useMemo(() => {
@@ -127,9 +140,11 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
       {/* Left sidebar: Task info - clickable to open edit modal */}
       <div
         className={cn(
-          "sticky left-0 z-10 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex items-center cursor-pointer transition-colors",
-          "hover:bg-gray-100 dark:hover:bg-gray-800",
-          isMobile ? "gap-1.5 px-2 py-1" : "gap-3 px-3 py-2"
+          "sticky left-0 z-10 border-r border-gray-200 dark:border-gray-800 flex items-center cursor-pointer transition-colors relative",
+          task.status === "completed"
+            ? "bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-150 dark:hover:bg-gray-800/70 opacity-70"
+            : "bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800",
+          isMobile ? "gap-1.5 px-2 py-1" : "gap-3 px-3 py-2",
         )}
         style={{ width: sidebarWidth }}
         onClick={handleClick}
@@ -144,50 +159,58 @@ export const GanttTaskRow = React.memo(function GanttTaskRow({
             {/* Phase icon (rendering-conditional-render) */}
             {PhaseIcon ? (
               <PhaseIcon
-                className={cn("shrink-0 text-gray-500 dark:text-gray-400", isMobile ? "h-3 w-3" : "h-3.5 w-3.5")}
+                className={cn(
+                  "shrink-0 text-gray-500 dark:text-gray-400",
+                  isMobile ? "h-3 w-3" : "h-3.5 w-3.5",
+                )}
                 strokeWidth={2}
                 aria-label={task.phase?.name || "Phase"}
               />
             ) : null}
             {/* Phase or Project name */}
-            {(showProjectInsteadOfPhase ? task.project?.name : task.phase?.name) ? (
-              <span className={cn(
-                "text-gray-500 dark:text-gray-400 truncate flex-1",
-                isMobile ? "text-[10px]" : "text-xs"
-              )}>
-                {showProjectInsteadOfPhase ? task.project?.name : task.phase?.name}
+            {(
+              showProjectInsteadOfPhase ? task.project?.name : task.phase?.name
+            ) ? (
+              <span
+                className={cn(
+                  "text-gray-500 dark:text-gray-400 truncate flex-1",
+                  isMobile ? "text-[10px]" : "text-xs",
+                )}
+              >
+                {showProjectInsteadOfPhase
+                  ? task.project?.name
+                  : task.phase?.name}
               </span>
             ) : null}
           </div>
           {/* Line 2 - Task title */}
-          <span className={cn(
-            "text-gray-900 dark:text-gray-100 truncate font-medium",
-            isMobile ? "text-xs" : "text-sm"
-          )}>
+          <span
+            className={cn(
+              "truncate font-medium",
+              task.status === "completed"
+                ? "text-gray-500 dark:text-gray-400 line-through"
+                : "text-gray-900 dark:text-gray-100",
+              isMobile ? "text-xs" : "text-sm",
+            )}
+          >
             {task.title}
           </span>
         </div>
-        {/* Due date & actual cost - right aligned (rendering-conditional-render) */}
-        {task.due_date || task.actual_cost ? (
-          <div className="shrink-0 text-right">
-            {task.due_date ? (
-              <span className={cn(
-                "block text-gray-500 dark:text-gray-400 tabular-nums",
-                isMobile ? "text-[10px]" : "text-xs"
-              )}>
-                {formatDate(task.due_date)}
-              </span>
-            ) : null}
-            {task.actual_cost ? (
-              <span className={cn(
-                "block text-construction-green font-bold tabular-nums",
-                isMobile ? "text-[9px]" : "text-[11px]"
-              )}>
-                {formatBudget(task.actual_cost)}
-              </span>
-            ) : null}
-          </div>
+        {/* Due date - right aligned (rendering-conditional-render) */}
+        {task.due_date ? (
+          <span
+            className={cn(
+              "shrink-0 tabular-nums",
+              task.status === "completed"
+                ? "text-gray-400 dark:text-gray-500"
+                : "text-gray-500 dark:text-gray-400",
+              isMobile ? "text-[10px]" : "text-xs",
+            )}
+          >
+            {formatDate(task.due_date)}
+          </span>
         ) : null}
+
       </div>
 
       {/* Right area: Task bar */}

@@ -182,9 +182,11 @@ export function CreateExpenseModal({
     });
 
     if (result.success) {
-      toast.success(taskContext
+      toast.success(
+        taskContext
           ? `Expense added to task: ${taskContext.taskTitle}`
-          : "Your expense has been added and is now under review.");
+          : "Your expense has been added and is now under review.",
+      );
       onClose();
     } else {
       toast.error(result.error || "Failed to submit expense");
@@ -203,7 +205,15 @@ export function CreateExpenseModal({
       onBack={taskContext ? onClose : undefined}
       backLabel="Back to Task"
       onContinue={onSubmit}
-      continueLabel={isSubmitting ? (taskContext ? "Adding..." : "Submitting...") : (taskContext ? "Add Expense" : "Submit Expense")}
+      continueLabel={
+        isSubmitting
+          ? taskContext
+            ? "Adding..."
+            : "Submitting..."
+          : taskContext
+            ? "Add Expense"
+            : "Submit Expense"
+      }
       continueDisabled={!canSubmit || isSubmitting}
     >
       <div className="space-y-6">
@@ -383,7 +393,10 @@ export function CreateExpenseModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="task" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="task"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
+              >
                 Task {taskContext ? "*" : "(Optional)"}
               </Label>
               <Controller
@@ -406,7 +419,8 @@ export function CreateExpenseModal({
                       <SelectItem value="no-task">No task</SelectItem>
                       {projectTasks.map((task) => {
                         const taskTypeLabel = task.task_type
-                          ? getTaskTypeDisplayConfig(task.task_type as any).label
+                          ? getTaskTypeDisplayConfig(task.task_type as any)
+                              .label
                           : "Work";
                         return (
                           <SelectItem key={task.id} value={task.id}>
@@ -431,7 +445,10 @@ export function CreateExpenseModal({
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="description"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
+            >
               Description *
             </Label>
             <Textarea
@@ -485,9 +502,14 @@ export function CreateExpenseModal({
                     <SelectContent>
                       <SelectItem value="materials">Materials</SelectItem>
                       <SelectItem value="labor">Labor</SelectItem>
+                      <SelectItem value="subcontractor">
+                        Subcontractor
+                      </SelectItem>
                       <SelectItem value="equipment">Equipment</SelectItem>
                       <SelectItem value="permits">Permits</SelectItem>
-                      <SelectItem value="transportation">Transportation</SelectItem>
+                      <SelectItem value="transportation">
+                        Transportation
+                      </SelectItem>
                       <SelectItem value="meals">Meals</SelectItem>
                       <SelectItem value="lodging">Lodging</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
@@ -498,14 +520,20 @@ export function CreateExpenseModal({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="date" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              <Label
+                htmlFor="date"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
+              >
                 Date *
               </Label>
               <Input
                 id="date"
                 type="date"
                 className="border-2"
-                {...register("expense_date", createExpenseValidation.expense_date)}
+                {...register(
+                  "expense_date",
+                  createExpenseValidation.expense_date,
+                )}
               />
               {errors.expense_date && (
                 <p className="text-sm text-red-600 font-medium">
@@ -517,7 +545,10 @@ export function CreateExpenseModal({
 
           {/* Vendor Name - VendorCombobox or fallback Input */}
           <div className="space-y-2">
-            <Label htmlFor="vendor" className="text-sm font-bold text-gray-700 dark:text-gray-300">
+            <Label
+              htmlFor="vendor"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
+            >
               Vendor Name (Optional)
             </Label>
             {companyId ? (
@@ -535,7 +566,10 @@ export function CreateExpenseModal({
                 id="vendor"
                 className="border-2"
                 placeholder="e.g., Home Depot, Lowe's, etc."
-                {...register("vendor_name", createExpenseValidation.vendor_name)}
+                {...register(
+                  "vendor_name",
+                  createExpenseValidation.vendor_name,
+                )}
               />
             )}
           </div>

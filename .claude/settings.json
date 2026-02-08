@@ -15,11 +15,11 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "~/.claude/hooks/deny_check.sh"
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/deny_check.sh"
 					},
 					{
 						"type": "command",
-						"command": "~/.claude/hooks/check_ai_commit.sh"
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check_ai_commit.sh"
 					}
 				]
 			}
@@ -30,7 +30,7 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "~/.claude/hooks/formatter.sh"
+						"command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/formatter.sh"
 					},
 					{
 						"type": "command",

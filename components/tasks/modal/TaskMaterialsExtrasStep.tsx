@@ -100,8 +100,8 @@ export function TaskMaterialsExtrasStep({
 }: TaskMaterialsExtrasStepProps) {
   return (
     <div className="space-y-5">
-      {/* Auto-Expense Section - Edit mode with actual cost > 0 and no auto-expense exists (moved to top) */}
-      {showAutoExpense && !hasAutoExpense && (actualCost ?? 0) > 0 && (
+      {/* Auto-Expense Section - Edit mode with actual cost > 0 and no expenses already attached */}
+      {showAutoExpense && expenses.length === 0 && (actualCost ?? 0) > 0 && (
         <AutoExpenseToggle
           enabled={autoExpenseEnabled}
           onToggle={onAutoExpenseToggle}
@@ -115,33 +115,43 @@ export function TaskMaterialsExtrasStep({
       )}
 
       {/* Expenses Section - Edit mode only, hidden when auto-expense preview is showing */}
-      {showExpenses && taskId && !(autoExpenseEnabled && showAutoExpense && !hasAutoExpense && (actualCost ?? 0) > 0) && (
-        <div className="space-y-2">
-          {expensesLoading ? (
-            <div className="flex items-center justify-center py-4">
-              <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : (
-            <TaskExpensesSection
-              taskId={taskId}
-              taskTitle={taskTitle}
-              projectId={projectId}
-              projectName={projectName}
-              expenses={expenses}
-              projects={projects}
-              tasks={tasks}
-              onExpenseAdded={onExpenseAdded}
-            />
-          )}
-        </div>
-      )}
+      {showExpenses &&
+        taskId &&
+        !(
+          autoExpenseEnabled &&
+          showAutoExpense &&
+          expenses.length === 0 &&
+          (actualCost ?? 0) > 0
+        ) && (
+          <div className="space-y-2">
+            {expensesLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-5 h-5 border-2 border-construction-blue border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <TaskExpensesSection
+                taskId={taskId}
+                taskTitle={taskTitle}
+                projectId={projectId}
+                projectName={projectName}
+                expenses={expenses}
+                projects={projects}
+                tasks={tasks}
+                onExpenseAdded={onExpenseAdded}
+              />
+            )}
+          </div>
+        )}
 
       {/* Materials Section - Always visible */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
           <Package className="h-4 w-4 text-construction-blue" />
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-            Materials <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
+            Materials{" "}
+            <span className="text-gray-400 dark:text-gray-500 font-normal">
+              (Optional)
+            </span>
           </h3>
           <p className="text-xs ml-auto text-gray-500 dark:text-gray-400">
             {mode === "create"
