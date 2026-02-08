@@ -56,14 +56,14 @@ const KanbanBoard = dynamic(
       <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-construction p-8">
         <div className="flex gap-4 overflow-x-auto pb-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-72 space-y-3"
-            >
+            <div key={i} className="flex-shrink-0 w-72 space-y-3">
               <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
               <div className="space-y-2">
                 {[1, 2, 3].map((j) => (
-                  <div key={j} className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />
+                  <div
+                    key={j}
+                    className="h-32 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse"
+                  />
                 ))}
               </div>
             </div>
@@ -421,7 +421,7 @@ export function TaskBoard({
             onTaskClick={handleTaskClick}
             onTaskDateChange={handleTaskDateChange}
             taskTypes={taskTypes}
-            showProjectInsteadOfPhase={!isProjectContext}
+            showProjectInsteadOfPhase={false}
           />
         </div>
       )}
@@ -469,7 +469,9 @@ export function TaskBoard({
             <div className="flex flex-wrap items-center justify-between gap-4">
               {/* Phase Filter */}
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Phase:</span>
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  Phase:
+                </span>
                 <button
                   onClick={() => setPhaseFilter("all")}
                   className={cn(

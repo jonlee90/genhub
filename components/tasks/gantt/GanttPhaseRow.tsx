@@ -74,7 +74,7 @@ export const GanttPhaseRow = React.memo(function GanttPhaseRow({
         <button
           className={cn(
             "flex items-center justify-center shrink-0 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors",
-            isMobile ? "min-h-[44px] min-w-[44px] -ml-2" : "h-8 w-8",
+            isMobile ? "hidden" : "h-8 w-8",
           )}
           onClick={(e) => {
             e.stopPropagation();
