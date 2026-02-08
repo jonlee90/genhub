@@ -216,7 +216,7 @@ export function ProjectOverview({
             >
               <ProjectExpenseSummarySkeleton />
             </motion.div>
-          ) : expenseStats && project.budget && project.budget > 0 ? (
+          ) : expenseStats ? (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -224,7 +224,7 @@ export function ProjectOverview({
             >
               <ProjectExpenseSummary
                 expenseStats={expenseStats}
-                budget={project.budget}
+                budget={project.budget ?? 0}
               />
             </motion.div>
           ) : null}
