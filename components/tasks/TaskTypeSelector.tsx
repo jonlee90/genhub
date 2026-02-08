@@ -15,7 +15,7 @@ import AlertTriangle from "lucide-react/icons/alert-triangle";
 import Hammer from "lucide-react/icons/hammer";
 import { cn } from "@/lib/utils";
 import { TASK_TYPE_ICON_MAP } from "@/lib/config/task-type-display";
-import type { TaskType } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 import type { LucideIcon } from "lucide-react";
 

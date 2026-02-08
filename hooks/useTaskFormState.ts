@@ -14,7 +14,7 @@
 
 import { useState, useMemo } from 'react';
 import { getTaskTypeConfig } from '@/lib/config/task-type-fields';
-import type { TaskType, TaskStatus, TaskPriority } from '@/types/db/enums';
+import type { TaskType, TaskStatus, TaskPriority } from '@/types/db/task';
 import type { TaskAssignee } from '@/app/actions/tasks';
 import type { TempMaterial } from '@/components/tasks/TaskMaterialsManager';
 import type { TasksRow } from '@/types/db/tables/tasks';

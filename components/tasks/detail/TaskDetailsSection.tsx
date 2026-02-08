@@ -37,12 +37,8 @@ import {
   TASK_STATUS_CONFIG,
   TASK_PRIORITY_CONFIG,
 } from "@/lib/config/task-colors";
-import type {
-  TaskStatus,
-  TaskPriority,
-  TaskType,
-  UserRole,
-} from "@/types/db/enums";
+import type { TaskStatus, TaskPriority, UserRole } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 
 interface TaskDetailsData {
   id: string;

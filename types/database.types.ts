@@ -61,6 +61,70 @@ export type Database = {
           },
         ]
       }
+      ai_usage_log: {
+        Row: {
+          cached: boolean
+          company_id: string
+          completion_tokens: number
+          cost: number
+          created_at: string
+          id: string
+          model: string
+          page_id: string | null
+          prompt_tokens: number
+          total_tokens: number
+          user_id: string
+        }
+        Insert: {
+          cached?: boolean
+          company_id: string
+          completion_tokens: number
+          cost: number
+          created_at?: string
+          id?: string
+          model: string
+          page_id?: string | null
+          prompt_tokens: number
+          total_tokens: number
+          user_id: string
+        }
+        Update: {
+          cached?: boolean
+          company_id?: string
+          completion_tokens?: number
+          cost?: number
+          created_at?: string
+          id?: string
+          model?: string
+          page_id?: string | null
+          prompt_tokens?: number
+          total_tokens?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_usage_log_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "ai_usage_log_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "plan_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       attachments: {
         Row: {
           created_at: string
@@ -196,6 +260,7 @@ export type Database = {
       companies: {
         Row: {
           address: string | null
+          ai_monthly_budget: number
           client_can_view_budget: boolean
           created_at: string
           email: string | null
@@ -207,6 +272,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ai_monthly_budget?: number
           client_can_view_budget?: boolean
           created_at?: string
           email?: string | null
@@ -218,6 +284,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ai_monthly_budget?: number
           client_can_view_budget?: boolean
           created_at?: string
           email?: string | null
@@ -482,6 +549,197 @@ export type Database = {
             columns: ["default_model_id"]
             isOneToOne: false
             referencedRelation: "default_3d_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimate_line_items: {
+        Row: {
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          created_at: string
+          description: string | null
+          equipment_cost: number
+          estimate_id: string
+          id: string
+          labor_cost: number
+          material_cost: number
+          quantity: number
+          sort_order: number
+          sub_type: string
+          subtotal: number
+          takeoff_item_id: string | null
+          trade: string
+          unit: string
+          unit_cost: number
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          created_at?: string
+          description?: string | null
+          equipment_cost?: number
+          estimate_id: string
+          id?: string
+          labor_cost?: number
+          material_cost?: number
+          quantity: number
+          sort_order?: number
+          sub_type: string
+          subtotal?: number
+          takeoff_item_id?: string | null
+          trade: string
+          unit: string
+          unit_cost?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["takeoff_category"]
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          equipment_cost?: number
+          estimate_id?: string
+          id?: string
+          labor_cost?: number
+          material_cost?: number
+          quantity?: number
+          sort_order?: number
+          sub_type?: string
+          subtotal?: number
+          takeoff_item_id?: string | null
+          trade?: string
+          unit?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimate_line_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_line_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "estimate_line_items_estimate_id_fkey"
+            columns: ["estimate_id"]
+            isOneToOne: false
+            referencedRelation: "estimates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimate_line_items_takeoff_item_id_fkey"
+            columns: ["takeoff_item_id"]
+            isOneToOne: false
+            referencedRelation: "takeoff_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      estimates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          grand_total: number
+          id: string
+          markup_amount: number
+          markup_pct: number
+          name: string
+          overhead_amount: number
+          overhead_pct: number
+          plan_upload_id: string | null
+          project_id: string
+          status: Database["public"]["Enums"]["estimate_status"]
+          subtotal: number
+          superseded_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          grand_total?: number
+          id?: string
+          markup_amount?: number
+          markup_pct?: number
+          name: string
+          overhead_amount?: number
+          overhead_pct?: number
+          plan_upload_id?: string | null
+          project_id: string
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          grand_total?: number
+          id?: string
+          markup_amount?: number
+          markup_pct?: number
+          name?: string
+          overhead_amount?: number
+          overhead_pct?: number
+          plan_upload_id?: string | null
+          project_id?: string
+          status?: Database["public"]["Enums"]["estimate_status"]
+          subtotal?: number
+          superseded_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estimates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "estimates_plan_upload_id_fkey"
+            columns: ["plan_upload_id"]
+            isOneToOne: false
+            referencedRelation: "plan_uploads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estimates_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "estimates"
             referencedColumns: ["id"]
           },
         ]
@@ -1385,6 +1643,335 @@ export type Database = {
           },
         ]
       }
+      plan_pages: {
+        Row: {
+          company_id: string
+          created_at: string
+          file_size: number
+          id: string
+          image_hash_sha256: string | null
+          image_height: number
+          image_path: string
+          image_width: number
+          page_number: number
+          parse_status: Database["public"]["Enums"]["plan_page_parse_status"]
+          parsed_at: string | null
+          plan_upload_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          file_size: number
+          id?: string
+          image_hash_sha256?: string | null
+          image_height: number
+          image_path: string
+          image_width: number
+          page_number: number
+          parse_status?: Database["public"]["Enums"]["plan_page_parse_status"]
+          parsed_at?: string | null
+          plan_upload_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          file_size?: number
+          id?: string
+          image_hash_sha256?: string | null
+          image_height?: number
+          image_path?: string
+          image_width?: number
+          page_number?: number
+          parse_status?: Database["public"]["Enums"]["plan_page_parse_status"]
+          parsed_at?: string | null
+          plan_upload_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_pages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_pages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "plan_pages_plan_upload_id_fkey"
+            columns: ["plan_upload_id"]
+            isOneToOne: false
+            referencedRelation: "plan_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_parse_results: {
+        Row: {
+          cached: boolean
+          company_id: string
+          completion_tokens: number
+          cost: number
+          created_at: string
+          id: string
+          model: string
+          page_type: string | null
+          plan_page_id: string
+          prompt_tokens: number
+          raw_response: Json
+          total_tokens: number
+        }
+        Insert: {
+          cached?: boolean
+          company_id: string
+          completion_tokens: number
+          cost: number
+          created_at?: string
+          id?: string
+          model: string
+          page_type?: string | null
+          plan_page_id: string
+          prompt_tokens: number
+          raw_response: Json
+          total_tokens: number
+        }
+        Update: {
+          cached?: boolean
+          company_id?: string
+          completion_tokens?: number
+          cost?: number
+          created_at?: string
+          id?: string
+          model?: string
+          page_type?: string | null
+          plan_page_id?: string
+          prompt_tokens?: number
+          raw_response?: Json
+          total_tokens?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_parse_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_parse_results_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "plan_parse_results_plan_page_id_fkey"
+            columns: ["plan_page_id"]
+            isOneToOne: false
+            referencedRelation: "plan_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_uploads: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          error_message: string | null
+          file_path: string
+          file_size: number
+          filename: string
+          id: string
+          mime_type: string
+          project_id: string
+          project_phase_id: string | null
+          status: Database["public"]["Enums"]["plan_upload_status"]
+          total_pages: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          error_message?: string | null
+          file_path: string
+          file_size: number
+          filename: string
+          id?: string
+          mime_type: string
+          project_id: string
+          project_phase_id?: string | null
+          status?: Database["public"]["Enums"]["plan_upload_status"]
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          error_message?: string | null
+          file_path?: string
+          file_size?: number
+          filename?: string
+          id?: string
+          mime_type?: string
+          project_id?: string
+          project_phase_id?: string | null
+          status?: Database["public"]["Enums"]["plan_upload_status"]
+          total_pages?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_uploads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_uploads_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "plan_uploads_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_uploads_project_phase_id_fkey"
+            columns: ["project_phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_phases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_template_items: {
+        Row: {
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          created_at: string
+          equipment_cost: number
+          id: string
+          labor_cost: number
+          material_cost: number
+          sub_type: string
+          template_id: string
+          trade: string
+          unit: string
+          unit_cost: number
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          created_at?: string
+          equipment_cost?: number
+          id?: string
+          labor_cost?: number
+          material_cost?: number
+          sub_type: string
+          template_id: string
+          trade: string
+          unit: string
+          unit_cost?: number
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["takeoff_category"]
+          company_id?: string
+          created_at?: string
+          equipment_cost?: number
+          id?: string
+          labor_cost?: number
+          material_cost?: number
+          sub_type?: string
+          template_id?: string
+          trade?: string
+          unit?: string
+          unit_cost?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_template_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_template_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "pricing_template_items_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_templates: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_templates_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+        ]
+      }
       project_files: {
         Row: {
           category: Database["public"]["Enums"]["document_category"]
@@ -2196,6 +2783,113 @@ export type Database = {
           },
         ]
       }
+      takeoff_items: {
+        Row: {
+          adjusted_quantity: number
+          ai_item_id: string | null
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          confidence: number
+          created_at: string
+          edit_history: Json
+          extraction_method: Database["public"]["Enums"]["extraction_method"]
+          id: string
+          needs_review: boolean
+          notes: string | null
+          plan_page_id: string
+          plan_upload_id: string
+          quantity: number
+          review_status: Database["public"]["Enums"]["review_status"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source_region: Json | null
+          sub_type: string
+          trade: string
+          unit: string
+          updated_at: string
+          waste_factor: number
+        }
+        Insert: {
+          adjusted_quantity: number
+          ai_item_id?: string | null
+          category: Database["public"]["Enums"]["takeoff_category"]
+          company_id: string
+          confidence: number
+          created_at?: string
+          edit_history?: Json
+          extraction_method: Database["public"]["Enums"]["extraction_method"]
+          id?: string
+          needs_review?: boolean
+          notes?: string | null
+          plan_page_id: string
+          plan_upload_id: string
+          quantity: number
+          review_status?: Database["public"]["Enums"]["review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_region?: Json | null
+          sub_type: string
+          trade: string
+          unit: string
+          updated_at?: string
+          waste_factor?: number
+        }
+        Update: {
+          adjusted_quantity?: number
+          ai_item_id?: string | null
+          category?: Database["public"]["Enums"]["takeoff_category"]
+          company_id?: string
+          confidence?: number
+          created_at?: string
+          edit_history?: Json
+          extraction_method?: Database["public"]["Enums"]["extraction_method"]
+          id?: string
+          needs_review?: boolean
+          notes?: string | null
+          plan_page_id?: string
+          plan_upload_id?: string
+          quantity?: number
+          review_status?: Database["public"]["Enums"]["review_status"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source_region?: Json | null
+          sub_type?: string
+          trade?: string
+          unit?: string
+          updated_at?: string
+          waste_factor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "takeoff_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "takeoff_items_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "mv_dashboard_kpis"
+            referencedColumns: ["company_id"]
+          },
+          {
+            foreignKeyName: "takeoff_items_plan_page_id_fkey"
+            columns: ["plan_page_id"]
+            isOneToOne: false
+            referencedRelation: "plan_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "takeoff_items_plan_upload_id_fkey"
+            columns: ["plan_upload_id"]
+            isOneToOne: false
+            referencedRelation: "plan_uploads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_activity: {
         Row: {
           comment: string | null
@@ -2940,6 +3634,7 @@ export type Database = {
         | "meeting_notes"
         | "specifications"
         | "general"
+      estimate_status: "draft" | "reviewed" | "approved" | "superseded"
       expense_category:
         | "materials"
         | "labor"
@@ -2955,6 +3650,7 @@ export type Database = {
         | "approved"
         | "rejected"
         | "paid"
+      extraction_method: "labeled" | "calculated" | "inferred" | "manual"
       marker_content_type: "photo" | "file" | "note" | "activity"
       material_category:
         | "lumber"
@@ -2996,6 +3692,8 @@ export type Database = {
         | "task_receipts"
         | "expense_receipts"
         | "general"
+      plan_page_parse_status: "pending" | "parsing" | "parsed" | "parse_failed"
+      plan_upload_status: "uploading" | "processing" | "ready" | "failed"
       procurement_status: "needed" | "ordered" | "delivered" | "installed"
       project_status:
         | "active"
@@ -3011,6 +3709,7 @@ export type Database = {
         | "commercial_office"
         | "industrial"
       purchaser_type: "gc" | "pm" | "subcontractor"
+      review_status: "pending" | "accepted" | "rejected" | "edited"
       spatial_marker_status: "open" | "in_progress" | "resolved" | "closed"
       spatial_marker_type:
         | "issue"
@@ -3022,6 +3721,15 @@ export type Database = {
         | "material"
         | "progress"
       spatial_processing_status: "pending" | "processing" | "ready" | "failed"
+      takeoff_category:
+        | "structural"
+        | "architectural"
+        | "mechanical"
+        | "electrical"
+        | "plumbing"
+        | "painting"
+        | "site"
+        | "general"
       task_priority: "low" | "medium" | "high" | "critical"
       task_status: "todo" | "in_progress" | "review" | "blocked" | "completed"
       trade_type:
@@ -3212,6 +3920,7 @@ export const Constants = {
         "specifications",
         "general",
       ],
+      estimate_status: ["draft", "reviewed", "approved", "superseded"],
       expense_category: [
         "materials",
         "labor",
@@ -3229,6 +3938,7 @@ export const Constants = {
         "rejected",
         "paid",
       ],
+      extraction_method: ["labeled", "calculated", "inferred", "manual"],
       marker_content_type: ["photo", "file", "note", "activity"],
       material_category: [
         "lumber",
@@ -3273,6 +3983,8 @@ export const Constants = {
         "expense_receipts",
         "general",
       ],
+      plan_page_parse_status: ["pending", "parsing", "parsed", "parse_failed"],
+      plan_upload_status: ["uploading", "processing", "ready", "failed"],
       procurement_status: ["needed", "ordered", "delivered", "installed"],
       project_status: [
         "active",
@@ -3290,6 +4002,7 @@ export const Constants = {
         "industrial",
       ],
       purchaser_type: ["gc", "pm", "subcontractor"],
+      review_status: ["pending", "accepted", "rejected", "edited"],
       spatial_marker_status: ["open", "in_progress", "resolved", "closed"],
       spatial_marker_type: [
         "issue",
@@ -3302,6 +4015,16 @@ export const Constants = {
         "progress",
       ],
       spatial_processing_status: ["pending", "processing", "ready", "failed"],
+      takeoff_category: [
+        "structural",
+        "architectural",
+        "mechanical",
+        "electrical",
+        "plumbing",
+        "painting",
+        "site",
+        "general",
+      ],
       task_priority: ["low", "medium", "high", "critical"],
       task_status: ["todo", "in_progress", "review", "blocked", "completed"],
       trade_type: [

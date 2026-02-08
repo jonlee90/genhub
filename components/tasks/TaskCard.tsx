@@ -18,7 +18,7 @@ import { cn, formatDate } from "@/lib/utils";
 import { TASK_PRIORITY_CONFIG } from "@/lib/config/task-colors";
 import { getTaskTypeInfoWithFallback } from "./TaskTypeSelector";
 import type { TaskWithRelations, Phase } from "@/types/db/task";
-import type { TaskType } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 
 interface TaskCardProps {

@@ -18,7 +18,7 @@ import {
 import { TaskReceiptUpload } from "../TaskReceiptUpload";
 import { AutoExpenseToggle } from "../AutoExpenseToggle";
 import { TaskExpensesSection, type TaskExpense } from "../TaskExpensesSection";
-import type { TaskType } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type { AssigneeOption } from "../PrimaryAssigneeSelector";
 
 interface Project {

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TaskTypeBadge } from "@/components/tasks/TaskTypeSelector";
 import { cn, formatDate } from "@/lib/utils";
-import type { TaskPriority, TaskStatus, TaskType } from "@/types/db/enums";
+import type { TaskPriority, TaskStatus, TaskType } from "@/types/db/task";
 import {
   TASK_PRIORITY_CONFIG,
   TASK_STATUS_CONFIG,

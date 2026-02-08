@@ -45,7 +45,7 @@ import {
   TASK_STATUS_CONFIG,
   TASK_PRIORITY_CONFIG,
 } from "@/lib/config/task-colors";
-import type { TaskType } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type { FieldConfig } from "@/lib/config/task-type-fields";
 import { AssigneeMultiSelect } from "../AssigneeMultiSelect";
 import {

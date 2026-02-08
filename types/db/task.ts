@@ -5,17 +5,13 @@
  * commonly used in UI components.
  */
 
-import type { LucideIcon } from 'lucide-react';
-import type {
-  TasksRow,
-  TaskDependenciesRow,
-} from './tables/tasks';
+import type { LucideIcon } from "lucide-react";
+import type { TasksRow, TaskDependenciesRow } from "./tables/tasks";
 import type {
   TaskStatus as DbTaskStatus,
   TaskPriority as DbTaskPriority,
-  TaskType as DbTaskType,
   ApprovalStatus as DbApprovalStatus,
-} from './enums';
+} from "./enums";
 
 // =============================================================================
 // Base Types from Database
@@ -24,7 +20,7 @@ import type {
 export type TaskRow = TasksRow;
 export type TaskStatus = DbTaskStatus;
 export type TaskPriority = DbTaskPriority;
-export type TaskType = DbTaskType;
+export type TaskType = string; // User-configurable task types (converted from enum to text in migration)
 export type ApprovalStatus = DbApprovalStatus;
 export type TaskDependencyRow = TaskDependenciesRow;
 
@@ -308,14 +304,19 @@ export interface KanbanBoardProps {
 export interface TaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   task?: TaskWithAssignees | null;
   projects: TaskProject[];
   teamMembers: TeamMember[];
   preselectedProjectId?: string;
   preselectedPhaseId?: string;
   onSuccess?: () => void;
-  tasks?: Array<{ id: string; title: string; project_id: string; task_type?: string | null }>;
+  tasks?: Array<{
+    id: string;
+    title: string;
+    project_id: string;
+    task_type?: string | null;
+  }>;
 }
 
 /**
@@ -326,7 +327,7 @@ export interface TaskBoardProps {
   taskDependencies?: TaskDependencyRow[];
   projects: TaskProject[];
   teamMembers: TeamMember[];
-  initialView: 'kanban' | 'list';
+  initialView: "kanban" | "list";
   projectId?: string;
   phases?: Phase[];
   showNewTaskButton?: boolean;

@@ -15,10 +15,10 @@ import type {
 import type {
   TaskStatus,
   TaskPriority,
-  TaskType,
   ApprovalStatus,
   ActivityAction,
 } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type {
   ActionResult,
   FormActionResult,
@@ -573,7 +573,10 @@ export async function createTask(
     after(() => {
       console.error("Error creating task:", insertError);
     });
-    return { success: false, error: "Failed to create task. Please try again." };
+    return {
+      success: false,
+      error: "Failed to create task. Please try again.",
+    };
   }
 
   // CRITICAL OPTIMIZATION (HIGH-002): Parallelize post-creation operations
@@ -839,7 +842,10 @@ export async function updateTask(
     after(() => {
       console.error("Error updating task:", updateError);
     });
-    return { success: false, error: "Failed to update task. Please try again." };
+    return {
+      success: false,
+      error: "Failed to update task. Please try again.",
+    };
   }
 
   // CRITICAL OPTIMIZATION (CRIT-005): Batch activity logging
@@ -1007,7 +1013,10 @@ export async function updateTaskWithExpense(
 
   if (updateError) {
     after(() => {
-      console.error("[updateTaskWithExpense] Error updating task:", updateError);
+      console.error(
+        "[updateTaskWithExpense] Error updating task:",
+        updateError,
+      );
     });
     return {
       success: false,
@@ -1427,7 +1436,10 @@ export async function addTaskDependency(
     after(() => {
       console.error("Error adding dependency:", insertError);
     });
-    return { success: false, error: "Failed to add dependency. Please try again." };
+    return {
+      success: false,
+      error: "Failed to add dependency. Please try again.",
+    };
   }
 
   // Log activity
@@ -1568,7 +1580,10 @@ export async function addTaskComment(
     after(() => {
       console.error("Error adding comment:", insertError);
     });
-    return { success: false, error: "Failed to add comment. Please try again." };
+    return {
+      success: false,
+      error: "Failed to add comment. Please try again.",
+    };
   }
 
   // Notify task participants (creator and assignee)
@@ -1652,7 +1667,10 @@ export async function deleteTask(taskId: string): Promise<MutationResult> {
     after(() => {
       console.error("Error deleting task:", deleteError);
     });
-    return { success: false, error: "Failed to delete task. Please try again." };
+    return {
+      success: false,
+      error: "Failed to delete task. Please try again.",
+    };
   }
 
   // Revalidate paths
@@ -2576,7 +2594,10 @@ export async function getTaskActivity(taskId: string): Promise<
 
   if (activityError) {
     after(() => {
-      console.error("[getTaskActivity] Error fetching activity:", activityError);
+      console.error(
+        "[getTaskActivity] Error fetching activity:",
+        activityError,
+      );
     });
     return { success: false, error: "Failed to fetch activity log" };
   }

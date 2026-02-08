@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { GanttTaskBar } from "./GanttTaskBar";
 import type { GanttTask, TaskPosition, GanttConfig } from "./gantt-types";
 import { getTaskTypeInfoWithFallback } from "@/components/tasks/TaskTypeSelector";
-import type { TaskType } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 import type { TaskTypeConfigsRow } from "@/types/db/tables/tasks";
 import { getPhaseIcon } from "./phase-icons";
 

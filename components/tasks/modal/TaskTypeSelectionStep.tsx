@@ -9,7 +9,7 @@
 import React, { memo } from 'react';
 import { m as motion } from 'framer-motion';
 import { TaskTypeSelector } from '../TaskTypeSelector';
-import type { TaskType } from '@/types/db/enums';
+import type { TaskType } from '@/types/db/task';
 import type { TaskTypeConfigsRow } from '@/types/db/tables/tasks';
 
 interface TaskTypeSelectionStepProps {

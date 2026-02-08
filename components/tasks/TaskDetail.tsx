@@ -47,10 +47,10 @@ import { updateTaskStatus, deleteTask } from "@/app/actions/tasks";
 import type {
   TaskStatus,
   TaskPriority,
-  TaskType,
   ApprovalStatus,
   UserRole,
 } from "@/types/db/enums";
+import type { TaskType } from "@/types/db/task";
 
 // Status icon mapping
 const STATUS_ICONS: Record<
