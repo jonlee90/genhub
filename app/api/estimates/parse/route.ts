@@ -203,14 +203,14 @@ export async function POST(request: NextRequest) {
         let cached = false;
 
         if (cachedResult) {
-          // Cache hit - reuse existing result
+          // Cache hit - reuse existing result (cost is $0 since no API call made)
           parseResult = cachedResult.raw_response;
           tokenUsage = {
-            prompt_tokens: cachedResult.prompt_tokens,
-            completion_tokens: cachedResult.completion_tokens,
-            total_tokens: cachedResult.total_tokens,
+            prompt_tokens: 0,
+            completion_tokens: 0,
+            total_tokens: 0,
           };
-          cost = Number(cachedResult.cost);
+          cost = 0;
           cached = true;
         } else {
           // Cache miss - call OpenAI
@@ -285,6 +285,7 @@ export async function POST(request: NextRequest) {
         const { data: storedResult, error: resultError } = await supabase
           .from("plan_parse_results")
           .insert({
+            company_id: companyId,
             plan_page_id: page.id,
             raw_response: validated as any,
             page_type: validated.page_type || "unknown",

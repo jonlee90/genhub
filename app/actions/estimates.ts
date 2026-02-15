@@ -283,8 +283,8 @@ export async function approveEstimate(estimateId: string) {
       return { success: false, error: context.error };
     }
 
-    // Check role (admin only)
-    if (context.role !== "admin") {
+    // Check role (admin or project_manager)
+    if (context.role !== "admin" && context.role !== "project_manager") {
       return {
         success: false,
         error: "Insufficient permissions to approve estimates",
@@ -763,6 +763,468 @@ export async function deleteTakeoffItem(itemId: string) {
         error instanceof Error
           ? error.message
           : "Failed to delete takeoff item",
+    };
+  }
+}
+
+// ============================================
+// BULK TAKEOFF OPERATIONS (v2)
+// ============================================
+
+export async function bulkAcceptTakeoffItems(input: {
+  planUploadId: string;
+  itemIds?: string[];
+  minConfidence?: number;
+}) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    let query = context.supabase
+      .from("takeoff_items")
+      .update({
+        review_status: "accepted" as const,
+        needs_review: false,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("plan_upload_id", input.planUploadId)
+      .eq("company_id", context.companyId)
+      .eq("review_status", "pending");
+
+    if (input.itemIds && input.itemIds.length > 0) {
+      query = query.in("id", input.itemIds);
+    }
+
+    if (input.minConfidence !== undefined) {
+      query = query.gte("confidence", input.minConfidence);
+    }
+
+    const { data, error } = await query.select();
+
+    if (error) throw error;
+
+    return { success: true, data: { accepted: data?.length || 0 } };
+  } catch (error) {
+    console.error("[bulkAcceptTakeoffItems] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to bulk accept items",
+    };
+  }
+}
+
+export async function bulkRejectTakeoffItems(input: {
+  planUploadId: string;
+  itemIds: string[];
+}) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const { data, error } = await context.supabase
+      .from("takeoff_items")
+      .update({
+        review_status: "rejected" as const,
+        needs_review: false,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("plan_upload_id", input.planUploadId)
+      .eq("company_id", context.companyId)
+      .in("id", input.itemIds)
+      .select();
+
+    if (error) throw error;
+
+    return { success: true, data: { rejected: data?.length || 0 } };
+  } catch (error) {
+    console.error("[bulkRejectTakeoffItems] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to bulk reject items",
+    };
+  }
+}
+
+export async function acceptHighConfidenceItems(input: {
+  planUploadId: string;
+  confidenceThreshold?: number;
+}) {
+  const threshold = input.confidenceThreshold ?? 0.85;
+
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const { data, error } = await context.supabase
+      .from("takeoff_items")
+      .update({
+        review_status: "accepted" as const,
+        needs_review: false,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("plan_upload_id", input.planUploadId)
+      .eq("company_id", context.companyId)
+      .eq("review_status", "pending")
+      .gte("confidence", threshold)
+      .select();
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: { accepted: data?.length || 0, threshold },
+    };
+  } catch (error) {
+    console.error("[acceptHighConfidenceItems] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to accept high-confidence items",
+    };
+  }
+}
+
+// ============================================
+// ESTIMATE DUPLICATION & DELETION (v2)
+// ============================================
+
+export async function duplicateEstimate(estimateId: string) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    // Get original estimate with line items
+    const { data: original, error: fetchError } = await context.supabase
+      .from("estimates")
+      .select("*")
+      .eq("id", estimateId)
+      .eq("company_id", context.companyId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const { data: originalLineItems, error: lineItemsError } =
+      await context.supabase
+        .from("estimate_line_items")
+        .select("*")
+        .eq("estimate_id", estimateId)
+        .eq("company_id", context.companyId)
+        .order("sort_order", { ascending: true });
+
+    if (lineItemsError) throw lineItemsError;
+
+    // Create duplicate estimate
+    const { data: newEstimate, error: insertError } = await context.supabase
+      .from("estimates")
+      .insert({
+        company_id: context.companyId,
+        project_id: original.project_id,
+        plan_upload_id: original.plan_upload_id,
+        name: `${original.name} (Copy)`,
+        description: original.description,
+        status: "draft",
+        subtotal: original.subtotal,
+        overhead_pct: original.overhead_pct,
+        overhead_amount: original.overhead_amount,
+        markup_pct: original.markup_pct,
+        markup_amount: original.markup_amount,
+        grand_total: original.grand_total,
+        created_by: context.userId,
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // Duplicate line items
+    if (originalLineItems && originalLineItems.length > 0) {
+      const newLineItems = originalLineItems.map((item) => ({
+        company_id: context.companyId,
+        estimate_id: newEstimate.id,
+        takeoff_item_id: item.takeoff_item_id,
+        trade: item.trade,
+        category: item.category,
+        sub_type: item.sub_type,
+        description: item.description,
+        quantity: item.quantity,
+        unit: item.unit,
+        material_cost: item.material_cost,
+        labor_cost: item.labor_cost,
+        equipment_cost: item.equipment_cost,
+        unit_cost: item.unit_cost,
+        subtotal: item.subtotal,
+        sort_order: item.sort_order,
+      }));
+
+      const { error: newLineItemsError } = await context.supabase
+        .from("estimate_line_items")
+        .insert(newLineItems);
+
+      if (newLineItemsError) throw newLineItemsError;
+    }
+
+    revalidatePath(`/app/projects/${original.project_id}`);
+
+    return { success: true, data: newEstimate };
+  } catch (error) {
+    console.error("[duplicateEstimate] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to duplicate estimate",
+    };
+  }
+}
+
+export async function supersedeEstimate(
+  estimateId: string,
+  newEstimateId: string,
+) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const { data, error } = await context.supabase
+      .from("estimates")
+      .update({
+        status: "superseded" as const,
+        superseded_by: newEstimateId,
+      })
+      .eq("id", estimateId)
+      .eq("company_id", context.companyId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    revalidatePath(`/app/estimates/${estimateId}`);
+    revalidatePath(`/app/estimates/${newEstimateId}`);
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("[supersedeEstimate] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to supersede estimate",
+    };
+  }
+}
+
+// ============================================
+// AI USAGE & PLAN STATUS (v2)
+// ============================================
+
+export async function getAiUsage() {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    // Get company budget
+    const { data: company, error: companyError } = await context.supabase
+      .from("companies")
+      .select("ai_monthly_budget")
+      .eq("id", context.companyId)
+      .single();
+
+    if (companyError) throw companyError;
+
+    // Get current month spend
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const { data: usageData, error: usageError } = await context.supabase
+      .from("ai_usage_log")
+      .select("cost, cached, created_at")
+      .eq("company_id", context.companyId)
+      .gte("created_at", monthStart.toISOString());
+
+    if (usageError) throw usageError;
+
+    const totalSpend =
+      usageData?.reduce((sum, log) => sum + Number(log.cost), 0) || 0;
+    const totalCalls = usageData?.length || 0;
+    const cachedCalls = usageData?.filter((log) => log.cached).length || 0;
+    const budget = Number(company.ai_monthly_budget);
+    const usagePercent = budget > 0 ? (totalSpend / budget) * 100 : 0;
+
+    return {
+      success: true,
+      data: {
+        totalSpend: Number(totalSpend.toFixed(4)),
+        budget,
+        usagePercent: Number(usagePercent.toFixed(1)),
+        totalCalls,
+        cachedCalls,
+        remaining: Number((budget - totalSpend).toFixed(4)),
+        isWarning: usagePercent >= 80,
+        isExceeded: usagePercent >= 100,
+      },
+    };
+  } catch (error) {
+    console.error("[getAiUsage] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch AI usage",
+    };
+  }
+}
+
+export async function getPlanPageStatus(planUploadId: string) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const { data: pages, error } = await context.supabase
+      .from("plan_pages")
+      .select("id, page_number, parse_status")
+      .eq("plan_upload_id", planUploadId)
+      .eq("company_id", context.companyId)
+      .order("page_number", { ascending: true });
+
+    if (error) throw error;
+
+    const allComplete =
+      pages?.every(
+        (p) => p.parse_status === "parsed" || p.parse_status === "parse_failed",
+      ) ?? false;
+
+    const parsed =
+      pages?.filter((p) => p.parse_status === "parsed").length || 0;
+    const failed =
+      pages?.filter((p) => p.parse_status === "parse_failed").length || 0;
+    const pending =
+      pages?.filter(
+        (p) => p.parse_status === "pending" || p.parse_status === "parsing",
+      ).length || 0;
+
+    return {
+      success: true,
+      data: {
+        pages,
+        allComplete,
+        summary: { parsed, failed, pending, total: pages?.length || 0 },
+      },
+    };
+  } catch (error) {
+    console.error("[getPlanPageStatus] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch page status",
+    };
+  }
+}
+
+// ============================================
+// ESTIMATE LINE ITEM MANAGEMENT (v2)
+// ============================================
+
+export async function updateEstimateLineItem(input: {
+  lineItemId: string;
+  materialCost?: number;
+  laborCost?: number;
+  equipmentCost?: number;
+  quantity?: number;
+}) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    // Get current line item
+    const { data: current, error: fetchError } = await context.supabase
+      .from("estimate_line_items")
+      .select("*, estimates!inner(id, overhead_pct, markup_pct)")
+      .eq("id", input.lineItemId)
+      .eq("company_id", context.companyId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const quantity = input.quantity ?? Number(current.quantity);
+    const materialCost = input.materialCost ?? Number(current.material_cost);
+    const laborCost = input.laborCost ?? Number(current.labor_cost);
+    const equipmentCost = input.equipmentCost ?? Number(current.equipment_cost);
+    const unitCost = materialCost + laborCost + equipmentCost;
+    const subtotal = Number((quantity * unitCost).toFixed(2));
+
+    // Update line item
+    const { error: updateError } = await context.supabase
+      .from("estimate_line_items")
+      .update({
+        quantity,
+        material_cost: materialCost,
+        labor_cost: laborCost,
+        equipment_cost: equipmentCost,
+        unit_cost: unitCost,
+        subtotal,
+      })
+      .eq("id", input.lineItemId)
+      .eq("company_id", context.companyId);
+
+    if (updateError) throw updateError;
+
+    // Recalculate estimate totals
+    const estimateId = (current.estimates as any).id;
+    const overheadPct = Number((current.estimates as any).overhead_pct);
+    const markupPct = Number((current.estimates as any).markup_pct);
+
+    const { data: allLineItems } = await context.supabase
+      .from("estimate_line_items")
+      .select("subtotal")
+      .eq("estimate_id", estimateId)
+      .eq("company_id", context.companyId);
+
+    const newSubtotal =
+      allLineItems?.reduce((sum, item) => sum + Number(item.subtotal), 0) || 0;
+    const overheadAmount = newSubtotal * (overheadPct / 100);
+    const markupAmount = (newSubtotal + overheadAmount) * (markupPct / 100);
+    const grandTotal = newSubtotal + overheadAmount + markupAmount;
+
+    await context.supabase
+      .from("estimates")
+      .update({
+        subtotal: Number(newSubtotal.toFixed(2)),
+        overhead_amount: Number(overheadAmount.toFixed(2)),
+        markup_amount: Number(markupAmount.toFixed(2)),
+        grand_total: Number(grandTotal.toFixed(2)),
+      })
+      .eq("id", estimateId)
+      .eq("company_id", context.companyId);
+
+    revalidatePath(`/app/estimates/${estimateId}`);
+
+    return { success: true, data: { subtotal, estimateTotal: grandTotal } };
+  } catch (error) {
+    console.error("[updateEstimateLineItem] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to update line item",
     };
   }
 }
