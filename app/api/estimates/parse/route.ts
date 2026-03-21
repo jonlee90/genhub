@@ -8,6 +8,10 @@ import {
   PARSE_SYSTEM_PROMPT,
   PARSE_USER_PROMPT,
 } from "@/lib/ai/parse-prompt";
+import {
+  getPromptForContentType,
+  type PromptConfig,
+} from "@/lib/ai/construction-prompts";
 import { normalizeTakeoffItem } from "@/lib/ai/normalize-takeoff";
 import { createHash } from "crypto";
 
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { planUploadId, pageIds } = body;
+    const { planUploadId, pageIds, sheetContentType } = body;
 
     if (!planUploadId) {
       return NextResponse.json(
@@ -214,12 +218,29 @@ export async function POST(request: NextRequest) {
           cached = true;
         } else {
           // Cache miss - call OpenAI
-          const resizedImage = await sharp(imageBuffer)
-            .resize(2048, null, { withoutEnlargement: true })
-            .jpeg({ quality: 85 })
+          // Convert to JPEG but keep original resolution for better OCR
+          // OpenAI will handle resizing internally while preserving text readability
+          const optimizedImage = await sharp(imageBuffer)
+            .jpeg({ quality: 95, mozjpeg: true })
             .toBuffer();
 
-          const base64Image = resizedImage.toString("base64");
+          const base64Image = optimizedImage.toString("base64");
+
+          // Use sheet-type-specific prompt if available, otherwise fall back to generic
+          const specializedPrompt: PromptConfig | null = sheetContentType
+            ? getPromptForContentType(sheetContentType)
+            : null;
+          const systemPrompt =
+            specializedPrompt?.systemPrompt ?? PARSE_SYSTEM_PROMPT;
+          const userPrompt = specializedPrompt?.userPrompt ?? PARSE_USER_PROMPT;
+          const maxTokens = specializedPrompt?.maxTokens ?? 2000;
+          const imageDetail = specializedPrompt?.imageDetail ?? "high";
+
+          if (specializedPrompt) {
+            console.log(
+              `[parse] Using specialized prompt for ${sheetContentType}, maxTokens=${maxTokens}, detail=${imageDetail}`,
+            );
+          }
 
           let retryCount = 0;
           let success = false;
@@ -231,28 +252,29 @@ export async function POST(request: NextRequest) {
                 messages: [
                   {
                     role: "system",
-                    content: PARSE_SYSTEM_PROMPT,
+                    content: systemPrompt,
                   },
                   {
                     role: "user",
                     content: [
-                      { type: "text", text: PARSE_USER_PROMPT },
+                      { type: "text", text: userPrompt },
                       {
                         type: "image_url",
                         image_url: {
                           url: `data:image/jpeg;base64,${base64Image}`,
+                          detail: imageDetail,
                         },
                       },
                     ],
                   },
                 ],
                 response_format: { type: "json_object" },
-                max_tokens: 2000,
+                max_tokens: maxTokens,
               });
 
-              parseResult = JSON.parse(
-                response.choices[0].message.content || "{}",
-              );
+              const rawContent = response.choices[0].message.content || "{}";
+              parseResult = JSON.parse(rawContent);
+
               tokenUsage = response.usage || {
                 prompt_tokens: 0,
                 completion_tokens: 0,
@@ -261,6 +283,16 @@ export async function POST(request: NextRequest) {
               cost =
                 tokenUsage.prompt_tokens * OPENAI_PRICING.prompt +
                 tokenUsage.completion_tokens * OPENAI_PRICING.completion;
+
+              // Debug logging
+              console.log(`[parse] OpenAI response for page ${page.id}:`, {
+                page_type: parseResult.page_type,
+                item_count: parseResult.items?.length || 0,
+                has_warnings: !!parseResult.warnings,
+                has_notes: !!parseResult.raw_notes,
+                tokens: tokenUsage.total_tokens,
+                cost: cost.toFixed(4),
+              });
 
               success = true;
             } catch (apiError: any) {
@@ -285,6 +317,7 @@ export async function POST(request: NextRequest) {
         const { data: storedResult, error: resultError } = await supabase
           .from("plan_parse_results")
           .insert({
+            company_id: companyId,
             plan_page_id: page.id,
             raw_response: validated as any,
             page_type: validated.page_type || "unknown",
@@ -301,6 +334,13 @@ export async function POST(request: NextRequest) {
         if (resultError || !storedResult) {
           throw new Error("Failed to store parse result");
         }
+
+        // Delete existing takeoff items for this page to avoid duplicates
+        await supabase
+          .from("takeoff_items")
+          .delete()
+          .eq("plan_page_id", page.id)
+          .eq("company_id", companyId);
 
         // Normalize and insert takeoff items
         const takeoffItems = validated.items.map((item) => ({
