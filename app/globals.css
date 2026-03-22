@@ -541,6 +541,24 @@ textarea:focus {
 }
 
 /* ================================================================
+   Plan Overlay Pulse Animation
+   ================================================================ */
+
+/* Pulse animation for selected overlay items */
+@keyframes pulse-overlay {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-overlay {
+  animation: pulse-overlay 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ================================================================
    Safari Backdrop-Filter Fallback - SlideMenu Glassmorphism
    ================================================================ */
 
@@ -557,4 +575,11 @@ textarea:focus {
 .glass-panel {
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* sm:flex missing from Tailwind JIT output — add explicitly */
+@media (min-width: 480px) {
+  .sm\:flex {
+    display: flex;
+  }
 }

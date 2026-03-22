@@ -9,14 +9,14 @@ import type {
   ProjectPhasesRow,
   ProjectFilesRow,
   TaskDependenciesRow,
-} from '@/types/db/tables';
+} from "@/types/db/tables";
 import type {
   ExpenseStats,
   TaskStats,
   TeamCostSummary,
-} from '@/app/actions/projects';
-import type { UnifiedPhoto } from '@/app/actions/project-photos';
-import type { UserRole } from '@/types/db/enums';
+} from "@/app/actions/projects";
+import type { UnifiedPhoto } from "@/app/actions/project-photos";
+import type { UserRole } from "@/types/db/enums";
 
 // ============================================
 // Project with Relations
@@ -112,6 +112,7 @@ export interface ProjectOverviewProps {
   teamCostSummaries?: TeamCostSummary[];
   taskTypes?: any[]; // TaskTypeConfigsRow[]
   onModalOpen?: () => void;
+  onNavigateToFinancials?: () => void;
 }
 
 // ============================================
@@ -124,4 +125,3 @@ export interface CreateProjectFormState {
   success?: boolean;
   project?: ProjectsRow;
 }
-

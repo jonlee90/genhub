@@ -56,6 +56,7 @@ LOAD BY SPEC PHASE:
 │ "project" features    │ Serena: find_symbol in app/actions/projects│
 │ "expense" features    │ Serena: find_symbol in app/actions/expenses│
 │ "material" features   │ Serena: find_symbol in app/actions/materials│
+│ "estimate" features   │ Serena: find_symbol in app/actions/estimates│
 │ "spatial" features    │ Serena: find_symbol in app/actions/spatial│
 │───────────────────────┼─────────────────────────────────────────│
 │ REFERENCE (for design phase):                                   │
@@ -101,6 +102,8 @@ LOAD BY SPEC PHASE:
 │    │ "expense" | "budget" | "cost"        → EXPENSE_FEATURE    │ │
 │    │ "chat" | "message" | "notification"  → CHAT_FEATURE       │ │
 │    │ "3d" | "spatial" | "marker" | "model"→ SPATIAL_FEATURE    │ │
+│    │ "estimate" | "takeoff" | "bid" | "plan upload"            │ │
+│    │                                      → ESTIMATE_FEATURE   │ │
 │    │ "team" | "user" | "role" | "invite"  → TEAM_FEATURE       │ │
 │    │ "file" | "document" | "photo"        → FILE_FEATURE       │ │
 │    │ "report" | "analytics" | "dashboard" → ANALYTICS_FEATURE  │ │
@@ -125,6 +128,7 @@ LOAD BY SPEC PHASE:
 │    SPATIAL_FEATURE  → find_symbol in app/actions/spatial.ts     │
 │    EXPENSE_FEATURE  → find_symbol in app/actions/expenses.ts    │
 │    CHAT_FEATURE     → find_symbol in app/actions/chat.ts        │
+│    ESTIMATE_FEATURE → find_symbol in app/actions/estimates.ts   │
 │                                                                  │
 │    TIER 3 - ON DEMAND (Research):                               │
 │    - WebSearch: Industry best practices                         │

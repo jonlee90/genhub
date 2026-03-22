@@ -1,0 +1,356 @@
+"use server";
+
+import { getUserContext } from "@/lib/auth-context";
+import { z } from "zod";
+import { revalidatePath } from "next/cache";
+
+// ============================================
+// VALIDATION SCHEMAS
+// ============================================
+
+const SuggestMaterialsSchema = z.object({
+  lineItemId: z.string().uuid(),
+});
+
+const LinkMaterialSchema = z.object({
+  lineItemId: z.string().uuid(),
+  materialId: z.string().uuid(),
+});
+
+// ============================================
+// MATERIAL SUGGESTION ACTIONS
+// ============================================
+
+/**
+ * Suggest materials for a line item based on trade and description
+ * P2.8: Material Catalog Integration Backend (EST-P2-008)
+ */
+export async function suggestMaterialsForLineItem(
+  input: z.infer<typeof SuggestMaterialsSchema>,
+) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const validated = SuggestMaterialsSchema.parse(input);
+
+    // Get line item
+    const { data: lineItem, error: lineItemError } = await context.supabase
+      .from("estimate_line_items")
+      .select("trade, category, sub_type, description")
+      .eq("id", validated.lineItemId)
+      .single();
+
+    if (lineItemError || !lineItem) {
+      return { success: false, error: "Line item not found" };
+    }
+
+    // Search materials by fuzzy matching trade and description
+    const { data: materials, error: materialsError } = await context.supabase
+      .from("materials")
+      .select("*")
+      .eq("company_id", context.companyId)
+      .or(
+        `product_name.ilike.%${lineItem.sub_type}%,product_description.ilike.%${lineItem.description}%`,
+      )
+      .limit(10);
+
+    if (materialsError) throw materialsError;
+
+    // Score materials by relevance
+    const scoredMaterials = (materials || []).map((material) => {
+      let score = 0;
+
+      // Exact trade match
+      if (material.category?.toLowerCase() === lineItem.trade.toLowerCase()) {
+        score += 50;
+      }
+
+      // Description keywords match
+      const descWords = (lineItem.description || "").toLowerCase().split(" ");
+      const matNameWords = (material.product_name || "")
+        .toLowerCase()
+        .split(" ");
+      const matchingWords = descWords.filter((w) =>
+        matNameWords.some((mw) => mw.includes(w) || w.includes(mw)),
+      );
+      score += matchingWords.length * 10;
+
+      return {
+        ...material,
+        relevanceScore: Math.min(100, score),
+      };
+    });
+
+    // Sort by relevance
+    scoredMaterials.sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+    return { success: true, data: scoredMaterials };
+  } catch (error) {
+    console.error("[suggestMaterialsForLineItem] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to suggest materials",
+    };
+  }
+}
+
+/**
+ * Link a line item to a material
+ * P2.8: Material Catalog Integration Backend (EST-P2-008)
+ */
+export async function linkLineItemToMaterial(
+  input: z.infer<typeof LinkMaterialSchema>,
+) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const validated = LinkMaterialSchema.parse(input);
+
+    // Get material price
+    const { data: material, error: materialError } = await context.supabase
+      .from("materials")
+      .select("id, unit_price")
+      .eq("id", validated.materialId)
+      .eq("company_id", context.companyId)
+      .single();
+
+    if (materialError || !material) {
+      return { success: false, error: "Material not found" };
+    }
+
+    // Update line item
+    const { error: updateError } = await context.supabase
+      .from("estimate_line_items")
+      .update({
+        material_id: validated.materialId,
+        unit_cost: material.unit_price,
+      })
+      .eq("id", validated.lineItemId);
+
+    if (updateError) throw updateError;
+
+    // Get estimate for revalidation
+    const { data: lineItem } = await context.supabase
+      .from("estimate_line_items")
+      .select("estimates!inner(project_id)")
+      .eq("id", validated.lineItemId)
+      .single();
+
+    if (lineItem) {
+      const projectId = (
+        lineItem.estimates as unknown as { project_id: string }
+      ).project_id;
+      revalidatePath(`/projects/${projectId}`);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("[linkLineItemToMaterial] Error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to link material",
+    };
+  }
+}
+
+/**
+ * Bulk match all unlinked items in an estimate
+ * P2.8: Material Catalog Integration Backend (EST-P2-008)
+ */
+export async function bulkMatchMaterials(estimateId: string) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    // Get estimate with unlinked line items
+    const { data: estimate, error: estimateError } = await context.supabase
+      .from("estimates")
+      .select(
+        `
+        id,
+        project_id,
+        estimate_line_items!inner (
+          id,
+          trade,
+          category,
+          sub_type,
+          description,
+          material_id
+        )
+      `,
+      )
+      .eq("id", estimateId)
+      .eq("company_id", context.companyId)
+      .single();
+
+    if (estimateError || !estimate) {
+      return { success: false, error: "Estimate not found" };
+    }
+
+    const lineItems = (
+      estimate.estimate_line_items as unknown as Array<{
+        id: string;
+        trade: string;
+        category: string;
+        sub_type: string;
+        description: string;
+        material_id: string | null;
+      }>
+    ).filter((item) => !item.material_id);
+
+    let matchedCount = 0;
+
+    // Match each item
+    for (const item of lineItems) {
+      const suggestions = await suggestMaterialsForLineItem({
+        lineItemId: item.id,
+      });
+
+      if (
+        suggestions.success &&
+        suggestions.data &&
+        suggestions.data.length > 0
+      ) {
+        const bestMatch = suggestions.data[0];
+
+        // Auto-link if relevance score is high enough (>= 60)
+        if (bestMatch.relevanceScore >= 60) {
+          await linkLineItemToMaterial({
+            lineItemId: item.id,
+            materialId: bestMatch.id,
+          });
+          matchedCount++;
+        }
+      }
+    }
+
+    const projectId = (estimate as unknown as { project_id: string })
+      .project_id;
+    revalidatePath(`/projects/${projectId}`);
+
+    return {
+      success: true,
+      data: { matchedCount, totalItems: lineItems.length },
+    };
+  } catch (error) {
+    console.error("[bulkMatchMaterials] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to bulk match materials",
+    };
+  }
+}
+
+/**
+ * Check for stale prices in an estimate (>30 days old)
+ * P2.8: Material Catalog Integration Backend (EST-P2-008)
+ */
+export async function checkStalePrices(estimateId: string) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    const { data, error } = await context.supabase
+      .from("estimate_line_items")
+      .select(
+        `
+        id,
+        trade,
+        description,
+        unit_cost,
+        materials!inner (
+          id,
+          product_name,
+          unit_price,
+          updated_at
+        )
+      `,
+      )
+      .eq("estimate_id", estimateId);
+
+    if (error) throw error;
+
+    const staleItems = (data || []).filter((item) => {
+      const material = item.materials as unknown as { updated_at: string };
+      const updatedAt = new Date(material.updated_at);
+      const daysSinceUpdate =
+        (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+      return daysSinceUpdate > 30;
+    });
+
+    return { success: true, data: { staleItems, count: staleItems.length } };
+  } catch (error) {
+    console.error("[checkStalePrices] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to check stale prices",
+    };
+  }
+}
+
+/**
+ * Update line items when linked material price changes
+ * P2.8: Material Catalog Integration Backend (EST-P2-008)
+ */
+export async function updateLinkedItemPrices(materialId: string) {
+  try {
+    const context = await getUserContext();
+    if ("error" in context) {
+      return { success: false, error: context.error };
+    }
+
+    // Get material
+    const { data: material, error: materialError } = await context.supabase
+      .from("materials")
+      .select("id, unit_price")
+      .eq("id", materialId)
+      .eq("company_id", context.companyId)
+      .single();
+
+    if (materialError || !material) {
+      return { success: false, error: "Material not found" };
+    }
+
+    // Get all line items linked to this material
+    const { data: lineItems, error: lineItemsError } = await context.supabase
+      .from("estimate_line_items")
+      .select("id")
+      .eq("material_id", materialId);
+
+    if (lineItemsError) throw lineItemsError;
+
+    // Update all linked items
+    const { error: updateError } = await context.supabase
+      .from("estimate_line_items")
+      .update({ unit_cost: material.unit_price })
+      .eq("material_id", materialId);
+
+    if (updateError) throw updateError;
+
+    return { success: true, data: { itemsUpdated: lineItems?.length || 0 } };
+  } catch (error) {
+    console.error("[updateLinkedItemPrices] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update linked item prices",
+    };
+  }
+}

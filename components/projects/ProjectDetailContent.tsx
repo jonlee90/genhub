@@ -25,18 +25,29 @@ import ChevronUp from "lucide-react/icons/chevron-up";
 import FolderKanban from "lucide-react/icons/folder-kanban";
 import FolderOpen from "lucide-react/icons/folder-open";
 import Target from "lucide-react/icons/target";
+import Calculator from "lucide-react/icons/calculator";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPercentWhole } from "@/lib/utils";
 import { ProjectTeam } from "./ProjectTeam";
 import { ProjectSettings } from "./ProjectSettings";
 import { ProjectOverview } from "./ProjectOverview";
 import { TaskBoard } from "@/components/tasks/TaskBoard";
+import { EstimatesTabClient } from "@/components/estimates/EstimatesTabClient";
 import {
   TaskModalProvider,
   useTaskModal,
 } from "@/components/tasks/TaskModalContext";
 import { ProjectFilesTab } from "./files/ProjectFilesTab";
 import { useModalData } from "@/hooks/use-modal-data";
+
+// Dynamic import FinancialsTabClient (only loads when Financials tab is active)
+const FinancialsTabClient = dynamic(
+  () =>
+    import("@/components/projects/financials/FinancialsTabClient").then(
+      (mod) => ({ default: mod.FinancialsTabClient }),
+    ),
+  { ssr: false },
+);
 
 // Dynamic import TaskModal (only loads when modal opens)
 const TaskModal = dynamic(
@@ -155,7 +166,13 @@ export function ProjectDetailContent({
 }: ProjectDetailContentProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    "overview" | "team" | "tasks" | "files" | "settings"
+    | "overview"
+    | "financials"
+    | "team"
+    | "tasks"
+    | "files"
+    | "estimates"
+    | "settings"
   >("overview");
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
@@ -563,6 +580,24 @@ export function ProjectDetailContent({
               <span>Overview</span>
             </button>
 
+            {/* Financials Tab */}
+            <button
+              onClick={() => setActiveTab("financials")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "financials"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
+              )}
+            >
+              <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Financials</span>
+            </button>
+
             {/* Team Tab */}
             <button
               onClick={() => setActiveTab("team")}
@@ -655,6 +690,24 @@ export function ProjectDetailContent({
               )}
             </button>
 
+            {/* Estimates Tab */}
+            <button
+              onClick={() => setActiveTab("estimates")}
+              className={cn(
+                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
+                "min-h-[44px] min-w-[44px] flex-shrink-0",
+                "transition-all duration-200 ease-out",
+                "active:scale-[0.97]",
+                "sm:px-5 sm:py-3 sm:text-sm",
+                activeTab === "estimates"
+                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
+              )}
+            >
+              <Calculator className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span>Estimates</span>
+            </button>
+
             {/* Settings Tab */}
             <button
               onClick={() => setActiveTab("settings")}
@@ -693,6 +746,14 @@ export function ProjectDetailContent({
               teamCostSummaries={teamCostSummaries}
               taskTypes={taskTypes}
               onModalOpen={handleModalOpen}
+              onNavigateToFinancials={() => setActiveTab("financials")}
+            />
+          )}
+
+          {activeTab === "financials" && (
+            <FinancialsTabClient
+              projectId={project.id}
+              userRole={userRole || null}
             />
           )}
 
@@ -741,7 +802,16 @@ export function ProjectDetailContent({
             />
           )}
 
-          {activeTab === "settings" && <ProjectSettings project={project} userRole={userRole} />}
+          {activeTab === "estimates" && (
+            <EstimatesTabClient
+              projectId={project.id}
+              userRole={userRole || null}
+            />
+          )}
+
+          {activeTab === "settings" && (
+            <ProjectSettings project={project} userRole={userRole} />
+          )}
         </motion.div>
 
         {/* Task modal - rendered via context */}

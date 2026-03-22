@@ -1,7 +1,7 @@
 # GenHub Dependency Graph
 
 > Critical paths, impact analysis, and cross-module dependencies.
-> Last updated: 2025-01-26
+> Last updated: 2026-03-21
 
 ---
 
@@ -11,7 +11,7 @@
 
 | Function | Location | Usage | Risk | If Changed... |
 |----------|----------|-------|------|---------------|
-| `getUserContext()` | `lib/auth-context.ts` | 29 action files | **CRITICAL** | Breaks all authenticated operations |
+| `getUserContext()` | `lib/auth-context.ts` | 35 action files | **CRITICAL** | Breaks all authenticated operations |
 | `createClient()` | `utils/supabase/server.ts` | 53 files | **CRITICAL** | Breaks all DB access |
 
 ### Tier 2: High Impact (8-20 consumers)
@@ -115,6 +115,8 @@ tasks-spatial.ts (3D Linking)
 | `components/settings/` | `project-types.ts`, `task-types.ts` | 12+ |
 | `components/team/` | `team.ts`, `subcontractors.ts` | 8+ |
 | `components/chat/` | `chat.ts`, `chat-queries.ts` | 10+ |
+| `components/estimates/` | `estimates.ts`, `estimate-chat.ts`, `assemblies.ts`, `revisions.ts` | 15+ |
+| `components/expenses/` | `expenses.ts` | 5+ |
 
 ### Actions → Actions (None Direct)
 

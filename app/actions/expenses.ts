@@ -37,6 +37,8 @@ const createExpenseSchema = z.object({
   vendor_name: z.string().optional().nullable(),
   vendor_address: z.string().optional().nullable(),
   receipt_url: z.string().url().optional().nullable(),
+  payment_method: z.string().optional().nullable(),
+  store_account: z.string().optional().nullable(),
 });
 
 const updateExpenseSchema = z.object({
@@ -58,6 +60,8 @@ const updateExpenseSchema = z.object({
   expense_date: z.string().optional(),
   vendor_name: z.string().optional().nullable(),
   vendor_address: z.string().optional().nullable(),
+  payment_method: z.string().optional().nullable(),
+  store_account: z.string().optional().nullable(),
 });
 
 const reviewExpenseSchema = z.object({
@@ -1391,5 +1395,52 @@ export async function createExpenseFromTask(
   } catch (error) {
     console.error("[createExpenseFromTask] Unexpected error:", error);
     return { success: false, error: "Failed to create expense from task" };
+  }
+}
+
+// ============================================
+// Payment Method Suggestions
+// ============================================
+
+/**
+ * Get distinct payment methods used by this company for autocomplete
+ * Used in CreateExpenseModal and AddPaymentModal combobox fields
+ */
+export async function getPaymentMethodSuggestions(): Promise<{
+  data?: string[];
+  error?: string;
+}> {
+  try {
+    const userContext = await getUserContext();
+    if ("error" in userContext) {
+      return { error: "Unauthorized" };
+    }
+
+    const { data, error } = await userContext.supabase
+      .from("expenses")
+      .select("payment_method")
+      .eq("company_id", userContext.companyId)
+      .not("payment_method", "is", null)
+      .order("payment_method");
+
+    if (error) {
+      console.error("[getPaymentMethodSuggestions] Query error:", error);
+      return { error: "Failed to fetch payment method suggestions" };
+    }
+
+    // Deduplicate in JS since Supabase JS client doesn't expose SELECT DISTINCT cleanly
+    const seen = new Set<string>();
+    const suggestions: string[] = [];
+    for (const row of (data as any[]) || []) {
+      if (row.payment_method && !seen.has(row.payment_method)) {
+        seen.add(row.payment_method);
+        suggestions.push(row.payment_method);
+      }
+    }
+
+    return { data: suggestions };
+  } catch (error) {
+    console.error("[getPaymentMethodSuggestions] Unexpected error:", error);
+    return { error: "Failed to fetch payment method suggestions" };
   }
 }

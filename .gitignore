@@ -52,3 +52,22 @@ next-env.d.ts
 .opencode/reports/
 
 .serena
+
+# Playwright
+playwright-report/
+test-results/
+.playwright-mcp/
+
+# Screenshots & test assets
+*.png
+public/test-plan.pdf
+
+# Backup directories
+.components-phase2-backup/
+.export-pdf-backup/
+
+# Scripts (dev utilities)
+scripts/
+
+# Root-level report files
+ESTIMATES-TESTING-COMPLETE.md

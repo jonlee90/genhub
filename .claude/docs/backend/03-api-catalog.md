@@ -1,7 +1,8 @@
 # API Catalog & Server Actions Reference
 
 > GenHub Backend Services: Server Actions + API Routes
-> Generated from source: `app/actions/*.ts` (38 files) + `app/api/*/route.ts` (22 routes)
+> Generated from source: `app/actions/*.ts` (47 files) + `app/api/*/route.ts` (33 routes)
+> **Updated:** 2026-03-21
 
 ---
 
@@ -482,6 +483,91 @@ Full-text search across projects, tasks, materials, expenses, and messages.
 | `searchMessages(query, chatRoomId?)` | Full-text message search with snippets | `query: string (1-500 chars)`, `chatRoomId?: UUID` | `{results: MessageSearchResult[]}` | — |
 
 **Security:** Full-text search on messages uses `type: 'plain'` to prevent tsquery injection.
+
+---
+
+### Estimates Domain
+
+> AI-powered construction estimating module. Phase 1 + Phase 2 complete as of 2026-02-16.
+
+**File:** `app/actions/estimates.ts`
+
+| Function | Purpose | Input | Returns |
+|----------|---------|-------|---------|
+| `createEstimate(data)` | Create new estimate | `{project_id, name, description?}` | `{success, data: Estimate}` |
+| `updateEstimate(id, data)` | Update estimate metadata or line items | `{id, ...fields}` | `{success, data}` |
+| `deleteEstimate(id)` | Archive estimate | `id: UUID` | `{success}` |
+| `getEstimatesByProject(projectId)` | List estimates for project | `projectId: UUID` | `{success, data: Estimate[]}` |
+| `getEstimateById(id)` | Fetch single estimate with line items | `id: UUID` | `{success, data: EstimateWithItems}` |
+| `uploadPlan(formData)` | Upload PDF/image plan for AI parsing | `FormData: {estimateId, file}` | `{success, planUploadId}` |
+| `parseEstimateFromPlan(planUploadId)` | Trigger AI extraction of line items | `planUploadId: UUID` | `{success, jobId}` |
+| `updateLineItem(id, data)` | Modify a line item | `{id, quantity?, unit_cost?, ...}` | `{success}` |
+| `deleteLineItem(id)` | Remove line item | `id: UUID` | `{success}` |
+| `addLineItem(data)` | Manually add line item | `{estimate_id, trade, description, quantity, unit, unit_cost}` | `{success, data}` |
+
+**File:** `app/actions/estimate-chat.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `sendChatMessage(estimateId, content)` | Send user message, get AI response |
+| `getChatHistory(estimateId)` | Fetch all messages for estimate |
+
+**File:** `app/actions/assemblies.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `getAssemblies(estimateId)` | List assemblies + items |
+| `createAssembly(data)` | Create named assembly bundle |
+| `addAssemblyItem(data)` | Add item to assembly |
+| `applyAssemblyToEstimate(assemblyId, estimateId)` | Expand assembly into estimate line items |
+| `deleteAssembly(id)` | Remove assembly |
+
+**File:** `app/actions/revisions.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `createRevision(data)` | Create revision comparing two estimate versions |
+| `getRevisions(estimateId)` | List revisions for estimate |
+| `applyRevisionChanges(revisionId, changeIds)` | Accept selected diff changes |
+
+**File:** `app/actions/budget-conversion.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `convertEstimateToBudget(estimateId)` | Create draft Budget from approved estimate |
+| `getBudgetsByProject(projectId)` | List project budgets |
+| `updateBudget(id, data)` | Update budget metadata |
+| `approveBudget(id)` | Lock budget for tracking |
+
+**File:** `app/actions/templates.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `getPricingTemplates(category?)` | List company pricing templates |
+| `createTemplate(data)` | Create new template with line items |
+| `applyTemplateToEstimate(templateId, estimateId)` | Import template line items |
+| `updateTemplate(id, data)` | Update template + increment version |
+| `deleteTemplate(id)` | Archive template |
+
+**File:** `app/actions/material-suggestions.ts`
+
+| Function | Purpose |
+|----------|---------|
+| `getMaterialSuggestions(lineItemId)` | AI-match line item description to materials catalog |
+| `linkLineItemToMaterial(lineItemId, materialId)` | Confirm match |
+
+---
+
+### Estimates API Routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `app/api/estimates/upload/route.ts` | POST | Upload plan file to Supabase Storage |
+| `app/api/estimates/parse/route.ts` | POST | Trigger AI plan parsing (returns streaming progress) |
+| `app/api/estimates/extract/route.ts` | POST | AI line item extraction from plan |
+| `app/api/estimates/extraction-progress/route.ts` | GET | Poll extraction job status |
+| `app/api/estimates/export-pdf/route.ts` | GET | Download estimate as PDF |
+| `app/api/estimates/takeoff-items/route.ts` | GET/POST | CRUD for takeoff overlay annotations |
 
 ---
 

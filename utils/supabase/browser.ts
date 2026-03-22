@@ -9,9 +9,9 @@
  * For data mutations, use Server Actions instead
  */
 
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database.types';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database.types";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Debug: Browser client singleton
 let browserClient: SupabaseClient<Database> | null = null;
@@ -31,14 +31,9 @@ let browserClient: SupabaseClient<Database> | null = null;
  * - Admin operations (use server.ts createAdminClient)
  */
 export function getBrowserClient(): SupabaseClient<Database> {
-  console.log('[browser] Getting browser Supabase client');
-
   if (browserClient) {
-    console.log('[browser] Returning existing client');
     return browserClient;
   }
-
-  console.log('[browser] Creating new browser client');
 
   browserClient = createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -49,7 +44,7 @@ export function getBrowserClient(): SupabaseClient<Database> {
           eventsPerSecond: 10, // Rate limiting for realtime events
         },
       },
-    }
+    },
   );
 
   return browserClient;
@@ -59,5 +54,5 @@ export function getBrowserClient(): SupabaseClient<Database> {
  * Helper to check if we're in browser environment
  */
 export function isBrowser(): boolean {
-  return typeof window !== 'undefined';
+  return typeof window !== "undefined";
 }

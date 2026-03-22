@@ -2,6 +2,9 @@
 
 **Implementation Tasks for Frontend and User Workflows**
 
+> **Pre-Implementation:** Ensure spec approval markers exist before starting.
+> Create `.claude/specs/ai-plan-estimator/` with `requirements.APPROVED`, `design.APPROVED`, and `tasks.APPROVED` markers per CLAUDE.md spec workflow.
+
 ---
 
 ## Overview
@@ -14,11 +17,33 @@ Part 2 builds the user-facing UI for AI-assisted plan estimating:
 - Cost editor with pricing templates
 - Estimate summary and history
 - AI budget banner
+- Error boundary for fault isolation
 - Mobile-first responsive design
 
 **Estimated Duration:** 2 weeks
 **Dependencies:** Part 1 completed and deployed
 **Agent Sequence:** frontend-engineer → code-reviewer
+
+### Dependency Graph
+
+```
+2.1 → 2.2 → 2.3 ──┬── 2.4 → 2.5 → 2.6
+                    ├── 2.7 ──┐
+                    ├── 2.9 ──┤→ 2.8
+                    │   ├── 2.10
+                    │   └── 2.11
+                    ├── 2.12 → 2.13
+                    │   ├── 2.14
+                    │   └── 2.15
+                    ├── 2.16
+                    ├── 2.17
+                    ├── 2.18
+                    └── 2.21 (error boundary)
+
+2.19, 2.20 ── (standalone, Part 1 types only)
+
+All component tasks → 2.22 (mobile testing) → 2.23 (Playwright E2E) → 2.24 (integration testing) → 2.25 (code review)
+```
 
 ---
 
@@ -27,7 +52,7 @@ Part 2 builds the user-facing UI for AI-assisted plan estimating:
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Add "estimates" to the tab union in ProjectDetailContent and add the Estimates tab button with Calculator icon.
@@ -41,6 +66,8 @@ Add "estimates" to the tab union in ProjectDetailContent and add the Estimates t
 - [ ] Tab button text: "Estimates"
 - [ ] Tab button follows existing pattern (same styling, active states)
 - [ ] 44px minimum touch target for tab button
+- [ ] Include `active:` states alongside `hover:` states on tab button
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Conditional render: `{activeTab === "estimates" && <EstimatesTab projectId={projectId} userRole={userRole} />}`
 - [ ] Build passes with no TypeScript errors
 - [ ] No visual regression on existing tabs
@@ -54,7 +81,7 @@ Add "estimates" to the tab union in ProjectDetailContent and add the Estimates t
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the server component wrapper that fetches initial data and passes to client component.
@@ -83,7 +110,7 @@ Create the server component wrapper that fetches initial data and passes to clie
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the client component that manages sub-views (upload, review, costing, summary) and state.
@@ -105,6 +132,10 @@ Create the client component that manages sub-views (upload, review, costing, sum
 - [ ] Renders `<AiBudgetBanner>` at top when budget >= 80%
 - [ ] Empty state: if no planUploads, render `<EmptyEstimatesState>`
 - [ ] Navigation between sub-views via button clicks (stepper pattern)
+- [ ] Include `active:` states alongside `hover:` states on navigation buttons
+- [ ] Include `dark:` variants on all color/background classes
+- [ ] Include `pb-[env(safe-area-inset-bottom)]` on bottom-positioned elements
+- [ ] Wrap children in `<EstimatesErrorBoundary>`
 - [ ] Build passes with no TypeScript errors
 
 **Dependencies:** Task 2.2
@@ -116,7 +147,7 @@ Create the client component that manages sub-views (upload, review, costing, sum
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/file-upload.md`
+- `genhub-patterns`
 
 **Description:**
 Create the plan upload UI with drag-drop zone and file picker.
@@ -132,11 +163,13 @@ Create the plan upload UI with drag-drop zone and file picker.
 - [ ] 44px minimum touch target on "Select File" button
 - [ ] Client-side validation: file size < 50MB, MIME type check
 - [ ] Error toast: "File exceeds 50MB limit" or "Only PDF, JPG, and PNG files are accepted"
-- [ ] Upload via `fetch('/api/estimates/upload', { method: 'POST', body: formData })`
+- [ ] Upload via `fetch('/api/estimates/upload', { method: 'POST', body: formData })` (fetch used for upload progress support)
 - [ ] Progress bar using `XMLHttpRequest.upload.onprogress`
 - [ ] Success callback: refreshes plan uploads list
 - [ ] Role gate: hide upload button if `userRole === 'foreman' || userRole === 'field_worker'`
 - [ ] Lucide `Upload` icon
+- [ ] Include `active:` states alongside `hover:` states on interactive elements
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
 **Dependencies:** Task 2.3
@@ -148,7 +181,7 @@ Create the plan upload UI with drag-drop zone and file picker.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the upload/processing progress indicator per plan.
@@ -167,6 +200,8 @@ Create the upload/processing progress indicator per plan.
 - [ ] Per-page progress if PDF (fetch pages from `getPlanPages()`)
 - [ ] "Retry" button on failed status (admin/PM only)
 - [ ] "Parse with AI" button on ready status (enabled if budget allows)
+- [ ] Include `active:` states alongside `hover:` states on buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
 **Dependencies:** Task 2.4
@@ -178,7 +213,7 @@ Create the upload/processing progress indicator per plan.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/polling.md`
+- `genhub-patterns`
 
 **Description:**
 Create the polling overlay that displays AI parsing progress.
@@ -200,9 +235,13 @@ Create the polling overlay that displays AI parsing progress.
 - [ ] Stops polling when `allComplete === true`
 - [ ] Calls `onComplete()` callback when done
 - [ ] Modal overlay with `ResponsiveModal` (NEVER raw Dialog)
+- [ ] Use `dvh` not `vh` for any viewport height values
+- [ ] Include `pb-[env(safe-area-inset-bottom)]` on bottom-positioned elements
+- [ ] Include `active:` states alongside `hover:` states on interactive elements
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.5
+**Dependencies:** Task 2.3
 
 ---
 
@@ -211,7 +250,7 @@ Create the polling overlay that displays AI parsing progress.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/image-viewer.md`
+- `mobile-pwa-design`
 
 **Description:**
 Create the pan/zoom plan image viewer with region highlights.
@@ -231,40 +270,53 @@ Create the pan/zoom plan image viewer with region highlights.
 - [ ] Page navigation: swipe or prev/next buttons (if multi-page)
 - [ ] `will-change: transform` for performance
 - [ ] 60fps target on mobile Safari (test on iPhone SE)
+- [ ] Include `active:` states alongside `hover:` states on nav buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.6
+**Dependencies:** Task 2.3
 
 ---
 
-## Task 2.8: TakeoffReviewScreen Component
+## Task 2.8: TakeoffReviewScreen Server Wrapper and Client Component
 
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/responsive-layout.md`
+- `mobile-pwa-design`
 
 **Description:**
-Create the review screen with responsive split layout.
+Create a server component wrapper that fetches data (following the pattern from Task 2.2) and a client component for the review screen with responsive split layout.
 
 **Files:**
-- `components/estimates/TakeoffReviewScreen.tsx`
+- `components/estimates/TakeoffReviewScreenWrapper.tsx` (server component)
+- `components/estimates/TakeoffReviewScreen.tsx` (client component)
 
 **Acceptance Criteria:**
-- [ ] `'use client'` directive
-- [ ] Props: `{ planUploadId: string }`
-- [ ] Fetches takeoff items via `getTakeoffItems(planUploadId)`
-- [ ] Fetches plan pages via `getPlanPages(planUploadId)`
-- [ ] Layout: `flex flex-col md:flex-row`
-- [ ] Mobile (< 768px): plan viewer top, item list bottom (stacked)
-- [ ] Desktop (>= 768px): plan viewer left 60%, item list right 40%
-- [ ] Progress indicator: "{reviewed} of {total} items reviewed"
-- [ ] "Proceed to Estimate" button: disabled until all items reviewed
-- [ ] Disabled state tooltip: "Review all items to continue"
-- [ ] State syncing: tapping item in list highlights region in viewer
+- [ ] `TakeoffReviewScreenWrapper`:
+  - Server component (no `'use client'`)
+  - Props: `{ planUploadId: string }`
+  - Fetches takeoff items via `getTakeoffItems(planUploadId)`
+  - Fetches plan pages via `getPlanPages(planUploadId)`
+  - Error handling with try/catch, displays error state if fetch fails
+  - Passes data down to `<TakeoffReviewScreen>` client component
+- [ ] `TakeoffReviewScreen`:
+  - `'use client'` directive
+  - Props: `{ planUploadId: string, takeoffItems: TakeoffItem[], planPages: PlanPage[] }`
+  - Layout: `flex flex-col md:flex-row`
+  - Mobile (< 768px): plan viewer top, item list bottom (stacked)
+  - Desktop (>= 768px): plan viewer left 60%, item list right 40%
+  - Progress indicator: "{reviewed} of {total} items reviewed"
+  - "Proceed to Estimate" button: disabled until all items reviewed
+  - Disabled state tooltip: "Review all items to continue"
+  - State syncing: tapping item in list highlights region in viewer
+  - Use `dvh` not `vh` for any viewport height values
+  - Include `pb-[env(safe-area-inset-bottom)]` on bottom-positioned elements
+  - Include `active:` states alongside `hover:` states on interactive elements
+  - Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.7
+**Dependencies:** Tasks 2.7, 2.9
 
 ---
 
@@ -273,7 +325,7 @@ Create the review screen with responsive split layout.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/list-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the scrollable takeoff item list and individual item row components.
@@ -290,6 +342,7 @@ Create the scrollable takeoff item list and individual item row components.
   - Scrollable with `overflow-y-auto`
   - Filter/sort controls: by trade, by confidence, by review_status
   - Virtualization not required for v1 (test with 200 items, should render < 100ms)
+  - Include `dark:` variants on all color/background classes
 - [ ] `TakeoffItemRow`:
   - `'use client'`
   - Props: `{ item: TakeoffItem, onAccept, onReject, onEdit, onTap }`
@@ -298,9 +351,11 @@ Create the scrollable takeoff item list and individual item row components.
   - Visual states: pending (neutral), accepted (green border), rejected (red strikethrough), edited (blue border)
   - `onTap` highlights source_region in viewer
   - Needs review flag: yellow highlight if `needs_review === true`
+  - Include `active:` states alongside `hover:` states on action buttons
+  - Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.8
+**Dependencies:** Task 2.3
 
 ---
 
@@ -309,7 +364,7 @@ Create the scrollable takeoff item list and individual item row components.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/modal-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the edit modal for takeoff items using ResponsiveModal.
@@ -327,6 +382,8 @@ Create the edit modal for takeoff items using ResponsiveModal.
 - [ ] On save: calls `reviewTakeoffItem({ itemId, reviewStatus: 'edited', editedValues })`
 - [ ] Validation: quantity > 0, waste_factor 0-100
 - [ ] Cancel button + Save button
+- [ ] Include `active:` states alongside `hover:` states on buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
 **Dependencies:** Task 2.9
@@ -338,7 +395,7 @@ Create the edit modal for takeoff items using ResponsiveModal.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/modal-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the modal for manually adding takeoff items.
@@ -355,9 +412,11 @@ Create the modal for manually adding takeoff items.
 - [ ] On add: calls `addManualTakeoffItem({ planUploadId, planPageId, ...values })`
 - [ ] Sets `extraction_method='manual'`, `confidence=1.0` on backend
 - [ ] Validation: all required fields filled
+- [ ] Include `active:` states alongside `hover:` states on buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.10
+**Dependencies:** Task 2.9
 
 ---
 
@@ -366,7 +425,7 @@ Create the modal for manually adding takeoff items.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/form-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the cost application UI with line items, templates, and totals.
@@ -376,7 +435,7 @@ Create the cost application UI with line items, templates, and totals.
 
 **Acceptance Criteria:**
 - [ ] `'use client'` directive
-- [ ] Props: `{ estimateId?: string, takeoffItems: TakeoffItem[] }`
+- [ ] Props: `{ estimateId?: string, takeoffItems: TakeoffItem[], pricingTemplates: PricingTemplate[] }`
 - [ ] State for line items (starts from takeoffItems, converts to EstimateLineItem format)
 - [ ] Table with columns: description, quantity, unit, material_cost, labor_cost, equipment_cost, unit_cost (computed), subtotal (computed)
 - [ ] Overhead % input (default 10%), markup % input (default 15%)
@@ -387,9 +446,11 @@ Create the cost application UI with line items, templates, and totals.
 - [ ] Summary section: subtotal, overhead_amount, markup_amount, grand_total
 - [ ] "Save Estimate" button → calls `createEstimate()` or `updateEstimate()`
 - [ ] All inputs have 44px min touch targets
+- [ ] Include `active:` states alongside `hover:` states on buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.11
+**Dependencies:** Task 2.3
 
 ---
 
@@ -398,7 +459,7 @@ Create the cost application UI with line items, templates, and totals.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the individual cost line item row with editable costs.
@@ -416,6 +477,8 @@ Create the individual cost line item row with editable costs.
 - [ ] Formula text below row (small gray text)
 - [ ] All inputs have 44px min touch targets
 - [ ] Number input formatting: 2 decimal places
+- [ ] Include `active:` states alongside `hover:` states on inputs
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
 **Dependencies:** Task 2.12
@@ -427,10 +490,10 @@ Create the individual cost line item row with editable costs.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/modal-patterns.md`
+- `genhub-patterns`
 
 **Description:**
-Create the modal for selecting and applying pricing templates.
+Create the modal for selecting and applying pricing templates. Templates are passed as props from the parent CostEditor (which receives them from server component).
 
 **Files:**
 - `components/estimates/PricingTemplateModal.tsx`
@@ -438,17 +501,17 @@ Create the modal for selecting and applying pricing templates.
 **Acceptance Criteria:**
 - [ ] `'use client'` directive
 - [ ] Uses `ResponsiveModal`
-- [ ] Props: `{ isOpen, onClose, onApply: (templateId: string) => void }`
-- [ ] Fetches templates via `getPricingTemplates()`
+- [ ] Props: `{ isOpen, onClose, templates: PricingTemplate[], onApply: (templateId: string) => void }`
 - [ ] Lists templates with: name, description, item count, created date
 - [ ] Selectable template cards (44px min touch targets)
 - [ ] "Apply" button (disabled until template selected)
 - [ ] On apply: calls `applyPricingTemplate(templateId, estimateId)`, shows toast with matched count
-- [ ] Loading state during fetch
 - [ ] Empty state: "No templates saved yet"
+- [ ] Include `active:` states alongside `hover:` states on cards and buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.13
+**Dependencies:** Task 2.12
 
 ---
 
@@ -457,7 +520,7 @@ Create the modal for selecting and applying pricing templates.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/modal-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the modal for saving current costs as a template.
@@ -475,9 +538,11 @@ Create the modal for saving current costs as a template.
 - [ ] Success toast: "Template saved: {name}"
 - [ ] Validation: name required, 1-200 chars
 - [ ] 44px min touch targets
+- [ ] Include `active:` states alongside `hover:` states on buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.14
+**Dependencies:** Task 2.12
 
 ---
 
@@ -486,7 +551,7 @@ Create the modal for saving current costs as a template.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the estimate summary view with trade breakdown and totals.
@@ -510,9 +575,11 @@ Create the estimate summary view with trade breakdown and totals.
   - "Create Materials" → calls `createMaterialsFromEstimate()`, toast with count
   - "Create Expense" → calls `createExpenseFromEstimate()`, toast with expense ID
 - [ ] Read-only for foreman/field_worker
+- [ ] Include `active:` states alongside `hover:` states on action buttons
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.15
+**Dependencies:** Task 2.3
 
 ---
 
@@ -521,7 +588,7 @@ Create the estimate summary view with trade breakdown and totals.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/list-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the estimate version history list.
@@ -537,9 +604,11 @@ Create the estimate version history list.
 - [ ] Current estimate highlighted
 - [ ] Superseded estimates grayed out
 - [ ] Tappable rows (44px min) → navigates to that estimate's summary
+- [ ] Include `active:` states alongside `hover:` states on rows
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.16
+**Dependencies:** Task 2.3
 
 ---
 
@@ -548,7 +617,7 @@ Create the estimate version history list.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create the budget warning/exceeded banner.
@@ -567,9 +636,11 @@ Create the budget warning/exceeded banner.
   - XCircle icon from Lucide
 - [ ] Hidden if percentUsed < 80%
 - [ ] Dismissible with X button (stores in sessionStorage)
+- [ ] Include `active:` states alongside `hover:` states on dismiss button
+- [ ] Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.17
+**Dependencies:** Task 2.3
 
 ---
 
@@ -578,7 +649,7 @@ Create the budget warning/exceeded banner.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create server component badges for status and confidence.
@@ -593,14 +664,16 @@ Create server component badges for status and confidence.
   - Props: `{ status: EstimateStatus }`
   - Badge colors: draft (gray), reviewed (blue), approved (green), superseded (gray + strikethrough)
   - Uses GenHub badge pattern
+  - Include `dark:` variants on all color/background classes
 - [ ] `ConfidenceBadge`:
   - Server component
   - Props: `{ confidence: number }`
   - Colors: green (>= 0.8), yellow (0.5-0.79), red (< 0.5)
   - Text: "High" / "Medium" / "Low"
+  - Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.18
+**Dependencies:** Part 1 Task 1.13 (types available)
 
 ---
 
@@ -609,7 +682,7 @@ Create server component badges for status and confidence.
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/frontend/component-patterns.md`
+- `genhub-patterns`
 
 **Description:**
 Create empty state and loading skeleton components.
@@ -626,23 +699,52 @@ Create empty state and loading skeleton components.
   - Text: "No estimates yet. Upload a construction plan to get started."
   - "Upload Plan" button (visible only for admin/PM)
   - Center-aligned, friendly design
+  - Include `dark:` variants on all color/background classes
 - [ ] `EstimatesSkeleton`:
   - Server component
   - Pulse animation on placeholder cards
   - Mimics layout of plan upload list
   - 3-4 skeleton cards
+  - Include `dark:` variants on all color/background classes
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.19
+**Dependencies:** Part 1 Task 1.13 (types available)
 
 ---
 
-## Task 2.21: Mobile Responsiveness Testing
+## Task 2.21: EstimatesErrorBoundary Component
 
 **Agent:** frontend-engineer
 **Skills:**
 - `vercel-react-best-practices`
-- `.claude/skills/testing/mobile-testing.md`
+- `genhub-patterns`
+
+**Description:**
+Create an error boundary to isolate failures within the estimates tab and sub-views.
+
+**Files:**
+- `components/estimates/EstimatesErrorBoundary.tsx`
+
+**Acceptance Criteria:**
+- [ ] `'use client'` directive (error boundaries must be client components)
+- [ ] Extends React `ErrorBoundary` pattern (class component with `getDerivedStateFromError` + `componentDidCatch`)
+- [ ] Props: `{ children: React.ReactNode, fallback?: React.ReactNode }`
+- [ ] Default fallback UI: error message + "Try Again" button that resets the boundary
+- [ ] Logs error to console in development
+- [ ] 44px min touch target on "Try Again" button
+- [ ] Include `dark:` variants on fallback UI
+- [ ] Build passes with no TypeScript errors
+
+**Dependencies:** Task 2.3
+
+---
+
+## Task 2.22: Mobile Responsiveness Testing
+
+**Agent:** frontend-engineer
+**Skills:**
+- `vercel-react-best-practices`
+- `mobile-pwa-design`
 
 **Description:**
 Test all components at 375px viewport width and verify mobile-specific requirements.
@@ -661,22 +763,50 @@ Test all components at 375px viewport width and verify mobile-specific requireme
 - [ ] Safe area insets applied: `pb-[env(safe-area-inset-bottom)]`
 - [ ] All inputs keyboard-accessible (no overlapping keyboards)
 - [ ] Dark mode tested (all text readable, proper contrast)
-- [ ] Active states visible on all interactive elements
+- [ ] `active:` states visible on all interactive elements
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.20
+**Dependencies:** Tasks 2.1-2.21 (all component tasks)
 
 ---
 
-## Task 2.22: Integration Testing - Full User Flow
+## Task 2.23: Playwright E2E Tests
 
 **Agent:** frontend-engineer
 **Skills:**
-- `.claude/skills/testing/integration-testing.md`
 - `vercel-react-best-practices`
 
 **Description:**
-Test the complete user flow from upload to estimate creation.
+Create Playwright E2E tests covering the core estimates user flows. Tests go in the `tests/` directory with `.spec.ts` extension per testing rules.
+
+**Files:**
+- `tests/estimates.spec.ts`
+
+**Acceptance Criteria:**
+- [ ] Test file uses Playwright with `.spec.ts` extension in `tests/` directory
+- [ ] Test: Navigate to project → click Estimates tab → tab renders
+- [ ] Test: Upload flow → file picker → progress indicator → ready state
+- [ ] Test: Review takeoff → accept/reject items → proceed button enables
+- [ ] Test: Cost editor → edit costs → save estimate
+- [ ] Test: Estimate summary → approve flow
+- [ ] Test: Role gate → foreman cannot see upload button
+- [ ] Test: Budget banner appears when AI usage >= 80%
+- [ ] Tests focused on user-visible behavior (not implementation details)
+- [ ] All tests pass against running dev server
+- [ ] Build passes with no TypeScript errors
+
+**Dependencies:** Task 2.22
+
+---
+
+## Task 2.24: Integration Testing - Full User Flow
+
+**Agent:** frontend-engineer
+**Skills:**
+- `vercel-react-best-practices`
+
+**Description:**
+Test the complete user flow from upload to estimate creation. Manual testing to supplement Playwright E2E.
 
 **Files:**
 - Manual testing checklist (document results in `.claude/tasks/features/ai-plan-estimator/test-results.md`)
@@ -695,20 +825,20 @@ Test the complete user flow from upload to estimate creation.
 - [ ] No console errors during flow
 - [ ] Build passes with no TypeScript errors
 
-**Dependencies:** Task 2.21
+**Dependencies:** Task 2.23
 
 ---
 
-## Task 2.23: Code Review - Part 2 Frontend Components
+## Task 2.25: Code Review - Part 2 Frontend Components
 
 **Agent:** code-reviewer
-**Skills:** `.claude/skills/workflow/code-review.md`
+**Skills:** (code-reviewer agent has built-in review capabilities)
 
 **Description:**
 Review all Part 2 frontend code for correctness, performance, accessibility, and adherence to GenHub patterns.
 
 **Files:**
-- All files created in Tasks 2.1-2.22
+- All files created in Tasks 2.1-2.24
 
 **Acceptance Criteria:**
 - [ ] All components follow GenHub patterns (ResponsiveModal, Lucide icons, 44px targets)
@@ -716,31 +846,48 @@ Review all Part 2 frontend code for correctness, performance, accessibility, and
 - [ ] All Server Actions called correctly with error handling
 - [ ] Loading states present on all async operations
 - [ ] Error states handled gracefully with user-friendly messages
+- [ ] Error boundary wrapping estimates sub-views
 - [ ] Mobile layout tested at 375px
 - [ ] Plan viewer maintains 60fps on mobile (Chrome Performance profiler)
 - [ ] All modals use ResponsiveModal (NEVER raw Dialog)
 - [ ] All touch targets >= 44px
+- [ ] `active:` states alongside `hover:` states on all interactive elements
+- [ ] `dark:` variants on all color/background classes
+- [ ] `dvh` used instead of `vh` for viewport height
+- [ ] `pb-[env(safe-area-inset-bottom)]` on bottom-positioned elements
 - [ ] Accessibility: ARIA labels, keyboard navigation, screen reader support
-- [ ] Dark mode support (proper text contrast)
 - [ ] No hardcoded colors (uses Tailwind theme)
 - [ ] TypeScript build passes with zero errors
 - [ ] ESLint passes with zero warnings
 - [ ] No console.log in production code
+- [ ] Playwright E2E tests passing
 - [ ] Integration tests documented in test-results.md
 
-**Dependencies:** Task 2.22
+**Dependencies:** Task 2.24
 
 ---
 
 ## Summary
 
-**Total Tasks:** 23
+**Total Tasks:** 25
 **Estimated Duration:** 2 weeks
 **Output:**
-- 18 React components (15 client, 3 server)
+- 23 React components (17 client, 6 server)
 - Full estimates tab integration
 - Complete user workflows (upload, parse, review, cost, summary)
-- Mobile-responsive design
+- Error boundary for fault isolation
+- Playwright E2E test suite
+- Mobile-responsive design with dark mode, active states, safe areas
 - Full code review and integration testing
+
+**Parallelization:** After Tasks 2.1-2.3 (sequential foundation), the following groups can be built in parallel:
+- Upload flow: 2.4 → 2.5 → 2.6
+- Plan viewer: 2.7
+- Takeoff items: 2.9 → 2.10, 2.11
+- Cost flow: 2.12 → 2.13, 2.14, 2.15
+- Summary/History/Banner: 2.16, 2.17, 2.18
+- Standalone badges/states: 2.19, 2.20
+- Error boundary: 2.21
+- Composite (after 2.7 + 2.9): 2.8
 
 **Feature Complete:** After Part 2, the AI Plan Estimator feature is ready for production deployment.

@@ -116,11 +116,11 @@ Server Actions are the primary mechanism for database mutations and queries. Loc
 - Return typed results
 - Trigger cache invalidation via `revalidatePath()` / `revalidateTag()`
 
-**Total**: 38 server action files, organized by domain
+**Total**: 47 server action files, organized by domain
 
 ### Domain Catalog
 
-#### **Projects Domain** (4 files)
+#### **Projects Domain** (5 files)
 
 | File | Exports | Purpose |
 |------|---------|---------|
@@ -135,7 +135,7 @@ Server Actions are the primary mechanism for database mutations and queries. Loc
 
 ---
 
-#### **Tasks Domain** (7 files)
+#### **Tasks Domain** (8 files)
 
 | File | Exports | Purpose |
 |------|---------|---------|
@@ -146,6 +146,7 @@ Server Actions are the primary mechanism for database mutations and queries. Loc
 | `tasks-dependencies.ts` | `addTaskDependency`, `removeTaskDependency`, `getTaskDependencies` | Task relationship graph |
 | `tasks-spatial.ts` | `linkTaskToMarker`, `unlinkTaskFromMarker`, `logTaskCompletionToMarker` | 3D model integration (Spatial AR) |
 | `tasks-deferred.ts` | `getDeferredTaskData`, `prefetchTaskData` | Lazy-loaded task details (13 KB) |
+| `tasks-analytics.ts` | `getTaskAnalytics`, `getTaskCompletionTrends` | Task analytics and reporting |
 
 **Critical Pattern**: All task mutations → `logTaskActivity()` → `invalidateDashboardCache()`
 
@@ -209,13 +210,12 @@ updateTask()
 
 ---
 
-#### **Chat Domain** (4 files)
+#### **Chat Domain** (3 files)
 
 | File | Exports | Purpose |
 |------|---------|---------|
 | `chat.ts` | `sendMessage`, `editMessage`, `deleteMessage`, `markAsRead`, `toggleReaction`, `muteChatRoom`, `createDMRoom`, `getChatRooms`, `getChatMessages` | Real-time messaging |
 | `chat-queries.ts` | `getChatRoomWithMessages`, `getUnreadCount`, `getChatRoomParticipants`, `searchChatHistory` | Chat queries (separate for performance) |
-| `chat-search.ts` | `searchChatRooms`, `searchChatMessages`, `searchEntityReferences` | Full-text search over chat |
 | `chat-search.ts` | `searchChatRooms`, `searchChatMessages`, `searchEntityReferences` | Full-text search over chat |
 
 **Features**:
@@ -287,6 +287,31 @@ updateTask()
 
 ---
 
+#### **Estimates Domain** (9 files)
+
+| File | Exports | Purpose |
+|------|---------|---------|
+| `estimates.ts` | `createEstimate`, `updateEstimate`, `deleteEstimate`, `getEstimatesForProject`, `uploadPlan`, `parsePlan`, `getLineItems`, `updateLineItem` | Core estimate CRUD, plan upload, AI parsing (59 KB) |
+| `estimate-chat.ts` | `sendEstimateChatMessage`, `getEstimateChatMessages`, `clearEstimateChat` | AI chat sidebar for estimate discussions |
+| `assemblies.ts` | `createAssembly`, `updateAssembly`, `deleteAssembly`, `getAssemblies`, `applyAssembly` | Assembly system for grouped line items |
+| `revisions.ts` | `createRevision`, `getRevisions`, `compareRevisions`, `restoreRevision` | Estimate revision tracking and comparison |
+| `budget-conversion.ts` | `convertEstimateToBudget`, `getBudgetFromEstimate` | Estimate-to-budget conversion workflow |
+| `templates.ts` | `createTemplate`, `updateTemplate`, `deleteTemplate`, `getTemplates`, `applyTemplate` | Pricing template management |
+| `material-suggestions.ts` | `getSuggestionsForLineItem`, `acceptSuggestion`, `rejectSuggestion` | AI-powered material suggestions for line items |
+| `ai-budget.ts` | `analyzeEstimateBudget`, `getBudgetInsights` | AI budget analysis and recommendations |
+| `pricing-templates.ts` | `createPricingTemplate`, `updatePricingTemplate`, `getPricingTemplates` | Pricing template configuration |
+
+**Key Features**:
+- AI-powered plan parsing (PDF → structured line items)
+- Takeoff item extraction with accept/reject workflow
+- Assembly system for grouped materials
+- Revision history with diff comparison
+- Budget conversion pipeline
+
+**Cache Strategy**: `revalidatePath("/app/projects/{projectId}")`, `revalidateTag("estimate-{estimateId}")`
+
+---
+
 #### **Miscellaneous Domains** (5 files)
 
 | File | Exports | Purpose |
@@ -310,7 +335,7 @@ API Routes handle:
 - **Authentication**: NextAuth session handling
 - **External Integrations**: Payment, messaging
 
-**Total**: 22 routes organized by purpose
+**Total**: 33 routes organized by purpose
 
 ### Route Catalog by Purpose
 
@@ -423,6 +448,29 @@ API Routes handle:
 | `app/api/companies/[companyId]/users/route.ts` | GET | List company users (with company_id isolation) |
 | `app/api/companies/[companyId]/subcontractors/route.ts` | GET | List company subcontractors |
 | `app/api/profile/route.ts` | GET, PATCH | Get/update current user profile |
+
+---
+
+#### **Estimates Routes** (11 routes)
+
+| Route | Method | Purpose |
+|--------|--------|---------|
+| `app/api/estimates/upload/route.ts` | POST | Upload construction plan PDF/images for estimate extraction |
+| `app/api/estimates/parse/route.ts` | POST | Trigger AI parsing of uploaded plans |
+| `app/api/estimates/parse-status/route.ts` | GET | Poll parse job status |
+| `app/api/estimates/extract/route.ts` | POST | Extract takeoff items from parsed plans |
+| `app/api/estimates/extraction-progress/route.ts` | GET | SSE stream for extraction progress |
+| `app/api/estimates/export-pdf/route.ts` | POST | Export estimate as PDF document |
+| `app/api/estimates/takeoff-items/accept/route.ts` | POST | Accept a single takeoff item |
+| `app/api/estimates/takeoff-items/reject/route.ts` | POST | Reject a single takeoff item |
+| `app/api/estimates/takeoff-items/update/route.ts` | POST | Update takeoff item details |
+| `app/api/estimates/takeoff-items/bulk-accept/route.ts` | POST | Bulk accept takeoff items |
+| `app/api/estimates/takeoff-items/bulk-reject/route.ts` | POST | Bulk reject takeoff items |
+
+**Estimate Processing Pipeline**:
+```
+Upload PDF → Parse (AI/OCR) → Extract Takeoff Items → Accept/Reject → Line Items → Budget Conversion
+```
 
 ---
 

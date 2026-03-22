@@ -1,7 +1,7 @@
 # GenHub Context Loading Strategy
 
 > Minimal context selection for token-efficient assistance.
-> Last updated: 2025-01-26
+> Last updated: 2026-03-21
 
 ---
 

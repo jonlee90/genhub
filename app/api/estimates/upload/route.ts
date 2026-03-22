@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
-import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import { Canvas } from "canvas";
 import sharp from "sharp";
+import { pdfToPng } from "pdf-to-png-converter";
 
-// Configure pdfjs for Node.js environment
-if (typeof window === "undefined") {
-  // @ts-ignore
-  global.DOMMatrix = class DOMMatrix {};
-}
-
-const SCALE_FACTOR = 4.17; // 300 DPI from 72 DPI
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
-const ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+const ALLOWED_MIME_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "image/heif",
+];
+
+// Note: Page type classification happens during parsing/extraction pipeline
+// and is stored in plan_parse_results, not plan_pages
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,10 +76,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // MIME type validation (server-side)
-    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+    // MIME type validation (allow HEIC by extension if MIME type is generic)
+    const isHEIC =
+      file.type === "image/heic" ||
+      file.type === "image/heif" ||
+      file.name.toLowerCase().endsWith(".heic") ||
+      file.name.toLowerCase().endsWith(".heif");
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type) && !isHEIC) {
       return NextResponse.json(
-        { error: "Invalid file type. Allowed: PDF, JPEG, PNG" },
+        { error: "Invalid file type. Allowed: PDF, JPEG, PNG, HEIC" },
         { status: 400 },
       );
     }
@@ -125,7 +132,6 @@ export async function POST(request: NextRequest) {
 
     if (insertError || !planUpload) {
       console.error("[plan-upload] DB insert error:", insertError);
-      // Cleanup uploaded file
       await supabase.storage.from("plan-files").remove([filePath]);
       return NextResponse.json(
         { error: "Failed to create plan record" },
@@ -142,31 +148,43 @@ export async function POST(request: NextRequest) {
           .update({ status: "processing" })
           .eq("id", planUpload.id);
 
-        // PDF processing pipeline
-        const doc = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
-        const numPages = doc.numPages;
-        const pages: any[] = [];
+        // PDF processing - render all pages with pdf-to-png-converter
+        console.log("[plan-upload] Rendering PDF...");
 
-        // Process pages sequentially to limit memory usage
-        for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-          const page = await doc.getPage(pageNum);
-          const viewport = page.getViewport({ scale: SCALE_FACTOR });
+        const pngPages = (await pdfToPng(
+          fileBuffer as any,
+          {
+            outputType: "buffer",
+            strictPagesToProcess: false,
+            verbosityLevel: 0,
+            viewportScale: 3.0, // High DPI (3x = ~216 DPI)
+          } as any,
+        )) as Array<{ content: Buffer }>;
 
-          // Create canvas
-          const canvas = new Canvas(viewport.width, viewport.height);
-          const context = canvas.getContext("2d");
+        if (!pngPages || pngPages.length === 0) {
+          throw new Error("Failed to render PDF pages");
+        }
 
-          // Render page to canvas
-          await page.render({
-            canvasContext: context as any,
-            viewport: viewport,
-          } as any).promise;
+        console.log(`[plan-upload] Rendered ${pngPages.length} page(s)`);
 
-          // Convert to PNG buffer via sharp
-          const pngBuffer = await sharp(canvas.toBuffer()).png().toBuffer();
+        // Process and upload each page
+        const pageRecords = [];
+        for (let i = 0; i < pngPages.length; i++) {
+          const page = pngPages[i];
+          const pageNumber = i + 1;
+
+          console.log(
+            `[plan-upload] Processing page ${pageNumber}: ${page.content.length} bytes`,
+          );
+
+          // Optimize with sharp
+          const pngBuffer = await sharp(page.content)
+            .png({ compressionLevel: 6 })
+            .toBuffer();
+          const imageMetadata = await sharp(pngBuffer).metadata();
 
           // Upload page image
-          const pageImagePath = `${companyId}/projects/${projectId}/pages/${planUpload.id}/page_${pageNum}.png`;
+          const pageImagePath = `${companyId}/projects/${projectId}/pages/${planUpload.id}/page_${pageNumber}.png`;
           const { error: pageUploadError } = await supabase.storage
             .from("plan-pages")
             .upload(pageImagePath, pngBuffer, {
@@ -175,46 +193,45 @@ export async function POST(request: NextRequest) {
             });
 
           if (pageUploadError) {
-            console.error("[plan-upload] Page upload error:", pageUploadError);
-            throw new Error("Failed to upload page image");
+            console.error(
+              `[plan-upload] Page ${pageNumber} upload error:`,
+              pageUploadError,
+            );
+            throw new Error(`Failed to upload page ${pageNumber} image`);
           }
 
-          // Insert plan_pages record
-          const { data: planPage, error: pageInsertError } = await supabase
-            .from("plan_pages")
-            .insert({
-              company_id: companyId,
-              plan_upload_id: planUpload.id,
-              page_number: pageNum,
-              image_path: pageImagePath,
-              image_width: Math.round(viewport.width),
-              image_height: Math.round(viewport.height),
-              file_size: pngBuffer.length,
-              parse_status: "pending",
-            })
-            .select()
-            .single();
-
-          if (pageInsertError || !planPage) {
-            console.error("[plan-upload] Page insert error:", pageInsertError);
-            throw new Error("Failed to create page record");
-          }
-
-          pages.push(planPage);
-
-          // Memory cleanup per page
-          page.cleanup();
+          pageRecords.push({
+            company_id: companyId,
+            plan_upload_id: planUpload.id,
+            page_number: pageNumber,
+            image_path: pageImagePath,
+            image_width: imageMetadata.width || 0,
+            image_height: imageMetadata.height || 0,
+            file_size: pngBuffer.length,
+            parse_status: "pending" as const,
+          });
         }
 
-        // Memory cleanup after all pages
-        doc.destroy();
+        // Insert all plan_pages records
+        const { error: pageInsertError } = await supabase
+          .from("plan_pages")
+          .insert(pageRecords);
+
+        if (pageInsertError) {
+          console.error("[plan-upload] Page insert error:", pageInsertError);
+          throw new Error("Failed to create page records");
+        }
+
+        console.log(
+          `[plan-upload] Success! Uploaded ${pngPages.length} page(s)`,
+        );
 
         // Update plan_uploads status
         await supabase
           .from("plan_uploads")
           .update({
             status: "ready",
-            total_pages: numPages,
+            total_pages: pngPages.length,
           })
           .eq("id", planUpload.id);
 
@@ -224,20 +241,29 @@ export async function POST(request: NextRequest) {
             planUpload: {
               id: planUpload.id,
               status: "ready",
-              totalPages: numPages,
+              totalPages: pngPages.length,
             },
           },
         });
       } else {
-        // JPG/PNG - store directly without conversion
-        const imageMetadata = await sharp(fileBuffer).metadata();
+        // JPG/PNG/HEIC - convert HEIC to PNG, store directly
+        let processedBuffer = fileBuffer;
+        let outputMimeType = file.type;
+
+        // Convert HEIC to PNG if needed
+        if (isHEIC) {
+          console.log("[plan-upload] Converting HEIC to PNG...");
+          processedBuffer = await sharp(fileBuffer).png().toBuffer();
+          outputMimeType = "image/png";
+        }
+
+        const imageMetadata = await sharp(processedBuffer).metadata();
         const pageImagePath = `${companyId}/projects/${projectId}/pages/${planUpload.id}/page_1.png`;
 
-        // Upload as single page
         const { error: pageUploadError } = await supabase.storage
           .from("plan-pages")
-          .upload(pageImagePath, fileBuffer, {
-            contentType: file.type,
+          .upload(pageImagePath, processedBuffer, {
+            contentType: outputMimeType,
             upsert: false,
           });
 
@@ -246,7 +272,6 @@ export async function POST(request: NextRequest) {
           throw new Error("Failed to upload page image");
         }
 
-        // Insert plan_pages record
         const { error: pageInsertError } = await supabase
           .from("plan_pages")
           .insert({
@@ -257,7 +282,7 @@ export async function POST(request: NextRequest) {
             image_width: imageMetadata.width || 0,
             image_height: imageMetadata.height || 0,
             file_size: file.size,
-            parse_status: "pending",
+            parse_status: "pending" as const,
           });
 
         if (pageInsertError) {
@@ -265,7 +290,6 @@ export async function POST(request: NextRequest) {
           throw new Error("Failed to create page record");
         }
 
-        // Update plan_uploads status
         await supabase
           .from("plan_uploads")
           .update({
@@ -287,8 +311,11 @@ export async function POST(request: NextRequest) {
       }
     } catch (processingError) {
       console.error("[plan-upload] Processing error:", processingError);
+      console.error(
+        "[plan-upload] Error stack:",
+        processingError instanceof Error ? processingError.stack : "N/A",
+      );
 
-      // Update status to failed
       await supabase
         .from("plan_uploads")
         .update({

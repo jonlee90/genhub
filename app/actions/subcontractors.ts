@@ -1078,3 +1078,45 @@ export async function deleteSubcontractorDocument(
     };
   }
 }
+
+/**
+ * Get all active subcontractors for the user's company
+ * Used to populate subcontractor selects in modals
+ */
+export async function getSubcontractorsByCompany(): Promise<{
+  success: boolean;
+  data?: Array<{
+    id: string;
+    company_name: string;
+    contact_name: string | null;
+  }>;
+  error?: string;
+}> {
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  const { data, error } = await supabase
+    .from("subcontractors")
+    .select("id, company_name, contact_name")
+    .eq("company_id", companyId)
+    .eq("is_active", true)
+    .order("company_name");
+
+  if (error) {
+    console.error("[getSubcontractorsByCompany] Query error:", error);
+    return { success: false, error: "Failed to fetch subcontractors" };
+  }
+
+  return {
+    success: true,
+    data: (data || []).map((s) => ({
+      id: s.id,
+      company_name: s.company_name,
+      contact_name: s.contact_name ?? null,
+    })),
+  };
+}

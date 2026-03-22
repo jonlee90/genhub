@@ -117,7 +117,16 @@
       "mcp__plugin_serena_serena__edit_memory",
       "Bash(psql:*)",
       "mcp__playwright__browser_fill_form",
-      "mcp__memory__search_nodes"
+      "mcp__memory__search_nodes",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "Bash(/Users/jonathanlee/Desktop/genhub/app/actions/assemblies.ts:*)",
+      "Bash(/Users/jonathanlee/Desktop/genhub/app/actions/budget-conversion.ts:*)",
+      "Bash(/Users/jonathanlee/Desktop/genhub/app/actions/material-suggestions.ts:*)",
+      "Bash(/Users/jonathanlee/Desktop/genhub/app/api/estimates/export-pdf/route.ts:*)",
+      "Bash(/Users/jonathanlee/Desktop/genhub/lib/pdf/estimate-template.ts:*)",
+      "Bash(done)",
+      "Bash(cat:*)",
+      "WebFetch(domain:serpapi.com)"
     ],
     "deny": [],
     "ask": []

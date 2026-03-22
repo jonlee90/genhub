@@ -154,7 +154,15 @@ Task(
 )
 ```
 
-### Phase 4: Review
+### Phase 4: Refactor
+
+```
+/refactor-code
+```
+
+Run after all code changes are complete but before review. Focuses on recently modified files only.
+
+### Phase 5: Review
 
 ```
 Task(
@@ -173,7 +181,7 @@ Task(
 )
 ```
 
-### Phase 5: Build & Sync
+### Phase 6: Build & Sync
 
 ```bash
 /kc:sync-docs
@@ -294,10 +302,13 @@ Halt and request guidance:
 2. Task(frontend-engineer, "ORCHESTRATED=true. Build UI for {feature}. Actions at {path}")
    → Wait, extract: component files
 
-3. Task(code-reviewer, "Review {feature} integration. Files: {list}")
+3. /refactor-code
+   → Clean up recently modified files before review
+
+4. Task(code-reviewer, "Review {feature} integration. Files: {list}")
    → Wait for approval
 
-4. Run /kc:build, /kc:sync-docs
+5. Run /kc:build, /kc:sync-docs
 ```
 
 ### Independent Components (Parallel)

@@ -60,7 +60,15 @@ FOR each task where agent = "frontend-engineer":
   5. TodoWrite: mark completed
 ```
 
-### Phase 4: Code Review
+### Phase 4: Refactor
+
+```
+1. Run /refactor-code on all changed files
+2. Focuses on recently modified code only
+3. Ensures quality before review
+```
+
+### Phase 5: Code Review
 
 ```
 1. Dispatch code-reviewer with all changed files
@@ -68,7 +76,7 @@ FOR each task where agent = "frontend-engineer":
 3. Collect review results
 ```
 
-### Phase 5: QA Validation
+### Phase 6: QA Validation
 
 ```
 1. Dispatch qa-auditor with spec path
@@ -76,7 +84,7 @@ FOR each task where agent = "frontend-engineer":
 3. Run build verification
 ```
 
-### Phase 6: Learning Extraction
+### Phase 7: Learning Extraction
 
 ```
 1. Dispatch learning-extractor with task summary

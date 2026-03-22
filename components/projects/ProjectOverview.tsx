@@ -24,11 +24,13 @@ import type { ProjectOverviewProps } from "@/types/components/projects";
 import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 import type { TasksRow } from "@/types/db/tables/tasks";
 import { TeamCostSummaryCard } from "./TeamCostSummaryCard";
+import { BudgetSummaryCard } from "./BudgetSummaryCard";
 import { useDeferredData } from "@/hooks/use-deferred-data";
 import {
   getProjectExpenseStats,
   getProjectTeamCosts,
 } from "@/app/actions/project-deferred";
+import { getProjectFinancialSummary } from "@/app/actions/project-financials";
 import {
   ProjectTaskSummarySkeleton,
   ProjectExpenseSummarySkeleton,
@@ -45,6 +47,7 @@ export function ProjectOverview({
   teamCostSummaries: initialTeamCostSummaries = [],
   taskTypes = [],
   onModalOpen,
+  onNavigateToFinancials,
 }: ProjectOverviewProps) {
   // Performance optimization: Deferred loading for non-critical data
   // Load expense/task stats 800ms after initial render (high priority deferred)
@@ -70,6 +73,16 @@ export function ProjectOverview({
     cacheKey: `project-${project.id}-team-costs`,
     enabled: initialTeamCostSummaries.length === 0, // Skip if already provided
   });
+
+  // Load financial summary deferred (1400ms — low priority)
+  const { data: financialData, hasFetched: financialFetched } = useDeferredData(
+    {
+      fetchFn: () => getProjectFinancialSummary(project.id),
+      delay: 1400,
+      cacheKey: `project-${project.id}-financial-summary`,
+      enabled: true,
+    },
+  );
 
   // Use deferred data if available, fallback to initial props
   const expenseStats = statsFetched
@@ -250,6 +263,14 @@ export function ProjectOverview({
               footerContent={clientFooterContent}
             />
           )}
+
+          {/* Budget Summary Card - Deferred Loading */}
+          {financialFetched && financialData ? (
+            <BudgetSummaryCard
+              summary={financialData.data ?? null}
+              onNavigateToFinancials={onNavigateToFinancials}
+            />
+          ) : null}
 
           {/* Team Cost Summary Card - Deferred Loading */}
           {teamLoading && teamCostSummaries.length === 0 ? (

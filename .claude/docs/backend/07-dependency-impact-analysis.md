@@ -2,9 +2,9 @@
 
 > Deep-dive dependency analysis extending dependency-graph.md with function consumer registry, cross-domain coupling heat maps, isolation scores, and breaking change impact calculators.
 
-**Last Updated**: February 7, 2025
+**Last Updated**: March 21, 2026
 **Codebase**: Next.js 16 + Supabase + React 19
-**Scope**: 38 action files, 96 component files importing actions, 25+ critical functions
+**Scope**: 47 action files, 100+ component files importing actions, 35+ critical functions
 
 ---
 
@@ -15,7 +15,7 @@
 #### `getUserContext()` — `lib/auth-context.ts`
 
 **Purpose**: Cached user context helper wrapping React.cache to prevent redundant auth queries.
-**Total Consumers**: 25 files across app/actions
+**Total Consumers**: 35 files across app/actions
 
 **Consumer List**:
 1. `app/actions/chat-search.ts` — Chat search scoped to company
@@ -43,9 +43,19 @@
 23. `app/actions/tasks-status.ts` — Task status updates
 24. `app/actions/tasks.ts` — Core task CRUD
 25. `app/actions/team.ts` — Team member management
+26. `app/actions/ai-budget.ts` — AI budget analysis
+27. `app/actions/assemblies.ts` — Assembly management
+28. `app/actions/budget-conversion.ts` — Estimate-to-budget conversion
+29. `app/actions/chat-queries.ts` — Chat data fetching
+30. `app/actions/estimate-chat.ts` — Estimate AI chat
+31. `app/actions/estimates.ts` — Core estimate CRUD
+32. `app/actions/material-suggestions.ts` — AI material suggestions
+33. `app/actions/pricing-templates.ts` — Pricing template management
+34. `app/actions/revisions.ts` — Estimate revision tracking
+35. `app/actions/templates.ts` — Generic template management
 
 **Change Impact if Modified**:
-- **Breaking Change**: ANY signature change breaks 25 action files
+- **Breaking Change**: ANY signature change breaks 35 action files
 - **Cascading Effect**: All authenticated operations fail across entire app
 - **Risk Level**: **CRITICAL** — impacts every user-facing feature
 - **Recovery Time**: Application-wide outage until fixed
@@ -1124,6 +1134,6 @@ queryClient.invalidateQueries({ queryKey: ['tasks'] })
 ---
 
 **Document Version**: 1.0
-**Last Review**: February 7, 2025
+**Last Review**: March 21, 2026
 **Maintained By**: Backend Architecture Team
 **Review Frequency**: Quarterly or after major refactors

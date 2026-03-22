@@ -5,11 +5,11 @@
  * commonly used in UI components.
  */
 
-import type { ExpensesRow } from './tables/expenses';
+import type { ExpensesRow } from "./tables/expenses";
 import type {
   ExpenseStatus as DbExpenseStatus,
   ExpenseCategory as DbExpenseCategory,
-} from './enums';
+} from "./enums";
 
 // Base types from database
 export type ExpenseStatus = DbExpenseStatus;
@@ -28,6 +28,8 @@ export interface ExpenseWithRelations {
   expense_date: string;
   vendor_name: string | null;
   receipt_url: string | null;
+  payment_method?: string | null;
+  store_account?: string | null;
   status: ExpenseStatus;
   created_at: string;
   project: {
@@ -51,7 +53,7 @@ export interface ExpenseWithRelations {
 export interface ExpenseProject {
   id: string;
   name: string;
-  status?: 'active' | 'on_hold' | 'completed';
+  status?: "active" | "on_hold" | "completed";
   end_date?: string | null;
 }
 
@@ -121,23 +123,27 @@ export const EXPENSE_STATUS_CONFIG: Record<
   { label: string; color: string }
 > = {
   submitted: {
-    label: 'Submitted',
-    color: 'bg-gray-100 text-gray-700 border-gray-300',
+    label: "Submitted",
+    color: "bg-gray-100 text-gray-700 border-gray-300",
   },
   under_review: {
-    label: 'Under Review',
-    color: 'bg-construction-blue/10 text-construction-blue border-construction-blue',
+    label: "Under Review",
+    color:
+      "bg-construction-blue/10 text-construction-blue border-construction-blue",
   },
   approved: {
-    label: 'Approved',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+    label: "Approved",
+    color:
+      "bg-construction-green/10 text-construction-green border-construction-green/30",
   },
   rejected: {
-    label: 'Rejected',
-    color: 'bg-construction-red/10 text-construction-red border-construction-red/30',
+    label: "Rejected",
+    color:
+      "bg-construction-red/10 text-construction-red border-construction-red/30",
   },
   paid: {
-    label: 'Paid',
-    color: 'bg-construction-green/10 text-construction-green border-construction-green/30',
+    label: "Paid",
+    color:
+      "bg-construction-green/10 text-construction-green border-construction-green/30",
   },
 };

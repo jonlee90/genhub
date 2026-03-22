@@ -30,6 +30,7 @@ import {
 import {
   createExpense,
   getVendorOptions,
+  getPaymentMethodSuggestions,
   type VendorOption,
 } from "@/app/actions/expenses";
 import { toast } from "sonner";
@@ -50,6 +51,11 @@ export function CreateExpenseModal({
   const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
   const [vendorLoading, setVendorLoading] = useState(false);
   const [vendorError, setVendorError] = useState<string | null>(null);
+  const [paymentMethodSuggestions, setPaymentMethodSuggestions] = useState<
+    string[]
+  >(["VISA", "AMEX", "ZELLE", "CASH", "CHECK", "DEBIT"]);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [showPaymentSuggestions, setShowPaymentSuggestions] = useState(false);
   const [, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
@@ -82,6 +88,10 @@ export function CreateExpenseModal({
   const selectedProject = watch("project_id");
   const selectedTask = watch("task_id");
   const vendorName = watch("vendor_name");
+  const [storeAccount, setStoreAccount] = useState("");
+
+  // Show store account field for Home Depot / Lowe's
+  const showStoreAccount = /home depot|lowes|lowe's/i.test(vendorName || "");
 
   // Filter tasks for selected project
   const projectTasks = useMemo(
@@ -101,8 +111,19 @@ export function CreateExpenseModal({
     return counts;
   }, [tasks]);
 
-  // Fetch vendor options on mount
+  // Fetch vendor options + payment method suggestions on mount
   useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      const result = await getPaymentMethodSuggestions();
+      if (result.data && result.data.length > 0) {
+        const defaults = ["VISA", "AMEX", "ZELLE", "CASH", "CHECK", "DEBIT"];
+        setPaymentMethodSuggestions(
+          Array.from(new Set([...result.data, ...defaults])),
+        );
+      }
+    };
+    fetchPaymentMethods();
+
     if (!companyId) return;
 
     const fetchVendors = async () => {
@@ -178,6 +199,8 @@ export function CreateExpenseModal({
       category: data.category,
       expense_date: data.expense_date,
       vendor_name: data.vendor_name || undefined,
+      payment_method: paymentMethod || undefined,
+      store_account: storeAccount || undefined,
       receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
     });
 
@@ -573,6 +596,82 @@ export function CreateExpenseModal({
               />
             )}
           </div>
+
+          {/* Payment Method */}
+          <div className="space-y-2 relative">
+            <Label
+              htmlFor="payment-method"
+              className="text-sm font-bold text-gray-700 dark:text-gray-300"
+            >
+              Payment Method (Optional)
+            </Label>
+            <div className="relative">
+              <input
+                id="payment-method"
+                type="text"
+                value={paymentMethod}
+                onChange={(e) => {
+                  setPaymentMethod(e.target.value);
+                  setShowPaymentSuggestions(true);
+                }}
+                onFocus={() => setShowPaymentSuggestions(true)}
+                onBlur={() =>
+                  setTimeout(() => setShowPaymentSuggestions(false), 200)
+                }
+                placeholder='e.g., "VISA 4516", "ZELLE", "CHK 2843"'
+                className="w-full border-2 border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-construction-blue focus:outline-none min-h-[44px]"
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {showPaymentSuggestions &&
+            paymentMethodSuggestions.filter((s) =>
+              s.toLowerCase().includes(paymentMethod.toLowerCase()),
+            ).length > 0 ? (
+              <div className="absolute z-50 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden max-h-40 overflow-y-auto">
+                {paymentMethodSuggestions
+                  .filter((s) =>
+                    s.toLowerCase().includes(paymentMethod.toLowerCase()),
+                  )
+                  .map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onMouseDown={() => {
+                        setPaymentMethod(method);
+                        setShowPaymentSuggestions(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 active:bg-gray-100 min-h-[44px] transition-colors"
+                    >
+                      {method}
+                    </button>
+                  ))}
+              </div>
+            ) : null}
+          </div>
+
+          {/* Store Account — shown for Home Depot / Lowe's */}
+          {showStoreAccount ? (
+            <div className="space-y-2">
+              <Label
+                htmlFor="store-account"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
+              >
+                Store Account (Optional)
+              </Label>
+              <Input
+                id="store-account"
+                className="border-2"
+                placeholder="e.g., HD 2819, HD 9127"
+                value={storeAccount}
+                onChange={(e) => setStoreAccount(e.target.value)}
+                disabled={isSubmitting}
+              />
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Store charge account number for {vendorName}
+              </p>
+            </div>
+          ) : null}
         </div>
       </div>
     </ResponsiveModal>

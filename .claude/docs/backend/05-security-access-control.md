@@ -49,7 +49,12 @@ GenHub implements a **hybrid NextAuth + Supabase Auth system** with **Role-Based
 
 ### System Overview
 
-GenHub uses a **NextAuth + Supabase Auth hybrid** system with JWT sessions:
+GenHub uses a **NextAuth + Supabase Auth hybrid** system with JWT sessions.
+
+**Key auth files:**
+- `lib/auth.config.ts` — NextAuth provider configuration (Google, Credentials, Email)
+- `lib/auth/user-context.ts` — User context helpers (`getAdminUserContext`, etc.)
+- `lib/auth-context.ts` — Cached `getUserContext()` (React.cache wrapper, used by 35 action files)
 
 ```mermaid
 graph TD

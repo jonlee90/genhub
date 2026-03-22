@@ -68,7 +68,9 @@ const OptionRow = memo(function OptionRow({
       <div
         className={cn(
           "flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0",
-          option.type === "member" ? "bg-construction-blue/10" : "bg-orange-100",
+          option.type === "member"
+            ? "bg-construction-blue/10"
+            : "bg-orange-100",
         )}
       >
         {option.type === "member" ? (
@@ -85,7 +87,9 @@ const OptionRow = memo(function OptionRow({
           {option.type === "member" ? "Team Member" : "Subcontractor"}
         </div>
       </div>
-      {isSelected && <Check className="w-4 h-4 text-construction-blue flex-shrink-0" />}
+      {isSelected && (
+        <Check className="w-4 h-4 text-construction-blue flex-shrink-0" />
+      )}
     </button>
   );
 });
@@ -316,8 +320,8 @@ export function VendorCombobox({
                 </div>
               )}
 
-              {/* Options List */}
-              <div className="max-h-[50vh] overflow-y-auto -mx-6">
+              {/* Options List — no negative margin to avoid breaking parent scroll containment */}
+              <div>
                 {/* Team Members Group */}
                 {groupedOptions.members.length > 0 && (
                   <div>

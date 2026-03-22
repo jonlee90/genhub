@@ -2,8 +2,8 @@
 
 > GenHub Construction PWA — Complete Database Schema Documentation
 >
-> **Source:** `types/database.types.ts` (3,339 lines), `types/db/enums.ts`, 62 migration files
-> **Generated:** 2026-02-07
+> **Source:** `types/database.types.ts` (3,339 lines), `types/db/enums.ts`, 71 migration files
+> **Generated:** 2026-02-07 | **Updated:** 2026-03-21
 
 ---
 
@@ -27,7 +27,7 @@
 
 ## 1. Schema Overview
 
-GenHub's database consists of **42 tables**, **1 materialized view**, **22 RPC functions**, **22 enum types**, and **30+ indexes** across 7 domain groups.
+GenHub's database consists of **54+ tables**, **1 materialized view** (refreshed across 3 migrations), **33 RPC functions**, **23 enum types**, and **40+ indexes** across 12 domain groups.
 
 ### Domain Summary
 
@@ -41,6 +41,7 @@ GenHub's database consists of **42 tables**, **1 materialized view**, **22 RPC f
 | **Files & Media** | 4 | `project_files` | Files, photos, attachments, audit log |
 | **Chat** | 5 | `chat_rooms` | Rooms, messages, participants, reactions, attachments |
 | **Spatial/3D** | 5 | `spatial_markers` | 3D models, markers, marker content, elements |
+| **Estimates** | 12 | `estimates` | Estimates, line items, takeoff, chat, revisions, assemblies, budgets, templates |
 | **Integrations** | 3 | `stripe_customers` | Stripe, Kakao, push notifications |
 | **Notifications** | 1 | `notifications` | User notifications |
 | **Subcontractors** | 1 | `subcontractors` | Trade subcontractor management |
@@ -1036,6 +1037,139 @@ See table definitions in Section 3.1 spatial ERD. These are seed data tables wit
 | `read` | boolean | NOT NULL | Default false |
 | `read_at` | timestamptz | null | |
 | `created_at` | timestamptz | NOT NULL | |
+
+### 3.11 Estimates Domain
+
+> AI-powered construction estimate module with plan uploads, takeoff, chat, revisions, assemblies, budgets, and templates.
+> **Added:** 2026-02-15 (Phase 1) + 2026-02-16 (Phase 2)
+
+#### `estimates`
+> Core estimate entity linked to a project.
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `company_id` | uuid | FK → `companies` | NOT NULL |
+| `project_id` | uuid | FK → `projects` | NOT NULL |
+| `name` | text | NOT NULL | |
+| `description` | text | null | |
+| `status` | `estimate_status` | NOT NULL | Enum: draft, pending_review, approved, rejected, archived |
+| `total_cost` | numeric | NOT NULL | Default 0 |
+| `confidence_score` | numeric | null | 0-1, AI confidence |
+| `created_by` | uuid | FK → `next_auth.users` | NOT NULL |
+| `created_at` | timestamptz | NOT NULL | |
+| `updated_at` | timestamptz | NOT NULL | |
+
+#### `estimate_line_items`
+> Individual cost line items within an estimate.
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `trade` | text | NOT NULL | e.g., Framing, Electrical |
+| `description` | text | NOT NULL | |
+| `quantity` | numeric | NOT NULL | |
+| `unit` | text | NOT NULL | |
+| `unit_cost` | numeric | NOT NULL | |
+| `total_cost` | numeric | NOT NULL | |
+| `confidence` | numeric | null | AI confidence per line |
+| `material_id` | uuid | FK → `materials` | null — catalog link for price updates |
+| `created_at` | timestamptz | NOT NULL | |
+| `updated_at` | timestamptz | NOT NULL | |
+
+#### `takeoff_items`
+> Visual plan overlay annotations for quantity takeoff.
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `label` | text | NOT NULL | |
+| `quantity` | numeric | NOT NULL | |
+| `unit` | text | NOT NULL | |
+| `source_region` | jsonb | null | `{x, y, width, height}` bounding box on plan image |
+| `created_at` | timestamptz | NOT NULL | |
+
+#### `plan_uploads`
+> Uploaded construction plan files (PDFs, images) used as estimate sources.
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `file_url` | text | NOT NULL | Supabase Storage URL |
+| `file_name` | text | NOT NULL | |
+| `page_count` | integer | null | PDF page count |
+| `status` | text | NOT NULL | processing, ready, failed |
+| `created_at` | timestamptz | NOT NULL | |
+
+#### `estimate_chat_messages`
+> AI chat history for estimate refinement (PlanChatSidebar).
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `role` | text | NOT NULL | 'user' or 'assistant' |
+| `content` | text | NOT NULL | |
+| `created_at` | timestamptz | NOT NULL | |
+
+**RLS:** SELECT-only; mutations via Server Actions.
+
+#### `estimate_revisions`
+> AI-computed diffs between estimate versions for revision comparison.
+
+| Column | Type | Nullable | Notes |
+|--------|------|----------|-------|
+| `id` | uuid | PK | |
+| `company_id` | uuid | FK → `companies` | NOT NULL |
+| `estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `previous_estimate_id` | uuid | FK → `estimates` | NOT NULL |
+| `new_plan_upload_id` | uuid | FK → `plan_uploads` | NOT NULL |
+| `diff_results` | jsonb | NOT NULL | `{ changes: DiffChange[], summary: { added, removed, modified, totalCostDelta } }` |
+| `changes_applied` | jsonb | NOT NULL | Array of accepted change IDs |
+| `notes` | text | null | |
+| `created_by` | uuid | FK → `next_auth.users` | NOT NULL |
+| `created_at` / `updated_at` | timestamptz | NOT NULL | |
+
+#### `estimate_assemblies` + `assembly_items`
+> Pre-built cost assembly bundles (e.g., "Exterior Wall" = framing + insulation + drywall).
+
+| Table | Key Columns |
+|-------|-------------|
+| `estimate_assemblies` | id, estimate_id, name, total_cost, sort_order |
+| `assembly_items` | id, assembly_id, trade, description, quantity, unit_cost |
+
+#### `budgets` + `budget_categories`
+> Project budgets converted from approved estimates.
+
+| Table | Key Columns |
+|-------|-------------|
+| `budgets` | id, company_id, project_id, name, status (draft/approved/locked), total_amount, source_estimate_id |
+| `budget_categories` | id, company_id, budget_id, name, allocated_amount, spent_amount, sort_order |
+
+**Enum:** `budget_status` = draft, approved, locked
+
+#### `pricing_templates`
+> Reusable estimate line item templates (extended with versioning in Phase 2).
+
+Extended columns added Phase 2:
+- `category` text — residential, commercial_ti, warehouse, etc.
+- `is_company_template` boolean
+- `version` int
+- `template_data` jsonb — `{ lineItems: [{trade, description, unit, unitCost}] }`
+- `changelog` text[]
+
+#### `template_usage`
+> Tracks when pricing templates are applied to estimates.
+
+| Column | Notes |
+|--------|-------|
+| `template_id` | FK → `pricing_templates` |
+| `user_id` | Who applied it |
+| `estimate_id` | Which estimate it was applied to |
+| `created_at` | Last-used timestamp |
 
 ---
 

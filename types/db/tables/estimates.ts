@@ -179,3 +179,41 @@ export type AiParseResponse = {
   raw_notes?: string;
   warnings?: string[];
 };
+
+// Assembly types (tables not yet in generated types — defined manually until migration is applied)
+export type EstimateAssembly = {
+  id: string;
+  company_id: string;
+  name: string;
+  description: string | null;
+  category: string;
+  is_company_template: boolean;
+  version: number;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
+export type EstimateAssemblyInsert = Partial<EstimateAssembly>;
+export type EstimateAssemblyUpdate = Partial<EstimateAssembly>;
+
+export type AssemblyItem = {
+  id: string;
+  assembly_id: string;
+  trade: string;
+  description: string;
+  unit: string;
+  quantity_multiplier: number;
+  material_id: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+export type AssemblyItemInsert = Partial<AssemblyItem>;
+export type AssemblyItemUpdate = Partial<AssemblyItem>;
+
+export type AssemblyCategory = string;
+
+// Joined types
+export type EstimateAssemblyWithItems = EstimateAssembly & {
+  assembly_items: AssemblyItem[];
+};

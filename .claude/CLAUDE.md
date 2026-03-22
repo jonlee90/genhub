@@ -91,6 +91,20 @@ Specs in `.claude/specs/{feature}/` require approval markers before implementati
 - `requirements.APPROVED` -> `design.APPROVED` -> `tasks.APPROVED`
 - Create markers: `touch .claude/specs/{feature}/{phase}.APPROVED`
 
+## POST-TASK WORKFLOW
+
+**After completing ANY batch of tasks that add or modify code:**
+
+```
+1. /refactor-code    ← Always run after code changes
+2. /kc:build         ← Verify build passes
+```
+
+This applies to:
+- Completing a `/kc:impl` task
+- Finishing a task-orchestrator phase (backend, frontend, or both)
+- Any session where ≥1 file was created or modified
+
 ## COMMANDS
 
 | Command | Purpose |
@@ -98,3 +112,4 @@ Specs in `.claude/specs/{feature}/` require approval markers before implementati
 | `/kc:spec {feature}` | Create spec: requirements -> design -> tasks |
 | `/kc:impl {task-id}` | Execute task from spec |
 | `/kc:build` | Verify build passes |
+| `/refactor-code` | Refactor recently modified code for quality |

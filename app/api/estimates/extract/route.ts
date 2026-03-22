@@ -7,7 +7,9 @@ import { classifyGeometry } from "@/lib/extraction/geometry-classifier";
 import { calculateQuantities } from "@/lib/extraction/quantity-calculator";
 import { normalizeTakeoffItem } from "@/lib/ai/normalize-takeoff";
 import { classifySheet } from "@/lib/extraction/sheet-classifier";
+import { extractReferencesFromPage } from "@/lib/extraction/cross-reference-resolver";
 import type { ScaleInfo, SheetClassification } from "@/lib/extraction/types";
+import type { ExtractedReference } from "@/lib/extraction/reference-types";
 
 // ---------------------------------------------------------------------------
 // VEC-007.2: Vector engine processing for a single page
@@ -334,6 +336,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const allReferences: ExtractedReference[] = [];
+    const sheetPageMap: Array<{
+      sheetNumber: string;
+      pageIndex: number;
+      itemIds: string[];
+    }> = [];
+
     const jobs = [];
     const vectorResults: Array<{
       pageNumber: number;
@@ -361,6 +370,23 @@ export async function POST(request: NextRequest) {
             // Run enhanced sheet classifier for fine-grained routing
             const sheetClassification: SheetClassification =
               classifySheet(vectorPagePreview);
+
+            // Collect cross-references from this page's text content
+            if (
+              sheetClassification.sheetNumber &&
+              sheetClassification.extractionEngine !== "skip"
+            ) {
+              const pageRefs = extractReferencesFromPage(
+                vectorPagePreview,
+                sheetClassification.sheetNumber,
+              );
+              allReferences.push(...pageRefs);
+              sheetPageMap.push({
+                sheetNumber: sheetClassification.sheetNumber,
+                pageIndex: page.page_number - 1,
+                itemIds: [], // populated after extraction
+              });
+            }
 
             // Route based on sheet classification
             switch (sheetClassification.extractionEngine) {
@@ -523,6 +549,26 @@ export async function POST(request: NextRequest) {
       createdJobs = data;
     }
 
+    if (allReferences.length > 0) {
+      console.log(
+        `[extract] Cross-references collected: ${allReferences.length} refs across ${sheetPageMap.length} sheets`,
+      );
+      // Store in plan_uploads.metadata if column exists
+      try {
+        await supabase
+          .from("plan_uploads")
+          .update({
+            metadata: {
+              crossReferenceCount: allReferences.length,
+              sheetCount: sheetPageMap.length,
+            },
+          } as any)
+          .eq("id", planUploadId);
+      } catch {
+        // metadata column may not exist yet — ignore
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -532,6 +578,7 @@ export async function POST(request: NextRequest) {
         planUploadId,
         engineMode: extractionEngine,
         pageResults: vectorResults,
+        referenceCount: allReferences.length,
       },
     });
   } catch (error) {

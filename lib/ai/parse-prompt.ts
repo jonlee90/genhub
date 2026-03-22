@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // Zod schema for AI response validation
 export const TakeoffItemSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(), // OpenAI doesn't generate IDs, we'll create them
   category: z.enum([
     "structural",
     "architectural",
@@ -19,13 +19,23 @@ export const TakeoffItemSchema = z.object({
   confidence: z.number().min(0).max(1),
   extraction_method: z.enum(["labeled", "calculated", "inferred", "manual"]),
   source_region: z
-    .object({
-      x: z.number(),
-      y: z.number(),
-      width: z.number(),
-      height: z.number(),
-    })
-    .optional(),
+    .union([
+      z.object({
+        x: z.number(),
+        y: z.number(),
+        width: z.number(),
+        height: z.number(),
+      }),
+      z.array(z.number()).length(4), // Accept [x, y, width, height]
+    ])
+    .optional()
+    .transform((val) => {
+      // Convert array to object if needed
+      if (Array.isArray(val)) {
+        return { x: val[0], y: val[1], width: val[2], height: val[3] };
+      }
+      return val;
+    }),
   notes: z.string().optional(),
 });
 
@@ -34,6 +44,7 @@ export const ParseResponseSchema = z.object({
   items: z.array(TakeoffItemSchema),
   raw_notes: z.string().optional(),
   warnings: z.array(z.string()).optional(),
+  extraction_notes: z.string().optional(), // Why items were/weren't extracted
 });
 
 export type TakeoffItemAI = z.infer<typeof TakeoffItemSchema>;
@@ -74,6 +85,15 @@ export const PARSE_USER_PROMPT = `Analyze this construction plan page and extrac
 4. Unit (LF, SF, CF, CY, EA, etc.)
 5. Confidence (0.0-1.0)
 6. Extraction method (labeled, calculated, inferred)
-7. Source region (bounding box coordinates)
+7. Source region (bounding box coordinates if visible)
 
-Return only explicitly measurable items. If nothing is measurable, return an empty items array.`;
+Extract items that are:
+- Explicitly labeled with dimensions/quantities (confidence 1.0)
+- Calculable from scale bars or dimension strings (confidence 0.7-0.9)
+- Countable elements like doors, windows, fixtures (confidence 0.8-1.0)
+
+If this appears to be a construction plan but has no extractable quantities, return empty items array with:
+- page_type: what type of plan it is (e.g., "site plan", "floor plan", "elevation", "detail")
+- extraction_notes: brief explanation of why no items were extracted (e.g., "No labeled dimensions visible", "Plan shows only property boundaries", "Text too small to read clearly")
+
+This helps the user understand whether the plan lacks quantities or if there was an extraction issue.`;

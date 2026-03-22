@@ -92,10 +92,24 @@ export const ExpenseCard = React.memo(
                   <span className="text-gray-400 dark:text-gray-600">•</span>
                   <span className="text-gray-600 dark:text-gray-400 font-medium truncate">
                     {expense.vendor_name}
+                    {expense.store_account ? (
+                      <span className="text-gray-400 ml-1">
+                        ({expense.store_account})
+                      </span>
+                    ) : null}
                   </span>
                 </>
               )}
             </div>
+
+            {/* Payment Method badge */}
+            {expense.payment_method ? (
+              <div>
+                <span className="inline-block px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+                  {expense.payment_method}
+                </span>
+              </div>
+            ) : null}
 
             {/* Spacer */}
             <div className="flex-1" />

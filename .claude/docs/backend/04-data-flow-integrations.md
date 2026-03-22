@@ -1,6 +1,6 @@
 # Data Flow and Integration Map — GenHub Construction PWA
 
-**Last Updated:** February 7, 2026
+**Last Updated:** March 21, 2026
 **Context:** Next.js 16 + React 19 + Supabase + Stripe + Home Depot API + KakaoTalk
 **Version:** 1.0
 
@@ -52,6 +52,28 @@ graph LR
     style External fill:#fce4ec
     style Storage fill:#f1f8e9
 ```
+
+### Estimate Extraction Pipeline (Added Feb 2026)
+
+```
+Client → POST /api/estimates/upload (PDF/images)
+       → POST /api/estimates/parse (triggers AI/OCR)
+       → GET /api/estimates/parse-status (poll)
+       → POST /api/estimates/extract (extract takeoff items)
+       → GET /api/estimates/extraction-progress (SSE stream)
+       → POST /api/estimates/takeoff-items/accept|reject|update (review)
+       → Server Action: convertEstimateToBudget() (budget pipeline)
+       → POST /api/estimates/export-pdf (final export)
+```
+
+**Key integrations:**
+- AI parsing via `lib/ai/parse-prompt.ts` and `lib/ai/normalize-takeoff.ts`
+- Background extraction jobs tracked in `extraction_jobs` table
+- SSE streaming for real-time progress updates
+- Estimate-to-budget conversion via `budget-conversion.ts`
+- AI chat sidebar via `estimate-chat.ts` for contextual Q&A
+
+---
 
 ### Task Creation Data Flow
 
@@ -1738,7 +1760,7 @@ const results = await searchHomeDepotProducts({
 ## Document Metadata
 
 - **Author:** Technical Documentation System
-- **Last Updated:** February 7, 2026
+- **Last Updated:** March 21, 2026
 - **Version:** 1.0
 - **Coverage:**
   - ✅ Stripe integration (complete)

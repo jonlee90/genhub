@@ -24,7 +24,7 @@
 ## 1. Query Pattern Analysis
 
 ### Overview
-GenHub contains **38 server action files** in `/app/actions/` with mixed query patterns. Analysis shows:
+GenHub contains **47 server action files** in `/app/actions/` with mixed query patterns (including 9 estimate-related files added Feb 2026). Analysis shows:
 - **SELECT operations:** Predominant pattern (queries, filters, aggregations)
 - **INSERT operations:** Used for CRUD creation
 - **UPDATE operations:** Limited to status/field updates
@@ -41,6 +41,7 @@ GenHub contains **38 server action files** in `/app/actions/` with mixed query p
 | Chat/Messages | 3 | Sequential reads | OPTIMIZED (Indexes) |
 | Team Management | 4 | Select-heavy | OPTIMIZED (Caching) |
 | Configuration | 5 | Lightweight reads | BASELINE |
+| Estimates/Takeoff | 9 | Heavy SELECT + AI calls | BASELINE |
 | Other Operations | 9 | Variable | MIXED |
 
 ### High-Query Files (>10 operations per function)
@@ -1272,5 +1273,5 @@ GenHub demonstrates **strong optimization practices** with:
 ---
 
 **Document Prepared:** February 2026
-**Analysis Scope:** 38 server action files, 11 database migrations, 25+ indexes, 1 materialized view
+**Analysis Scope:** 47 server action files, 71 database migrations, 40+ indexes, 1 materialized view (refreshed 3x)
 **Total Operations Analyzed:** 150+ database queries across performance hotspots
