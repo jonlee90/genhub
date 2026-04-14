@@ -84,8 +84,6 @@ export async function createPayment(
       return { success: false, error: "Failed to record payment" };
     }
 
-    revalidatePath(`/app/projects/${(contract as any).project_id}`);
-
     // Flow A: auto-create a linked expense unless caller opted out
     if (!input.skipExpenseSync) {
       // Fetch the subcontractor name via the contract
@@ -130,6 +128,8 @@ export async function createPayment(
         }
       }
     }
+
+    revalidatePath(`/app/projects/${(contract as any).project_id}`);
 
     return { success: true, data: { id: (payment as any).id, isOverpayment } };
   } catch (error) {
