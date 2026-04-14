@@ -373,10 +373,10 @@ export async function deleteExpense(expenseId: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Get expense details before deleting
+    // Get expense details before deleting (including linked payment)
     const { data: expense } = await userContext.supabase
       .from("expenses")
-      .select("project_id")
+      .select("project_id, subcontractor_payment_id")
       .eq("id", expenseId)
       .single();
 
@@ -388,6 +388,13 @@ export async function deleteExpense(expenseId: string) {
     if (error) {
       console.error("Error deleting expense:", error);
       return { success: false, error: "Failed to delete expense" };
+    }
+
+    // If expense was linked to a payment, delete the payment (which also cleans up the contract if empty)
+    if ((expense as any)?.subcontractor_payment_id) {
+      const { deletePayment } =
+        await import("@/app/actions/subcontractor-payments");
+      await deletePayment((expense as any).subcontractor_payment_id);
     }
 
     revalidatePath("/app/expenses");

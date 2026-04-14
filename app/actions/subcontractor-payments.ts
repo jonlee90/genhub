@@ -214,6 +214,12 @@ export async function deletePayment(
       .eq("subcontractor_payment_id", paymentId)
       .eq("company_id", userContext.companyId);
 
+    const contractId = (payment as any).contract_id as string;
+    const contract = (payment as any).subcontractor_contracts as {
+      project_id: string;
+      company_id: string;
+    };
+
     const { error } = await userContext.supabase
       .from("subcontractor_payments" as any)
       .delete()
@@ -225,10 +231,21 @@ export async function deletePayment(
       return { success: false, error: "Failed to delete payment" };
     }
 
-    const contract = (payment as any).subcontractor_contracts as {
-      project_id: string;
-      company_id: string;
-    };
+    // If contract now has no payments, delete it
+    const { count } = await userContext.supabase
+      .from("subcontractor_payments" as any)
+      .select("id", { count: "exact", head: true })
+      .eq("contract_id", contractId)
+      .eq("company_id", userContext.companyId);
+
+    if (count === 0) {
+      await userContext.supabase
+        .from("subcontractor_contracts" as any)
+        .delete()
+        .eq("id", contractId)
+        .eq("company_id", userContext.companyId);
+    }
+
     revalidatePath(`/app/projects/${contract.project_id}`);
 
     return { success: true };
