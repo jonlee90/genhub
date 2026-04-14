@@ -33,6 +33,8 @@ import {
   getPaymentMethodSuggestions,
   type VendorOption,
 } from "@/app/actions/expenses";
+import { getSubcontractorsByCompany } from "@/app/actions/subcontractors";
+import { Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { m as motion } from "framer-motion";
 import Image from "next/image";
@@ -81,6 +83,7 @@ export function CreateExpenseModal({
       category: "materials" as const,
       expense_date: new Date().toISOString().split("T")[0],
       vendor_name: "",
+      subcontractor_id: null as string | null,
     },
   });
 
@@ -89,6 +92,13 @@ export function CreateExpenseModal({
   const selectedTask = watch("task_id");
   const vendorName = watch("vendor_name");
   const [storeAccount, setStoreAccount] = useState("");
+  const [subcontractors, setSubcontractors] = useState<
+    Array<{ id: string; company_name: string; contact_name: string | null }>
+  >([]);
+  const [subcontractorLoading, setSubcontractorLoading] = useState(false);
+  const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<
+    string | null
+  >(null);
 
   // Show store account field for Home Depot / Lowe's
   const showStoreAccount = /home depot|lowes|lowe's/i.test(vendorName || "");
@@ -101,6 +111,22 @@ export function CreateExpenseModal({
         : [],
     [selectedProject, tasks],
   );
+
+  // Load subcontractors when project is selected
+  useEffect(() => {
+    if (!selectedProject) {
+      setSubcontractors([]);
+      return;
+    }
+    setSubcontractorLoading(true);
+    getSubcontractorsByCompany()
+      .then((result) => {
+        if (result.success && result.data) {
+          setSubcontractors(result.data);
+        }
+      })
+      .finally(() => setSubcontractorLoading(false));
+  }, [selectedProject]);
 
   // Count tasks per project
   const taskCountPerProject = useMemo(() => {
@@ -186,6 +212,11 @@ export function CreateExpenseModal({
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
+  const handleClose = () => {
+    setSelectedSubcontractorId(null);
+    onClose();
+  };
+
   const onSubmit = handleSubmit(async (data) => {
     // In a real implementation, upload the receipt to storage first
     // const receiptUrl = await uploadReceiptToStorage(receiptFile);
@@ -202,6 +233,7 @@ export function CreateExpenseModal({
       payment_method: paymentMethod || undefined,
       store_account: storeAccount || undefined,
       receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
+      subcontractor_id: selectedSubcontractorId || undefined,
     });
 
     if (result.success) {
@@ -219,13 +251,13 @@ export function CreateExpenseModal({
   return (
     <ResponsiveModal
       isOpen={true}
-      onClose={onClose}
+      onClose={handleClose}
       icon={FileText}
       title={taskContext ? "Add Expense" : "Submit Expense"}
       theme="default"
       maxWidth="3xl"
       showNavigation={true}
-      onBack={taskContext ? onClose : undefined}
+      onBack={taskContext ? handleClose : undefined}
       backLabel="Back to Task"
       onContinue={onSubmit}
       continueLabel={
@@ -498,8 +530,10 @@ export function CreateExpenseModal({
                 <CurrencyInput
                   {...fieldRest}
                   label="Amount *"
+                  hint="Use a negative amount for refunds or credits"
                   error={errors.amount?.message}
                   placeholder="0.00"
+                  allowNegative
                   onValueChange={(val) => onChange(val || "")}
                   value={value || ""}
                 />
@@ -565,6 +599,51 @@ export function CreateExpenseModal({
               )}
             </div>
           </div>
+
+          {/* Subcontractor Picker — only when project is selected */}
+          {selectedProject && (
+            <div className="space-y-2">
+              <Label
+                htmlFor="subcontractor_id"
+                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Subcontractor
+              </Label>
+              <div className="relative">
+                <select
+                  id="subcontractor_id"
+                  className="w-full min-h-[44px] rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-base text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#001B51] disabled:opacity-50"
+                  value={selectedSubcontractorId ?? ""}
+                  disabled={subcontractorLoading}
+                  onChange={(e) => {
+                    const val = e.target.value || null;
+                    setSelectedSubcontractorId(val);
+                    if (val) {
+                      const sub = subcontractors.find((s) => s.id === val);
+                      if (sub) {
+                        setValue("vendor_name", sub.company_name);
+                      }
+                    }
+                  }}
+                >
+                  <option value="">
+                    {subcontractorLoading ? "Loading..." : "None (optional)"}
+                  </option>
+                  {subcontractors.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.company_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {selectedSubcontractorId && (
+                <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                  <Building2 className="w-3 h-3" />A payment will be auto-added
+                  to this subcontractor&apos;s contract.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Vendor Name - VendorCombobox or fallback Input */}
           <div className="space-y-2">
