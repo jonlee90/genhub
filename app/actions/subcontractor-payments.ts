@@ -207,6 +207,13 @@ export async function deletePayment(
       return { success: false, error: "Payment not found" };
     }
 
+    // Delete the auto-created linked expense before removing the payment
+    await userContext.supabase
+      .from("expenses")
+      .delete()
+      .eq("subcontractor_payment_id", paymentId)
+      .eq("company_id", userContext.companyId);
+
     const { error } = await userContext.supabase
       .from("subcontractor_payments" as any)
       .delete()
