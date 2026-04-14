@@ -25,7 +25,7 @@ const createPaymentSchema = z.object({
  * Warns but allows overpayment (amount + existing > contract)
  */
 export async function createPayment(
-  input: z.infer<typeof createPaymentSchema>,
+  input: z.infer<typeof createPaymentSchema> & { skipExpenseSync?: boolean },
 ): Promise<{
   success: boolean;
   data?: { id: string; isOverpayment: boolean };
@@ -85,6 +85,51 @@ export async function createPayment(
     }
 
     revalidatePath(`/app/projects/${(contract as any).project_id}`);
+
+    // Flow A: auto-create a linked expense unless caller opted out
+    if (!input.skipExpenseSync) {
+      // Fetch the subcontractor name via the contract
+      const { data: contractDetail } = await userContext.supabase
+        .from("subcontractor_contracts" as any)
+        .select("subcontractor_id, subcontractors!inner(company_name)")
+        .eq("id", validated.contractId)
+        .single();
+
+      if (contractDetail) {
+        const sub = (contractDetail as any).subcontractors as {
+          company_name: string;
+        };
+        const description = validated.notes
+          ? `Payment to ${sub.company_name} - ${validated.notes}`
+          : `Payment to ${sub.company_name}`;
+
+        const { error: expenseError } = await userContext.supabase
+          .from("expenses")
+          .insert({
+            company_id: userContext.companyId,
+            project_id: (contract as any).project_id,
+            description,
+            amount: validated.amount,
+            category: "labor" as const,
+            expense_date: validated.paymentDate,
+            vendor_name: sub.company_name,
+            subcontractor_id: (contractDetail as any).subcontractor_id,
+            status: "approved" as const,
+            submitted_by: userContext.userId,
+            submitted_at: new Date().toISOString(),
+            ocr_processed: false,
+            subcontractor_payment_id: (payment as any).id,
+          });
+
+        if (expenseError) {
+          console.error(
+            "[createPayment] Failed to auto-create expense:",
+            expenseError,
+          );
+          // Best-effort: payment already inserted, return success with warning
+        }
+      }
+    }
 
     return { success: true, data: { id: (payment as any).id, isOverpayment } };
   } catch (error) {
