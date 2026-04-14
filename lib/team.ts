@@ -79,8 +79,7 @@ export async function getTeamPageData(): Promise<TeamPageOk | TeamPageError> {
 
   const members = (teamMembersResult.data || []).map((member) => ({
     ...member,
-    user_profiles:
-      member.user_profiles as TeamMember["user_profiles"],
+    user_profiles: member.user_profiles as TeamMember["user_profiles"],
     project_count: countsMap.get(member.user_id) || 0,
   })) as TeamMember[];
 
@@ -115,16 +114,20 @@ export async function getTeamPageData(): Promise<TeamPageOk | TeamPageError> {
   };
 }
 
+export type SubcontractorFinancialTotals = Record<
+  string,
+  { totalContractAmount: number; totalPaid: number }
+>;
+
 interface SubcontractorsOk {
   status: "ok";
   companyId: string;
   role: UserRole;
   subcontractors: SubcontractorsRow[];
+  financialTotals: SubcontractorFinancialTotals;
   stats: {
     total: number;
     active: number;
-    expiringLicenses: number;
-    expiringInsurance: number;
   };
 }
 
@@ -168,39 +171,49 @@ export async function getSubcontractorsPageData(): Promise<
 
   const allSubcontractors = subcontractors || [];
 
-  const isExpiringSoon = (expiryDate: string | null): boolean => {
-    if (!expiryDate) return false;
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const daysUntilExpiry = Math.ceil(
-      (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    return daysUntilExpiry > 0 && daysUntilExpiry <= 30;
-  };
-
   const stats = allSubcontractors.reduce(
     (acc, sub) => {
       acc.total += 1;
-      if (sub.is_active) {
-        acc.active += 1;
-        if (isExpiringSoon(sub.license_expiry)) acc.expiringLicenses += 1;
-        if (isExpiringSoon(sub.insurance_expiry)) acc.expiringInsurance += 1;
-      }
+      if (sub.is_active) acc.active += 1;
       return acc;
     },
-    {
-      total: 0,
-      active: 0,
-      expiringLicenses: 0,
-      expiringInsurance: 0,
-    },
+    { total: 0, active: 0 },
   );
+
+  type ContractRow = {
+    subcontractor_id: string;
+    contract_amount: number | null;
+    subcontractor_payments: { amount: number }[] | null;
+  };
+  const { data: contractsData } = (await (
+    supabase as unknown as ReturnType<
+      typeof import("@supabase/supabase-js").createClient
+    >
+  )
+    .from("subcontractor_contracts")
+    .select("subcontractor_id, contract_amount, subcontractor_payments(amount)")
+    .eq("company_id", companyUser.company_id)) as {
+    data: ContractRow[] | null;
+  };
+
+  const financialTotals: SubcontractorFinancialTotals = {};
+  for (const contract of contractsData || []) {
+    const subId = contract.subcontractor_id;
+    if (!financialTotals[subId]) {
+      financialTotals[subId] = { totalContractAmount: 0, totalPaid: 0 };
+    }
+    financialTotals[subId].totalContractAmount += contract.contract_amount ?? 0;
+    for (const p of contract.subcontractor_payments || []) {
+      financialTotals[subId].totalPaid += p.amount ?? 0;
+    }
+  }
 
   return {
     status: "ok",
     companyId: companyUser.company_id,
     role: companyUser.role,
     subcontractors: allSubcontractors,
+    financialTotals,
     stats,
   };
 }

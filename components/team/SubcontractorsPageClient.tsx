@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * SubcontractorsPageClient - Optimized Subcontractors List Page
@@ -12,33 +12,40 @@
  * - B-002: Dynamic import for SubcontractorModal (-30KB from initial bundle)
  */
 
-import { useState, useCallback, useMemo, useEffect, useRef, memo } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { PullToRefresh, type PullToRefreshHandle } from '@/components/mobile/PullToRefresh';
-import { BlueprintBackground } from '@/components/shared/BlueprintBackground';
-import { useIsMobile } from '@/lib/hooks/useMediaQuery';
-import { SubcontractorCard } from './SubcontractorCard';
-import { SubcontractorFilters } from './SubcontractorFilters';
-import { SubcontractorPortfolio } from './SubcontractorPortfolio';
-import { Button } from '@/components/ui/button';
-import { EmptyStateCard } from '@/components/ui/EmptyStateCard';
+import { useState, useCallback, useMemo, useEffect, useRef, memo } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import {
+  PullToRefresh,
+  type PullToRefreshHandle,
+} from "@/components/mobile/PullToRefresh";
+import { BlueprintBackground } from "@/components/shared/BlueprintBackground";
+import { useIsMobile } from "@/lib/hooks/useMediaQuery";
+import { SubcontractorCard } from "./SubcontractorCard";
+import { SubcontractorFilters } from "./SubcontractorFilters";
+import { SubcontractorPortfolio } from "./SubcontractorPortfolio";
+import { Button } from "@/components/ui/button";
+import { EmptyStateCard } from "@/components/ui/EmptyStateCard";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Users from 'lucide-react/icons/users';
-import Plus from 'lucide-react/icons/plus';
-import Search from 'lucide-react/icons/search';
-import ChevronLeft from 'lucide-react/icons/chevron-left';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import type { SubcontractorsRow } from '@/types/db/tables/companies';
-import type { UserRole } from '@/types/db/enums';
+import Users from "lucide-react/icons/users";
+import Plus from "lucide-react/icons/plus";
+import Search from "lucide-react/icons/search";
+import ChevronLeft from "lucide-react/icons/chevron-left";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import type { SubcontractorsRow } from "@/types/db/tables/companies";
+import type { UserRole } from "@/types/db/enums";
+import type { SubcontractorFinancialTotals } from "@/lib/team";
 
 // B-002: Dynamic import for heavy SubcontractorModal component (-30KB from initial bundle)
 const SubcontractorModal = dynamic(
-  () => import('./SubcontractorModal').then((mod) => ({ default: mod.SubcontractorModal })),
+  () =>
+    import("./SubcontractorModal").then((mod) => ({
+      default: mod.SubcontractorModal,
+    })),
   {
     ssr: false,
     loading: () => null,
-  }
+  },
 );
 
 // ============================================
@@ -64,7 +71,8 @@ const NoResultsState = memo(function NoResultsState({
         No subcontractors found
       </h3>
       <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 max-w-md">
-        No subcontractors match your current filters{searchQuery ? `: "${searchQuery}"` : ''}
+        No subcontractors match your current filters
+        {searchQuery ? `: "${searchQuery}"` : ""}
       </p>
       <Button
         variant="outline"
@@ -87,6 +95,7 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
   isGCAdmin,
   onEdit,
   onDeactivate,
+  financialTotals,
 }: {
   subcontractors: SubcontractorsRow[];
   isMobile: boolean;
@@ -94,13 +103,14 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
   isGCAdmin: boolean;
   onEdit: (sub: SubcontractorsRow) => void;
   onDeactivate: () => void;
+  financialTotals: SubcontractorFinancialTotals;
 }) {
   return (
     <div
       className={
         isMobile
-          ? 'space-y-3'
-          : 'grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+          ? "space-y-3"
+          : "grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
       }
     >
       {subcontractors.map((sub, index) => (
@@ -109,8 +119,8 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
           className="animate-in fade-in slide-in-from-bottom-4"
           style={{
             animationDelay: `${Math.min(index * 50, 300)}ms`,
-            animationDuration: '400ms',
-            animationFillMode: 'both',
+            animationDuration: "400ms",
+            animationFillMode: "both",
           }}
         >
           <SubcontractorCard
@@ -119,6 +129,10 @@ const SubcontractorGrid = memo(function SubcontractorGrid({
             isGCAdmin={isGCAdmin}
             onEdit={onEdit}
             onDeactivate={onDeactivate}
+            totalContractAmount={
+              financialTotals[sub.id]?.totalContractAmount ?? 0
+            }
+            totalPaid={financialTotals[sub.id]?.totalPaid ?? 0}
           />
         </div>
       ))}
@@ -143,20 +157,31 @@ const Pagination = memo(function Pagination({
   if (totalPages <= 1) return null;
 
   // Generate page numbers with smart ellipsis
-  const getPageNumbers = (current: number, total: number): (number | 'ellipsis')[] => {
+  const getPageNumbers = (
+    current: number,
+    total: number,
+  ): (number | "ellipsis")[] => {
     if (total <= 7) {
       return Array.from({ length: total }, (_, i) => i + 1);
     }
 
     if (current <= 3) {
-      return [1, 2, 3, 4, 5, 'ellipsis', total];
+      return [1, 2, 3, 4, 5, "ellipsis", total];
     }
 
     if (current >= total - 2) {
-      return [1, 'ellipsis', total - 4, total - 3, total - 2, total - 1, total];
+      return [1, "ellipsis", total - 4, total - 3, total - 2, total - 1, total];
     }
 
-    return [1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total];
+    return [
+      1,
+      "ellipsis",
+      current - 1,
+      current,
+      current + 1,
+      "ellipsis",
+      total,
+    ];
   };
 
   const pageNumbers = getPageNumbers(currentPage, totalPages);
@@ -175,7 +200,7 @@ const Pagination = memo(function Pagination({
           disabled:opacity-30 disabled:cursor-not-allowed
           transition-all duration-150
           active:scale-[0.98]
-          ${isMobile ? 'min-w-[44px]' : ''}
+          ${isMobile ? "min-w-[44px]" : ""}
         `}
       >
         <ChevronLeft className="w-5 h-5" />
@@ -185,7 +210,7 @@ const Pagination = memo(function Pagination({
       {/* Page numbers */}
       <div className="flex items-center gap-1">
         {pageNumbers.map((page, idx) => {
-          if (page === 'ellipsis') {
+          if (page === "ellipsis") {
             return (
               <span
                 key={`ellipsis-${idx}`}
@@ -209,8 +234,8 @@ const Pagination = memo(function Pagination({
                 active:scale-[0.98]
                 ${
                   isActive
-                    ? 'bg-construction-blue dark:bg-construction-blue border-construction-blue dark:border-construction-blue text-white'
-                    : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-construction-blue dark:hover:border-construction-blue hover:text-construction-blue dark:hover:text-construction-blue'
+                    ? "bg-construction-blue dark:bg-construction-blue border-construction-blue dark:border-construction-blue text-white"
+                    : "bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-construction-blue dark:hover:border-construction-blue hover:text-construction-blue dark:hover:text-construction-blue"
                 }
               `}
             >
@@ -232,7 +257,7 @@ const Pagination = memo(function Pagination({
           disabled:opacity-30 disabled:cursor-not-allowed
           transition-all duration-150
           active:scale-[0.98]
-          ${isMobile ? 'min-w-[44px]' : ''}
+          ${isMobile ? "min-w-[44px]" : ""}
         `}
       >
         {!isMobile && <span className="mr-1">Next</span>}
@@ -251,11 +276,10 @@ interface SubcontractorsPageClientProps {
   stats: {
     total: number;
     active: number;
-    expiringLicenses: number;
-    expiringInsurance: number;
   };
   role: UserRole;
   companyId: string;
+  financialTotals: SubcontractorFinancialTotals;
 }
 
 export function SubcontractorsPageClient({
@@ -263,6 +287,7 @@ export function SubcontractorsPageClient({
   stats,
   role,
   companyId,
+  financialTotals,
 }: SubcontractorsPageClientProps) {
   // Data states
   const [subcontractors, setSubcontractors] = useState(initialSubcontractors);
@@ -273,9 +298,9 @@ export function SubcontractorsPageClient({
   }, [initialSubcontractors]);
 
   // Filter states
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [tradeFilter, setTradeFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [tradeFilter, setTradeFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -283,9 +308,8 @@ export function SubcontractorsPageClient({
 
   // Modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedSubcontractor, setSelectedSubcontractor] = useState<SubcontractorsRow | null>(
-    null
-  );
+  const [selectedSubcontractor, setSelectedSubcontractor] =
+    useState<SubcontractorsRow | null>(null);
 
   const router = useRouter();
   const isMobile = useIsMobile();
@@ -294,8 +318,8 @@ export function SubcontractorsPageClient({
   const pullToRefreshRef = useRef<PullToRefreshHandle>(null);
 
   // Check permissions
-  const canCreate = role === 'admin' || role === 'project_manager';
-  const isGCAdmin = role === 'admin';
+  const canCreate = role === "admin" || role === "project_manager";
+  const isGCAdmin = role === "admin";
 
   // Pull-to-refresh handler
   const handleRefresh = useCallback(async () => {
@@ -315,26 +339,30 @@ export function SubcontractorsPageClient({
           sub.company_name.toLowerCase().includes(query) ||
           sub.contact_name.toLowerCase().includes(query) ||
           sub.email?.toLowerCase().includes(query) ||
-          sub.phone?.toLowerCase().includes(query)
+          sub.phone?.toLowerCase().includes(query),
       );
     }
 
     // Trade filter
-    if (tradeFilter !== 'all') {
-      filtered = filtered.filter((sub) => sub.trade_specialization === tradeFilter);
+    if (tradeFilter !== "all") {
+      filtered = filtered.filter(
+        (sub) => sub.trade_specialization === tradeFilter,
+      );
     }
 
     // Sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'name':
+        case "name":
           return a.company_name.localeCompare(b.company_name);
-        case 'rating':
-          return (b.performance_rating || 0) - (a.performance_rating || 0);
-        case 'recent':
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        case 'trade':
-          return (a.trade_specialization || 'zzz').localeCompare(b.trade_specialization || 'zzz');
+        case "recent":
+          return (
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+        case "trade":
+          return (a.trade_specialization || "zzz").localeCompare(
+            b.trade_specialization || "zzz",
+          );
         default:
           return a.company_name.localeCompare(b.company_name);
       }
@@ -346,7 +374,10 @@ export function SubcontractorsPageClient({
   // Paginated results - memoized
   const paginatedSubcontractors = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredSubcontractors.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    return filteredSubcontractors.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE,
+    );
   }, [filteredSubcontractors, currentPage, ITEMS_PER_PAGE]);
 
   // Total pages
@@ -359,9 +390,9 @@ export function SubcontractorsPageClient({
 
   // Clear all filters
   const clearFilters = useCallback(() => {
-    setSearchQuery('');
-    setTradeFilter('all');
-    setSortBy('name');
+    setSearchQuery("");
+    setTradeFilter("all");
+    setSortBy("name");
   }, []);
 
   // Handle edit
@@ -385,7 +416,7 @@ export function SubcontractorsPageClient({
   // Handle page change
   const handlePageChange = useCallback((newPage: number) => {
     setCurrentPage(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   // Empty State - No Subcontractors Created Yet
@@ -417,7 +448,11 @@ export function SubcontractorsPageClient({
     <>
       {isMobile ? (
         <div className="flex flex-col h-full">
-          <PullToRefresh ref={pullToRefreshRef} onRefresh={handleRefresh} className="flex-1">
+          <PullToRefresh
+            ref={pullToRefreshRef}
+            onRefresh={handleRefresh}
+            className="flex-1"
+          >
             <div className="p-4 pb-[env(safe-area-inset-bottom)]">
               <BlueprintBackground />
 
@@ -445,7 +480,10 @@ export function SubcontractorsPageClient({
 
               {/* Portfolio Summary */}
               <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <SubcontractorPortfolio subcontractors={subcontractors} stats={stats} compact />
+                <SubcontractorPortfolio
+                  subcontractors={subcontractors}
+                  stats={stats}
+                />
               </div>
 
               {/* Filters */}
@@ -462,7 +500,10 @@ export function SubcontractorsPageClient({
 
               {/* Subcontractor cards */}
               {filteredSubcontractors.length === 0 ? (
-                <NoResultsState searchQuery={searchQuery} onClearFilters={clearFilters} />
+                <NoResultsState
+                  searchQuery={searchQuery}
+                  onClearFilters={clearFilters}
+                />
               ) : (
                 <>
                   <SubcontractorGrid
@@ -472,6 +513,7 @@ export function SubcontractorsPageClient({
                     isGCAdmin={isGCAdmin}
                     onEdit={handleEdit}
                     onDeactivate={handleDeactivate}
+                    financialTotals={financialTotals}
                   />
 
                   {/* Pagination */}
@@ -508,7 +550,9 @@ export function SubcontractorsPageClient({
                     className="relative w-full md:w-auto h-11 md:h-14 px-4 md:px-8 bg-gradient-to-r from-construction-blue to-blue-700 hover:from-construction-blue/90 hover:to-blue-700/90 shadow-construction-lg hover:shadow-construction-xl transition-all group overflow-hidden text-white min-w-[44px]"
                   >
                     <Plus className="mr-1.5 md:mr-2 h-4 w-4 md:h-5 md:w-5 group-hover:rotate-90 transition-transform" />
-                    <span className="font-black text-sm md:text-base">NEW SUBCONTRACTOR</span>
+                    <span className="font-black text-sm md:text-base">
+                      NEW SUBCONTRACTOR
+                    </span>
                   </Button>
                 )}
               </div>
@@ -517,7 +561,10 @@ export function SubcontractorsPageClient({
 
           {/* Portfolio Summary */}
           <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-            <SubcontractorPortfolio subcontractors={subcontractors} stats={stats} />
+            <SubcontractorPortfolio
+              subcontractors={subcontractors}
+              stats={stats}
+            />
           </div>
 
           {/* Filters */}
@@ -533,7 +580,10 @@ export function SubcontractorsPageClient({
 
           {/* Subcontractor grid or empty state */}
           {filteredSubcontractors.length === 0 ? (
-            <NoResultsState searchQuery={searchQuery} onClearFilters={clearFilters} />
+            <NoResultsState
+              searchQuery={searchQuery}
+              onClearFilters={clearFilters}
+            />
           ) : (
             <>
               <SubcontractorGrid
@@ -543,6 +593,7 @@ export function SubcontractorsPageClient({
                 isGCAdmin={isGCAdmin}
                 onEdit={handleEdit}
                 onDeactivate={handleDeactivate}
+                financialTotals={financialTotals}
               />
 
               {/* Pagination */}

@@ -33,44 +33,78 @@ export async function getProjectFinancialSummary(
       return { success: false, error: "Unauthorized" };
     }
 
-    const [budgetResult, expensesResult] = await Promise.all([
-      // Most recent budget for the project
-      userContext.supabase
-        .from("budgets" as any)
-        .select("total_amount")
-        .eq("project_id", projectId)
-        .eq("company_id", userContext.companyId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+    const [budgetResult, projectResult, expensesResult, contractsResult] =
+      await Promise.all([
+        // Most recent budget record for the project
+        userContext.supabase
+          .from("budgets" as any)
+          .select("total_amount")
+          .eq("project_id", projectId)
+          .eq("company_id", userContext.companyId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
 
-      // Approved/paid expenses for the project (includes auto-created payment expenses)
-      userContext.supabase
-        .from("expenses")
-        .select("amount")
-        .eq("project_id", projectId)
-        .eq("company_id", userContext.companyId)
-        .in("status", ["approved", "paid"]),
-    ]);
+        // Project's own budget field as fallback
+        userContext.supabase
+          .from("projects")
+          .select("budget")
+          .eq("id", projectId)
+          .eq("company_id", userContext.companyId)
+          .single(),
 
-    const totalBudget = (budgetResult.data as any)?.total_amount ?? 0;
-    const hasBudget = !!budgetResult.data;
+        // Approved/paid expenses for the project
+        userContext.supabase
+          .from("expenses")
+          .select("amount")
+          .eq("project_id", projectId)
+          .eq("company_id", userContext.companyId)
+          .in("status", ["approved", "paid"]),
+
+        // Contract IDs for this project, then sum their payments below
+        userContext.supabase
+          .from("subcontractor_contracts" as any)
+          .select("id")
+          .eq("project_id", projectId)
+          .eq("company_id", userContext.companyId),
+      ]);
+
+    const budgetRecordAmount = (budgetResult.data as any)?.total_amount ?? null;
+    const projectBudget = (projectResult.data as any)?.budget ?? null;
+    // Prefer explicit budget record; fall back to project.budget
+    const totalBudget = budgetRecordAmount ?? projectBudget ?? 0;
+    const hasBudget = budgetRecordAmount !== null || projectBudget !== null;
 
     const totalSpent = (expensesResult.data || []).reduce(
       (sum, e) => sum + (e.amount || 0),
       0,
     );
 
-    const totalUsed = totalSpent;
-    const netRemaining = totalBudget - totalUsed;
-    const percentUsed = totalBudget > 0 ? (totalUsed / totalBudget) * 100 : 0;
+    const contractIds = ((contractsResult.data as any[]) || []).map(
+      (c: any) => c.id,
+    );
+
+    let subPayments = 0;
+    if (contractIds.length > 0) {
+      const { data: paymentsData } = await userContext.supabase
+        .from("subcontractor_payments" as any)
+        .select("amount")
+        .in("contract_id", contractIds);
+      subPayments = ((paymentsData as any[]) || []).reduce(
+        (sum: number, p: any) => sum + (p.amount || 0),
+        0,
+      );
+    }
+
+    const netRemaining = hasBudget ? totalBudget - totalSpent : 0;
+    const percentUsed = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
 
     return {
       success: true,
       data: {
         totalBudget,
         totalSpent,
-        subPayments: 0, // Kept for interface compatibility; always 0 now
+        subPayments,
         netRemaining,
         hasBudget,
         percentUsed,

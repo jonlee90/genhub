@@ -8,7 +8,7 @@
  * These client schemas are for UX only, not security.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ============================================================================
 // FIELD-LEVEL SCHEMAS
@@ -20,8 +20,8 @@ import { z } from 'zod';
  */
 export const emailSchema = z
   .string()
-  .min(1, 'Email is required')
-  .email('Please enter a valid email address');
+  .min(1, "Email is required")
+  .email("Please enter a valid email address");
 
 /**
  * Optional email validation schema
@@ -29,7 +29,7 @@ export const emailSchema = z
  */
 export const optionalEmailSchema = z
   .string()
-  .email('Please enter a valid email address')
+  .email("Please enter a valid email address")
   .or(z.string().length(0));
 
 /**
@@ -38,7 +38,7 @@ export const optionalEmailSchema = z
  */
 export const phoneSchema = z
   .string()
-  .regex(/^\(\d{3}\) \d{3}-\d{4}$/, 'Phone must be (XXX) XXX-XXXX format')
+  .regex(/^\(\d{3}\) \d{3}-\d{4}$/, "Phone must be (XXX) XXX-XXXX format")
   .or(z.string().length(0));
 
 /**
@@ -47,7 +47,7 @@ export const phoneSchema = z
  */
 export const zipCodeSchema = z
   .string()
-  .regex(/^\d{5}(-\d{4})?$/, 'Please enter a valid ZIP code')
+  .regex(/^\d{5}(-\d{4})?$/, "Please enter a valid ZIP code")
   .or(z.string().length(0));
 
 /**
@@ -56,14 +56,14 @@ export const zipCodeSchema = z
  */
 export const currencySchema = z
   .number()
-  .nonnegative('Amount must be positive')
+  .nonnegative("Amount must be positive")
   .or(
     z.string().transform((val) => {
       // Remove currency formatting and parse
-      const cleaned = val.replace(/[^0-9.-]+/g, '');
+      const cleaned = val.replace(/[^0-9.-]+/g, "");
       const num = parseFloat(cleaned);
       return isNaN(num) ? 0 : num;
-    })
+    }),
   );
 
 /**
@@ -72,14 +72,16 @@ export const currencySchema = z
  */
 export const optionalCurrencySchema = z
   .number()
-  .nonnegative('Amount must be positive')
+  .nonnegative("Amount must be positive")
   .optional()
-  .or(z.string().transform((val) => {
-    if (!val) return undefined;
-    const cleaned = val.replace(/[^0-9.-]+/g, '');
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? undefined : num;
-  }));
+  .or(
+    z.string().transform((val) => {
+      if (!val) return undefined;
+      const cleaned = val.replace(/[^0-9.-]+/g, "");
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? undefined : num;
+    }),
+  );
 
 /**
  * Required string validation schema
@@ -87,8 +89,8 @@ export const optionalCurrencySchema = z
  */
 export const requiredStringSchema = z
   .string()
-  .min(1, 'This field is required')
-  .max(200, 'Must be less than 200 characters')
+  .min(1, "This field is required")
+  .max(200, "Must be less than 200 characters")
   .transform((val) => val.trim());
 
 /**
@@ -97,9 +99,14 @@ export const requiredStringSchema = z
  */
 export const optionalStringSchema = z
   .string()
-  .max(200, 'Must be less than 200 characters')
+  .max(200, "Must be less than 200 characters")
   .optional()
-  .or(z.string().length(0).transform(() => undefined));
+  .or(
+    z
+      .string()
+      .length(0)
+      .transform(() => undefined),
+  );
 
 /**
  * Long text validation schema
@@ -107,9 +114,14 @@ export const optionalStringSchema = z
  */
 export const longTextSchema = z
   .string()
-  .max(2000, 'Must be less than 2000 characters')
+  .max(2000, "Must be less than 2000 characters")
   .optional()
-  .or(z.string().length(0).transform(() => undefined));
+  .or(
+    z
+      .string()
+      .length(0)
+      .transform(() => undefined),
+  );
 
 /**
  * Date validation schema
@@ -117,34 +129,42 @@ export const longTextSchema = z
  */
 export const dateSchema = z
   .string()
-  .min(1, 'Date is required')
-  .refine((val) => !isNaN(Date.parse(val)), 'Invalid date format');
+  .min(1, "Date is required")
+  .refine((val) => !isNaN(Date.parse(val)), "Invalid date format");
 
 /**
  * Optional date validation schema
  */
 export const optionalDateSchema = z
   .string()
-  .refine((val) => !val || !isNaN(Date.parse(val)), 'Invalid date format')
+  .refine((val) => !val || !isNaN(Date.parse(val)), "Invalid date format")
   .optional()
-  .or(z.string().length(0).transform(() => undefined));
+  .or(
+    z
+      .string()
+      .length(0)
+      .transform(() => undefined),
+  );
 
 /**
  * UUID validation schema
  * For validating entity IDs
  */
-export const uuidSchema = z
-  .string()
-  .uuid('Please select a valid option');
+export const uuidSchema = z.string().uuid("Please select a valid option");
 
 /**
  * Optional UUID validation schema
  */
 export const optionalUuidSchema = z
   .string()
-  .uuid('Please select a valid option')
+  .uuid("Please select a valid option")
   .optional()
-  .or(z.string().length(0).transform(() => undefined));
+  .or(
+    z
+      .string()
+      .length(0)
+      .transform(() => undefined),
+  );
 
 // ============================================================================
 // FORM-LEVEL SCHEMAS
@@ -188,9 +208,9 @@ export const createProjectSchema = z
       return true;
     },
     {
-      message: 'End date must be after start date',
-      path: ['end_date'],
-    }
+      message: "End date must be after start date",
+      path: ["end_date"],
+    },
   );
 
 /**
@@ -203,7 +223,7 @@ export const createTaskSchema = z
     project_id: uuidSchema,
     phase_id: uuidSchema,
     assignee_id: optionalUuidSchema,
-    priority: z.enum(['low', 'medium', 'high']),
+    priority: z.enum(["low", "medium", "high"]),
     start_date: dateSchema,
     due_date: optionalDateSchema,
     planned_cost: optionalCurrencySchema,
@@ -218,9 +238,9 @@ export const createTaskSchema = z
       return true;
     },
     {
-      message: 'Due date must be on or after start date',
-      path: ['due_date'],
-    }
+      message: "Due date must be on or after start date",
+      path: ["due_date"],
+    },
   );
 
 /**
@@ -230,16 +250,18 @@ export const createExpenseSchema = z.object({
   project_id: uuidSchema,
   task_id: optionalUuidSchema,
   description: requiredStringSchema,
-  amount: z.number().positive('Amount must be greater than 0'),
+  amount: z
+    .number()
+    .refine((n) => n !== 0, { message: "Amount cannot be zero" }),
   category: z.enum([
-    'materials',
-    'labor',
-    'equipment',
-    'permits',
-    'transportation',
-    'meals',
-    'lodging',
-    'other',
+    "materials",
+    "labor",
+    "equipment",
+    "permits",
+    "transportation",
+    "meals",
+    "lodging",
+    "other",
   ]),
   expense_date: dateSchema,
   vendor_name: optionalStringSchema,
@@ -252,12 +274,12 @@ export const inviteTeamMemberSchema = z.object({
   email: emailSchema,
   name: requiredStringSchema,
   role: z.enum([
-    'admin',
-    'project_manager',
-    'foreman',
-    'field_worker',
-    'subcontractor',
-    'client',
+    "admin",
+    "project_manager",
+    "foreman",
+    "field_worker",
+    "subcontractor",
+    "client",
   ]),
 });
 
@@ -270,32 +292,32 @@ export const addSubcontractorSchema = z.object({
   email: optionalEmailSchema,
   phone: phoneSchema,
   trade_type: z.enum([
-    'general',
-    'electrical',
-    'plumbing',
-    'hvac',
-    'carpentry',
-    'masonry',
-    'roofing',
-    'flooring',
-    'painting',
-    'drywall',
-    'concrete',
-    'landscaping',
-    'demolition',
-    'steel_work',
-    'glass_glazing',
-    'fire_protection',
-    'insulation',
-    'other',
+    "general",
+    "electrical",
+    "plumbing",
+    "hvac",
+    "carpentry",
+    "masonry",
+    "roofing",
+    "flooring",
+    "painting",
+    "drywall",
+    "concrete",
+    "landscaping",
+    "demolition",
+    "steel_work",
+    "glass_glazing",
+    "fire_protection",
+    "insulation",
+    "other",
   ]),
   address: optionalStringSchema,
   license_number: optionalStringSchema,
   insurance_provider: optionalStringSchema,
   rating: z
     .number()
-    .min(0, 'Rating must be between 0 and 5')
-    .max(5, 'Rating must be between 0 and 5')
+    .min(0, "Rating must be between 0 and 5")
+    .max(5, "Rating must be between 0 and 5")
     .optional(),
   notes: longTextSchema,
 });
@@ -309,8 +331,8 @@ export const assignMaterialSchema = z.object({
   task_id: optionalUuidSchema,
   quantity: z
     .number()
-    .positive('Quantity must be greater than 0')
-    .int('Quantity must be a whole number'),
+    .positive("Quantity must be greater than 0")
+    .int("Quantity must be a whole number"),
 });
 
 /**

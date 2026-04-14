@@ -4,7 +4,11 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { cache } from "react";
 import { z } from "zod";
 import { createClient } from "@/utils/supabase/server";
-import { getUserContext, getAdminUserContext, verifyProjectAccess } from "@/lib/auth/user-context";
+import {
+  getUserContext,
+  getAdminUserContext,
+  verifyProjectAccess,
+} from "@/lib/auth/user-context";
 import type {
   ProjectsRow,
   ProjectsInsert,
@@ -15,6 +19,36 @@ import type { UserRole } from "@/types/db/enums";
 type Project = ProjectsRow;
 type ProjectInsert = ProjectsInsert;
 type ProjectUpdate = ProjectsUpdate;
+
+// ============================================
+// Internal Helpers
+// ============================================
+
+/**
+ * Silently ensures a subcontractor appears in project_team.
+ * No permission checks — caller is trusted server-side code.
+ * Safe to call multiple times (unique constraint prevents duplicates).
+ */
+export async function ensureSubcontractorOnProject(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  _companyId: string,
+  userId: string,
+  projectId: string,
+  subcontractorId: string,
+): Promise<void> {
+  const { error } = await (supabase as any).from("project_team").upsert(
+    {
+      project_id: projectId,
+      subcontractor_id: subcontractorId,
+      role: "subcontractor",
+      assigned_by: userId,
+    },
+    { onConflict: "project_id,subcontractor_id", ignoreDuplicates: true },
+  );
+  if (error) {
+    console.error("[ensureSubcontractorOnProject] Upsert error:", error);
+  }
+}
 
 // ============================================
 // Project Stats Types (for enhanced ProjectCard)
@@ -175,7 +209,11 @@ export async function createProject(formData: FormData) {
 
   const { userId, companyId, role, supabase } = userContext;
   if (process.env.NODE_ENV === "development") {
-    console.log("[createProject] Creating project with context:", { userId, companyId, role });
+    console.log("[createProject] Creating project with context:", {
+      userId,
+      companyId,
+      role,
+    });
   }
 
   // Check permissions - only Admin and Project Manager can create projects
@@ -219,7 +257,10 @@ export async function createProject(formData: FormData) {
   let projectTypeValue = data.project_type;
 
   // Check if it's a UUID (36 chars with hyphens)
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.project_type);
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      data.project_type,
+    );
 
   if (isUuid) {
     // New approach: Look up config by ID
@@ -234,7 +275,7 @@ export async function createProject(formData: FormData) {
     if (config) {
       projectTypeConfig = config;
       // Convert config name to slug for project_type (now text, not enum)
-      projectTypeValue = config.name.toLowerCase().replace(/\s+/g, '_');
+      projectTypeValue = config.name.toLowerCase().replace(/\s+/g, "_");
     }
   } else {
     // Legacy approach: Look up config by name mapping
@@ -265,7 +306,7 @@ export async function createProject(formData: FormData) {
 
   if (process.env.NODE_ENV === "development") {
     console.log(
-      `[createProject] Project type: ${data.project_type} (isUuid: ${isUuid}), Config found: ${projectTypeConfig?.id || 'none'}`,
+      `[createProject] Project type: ${data.project_type} (isUuid: ${isUuid}), Config found: ${projectTypeConfig?.id || "none"}`,
     );
   }
 
@@ -437,10 +478,15 @@ export async function createProject(formData: FormData) {
   try {
     await supabase.rpc("refresh_dashboard_kpis");
     if (process.env.NODE_ENV === "development") {
-      console.log("[createProject] ✅ Refreshed dashboard KPIs materialized view");
+      console.log(
+        "[createProject] ✅ Refreshed dashboard KPIs materialized view",
+      );
     }
   } catch (refreshError) {
-    console.error("[createProject] Failed to refresh dashboard KPIs:", refreshError);
+    console.error(
+      "[createProject] Failed to refresh dashboard KPIs:",
+      refreshError,
+    );
     // Don't fail project creation if refresh fails - view will refresh on schedule
   }
 
@@ -545,6 +591,13 @@ export async function updateProject(formData: FormData) {
   revalidateTag("projects", "max");
   revalidateTag(`project-${id}`, "max");
 
+  try {
+    await supabase.rpc("refresh_dashboard_kpis");
+  } catch {
+    // Don't fail project update if refresh fails
+  }
+  revalidateTag("dashboard", "max");
+
   return { success: true, project };
 }
 
@@ -607,10 +660,15 @@ export async function updateProjectStatus(
   try {
     await supabase.rpc("refresh_dashboard_kpis");
     if (process.env.NODE_ENV === "development") {
-      console.log("[updateProjectStatus] ✅ Refreshed dashboard KPIs materialized view");
+      console.log(
+        "[updateProjectStatus] ✅ Refreshed dashboard KPIs materialized view",
+      );
     }
   } catch (refreshError) {
-    console.error("[updateProjectStatus] Failed to refresh dashboard KPIs:", refreshError);
+    console.error(
+      "[updateProjectStatus] Failed to refresh dashboard KPIs:",
+      refreshError,
+    );
     // Don't fail project update if refresh fails - view will refresh on schedule
   }
 
@@ -633,7 +691,11 @@ export async function deleteProject(projectId: string) {
   const { companyId, supabase } = adminContext;
 
   // Verify project belongs to user's company
-  const accessResult = await verifyProjectAccess(supabase, projectId, companyId);
+  const accessResult = await verifyProjectAccess(
+    supabase,
+    projectId,
+    companyId,
+  );
   if ("error" in accessResult) {
     return { error: accessResult.error };
   }
@@ -842,7 +904,10 @@ export async function addSubcontractorToProject(
 
   const { companyId, role, supabase } = userContext;
   if (process.env.NODE_ENV === "development") {
-    console.log("[addSubcontractorToProject] User context:", { companyId, role });
+    console.log("[addSubcontractorToProject] User context:", {
+      companyId,
+      role,
+    });
   }
 
   // Check permissions
@@ -892,7 +957,9 @@ export async function addSubcontractorToProject(
 
   if (subcontractor.company_id !== companyId) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[addSubcontractorToProject] Subcontractor company mismatch");
+      console.error(
+        "[addSubcontractorToProject] Subcontractor company mismatch",
+      );
     }
     return { error: "Subcontractor not in your company" };
   }
@@ -921,7 +988,9 @@ export async function addSubcontractorToProject(
 
   if (existingMember) {
     if (process.env.NODE_ENV === "development") {
-      console.error("[addSubcontractorToProject] Subcontractor already on team");
+      console.error(
+        "[addSubcontractorToProject] Subcontractor already on team",
+      );
     }
     return { error: "This subcontractor is already assigned to the project" };
   }
@@ -1441,7 +1510,7 @@ async function fetchProjectWithStats(
     // Use optimized RPC function (single query replaces 4 queries + JS aggregation)
     const { data, error } = await (supabase.rpc as any)(
       "get_project_with_full_stats",
-      { p_project_id: projectId, p_company_id: companyId }
+      { p_project_id: projectId, p_company_id: companyId },
     );
 
     if (error) {
@@ -1462,12 +1531,14 @@ async function fetchProjectWithStats(
       teamSize,
       actualSpent,
       plannedCost,
-      materialCosts
+      materialCosts,
     } = data;
 
     const budget = Number(project.budget) || 0;
     const totalActualSpent =
-      Number(actualSpent) + Number(materialCosts) + Number(expenseStats.approvedAmount);
+      Number(actualSpent) +
+      Number(materialCosts) +
+      Number(expenseStats.approvedAmount);
 
     // Calculate schedule status (kept in JS as it's pure calculation)
     const schedule = calculateScheduleStatus(
@@ -1578,7 +1649,7 @@ async function fetchProjectTeamCostSummary(
     // Call optimized RPC function (single query replaces 5+ queries + aggregation)
     const { data, error } = await (supabase.rpc as any)(
       "get_project_team_cost_summary",
-      { p_project_id: projectId }
+      { p_project_id: projectId },
     );
 
     if (error) {
@@ -1681,7 +1752,8 @@ export async function getTeamMembersForModal(): Promise<{
 
   const { data, error } = await supabase
     .from("company_users")
-    .select(`
+    .select(
+      `
       user_id,
       user_profiles:user_profiles!company_users_user_profile_fkey (
         id,
@@ -1689,7 +1761,8 @@ export async function getTeamMembersForModal(): Promise<{
         email,
         avatar_url
       )
-    `)
+    `,
+    )
     .eq("company_id", context.companyId)
     .eq("status", "active");
 
@@ -1703,7 +1776,9 @@ export async function getTeamMembersForModal(): Promise<{
     .map((cu) => cu.user_profiles)
     .filter((p): p is Required<typeof p> => {
       if (!p) {
-        console.warn('[getTeamMembersForModal] Null user_profile in company_users result. This may indicate a data integrity issue.');
+        console.warn(
+          "[getTeamMembersForModal] Null user_profile in company_users result. This may indicate a data integrity issue.",
+        );
         return false;
       }
       return true;
@@ -1719,29 +1794,31 @@ export async function getTeamMembersForModal(): Promise<{
  *
  * @returns Promise with both projects and team members
  */
-export const getModalData = cache(async (): Promise<{
-  data?: {
-    projects: ProjectForModal[];
-    teamMembers: TeamMemberForModal[];
-  };
-  error?: string;
-}> => {
-  const [projectsResult, teamResult] = await Promise.all([
-    getProjectsForModal(),
-    getTeamMembersForModal(),
-  ]);
+export const getModalData = cache(
+  async (): Promise<{
+    data?: {
+      projects: ProjectForModal[];
+      teamMembers: TeamMemberForModal[];
+    };
+    error?: string;
+  }> => {
+    const [projectsResult, teamResult] = await Promise.all([
+      getProjectsForModal(),
+      getTeamMembersForModal(),
+    ]);
 
-  if (projectsResult.error) {
-    return { error: projectsResult.error };
-  }
-  if (teamResult.error) {
-    return { error: teamResult.error };
-  }
+    if (projectsResult.error) {
+      return { error: projectsResult.error };
+    }
+    if (teamResult.error) {
+      return { error: teamResult.error };
+    }
 
-  return {
-    data: {
-      projects: projectsResult.data || [],
-      teamMembers: teamResult.data || [],
-    },
-  };
-});
+    return {
+      data: {
+        projects: projectsResult.data || [],
+        teamMembers: teamResult.data || [],
+      },
+    };
+  },
+);

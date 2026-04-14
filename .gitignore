@@ -69,5 +69,25 @@ public/test-plan.pdf
 # Scripts (dev utilities)
 scripts/
 
+# Local prompt/import scratch files
+prompt/
+
 # Root-level report files
 ESTIMATES-TESTING-COMPLETE.md
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# OS
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cursor IDE
+.cursor/
+
+# Claude Code
+.claude/projects/

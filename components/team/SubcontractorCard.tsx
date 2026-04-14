@@ -27,15 +27,10 @@ import MoreVertical from "lucide-react/icons/more-vertical";
 import Phone from "lucide-react/icons/phone";
 import Mail from "lucide-react/icons/mail";
 import MapPin from "lucide-react/icons/map-pin";
-import Star from "lucide-react/icons/star";
-import AlertTriangle from "lucide-react/icons/alert-triangle";
-import CheckCircle2 from "lucide-react/icons/check-circle-2";
-import XCircle from "lucide-react/icons/x-circle";
 import Edit from "lucide-react/icons/edit";
 import Trash2 from "lucide-react/icons/trash-2";
 import RotateCcw from "lucide-react/icons/rotate-ccw";
-import FileText from "lucide-react/icons/file-text";
-import Shield from "lucide-react/icons/shield";
+import DollarSign from "lucide-react/icons/dollar-sign";
 import { toast } from "sonner";
 import {
   deactivateSubcontractor,
@@ -45,12 +40,20 @@ import {
 
 type Subcontractor = SubcontractorsRow;
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  maximumFractionDigits: 0,
+});
+
 interface SubcontractorCardProps {
   subcontractor: Subcontractor;
   canManage: boolean;
   isGCAdmin: boolean;
   onEdit: (subcontractor: Subcontractor) => void;
   onDeactivate?: () => void;
+  totalContractAmount?: number;
+  totalPaid?: number;
 }
 
 // Trade badge color mapping
@@ -105,29 +108,12 @@ export function SubcontractorCard({
   isGCAdmin,
   onEdit,
   onDeactivate,
+  totalContractAmount = 0,
+  totalPaid = 0,
 }: SubcontractorCardProps) {
   const [isPending, startTransition] = useTransition();
   const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  // Check if dates are expiring (within 30 days) or expired
-  const checkExpiryStatus = (
-    expiryDate: string | null,
-  ): "valid" | "expiring" | "expired" => {
-    if (!expiryDate) return "valid";
-    const expiry = new Date(expiryDate);
-    const now = new Date();
-    const daysUntilExpiry = Math.ceil(
-      (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    if (daysUntilExpiry < 0) return "expired";
-    if (daysUntilExpiry <= 30) return "expiring";
-    return "valid";
-  };
-
-  const licenseStatus = checkExpiryStatus(subcontractor.license_expiry);
-  const insuranceStatus = checkExpiryStatus(subcontractor.insurance_expiry);
 
   const handleDeactivate = async () => {
     setDeactivateDialogOpen(false);
@@ -167,28 +153,6 @@ export function SubcontractorCard({
         toast.error(result.error);
       }
     });
-  };
-
-  // Render star rating
-  const renderStars = (rating: number | null) => {
-    const stars = rating || 0;
-    return (
-      <div className="flex items-center gap-1">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Star
-            key={i}
-            className={`h-4 w-4 ${
-              i <= stars
-                ? "fill-construction-yellow text-construction-yellow"
-                : "text-gray-300"
-            }`}
-          />
-        ))}
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">
-          {stars > 0 ? stars.toFixed(1) : "N/A"}
-        </span>
-      </div>
-    );
   };
 
   return (
@@ -333,93 +297,32 @@ export function SubcontractorCard({
           )}
         </div>
 
-        {/* Performance Rating */}
-        <div className="mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-            Performance
-          </div>
-          {renderStars(subcontractor.performance_rating)}
-        </div>
-
-        {/* Document Status */}
-        <div className="space-y-3">
-          {/* License Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                License
+        {/* Financial Summary */}
+        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-gray-200 dark:border-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Total Contract
               </span>
             </div>
-            {licenseStatus === "valid" && subcontractor.license_number ? (
-              <div className="flex items-center gap-1 text-construction-green">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="text-xs font-semibold">Valid</span>
-              </div>
-            ) : licenseStatus === "expiring" ? (
-              <div className="flex items-center gap-1 text-construction-yellow">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs font-semibold">Expiring Soon</span>
-              </div>
-            ) : licenseStatus === "expired" ? (
-              <div className="flex items-center gap-1 text-construction-red">
-                <XCircle className="h-4 w-4" />
-                <span className="text-xs font-semibold">Expired</span>
-              </div>
-            ) : (
-              <span className="text-xs text-gray-400">Not Provided</span>
-            )}
+            <div className="text-base font-black text-gray-900 dark:text-gray-100">
+              {totalContractAmount > 0
+                ? currencyFormatter.format(totalContractAmount)
+                : "—"}
+            </div>
           </div>
-
-          {/* Insurance Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Insurance
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+            <div className="flex items-center gap-1.5 mb-1">
+              <DollarSign className="h-3.5 w-3.5 text-green-500" />
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                Total Paid
               </span>
             </div>
-            {insuranceStatus === "valid" && subcontractor.insurance_provider ? (
-              <div className="flex items-center gap-1 text-construction-green">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="text-xs font-semibold">Valid</span>
-              </div>
-            ) : insuranceStatus === "expiring" ? (
-              <div className="flex items-center gap-1 text-construction-yellow">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-xs font-semibold">Expiring Soon</span>
-              </div>
-            ) : insuranceStatus === "expired" ? (
-              <div className="flex items-center gap-1 text-construction-red">
-                <XCircle className="h-4 w-4" />
-                <span className="text-xs font-semibold">Expired</span>
-              </div>
-            ) : (
-              <span className="text-xs text-gray-400">Not Provided</span>
-            )}
-          </div>
-
-          {/* Certificate of Insurance */}
-          {subcontractor.certificate_of_insurance ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  COI
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  window.open(subcontractor.certificate_of_insurance!, "_blank")
-                }
-                className="text-xs font-semibold text-construction-blue hover:text-construction-blue/80 hover:bg-construction-blue/10 min-h-[44px] px-3"
-              >
-                View COI
-              </Button>
+            <div className="text-base font-black text-green-600 dark:text-green-400">
+              {totalPaid > 0 ? currencyFormatter.format(totalPaid) : "—"}
             </div>
-          ) : null}
+          </div>
         </div>
 
         {/* Notes Preview */}

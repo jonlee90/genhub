@@ -19,7 +19,6 @@
 | P3-001-F | Toolbar + PlanViewer wire-up | frontend-engineer | 0.5d | P3-001-B, P3-001-D, P3-001-E |
 
 ---
-
 ## P3-001-A: Database Migration
 
 **Agent:** backend-engineer
@@ -55,9 +54,9 @@ CREATE INDEX idx_plan_measurements_page ON plan_measurements(plan_upload_id, pag
 RLS: company_id-scoped SELECT/INSERT/UPDATE/DELETE for authenticated users.
 
 **Acceptance Criteria:**
-- [x] Migration runs without errors
-- [x] RLS blocks cross-company access (SELECT + INSERT + UPDATE + DELETE policies via 20260216000008 follow-up migration)
-- [ ] `npm run db:gen-types` produces updated types (pending — run after applying migrations)
+- [ ] Migration runs without errors
+- [ ] RLS blocks cross-company access
+- [ ] `npm run db:gen-types` produces updated types
 
 ---
 
@@ -96,10 +95,10 @@ calibratePlanScale(planUploadId: string, scaleRatio: number): Promise<{ error: s
 ```
 
 **Acceptance Criteria:**
-- [x] All actions validate auth and company_id
-- [x] `saveMeasurement` returns created record
-- [x] `getMeasurements` returns all for given page
-- [x] No direct Supabase in client components
+- [ ] All actions validate auth and company_id
+- [ ] `saveMeasurement` returns created record
+- [ ] `getMeasurements` returns all for given page
+- [ ] No direct Supabase in client components
 
 ---
 
@@ -128,10 +127,10 @@ export function formatMeasurement(value: number, unit: string): string
 ```
 
 **Acceptance Criteria:**
-- [x] Shoelace formula matches known test polygon areas
-- [x] `calculatePolylineLength` sums correctly for multi-segment lines
-- [x] `deriveScaleRatio` returns pixels-per-foot correctly
-- [x] All functions are pure (no side effects)
+- [ ] Shoelace formula matches known test polygon areas
+- [ ] `calculatePolylineLength` sums correctly for multi-segment lines
+- [ ] `deriveScaleRatio` returns pixels-per-foot correctly
+- [ ] All functions are pure (no side effects)
 
 ---
 
@@ -169,15 +168,15 @@ interface MeasurementToolProps {
 - `bundle-barrel-imports` — direct Lucide icon imports
 
 **Mobile Checks:**
-- [x] 44px hit area on control points
-- [x] `active:` states on toolbar buttons
-- [x] Two-finger zoom does not trigger measurement
+- [ ] 44px hit area on control points
+- [ ] `active:` states on toolbar buttons
+- [ ] Two-finger zoom does not trigger measurement
 
 **Acceptance Criteria:**
-- [x] Polygon closes correctly on double-click (phantom point bug fixed with 220ms click timer)
-- [x] Area label updates live while drawing
-- [x] Undo removes last placed point
-- [x] `onComplete` fires with correct points array and calculated result
+- [ ] Polygon closes correctly on double-click
+- [ ] Area label updates live while drawing
+- [ ] Undo removes last placed point
+- [ ] `onComplete` fires with correct points array and calculated result
 
 ---
 
@@ -219,11 +218,11 @@ Use `ResponsiveModal` for the wizard. Never raw `<Dialog>`.
 - `async-defer-await` — defer save until wizard confirmed
 
 **Acceptance Criteria:**
-- [x] Count increments correctly on each tap
-- [x] Removing a marker re-numbers remaining markers
-- [x] Wizard 3 steps flow correctly
-- [x] `calibratePlanScale` server action called on wizard completion
-- [x] Uses `ResponsiveModal` (not raw Dialog)
+- [ ] Count increments correctly on each tap
+- [ ] Removing a marker re-numbers remaining markers
+- [ ] Wizard 3 steps flow correctly
+- [ ] `calibratePlanScale` server action called on wizard completion
+- [ ] Uses `ResponsiveModal` (not raw Dialog)
 
 ---
 
@@ -256,15 +255,13 @@ type MeasurementMode = 'select' | 'area' | 'linear' | 'count'
 ```
 
 **Mobile Checks:**
-- [x] FAB is `min-h-[44px] min-w-[44px]`
-- [x] `pb-[env(safe-area-inset-bottom)]` on FAB container
-- [x] `active:scale-95` on tool buttons
-- [x] `dark:` variants on palette background
+- [ ] FAB is `min-h-[44px] min-w-[44px]`
+- [ ] `pb-[env(safe-area-inset-bottom)]` on FAB container
+- [ ] `active:scale-95` on tool buttons
+- [ ] `dark:` variants on palette background
 
 **Acceptance Criteria:**
-- [x] Switching modes cleanly unmounts/mounts tool
-- [x] Completed measurements persist and re-render on page load (getMeasurements on load, rendered as static SVG overlay)
-- [x] `PlanViewer` passes scale ratio from plan metadata to tools
-- [x] Build passes with no TS errors (0 errors in all new/modified files)
-
-**Implemented:** 2026-02-16
+- [ ] Switching modes cleanly unmounts/mounts tool
+- [ ] Completed measurements persist and re-render on page load
+- [ ] `PlanViewer` passes scale ratio from plan metadata to tools
+- [ ] Build passes with no TS errors

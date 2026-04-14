@@ -27,7 +27,7 @@ import FolderOpen from "lucide-react/icons/folder-open";
 import Target from "lucide-react/icons/target";
 import Calculator from "lucide-react/icons/calculator";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatPercentWhole } from "@/lib/utils";
+import { cn, formatBudget, formatPercentWhole } from "@/lib/utils";
 import { ProjectTeam } from "./ProjectTeam";
 import { ProjectSettings } from "./ProjectSettings";
 import { ProjectOverview } from "./ProjectOverview";
@@ -397,6 +397,49 @@ export function ProjectDetailContent({
 
             {/* Bottom Section: Quick Stats Grid */}
             <div className="grid grid-cols-2 gap-px bg-gray-200 dark:bg-gray-700 sm:grid-cols-3 lg:grid-cols-6">
+              {/* Budget — wide card, first position */}
+              <div className="col-span-2 sm:col-span-1 bg-white dark:bg-gray-800 p-3 sm:p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign className="h-3.5 w-3.5 text-construction-green" />
+                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Budget
+                  </span>
+                </div>
+                <div className="flex items-end justify-between gap-2 mb-2">
+                  <span className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums leading-none">
+                    {project.budget ? formatBudget(project.budget) : "Not set"}
+                  </span>
+                  {expenseStats && expenseStats.approvedAmount > 0 ? (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums leading-none">
+                      {`${formatBudget(expenseStats.approvedAmount)} spent`}
+                    </span>
+                  ) : null}
+                </div>
+                {project.budget && project.budget > 0 && expenseStats ? (
+                  <>
+                    <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500",
+                          expenseStats.approvedAmount / project.budget > 1
+                            ? "bg-construction-red"
+                            : expenseStats.approvedAmount / project.budget >=
+                                0.75
+                              ? "bg-construction-yellow"
+                              : "bg-construction-green",
+                        )}
+                        style={{
+                          width: `${Math.min((expenseStats.approvedAmount / project.budget) * 100, 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="mt-1 text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">
+                      {`${formatBudget(project.budget - expenseStats.approvedAmount)} left`}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+
               {/* Progress */}
               <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
                 <div className="flex items-center gap-2 mb-1.5">
@@ -522,21 +565,6 @@ export function ProjectDetailContent({
                   )}
                 >
                   {daysRemaining !== null ? Math.abs(daysRemaining) : "N/A"}
-                </span>
-              </div>
-
-              {/* Budget */}
-              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <DollarSign className="h-3.5 w-3.5 text-construction-green" />
-                  <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Budget
-                  </span>
-                </div>
-                <span className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums">
-                  {project.budget
-                    ? `$${(project.budget / 1000).toFixed(0)}k`
-                    : "Not set"}
                 </span>
               </div>
             </div>
@@ -690,24 +718,6 @@ export function ProjectDetailContent({
               )}
             </button>
 
-            {/* Estimates Tab */}
-            <button
-              onClick={() => setActiveTab("estimates")}
-              className={cn(
-                "relative flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs whitespace-nowrap snap-start",
-                "min-h-[44px] min-w-[44px] flex-shrink-0",
-                "transition-all duration-200 ease-out",
-                "active:scale-[0.97]",
-                "sm:px-5 sm:py-3 sm:text-sm",
-                activeTab === "estimates"
-                  ? "bg-construction-blue text-white shadow-lg shadow-[var(--construction-blue)]/25"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 active:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:active:bg-gray-600",
-              )}
-            >
-              <Calculator className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span>Estimates</span>
-            </button>
-
             {/* Settings Tab */}
             <button
               onClick={() => setActiveTab("settings")}
@@ -753,6 +763,7 @@ export function ProjectDetailContent({
           {activeTab === "financials" && (
             <FinancialsTabClient
               projectId={project.id}
+              projectName={project.name}
               userRole={userRole || null}
             />
           )}
@@ -799,13 +810,6 @@ export function ProjectDetailContent({
               initialPhotos={projectPhotos || []}
               currentImageUrl={project.image_url}
               onPrimaryPhotoChange={handlePrimaryPhotoChange}
-            />
-          )}
-
-          {activeTab === "estimates" && (
-            <EstimatesTabClient
-              projectId={project.id}
-              userRole={userRole || null}
             />
           )}
 

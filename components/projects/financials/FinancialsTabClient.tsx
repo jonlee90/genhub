@@ -26,8 +26,25 @@ const CreateExpenseModal = dynamic(
 
 type SubView = "budget" | "expenses" | "subs";
 
+// Module-level cache — survives tab switches (component unmount/remount)
+interface FinancialsCacheEntry {
+  summary: FinancialSummary | null;
+  budget: any;
+  contracts: ContractWithPayments[];
+  expenses: any[];
+  subcontractors: Array<{
+    id: string;
+    company_name: string;
+    contact_name: string | null;
+  }>;
+  timestamp: number;
+}
+const FINANCIALS_CACHE_TTL = 5 * 60 * 1000;
+const financialsCache = new Map<string, FinancialsCacheEntry>();
+
 interface FinancialsTabClientProps {
   projectId: string;
+  projectName: string;
   userRole: string | null;
 }
 
@@ -61,10 +78,13 @@ function FinancialsSkeleton() {
 
 export function FinancialsTabClient({
   projectId,
+  projectName,
   userRole,
 }: FinancialsTabClientProps) {
-  const [activeSubView, setActiveSubView] = useState<SubView>("budget");
-  const [isLoading, setIsLoading] = useState(true);
+  const [activeSubView, setActiveSubView] = useState<SubView>("subs");
+  const [isLoading, setIsLoading] = useState(
+    () => !financialsCache.has(projectId),
+  );
   const [error, setError] = useState<string | null>(null);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
 
@@ -76,43 +96,76 @@ export function FinancialsTabClient({
     Array<{ id: string; company_name: string; contact_name: string | null }>
   >([]);
 
-  const fetchData = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const fetchData = useCallback(
+    async (invalidateCache = false) => {
+      if (invalidateCache) {
+        financialsCache.delete(projectId);
+      }
 
-      // Parallel fetch of all financial data (async-parallel skill)
-      const [
-        summaryResult,
-        budgetResult,
-        contractsResult,
-        expensesResult,
-        subsResult,
-      ] = await Promise.all([
-        getProjectFinancialSummary(projectId),
-        getBudgetByProject(projectId),
-        getContractsByProject(projectId),
-        getExpensesByProject(projectId),
-        getSubcontractorsByCompany(),
-      ]);
-
-      if (!summaryResult.success) {
-        setError(summaryResult.error || "Failed to load financial data");
+      // Serve from cache if still fresh (avoids refetch on tab switch remount)
+      const cached = financialsCache.get(projectId);
+      if (cached && Date.now() - cached.timestamp < FINANCIALS_CACHE_TTL) {
+        setSummary(cached.summary);
+        setBudget(cached.budget);
+        setContracts(cached.contracts);
+        setExpenses(cached.expenses);
+        setSubcontractors(cached.subcontractors);
+        setIsLoading(false);
         return;
       }
 
-      setSummary(summaryResult.data ?? null);
-      setBudget(budgetResult.data ?? null);
-      setContracts(contractsResult.data ?? []);
-      setExpenses(expensesResult.data ?? []);
-      setSubcontractors(subsResult.data ?? []);
-    } catch (err) {
-      console.error("[FinancialsTabClient] Error:", err);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [projectId]);
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Parallel fetch of all financial data (async-parallel skill)
+        const [
+          summaryResult,
+          budgetResult,
+          contractsResult,
+          expensesResult,
+          subsResult,
+        ] = await Promise.all([
+          getProjectFinancialSummary(projectId),
+          getBudgetByProject(projectId),
+          getContractsByProject(projectId),
+          getExpensesByProject(projectId),
+          getSubcontractorsByCompany(),
+        ]);
+
+        if (!summaryResult.success) {
+          setError(summaryResult.error || "Failed to load financial data");
+          return;
+        }
+
+        const entry: FinancialsCacheEntry = {
+          summary: summaryResult.data ?? null,
+          budget: budgetResult.data ?? null,
+          contracts: contractsResult.data ?? [],
+          expenses: expensesResult.data ?? [],
+          subcontractors: subsResult.data ?? [],
+          timestamp: Date.now(),
+        };
+        // Evict oldest entry when cache exceeds 20 projects
+        if (financialsCache.size >= 20) {
+          financialsCache.delete(financialsCache.keys().next().value!);
+        }
+        financialsCache.set(projectId, entry);
+
+        setSummary(entry.summary);
+        setBudget(entry.budget);
+        setContracts(entry.contracts);
+        setExpenses(entry.expenses);
+        setSubcontractors(entry.subcontractors);
+      } catch (err) {
+        console.error("[FinancialsTabClient] Error:", err);
+        setError("An unexpected error occurred. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [projectId],
+  );
 
   useEffect(() => {
     fetchData();
@@ -140,9 +193,9 @@ export function FinancialsTabClient({
   };
 
   const SUB_VIEWS: { id: SubView; label: string }[] = [
-    { id: "budget", label: "Budget" },
-    { id: "expenses", label: "Expenses" },
     { id: "subs", label: "Subs" },
+    { id: "expenses", label: "Expenses" },
+    { id: "budget", label: "Budget" },
   ];
 
   return (
@@ -179,7 +232,7 @@ export function FinancialsTabClient({
           <BudgetOverview
             projectId={projectId}
             budget={budget}
-            onRefresh={fetchData}
+            onRefresh={() => fetchData(true)}
             userRole={userRole}
           />
         ) : null}
@@ -189,7 +242,7 @@ export function FinancialsTabClient({
             projectId={projectId}
             expenses={expenses}
             onAddExpense={() => setShowExpenseModal(true)}
-            onRefresh={fetchData}
+            onRefresh={() => fetchData(true)}
           />
         ) : null}
 
@@ -198,7 +251,7 @@ export function FinancialsTabClient({
             projectId={projectId}
             contracts={contracts}
             subcontractors={subcontractors}
-            onRefresh={fetchData}
+            onRefresh={() => fetchData(true)}
             userRole={userRole}
           />
         ) : null}
@@ -206,13 +259,12 @@ export function FinancialsTabClient({
 
       {showExpenseModal ? (
         <CreateExpenseModal
-          projects={[{ id: projectId, name: "Project" }]}
+          projects={[{ id: projectId, name: projectName }]}
           tasks={[]}
           companyId=""
-          onClose={() => {
-            setShowExpenseModal(false);
-            fetchData();
-          }}
+          defaultProjectId={projectId}
+          onClose={() => setShowExpenseModal(false)}
+          onSuccess={() => fetchData(true)}
         />
       ) : null}
     </div>

@@ -89,9 +89,9 @@ export function ProjectOverview({
     ? statsData?.expenseStats
     : initialExpenseStats;
   const taskStats = statsFetched ? statsData?.taskStats : initialTaskStats;
-  const teamCostSummaries = teamFetched
-    ? (teamData?.teamCostSummaries ?? [])
-    : initialTeamCostSummaries;
+  const teamCostSummaries = (
+    teamFetched ? (teamData?.teamCostSummaries ?? []) : initialTeamCostSummaries
+  ).slice(0, 5);
 
   // Performance optimization: Memoize computed values to prevent unnecessary recalculations
   const hasPhases = useMemo(

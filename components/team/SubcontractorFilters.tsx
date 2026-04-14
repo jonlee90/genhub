@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { PlaceholdersVanishInput } from '@/components/ui/aceternity/placeholders-vanish-input';
-import type { SubcontractorsRow } from '@/types/db/tables/companies';
-import type { TradeType } from '@/types/db/enums';
+} from "@/components/ui/select";
+import { PlaceholdersVanishInput } from "@/components/ui/aceternity/placeholders-vanish-input";
+import type { SubcontractorsRow } from "@/types/db/tables/companies";
+import type { TradeType } from "@/types/db/enums";
 
 interface SubcontractorFiltersProps {
   searchQuery: string;
@@ -25,41 +25,40 @@ interface SubcontractorFiltersProps {
 
 // Search placeholders
 const searchPlaceholders = [
-  'Search subcontractors...',
-  'Find by company name...',
-  'Search by contact...',
-  'Filter by email...',
+  "Search subcontractors...",
+  "Find by company name...",
+  "Search by contact...",
+  "Filter by email...",
 ];
 
 // Trade labels
 const TRADE_LABELS: Record<TradeType, string> = {
-  electrical: 'Electrical',
-  plumbing: 'Plumbing',
-  hvac: 'HVAC',
-  carpentry: 'Carpentry',
-  masonry: 'Masonry',
-  roofing: 'Roofing',
-  flooring: 'Flooring',
-  painting: 'Painting',
-  drywall: 'Drywall',
-  concrete: 'Concrete',
-  landscaping: 'Landscaping',
-  demolition: 'Demolition',
-  steel_work: 'Steel Work',
-  glass_glazing: 'Glass & Glazing',
-  fire_protection: 'Fire Protection',
-  insulation: 'Insulation',
-  framing: 'Framing',
-  general: 'General',
-  other: 'Other',
+  electrical: "Electrical",
+  plumbing: "Plumbing",
+  hvac: "HVAC",
+  carpentry: "Carpentry",
+  masonry: "Masonry",
+  roofing: "Roofing",
+  flooring: "Flooring",
+  painting: "Painting",
+  drywall: "Drywall",
+  concrete: "Concrete",
+  landscaping: "Landscaping",
+  demolition: "Demolition",
+  steel_work: "Steel Work",
+  glass_glazing: "Glass & Glazing",
+  fire_protection: "Fire Protection",
+  insulation: "Insulation",
+  framing: "Framing",
+  general: "General",
+  other: "Other",
 };
 
 // Sort labels
 const SORT_LABELS: Record<string, string> = {
-  name: 'Name (A-Z)',
-  rating: 'Rating (High-Low)',
-  recent: 'Recently Added',
-  trade: 'Trade Type',
+  name: "Name (A-Z)",
+  recent: "Recently Added",
+  trade: "Trade Type",
 };
 
 export function SubcontractorFilters({
@@ -80,7 +79,9 @@ export function SubcontractorFilters({
         trades.add(sub.trade_specialization);
       }
     });
-    return Array.from(trades).sort((a, b) => TRADE_LABELS[a].localeCompare(TRADE_LABELS[b]));
+    return Array.from(trades).sort((a, b) =>
+      TRADE_LABELS[a].localeCompare(TRADE_LABELS[b]),
+    );
   }, [subcontractors]);
 
   if (mobile) {
@@ -91,7 +92,7 @@ export function SubcontractorFilters({
           placeholders={searchPlaceholders}
           value={searchQuery}
           onChange={onSearchChange}
-          onClear={() => onSearchChange('')}
+          onClear={() => onSearchChange("")}
         />
 
         {/* Filter dropdowns in a scrollable row */}
@@ -140,7 +141,7 @@ export function SubcontractorFilters({
           placeholders={searchPlaceholders}
           value={searchQuery}
           onChange={onSearchChange}
-          onClear={() => onSearchChange('')}
+          onClear={() => onSearchChange("")}
         />
       </div>
 

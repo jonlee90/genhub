@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getUserContext } from "@/lib/auth-context";
+import { ensureSubcontractorOnProject } from "@/app/actions/projects";
 
 // ============================================
 // Types
@@ -111,6 +112,14 @@ export async function createContract(
       console.error("[createContract] Insert error:", error);
       return { success: false, error: "Failed to create contract" };
     }
+
+    await ensureSubcontractorOnProject(
+      userContext.supabase,
+      userContext.companyId,
+      userContext.userId,
+      validated.projectId,
+      validated.subcontractorId,
+    );
 
     revalidatePath(`/app/projects/${validated.projectId}`);
 

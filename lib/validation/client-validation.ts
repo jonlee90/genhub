@@ -8,9 +8,9 @@
  * These client rules are for UX only, not security.
  */
 
-'use client';
+"use client";
 
-import { RegisterOptions } from 'react-hook-form';
+import { RegisterOptions } from "react-hook-form";
 
 // ============================================================================
 // FIELD-LEVEL VALIDATION RULES
@@ -20,10 +20,10 @@ import { RegisterOptions } from 'react-hook-form';
  * Email validation rules
  */
 export const emailValidation = {
-  required: 'Email is required',
+  required: "Email is required",
   pattern: {
     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-    message: 'Please enter a valid email address',
+    message: "Please enter a valid email address",
   },
 };
 
@@ -33,7 +33,7 @@ export const emailValidation = {
 export const optionalEmailValidation = {
   pattern: {
     value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-    message: 'Please enter a valid email address',
+    message: "Please enter a valid email address",
   },
 };
 
@@ -44,7 +44,7 @@ export const optionalEmailValidation = {
 export const phoneValidation = {
   pattern: {
     value: /^\(\d{3}\) \d{3}-\d{4}$/,
-    message: 'Phone must be (XXX) XXX-XXXX format',
+    message: "Phone must be (XXX) XXX-XXXX format",
   },
 };
 
@@ -54,7 +54,7 @@ export const phoneValidation = {
 export const zipCodeValidation = {
   pattern: {
     value: /^\d{5}(-\d{4})?$/,
-    message: 'Please enter a valid ZIP code',
+    message: "Please enter a valid ZIP code",
   },
 };
 
@@ -62,10 +62,10 @@ export const zipCodeValidation = {
  * Required string validation rules
  */
 export const requiredStringValidation = {
-  required: 'This field is required',
+  required: "This field is required",
   maxLength: {
     value: 200,
-    message: 'Must be less than 200 characters',
+    message: "Must be less than 200 characters",
   },
 };
 
@@ -75,7 +75,7 @@ export const requiredStringValidation = {
 export const optionalStringValidation = {
   maxLength: {
     value: 200,
-    message: 'Must be less than 200 characters',
+    message: "Must be less than 200 characters",
   },
 };
 
@@ -85,7 +85,7 @@ export const optionalStringValidation = {
 export const longTextValidation = {
   maxLength: {
     value: 2000,
-    message: 'Must be less than 2000 characters',
+    message: "Must be less than 2000 characters",
   },
 };
 
@@ -93,7 +93,7 @@ export const longTextValidation = {
  * Date validation rules
  */
 export const dateValidation = {
-  required: 'Date is required',
+  required: "Date is required",
 };
 
 /**
@@ -110,7 +110,7 @@ export const currencyValidation = {
   required: false,
   min: {
     value: 0,
-    message: 'Amount must be positive',
+    message: "Amount must be positive",
   },
 };
 
@@ -118,10 +118,10 @@ export const currencyValidation = {
  * Positive number validation rules
  */
 export const positiveNumberValidation = {
-  required: 'This field is required',
+  required: "This field is required",
   min: {
     value: 0.01,
-    message: 'Must be greater than 0',
+    message: "Must be greater than 0",
   },
 };
 
@@ -136,7 +136,7 @@ export const inviteTeamMemberValidation = {
   email: emailValidation,
   name: requiredStringValidation,
   role: {
-    required: 'Please select a role',
+    required: "Please select a role",
   },
 };
 
@@ -145,22 +145,22 @@ export const inviteTeamMemberValidation = {
  */
 export const manualTeamMemberValidation = {
   first_name: {
-    required: 'First name is required',
+    required: "First name is required",
     maxLength: {
       value: 100,
-      message: 'First name must be less than 100 characters',
+      message: "First name must be less than 100 characters",
     },
   },
   last_name: {
-    required: 'Last name is required',
+    required: "Last name is required",
     maxLength: {
       value: 100,
-      message: 'Last name must be less than 100 characters',
+      message: "Last name must be less than 100 characters",
     },
   },
   email: optionalEmailValidation,
   role: {
-    required: 'Please select a role',
+    required: "Please select a role",
   },
 };
 
@@ -187,11 +187,18 @@ export const createProjectValidation = {
  * Create Expense validation rules
  */
 export const createExpenseValidation = {
-  project_id: { required: 'Please select a project' },
+  project_id: { required: "Please select a project" },
   task_id: { required: false },
   description: requiredStringValidation,
-  amount: positiveNumberValidation,
-  category: { required: 'Please select a category' },
+  amount: {
+    required: "Amount is required",
+    validate: (v: string | number) => {
+      const n = typeof v === "number" ? v : parseFloat(v);
+      if (!Number.isFinite(n)) return "Amount is required";
+      return n !== 0 || "Amount cannot be zero";
+    },
+  },
+  category: { required: "Please select a category" },
   expense_date: dateValidation,
   vendor_name: optionalStringValidation,
 };
@@ -204,13 +211,13 @@ export const addSubcontractorValidation = {
   contact_name: requiredStringValidation,
   email: optionalEmailValidation,
   phone: phoneValidation,
-  trade_specialization: { required: 'Please select a trade type' },
+  trade_specialization: { required: "Please select a trade type" },
   address: optionalStringValidation,
   license_number: optionalStringValidation,
   insurance_provider: optionalStringValidation,
   rating: {
-    min: { value: 0, message: 'Rating must be between 0 and 5' },
-    max: { value: 5, message: 'Rating must be between 0 and 5' },
+    min: { value: 0, message: "Rating must be between 0 and 5" },
+    max: { value: 5, message: "Rating must be between 0 and 5" },
   },
   notes: longTextValidation,
 };
@@ -219,12 +226,12 @@ export const addSubcontractorValidation = {
  * Assign Material validation rules
  */
 export const assignMaterialValidation = {
-  project_id: { required: 'Please select a project' },
-  phase_id: { required: 'Please select a phase' },
-  task_id: { required: 'Please select a task' },
+  project_id: { required: "Please select a project" },
+  phase_id: { required: "Please select a phase" },
+  task_id: { required: "Please select a task" },
   quantity: {
-    required: 'Quantity is required',
-    min: { value: 1, message: 'Quantity must be at least 1' },
+    required: "Quantity is required",
+    min: { value: 1, message: "Quantity must be at least 1" },
   },
 };
 
@@ -244,15 +251,17 @@ export const emailSignInValidation = {
  * Requirements: 8+ chars, uppercase, lowercase, number
  */
 export const passwordValidation = {
-  required: 'Password is required',
+  required: "Password is required",
   minLength: {
     value: 8,
-    message: 'Password must be at least 8 characters',
+    message: "Password must be at least 8 characters",
   },
   validate: {
-    hasUppercase: (v: string) => /[A-Z]/.test(v) || 'Must contain an uppercase letter',
-    hasLowercase: (v: string) => /[a-z]/.test(v) || 'Must contain a lowercase letter',
-    hasNumber: (v: string) => /[0-9]/.test(v) || 'Must contain a number',
+    hasUppercase: (v: string) =>
+      /[A-Z]/.test(v) || "Must contain an uppercase letter",
+    hasLowercase: (v: string) =>
+      /[a-z]/.test(v) || "Must contain a lowercase letter",
+    hasNumber: (v: string) => /[0-9]/.test(v) || "Must contain a number",
   },
 };
 
@@ -261,8 +270,8 @@ export const passwordValidation = {
  * @param getPassword - Function that returns the password value to compare against
  */
 export const confirmPasswordValidation = (getPassword: () => string) => ({
-  required: 'Please confirm your password',
-  validate: (v: string) => v === getPassword() || 'Passwords do not match',
+  required: "Please confirm your password",
+  validate: (v: string) => v === getPassword() || "Passwords do not match",
 });
 
 /**

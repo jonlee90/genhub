@@ -4,6 +4,8 @@ import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getUserContext } from "@/lib/auth-context";
+import { invalidateDashboardCache } from "@/app/actions/dashboard";
+import { ensureSubcontractorOnProject } from "@/app/actions/projects";
 import { createClient } from "@/utils/supabase/server";
 import type { ExpensesRow, ExpensesInsert } from "@/types/db/tables/expenses";
 import type { ExpenseCategory } from "@/types/db/enums";
@@ -116,6 +118,17 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
     if (error) {
       console.error("Error creating expense:", error);
       return { success: false, error: "Failed to create expense" };
+    }
+
+    // Auto-assign subcontractor to project team when expense links them
+    if (validated.subcontractor_id && validated.project_id) {
+      await ensureSubcontractorOnProject(
+        userContext.supabase,
+        userContext.companyId,
+        userContext.userId,
+        validated.project_id,
+        validated.subcontractor_id,
+      );
     }
 
     // Flow B: if subcontractor_id provided, find/create contract and add payment
@@ -238,6 +251,7 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
     if (validated.project_id) {
       revalidatePath(`/app/projects/${validated.project_id}`);
     }
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true, data: expense };
   } catch (error) {
@@ -275,6 +289,7 @@ export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
     if (expense.project_id) {
       revalidatePath(`/app/projects/${expense.project_id}`);
     }
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true, data: expense };
   } catch (error) {
@@ -355,6 +370,7 @@ export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
     if (expense.project_id) {
       revalidatePath(`/app/projects/${expense.project_id}`);
     }
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true, data: expense };
   } catch (error) {
@@ -401,6 +417,7 @@ export async function deleteExpense(expenseId: string) {
     if (expense?.project_id) {
       revalidatePath(`/app/projects/${expense.project_id}`);
     }
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true };
   } catch (error) {
@@ -908,6 +925,7 @@ export async function createExpenseFromMaterial(data: {
     revalidatePath("/app/expenses");
     revalidatePath(`/app/tasks/${data.task_id}`);
     revalidatePath(`/app/projects/${data.project_id}`);
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true, expense };
   } catch (error) {
@@ -1483,6 +1501,7 @@ export async function createExpenseFromTask(
     if (task.project_id) {
       revalidatePath(`/app/projects/${task.project_id}`);
     }
+    await invalidateDashboardCache({ companyId: userContext.companyId });
 
     return { success: true, data: expense };
   } catch (error) {

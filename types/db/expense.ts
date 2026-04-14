@@ -103,8 +103,10 @@ export interface CreateExpenseModalProps {
   projects: ExpenseProject[];
   tasks: ExpenseTask[];
   onClose: () => void;
+  onSuccess?: () => void;
   taskContext?: ExpenseTaskContext;
   companyId?: string;
+  defaultProjectId?: string;
 }
 
 /**

@@ -48,7 +48,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@next/third-parties": "16.1.4",
-    "idb": "^7.1.1",
     "@openpanel/nextjs": "^1.0.7",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -82,6 +81,7 @@
     "firebase": "^12.7.0",
     "framer-motion": "^12.23.26",
     "fuse.js": "^7.1.0",
+    "idb": "^7.1.1",
     "jose": "^5.10.0",
     "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
@@ -104,7 +104,8 @@
     "sonner": "^2.0.7",
     "stripe": "17.6.0",
     "tailwind-merge": "^3.0.1",
-    "web-ifc": "^0.0.74"
+    "web-ifc": "^0.0.74",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

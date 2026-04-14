@@ -58,7 +58,7 @@
 				"hooks": [
 					{
 						"type": "prompt",
-						"prompt": "Before stopping, quickly verify: 1) Were all requested changes made? 2) Did we follow the output format (Status, Files, Skills Applied, Mobile Checks, Build)? 3) Are there any TODO items still in_progress? If anything is incomplete, list what remains. $ARGUMENTS",
+						"prompt": "Before stopping, quickly verify: 1) Were all requested changes made? 2) Did we follow the output format (Status, Files, Skills Applied, Mobile Checks, Build)? 3) Are there any TODO items still in_progress that I (the AI) can complete right now without user input? If work is complete or is intentionally waiting on user action (e.g. user testing, user approval, user response), that is NOT incomplete. Only flag items I can fix myself. $ARGUMENTS",
 						"timeout": 30
 					},
 					{

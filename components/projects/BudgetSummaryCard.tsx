@@ -70,7 +70,7 @@ export function BudgetSummaryCard({
     );
   }
 
-  const totalUsed = summary.totalSpent + summary.subPayments;
+  const totalUsed = summary.totalSpent;
   const pct = summary.percentUsed;
 
   return (

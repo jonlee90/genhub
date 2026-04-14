@@ -102,15 +102,6 @@ export function TaskExpensesSection({
     .filter((e) => e.status === "approved" || e.status === "paid")
     .reduce((sum, e) => sum + e.amount, 0);
 
-  // Handle expense created callback
-  const handleExpenseCreated = async () => {
-    setShowCreateModal(false);
-    // Refresh expense list in TaskModal
-    if (onExpenseAdded) {
-      await onExpenseAdded();
-    }
-  };
-
   return (
     <div className="space-y-3">
       {/* Header with add button - only shown when no expenses exist */}
@@ -119,7 +110,10 @@ export function TaskExpensesSection({
           <div className="flex items-center gap-2">
             <Receipt className="h-4 w-4 text-construction-blue" />
             <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
-              Expenses <span className="text-gray-400 dark:text-gray-500 font-normal">(Optional)</span>
+              Expenses{" "}
+              <span className="text-gray-400 dark:text-gray-500 font-normal">
+                (Optional)
+              </span>
             </h3>
           </div>
 
@@ -213,7 +207,8 @@ export function TaskExpensesSection({
         <CreateExpenseModal
           projects={projects}
           tasks={tasks}
-          onClose={handleExpenseCreated}
+          onClose={() => setShowCreateModal(false)}
+          onSuccess={onExpenseAdded ?? undefined}
           taskContext={{
             taskId,
             taskTitle,

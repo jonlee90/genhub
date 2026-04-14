@@ -1,23 +1,12 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  updateCompliance,
-  deleteContract,
-} from "@/app/actions/subcontractor-contracts";
+import { deleteContract } from "@/app/actions/subcontractor-contracts";
 import { deletePayment } from "@/app/actions/subcontractor-payments";
 import { AddPaymentModal } from "./AddPaymentModal";
-import type {
-  ContractWithPayments,
-  ComplianceField,
-} from "@/app/actions/subcontractor-contracts";
-import Shield from "lucide-react/icons/shield";
-import FileText from "lucide-react/icons/file-text";
-import Flag from "lucide-react/icons/flag";
-import CalendarDays from "lucide-react/icons/calendar-days";
-import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import type { ContractWithPayments } from "@/app/actions/subcontractor-contracts";
 import Plus from "lucide-react/icons/plus";
 import ChevronDown from "lucide-react/icons/chevron-down";
 import ChevronUp from "lucide-react/icons/chevron-up";
@@ -37,53 +26,12 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-interface ComplianceIconProps {
-  field: ComplianceField;
-  value: boolean;
-  icon: React.ElementType;
-  label: string;
-  onToggle: (field: ComplianceField, value: boolean) => void;
-}
-
-function ComplianceIconButton({
-  field,
-  value,
-  icon: Icon,
-  label,
-  onToggle,
-}: ComplianceIconProps) {
-  return (
-    <button
-      type="button"
-      onClick={() => onToggle(field, !value)}
-      aria-label={`${label}: ${value ? "complete" : "pending"}`}
-      title={label}
-      className={cn(
-        "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl transition-all",
-        "active:scale-[0.97]",
-        value
-          ? "bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-950/60"
-          : "bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-600",
-      )}
-    >
-      <Icon className="h-5 w-5" />
-    </button>
-  );
-}
-
 interface SubContractCardProps {
   contract: ContractWithPayments;
   onRefresh: () => void;
 }
 
 export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
-  const [compliance, setCompliance] = useState({
-    insurance_received: contract.insurance_received,
-    contract_executed: contract.contract_executed,
-    ntp_issued: contract.ntp_issued,
-    schedule_received: contract.schedule_received,
-    punchlist_complete: contract.punchlist_complete,
-  });
   const [showPayments, setShowPayments] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -98,27 +46,6 @@ export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
     if (p >= 75) return "bg-yellow-500";
     return "bg-construction-blue";
   };
-
-  const handleComplianceToggle = useCallback(
-    async (field: ComplianceField, value: boolean) => {
-      // Optimistic update
-      setCompliance((prev) => ({ ...prev, [field]: value }));
-
-      try {
-        const result = await updateCompliance(contract.id, field, value);
-        if (!result.success) {
-          // Revert
-          setCompliance((prev) => ({ ...prev, [field]: !value }));
-          toast.error("Failed to update compliance status");
-        }
-      } catch {
-        // Revert
-        setCompliance((prev) => ({ ...prev, [field]: !value }));
-        toast.error("Failed to update compliance status");
-      }
-    },
-    [contract.id],
-  );
 
   const handleDelete = async () => {
     if (contract.payments.length > 0) {
@@ -241,50 +168,6 @@ export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
           </div>
           <div className="text-xs text-gray-500 dark:text-gray-400 text-right">
             {Math.round(pct)}% paid
-          </div>
-        </div>
-
-        {/* Compliance icons */}
-        <div>
-          <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-            Compliance
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <ComplianceIconButton
-              field="insurance_received"
-              value={compliance.insurance_received}
-              icon={Shield}
-              label="Insurance"
-              onToggle={handleComplianceToggle}
-            />
-            <ComplianceIconButton
-              field="contract_executed"
-              value={compliance.contract_executed}
-              icon={FileText}
-              label="Contract Signed"
-              onToggle={handleComplianceToggle}
-            />
-            <ComplianceIconButton
-              field="ntp_issued"
-              value={compliance.ntp_issued}
-              icon={Flag}
-              label="NTP Issued"
-              onToggle={handleComplianceToggle}
-            />
-            <ComplianceIconButton
-              field="schedule_received"
-              value={compliance.schedule_received}
-              icon={CalendarDays}
-              label="Schedule Received"
-              onToggle={handleComplianceToggle}
-            />
-            <ComplianceIconButton
-              field="punchlist_complete"
-              value={compliance.punchlist_complete}
-              icon={CheckCircle2}
-              label="Punchlist Complete"
-              onToggle={handleComplianceToggle}
-            />
           </div>
         </div>
 

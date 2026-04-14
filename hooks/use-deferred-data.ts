@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from "react";
 
 interface UseDeferredDataOptions<T> {
   /**
@@ -80,7 +80,6 @@ export function useDeferredData<T>({
   cacheKey,
 }: UseDeferredDataOptions<T>): UseDeferredDataReturn<T> {
   const [data, setData] = useState<T | null>(() => {
-    // Check cache on mount
     if (cacheKey && dataCache.has(cacheKey)) {
       return dataCache.get(cacheKey);
     }
@@ -88,16 +87,20 @@ export function useDeferredData<T>({
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [hasFetched, setHasFetched] = useState(
-    () => cacheKey ? dataCache.has(cacheKey) : false
+  const [hasFetched, setHasFetched] = useState(() =>
+    cacheKey ? dataCache.has(cacheKey) : false,
   );
 
   const isMountedRef = useRef(true);
   const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  // Stable ref for fetchFn — avoids recreating fetchData on every render
+  // when callers pass inline arrow functions
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
 
   const fetchData = useCallback(async () => {
-    // Don't fetch if already fetched and cached
-    if (hasFetched && cacheKey && dataCache.has(cacheKey)) {
+    // Use module-level cache as source of truth to avoid hasFetched in deps
+    if (cacheKey && dataCache.has(cacheKey)) {
       return;
     }
 
@@ -105,33 +108,30 @@ export function useDeferredData<T>({
     setError(null);
 
     try {
-      const result = await fetchFn();
+      const result = await fetchFnRef.current();
 
-      // Only update state if component is still mounted
       if (isMountedRef.current) {
         setData(result);
         setHasFetched(true);
-
-        // Cache the result if cache key provided
         if (cacheKey) {
           dataCache.set(cacheKey, result);
         }
       }
     } catch (err) {
       if (isMountedRef.current) {
-        const error = err instanceof Error ? err : new Error('Failed to fetch data');
-        setError(error);
-        console.error('[useDeferredData] Fetch failed:', error);
+        const fetchError =
+          err instanceof Error ? err : new Error("Failed to fetch data");
+        setError(fetchError);
+        console.error("[useDeferredData] Fetch failed:", fetchError);
       }
     } finally {
       if (isMountedRef.current) {
         setLoading(false);
       }
     }
-  }, [fetchFn, cacheKey, hasFetched]);
+  }, [cacheKey]); // fetchFn removed — stable via ref; hasFetched removed — cache is source of truth
 
   const refetch = useCallback(async () => {
-    // Clear cache on manual refetch
     if (cacheKey) {
       dataCache.delete(cacheKey);
     }
