@@ -20,8 +20,9 @@ export interface FinancialSummary {
 // ============================================
 
 /**
- * Aggregate financial summary for a project
- * Runs three queries in parallel: budget total, approved expenses, sub payments
+ * Aggregate financial summary for a project.
+ * Expenses are the single source of truth — subcontractor payments
+ * are auto-created as expenses and counted here.
  */
 export async function getProjectFinancialSummary(
   projectId: string,
@@ -32,34 +33,25 @@ export async function getProjectFinancialSummary(
       return { success: false, error: "Unauthorized" };
     }
 
-    const [budgetResult, expensesResult, subPaymentsResult] = await Promise.all(
-      [
-        // Most recent budget for the project
-        userContext.supabase
-          .from("budgets" as any)
-          .select("total_amount")
-          .eq("project_id", projectId)
-          .eq("company_id", userContext.companyId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
+    const [budgetResult, expensesResult] = await Promise.all([
+      // Most recent budget for the project
+      userContext.supabase
+        .from("budgets" as any)
+        .select("total_amount")
+        .eq("project_id", projectId)
+        .eq("company_id", userContext.companyId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
 
-        // Approved/paid expenses for the project
-        userContext.supabase
-          .from("expenses")
-          .select("amount")
-          .eq("project_id", projectId)
-          .eq("company_id", userContext.companyId)
-          .in("status", ["approved", "paid"]),
-
-        // Sub payments for all contracts on this project
-        userContext.supabase
-          .from("subcontractor_payments" as any)
-          .select("amount, subcontractor_contracts!inner(project_id)")
-          .eq("company_id", userContext.companyId)
-          .eq("subcontractor_contracts.project_id", projectId),
-      ],
-    );
+      // Approved/paid expenses for the project (includes auto-created payment expenses)
+      userContext.supabase
+        .from("expenses")
+        .select("amount")
+        .eq("project_id", projectId)
+        .eq("company_id", userContext.companyId)
+        .in("status", ["approved", "paid"]),
+    ]);
 
     const totalBudget = (budgetResult.data as any)?.total_amount ?? 0;
     const hasBudget = !!budgetResult.data;
@@ -69,12 +61,7 @@ export async function getProjectFinancialSummary(
       0,
     );
 
-    const subPayments = ((subPaymentsResult.data as any[]) || []).reduce(
-      (sum: number, p: any) => sum + (p.amount || 0),
-      0,
-    );
-
-    const totalUsed = totalSpent + subPayments;
+    const totalUsed = totalSpent;
     const netRemaining = totalBudget - totalUsed;
     const percentUsed = totalBudget > 0 ? (totalUsed / totalBudget) * 100 : 0;
 
@@ -83,7 +70,7 @@ export async function getProjectFinancialSummary(
       data: {
         totalBudget,
         totalSpent,
-        subPayments,
+        subPayments: 0, // Kept for interface compatibility; always 0 now
         netRemaining,
         hasBudget,
         percentUsed,
