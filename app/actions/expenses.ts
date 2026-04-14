@@ -20,7 +20,9 @@ type ExpenseInsert = ExpensesInsert;
 
 const createExpenseSchema = z.object({
   description: z.string().min(1, "Description is required"),
-  amount: z.number().min(0.01, "Amount must be positive"),
+  amount: z
+    .number()
+    .refine((n) => n !== 0, { message: "Amount cannot be zero" }),
   category: z.enum([
     "materials",
     "labor",
@@ -39,12 +41,16 @@ const createExpenseSchema = z.object({
   receipt_url: z.string().url().optional().nullable(),
   payment_method: z.string().optional().nullable(),
   store_account: z.string().optional().nullable(),
+  subcontractor_id: z.string().uuid().optional().nullable(),
 });
 
 const updateExpenseSchema = z.object({
   id: z.string().uuid("Invalid expense ID"),
   description: z.string().min(1).optional(),
-  amount: z.number().min(0.01).optional(),
+  amount: z
+    .number()
+    .refine((n) => n !== 0, { message: "Amount cannot be zero" })
+    .optional(),
   category: z
     .enum([
       "materials",
@@ -110,6 +116,86 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
     if (error) {
       console.error("Error creating expense:", error);
       return { success: false, error: "Failed to create expense" };
+    }
+
+    // Flow B: if subcontractor_id provided, find/create contract and add payment
+    if (validated.subcontractor_id && validated.project_id) {
+      try {
+        // Look up existing active contract for this subcontractor + project
+        const { data: existingContract } = await userContext.supabase
+          .from("subcontractor_contracts" as any)
+          .select("id")
+          .eq("subcontractor_id", validated.subcontractor_id)
+          .eq("project_id", validated.project_id)
+          .eq("company_id", userContext.companyId)
+          .eq("status", "active")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let contractId: string;
+
+        if (existingContract) {
+          contractId = (existingContract as any).id;
+        } else {
+          // Create a new contract with contract_amount = expense amount
+          const { data: newContract, error: contractError } =
+            await userContext.supabase
+              .from("subcontractor_contracts" as any)
+              .insert({
+                company_id: userContext.companyId,
+                project_id: validated.project_id,
+                subcontractor_id: validated.subcontractor_id,
+                contract_amount: Math.abs(validated.amount),
+                status: "active",
+                phase: null,
+                notes: null,
+                created_by: userContext.userId,
+              })
+              .select("id")
+              .single();
+
+          if (contractError || !newContract) {
+            console.error(
+              "[createExpense] Failed to create contract for Flow B:",
+              contractError,
+            );
+            // Best-effort — expense already saved
+            return { success: true, data: expense };
+          }
+
+          contractId = (newContract as any).id;
+        }
+
+        // Insert payment with skipExpenseSync: true to prevent loop
+        const { createPayment } =
+          await import("@/app/actions/subcontractor-payments");
+        const paymentResult = await createPayment({
+          contractId,
+          amount: Math.abs(validated.amount),
+          paymentDate: validated.expense_date,
+          paymentMethod: "expense",
+          notes: validated.description,
+          skipExpenseSync: true,
+        });
+
+        if (paymentResult.success && paymentResult.data) {
+          // Link the expense back to the payment we just created
+          await userContext.supabase
+            .from("expenses")
+            .update({ subcontractor_payment_id: paymentResult.data.id })
+            .eq("id", expense.id);
+        } else {
+          console.error(
+            "[createExpense] Failed to create payment for Flow B:",
+            paymentResult.error,
+          );
+          // Best-effort — expense already saved
+        }
+      } catch (syncError) {
+        console.error("[createExpense] Flow B sync error:", syncError);
+        // Best-effort — expense already saved
+      }
     }
 
     // Notify project managers about new expense
@@ -328,8 +414,8 @@ export async function getExpensesByProject(projectId: string) {
       .select(
         `
         *,
-        submitted_by_user:submitted_by(id, name, email),
-        reviewed_by_user:reviewed_by(id, name, email),
+        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
+        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
         task:tasks(id, title),
         line_items:expense_line_items(*)
       `,
@@ -361,8 +447,8 @@ export async function getExpensesByCompany() {
       .select(
         `
         *,
-        submitted_by_user:submitted_by(id, name, email),
-        reviewed_by_user:reviewed_by(id, name, email),
+        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
+        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
         project:projects(id, name),
         task:tasks(id, title)
       `,
@@ -394,8 +480,8 @@ export async function getExpenseById(expenseId: string) {
       .select(
         `
         *,
-        submitted_by_user:submitted_by(id, name, email),
-        reviewed_by_user:reviewed_by(id, name, email),
+        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
+        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
         project:projects(id, name),
         task:tasks(id, title),
         line_items:expense_line_items(
