@@ -14,28 +14,18 @@ import type {
   ExpensesListProps,
 } from "@/types/db/expense";
 
-const STATUS_FILTER_OPTIONS = [
-  { label: "All Statuses", value: "all" },
-  { label: "Submitted", value: "submitted" },
-  { label: "Under Review", value: "under_review" },
-  { label: "Approved", value: "approved" },
-  { label: "Rejected", value: "rejected" },
-  { label: "Paid", value: "paid" },
-];
-
 const SORT_FILTER_OPTIONS = [
   { label: "Latest First", value: "created_at" },
   { label: "Expense Date", value: "date" },
   { label: "Amount (High to Low)", value: "amount_high" },
   { label: "Amount (Low to High)", value: "amount_low" },
   { label: "Description (A-Z)", value: "description" },
-  { label: "Status", value: "status" },
 ];
 
 const EMPTY_STATE_STEPS = [
   { num: "01", label: "Upload", icon: Receipt },
-  { num: "02", label: "Review", icon: DollarSign },
-  { num: "03", label: "Approve", icon: Wrench },
+  { num: "02", label: "Track", icon: DollarSign },
+  { num: "03", label: "Manage", icon: Wrench },
 ];
 
 const CreateExpenseModal = dynamic(
@@ -60,7 +50,6 @@ export function ExpensesList({
   const [selectedExpense, setSelectedExpense] =
     useState<ExpenseWithRelations | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("created_at");
 
@@ -97,11 +86,6 @@ export function ExpensesList({
       );
     }
 
-    // Status filter
-    if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter((expense) => expense.status === statusFilter);
-    }
-
     // Project filter
     if (projectFilter && projectFilter !== "all") {
       filtered = filtered.filter(
@@ -123,8 +107,6 @@ export function ExpensesList({
           );
         case "description":
           return a.description.localeCompare(b.description);
-        case "status":
-          return a.status.localeCompare(b.status);
         case "created_at":
         default:
           return (
@@ -134,7 +116,7 @@ export function ExpensesList({
     });
 
     return filtered;
-  }, [initialExpenses, normalizedQuery, statusFilter, projectFilter, sortBy]);
+  }, [initialExpenses, normalizedQuery, projectFilter, sortBy]);
 
   // Calculate current expense count for the selected project
   const currentExpenseCount = useMemo(() => {
@@ -146,7 +128,6 @@ export function ExpensesList({
 
   const handleClearFilters = useCallback(() => {
     setSearchQuery("");
-    setStatusFilter("all");
     setProjectFilter("all");
     setSortBy("created_at");
   }, []);
@@ -168,13 +149,6 @@ export function ExpensesList({
   const filterConfigs = useMemo(
     () => [
       {
-        name: "status",
-        value: statusFilter,
-        onChange: setStatusFilter,
-        options: STATUS_FILTER_OPTIONS,
-        placeholder: "All Statuses",
-      },
-      {
         name: "sort",
         value: sortBy,
         onChange: setSortBy,
@@ -183,7 +157,7 @@ export function ExpensesList({
         colSpan: "auto" as const,
       },
     ],
-    [statusFilter, sortBy],
+    [sortBy],
   );
 
   // Empty State - No Expenses Created Yet

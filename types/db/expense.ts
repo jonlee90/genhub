@@ -6,13 +6,9 @@
  */
 
 import type { ExpensesRow } from "./tables/expenses";
-import type {
-  ExpenseStatus as DbExpenseStatus,
-  ExpenseCategory as DbExpenseCategory,
-} from "./enums";
+import type { ExpenseCategory as DbExpenseCategory } from "./enums";
 
 // Base types from database
-export type ExpenseStatus = DbExpenseStatus;
 export type ExpenseCategory = DbExpenseCategory;
 export type ExpenseRow = ExpensesRow;
 
@@ -30,7 +26,6 @@ export interface ExpenseWithRelations {
   receipt_url: string | null;
   payment_method?: string | null;
   store_account?: string | null;
-  status: ExpenseStatus;
   created_at: string;
   project: {
     id: string;
@@ -116,36 +111,3 @@ export interface ExpenseDetailModalProps {
   expense: ExpenseWithRelations;
   onClose: () => void;
 }
-
-/**
- * Status configuration for expense badges
- */
-export const EXPENSE_STATUS_CONFIG: Record<
-  ExpenseStatus,
-  { label: string; color: string }
-> = {
-  submitted: {
-    label: "Submitted",
-    color: "bg-gray-100 text-gray-700 border-gray-300",
-  },
-  under_review: {
-    label: "Under Review",
-    color:
-      "bg-construction-blue/10 text-construction-blue border-construction-blue",
-  },
-  approved: {
-    label: "Approved",
-    color:
-      "bg-construction-green/10 text-construction-green border-construction-green/30",
-  },
-  rejected: {
-    label: "Rejected",
-    color:
-      "bg-construction-red/10 text-construction-red border-construction-red/30",
-  },
-  paid: {
-    label: "Paid",
-    color:
-      "bg-construction-green/10 text-construction-green border-construction-green/30",
-  },
-};

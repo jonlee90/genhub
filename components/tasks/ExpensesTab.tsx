@@ -1,20 +1,14 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Receipt from "lucide-react/icons/receipt";
 import Loader2 from "lucide-react/icons/loader-2";
 import ExternalLink from "lucide-react/icons/external-link";
-import { cn, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { getTaskExpenses } from "@/app/actions/expenses";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
 
-type ExpenseStatus =
-  | "submitted"
-  | "under_review"
-  | "approved"
-  | "rejected"
-  | "paid";
 type ExpenseCategory =
   | "permits"
   | "materials"
@@ -29,7 +23,6 @@ interface Expense {
   id: string;
   description: string;
   amount: number;
-  status: ExpenseStatus;
   expense_date: string;
   vendor_name: string | null;
   category: ExpenseCategory;
@@ -43,19 +36,17 @@ export interface ExpensesTabProps {
 
 /**
  * ExpensesTab - Display expenses linked to task
- * Shows list of expenses with date, category, amount, status, and receipt link
+ * Shows list of expenses with date, category, amount, and receipt link
  * Calculates total expenses
  */
 export function ExpensesTab({
   taskId,
   hasBudgetVisibility = true,
 }: ExpensesTabProps) {
-  // Component state
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const { error, setError, clearError } = useActionWithError();
 
-  // Fetch expenses on mount
   useEffect(() => {
     const fetchExpenses = async () => {
       setLoading(true);
@@ -76,18 +67,6 @@ export function ExpensesTab({
     fetchExpenses();
   }, [taskId, setError]);
 
-  // Status badge color helper
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      submitted: "bg-gray-400 text-white",
-      reviewed: "bg-blue-500 text-white",
-      approved: "bg-green-500 text-white",
-      rejected: "bg-red-500 text-white",
-    };
-    return colors[status] || "bg-gray-400 text-white";
-  };
-
-  // Loading state
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
@@ -97,12 +76,10 @@ export function ExpensesTab({
     );
   }
 
-  // Error state
   if (error) {
     return <ErrorBanner error={error} onDismiss={clearError} />;
   }
 
-  // Empty state
   if (expenses.length === 0) {
     return (
       <div className="text-center py-12">
@@ -117,11 +94,7 @@ export function ExpensesTab({
     );
   }
 
-  // Calculate total expenses
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const approvedExpenses = expenses
-    .filter((e) => e.status === "approved")
-    .reduce((sum, e) => sum + e.amount, 0);
 
   return (
     <div className="space-y-4">
@@ -156,24 +129,15 @@ export function ExpensesTab({
             </div>
 
             {/* Notes */}
-            {expense.description && (
+            {expense.description ? (
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 border-l-2 border-gray-300 dark:border-gray-600 pl-3">
                 {expense.description}
               </p>
-            )}
+            ) : null}
 
-            {/* Status and Receipt */}
-            <div className="flex items-center justify-between gap-2 mt-3">
-              <span
-                className={cn(
-                  "px-2 py-1 rounded text-xs font-bold uppercase",
-                  getStatusColor(expense.status),
-                )}
-              >
-                {expense.status}
-              </span>
-
-              {expense.vendor_name && (
+            {/* Vendor */}
+            {expense.vendor_name ? (
+              <div className="flex items-center justify-end gap-2 mt-3">
                 <a
                   href="#"
                   target="_blank"
@@ -184,16 +148,16 @@ export function ExpensesTab({
                   Vendor: {expense.vendor_name}
                   <ExternalLink className="h-3 w-3" />
                 </a>
-              )}
-            </div>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
 
       {/* Total Summary (conditionally hidden) */}
-      {hasBudgetVisibility && (
+      {hasBudgetVisibility ? (
         <div className="border-2 border-construction-blue dark:border-construction-blue/40 rounded-lg p-4 bg-construction-blue/5 dark:bg-construction-blue/10">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center">
             <span className="font-bold uppercase text-sm text-construction-blue">
               Total Expenses:
             </span>
@@ -201,21 +165,11 @@ export function ExpensesTab({
               ${totalExpenses.toFixed(2)}
             </span>
           </div>
-          {approvedExpenses !== totalExpenses && (
-            <div className="flex justify-between items-center text-sm pt-2 border-t border-construction-blue/20">
-              <span className="text-gray-600 dark:text-gray-400">
-                Approved:
-              </span>
-              <span className="font-bold text-green-600">
-                ${approvedExpenses.toFixed(2)}
-              </span>
-            </div>
-          )}
           <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
             {expenses.length} expense{expenses.length !== 1 ? "s" : ""} recorded
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -15,7 +15,6 @@ interface Expense {
   vendor_name?: string | null;
   payment_method?: string | null;
   store_account?: string | null;
-  status: string;
   project?: { id: string; name: string } | null;
   task?: { id: string; title: string } | null;
 }
@@ -39,19 +38,6 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-function getStatusColor(status: string) {
-  switch (status) {
-    case "approved":
-    case "paid":
-      return "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400";
-    case "under_review":
-      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-400";
-    case "rejected":
-      return "bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400";
-    default:
-      return "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400";
-  }
-}
 
 function ExpenseRow({ expense }: { expense: Expense }) {
   return (
@@ -90,14 +76,6 @@ function ExpenseRow({ expense }: { expense: Expense }) {
             <div className="font-bold text-gray-900 dark:text-gray-100">
               {currencyFormatter.format(expense.amount)}
             </div>
-            <span
-              className={cn(
-                "inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold capitalize",
-                getStatusColor(expense.status),
-              )}
-            >
-              {expense.status.replace("_", " ")}
-            </span>
           </div>
         </div>
       </div>

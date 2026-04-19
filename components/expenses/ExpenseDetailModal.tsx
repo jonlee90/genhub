@@ -6,17 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Receipt,
-  CheckCircle2,
-  XCircle,
   FileText,
   Image as ImageIcon,
-  AlertCircle,
   Trash2,
 } from "lucide-react";
 import { CreatorBadge } from "@/components/ui/CreatorBadge";
-import { reviewExpense, deleteExpense } from "@/app/actions/expenses";
+import { deleteExpense } from "@/app/actions/expenses";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { m as motion } from "framer-motion";
 
@@ -28,7 +24,6 @@ interface Expense {
   expense_date: string;
   vendor_name: string | null;
   receipt_url: string | null;
-  status: "submitted" | "under_review" | "approved" | "rejected" | "paid";
   created_at: string;
   project: {
     id: string;
@@ -43,11 +38,6 @@ interface Expense {
     name: string;
     email: string;
   } | null;
-  reviewer?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
 }
 
 interface ExpenseDetailModalProps {
@@ -55,38 +45,6 @@ interface ExpenseDetailModalProps {
   onClose: () => void;
   userRole?: string | null;
 }
-
-const STATUS_CONFIG = {
-  submitted: {
-    label: "Submitted",
-    color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600",
-    icon: FileText,
-  },
-  under_review: {
-    label: "Under Review",
-    color:
-      "bg-construction-blue/10 text-construction-blue border-construction-blue",
-    icon: AlertCircle,
-  },
-  approved: {
-    label: "Approved",
-    color:
-      "bg-construction-green/10 text-construction-green border-construction-green/30",
-    icon: CheckCircle2,
-  },
-  rejected: {
-    label: "Rejected",
-    color:
-      "bg-construction-red/10 text-construction-red border-construction-red/30",
-    icon: XCircle,
-  },
-  paid: {
-    label: "Paid",
-    color:
-      "bg-construction-green/10 text-construction-green border-construction-green/30",
-    icon: CheckCircle2,
-  },
-};
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -109,45 +67,11 @@ export function ExpenseDetailModal({
   userRole,
 }: ExpenseDetailModalProps) {
   const [isPending, startTransition] = useTransition();
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(
-    null,
-  );
-  const [reviewNotes, setReviewNotes] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const statusConfig = STATUS_CONFIG[expense.status];
-  const StatusIcon = statusConfig.icon;
+  const isAdmin = userRole === "admin";
+  const canDelete = isAdmin;
 
-  const canReview =
-    expense.status === "submitted" || expense.status === "under_review";
-
-  const handleReview = (action: "approve" | "reject") => {
-    setReviewAction(action);
-    setShowReviewForm(true);
-  };
-
-  const handleSubmitReview = () => {
-    if (!reviewAction) return;
-
-    startTransition(async () => {
-      // DEBUG: reviewExpense expects snake_case params: id, status, approval_notes
-      const result = await reviewExpense({
-        id: expense.id,
-        status: reviewAction === "approve" ? "approved" : "rejected",
-        approval_notes: reviewNotes || undefined,
-      });
-
-      if (result.success) {
-        toast.success(`The expense has been ${reviewAction}d.`);
-        onClose();
-      } else {
-        toast.error(result.error || "Failed to review expense");
-      }
-    });
-  };
-
-  // DEBUG: Delete expense handler - only works for submitted expenses or admin
   const handleDelete = () => {
     startTransition(async () => {
       const result = await deleteExpense(expense.id);
@@ -156,58 +80,35 @@ export function ExpenseDetailModal({
         toast.success("The expense has been permanently deleted.");
         onClose();
       } else {
-        toast.error(result.error ||
-            "Failed to delete expense. You may not have permission.");
+        toast.error(result.error || "Failed to delete expense. You may not have permission.");
         setShowDeleteConfirm(false);
       }
     });
   };
 
-  // Can delete if status is 'submitted' (user's own expense before approval)
-  // Admin can also delete approved expenses
-  const isAdmin = userRole === "admin";
-  const canDelete = expense.status === "submitted" || (isAdmin && expense.status === "approved");
-
-  // Compute navigation state based on modal mode
   const getBackHandler = useCallback(() => {
-    if (showReviewForm) {
-      setShowReviewForm(false);
-      setReviewAction(null);
-      setReviewNotes("");
-    } else if (showDeleteConfirm) {
+    if (showDeleteConfirm) {
       setShowDeleteConfirm(false);
     } else {
       onClose();
     }
-  }, [showReviewForm, showDeleteConfirm, onClose]);
+  }, [showDeleteConfirm, onClose]);
 
   const getContinueHandler = useCallback(() => {
-    if (showReviewForm && reviewAction) {
-      handleSubmitReview();
-    } else if (showDeleteConfirm) {
+    if (showDeleteConfirm) {
       handleDelete();
-    } else if (canReview) {
-      // Default to approve when in review mode
-      handleReview("approve");
     }
-  }, [showReviewForm, reviewAction, showDeleteConfirm, canReview]);
+  }, [showDeleteConfirm]);
 
   const getContinueLabel = (): string => {
-    if (showReviewForm && reviewAction) {
-      if (isPending) return "Processing...";
-      return `Confirm ${reviewAction === "approve" ? "Approval" : "Rejection"}`;
-    }
     if (showDeleteConfirm) {
       return isPending ? "Deleting..." : "Delete Permanently";
-    }
-    if (canReview) {
-      return "Approve";
     }
     return "Close";
   };
 
   const getBackLabel = (): string => {
-    if (showReviewForm || showDeleteConfirm) {
+    if (showDeleteConfirm) {
       return "Cancel";
     }
     return "Close";
@@ -219,26 +120,18 @@ export function ExpenseDetailModal({
       onClose={onClose}
       icon={Receipt}
       title="Expense Details"
-      badges={
-        <Badge
-          className={cn("font-semibold border-2 px-3 py-2", statusConfig.color)}
-        >
-          <StatusIcon className="h-4 w-4 mr-1" />
-          {statusConfig.label}
-        </Badge>
-      }
       theme="default"
       maxWidth="4xl"
       showNavigation={true}
       onBack={getBackHandler}
       backLabel={getBackLabel()}
-      onContinue={canReview || showReviewForm || showDeleteConfirm ? getContinueHandler : undefined}
+      onContinue={showDeleteConfirm ? getContinueHandler : undefined}
       continueLabel={getContinueLabel()}
       continueDisabled={isPending}
     >
       <div className="space-y-6">
         {/* Receipt Image */}
-        {expense.receipt_url && (
+        {expense.receipt_url ? (
           <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4">
             <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
               <ImageIcon className="h-5 w-5" />
@@ -253,7 +146,7 @@ export function ExpenseDetailModal({
               />
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Expense Information */}
         <div className="bg-white dark:bg-gray-850 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-4">
@@ -299,7 +192,7 @@ export function ExpenseDetailModal({
               </p>
             </div>
 
-            {expense.vendor_name && (
+            {expense.vendor_name ? (
               <div>
                 <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
                   Vendor
@@ -308,7 +201,7 @@ export function ExpenseDetailModal({
                   {expense.vendor_name}
                 </p>
               </div>
-            )}
+            ) : null}
 
             <div>
               <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Project</Label>
@@ -317,22 +210,21 @@ export function ExpenseDetailModal({
               </p>
             </div>
 
-            {expense.task && (
+            {expense.task ? (
               <div className="md:col-span-2">
                 <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Task</Label>
                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {expense.task.title}
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 
-        {/* Submission & Review Info */}
+        {/* Timeline */}
         <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-3">
           <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">Timeline</h3>
 
-          {/* Created By - Industrial Metadata Tag */}
           <CreatorBadge
             creatorName={expense.submitter?.name || "Unknown User"}
             createdAt={expense.created_at}
@@ -352,52 +244,23 @@ export function ExpenseDetailModal({
               </p>
             </div>
           </div>
-
-          {expense.reviewer &&
-            (expense.status === "approved" ||
-              expense.status === "rejected") && (
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "p-2 rounded-lg",
-                    expense.status === "approved"
-                      ? "bg-construction-green/10"
-                      : "bg-construction-red/10",
-                  )}
-                >
-                  {expense.status === "approved" ? (
-                    <CheckCircle2 className="h-5 w-5 text-construction-green" />
-                  ) : (
-                    <XCircle className="h-5 w-5 text-construction-red" />
-                  )}
-                </div>
-                <div>
-                  <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
-                    {expense.status === "approved" ? "Approved" : "Rejected"}
-                  </Label>
-                  <p className="text-sm text-gray-900 dark:text-gray-100">
-                    {expense.reviewer.name}
-                  </p>
-                </div>
-              </div>
-            )}
         </div>
 
-        {/* Delete Expense Action - only for submitted expenses */}
-        {canDelete && !showDeleteConfirm && (
+        {/* Delete Expense Action */}
+        {canDelete && !showDeleteConfirm ? (
           <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 font-bold transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 min-h-[44px] rounded-lg border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/40 font-bold transition-colors"
             >
               <Trash2 className="h-4 w-4" />
               Delete Expense
             </button>
           </div>
-        )}
+        ) : null}
 
         {/* Delete Confirmation */}
-        {showDeleteConfirm && (
+        {showDeleteConfirm ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -415,7 +278,7 @@ export function ExpenseDetailModal({
               Click "Delete Permanently" in the footer to confirm deletion.
             </p>
           </motion.div>
-        )}
+        ) : null}
       </div>
     </ResponsiveModal>
   );

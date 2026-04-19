@@ -10,8 +10,7 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ExpenseCardProps, ExpenseStatus } from "@/types/db/expense";
-import { EXPENSE_STATUS_CONFIG } from "@/types/db/expense";
+import type { ExpenseCardProps } from "@/types/db/expense";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -30,8 +29,6 @@ const formatDate = (date: string) => dateFormatter.format(new Date(date));
 
 export const ExpenseCard = React.memo(
   function ExpenseCard({ expense }: ExpenseCardProps) {
-    const statusConfig = EXPENSE_STATUS_CONFIG[expense.status as ExpenseStatus];
-
     return (
       <div className="group relative h-full cursor-pointer">
         {/* Decorative background - construction theme */}
@@ -53,21 +50,12 @@ export const ExpenseCard = React.memo(
               <FileText className="h-12 w-12 md:h-16 md:w-16 text-gray-400 dark:text-gray-500 opacity-40" />
             )}
 
-            {/* Status badge - top right */}
-            <div className="absolute top-2 right-2">
-              <Badge
-                className={cn("font-bold border-2 text-xs", statusConfig.color)}
-              >
-                {statusConfig.label}
-              </Badge>
-            </div>
-
             {/* Receipt indicator - top left */}
-            {expense.receipt_url && (
+            {expense.receipt_url ? (
               <div className="absolute top-2 left-2 p-1.5 bg-white dark:bg-gray-800 rounded-lg border-2 border-construction-blue/20 dark:border-blue-600/30 shadow-sm">
                 <Receipt className="h-3 w-3 text-construction-blue dark:text-blue-400" />
               </div>
-            )}
+            ) : null}
           </div>
 
           {/* Content */}
@@ -87,7 +75,7 @@ export const ExpenseCard = React.memo(
               <Badge variant="outline" className="font-semibold capitalize">
                 {expense.category}
               </Badge>
-              {expense.vendor_name && (
+              {expense.vendor_name ? (
                 <>
                   <span className="text-gray-400 dark:text-gray-600">•</span>
                   <span className="text-gray-600 dark:text-gray-400 font-medium truncate">
@@ -99,7 +87,7 @@ export const ExpenseCard = React.memo(
                     ) : null}
                   </span>
                 </>
-              )}
+              ) : null}
             </div>
 
             {/* Payment Method badge */}
@@ -142,6 +130,5 @@ export const ExpenseCard = React.memo(
   },
   (prev, next) =>
     prev.expense.id === next.expense.id &&
-    prev.expense.status === next.expense.status &&
     prev.expense.amount === next.expense.amount,
 );
