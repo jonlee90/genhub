@@ -53,13 +53,12 @@ export async function getProjectFinancialSummary(
           .eq("company_id", userContext.companyId)
           .single(),
 
-        // Approved/paid expenses for the project
+        // All expenses for the project
         userContext.supabase
           .from("expenses")
           .select("amount")
           .eq("project_id", projectId)
-          .eq("company_id", userContext.companyId)
-          .in("status", ["approved", "paid"]),
+          .eq("company_id", userContext.companyId),
 
         // Contract IDs for this project, then sum their payments below
         userContext.supabase

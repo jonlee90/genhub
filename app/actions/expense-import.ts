@@ -238,8 +238,6 @@ export async function importExpenses(
     }
 
     // Step 2: Bulk insert expenses
-    const now = new Date().toISOString();
-
     const expenseRows = resolvedRows.map((row) => {
       // Resolve subcontractor_id for newly inserted subs
       const resolvedSubId =
@@ -256,9 +254,7 @@ export async function importExpenses(
         category: mapCategory(row.category_raw),
         expense_date: row.date,
         vendor_name: row.vendor_name,
-        status: "approved" as const,
         submitted_by: userId,
-        submitted_at: now,
         ocr_processed: false,
         // attach subcontractor reference if available
         ...(resolvedSubId ? { subcontractor_id: resolvedSubId } : {}),

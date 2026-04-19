@@ -72,12 +72,6 @@ const updateExpenseSchema = z.object({
   store_account: z.string().optional().nullable(),
 });
 
-const reviewExpenseSchema = z.object({
-  id: z.string().uuid("Invalid expense ID"),
-  status: z.enum(["approved", "rejected", "under_review"]),
-  approval_notes: z.string().optional().nullable(),
-});
-
 const addLineItemSchema = z.object({
   expense_id: z.string().uuid("Invalid expense ID"),
   description: z.string().min(1, "Description is required"),
@@ -110,7 +104,6 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
         ...validated,
         company_id: userContext.companyId,
         submitted_by: userContext.userId,
-        status: "approved",
       })
       .select()
       .single();
@@ -211,42 +204,6 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
       }
     }
 
-    // Notify project managers about new expense
-    if (validated.project_id) {
-      // Fetch submitter's name for notification
-      const { data: userProfile } = await userContext.supabase
-        .from("user_profiles")
-        .select("name")
-        .eq("id", userContext.userId)
-        .single();
-
-      const submitterName = userProfile?.name || "A user";
-
-      const { data: projectManagers } = await userContext.supabase
-        .from("project_team")
-        .select("user_id")
-        .eq("project_id", validated.project_id)
-        .eq("role", "project_manager");
-
-      if (projectManagers && projectManagers.length > 0) {
-        const notifications = projectManagers
-          .filter((pm) => pm.user_id !== null)
-          .map((pm) => ({
-            user_id: pm.user_id as string,
-            type: "expense_submitted" as const,
-            title: "New Expense Submitted",
-            message: `${submitterName} submitted an expense for review: ${validated.description}`,
-            link: `/app/expenses/${expense.id}`,
-          }));
-
-        if (notifications.length > 0) {
-          await userContext.supabase
-            .from("notifications")
-            .insert(notifications);
-        }
-      }
-    }
-
     revalidatePath("/app/expenses");
     if (validated.project_id) {
       revalidatePath(`/app/projects/${validated.project_id}`);
@@ -298,87 +255,6 @@ export async function updateExpense(data: z.infer<typeof updateExpenseSchema>) {
     }
     console.error("Error updating expense:", error);
     return { success: false, error: "Failed to update expense" };
-  }
-}
-
-export async function reviewExpense(data: z.infer<typeof reviewExpenseSchema>) {
-  try {
-    const userContext = await getUserContext();
-    if ("error" in userContext) {
-      return { success: false, error: "Unauthorized" };
-    }
-
-    const validated = reviewExpenseSchema.parse(data);
-
-    // Get current expense
-    const { data: currentExpense } = await userContext.supabase
-      .from("expenses")
-      .select("submitted_by, project_id, description")
-      .eq("id", validated.id)
-      .single();
-
-    // Update expense with review
-    const { data: expense, error } = await userContext.supabase
-      .from("expenses")
-      .update({
-        status: validated.status,
-        approval_notes: validated.approval_notes,
-        reviewed_by: userContext.userId,
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq("id", validated.id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error reviewing expense:", error);
-      return { success: false, error: "Failed to review expense" };
-    }
-
-    // Notify submitter
-    if (currentExpense) {
-      await userContext.supabase.from("notifications").insert({
-        user_id: currentExpense.submitted_by,
-        type:
-          validated.status === "approved"
-            ? "expense_approved"
-            : "expense_rejected",
-        title: `Expense ${validated.status === "approved" ? "Approved" : "Rejected"}`,
-        message: `Your expense "${currentExpense.description}" has been ${validated.status}`,
-        link: `/app/expenses/${validated.id}`,
-      });
-
-      // Send AlimTalk notification to submitter (Task 0018)
-      try {
-        const { KakaoService } = await import("@/lib/services/kakao");
-        await KakaoService.sendAlimTalk(currentExpense.submitted_by, {
-          template: "expense_status",
-          params: {
-            status: validated.status === "approved" ? "Approved" : "Rejected",
-            amount: `$${expense.amount.toFixed(2)}`,
-            comment: validated.approval_notes || "No comment provided",
-          },
-        });
-      } catch (error) {
-        console.error("[reviewExpense] Error sending AlimTalk:", error);
-        // Don't fail expense review if AlimTalk fails
-      }
-    }
-
-    revalidatePath("/app/expenses");
-    revalidatePath(`/app/expenses/${validated.id}`);
-    if (expense.project_id) {
-      revalidatePath(`/app/projects/${expense.project_id}`);
-    }
-    await invalidateDashboardCache({ companyId: userContext.companyId });
-
-    return { success: true, data: expense };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return { success: false, error: error.issues[0].message };
-    }
-    console.error("Error reviewing expense:", error);
-    return { success: false, error: "Failed to review expense" };
   }
 }
 
@@ -773,7 +649,7 @@ export async function getTaskExpenses(taskId: string) {
     const { data: expenses, error } = await userContext.supabase
       .from("expenses")
       .select(
-        "id, description, amount, status, expense_date, vendor_name, category",
+        "id, description, amount, expense_date, vendor_name, category",
       )
       .eq("task_id", taskId)
       .order("expense_date", { ascending: false });
@@ -889,7 +765,6 @@ export async function createExpenseFromMaterial(data: {
         category: data.category,
         expense_date: new Date().toISOString().split("T")[0],
         submitted_by: userContext.userId,
-        status: "approved",
       })
       .select()
       .single();
@@ -974,12 +849,6 @@ export async function getMaterialExpenseLink(materialAssignmentId: string) {
 export interface ExpenseAnalytics {
   totalCount: number;
   totalAmount: number;
-  pendingCount: number;
-  pendingAmount: number;
-  approvedCount: number;
-  approvedAmount: number;
-  rejectedCount: number;
-  rejectedAmount: number;
   byCategory: { category: string; amount: number; count: number }[];
 }
 
@@ -1004,7 +873,7 @@ export async function getExpenseAnalytics(filters?: {
     // Build query with company filter and optional filters
     let query = userContext.supabase
       .from("expenses")
-      .select("id, amount, status, category")
+      .select("id, amount, category")
       .eq("company_id", userContext.companyId);
 
     if (filters?.projectId) {
@@ -1030,12 +899,6 @@ export async function getExpenseAnalytics(filters?: {
     const analytics: ExpenseAnalytics = {
       totalCount: 0,
       totalAmount: 0,
-      pendingCount: 0,
-      pendingAmount: 0,
-      approvedCount: 0,
-      approvedAmount: 0,
-      rejectedCount: 0,
-      rejectedAmount: 0,
       byCategory: [],
     };
 
@@ -1049,19 +912,6 @@ export async function getExpenseAnalytics(filters?: {
       // Total counts
       analytics.totalCount++;
       analytics.totalAmount += amount;
-
-      // Status aggregation
-      // "pending" = submitted + under_review (awaiting decision)
-      if (expense.status === "submitted" || expense.status === "under_review") {
-        analytics.pendingCount++;
-        analytics.pendingAmount += amount;
-      } else if (expense.status === "approved" || expense.status === "paid") {
-        analytics.approvedCount++;
-        analytics.approvedAmount += amount;
-      } else if (expense.status === "rejected") {
-        analytics.rejectedCount++;
-        analytics.rejectedAmount += amount;
-      }
 
       // Category aggregation
       const category = expense.category || "other";
@@ -1473,7 +1323,6 @@ export async function createExpenseFromTask(
       expense_date: new Date().toISOString().split("T")[0], // Today's date
       vendor_name: vendorName,
       submitted_by: userContext.userId,
-      status: "approved",
     };
 
     const { data: expense, error: insertError } = await userContext.supabase
