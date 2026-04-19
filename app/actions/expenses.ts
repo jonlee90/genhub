@@ -1322,7 +1322,6 @@ export async function createExpenseFromTask(
       category: category,
       expense_date: new Date().toISOString().split("T")[0], // Today's date
       vendor_name: vendorName,
-      submitted_by: userContext.userId,
     };
 
     const { data: expense, error: insertError } = await userContext.supabase

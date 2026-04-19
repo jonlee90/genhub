@@ -144,10 +144,9 @@ export async function getBudgetByProject(projectId: string) {
     // Fetch approved expenses for this project to aggregate by category name
     const { data: expenses } = await userContext.supabase
       .from("expenses")
-      .select("category, amount, status")
+      .select("category, amount")
       .eq("project_id", projectId)
-      .eq("company_id", userContext.companyId)
-      .in("status", ["approved", "paid"]);
+      .eq("company_id", userContext.companyId);
 
     // Aggregate spent by category name (case-insensitive match)
     const spentByCategory: Record<string, number> = {};

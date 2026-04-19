@@ -80,10 +80,8 @@ export interface PriorityMetrics {
  * Expense tracking metrics
  */
 export interface ExpenseMetrics {
-  pending: number;
-  pendingAmount: number;
-  approved: number;
-  approvedAmount: number;
+  total: number;
+  totalAmount: number;
 }
 
 /**

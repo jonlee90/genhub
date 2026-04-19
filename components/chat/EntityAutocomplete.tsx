@@ -528,7 +528,7 @@ function getSecondaryText(result: SearchResultType): string {
     case "material":
       return `$${result.unit_price.toFixed(2)}${result.stock_status ? ` • ${result.stock_status}` : ""}`;
     case "expense":
-      return `$${result.amount.toFixed(2)} • ${result.status}`;
+      return `$${result.amount.toFixed(2)}`;
     case "user":
       return result.email;
   }

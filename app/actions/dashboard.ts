@@ -231,7 +231,7 @@ async function getDashboardDataImpl(
     console.log("[getDashboardData] Raw KPI data from view:", {
       projects: kpiData.total_projects,
       tasks: kpiData.total_tasks,
-      pendingExpenses: kpiData.pending_expenses,
+      totalExpenses: kpiData.expenses_total,
       materials: kpiData.total_materials,
       team: kpiData.team_size,
       quickActionProjects: quickActionData.projects.length,
@@ -239,7 +239,7 @@ async function getDashboardDataImpl(
 
     // Calculate derived metrics
     const totalPlannedBudget = Number(kpiData.total_budget) || 0;
-    const totalActualSpend = Number(kpiData.approved_expense_amount) || 0;
+    const totalActualSpend = Number(kpiData.expenses_total_amount) || 0;
     const budgetUtilization =
       totalPlannedBudget > 0
         ? Math.round((totalActualSpend / totalPlannedBudget) * 100)
@@ -279,8 +279,8 @@ async function getDashboardDataImpl(
       scheduleAtRisk: kpiData.at_risk_tasks ?? 0,
       scheduleDelayed: kpiData.delayed_tasks ?? 0,
 
-      pendingExpenses: kpiData.pending_expenses ?? 0,
-      pendingExpenseAmount: Number(kpiData.pending_expense_amount) || 0,
+      totalExpenses: kpiData.expenses_total ?? 0,
+      totalExpenseAmount: Number(kpiData.expenses_total_amount) || 0,
       pendingApprovals: kpiData.pending_approval_tasks ?? 0,
 
       teamSize: kpiData.team_size ?? 0,
@@ -310,9 +310,9 @@ async function getDashboardDataImpl(
       totalActual: totalActualSpend,
       variance: totalPlannedBudget - totalActualSpend,
       utilizationPercent: budgetUtilization,
-      pendingExpenses: {
-        count: kpiData.pending_expenses ?? 0,
-        amount: Number(kpiData.pending_expense_amount) || 0,
+      totalExpenses: {
+        count: kpiData.expenses_total ?? 0,
+        amount: Number(kpiData.expenses_total_amount) || 0,
       },
       expensesByCategory,
     };

@@ -166,9 +166,9 @@ export function BudgetSummaryWidget({
         </span>
       </div>
 
-      {/* Pending Expenses CTA */}
-      {budget.pendingExpenses.count > 0 ? (
-        <Link href="/app/expenses?status=pending">
+      {/* Total Expenses CTA */}
+      {budget.totalExpenses.count > 0 ? (
+        <Link href="/app/expenses">
           <div
             className={cn(
               "flex items-center justify-between p-3 rounded-lg",
@@ -180,12 +180,12 @@ export function BudgetSummaryWidget({
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-[#F59E0B] dark:text-yellow-400" />
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                {budget.pendingExpenses.count} pending
+                {budget.totalExpenses.count} expenses
               </span>
             </div>
             <div className="flex items-center gap-1">
               <span className="text-sm font-bold text-[#F59E0B] dark:text-yellow-400">
-                {formatBudget(budget.pendingExpenses.amount, true)}
+                {formatBudget(budget.totalExpenses.amount, true)}
               </span>
               <ChevronRight className="w-4 h-4 text-[#F59E0B] dark:text-yellow-400" />
             </div>

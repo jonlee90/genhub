@@ -59,7 +59,6 @@ export interface ExpenseSearchResult {
   id: string;
   description: string;
   amount: number;
-  status: string;
   vendor_name: string | null;
 }
 
@@ -284,7 +283,7 @@ export async function searchMaterials(query: string) {
 
 /**
  * Search expenses
- * Returns: id, description, amount, status, vendor_name
+ * Returns: id, description, amount, vendor_name
  * @param query - Search query string (case-insensitive, searches description and vendor_name)
  * @returns Array of ExpenseSearchResult (max 10)
  */
@@ -316,7 +315,7 @@ export async function searchExpenses(query: string) {
   // Search expenses by description or vendor name (case-insensitive)
   const { data: expenses, error } = await supabase
     .from('expenses')
-    .select('id, description, amount, status, vendor_name')
+    .select('id, description, amount, vendor_name')
     .eq('company_id', companyId)
     .or(`description.ilike.%${searchQuery}%,vendor_name.ilike.%${searchQuery}%`)
     .order('expense_date', { ascending: false })

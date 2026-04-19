@@ -29,9 +29,9 @@ export interface DashboardKPIs {
   scheduleAtRisk: number;
   scheduleDelayed: number;
 
-  // Approval metrics
-  pendingExpenses: number;
-  pendingExpenseAmount: number;
+  // Expense metrics
+  totalExpenses: number;
+  totalExpenseAmount: number;
   pendingApprovals: number; // tasks needing approval
 
   // Team metrics
@@ -71,7 +71,7 @@ export interface BudgetSummaryData {
   totalActual: number;
   variance: number; // positive = under budget
   utilizationPercent: number;
-  pendingExpenses: {
+  totalExpenses: {
     count: number;
     amount: number;
   };

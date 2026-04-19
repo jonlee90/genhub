@@ -47,7 +47,7 @@ function getVariant(
       return "danger";
 
     case "approvals":
-      return kpis.pendingExpenses > 0 ? "warning" : "default";
+      return kpis.totalExpenses > 0 ? "warning" : "default";
 
     case "team":
       return "default";
@@ -161,10 +161,10 @@ export function KPICardsGrid({ kpis, isLoading = false }: KPICardsGridProps) {
     {
       key: "pending-approvals",
       title: "Approvals",
-      value: kpis.pendingExpenses + kpis.pendingApprovals,
+      value: kpis.totalExpenses + kpis.pendingApprovals,
       subtitle:
-        kpis.pendingExpenseAmount > 0
-          ? formatBudget(kpis.pendingExpenseAmount)
+        kpis.totalExpenseAmount > 0
+          ? formatBudget(kpis.totalExpenseAmount)
           : "All caught up",
       icon: AlertCircle,
       variant: getVariant("approvals", kpis),

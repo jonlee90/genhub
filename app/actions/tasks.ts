@@ -2829,10 +2829,8 @@ export async function getTaskAnalytics(
           materials: { needed: 0, ordered: 0, delivered: 0 },
           priority: { high: 0, medium: 0, low: 0 },
           expenses: {
-            pending: 0,
-            pendingAmount: 0,
-            approved: 0,
-            approvedAmount: 0,
+            total: 0,
+            totalAmount: 0,
           },
           dependencies: { blockedByDeps: 0, ready: 0 },
           velocity: { tasksPerDay: 0, trend: 0 },
@@ -2887,10 +2885,8 @@ export async function getTaskAnalytics(
         low: Number(row.priority_low) || 0,
       },
       expenses: {
-        pending: Number(row.expenses_pending) || 0,
-        pendingAmount: Number(row.pending_amount) || 0,
-        approved: Number(row.expenses_approved) || 0,
-        approvedAmount: Number(row.approved_amount) || 0,
+        total: Number(row.expenses_total) || 0,
+        totalAmount: Number(row.total_amount) || 0,
       },
       dependencies: {
         blockedByDeps: Number(row.blocked_by_deps) || 0,
