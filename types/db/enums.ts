@@ -8,11 +8,13 @@
 export type ActivityAction = 'created' | 'updated' | 'deleted' | 'status_changed' | 'assigned' | 'commented' | 'attachment_added' | 'attachment_removed';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'revision_requested';
 export type AttachmentEntityType = 'task' | 'project' | 'phase' | 'profile' | 'subcontractor';
+export type BudgetStatus = 'draft' | 'approved' | 'locked';
 export type DocumentCategory = 'contracts' | 'permits' | 'drawings' | 'reports' | 'financial' | 'safety' | 'meeting_notes' | 'specifications' | 'general';
 export type EstimateStatus = 'draft' | 'reviewed' | 'approved' | 'superseded';
 export type ExpenseCategory = 'materials' | 'labor' | 'equipment' | 'permits' | 'transportation' | 'meals' | 'lodging' | 'other';
-export type ExpenseStatus = 'submitted' | 'under_review' | 'approved' | 'rejected' | 'paid';
 export type ExtractionMethod = 'labeled' | 'calculated' | 'inferred' | 'manual';
+export type ExtractionStage = 'extract_vectors' | 'classify_sheet' | 'detect_scale' | 'detect_elements' | 'detect_rooms' | 'extract_schedules' | 'extract_mep' | 'calculate_quantities' | 'cross_page_reconcile' | 'generate_estimate';
+export type JobStatus = 'pending' | 'claimed' | 'processing' | 'completed' | 'failed' | 'dead_letter';
 export type MarkerContentType = 'photo' | 'file' | 'note' | 'activity';
 export type MaterialCategory = 'lumber' | 'concrete' | 'electrical' | 'plumbing' | 'hvac' | 'roofing' | 'flooring' | 'paint' | 'hardware' | 'tools' | 'fixtures' | 'insulation' | 'drywall' | 'doors_windows' | 'landscaping' | 'other';
 export type MemberStatus = 'active' | 'invited' | 'inactive';
