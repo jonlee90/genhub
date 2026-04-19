@@ -13,7 +13,7 @@ export interface KakaoConnection {
 }
 
 export interface AlimTalkTemplate {
-  template: 'task_assignment' | 'expense_status' | 'project_milestone';
+  template: 'task_assignment' | 'project_milestone';
   params: Record<string, string>;
 }
 

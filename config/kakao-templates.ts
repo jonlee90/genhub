@@ -12,16 +12,6 @@ export const ALIMTALK_TEMPLATES = {
     // English: "You have been assigned a new task.\nProject: {{projectName}}\nTask: {{taskTitle}}\nDue Date: {{dueDate}}"
   },
 
-  // Expense Status Update Template
-  expense_status: {
-    code: 'EXPENSE_STATUS_001',
-    name: 'Expense Approval Status',
-    params: ['status', 'amount', 'comment'] as const,
-    // Template message format:
-    // "경비 승인 상태: {{status}}\n금액: {{amount}}\n코멘트: {{comment}}"
-    // English: "Expense Status: {{status}}\nAmount: {{amount}}\nComment: {{comment}}"
-  },
-
   // Project Milestone Template
   project_milestone: {
     code: 'PROJECT_MILESTONE_001',
