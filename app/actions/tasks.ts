@@ -1980,6 +1980,44 @@ export async function getProjectTasks(
 }
 
 /**
+ * Lightweight task fetch for expense-modal dropdowns (no joins).
+ * Returns only the fields the modal needs.
+ */
+export async function getProjectTasksForExpenseModal(projectId: string) {
+  const userContext = await getUserContext();
+  if ("error" in userContext) {
+    return { success: false, error: userContext.error as string, data: [] };
+  }
+
+  const { companyId, supabase } = userContext;
+
+  const projectCheck = await verifyProjectAccess(
+    supabase,
+    projectId,
+    companyId,
+  );
+  if ("error" in projectCheck) {
+    return { success: false, error: projectCheck.error as string, data: [] };
+  }
+
+  const { data, error } = await supabase
+    .from("tasks")
+    .select("id, title, project_id, task_type")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    after(() => {
+      console.error("Error fetching tasks for expense modal:", error);
+    });
+    return { success: false, error: "Failed to load tasks", data: [] };
+  }
+
+  return { success: true, data: data ?? [] };
+}
+
+/**
  * Update a task's due date (for Gantt chart drag-and-drop)
  * @deprecated Use updateTaskDates instead to update both start_date and due_date
  */

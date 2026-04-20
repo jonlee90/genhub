@@ -98,6 +98,7 @@ export function SubContractsList({
               key={contract.id}
               contract={contract}
               onRefresh={onRefresh}
+              userRole={userRole}
             />
           ))}
         </div>

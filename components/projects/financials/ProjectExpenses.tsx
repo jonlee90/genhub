@@ -1,29 +1,47 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import Filter from "lucide-react/icons/filter";
 import Plus from "lucide-react/icons/plus";
 import X from "lucide-react/icons/x";
+import type { ExpenseWithRelations } from "@/types/db/expense";
 
-interface Expense {
+const ExpenseDetailModal = dynamic(
+  () =>
+    import("@/components/expenses/ExpenseDetailModal").then((mod) => ({
+      default: mod.ExpenseDetailModal,
+    })),
+  { ssr: false },
+);
+
+const CreateExpenseModal = dynamic(
+  () =>
+    import("@/components/expenses/CreateExpenseModal").then((mod) => ({
+      default: mod.CreateExpenseModal,
+    })),
+  { ssr: false },
+);
+
+type Expense = ExpenseWithRelations;
+
+interface ProjectExpensesTask {
   id: string;
-  description: string;
-  amount: number;
-  category: string;
-  expense_date: string;
-  vendor_name?: string | null;
-  payment_method?: string | null;
-  store_account?: string | null;
-  project?: { id: string; name: string } | null;
-  task?: { id: string; title: string } | null;
+  title: string;
+  project_id: string;
+  task_type: string | null;
 }
 
 interface ProjectExpensesProps {
   projectId: string;
+  projectName: string;
   expenses: Expense[];
+  tasks: ProjectExpensesTask[];
   onAddExpense: () => void;
   onRefresh: () => void;
+  userRole?: string | null;
+  companyId?: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -38,11 +56,19 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
-
-function ExpenseRow({ expense }: { expense: Expense }) {
+function ExpenseRow({
+  expense,
+  onClick,
+}: {
+  expense: Expense;
+  onClick: (expense: Expense) => void;
+}) {
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-gray-100 dark:border-gray-700 last:border-0">
-      <div className="flex-1 min-w-0">
+    <button
+      onClick={() => onClick(expense)}
+      className="w-full flex items-start gap-3 py-3 px-2 border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer min-h-[44px] active:scale-[0.98]"
+    >
+      <div className="flex-1 min-w-0 text-left">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 truncate">
@@ -79,17 +105,39 @@ function ExpenseRow({ expense }: { expense: Expense }) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
 export function ProjectExpenses({
+  projectId,
+  projectName,
   expenses,
+  tasks,
   onAddExpense,
+  onRefresh,
+  userRole,
+  companyId,
 }: ProjectExpensesProps) {
   const [vendorFilter, setVendorFilter] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+
+  const handleExpenseSelect = useCallback((expense: Expense) => {
+    setSelectedExpense(expense);
+  }, []);
+
+  const handleEdit = useCallback(() => {
+    setEditingExpense(selectedExpense);
+    setSelectedExpense(null);
+  }, [selectedExpense]);
+
+  const handleDelete = useCallback(() => {
+    setSelectedExpense(null);
+    onRefresh();
+  }, [onRefresh]);
 
   // Derive unique filter options
   const vendors = useMemo(() => {
@@ -250,9 +298,13 @@ export function ProjectExpenses({
               : "No expenses for this project yet"}
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-gray-700 px-4">
+          <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {filtered.map((expense) => (
-              <ExpenseRow key={expense.id} expense={expense} />
+              <ExpenseRow
+                key={expense.id}
+                expense={expense}
+                onClick={handleExpenseSelect}
+              />
             ))}
           </div>
         )}
@@ -264,6 +316,32 @@ export function ProjectExpenses({
           {currencyFormatter.format(filtered.reduce((s, e) => s + e.amount, 0))}{" "}
           total
         </div>
+      ) : null}
+
+      {/* Expense Detail Modal */}
+      {selectedExpense ? (
+        <ExpenseDetailModal
+          expense={selectedExpense}
+          onClose={() => setSelectedExpense(null)}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          userRole={userRole}
+        />
+      ) : null}
+
+      {/* Edit Expense Modal */}
+      {editingExpense ? (
+        <CreateExpenseModal
+          projects={[{ id: projectId, name: projectName }]}
+          tasks={tasks}
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSuccess={() => {
+            setEditingExpense(null);
+            onRefresh();
+          }}
+          companyId={companyId ?? ""}
+        />
       ) : null}
     </div>
   );

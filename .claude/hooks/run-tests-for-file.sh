@@ -16,6 +16,14 @@ if [[ "$FILE_PATH" == *.spec.* ]] || [[ "$FILE_PATH" == *.test.* ]] || [[ "$FILE
   exit 0
 fi
 
+# Prevent concurrent tsc runs — if one is already in progress, skip
+LOCK_FILE="/tmp/genhub-tsc.lock"
+if [ -f "$LOCK_FILE" ]; then
+  exit 0
+fi
+touch "$LOCK_FILE"
+trap 'rm -f "$LOCK_FILE"' EXIT
+
 # Run TypeScript type check on the modified file's project
 # Using --noEmit for fast check without output
 npx tsc --noEmit --pretty 2>&1 | tail -20

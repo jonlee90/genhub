@@ -765,6 +765,7 @@ export function ProjectDetailContent({
               projectId={project.id}
               projectName={project.name}
               userRole={userRole || null}
+              companyId={project.company_id || ""}
             />
           )}
 

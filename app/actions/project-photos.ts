@@ -38,7 +38,7 @@ const getProjectPhotosWithReceiptsSchema = z.object({
             "task_receipts",
             "expense_receipts",
             "general",
-          ])
+          ]),
         )
         .optional(),
       search: z.string().min(1).max(200).optional(),
@@ -77,7 +77,7 @@ const setProjectPrimaryPhotoSchema = z.object({
       },
       {
         message: "Photo URL must be from an approved storage provider",
-      }
+      },
     ),
 });
 
@@ -196,11 +196,8 @@ export async function getProjectPhotosWithReceipts(params: unknown) {
           id,
           description,
           amount,
-          status,
           receipt_url,
-          created_at,
-          submitted_by,
-          uploader:submitted_by (id, name, avatar_url)
+          created_at
         `,
         )
         .eq("project_id", projectId)
@@ -273,7 +270,7 @@ export async function getProjectPhotosWithReceipts(params: unknown) {
         source_id: expense.id,
         source_title: `${expense.description} ($${expense.amount})`,
         uploaded_by: expense.uploader || {
-          id: expense.submitted_by || "",
+          id: "",
           name: "Unknown",
         },
         created_at: expense.created_at,
@@ -304,7 +301,7 @@ export async function getProjectPhotosWithReceipts(params: unknown) {
  * Updates projects.image_url column
  */
 export async function setProjectPrimaryPhoto(
-  params: unknown
+  params: unknown,
 ): Promise<{ success: boolean; error?: string }> {
   // Validate input
   const validated = setProjectPrimaryPhotoSchema.safeParse(params);

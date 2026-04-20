@@ -254,7 +254,6 @@ export async function importExpenses(
         category: mapCategory(row.category_raw),
         expense_date: row.date,
         vendor_name: row.vendor_name,
-        submitted_by: userId,
         ocr_processed: false,
         // attach subcontractor reference if available
         ...(resolvedSubId ? { subcontractor_id: resolvedSubId } : {}),

@@ -29,9 +29,7 @@ import {
 import {
   createExpense,
   updateExpense,
-  getVendorOptions,
   getPaymentMethodSuggestions,
-  type VendorOption,
 } from "@/app/actions/expenses";
 import { getSubcontractorsByCompany } from "@/app/actions/subcontractors";
 import { Building2 } from "lucide-react";
@@ -39,7 +37,6 @@ import { toast } from "sonner";
 import { m as motion } from "framer-motion";
 import Image from "next/image";
 import type { CreateExpenseModalProps } from "@/types/db/expense";
-import { VendorCombobox } from "./VendorCombobox";
 import { getTaskTypeDisplayConfig } from "@/lib/config/task-type-display";
 
 export function CreateExpenseModal({
@@ -55,10 +52,6 @@ export function CreateExpenseModal({
   // Derive edit mode before any state declarations
   const isEdit = !!expense;
 
-  // Vendor options state
-  const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
-  const [vendorLoading, setVendorLoading] = useState(false);
-  const [vendorError, setVendorError] = useState<string | null>(null);
   const [paymentMethodSuggestions, setPaymentMethodSuggestions] = useState<
     string[]
   >(["VISA", "AMEX", "ZELLE", "CASH", "CHECK", "DEBIT"]);
@@ -80,22 +73,22 @@ export function CreateExpenseModal({
     formState: { errors },
     canSubmit,
     isSubmitting,
-    setValue,
     watch,
   } = useValidatedForm({
     defaultValues: {
       project_id: isEdit
         ? (expense.project?.id ?? "")
-        : (taskContext?.projectId || defaultProjectId || ""),
+        : taskContext?.projectId || defaultProjectId || "",
       task_id: isEdit
         ? (expense.task?.id ?? undefined)
-        : (taskContext?.taskId || undefined),
+        : taskContext?.taskId || undefined,
       description: isEdit ? expense.description : "",
       amount: isEdit ? String(expense.amount) : "",
       category: isEdit
         ? (expense.category as
             | "materials"
             | "labor"
+            | "subcontractor"
             | "equipment"
             | "permits"
             | "transportation"
@@ -115,17 +108,12 @@ export function CreateExpenseModal({
       expense_date: isEdit
         ? expense.expense_date
         : new Date().toISOString().split("T")[0],
-      vendor_name: isEdit ? (expense.vendor_name ?? "") : "",
       subcontractor_id: null as string | null,
     },
   });
 
   // Watch values for derived state
   const selectedProject = watch("project_id");
-  const vendorName = watch("vendor_name");
-  const [storeAccount, setStoreAccount] = useState(
-    isEdit ? (expense?.store_account ?? "") : "",
-  );
   const [subcontractors, setSubcontractors] = useState<
     Array<{ id: string; company_name: string; contact_name: string | null }>
   >([]);
@@ -133,9 +121,6 @@ export function CreateExpenseModal({
   const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<
     string | null
   >(null);
-
-  // Show store account field for Home Depot / Lowe's
-  const showStoreAccount = /home depot|lowes|lowe's/i.test(vendorName || "");
 
   // Filter tasks for selected project
   const projectTasks = useMemo(
@@ -171,7 +156,7 @@ export function CreateExpenseModal({
     return counts;
   }, [tasks]);
 
-  // Fetch vendor options + payment method suggestions on mount
+  // Fetch payment method suggestions on mount
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       const result = await getPaymentMethodSuggestions();
@@ -183,29 +168,7 @@ export function CreateExpenseModal({
       }
     };
     fetchPaymentMethods();
-
-    if (!companyId) return;
-
-    const fetchVendors = async () => {
-      setVendorLoading(true);
-      setVendorError(null);
-
-      try {
-        const result = await getVendorOptions(companyId);
-        if (result.data) {
-          setVendorOptions(result.data);
-        } else if (result.error) {
-          setVendorError(result.error);
-        }
-      } catch {
-        setVendorError("Failed to load vendor options");
-      } finally {
-        setVendorLoading(false);
-      }
-    };
-
-    fetchVendors();
-  }, [companyId]);
+  }, []);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -260,6 +223,7 @@ export function CreateExpenseModal({
         category: data.category as
           | "materials"
           | "labor"
+          | "subcontractor"
           | "equipment"
           | "permits"
           | "transportation"
@@ -267,9 +231,7 @@ export function CreateExpenseModal({
           | "lodging"
           | "other",
         expense_date: data.expense_date,
-        vendor_name: data.vendor_name || undefined,
         payment_method: paymentMethod || undefined,
-        store_account: storeAccount || undefined,
       });
       if (result.success) {
         toast.success("Expense updated.");
@@ -293,6 +255,7 @@ export function CreateExpenseModal({
       category: data.category as
         | "materials"
         | "labor"
+        | "subcontractor"
         | "equipment"
         | "permits"
         | "transportation"
@@ -300,9 +263,7 @@ export function CreateExpenseModal({
         | "lodging"
         | "other",
       expense_date: data.expense_date,
-      vendor_name: data.vendor_name || undefined,
       payment_method: paymentMethod || undefined,
-      store_account: storeAccount || undefined,
       receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
       subcontractor_id: selectedSubcontractorId || undefined,
     });
@@ -599,12 +560,6 @@ export function CreateExpenseModal({
                   onChange={(e) => {
                     const val = e.target.value || null;
                     setSelectedSubcontractorId(val);
-                    if (val) {
-                      const sub = subcontractors.find((s) => s.id === val);
-                      if (sub) {
-                        setValue("vendor_name", sub.company_name);
-                      }
-                    }
                   }}
                 >
                   <option value="">
@@ -625,37 +580,6 @@ export function CreateExpenseModal({
               ) : null}
             </div>
           ) : null}
-
-          {/* Vendor Name - VendorCombobox or fallback Input */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="vendor"
-              className="text-sm font-bold text-gray-700 dark:text-gray-300"
-            >
-              Vendor Name (Optional)
-            </Label>
-            {companyId ? (
-              <VendorCombobox
-                options={vendorOptions}
-                value={vendorName || ""}
-                onChange={(value) => setValue("vendor_name", value)}
-                placeholder="Select or enter vendor..."
-                loading={vendorLoading}
-                error={vendorError}
-                disabled={isSubmitting}
-              />
-            ) : (
-              <Input
-                id="vendor"
-                className="border-2"
-                placeholder="e.g., Home Depot, Lowe's, etc."
-                {...register(
-                  "vendor_name",
-                  createExpenseValidation.vendor_name,
-                )}
-              />
-            )}
-          </div>
 
           {/* Payment Method */}
           <div className="space-y-2 relative">
@@ -709,136 +633,115 @@ export function CreateExpenseModal({
               </div>
             ) : null}
           </div>
-
-          {/* Store Account — shown for Home Depot / Lowe's */}
-          {showStoreAccount ? (
-            <div className="space-y-2">
-              <Label
-                htmlFor="store-account"
-                className="text-sm font-bold text-gray-700 dark:text-gray-300"
-              >
-                Store Account (Optional)
-              </Label>
-              <Input
-                id="store-account"
-                className="border-2"
-                placeholder="e.g., HD 2819, HD 9127"
-                value={storeAccount}
-                onChange={(e) => setStoreAccount(e.target.value)}
-                disabled={isSubmitting}
-              />
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Store charge account number for {vendorName}
-              </p>
-            </div>
-          ) : null}
         </div>
 
         {/* Receipt Upload Section — hidden in edit mode */}
         {!isEdit ? (
-        <div className="space-y-4">
-          <Label className="text-sm font-bold text-gray-700 dark:text-gray-300">
-            Receipt Photo
-          </Label>
+          <div className="space-y-4">
+            <Label className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              Receipt Photo
+            </Label>
 
-          {receiptPreview ? (
-            <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
-              <div className="relative w-full h-64 bg-gray-100">
-                <Image
-                  src={receiptPreview}
-                  alt="Receipt preview"
-                  fill
-                  className="object-contain"
-                />
+            {receiptPreview ? (
+              <div className="relative border-2 border-gray-200 rounded-lg overflow-hidden">
+                <div className="relative w-full h-64 bg-gray-100">
+                  <Image
+                    src={receiptPreview}
+                    alt="Receipt preview"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <div className="absolute top-2 right-2 flex gap-2">
+                  {isProcessingOCR && (
+                    <div className="bg-construction-blue text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className="text-sm font-semibold">
+                        Processing OCR...
+                      </span>
+                    </div>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleRemoveReceipt}
+                    className="shadow-lg"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="absolute top-2 right-2 flex gap-2">
-                {isProcessingOCR && (
-                  <div className="bg-construction-blue text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm font-semibold">
-                      Processing OCR...
-                    </span>
-                  </div>
-                )}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleRemoveReceipt}
-                  className="shadow-lg"
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                {/* File Upload */}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-construction-blue hover:bg-construction-blue/5 transition-all group"
                 >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {/* File Upload */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-construction-blue hover:bg-construction-blue/5 transition-all group"
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <div className="flex flex-col items-center gap-3">
-                  <div className="p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors">
-                    <Upload className="h-8 w-8 text-gray-400 group-hover:text-construction-blue" />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors">
+                      <Upload className="h-8 w-8 text-gray-400 group-hover:text-construction-blue" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-gray-900">Upload File</p>
+                      <p className="text-sm text-gray-600">
+                        Choose from gallery
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="font-bold text-gray-900">Upload File</p>
-                    <p className="text-sm text-gray-600">Choose from gallery</p>
-                  </div>
-                </div>
-              </button>
+                </button>
 
-              {/* Camera Upload */}
-              <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-construction-blue hover:bg-construction-blue/5 transition-all group"
-              >
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-                <div className="flex flex-col items-center gap-3">
-                  <div className="p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors">
-                    <Camera className="h-8 w-8 text-gray-400 group-hover:text-construction-blue" />
+                {/* Camera Upload */}
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="relative border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-construction-blue hover:bg-construction-blue/5 transition-all group"
+                >
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="p-3 bg-gray-100 rounded-lg group-hover:bg-construction-blue/10 transition-colors">
+                      <Camera className="h-8 w-8 text-gray-400 group-hover:text-construction-blue" />
+                    </div>
+                    <div className="text-center">
+                      <p className="font-bold text-gray-900">Take Photo</p>
+                      <p className="text-sm text-gray-600">Use camera</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="font-bold text-gray-900">Take Photo</p>
-                    <p className="text-sm text-gray-600">Use camera</p>
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-
-          {isProcessingOCR ? (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg p-3 flex items-center gap-3"
-            >
-              <Sparkles className="h-5 w-5 text-construction-blue animate-pulse" />
-              <div>
-                <p className="font-bold text-construction-blue text-sm">
-                  AI Processing
-                </p>
-                <p className="text-xs text-gray-600">
-                  Extracting vendor, amount, and line items...
-                </p>
+                </button>
               </div>
-            </motion.div>
-          ) : null}
-        </div>
+            )}
+
+            {isProcessingOCR ? (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-construction-blue/5 border-2 border-construction-blue/20 rounded-lg p-3 flex items-center gap-3"
+              >
+                <Sparkles className="h-5 w-5 text-construction-blue animate-pulse" />
+                <div>
+                  <p className="font-bold text-construction-blue text-sm">
+                    AI Processing
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    Extracting vendor, amount, and line items...
+                  </p>
+                </div>
+              </motion.div>
+            ) : null}
+          </div>
         ) : null}
       </div>
     </ResponsiveModal>

@@ -28,6 +28,7 @@ const createExpenseSchema = z.object({
   category: z.enum([
     "materials",
     "labor",
+    "subcontractor",
     "equipment",
     "permits",
     "transportation",
@@ -104,7 +105,6 @@ export async function createExpense(data: z.infer<typeof createExpenseSchema>) {
       .insert({
         ...validated,
         company_id: userContext.companyId,
-        submitted_by: userContext.userId,
       })
       .select()
       .single();
@@ -315,8 +315,7 @@ export async function getExpensesByProject(projectId: string) {
       .select(
         `
         *,
-        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
-        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
+        project:projects(id, name),
         task:tasks(id, title),
         line_items:expense_line_items(*)
       `,
@@ -348,8 +347,6 @@ export async function getExpensesByCompany() {
       .select(
         `
         *,
-        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
-        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
         project:projects(id, name),
         task:tasks(id, title)
       `,
@@ -381,8 +378,6 @@ export async function getExpenseById(expenseId: string) {
       .select(
         `
         *,
-        submitted_by_user:user_profiles!expenses_submitted_by_fkey(id, name, email),
-        reviewed_by_user:user_profiles!expenses_reviewed_by_fkey(id, name, email),
         project:projects(id, name),
         task:tasks(id, title),
         line_items:expense_line_items(
@@ -649,9 +644,7 @@ export async function getTaskExpenses(taskId: string) {
 
     const { data: expenses, error } = await userContext.supabase
       .from("expenses")
-      .select(
-        "id, description, amount, expense_date, vendor_name, category",
-      )
+      .select("id, description, amount, expense_date, vendor_name, category")
       .eq("task_id", taskId)
       .order("expense_date", { ascending: false });
 
@@ -765,7 +758,6 @@ export async function createExpenseFromMaterial(data: {
         amount: data.amount,
         category: data.category,
         expense_date: new Date().toISOString().split("T")[0],
-        submitted_by: userContext.userId,
       })
       .select()
       .single();

@@ -14,7 +14,10 @@ import {
   getProjectPhotosWithReceipts,
   type UnifiedPhoto,
 } from "@/app/actions/project-photos";
-import type { ProjectFilesRow, ProjectTypeConfigsRow } from "@/types/db/tables/projects";
+import type {
+  ProjectFilesRow,
+  ProjectTypeConfigsRow,
+} from "@/types/db/tables/projects";
 import type { TaskStats, TeamCostSummary } from "@/app/actions/projects";
 
 export const getProjectsPageData = cache(async function getProjectsPageData() {
@@ -61,7 +64,9 @@ export const getProjectsPageData = cache(async function getProjectsPageData() {
     totalCount: totalCount || 0,
     role: companyUser.role,
     companyId: companyUser.company_id,
-    projectTypes: projectTypesResult.success ? projectTypesResult.projectTypes || [] : [],
+    projectTypes: projectTypesResult.success
+      ? projectTypesResult.projectTypes || []
+      : [],
   };
 });
 
@@ -250,14 +255,16 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
     optionalQueries.push(
       supabase
         .from("task_assignees")
-        .select(`
+        .select(
+          `
           id,
           task_id,
           user_id,
           subcontractor_id,
           user:user_profiles!task_assignees_user_id_fkey(id, name, email, avatar_url),
           subcontractor:subcontractors!task_assignees_subcontractor_id_fkey(id, company_name, contact_name, email)
-        `)
+        `,
+        )
         .in("task_id", taskIds),
     );
 
@@ -284,10 +291,7 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
     // Using two separate queries and merging results for security
     optionalQueries.push(
       Promise.all([
-        supabase
-          .from("task_dependencies")
-          .select("*")
-          .in("task_id", taskIds),
+        supabase.from("task_dependencies").select("*").in("task_id", taskIds),
         supabase
           .from("task_dependencies")
           .select("*")
@@ -296,7 +300,7 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
         // Merge and deduplicate results
         const allDeps = [...(result1.data || []), ...(result2.data || [])];
         const uniqueDeps = Array.from(
-          new Map(allDeps.map((d) => [d.id, d])).values()
+          new Map(allDeps.map((d) => [d.id, d])).values(),
         );
         return { data: uniqueDeps };
       }),
@@ -524,9 +528,21 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
       }));
     }
 
-    // Use expense stats from RPC
+    // Use expense stats from RPC with field validation
     if (statsProject.expense_stats) {
-      expenseStats = statsProject.expense_stats;
+      expenseStats = {
+        total: (statsProject.expense_stats.total as number) || 0,
+        approved: (statsProject.expense_stats.approved as number) || 0,
+        pending: (statsProject.expense_stats.pending as number) || 0,
+        rejected: (statsProject.expense_stats.rejected as number) || 0,
+        totalAmount: (statsProject.expense_stats.totalAmount as number) || 0,
+        approvedAmount:
+          (statsProject.expense_stats.approvedAmount as number) || 0,
+        pendingAmount:
+          (statsProject.expense_stats.pendingAmount as number) || 0,
+        rejectedAmount:
+          (statsProject.expense_stats.rejectedAmount as number) || 0,
+      };
     }
 
     // Use task stats from RPC

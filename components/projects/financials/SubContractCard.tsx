@@ -6,11 +6,13 @@ import { cn } from "@/lib/utils";
 import { deleteContract } from "@/app/actions/subcontractor-contracts";
 import { deletePayment } from "@/app/actions/subcontractor-payments";
 import { AddPaymentModal } from "./AddPaymentModal";
+import { EditContractModal } from "./EditContractModal";
 import type { ContractWithPayments } from "@/app/actions/subcontractor-contracts";
 import Plus from "lucide-react/icons/plus";
 import ChevronDown from "lucide-react/icons/chevron-down";
 import ChevronUp from "lucide-react/icons/chevron-up";
 import MoreHorizontal from "lucide-react/icons/more-horizontal";
+import Pencil from "lucide-react/icons/pencil";
 import Trash2 from "lucide-react/icons/trash-2";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -29,12 +31,20 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 interface SubContractCardProps {
   contract: ContractWithPayments;
   onRefresh: () => void;
+  userRole: string | null;
 }
 
-export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
+export function SubContractCard({
+  contract,
+  onRefresh,
+  userRole,
+}: SubContractCardProps) {
   const [showPayments, setShowPayments] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  const canManage = userRole === "admin" || userRole === "pm";
 
   const pct =
     contract.contractAmount > 0
@@ -101,30 +111,42 @@ export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
           </div>
 
           {/* More menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu((v) => !v)}
-              aria-label="More options"
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.97] transition-all"
-            >
-              <MoreHorizontal className="h-5 w-5" />
-            </button>
+          {canManage ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu((v) => !v)}
+                aria-label="More options"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-[0.97] transition-all"
+              >
+                <MoreHorizontal className="h-5 w-5" />
+              </button>
 
-            {showMenu ? (
-              <div className="absolute right-0 top-full mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden min-w-[150px]">
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    handleDelete();
-                  }}
-                  className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 min-h-[44px] transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete Contract
-                </button>
-              </div>
-            ) : null}
-          </div>
+              {showMenu ? (
+                <div className="absolute right-0 top-full mt-1 z-30 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg overflow-hidden min-w-[160px]">
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      setShowEditModal(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 min-h-[44px] transition-colors border-b border-gray-100 dark:border-gray-700"
+                  >
+                    <Pencil className="h-4 w-4" />
+                    Edit Contract
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      handleDelete();
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 min-h-[44px] transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete Contract
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
 
         {/* Financial summary */}
@@ -257,6 +279,15 @@ export function SubContractCard({ contract, onRefresh }: SubContractCardProps) {
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           onCreated={onRefresh}
+        />
+      ) : null}
+
+      {showEditModal ? (
+        <EditContractModal
+          contract={contract}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={onRefresh}
         />
       ) : null}
     </div>

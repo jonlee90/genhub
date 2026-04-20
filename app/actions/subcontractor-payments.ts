@@ -112,9 +112,6 @@ export async function createPayment(
             expense_date: validated.paymentDate,
             vendor_name: sub.company_name,
             subcontractor_id: (contractDetail as any).subcontractor_id,
-            status: "approved" as const,
-            submitted_by: userContext.userId,
-            submitted_at: new Date().toISOString(),
             ocr_processed: false,
             subcontractor_payment_id: (payment as any).id,
           });

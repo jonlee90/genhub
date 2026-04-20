@@ -46,6 +46,7 @@ interface ExpenseDetailModalProps {
   onClose: () => void;
   userRole?: string | null;
   onEdit?: () => void;
+  onDelete?: () => void;
   currentUserId?: string;
 }
 
@@ -69,6 +70,7 @@ export function ExpenseDetailModal({
   onClose,
   userRole,
   onEdit,
+  onDelete,
   currentUserId,
 }: ExpenseDetailModalProps) {
   const [isPending, startTransition] = useTransition();
@@ -84,9 +86,13 @@ export function ExpenseDetailModal({
 
       if (result.success) {
         toast.success("The expense has been permanently deleted.");
+        onDelete?.();
         onClose();
       } else {
-        toast.error(result.error || "Failed to delete expense. You may not have permission.");
+        toast.error(
+          result.error ||
+            "Failed to delete expense. You may not have permission.",
+        );
         setShowDeleteConfirm(false);
       }
     });
@@ -171,7 +177,9 @@ export function ExpenseDetailModal({
             </div>
 
             <div>
-              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Amount</Label>
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                Amount
+              </Label>
               <p className="text-2xl font-black text-construction-blue mt-1">
                 {formatCurrency(expense.amount)}
               </p>
@@ -210,7 +218,9 @@ export function ExpenseDetailModal({
             ) : null}
 
             <div>
-              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Project</Label>
+              <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                Project
+              </Label>
               <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                 {expense.project?.name || "N/A"}
               </p>
@@ -218,7 +228,9 @@ export function ExpenseDetailModal({
 
             {expense.task ? (
               <div className="md:col-span-2">
-                <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">Task</Label>
+                <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                  Task
+                </Label>
                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {expense.task.title}
                 </p>
@@ -229,7 +241,9 @@ export function ExpenseDetailModal({
 
         {/* Timeline */}
         <div className="bg-gray-50 dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-6 space-y-3">
-          <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">Timeline</h3>
+          <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg mb-4">
+            Timeline
+          </h3>
 
           <CreatorBadge
             creatorName={expense.submitter?.name || "Unknown User"}
