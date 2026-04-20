@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import {
   createExpense,
+  updateExpense,
   getVendorOptions,
   getPaymentMethodSuggestions,
   type VendorOption,
@@ -50,7 +51,11 @@ export function CreateExpenseModal({
   taskContext,
   companyId,
   defaultProjectId,
+  expense,
 }: CreateExpenseModalProps) {
+  // Derive edit mode before any state declarations
+  const isEdit = !!expense;
+
   // Vendor options state
   const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
   const [vendorLoading, setVendorLoading] = useState(false);
@@ -58,7 +63,9 @@ export function CreateExpenseModal({
   const [paymentMethodSuggestions, setPaymentMethodSuggestions] = useState<
     string[]
   >(["VISA", "AMEX", "ZELLE", "CASH", "CHECK", "DEBIT"]);
-  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState(
+    isEdit ? (expense?.payment_method ?? "") : "",
+  );
   const [showPaymentSuggestions, setShowPaymentSuggestions] = useState(false);
   const [, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
@@ -78,13 +85,38 @@ export function CreateExpenseModal({
     watch,
   } = useValidatedForm({
     defaultValues: {
-      project_id: taskContext?.projectId || defaultProjectId || "",
-      task_id: taskContext?.taskId || undefined,
-      description: "",
-      amount: "",
-      category: "materials" as const,
-      expense_date: new Date().toISOString().split("T")[0],
-      vendor_name: "",
+      project_id: isEdit
+        ? (expense.project?.id ?? "")
+        : (taskContext?.projectId || defaultProjectId || ""),
+      task_id: isEdit
+        ? (expense.task?.id ?? undefined)
+        : (taskContext?.taskId || undefined),
+      description: isEdit ? expense.description : "",
+      amount: isEdit ? String(expense.amount) : "",
+      category: isEdit
+        ? (expense.category as
+            | "materials"
+            | "labor"
+            | "equipment"
+            | "permits"
+            | "transportation"
+            | "meals"
+            | "lodging"
+            | "other")
+        : ("materials" as
+            | "materials"
+            | "labor"
+            | "subcontractor"
+            | "equipment"
+            | "permits"
+            | "transportation"
+            | "meals"
+            | "lodging"
+            | "other"),
+      expense_date: isEdit
+        ? expense.expense_date
+        : new Date().toISOString().split("T")[0],
+      vendor_name: isEdit ? (expense.vendor_name ?? "") : "",
       subcontractor_id: null as string | null,
     },
   });
@@ -93,7 +125,9 @@ export function CreateExpenseModal({
   const selectedProject = watch("project_id");
   const selectedTask = watch("task_id");
   const vendorName = watch("vendor_name");
-  const [storeAccount, setStoreAccount] = useState("");
+  const [storeAccount, setStoreAccount] = useState(
+    isEdit ? (expense?.store_account ?? "") : "",
+  );
   const [subcontractors, setSubcontractors] = useState<
     Array<{ id: string; company_name: string; contact_name: string | null }>
   >([]);
@@ -220,6 +254,35 @@ export function CreateExpenseModal({
   };
 
   const onSubmit = handleSubmit(async (data) => {
+    if (isEdit) {
+      const result = await updateExpense({
+        id: expense.id,
+        description: data.description,
+        amount: parseFloat(data.amount) || 0,
+        category: data.category as
+          | "materials"
+          | "labor"
+          | "equipment"
+          | "permits"
+          | "transportation"
+          | "meals"
+          | "lodging"
+          | "other",
+        expense_date: data.expense_date,
+        vendor_name: data.vendor_name || undefined,
+        payment_method: paymentMethod || undefined,
+        store_account: storeAccount || undefined,
+      });
+      if (result.success) {
+        toast.success("Expense updated.");
+        onSuccess?.();
+        onClose();
+      } else {
+        toast.error(result.error || "Failed to update expense");
+      }
+      return;
+    }
+
     // In a real implementation, upload the receipt to storage first
     // const receiptUrl = await uploadReceiptToStorage(receiptFile);
 
@@ -229,7 +292,15 @@ export function CreateExpenseModal({
         data.task_id && data.task_id !== "no-task" ? data.task_id : undefined,
       description: data.description,
       amount: parseFloat(data.amount) || 0,
-      category: data.category,
+      category: data.category as
+        | "materials"
+        | "labor"
+        | "equipment"
+        | "permits"
+        | "transportation"
+        | "meals"
+        | "lodging"
+        | "other",
       expense_date: data.expense_date,
       vendor_name: data.vendor_name || undefined,
       payment_method: paymentMethod || undefined,
@@ -256,21 +327,27 @@ export function CreateExpenseModal({
       isOpen={true}
       onClose={handleClose}
       icon={FileText}
-      title={taskContext ? "Add Expense" : "Submit Expense"}
+      title={
+        isEdit ? "Edit Expense" : taskContext ? "Add Expense" : "Submit Expense"
+      }
       theme="default"
       maxWidth="3xl"
       showNavigation={true}
-      onBack={taskContext ? handleClose : undefined}
-      backLabel="Back to Task"
+      onBack={isEdit ? handleClose : taskContext ? handleClose : undefined}
+      backLabel={isEdit ? "Back" : "Back to Task"}
       onContinue={onSubmit}
       continueLabel={
         isSubmitting
-          ? taskContext
-            ? "Adding..."
-            : "Submitting..."
-          : taskContext
-            ? "Add Expense"
-            : "Submit Expense"
+          ? isEdit
+            ? "Saving..."
+            : taskContext
+              ? "Adding..."
+              : "Submitting..."
+          : isEdit
+            ? "Save Changes"
+            : taskContext
+              ? "Add Expense"
+              : "Submit Expense"
       }
       continueDisabled={!canSubmit || isSubmitting}
     >
@@ -312,11 +389,11 @@ export function CreateExpenseModal({
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
-                    disabled={!!taskContext}
+                    disabled={!!taskContext || isEdit}
                   >
                     <SelectTrigger
                       id="project"
-                      className={`border-2 ${taskContext ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
+                      className={`border-2 ${taskContext || isEdit ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
                     >
                       <SelectValue placeholder="Select a project" />
                     </SelectTrigger>
@@ -333,11 +410,15 @@ export function CreateExpenseModal({
                   </Select>
                 )}
               />
-              {taskContext && (
+              {taskContext ? (
                 <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Locked: Pre-filled from task context
                 </p>
-              )}
+              ) : isEdit ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                  Locked — project cannot be changed when editing
+                </p>
+              ) : null}
               {errors.project_id && (
                 <p className="text-sm text-red-600 font-medium">
                   {errors.project_id.message}
@@ -360,11 +441,11 @@ export function CreateExpenseModal({
                   <Select
                     value={field.value || ""}
                     onValueChange={field.onChange}
-                    disabled={!selectedProject || !!taskContext}
+                    disabled={!selectedProject || !!taskContext || isEdit}
                   >
                     <SelectTrigger
                       id="task"
-                      className={`border-2 ${taskContext ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
+                      className={`border-2 ${taskContext || isEdit ? "bg-gray-50 dark:bg-gray-900 cursor-not-allowed opacity-60" : ""}`}
                     >
                       <SelectValue placeholder="Select a task" />
                     </SelectTrigger>
@@ -388,11 +469,15 @@ export function CreateExpenseModal({
                   </Select>
                 )}
               />
-              {taskContext && (
+              {taskContext ? (
                 <p className="text-xs text-gray-500 dark:text-gray-400 italic">
                   Locked: Pre-filled from task context
                 </p>
-              )}
+              ) : isEdit ? (
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                  Locked — task cannot be changed when editing
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -498,8 +583,8 @@ export function CreateExpenseModal({
             </div>
           </div>
 
-          {/* Subcontractor Picker — only when project is selected */}
-          {selectedProject && (
+          {/* Subcontractor Picker — only when project is selected and not editing */}
+          {!isEdit && selectedProject ? (
             <div className="space-y-2">
               <Label
                 htmlFor="subcontractor_id"
@@ -534,14 +619,14 @@ export function CreateExpenseModal({
                   ))}
                 </select>
               </div>
-              {selectedSubcontractorId && (
+              {selectedSubcontractorId ? (
                 <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
                   <Building2 className="w-3 h-3" />A payment will be auto-added
                   to this subcontractor&apos;s contract.
                 </p>
-              )}
+              ) : null}
             </div>
-          )}
+          ) : null}
 
           {/* Vendor Name - VendorCombobox or fallback Input */}
           <div className="space-y-2">
@@ -651,7 +736,8 @@ export function CreateExpenseModal({
           ) : null}
         </div>
 
-        {/* Receipt Upload Section */}
+        {/* Receipt Upload Section — hidden in edit mode */}
+        {!isEdit ? (
         <div className="space-y-4">
           <Label className="text-sm font-bold text-gray-700">
             Receipt Photo
@@ -737,7 +823,7 @@ export function CreateExpenseModal({
             </div>
           )}
 
-          {isProcessingOCR && (
+          {isProcessingOCR ? (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -753,8 +839,9 @@ export function CreateExpenseModal({
                 </p>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </div>
+        ) : null}
       </div>
     </ResponsiveModal>
   );
