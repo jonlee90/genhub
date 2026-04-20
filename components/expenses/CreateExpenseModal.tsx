@@ -122,7 +122,6 @@ export function CreateExpenseModal({
 
   // Watch values for derived state
   const selectedProject = watch("project_id");
-  const selectedTask = watch("task_id");
   const vendorName = watch("vendor_name");
   const [storeAccount, setStoreAccount] = useState(
     isEdit ? (expense?.store_account ?? "") : "",

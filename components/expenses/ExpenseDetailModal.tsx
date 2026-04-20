@@ -78,7 +78,7 @@ export function ExpenseDetailModal({
   const canDelete = isAdmin;
   const canEdit = isAdmin || expense.submitter?.id === currentUserId;
 
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     startTransition(async () => {
       const result = await deleteExpense(expense.id);
 
@@ -90,7 +90,7 @@ export function ExpenseDetailModal({
         setShowDeleteConfirm(false);
       }
     });
-  };
+  }, [expense.id, onClose]);
 
   const getBackHandler = useCallback(() => {
     if (showDeleteConfirm) {
@@ -104,7 +104,7 @@ export function ExpenseDetailModal({
     if (showDeleteConfirm) {
       handleDelete();
     }
-  }, [showDeleteConfirm]);
+  }, [showDeleteConfirm, handleDelete]);
 
   const getContinueLabel = (): string => {
     if (showDeleteConfirm) {
