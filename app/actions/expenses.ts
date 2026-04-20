@@ -57,6 +57,7 @@ const updateExpenseSchema = z.object({
     .enum([
       "materials",
       "labor",
+      "subcontractor",
       "equipment",
       "permits",
       "transportation",

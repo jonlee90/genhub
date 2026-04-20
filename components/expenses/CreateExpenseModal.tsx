@@ -6,7 +6,6 @@ import { createExpenseValidation } from "@/lib/validation/client-validation";
 import { Controller } from "react-hook-form";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
-import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/CurrencyInput";
 import { Label } from "@/components/ui/label";
@@ -150,7 +149,7 @@ export function CreateExpenseModal({
 
   // Load subcontractors when project is selected
   useEffect(() => {
-    if (!selectedProject) {
+    if (!selectedProject || isEdit) {
       setSubcontractors([]);
       return;
     }
@@ -162,7 +161,7 @@ export function CreateExpenseModal({
         }
       })
       .finally(() => setSubcontractorLoading(false));
-  }, [selectedProject]);
+  }, [selectedProject, isEdit]);
 
   // Count tasks per project
   const taskCountPerProject = useMemo(() => {
@@ -334,7 +333,7 @@ export function CreateExpenseModal({
       maxWidth="3xl"
       showNavigation={true}
       onBack={isEdit ? handleClose : taskContext ? handleClose : undefined}
-      backLabel={isEdit ? "Back" : "Back to Task"}
+      backLabel={isEdit ? "Back" : taskContext ? "Back to Task" : "Back"}
       onContinue={onSubmit}
       continueLabel={
         isSubmitting

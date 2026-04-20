@@ -4605,6 +4605,7 @@ export type Database = {
       expense_category:
         | "materials"
         | "labor"
+        | "subcontractor"
         | "equipment"
         | "permits"
         | "transportation"
@@ -4904,6 +4905,7 @@ export const Constants = {
       expense_category: [
         "materials",
         "labor",
+        "subcontractor",
         "equipment",
         "permits",
         "transportation",
