@@ -102,6 +102,7 @@ export default async function ExpensesPage({
           searchParams={params}
           companyId={companyId}
           userRole={companyUser.role}
+          currentUserId={session.user.id}
         />
       </Suspense>
 

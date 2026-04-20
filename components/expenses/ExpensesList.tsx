@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { m as motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -45,9 +46,13 @@ export function ExpensesList({
   searchParams: _searchParams,
   companyId,
   userRole,
+  currentUserId,
 }: ExpensesListProps) {
+  const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedExpense, setSelectedExpense] =
+    useState<ExpenseWithRelations | null>(null);
+  const [editingExpense, setEditingExpense] =
     useState<ExpenseWithRelations | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [projectFilter, setProjectFilter] = useState<string>("all");
@@ -136,6 +141,11 @@ export function ExpensesList({
     setSelectedExpense(expense);
   }, []);
 
+  const handleEdit = useCallback(() => {
+    setEditingExpense(selectedExpense);
+    setSelectedExpense(null);
+  }, [selectedExpense]);
+
   const searchConfig = useMemo(
     () => ({
       placeholder: "Search expenses...",
@@ -175,14 +185,14 @@ export function ExpensesList({
         />
 
         {/* Create Expense Modal */}
-        {showCreateModal && (
+        {showCreateModal ? (
           <CreateExpenseModal
             projects={projects}
             tasks={tasks}
             onClose={() => setShowCreateModal(false)}
             companyId={companyId}
           />
-        )}
+        ) : null}
       </>
     );
   }
@@ -263,23 +273,40 @@ export function ExpensesList({
       )}
 
       {/* Create Expense Modal */}
-      {showCreateModal && (
+      {showCreateModal ? (
         <CreateExpenseModal
           projects={projects}
           tasks={tasks}
           onClose={() => setShowCreateModal(false)}
           companyId={companyId}
         />
-      )}
+      ) : null}
 
       {/* Expense Detail Modal */}
-      {selectedExpense && (
+      {selectedExpense ? (
         <ExpenseDetailModal
           expense={selectedExpense}
           onClose={() => setSelectedExpense(null)}
           userRole={userRole}
+          onEdit={handleEdit}
+          currentUserId={currentUserId}
         />
-      )}
+      ) : null}
+
+      {/* Edit Expense Modal */}
+      {editingExpense ? (
+        <CreateExpenseModal
+          projects={projects}
+          tasks={tasks}
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSuccess={() => {
+            setEditingExpense(null);
+            router.refresh();
+          }}
+          companyId={companyId}
+        />
+      ) : null}
     </div>
   );
 }
