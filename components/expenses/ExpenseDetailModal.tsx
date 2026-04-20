@@ -9,6 +9,7 @@ import {
   FileText,
   Image as ImageIcon,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { CreatorBadge } from "@/components/ui/CreatorBadge";
 import { deleteExpense } from "@/app/actions/expenses";
@@ -44,6 +45,8 @@ interface ExpenseDetailModalProps {
   expense: Expense;
   onClose: () => void;
   userRole?: string | null;
+  onEdit?: () => void;
+  currentUserId?: string;
 }
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -65,12 +68,15 @@ export function ExpenseDetailModal({
   expense,
   onClose,
   userRole,
+  onEdit,
+  currentUserId,
 }: ExpenseDetailModalProps) {
   const [isPending, startTransition] = useTransition();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const isAdmin = userRole === "admin";
   const canDelete = isAdmin;
+  const canEdit = isAdmin || expense.submitter?.id === currentUserId;
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -246,9 +252,22 @@ export function ExpenseDetailModal({
           </div>
         </div>
 
+        {/* Edit Expense Action */}
+        {canEdit && !showDeleteConfirm ? (
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button
+              onClick={onEdit}
+              className="w-full flex items-center justify-center gap-2 px-4 min-h-[44px] rounded-lg border-2 border-construction-blue dark:border-blue-500 text-construction-blue dark:text-blue-400 hover:bg-construction-blue hover:text-white dark:hover:bg-blue-600 dark:hover:text-white active:bg-construction-blue/90 dark:active:bg-blue-700 font-bold transition-colors"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit Expense
+            </button>
+          </div>
+        ) : null}
+
         {/* Delete Expense Action */}
         {canDelete && !showDeleteConfirm ? (
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="mt-3">
             <button
               onClick={() => setShowDeleteConfirm(true)}
               className="w-full flex items-center justify-center gap-2 px-4 min-h-[44px] rounded-lg border-2 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/40 font-bold transition-colors"
