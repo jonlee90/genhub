@@ -82,6 +82,7 @@ export interface ExpensesListProps {
   searchParams: { [key: string]: string | string[] | undefined };
   companyId?: string;
   userRole?: string | null;
+  currentUserId?: string;
 }
 
 /**
@@ -102,6 +103,8 @@ export interface CreateExpenseModalProps {
   taskContext?: ExpenseTaskContext;
   companyId?: string;
   defaultProjectId?: string;
+  expense?: ExpenseWithRelations;
+  currentUserId?: string;
 }
 
 /**
@@ -110,4 +113,6 @@ export interface CreateExpenseModalProps {
 export interface ExpenseDetailModalProps {
   expense: ExpenseWithRelations;
   onClose: () => void;
+  onEdit?: () => void;
+  currentUserId?: string;
 }
