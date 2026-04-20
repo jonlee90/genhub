@@ -739,7 +739,7 @@ export function CreateExpenseModal({
         {/* Receipt Upload Section — hidden in edit mode */}
         {!isEdit ? (
         <div className="space-y-4">
-          <Label className="text-sm font-bold text-gray-700">
+          <Label className="text-sm font-bold text-gray-700 dark:text-gray-300">
             Receipt Photo
           </Label>
 
