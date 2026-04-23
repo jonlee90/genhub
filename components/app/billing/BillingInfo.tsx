@@ -228,7 +228,7 @@ export async function BillingInfo() {
                           ).toISOString()}
                           className="font-medium text-gray-900 dark:text-gray-100"
                         >
-                          {formatDate(subscriptionData.plan_expires, {
+                          {formatDate(new Date(subscriptionData.plan_expires), {
                             includeYear: true,
                           })}{" "}
                           at{" "}
