@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, memo } from "react";
+import { formatDate } from "@/lib/utils";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,7 +99,8 @@ const TemplateCard = memo(function TemplateCard({
           <>
             <span>•</span>
             <span>
-              Last used: {new Date(template.last_used_at).toLocaleDateString()}
+              Last used:{" "}
+              {formatDate(template.last_used_at, { includeYear: true })}
             </span>
           </>
         ) : null}

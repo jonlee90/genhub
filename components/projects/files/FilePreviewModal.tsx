@@ -10,6 +10,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { formatDate } from "@/lib/utils";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import Trash2 from "lucide-react/icons/trash-2";
 import FileText from "lucide-react/icons/file-text";
@@ -210,11 +211,7 @@ export function FilePreviewModal({
               Date
             </p>
             <p className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-              {new Date(file.created_at).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {formatDate(file.created_at, { includeYear: true })}
             </p>
           </div>
         </div>

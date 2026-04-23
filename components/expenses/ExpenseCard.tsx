@@ -9,7 +9,7 @@ import {
   Calendar,
   Building2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type { ExpenseCardProps } from "@/types/db/expense";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -18,14 +18,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
 const formatCurrency = (amount: number) => currencyFormatter.format(amount);
-const formatDate = (date: string) => dateFormatter.format(new Date(date));
 
 export const ExpenseCard = React.memo(
   function ExpenseCard({ expense }: ExpenseCardProps) {
@@ -116,7 +109,7 @@ export const ExpenseCard = React.memo(
               <div className="flex items-center gap-2 text-xs md:text-sm">
                 <Calendar className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  {formatDate(expense.expense_date)}
+                  {formatDate(expense.expense_date, { includeYear: true })}
                 </span>
               </div>
             </div>

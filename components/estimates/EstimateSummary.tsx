@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { EstimateHistoryList } from "@/components/estimates/EstimateHistoryList";
 import { TradeDonutChart } from "@/components/estimates/TradeDonutChart";
@@ -167,7 +168,7 @@ export function EstimateSummary({
               Estimate Summary
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Created {new Date(estimate.created_at).toLocaleDateString()}
+              Created {formatDate(estimate.created_at, { includeYear: true })}
             </p>
           </div>
         </div>

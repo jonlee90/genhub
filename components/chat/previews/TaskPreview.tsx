@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { m as motion } from "framer-motion";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 import { ClipboardCheck, Calendar, Flag, User as UserIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -149,7 +149,7 @@ export function TaskPreview({ id }: TaskPreviewProps) {
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-construction-blue" />
             <span className="text-xs text-gray-700 dark:text-gray-300">
-              {formatDate(task.due_date)}
+              {formatDueDate(task.due_date)}
             </span>
           </div>
         ) : (
@@ -198,8 +198,7 @@ function getPriorityConfig(priority: string | null): { color: string } {
   return configs[priority.toLowerCase()] || configs.low;
 }
 
-// Note: Local formatDate with "Today"/"Tomorrow" logic - differs from shared utils
-function formatDate(dateString: string): string {
+function formatDueDate(dateString: string): string {
   const date = new Date(dateString);
   const today = new Date();
   const tomorrow = new Date(today);
@@ -212,8 +211,5 @@ function formatDate(dateString: string): string {
     return "Tomorrow";
   }
 
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return formatDate(date);
 }

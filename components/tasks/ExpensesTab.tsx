@@ -112,7 +112,7 @@ export function ExpensesTab({
                   {expense.category}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {formatDate(expense.expense_date)}
+                  {formatDate(expense.expense_date, { includeYear: true })}
                 </p>
               </div>
               <div className="text-right">

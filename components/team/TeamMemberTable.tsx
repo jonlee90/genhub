@@ -47,15 +47,18 @@ import UserPlus from "lucide-react/icons/user-plus";
 import ChevronLeft from "lucide-react/icons/chevron-left";
 import ChevronRight from "lucide-react/icons/chevron-right";
 import { toast } from "sonner";
-import { getInitials } from "@/lib/utils";
+import { getInitials, formatDate } from "@/lib/utils";
 import { ROLE_CONFIG, STATUS_CONFIG } from "@/lib/team-config";
 import { getDisplayEmail } from "@/lib/team-utils";
 import type { TeamMember } from "@/types/team";
 
 // Dynamic import for heavy modal component
 const InviteTeamMemberModal = dynamic(
-  () => import("./InviteTeamMemberModal").then((m) => ({ default: m.InviteTeamMemberModal })),
-  { ssr: false }
+  () =>
+    import("./InviteTeamMemberModal").then((m) => ({
+      default: m.InviteTeamMemberModal,
+    })),
+  { ssr: false },
 );
 
 interface TeamMemberTableProps {
@@ -170,7 +173,9 @@ export function TeamMemberTable({
       // Optimistic update using functional setState
       setOptimisticMembers((prev) => {
         previousMembers = [...prev];
-        return prev.map((m) => (m.user_id === userId ? { ...m, role: newRole } : m));
+        return prev.map((m) =>
+          m.user_id === userId ? { ...m, role: newRole } : m,
+        );
       });
 
       startTransition(async () => {
@@ -189,20 +194,23 @@ export function TeamMemberTable({
     [router],
   );
 
-  const handleDeactivate = useCallback((userId: string) => {
-    setDeactivateUserId(null);
+  const handleDeactivate = useCallback(
+    (userId: string) => {
+      setDeactivateUserId(null);
 
-    startTransition(async () => {
-      const result = await deactivateTeamMember(userId);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Team member deactivated successfully");
-        // Sync with server state
-        router.refresh();
-      }
-    });
-  }, [router]);
+      startTransition(async () => {
+        const result = await deactivateTeamMember(userId);
+        if (result.error) {
+          toast.error(result.error);
+        } else {
+          toast.success("Team member deactivated successfully");
+          // Sync with server state
+          router.refresh();
+        }
+      });
+    },
+    [router],
+  );
 
   return (
     <div className="space-y-6">
@@ -211,7 +219,9 @@ export function TeamMemberTable({
         <div className="flex items-center gap-2">
           <div className="h-10 w-1 bg-construction-blue rounded-full" />
           <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Team Members</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+              Team Members
+            </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {members.length} total members
             </p>
@@ -335,9 +345,9 @@ export function TeamMemberTable({
                             {member.activated_at && (
                               <p className="text-xs text-gray-500 dark:text-gray-400">
                                 Joined{" "}
-                                {new Date(
-                                  member.activated_at,
-                                ).toLocaleDateString()}
+                                {formatDate(member.activated_at, {
+                                  includeYear: true,
+                                })}
                               </p>
                             )}
                           </div>

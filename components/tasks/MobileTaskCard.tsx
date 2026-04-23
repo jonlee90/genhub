@@ -13,7 +13,7 @@ import {
   Circle,
   Receipt,
 } from "lucide-react";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 import { TASK_STATUS_CONFIG } from "@/lib/config/task-colors";
 import type { TaskStatus } from "@/types/db/enums";
 
@@ -54,7 +54,7 @@ const STATUS_ICONS: Record<
   completed: CheckCircle,
 };
 
-const formatDate = (date: string) => {
+const formatDueDate = (date: string) => {
   const [year, month, day] = date.split("T")[0].split("-").map(Number);
   const dateObj = new Date(year, month - 1, day);
   const today = new Date();
@@ -70,10 +70,7 @@ const formatDate = (date: string) => {
     return "Tomorrow";
   }
 
-  return dateObj.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return formatDate(dateObj);
 };
 
 const formatCurrency = (amount: number) => {
@@ -128,11 +125,16 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
         "active:bg-gray-50 dark:active:bg-gray-700 active:scale-[0.98]",
         "transition-all duration-150",
         // Status-based left border
-        task.status === "blocked" && "border-l-4 border-l-[#DC2626] dark:border-l-red-500",
-        task.status === "completed" && "border-l-4 border-l-[#059669] dark:border-l-green-500",
-        task.status === "in_progress" && "border-l-4 border-l-[var(--construction-blue)] dark:border-l-blue-500",
-        task.status === "todo" && "border-l-4 border-l-gray-400 dark:border-l-gray-500",
-        task.status === "review" && "border-l-4 border-l-[#F59E0B] dark:border-l-orange-500",
+        task.status === "blocked" &&
+          "border-l-4 border-l-[#DC2626] dark:border-l-red-500",
+        task.status === "completed" &&
+          "border-l-4 border-l-[#059669] dark:border-l-green-500",
+        task.status === "in_progress" &&
+          "border-l-4 border-l-[var(--construction-blue)] dark:border-l-blue-500",
+        task.status === "todo" &&
+          "border-l-4 border-l-gray-400 dark:border-l-gray-500",
+        task.status === "review" &&
+          "border-l-4 border-l-[#F59E0B] dark:border-l-orange-500",
         className,
       )}
     >
@@ -190,7 +192,7 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
         >
           <Calendar className="w-4 h-4 flex-shrink-0" />
           <span className="text-sm font-semibold">
-            {task.due_date ? formatDate(task.due_date) : "No due date"}
+            {task.due_date ? formatDueDate(task.due_date) : "No due date"}
           </span>
         </div>
 
@@ -199,7 +201,9 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
           className={cn(
             "flex items-center gap-2 px-3 py-2 rounded-lg",
             "min-h-[44px]",
-            task.assignee ? "bg-construction-blue/5 dark:bg-blue-950/20" : "bg-gray-50 dark:bg-gray-800",
+            task.assignee
+              ? "bg-construction-blue/5 dark:bg-blue-950/20"
+              : "bg-gray-50 dark:bg-gray-800",
           )}
         >
           {task.assignee ? (
@@ -217,7 +221,9 @@ export const MobileTaskCard = React.memo(function MobileTaskCard({
           ) : (
             <>
               <User className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-              <span className="text-sm text-gray-400 dark:text-gray-500">Unassigned</span>
+              <span className="text-sm text-gray-400 dark:text-gray-500">
+                Unassigned
+              </span>
             </>
           )}
         </div>

@@ -9,7 +9,7 @@ import Loader2 from "lucide-react/icons/loader-2";
 import FileText from "lucide-react/icons/file-text";
 import ChevronDown from "lucide-react/icons/chevron-down";
 import ChevronUp from "lucide-react/icons/chevron-up";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { toast } from "sonner";
 import { getPlanPageStatus } from "@/app/actions/estimates";
 import { ExtractionProgress } from "@/components/estimates/ExtractionProgress";
@@ -182,11 +182,7 @@ export function PlanUploadProgress({
               {planUpload.filename}
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {new Date(planUpload.created_at).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
+              {formatDate(planUpload.created_at, { includeYear: true })}
             </p>
 
             {planUpload.status === "failed" && planUpload.error_message ? (

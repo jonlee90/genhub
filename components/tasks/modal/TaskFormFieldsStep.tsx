@@ -12,6 +12,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { formatDate } from "@/lib/utils";
 import { m as motion } from "framer-motion";
 import {
   Calendar,
@@ -335,7 +336,7 @@ export function TaskFormFieldsStep({
           {/* Show previous approval info if exists */}
           {approvedBy && approvedAt && (
             <div className="mt-3 pt-3 border-t border-amber-200 dark:border-amber-900/40 text-xs text-amber-700 dark:text-amber-300">
-              Last updated: {new Date(approvedAt).toLocaleDateString()}
+              Last updated: {formatDate(approvedAt, { includeYear: true })}
               {approvalNotesHistory && (
                 <p className="mt-1 italic">"{approvalNotesHistory}"</p>
               )}
@@ -523,14 +524,16 @@ export function TaskFormFieldsStep({
       )}
 
       {/* Primary Assignee Selector - Only when multiple assignees */}
-      {showPrimarySelector && assigneeOptions.length > 1 && onPrimaryAssigneeChange && (
-        <PrimaryAssigneeSelector
-          assignees={assigneeOptions}
-          primaryId={primaryAssigneeId || null}
-          onPrimaryChange={onPrimaryAssigneeChange}
-          disabled={disabled}
-        />
-      )}
+      {showPrimarySelector &&
+        assigneeOptions.length > 1 &&
+        onPrimaryAssigneeChange && (
+          <PrimaryAssigneeSelector
+            assignees={assigneeOptions}
+            primaryId={primaryAssigneeId || null}
+            onPrimaryChange={onPrimaryAssigneeChange}
+            disabled={disabled}
+          />
+        )}
 
       {/* Date Range Row - Always visible */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

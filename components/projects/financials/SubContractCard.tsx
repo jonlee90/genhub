@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { deleteContract } from "@/app/actions/subcontractor-contracts";
 import { deletePayment } from "@/app/actions/subcontractor-payments";
 import { AddPaymentModal } from "./AddPaymentModal";
@@ -21,12 +21,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 const fmt = (v: number) => currencyFormatter.format(v);
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
 
 interface SubContractCardProps {
   contract: ContractWithPayments;
@@ -247,7 +241,7 @@ export function SubContractCard({
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                   <span>
-                    {dateFormatter.format(new Date(payment.payment_date))}
+                    {formatDate(payment.payment_date, { includeYear: true })}
                   </span>
                   <span>·</span>
                   <span className="font-medium">{payment.payment_method}</span>

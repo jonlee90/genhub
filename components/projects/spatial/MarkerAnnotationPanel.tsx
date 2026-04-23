@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import MapPin from 'lucide-react/icons/map-pin';
-import Plus from 'lucide-react/icons/plus';
-import ChevronDown from 'lucide-react/icons/chevron-down';
-import ChevronRight from 'lucide-react/icons/chevron-right';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import CheckCircle2 from 'lucide-react/icons/check-circle-2';
-import Clock from 'lucide-react/icons/clock';
-import MessageSquare from 'lucide-react/icons/message-square';
-import Filter from 'lucide-react/icons/filter';
-import Search from 'lucide-react/icons/search';
-import X from 'lucide-react/icons/x';;
-import { cn } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import MapPin from "lucide-react/icons/map-pin";
+import Plus from "lucide-react/icons/plus";
+import ChevronDown from "lucide-react/icons/chevron-down";
+import ChevronRight from "lucide-react/icons/chevron-right";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import CheckCircle2 from "lucide-react/icons/check-circle-2";
+import Clock from "lucide-react/icons/clock";
+import MessageSquare from "lucide-react/icons/message-square";
+import Filter from "lucide-react/icons/filter";
+import Search from "lucide-react/icons/search";
+import X from "lucide-react/icons/x";
+import { cn, formatDate } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export interface Marker {
   id: string;
   title: string;
   description?: string;
-  category: 'issue' | 'note' | 'task' | 'approval';
-  status: 'open' | 'in-progress' | 'resolved';
+  category: "issue" | "note" | "task" | "approval";
+  status: "open" | "in-progress" | "resolved";
   position: { x: number; y: number; z: number };
   createdAt: string;
   assignedTask?: string;
@@ -44,83 +44,91 @@ export function MarkerAnnotationPanel({
   onFilterChange,
   className,
 }: MarkerAnnotationPanelProps) {
-  console.log('[MarkerAnnotationPanel] Rendering', { markerCount: markers.length });
+  console.log("[MarkerAnnotationPanel] Rendering", {
+    markerCount: markers.length,
+  });
 
   const [isExpanded, setIsExpanded] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const getCategoryIcon = (category: Marker['category']) => {
+  const getCategoryIcon = (category: Marker["category"]) => {
     switch (category) {
-      case 'issue':
+      case "issue":
         return AlertCircle;
-      case 'note':
+      case "note":
         return MessageSquare;
-      case 'task':
+      case "task":
         return CheckCircle2;
-      case 'approval':
+      case "approval":
         return Clock;
     }
   };
 
-  const getCategoryColor = (category: Marker['category']) => {
+  const getCategoryColor = (category: Marker["category"]) => {
     switch (category) {
-      case 'issue':
-        return 'bg-red-100 text-red-700 border-red-300';
-      case 'note':
-        return 'bg-blue-100 text-blue-700 border-blue-300';
-      case 'task':
-        return 'bg-green-100 text-green-700 border-green-300';
-      case 'approval':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+      case "issue":
+        return "bg-red-100 text-red-700 border-red-300";
+      case "note":
+        return "bg-blue-100 text-blue-700 border-blue-300";
+      case "task":
+        return "bg-green-100 text-green-700 border-green-300";
+      case "approval":
+        return "bg-yellow-100 text-yellow-700 border-yellow-300";
     }
   };
 
-  const getStatusColor = (status: Marker['status']) => {
+  const getStatusColor = (status: Marker["status"]) => {
     switch (status) {
-      case 'open':
-        return 'bg-gray-400 text-white';
-      case 'in-progress':
-        return 'bg-[#FBBF24] text-gray-900';
-      case 'resolved':
-        return 'bg-[#059669] text-white';
+      case "open":
+        return "bg-gray-400 text-white";
+      case "in-progress":
+        return "bg-[#FBBF24] text-gray-900";
+      case "resolved":
+        return "bg-[#059669] text-white";
     }
   };
 
   // Performance optimization: Memoize filtered markers to avoid recalculation on every render
-  const filteredMarkers = useMemo(() =>
-    markers.filter((marker) => {
-      const matchesSearch = marker.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        marker.description?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = !selectedCategory || marker.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    })
-  , [markers, searchQuery, selectedCategory]);
+  const filteredMarkers = useMemo(
+    () =>
+      markers.filter((marker) => {
+        const matchesSearch =
+          marker.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          marker.description?.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesCategory =
+          !selectedCategory || marker.category === selectedCategory;
+        return matchesSearch && matchesCategory;
+      }),
+    [markers, searchQuery, selectedCategory],
+  );
 
   // Performance optimization: Memoize category counts computed via reduce
-  const categoryCounts = useMemo(() =>
-    markers.reduce(
-      (acc, marker) => {
-        acc[marker.category] = (acc[marker.category] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    )
-  , [markers]);
+  const categoryCounts = useMemo(
+    () =>
+      markers.reduce(
+        (acc, marker) => {
+          acc[marker.category] = (acc[marker.category] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+    [markers],
+  );
 
   const categories = [
-    { id: 'issue', label: 'Issues', icon: AlertCircle },
-    { id: 'task', label: 'Tasks', icon: CheckCircle2 },
-    { id: 'note', label: 'Notes', icon: MessageSquare },
-    { id: 'approval', label: 'Approvals', icon: Clock },
+    { id: "issue", label: "Issues", icon: AlertCircle },
+    { id: "task", label: "Tasks", icon: CheckCircle2 },
+    { id: "note", label: "Notes", icon: MessageSquare },
+    { id: "approval", label: "Approvals", icon: Clock },
   ];
 
   return (
     <Card
       className={cn(
-        'border-2 border-gray-200 shadow-construction overflow-hidden relative group',
-        'bg-white',
-        className
+        "border-2 border-gray-200 shadow-construction overflow-hidden relative group",
+        "bg-white",
+        className,
       )}
     >
       {/* Hover overlay effect */}
@@ -141,7 +149,9 @@ export function MarkerAnnotationPanel({
               <h3 className="text-sm font-black text-gray-700 uppercase tracking-wider">
                 Markers & Annotations
               </h3>
-              <p className="text-xs text-gray-500 mt-0.5">{markers.length} total</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {markers.length} total
+              </p>
             </div>
           </div>
 
@@ -166,14 +176,14 @@ export function MarkerAnnotationPanel({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search markers..."
                 className={cn(
-                  'w-full pl-10 pr-8 py-2 rounded-lg',
-                  'border-2 border-gray-200 focus:border-construction-blue focus:outline-none',
-                  'text-sm placeholder:text-gray-400'
+                  "w-full pl-10 pr-8 py-2 rounded-lg",
+                  "border-2 border-gray-200 focus:border-construction-blue focus:outline-none",
+                  "text-sm placeholder:text-gray-400",
                 )}
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded"
                 >
                   <X className="w-3 h-3 text-gray-400" />
@@ -184,10 +194,10 @@ export function MarkerAnnotationPanel({
             <button
               onClick={onAddMarker}
               className={cn(
-                'px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide',
-                'bg-construction-blue text-white border-2 border-construction-blue',
-                'hover:bg-[#002666] transition-colors',
-                'flex items-center gap-2 flex-shrink-0'
+                "px-4 py-2 rounded-lg font-semibold text-sm uppercase tracking-wide",
+                "bg-construction-blue text-white border-2 border-construction-blue",
+                "hover:bg-[#002666] transition-colors",
+                "flex items-center gap-2 flex-shrink-0",
               )}
               title="Add Marker"
             >
@@ -208,12 +218,12 @@ export function MarkerAnnotationPanel({
                   onFilterChange?.(newCategory);
                 }}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide',
-                  'border-2 transition-all',
-                  'flex items-center gap-1.5',
+                  "px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wide",
+                  "border-2 transition-all",
+                  "flex items-center gap-1.5",
                   selectedCategory === id
-                    ? 'bg-construction-blue text-white border-construction-blue'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-construction-blue'
+                    ? "bg-construction-blue text-white border-construction-blue"
+                    : "bg-white text-gray-700 border-gray-200 hover:border-construction-blue",
                 )}
               >
                 <Icon className="w-3 h-3" />
@@ -231,7 +241,9 @@ export function MarkerAnnotationPanel({
               <div className="text-center py-8">
                 <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-sm text-gray-500">
-                  {searchQuery || selectedCategory ? 'No matching markers' : 'No markers yet'}
+                  {searchQuery || selectedCategory
+                    ? "No matching markers"
+                    : "No markers yet"}
                 </p>
               </div>
             ) : (
@@ -243,16 +255,16 @@ export function MarkerAnnotationPanel({
                     key={marker.id}
                     onClick={() => onMarkerClick?.(marker.id)}
                     className={cn(
-                      'w-full p-3 rounded-lg border-2 text-left',
-                      'hover:border-construction-blue hover:bg-blue-50/30 transition-all',
-                      'group'
+                      "w-full p-3 rounded-lg border-2 text-left",
+                      "hover:border-construction-blue hover:bg-blue-50/30 transition-all",
+                      "group",
                     )}
                   >
                     <div className="flex items-start gap-3">
                       <div
                         className={cn(
-                          'p-2 rounded-lg border-2 flex-shrink-0',
-                          getCategoryColor(marker.category)
+                          "p-2 rounded-lg border-2 flex-shrink-0",
+                          getCategoryColor(marker.category),
                         )}
                       >
                         <CategoryIcon className="w-4 h-4" />
@@ -263,7 +275,12 @@ export function MarkerAnnotationPanel({
                           <h4 className="font-semibold text-sm text-gray-900 group-hover:text-construction-blue transition-colors">
                             {marker.title}
                           </h4>
-                          <Badge className={cn('text-xs px-2 py-0.5', getStatusColor(marker.status))}>
+                          <Badge
+                            className={cn(
+                              "text-xs px-2 py-0.5",
+                              getStatusColor(marker.status),
+                            )}
+                          >
                             {marker.status}
                           </Badge>
                         </div>
@@ -276,14 +293,17 @@ export function MarkerAnnotationPanel({
 
                         <div className="flex items-center gap-3 text-xs text-gray-500">
                           <span className="font-mono">
-                            {new Date(marker.createdAt).toLocaleDateString()}
+                            {formatDate(marker.createdAt, {
+                              includeYear: true,
+                            })}
                           </span>
-                          {marker.commentCount !== undefined && marker.commentCount > 0 && (
-                            <span className="flex items-center gap-1">
-                              <MessageSquare className="w-3 h-3" />
-                              {marker.commentCount}
-                            </span>
-                          )}
+                          {marker.commentCount !== undefined &&
+                            marker.commentCount > 0 && (
+                              <span className="flex items-center gap-1">
+                                <MessageSquare className="w-3 h-3" />
+                                {marker.commentCount}
+                              </span>
+                            )}
                         </div>
                       </div>
                     </div>

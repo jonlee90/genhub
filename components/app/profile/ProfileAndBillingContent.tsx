@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatDate } from "@/lib/utils";
 import Image from "next/image";
 import PortalButton from "@/components/stripe/PortalButton";
 import CheckoutButton from "@/components/CheckoutButton";
@@ -351,12 +352,8 @@ export default function ProfileAndBillingContent() {
                             ).toISOString()}
                             className="font-medium"
                           >
-                            {new Date(
-                              subscriptionData.plan_expires,
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
+                            {formatDate(subscriptionData.plan_expires, {
+                              includeYear: true,
                             })}{" "}
                             at{" "}
                             {new Date(subscriptionData.plan_expires)

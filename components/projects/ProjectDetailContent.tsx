@@ -27,7 +27,7 @@ import FolderOpen from "lucide-react/icons/folder-open";
 import Target from "lucide-react/icons/target";
 import Calculator from "lucide-react/icons/calculator";
 import { Badge } from "@/components/ui/badge";
-import { cn, formatBudget, formatPercentWhole } from "@/lib/utils";
+import { cn, formatBudget, formatPercentWhole, formatDate } from "@/lib/utils";
 import { ProjectTeam } from "./ProjectTeam";
 import { ProjectSettings } from "./ProjectSettings";
 import { ProjectOverview } from "./ProjectOverview";
@@ -409,9 +409,9 @@ export function ProjectDetailContent({
                   <span className="text-sm font-black text-gray-900 dark:text-gray-100 tabular-nums leading-none">
                     {project.budget ? formatBudget(project.budget) : "Not set"}
                   </span>
-                  {expenseStats && expenseStats.approvedAmount > 0 ? (
+                  {expenseStats && expenseStats.totalAmount > 0 ? (
                     <span className="text-[10px] text-gray-500 dark:text-gray-400 tabular-nums leading-none">
-                      {`${formatBudget(expenseStats.approvedAmount)} spent`}
+                      {`${formatBudget(expenseStats.totalAmount)} spent`}
                     </span>
                   ) : null}
                 </div>
@@ -421,20 +421,19 @@ export function ProjectDetailContent({
                       <div
                         className={cn(
                           "h-full rounded-full transition-all duration-500",
-                          expenseStats.approvedAmount / project.budget > 1
+                          expenseStats.totalAmount / project.budget > 1
                             ? "bg-construction-red"
-                            : expenseStats.approvedAmount / project.budget >=
-                                0.75
+                            : expenseStats.totalAmount / project.budget >= 0.75
                               ? "bg-construction-yellow"
                               : "bg-construction-green",
                         )}
                         style={{
-                          width: `${Math.min((expenseStats.approvedAmount / project.budget) * 100, 100)}%`,
+                          width: `${Math.min((expenseStats.totalAmount / project.budget) * 100, 100)}%`,
                         }}
                       />
                     </div>
                     <div className="mt-1 text-[10px] text-gray-400 dark:text-gray-500 tabular-nums">
-                      {`${formatBudget(project.budget - expenseStats.approvedAmount)} left`}
+                      {`${formatBudget(project.budget - expenseStats.totalAmount)} left`}
                     </div>
                   </>
                 ) : null}
@@ -512,12 +511,7 @@ export function ProjectDetailContent({
                   </span>
                 </div>
                 <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  {project.start_date
-                    ? new Date(project.start_date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "Not set"}
+                  {formatDate(project.start_date, { fallback: "Not set" })}
                 </span>
               </div>
 
@@ -530,12 +524,7 @@ export function ProjectDetailContent({
                   </span>
                 </div>
                 <span className="text-sm font-bold text-gray-900 dark:text-gray-100">
-                  {project.end_date
-                    ? new Date(project.end_date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })
-                    : "Not set"}
+                  {formatDate(project.end_date, { fallback: "Not set" })}
                 </span>
               </div>
 

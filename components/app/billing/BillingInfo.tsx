@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { formatDate } from "@/lib/utils";
 import { getSupabaseClient } from "@/utils/supabase/server";
 import { auth } from "@/lib/auth";
 import PortalButton from "@/components/stripe/PortalButton";
@@ -146,7 +147,9 @@ export async function BillingInfo() {
         <div className="bg-[var(--background)] p-4 rounded-lg">
           <div className="space-y-3">
             <div>
-              <label className="text-sm text-gray-600 dark:text-gray-400">Current Plan</label>
+              <label className="text-sm text-gray-600 dark:text-gray-400">
+                Current Plan
+              </label>
               {(() => {
                 const style = getPlanBadgeStyle(planName);
                 const intervalStyle = getIntervalBadgeStyle(planName);
@@ -225,12 +228,8 @@ export async function BillingInfo() {
                           ).toISOString()}
                           className="font-medium text-gray-900 dark:text-gray-100"
                         >
-                          {new Date(
-                            subscriptionData.plan_expires,
-                          ).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
+                          {formatDate(subscriptionData.plan_expires, {
+                            includeYear: true,
                           })}{" "}
                           at{" "}
                           {new Date(subscriptionData.plan_expires)

@@ -16,7 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 import { addTaskComment } from "@/app/actions/tasks";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { m as motion, AnimatePresence } from "framer-motion";
 import type { TaskActivity } from "@/types/db/task";
 
@@ -64,7 +64,7 @@ const ACTION_CONFIG = {
   },
 };
 
-const formatDate = (date: string) => {
+const formatActivityDate = (date: string) => {
   const d = new Date(date);
   const now = new Date();
   const diff = now.getTime() - d.getTime();
@@ -76,11 +76,7 @@ const formatDate = (date: string) => {
   if (minutes < 60) return `${minutes}m ago`;
   if (hours < 24) return `${hours}h ago`;
   if (days < 7) return `${days}d ago`;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: d.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-  });
+  return formatDate(d);
 };
 
 export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
@@ -247,7 +243,7 @@ export function TaskActivityLog({ taskId, activity }: TaskActivityLogProps) {
                             {item.user?.name || "Unknown"}
                           </span>
                           <span className="text-xs text-construction-blue font-mono">
-                            {formatDate(item.created_at)}
+                            {formatActivityDate(item.created_at)}
                           </span>
                         </div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">

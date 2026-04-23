@@ -75,15 +75,16 @@ export interface MaterialsStatus {
   delivered: number;
 }
 
+export interface ExpenseCategoryBreakdown {
+  category: string;
+  count: number;
+  totalAmount: number;
+}
+
 export interface ExpenseStats {
   total: number;
-  approved: number;
-  pending: number;
-  rejected: number;
   totalAmount: number;
-  approvedAmount: number;
-  pendingAmount: number;
-  rejectedAmount: number;
+  categoryBreakdown: ExpenseCategoryBreakdown[];
 }
 
 export interface TaskStats {
@@ -1384,20 +1385,15 @@ async function fetchProjectsWithStats(
       const plannedCost = Number(dbStats.planned_cost) || 0;
       const budget = Number(project.budget) || 0;
 
-      // Expense stats from DB
+      // Expense stats from DB (list view — no category breakdown needed)
       const expenseStats: ExpenseStats = {
         total: dbStats.expenses_total || 0,
-        approved: dbStats.expenses_approved || 0,
-        pending: dbStats.expenses_pending || 0,
-        rejected: dbStats.expenses_rejected || 0,
         totalAmount: Number(dbStats.expenses_total_amount) || 0,
-        approvedAmount: Number(dbStats.expenses_approved_amount) || 0,
-        pendingAmount: Number(dbStats.expenses_pending_amount) || 0,
-        rejectedAmount: 0, // Not tracked separately in DB function
+        categoryBreakdown: [],
       };
 
       // Calculate total actual spent (tasks + expenses)
-      const totalActualSpent = actualSpent + expenseStats.approvedAmount;
+      const totalActualSpent = actualSpent + expenseStats.totalAmount;
 
       // OPTIMIZATION: Use pre-calculated schedule status from SQL
       // This eliminates the O(n) JavaScript loop that ran on every page load

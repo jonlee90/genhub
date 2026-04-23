@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { m as motion } from "framer-motion";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ChatRoomWithUnread } from "@/types/db/chat";
@@ -110,7 +110,9 @@ export const ChatRoomItem = memo(function ChatRoomItem({
 
           {/* Debug: Unread Badge + Muted Icon with stamped metal style */}
           <div className="flex items-center gap-1.5 shrink-0">
-            {isMuted && <BellOff className="h-3 w-3 text-gray-400 dark:text-gray-500" />}
+            {isMuted && (
+              <BellOff className="h-3 w-3 text-gray-400 dark:text-gray-500" />
+            )}
             {room.unread_count > 0 && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -174,7 +176,7 @@ function formatRelativeTime(timestamp: string): string {
   if (diffHours < 24) return `${diffHours}h`;
   if (diffDays === 1) return "YDA";
   if (diffDays < 7) return `${diffDays}d`;
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return formatDate(date);
 }
 
 // Debug: Get message preview (truncate to 50 chars)

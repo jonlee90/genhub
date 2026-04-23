@@ -12,7 +12,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { m as motion, AnimatePresence } from "framer-motion";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 import { Search, X, MessageSquare, Hash, Users, Loader2 } from "lucide-react";
 import { searchMessages } from "@/app/actions/chat-search";
 import { useRouter } from "next/navigation";
@@ -422,10 +422,5 @@ function formatMessageTime(timestamp: string): string {
   if (isToday) return `Today at ${timeStr}`;
   if (isYesterday) return `Yesterday at ${timeStr}`;
 
-  return (
-    date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    }) + ` at ${timeStr}`
-  );
+  return formatDate(date) + ` at ${timeStr}`;
 }

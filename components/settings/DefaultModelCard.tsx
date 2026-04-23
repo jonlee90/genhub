@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useTransition, useCallback, useMemo } from 'react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useState, useTransition, useCallback, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 // Direct Lucide imports for performance
-import Home from 'lucide-react/icons/home';
-import Coffee from 'lucide-react/icons/coffee';
-import UtensilsCrossed from 'lucide-react/icons/utensils-crossed';
-import Building2 from 'lucide-react/icons/building-2';
-import Factory from 'lucide-react/icons/factory';
-import Upload from 'lucide-react/icons/upload';
-import Eye from 'lucide-react/icons/eye';
-import RotateCcw from 'lucide-react/icons/rotate-ccw';
-import Check from 'lucide-react/icons/check';
-import AlertCircle from 'lucide-react/icons/alert-circle';
-import Loader2 from 'lucide-react/icons/loader-2';
-import type { LucideIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { formatFileSize } from '@/lib/format-utils';
-import { ModelUploadModal } from './ModelUploadModal';
-import { ModelPreviewModal } from './ModelPreviewModal';
-import { resetToSystemDefault } from '@/app/actions/default-models';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import Home from "lucide-react/icons/home";
+import Coffee from "lucide-react/icons/coffee";
+import UtensilsCrossed from "lucide-react/icons/utensils-crossed";
+import Building2 from "lucide-react/icons/building-2";
+import Factory from "lucide-react/icons/factory";
+import Upload from "lucide-react/icons/upload";
+import Eye from "lucide-react/icons/eye";
+import RotateCcw from "lucide-react/icons/rotate-ccw";
+import Check from "lucide-react/icons/check";
+import AlertCircle from "lucide-react/icons/alert-circle";
+import Loader2 from "lucide-react/icons/loader-2";
+import type { LucideIcon } from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
+import { formatFileSize } from "@/lib/format-utils";
+import { ModelUploadModal } from "./ModelUploadModal";
+import { ModelPreviewModal } from "./ModelPreviewModal";
+import { resetToSystemDefault } from "@/app/actions/default-models";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // Map icon names to Lucide icons
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -78,7 +78,7 @@ export function DefaultModelCard({
 
   // Determine which icon to use (memoized to prevent recalculation on every render)
   const Icon = useMemo(() => {
-    const key = (iconName || projectTypeName).toLowerCase().replace(/\s+/g, '');
+    const key = (iconName || projectTypeName).toLowerCase().replace(/\s+/g, "");
     return ICON_MAP[key] || Building2;
   }, [iconName, projectTypeName]);
 
@@ -113,7 +113,9 @@ export function DefaultModelCard({
               {projectTypeName}
             </h3>
             {projectTypeDescription && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{projectTypeDescription}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {projectTypeDescription}
+              </p>
             )}
           </div>
 
@@ -136,9 +138,13 @@ export function DefaultModelCard({
             {/* Model Name (for system defaults) */}
             {!isUsingCustom && systemDefault && (
               <div>
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{systemDefault.name}</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  {systemDefault.name}
+                </p>
                 {systemDefault.description && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{systemDefault.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {systemDefault.description}
+                  </p>
                 )}
               </div>
             )}
@@ -146,17 +152,27 @@ export function DefaultModelCard({
             {/* Metadata Grid */}
             <div className="grid grid-cols-2 gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">File Size</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">
+                  File Size
+                </p>
                 <p className="text-sm font-bold text-construction-blue dark:text-blue-400 font-mono">
-                  {formatFileSize('fileSize' in currentModel ? currentModel.fileSize : (currentModel as { file_size_bytes: number }).file_size_bytes)}
+                  {formatFileSize(
+                    "fileSize" in currentModel
+                      ? currentModel.fileSize
+                      : (currentModel as { file_size_bytes: number })
+                          .file_size_bytes,
+                  )}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">Elements</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-mono">
+                  Elements
+                </p>
                 <p className="text-sm font-bold text-construction-blue dark:text-blue-400 font-mono">
-                  {('elementCount' in currentModel
+                  {("elementCount" in currentModel
                     ? currentModel.elementCount
-                    : (currentModel as { element_count?: number }).element_count)?.toLocaleString() || 'N/A'}
+                    : (currentModel as { element_count?: number }).element_count
+                  )?.toLocaleString() || "N/A"}
                 </p>
               </div>
             </div>
@@ -164,7 +180,8 @@ export function DefaultModelCard({
             {/* Upload Date (for custom models) */}
             {isUsingCustom && companyCustom && (
               <div className="text-xs text-gray-500 dark:text-gray-400">
-                Uploaded: {new Date(companyCustom.uploadedAt).toLocaleDateString()}
+                Uploaded:{" "}
+                {formatDate(companyCustom.uploadedAt, { includeYear: true })}
               </div>
             )}
           </div>
@@ -172,7 +189,9 @@ export function DefaultModelCard({
           <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
             <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
               <AlertCircle className="w-4 h-4" />
-              <p className="text-sm font-semibold">No default model available</p>
+              <p className="text-sm font-semibold">
+                No default model available
+              </p>
             </div>
           </div>
         )}
@@ -185,14 +204,14 @@ export function DefaultModelCard({
             variant="outline"
             size="sm"
             className={cn(
-              'flex-1 min-w-[140px] border-2 transition-colors',
+              "flex-1 min-w-[140px] border-2 transition-colors",
               isUsingCustom
-                ? 'border-[#059669] text-[#059669] hover:bg-[#059669]/10'
-                : 'border-construction-blue text-construction-blue hover:bg-construction-blue/10'
+                ? "border-[#059669] text-[#059669] hover:bg-[#059669]/10"
+                : "border-construction-blue text-construction-blue hover:bg-construction-blue/10",
             )}
           >
             <Upload className="w-4 h-4 mr-2" />
-            {isUsingCustom ? 'Replace Custom' : 'Upload Custom'}
+            {isUsingCustom ? "Replace Custom" : "Upload Custom"}
           </Button>
 
           {/* Preview Model */}
@@ -212,19 +231,28 @@ export function DefaultModelCard({
           {isUsingCustom && (
             <Button
               onClick={() => {
-                if (!confirm(`Reset ${projectTypeName} to system default model?\n\nThis will remove your custom model and use the GenHub default instead. This action cannot be undone.`)) {
+                if (
+                  !confirm(
+                    `Reset ${projectTypeName} to system default model?\n\nThis will remove your custom model and use the GenHub default instead. This action cannot be undone.`,
+                  )
+                ) {
                   return;
                 }
 
                 startTransition(async () => {
-                  const result = await resetToSystemDefault(projectTypeConfigId);
+                  const result =
+                    await resetToSystemDefault(projectTypeConfigId);
 
                   if (result.success) {
-                    toast.success(`${projectTypeName} has been reset to the system default model.`);
+                    toast.success(
+                      `${projectTypeName} has been reset to the system default model.`,
+                    );
 
                     router.refresh();
                   } else {
-                    toast.error('An error occurred while resetting to the system default.');
+                    toast.error(
+                      "An error occurred while resetting to the system default.",
+                    );
                   }
                 });
               }}

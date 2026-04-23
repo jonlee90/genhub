@@ -16,6 +16,7 @@ import { deleteExpense } from "@/app/actions/expenses";
 import { toast } from "sonner";
 import Image from "next/image";
 import { m as motion } from "framer-motion";
+import { formatDate } from "@/lib/utils";
 
 interface Expense {
   id: string;
@@ -56,14 +57,7 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
 });
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  day: "numeric",
-  year: "numeric",
-});
-
 const formatCurrency = (amount: number) => currencyFormatter.format(amount);
-const formatDate = (date: string) => dateFormatter.format(new Date(date));
 
 export function ExpenseDetailModal({
   expense,
@@ -202,7 +196,7 @@ export function ExpenseDetailModal({
                 Expense Date
               </Label>
               <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                {formatDate(expense.expense_date)}
+                {formatDate(expense.expense_date, { includeYear: true })}
               </p>
             </div>
 
@@ -260,7 +254,7 @@ export function ExpenseDetailModal({
                 Submitted
               </Label>
               <p className="text-sm text-gray-900 dark:text-gray-100">
-                {formatDate(expense.created_at)}
+                {formatDate(expense.created_at, { includeYear: true })}
               </p>
             </div>
           </div>

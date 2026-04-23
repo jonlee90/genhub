@@ -5,7 +5,7 @@ import Activity from "lucide-react/icons/activity";
 import Loader2 from "lucide-react/icons/loader-2";
 import Clock from "lucide-react/icons/clock";
 import User from "lucide-react/icons/user";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import { getTaskActivity } from "@/app/actions/tasks";
 import { useActionWithError } from "@/hooks/useActionWithError";
 import { ErrorBanner } from "@/components/shared/ErrorBanner";
@@ -67,20 +67,22 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
 
     // Relative time for recent activity
     if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
     if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
 
     // Absolute time for older activity
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
-    }) + " at " + date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return (
+      formatDate(date) +
+      " at " +
+      date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      })
+    );
   };
 
   // Get action display text
@@ -93,9 +95,13 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
         <span>
           <span className="capitalize">{action}</span>
           {" from "}
-          <span className="font-semibold text-red-600 dark:text-red-400">{activity.old_value}</span>
+          <span className="font-semibold text-red-600 dark:text-red-400">
+            {activity.old_value}
+          </span>
           {" to "}
-          <span className="font-semibold text-green-600 dark:text-green-400">{activity.new_value}</span>
+          <span className="font-semibold text-green-600 dark:text-green-400">
+            {activity.new_value}
+          </span>
         </span>
       );
     }
@@ -106,7 +112,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
         <span>
           <span className="capitalize">{action}</span>
           {" to "}
-          <span className="font-semibold text-construction-blue">{activity.new_value}</span>
+          <span className="font-semibold text-construction-blue">
+            {activity.new_value}
+          </span>
         </span>
       );
     }
@@ -120,7 +128,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12 gap-3">
         <Loader2 className="h-8 w-8 animate-spin text-construction-blue" />
-        <p className="text-sm text-gray-500 dark:text-gray-400">Loading activity...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Loading activity...
+        </p>
       </div>
     );
   }
@@ -135,8 +145,12 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
     return (
       <div className="text-center py-12">
         <Activity className="h-16 w-16 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-        <p className="text-gray-500 dark:text-gray-400 font-semibold">No activity yet</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Task activity will appear here as changes are made</p>
+        <p className="text-gray-500 dark:text-gray-400 font-semibold">
+          No activity yet
+        </p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+          Task activity will appear here as changes are made
+        </p>
       </div>
     );
   }
@@ -150,7 +164,7 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
           className={cn(
             "flex gap-3 p-3 rounded-lg",
             "hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
-            "border-l-2 border-transparent hover:border-l-[var(--construction-blue)]"
+            "border-l-2 border-transparent hover:border-l-[var(--construction-blue)]",
           )}
         >
           {/* Timeline dot */}
@@ -167,7 +181,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
             <div className="flex items-start gap-2 mb-1">
               <User className="h-4 w-4 text-gray-400 dark:text-gray-500 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <span className="font-bold text-sm text-gray-900 dark:text-gray-100">{activity.user_name}</span>
+                <span className="font-bold text-sm text-gray-900 dark:text-gray-100">
+                  {activity.user_name}
+                </span>
                 <span className="text-sm text-gray-600 dark:text-gray-400 ml-1.5">
                   {getActionDisplay(activity)}
                 </span>
@@ -177,7 +193,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
             {/* Comment (if exists) */}
             {activity.comment && (
               <div className="ml-6 mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded border-l-2 border-l-gray-300 dark:border-l-gray-700">
-                <p className="text-sm text-gray-700 dark:text-gray-300 italic">{activity.comment}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                  {activity.comment}
+                </p>
               </div>
             )}
 
@@ -192,7 +210,9 @@ export function ActivityTab({ taskId }: ActivityTabProps) {
 
       {/* Summary */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4 text-xs text-gray-500 dark:text-gray-400 text-center">
-        <p>{activities.length} activity log{activities.length !== 1 ? "s" : ""}</p>
+        <p>
+          {activities.length} activity log{activities.length !== 1 ? "s" : ""}
+        </p>
       </div>
     </div>
   );

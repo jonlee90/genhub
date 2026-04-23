@@ -10,14 +10,19 @@
  * 3. User sees page content faster, secondary data populates as it loads
  */
 
-'use server';
+"use server";
 
-import { cache } from 'react';
-import { createClient } from '@/utils/supabase/server';
-import { auth } from '@/lib/auth';
-import { getProjectTeamCostSummary } from './projects';
-import type { TeamCostSummary, TaskStats, ExpenseStats } from './projects';
-import { z } from 'zod';
+import { cache } from "react";
+import { createClient } from "@/utils/supabase/server";
+import { auth } from "@/lib/auth";
+import { getProjectTeamCostSummary } from "./projects";
+import type {
+  TeamCostSummary,
+  TaskStats,
+  ExpenseStats,
+  ExpenseCategoryBreakdown,
+} from "./projects";
+import { z } from "zod";
 
 // ============================================
 // Validation Schemas
@@ -49,8 +54,11 @@ interface ProjectDetailWithStatsResponse {
 export async function getProjectExpenseStats(input: unknown) {
   const validation = projectIdSchema.safeParse(input);
   if (!validation.success) {
-    console.error('[getProjectExpenseStats] Validation failed:', validation.error);
-    throw new Error('Invalid project ID');
+    console.error(
+      "[getProjectExpenseStats] Validation failed:",
+      validation.error,
+    );
+    throw new Error("Invalid project ID");
   }
 
   const { projectId } = validation.data;
@@ -59,31 +67,28 @@ export async function getProjectExpenseStats(input: unknown) {
   const session = await auth();
 
   if (!session?.user?.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
-  try {    const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
-      'get_project_detail_with_stats',
+  try {
+    const { data: rpcResult, error: rpcError } = await (supabase.rpc as any)(
+      "get_project_detail_with_stats",
       {
         p_project_id: projectId,
-      }
+      },
     );
+
+    const emptyExpenseStats: ExpenseStats = {
+      total: 0,
+      totalAmount: 0,
+      categoryBreakdown: [],
+    };
 
     // Check for RPC error
     if (rpcError) {
-      console.error('[getProjectExpenseStats] RPC error:', rpcError);
-      // Return default empty stats on error
+      console.error("[getProjectExpenseStats] RPC error:", rpcError);
       return {
-        expenseStats: {
-          total: 0,
-          approved: 0,
-          pending: 0,
-          rejected: 0,
-          totalAmount: 0,
-          approvedAmount: 0,
-          pendingAmount: 0,
-          rejectedAmount: 0,
-        } as ExpenseStats,
+        expenseStats: emptyExpenseStats,
         taskStats: null,
         phaseTaskStats: [],
       };
@@ -95,38 +100,42 @@ export async function getProjectExpenseStats(input: unknown) {
     // Safely extract the project data from the nested structure
     const projectData = result?.project;
     if (!projectData) {
-      console.warn('[getProjectExpenseStats] No project data in RPC response');
+      console.warn("[getProjectExpenseStats] No project data in RPC response");
       return {
-        expenseStats: {
-          total: 0,
-          approved: 0,
-          pending: 0,
-          rejected: 0,
-          totalAmount: 0,
-          approvedAmount: 0,
-          pendingAmount: 0,
-          rejectedAmount: 0,
-        } as ExpenseStats,
+        expenseStats: emptyExpenseStats,
         taskStats: null,
         phaseTaskStats: [],
       };
     }
 
     // Extract stats from the response, with proper typing
-    const expenseStatsData = projectData.expense_stats as Record<string, unknown> | undefined;
-    const rawTaskStats = projectData.task_stats as Record<string, unknown> | undefined;
-    const phaseTaskStats = projectData.phase_task_stats as Record<string, unknown> | undefined;
+    const expenseStatsData = projectData.expense_stats as
+      | Record<string, unknown>
+      | undefined;
+    const rawTaskStats = projectData.task_stats as
+      | Record<string, unknown>
+      | undefined;
+    const phaseTaskStats = projectData.phase_task_stats as
+      | Record<string, unknown>
+      | undefined;
 
-    // Construct proper ExpenseStats object with all required fields
+    const rawCategoryBreakdown = Array.isArray(
+      expenseStatsData?.categoryBreakdown,
+    )
+      ? (expenseStatsData?.categoryBreakdown as Array<Record<string, unknown>>)
+      : [];
+
+    const categoryBreakdown: ExpenseCategoryBreakdown[] =
+      rawCategoryBreakdown.map((row) => ({
+        category: String(row?.category ?? "other"),
+        count: Number(row?.count ?? 0),
+        totalAmount: Number(row?.totalAmount ?? 0),
+      }));
+
     const expenseStats: ExpenseStats = {
       total: (expenseStatsData?.total as number) || 0,
-      approved: (expenseStatsData?.approved as number) || 0,
-      pending: (expenseStatsData?.pending as number) || 0,
-      rejected: (expenseStatsData?.rejected as number) || 0,
       totalAmount: (expenseStatsData?.totalAmount as number) || 0,
-      approvedAmount: (expenseStatsData?.approvedAmount as number) || 0,
-      pendingAmount: (expenseStatsData?.pendingAmount as number) || 0,
-      rejectedAmount: (expenseStatsData?.rejectedAmount as number) || 0,
+      categoryBreakdown,
     };
 
     // Construct proper TaskStats object with all required fields
@@ -139,10 +148,11 @@ export async function getProjectExpenseStats(input: unknown) {
           overdue: (rawTaskStats.overdue as number) || 0,
           totalPlannedCost: (rawTaskStats.totalPlannedCost as number) || 0,
           totalActualCost: (rawTaskStats.totalActualCost as number) || 0,
-          budgetVariance: ((rawTaskStats.budgetVariance as number) || 0),
-          budgetUtilization: ((rawTaskStats.budgetUtilization as number) || 0),
+          budgetVariance: (rawTaskStats.budgetVariance as number) || 0,
+          budgetUtilization: (rawTaskStats.budgetUtilization as number) || 0,
           unassignedCount: (rawTaskStats.unassignedCount as number) || 0,
-          topAssignees: (rawTaskStats.topAssignees as TaskStats['topAssignees']) || [],
+          topAssignees:
+            (rawTaskStats.topAssignees as TaskStats["topAssignees"]) || [],
           tasksWithMaterials: (rawTaskStats.tasksWithMaterials as number) || 0,
           totalMaterialCost: (rawTaskStats.totalMaterialCost as number) || 0,
         }
@@ -154,19 +164,13 @@ export async function getProjectExpenseStats(input: unknown) {
       phaseTaskStats: phaseTaskStats ? Object.values(phaseTaskStats) : [],
     };
   } catch (error) {
-    console.error('[getProjectExpenseStats] Unexpected error:', error);
-    // Return default empty stats on error
+    console.error("[getProjectExpenseStats] Unexpected error:", error);
     return {
       expenseStats: {
         total: 0,
-        approved: 0,
-        pending: 0,
-        rejected: 0,
         totalAmount: 0,
-        approvedAmount: 0,
-        pendingAmount: 0,
-        rejectedAmount: 0,
-      } as ExpenseStats,
+        categoryBreakdown: [],
+      } satisfies ExpenseStats,
       taskStats: null,
       phaseTaskStats: [],
     };
@@ -182,8 +186,8 @@ export async function getProjectTeamCosts(input: unknown): Promise<{
 }> {
   const validation = projectIdSchema.safeParse(input);
   if (!validation.success) {
-    console.error('[getProjectTeamCosts] Validation failed:', validation.error);
-    throw new Error('Invalid project ID');
+    console.error("[getProjectTeamCosts] Validation failed:", validation.error);
+    throw new Error("Invalid project ID");
   }
 
   const { projectId } = validation.data;
@@ -191,7 +195,7 @@ export async function getProjectTeamCosts(input: unknown): Promise<{
   const session = await auth();
 
   if (!session?.user?.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   try {
@@ -201,7 +205,7 @@ export async function getProjectTeamCosts(input: unknown): Promise<{
       teamCostSummaries: teamCostResult.data || [],
     };
   } catch (error) {
-    console.error('[getProjectTeamCosts] Error:', error);
+    console.error("[getProjectTeamCosts] Error:", error);
     return {
       teamCostSummaries: [],
     };
@@ -215,8 +219,11 @@ export async function getProjectTeamCosts(input: unknown): Promise<{
 export async function getProjectTaskDependencies(input: unknown) {
   const validation = projectIdSchema.safeParse(input);
   if (!validation.success) {
-    console.error('[getProjectTaskDependencies] Validation failed:', validation.error);
-    throw new Error('Invalid project ID');
+    console.error(
+      "[getProjectTaskDependencies] Validation failed:",
+      validation.error,
+    );
+    throw new Error("Invalid project ID");
   }
 
   const { projectId } = validation.data;
@@ -225,19 +232,22 @@ export async function getProjectTaskDependencies(input: unknown) {
   const session = await auth();
 
   if (!session?.user?.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   try {
     // Get task IDs for this project
     const { data: tasks, error: tasksError } = await supabase
-      .from('tasks')
-      .select('id')
-      .eq('project_id', projectId);
+      .from("tasks")
+      .select("id")
+      .eq("project_id", projectId);
 
     // Handle error or empty result
     if (tasksError) {
-      console.error('[getProjectTaskDependencies] Error fetching tasks:', tasksError);
+      console.error(
+        "[getProjectTaskDependencies] Error fetching tasks:",
+        tasksError,
+      );
       return { taskDependencies: [] };
     }
 
@@ -249,24 +259,24 @@ export async function getProjectTaskDependencies(input: unknown) {
 
     // Fetch dependencies
     const [result1, result2] = await Promise.all([
-      supabase.from('task_dependencies').select('*').in('task_id', taskIds),
+      supabase.from("task_dependencies").select("*").in("task_id", taskIds),
       supabase
-        .from('task_dependencies')
-        .select('*')
-        .in('depends_on_task_id', taskIds),
+        .from("task_dependencies")
+        .select("*")
+        .in("depends_on_task_id", taskIds),
     ]);
 
     // Merge and deduplicate
     const allDeps = [...(result1.data || []), ...(result2.data || [])];
     const uniqueDeps = Array.from(
-      new Map(allDeps.map((d) => [d.id, d])).values()
+      new Map(allDeps.map((d) => [d.id, d])).values(),
     );
 
     return {
       taskDependencies: uniqueDeps,
     };
   } catch (error) {
-    console.error('[getProjectTaskDependencies] Unexpected error:', error);
+    console.error("[getProjectTaskDependencies] Unexpected error:", error);
     return { taskDependencies: [] };
   }
 }
@@ -278,8 +288,11 @@ export async function getProjectTaskDependencies(input: unknown) {
 export const getProjectDeferredData = cache(async (input: unknown) => {
   const validation = projectIdSchema.safeParse(input);
   if (!validation.success) {
-    console.error('[getProjectDeferredData] Validation failed:', validation.error);
-    throw new Error('Invalid project ID');
+    console.error(
+      "[getProjectDeferredData] Validation failed:",
+      validation.error,
+    );
+    throw new Error("Invalid project ID");
   }
 
   const { projectId } = validation.data;
@@ -292,19 +305,19 @@ export const getProjectDeferredData = cache(async (input: unknown) => {
 
   return {
     expenseStats:
-      expenseData.status === 'fulfilled'
+      expenseData.status === "fulfilled"
         ? expenseData.value.expenseStats
         : null,
     taskStats:
-      expenseData.status === 'fulfilled' ? expenseData.value.taskStats : null,
+      expenseData.status === "fulfilled" ? expenseData.value.taskStats : null,
     phaseTaskStats:
-      expenseData.status === 'fulfilled'
+      expenseData.status === "fulfilled"
         ? expenseData.value.phaseTaskStats
         : [],
     teamCostSummaries:
-      teamData.status === 'fulfilled' ? teamData.value.teamCostSummaries : [],
+      teamData.status === "fulfilled" ? teamData.value.teamCostSummaries : [],
     taskDependencies:
-      dependencyData.status === 'fulfilled'
+      dependencyData.status === "fulfilled"
         ? dependencyData.value.taskDependencies
         : [],
   };

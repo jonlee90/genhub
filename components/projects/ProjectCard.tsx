@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * ProjectCard Component - Unified Responsive Design
@@ -17,19 +17,22 @@
  * - Memoized theme lookups
  */
 
-import { memo, useMemo, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { memo, useMemo, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
-import Users from 'lucide-react/icons/users';
-import Calendar from 'lucide-react/icons/calendar';
-import MapPin from 'lucide-react/icons/map-pin';
-import Building2 from 'lucide-react/icons/building-2';
-import type { ProjectsRow, ProjectTypeConfigsRow } from '@/types/db/tables/projects';
-import { cn, formatBudget, formatPercentWhole } from '@/lib/utils';
-import type { ProjectWithStats } from '@/app/actions/projects';
-import { PROJECT_STATUS_CONFIG } from '@/lib/project-card-themes';
-import { PROJECT_TYPE_ICON_MAP } from '@/lib/config/project-type-display';
+import Users from "lucide-react/icons/users";
+import Calendar from "lucide-react/icons/calendar";
+import MapPin from "lucide-react/icons/map-pin";
+import Building2 from "lucide-react/icons/building-2";
+import type {
+  ProjectsRow,
+  ProjectTypeConfigsRow,
+} from "@/types/db/tables/projects";
+import { cn, formatBudget, formatPercentWhole, formatDate } from "@/lib/utils";
+import type { ProjectWithStats } from "@/app/actions/projects";
+import { PROJECT_STATUS_CONFIG } from "@/lib/project-card-themes";
+import { PROJECT_TYPE_ICON_MAP } from "@/lib/config/project-type-display";
 
 type Project = ProjectsRow & {
   project_phases?: Array<{
@@ -53,7 +56,9 @@ interface ProjectCardProps {
  * Calculate days remaining from end date if stats not available
  * Hoisted outside component to avoid recreation on every render (performance optimization)
  */
-function calculateDaysRemaining(endDate: string | null | undefined): number | null {
+function calculateDaysRemaining(
+  endDate: string | null | undefined,
+): number | null {
   if (!endDate) return null;
   const end = new Date(endDate);
   const today = new Date();
@@ -62,20 +67,28 @@ function calculateDaysRemaining(endDate: string | null | undefined): number | nu
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-function ProjectCardComponent({ project, className, projectTypes = [] }: ProjectCardProps) {
+function ProjectCardComponent({
+  project,
+  className,
+  projectTypes = [],
+}: ProjectCardProps) {
   // Look up the actual project type config from database
   const projectTypeConfig = useMemo(() => {
     // First try to match by project_type_config_id (most accurate)
     if (project.project_type_config_id && projectTypes.length > 0) {
-      const configById = projectTypes.find(pt => pt.id === project.project_type_config_id);
+      const configById = projectTypes.find(
+        (pt) => pt.id === project.project_type_config_id,
+      );
       if (configById) return configById;
     }
 
     // Fallback: match by normalized project_type string
     if (projectTypes.length > 0) {
-      const normalizedType = project.project_type.toLowerCase().replace(/\s+/g, '_');
-      const configByName = projectTypes.find(pt =>
-        pt.name.toLowerCase().replace(/\s+/g, '_') === normalizedType
+      const normalizedType = project.project_type
+        .toLowerCase()
+        .replace(/\s+/g, "_");
+      const configByName = projectTypes.find(
+        (pt) => pt.name.toLowerCase().replace(/\s+/g, "_") === normalizedType,
       );
       if (configByName) return configByName;
     }
@@ -85,7 +98,10 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
 
   // Get icon component from database or use default
   const TypeIcon = useMemo(() => {
-    if (projectTypeConfig?.icon_name && PROJECT_TYPE_ICON_MAP[projectTypeConfig.icon_name]) {
+    if (
+      projectTypeConfig?.icon_name &&
+      PROJECT_TYPE_ICON_MAP[projectTypeConfig.icon_name]
+    ) {
       return PROJECT_TYPE_ICON_MAP[projectTypeConfig.icon_name];
     }
     return Building2; // Default fallback icon
@@ -95,57 +111,66 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
   const projectTypeName = projectTypeConfig?.name || project.project_type;
 
   const statusConfig = useMemo(
-    () => PROJECT_STATUS_CONFIG[project.status as keyof typeof PROJECT_STATUS_CONFIG],
-    [project.status]
+    () =>
+      PROJECT_STATUS_CONFIG[
+        project.status as keyof typeof PROJECT_STATUS_CONFIG
+      ],
+    [project.status],
   );
 
   // Performance optimization: Memoize computed values
   const completionPercentage = useMemo(
     () => project.completion_percentage || 0,
-    [project.completion_percentage]
+    [project.completion_percentage],
   );
 
-  const hasStats = useMemo(() => 'stats' in project && project.stats, [project]);
+  const hasStats = useMemo(
+    () => "stats" in project && project.stats,
+    [project],
+  );
   const stats = hasStats ? project.stats : null;
 
   const daysRemaining = useMemo(
-    () => stats?.schedule?.daysRemaining ?? calculateDaysRemaining(project.end_date),
-    [stats?.schedule?.daysRemaining, project.end_date]
+    () =>
+      stats?.schedule?.daysRemaining ??
+      calculateDaysRemaining(project.end_date),
+    [stats?.schedule?.daysRemaining, project.end_date],
   );
 
   const imageUrl = project.image_url;
 
   // Performance optimization: Memoize event handlers
-  const handleAddressClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    window.open(
-      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-        `${project.address}${project.city ? `, ${project.city}` : ''}`
-      )}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  }, [project.address, project.city]);
+  const handleAddressClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      window.open(
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          `${project.address}${project.city ? `, ${project.city}` : ""}`,
+        )}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+    },
+    [project.address, project.city],
+  );
 
   return (
     <Link href={`/app/projects/${project.id}`} className="block h-full">
       <article
         className={cn(
-          'group relative h-full rounded-xl overflow-hidden',
-          'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800',
-          'shadow-sm hover:shadow-xl active:shadow-md',
-          'transition-all duration-300',
-          'cursor-pointer',
-          'hover:-translate-y-1.5 md:hover:-translate-y-2',
-          'active:scale-[0.98] md:active:scale-100',
-          className
+          "group relative h-full rounded-xl overflow-hidden",
+          "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800",
+          "shadow-sm hover:shadow-xl active:shadow-md",
+          "transition-all duration-300",
+          "cursor-pointer",
+          "hover:-translate-y-1.5 md:hover:-translate-y-2",
+          "active:scale-[0.98] md:active:scale-100",
+          className,
         )}
       >
         {/* Header Section - Construction Blue */}
-        <header
-          className="relative px-3 md:px-4 py-2.5 md:py-3 bg-construction-blue text-white"
-        >
+        <header className="relative px-3 md:px-4 py-2.5 md:py-3 bg-construction-blue text-white">
           <div className="flex items-start justify-between gap-2 md:gap-3">
             {/* Project Type Label & Name */}
             <div className="flex-1 min-w-0">
@@ -160,8 +185,8 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
             {/* Color-Coded Type Icon */}
             <div
               className={cn(
-                'shrink-0 p-2 md:p-2.5 rounded-lg bg-white/95 backdrop-blur-sm',
-                'border border-white/20 shadow-sm'
+                "shrink-0 p-2 md:p-2.5 rounded-lg bg-white/95 backdrop-blur-sm",
+                "border border-white/20 shadow-sm",
               )}
             >
               <TypeIcon
@@ -195,7 +220,7 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
                     linear-gradient(rgba(0,27,81,0.1) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(0,27,81,0.1) 1px, transparent 1px)
                   `,
-                  backgroundSize: '16px 16px',
+                  backgroundSize: "16px 16px",
                 }}
               />
 
@@ -260,14 +285,14 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
               <div className="flex items-center gap-1 md:gap-1.5 mt-0.5">
                 <span
                   className={cn(
-                    'inline-block w-1.5 h-1.5 rounded-full',
-                    statusConfig?.dotColor || 'bg-gray-400'
+                    "inline-block w-1.5 h-1.5 rounded-full",
+                    statusConfig?.dotColor || "bg-gray-400",
                   )}
                 />
                 <span
                   className={cn(
-                    'text-xs md:text-sm font-semibold',
-                    statusConfig?.textColor || 'text-gray-700'
+                    "text-xs md:text-sm font-semibold",
+                    statusConfig?.textColor || "text-gray-700",
                   )}
                 >
                   {statusConfig?.label || project.status}
@@ -301,8 +326,10 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
               <div className="flex items-center gap-1 mt-0.5">
                 <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 dark:text-gray-500" />
                 <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  {daysRemaining ?? '--'}
-                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">days</span>
+                  {daysRemaining ?? "--"}
+                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">
+                    days
+                  </span>
                 </span>
               </div>
             </div>
@@ -316,7 +343,9 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
                 <Users className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-400 dark:text-gray-500" />
                 <span className="text-xs md:text-sm font-semibold text-gray-700 dark:text-gray-300">
                   {stats?.teamSize ?? 0}
-                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">members</span>
+                  <span className="text-gray-400 dark:text-gray-500 font-normal ml-0.5">
+                    members
+                  </span>
                 </span>
               </div>
             </div>
@@ -332,10 +361,10 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
                 type="button"
                 onClick={handleAddressClick}
                 className={cn(
-                  'flex items-center gap-1 md:gap-1.5 group/link',
-                  'text-construction-blue dark:text-blue-400 hover:text-construction-blue/80 dark:hover:text-blue-300',
-                  'transition-colors duration-200',
-                  'bg-transparent border-none cursor-pointer p-0 min-w-0'
+                  "flex items-center gap-1 md:gap-1.5 group/link",
+                  "text-construction-blue dark:text-blue-400 hover:text-construction-blue/80 dark:hover:text-blue-300",
+                  "transition-colors duration-200",
+                  "bg-transparent border-none cursor-pointer p-0 min-w-0",
                 )}
               >
                 <MapPin className="h-3 w-3 md:h-3.5 md:w-3.5 shrink-0" />
@@ -352,12 +381,7 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
             )}
 
             <span className="text-[10px] md:text-[11px] text-gray-400 dark:text-gray-500 font-medium shrink-0">
-              {project.start_date
-                ? new Date(project.start_date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                  })
-                : 'Not started'}
+              {formatDate(project.start_date, { fallback: "Not started" })}
             </span>
           </div>
         </div>
@@ -365,10 +389,10 @@ function ProjectCardComponent({ project, className, projectTypes = [] }: Project
         {/* Hover/active indicator line at bottom */}
         <div
           className={cn(
-            'absolute bottom-0 left-0 right-0 h-1',
-            'opacity-0 group-hover:opacity-100 group-active:opacity-100',
-            'transition-opacity duration-300',
-            'bg-construction-blue'
+            "absolute bottom-0 left-0 right-0 h-1",
+            "opacity-0 group-hover:opacity-100 group-active:opacity-100",
+            "transition-opacity duration-300",
+            "bg-construction-blue",
           )}
         />
       </article>

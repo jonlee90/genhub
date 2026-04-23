@@ -16,7 +16,7 @@ import { TaskModalTrigger } from "@/components/tasks/TaskModalTrigger";
 import { useTaskModal } from "@/components/tasks/TaskModalContext";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { m as motion } from "framer-motion";
-import { cn, formatPercentWhole } from "@/lib/utils";
+import { cn, formatPercentWhole, formatDate } from "@/lib/utils";
 import type { TaskWithRelations } from "@/types/db/task";
 import type { ProjectPhasesRow } from "@/types/db/tables/projects";
 import type { TasksRow } from "@/types/db/tables/tasks";
@@ -47,7 +47,10 @@ function transformToTaskWithRelations(task: Task): TaskWithRelations {
   const assignee = firstAssignee
     ? {
         id: firstAssignee.user?.id || firstAssignee.id,
-        name: firstAssignee.user?.name || firstAssignee.subcontractor?.contact_name || "Unknown",
+        name:
+          firstAssignee.user?.name ||
+          firstAssignee.subcontractor?.contact_name ||
+          "Unknown",
         email: "", // TaskCard doesn't display email
         avatar_url: firstAssignee.user?.avatar_url || null,
       }
@@ -157,7 +160,6 @@ export function PhaseDetailPanel({
           transition={{ delay: 0.1 }}
         >
           <div className="flex items-center gap-3 pb-3 border-b-2 border-gray-200 dark:border-gray-700 w-full">
-
             {/* Add task button Section */}
             <TaskModalTrigger
               projects={projects}
@@ -199,11 +201,7 @@ export function PhaseDetailPanel({
                 <div className="flex items-center gap-2 text-construction-blue">
                   <Calendar className="h-5 w-5" />
                   <span className="text-sm font-bold">
-                    {new Date(phase.started_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {formatDate(phase.started_at, { includeYear: true })}
                   </span>
                 </div>
               </div>
@@ -218,11 +216,7 @@ export function PhaseDetailPanel({
                 <div className="flex items-center gap-2 text-[#059669]">
                   <CheckCircle2 className="h-5 w-5" />
                   <span className="text-sm font-bold">
-                    {new Date(phase.completed_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {formatDate(phase.completed_at, { includeYear: true })}
                   </span>
                 </div>
               </div>
@@ -288,7 +282,7 @@ export function PhaseDetailPanel({
                     strokeLinecap="round"
                     opacity="1"
                     style={{
-                      colorScheme: 'light',
+                      colorScheme: "light",
                     }}
                   />
                   {/* Progress arc - animated */}
@@ -571,7 +565,6 @@ export function PhaseDetailPanel({
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2 }}
       >
-
         {/* Task List with Fixed Height and Scroll */}
         {transformedTasks.length === 0 ? (
           <motion.div

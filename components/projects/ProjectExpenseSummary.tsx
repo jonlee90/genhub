@@ -3,11 +3,8 @@
 import { useMemo } from "react";
 // Performance optimization: Direct imports instead of barrel file (saves 200-800ms per page)
 import DollarSign from "lucide-react/icons/dollar-sign";
-import CheckCircle from "lucide-react/icons/check-circle";
-import Clock from "lucide-react/icons/clock";
-import XCircle from "lucide-react/icons/x-circle";
 import AlertCircle from "lucide-react/icons/alert-circle";
-import Receipt from "lucide-react/icons/receipt";
+import Tag from "lucide-react/icons/tag";
 import type { ExpenseStats } from "@/app/actions/projects";
 import { formatPercent } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -18,53 +15,52 @@ interface ProjectExpenseSummaryProps {
   className?: string;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+  materials: "Materials",
+  labor: "Labor",
+  subcontractor: "Subcontractor",
+  equipment: "Equipment",
+  permits: "Permits",
+  transportation: "Transportation",
+  meals: "Meals",
+  lodging: "Lodging",
+  other: "Other",
+};
+
 /**
- * ProjectExpenseSummary Component - Mobile PWA Optimized
- *
- * A premium, mobile-first expense analytics card designed for construction
- * field workers. Features touch-optimized interactions, high contrast
- * for outdoor visibility, and a clean visual hierarchy.
- *
- * Design Principles:
- * - Mobile-first with 44px+ touch targets
- * - High contrast for outdoor/bright sun visibility
- * - Clear visual hierarchy with scannable stats
- * - Native app feel with smooth transitions
- * - Construction-themed with GenHub design system
- *
- * @component
+ * ProjectExpenseSummary — budget vs. actual + top expense categories.
+ * Approval workflow removed; card now surfaces real spend against budget
+ * and the top three categories driving cost.
  */
 export function ProjectExpenseSummary({
   expenseStats,
   budget,
   className = "",
 }: ProjectExpenseSummaryProps) {
-  // Performance optimization: Memoize budget calculations to avoid recalculation on every render
-  // NOTE: Must call hooks before any early returns (React rules)
   const budgetUtilization = useMemo(
-    () => (budget > 0 ? (expenseStats.approvedAmount / budget) * 100 : 0),
-    [budget, expenseStats.approvedAmount],
+    () => (budget > 0 ? (expenseStats.totalAmount / budget) * 100 : 0),
+    [budget, expenseStats.totalAmount],
   );
 
   const isOverBudget = budgetUtilization > 100;
   const isNearBudget = budgetUtilization > 80 && budgetUtilization <= 100;
 
-  // Performance optimization: Memoize approval rate calculation
-  const approvalRate = useMemo(
-    () =>
-      expenseStats.total > 0
-        ? (expenseStats.approved / expenseStats.total) * 100
-        : 0,
-    [expenseStats.total, expenseStats.approved],
-  );
-
-  // Performance optimization: Memoize budget variance calculation
   const budgetVariance = useMemo(
-    () => budget - expenseStats.approvedAmount,
-    [budget, expenseStats.approvedAmount],
+    () => budget - expenseStats.totalAmount,
+    [budget, expenseStats.totalAmount],
   );
 
-  // Handle empty state when no expenses exist
+  const topCategories = useMemo(
+    () => (expenseStats.categoryBreakdown ?? []).slice(0, 3),
+    [expenseStats.categoryBreakdown],
+  );
+
+  const maxCategoryAmount = useMemo(
+    () => topCategories.reduce((max, cat) => Math.max(max, cat.totalAmount), 0),
+    [topCategories],
+  );
+
+  // Empty state
   if (expenseStats.total === 0) {
     return (
       <div
@@ -74,7 +70,6 @@ export function ProjectExpenseSummary({
           className,
         )}
       >
-        {/* Header */}
         <div className="px-4 py-3.5 border-b border-gray-100 dark:border-gray-700 bg-gradient-to-r from-gray-50/80 to-white dark:from-gray-800/80 dark:to-gray-900">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-construction-blue flex items-center justify-center shadow-sm">
@@ -91,7 +86,6 @@ export function ProjectExpenseSummary({
           </div>
         </div>
 
-        {/* Empty State */}
         <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
           <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
             <DollarSign className="w-8 h-8 text-gray-300 dark:text-gray-600" />
@@ -107,16 +101,9 @@ export function ProjectExpenseSummary({
     );
   }
 
-  // Determine progress bar colors
   const getBudgetColor = () => {
     if (isOverBudget) return "bg-[#DC2626]";
     if (isNearBudget) return "bg-[#F59E0B]";
-    return "bg-construction-blue";
-  };
-
-  const getApprovalColor = () => {
-    if (approvalRate >= 80) return "bg-[#059669]";
-    if (approvalRate >= 50) return "bg-[#F59E0B]";
     return "bg-construction-blue";
   };
 
@@ -139,12 +126,11 @@ export function ProjectExpenseSummary({
             <h3 className="font-bold text-construction-blue text-sm uppercase tracking-wide">
               Expense Summary
             </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 tabular-nums">
               {expenseStats.total} expense{expenseStats.total !== 1 ? "s" : ""}{" "}
-              total
+              · ${formatCompactNumber(expenseStats.totalAmount)}
             </p>
           </div>
-          {/* Quick Status Badge */}
           <div
             className={cn(
               "px-2.5 py-1 rounded-lg text-xs font-bold",
@@ -166,74 +152,47 @@ export function ProjectExpenseSummary({
 
       {/* Main Content */}
       <div className="p-4">
-        {/* Progress Bars Section */}
-        <div className="space-y-4 mb-5">
-          {/* Budget Utilization */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Budget Used
-                </span>
-              </div>
-              <span
-                className={cn(
-                  "text-sm font-bold tabular-nums",
-                  isOverBudget
-                    ? "text-[#DC2626]"
-                    : isNearBudget
-                      ? "text-[#F59E0B]"
-                      : "text-construction-blue",
-                )}
-              >
-                {formatPercent(budgetUtilization)}
+        {/* Budget Used Progress Bar */}
+        <div className="mb-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Budget Used
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500 ease-out",
-                  getBudgetColor(),
-                )}
-                style={{ width: `${Math.min(100, budgetUtilization)}%` }}
-              />
-            </div>
+            <span
+              className={cn(
+                "text-sm font-bold tabular-nums",
+                isOverBudget
+                  ? "text-[#DC2626]"
+                  : isNearBudget
+                    ? "text-[#F59E0B]"
+                    : "text-construction-blue",
+              )}
+            >
+              {formatPercent(budgetUtilization)}
+            </span>
           </div>
-
-          {/* Approval Rate */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  Approval Rate
-                </span>
-              </div>
-              <span className="text-sm font-bold text-construction-blue tabular-nums">
-                {expenseStats.approved}/{expenseStats.total}
-              </span>
-            </div>
-            <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all duration-500 ease-out",
-                  getApprovalColor(),
-                )}
-                style={{ width: `${approvalRate}%` }}
-              />
-            </div>
+          <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500 ease-out",
+                getBudgetColor(),
+              )}
+              style={{ width: `${Math.min(100, budgetUtilization)}%` }}
+            />
           </div>
         </div>
 
-        {/* Budget Stats Grid - Neutral backgrounds with small color accents */}
+        {/* 3-Tile Stats Grid */}
         <div className="grid grid-cols-3 gap-2.5 mb-4">
           {/* Budget */}
           <div className="flex flex-col p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 min-h-[76px]">
             <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
               Budget
             </span>
-            <span className="text-base font-bold text-construction-blue dark:text-blue-400 leading-tight">
+            <span className="text-base font-bold text-construction-blue dark:text-blue-400 leading-tight tabular-nums">
               ${formatCompactNumber(budget)}
             </span>
             <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
@@ -241,23 +200,22 @@ export function ProjectExpenseSummary({
             </span>
           </div>
 
-          {/* Approved */}
+          {/* Spent */}
           <div className="flex flex-col p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 min-h-[76px]">
             <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-              Approved
+              Spent
             </span>
-            <span className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight">
-              ${formatCompactNumber(expenseStats.approvedAmount)}
+            <span className="text-base font-bold text-gray-900 dark:text-gray-100 leading-tight tabular-nums">
+              ${formatCompactNumber(expenseStats.totalAmount)}
             </span>
             <span className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-              Spent
+              Actual
             </span>
           </div>
 
-          {/* Variance - Neutral bg with colored dot indicator */}
+          {/* Variance */}
           <div className="flex flex-col p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 min-h-[76px]">
             <div className="flex items-center gap-1 mb-1">
-              {/* Small colored dot indicator - appropriate use of status color */}
               <span
                 className={cn(
                   "w-2 h-2 rounded-full flex-shrink-0",
@@ -268,7 +226,7 @@ export function ProjectExpenseSummary({
                 Variance
               </span>
             </div>
-            <span className="text-base font-bold text-construction-blue dark:text-blue-400 leading-tight">
+            <span className="text-base font-bold text-construction-blue dark:text-blue-400 leading-tight tabular-nums">
               {budgetVariance >= 0 ? "+" : "-"}$
               {formatCompactNumber(Math.abs(budgetVariance))}
             </span>
@@ -278,52 +236,47 @@ export function ProjectExpenseSummary({
           </div>
         </div>
 
-        {/* Status Indicators Grid */}
-        <div className="grid grid-cols-2 gap-2.5 mb-4">
-          {/* Approved Expenses */}
-          <StatusCard
-            icon={CheckCircle}
-            label="Approved"
-            value={expenseStats.approved}
-            subtext={`$${formatCompactNumber(expenseStats.approvedAmount)}`}
-            variant="success"
-          />
-
-          {/* Pending Expenses */}
-          <StatusCard
-            icon={Clock}
-            label="Pending"
-            value={expenseStats.pending}
-            subtext={
-              expenseStats.pending > 0
-                ? `$${formatCompactNumber(expenseStats.pendingAmount)}`
-                : "All processed"
-            }
-            variant={expenseStats.pending > 0 ? "warning" : "success"}
-          />
-
-          {/* Rejected Expenses */}
-          <StatusCard
-            icon={XCircle}
-            label="Rejected"
-            value={expenseStats.rejected}
-            subtext={
-              expenseStats.rejected > 0
-                ? `$${formatCompactNumber(expenseStats.rejectedAmount)}`
-                : "None rejected"
-            }
-            variant={expenseStats.rejected > 0 ? "danger" : "success"}
-          />
-
-          {/* Total Expenses */}
-          <StatusCard
-            icon={Receipt}
-            label="Total"
-            value={expenseStats.total}
-            subtext={`$${formatCompactNumber(expenseStats.totalAmount)}`}
-            variant="neutral"
-          />
-        </div>
+        {/* Top Categories */}
+        {topCategories.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2.5">
+              <Tag className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Top Categories
+              </span>
+            </div>
+            <div className="space-y-2">
+              {topCategories.map((cat) => {
+                const pct =
+                  maxCategoryAmount > 0
+                    ? (cat.totalAmount / maxCategoryAmount) * 100
+                    : 0;
+                const label = CATEGORY_LABELS[cat.category] ?? cat.category;
+                return (
+                  <div key={cat.category}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-200">
+                        {label}
+                        <span className="text-gray-400 dark:text-gray-500 ml-1.5 tabular-nums">
+                          ({cat.count})
+                        </span>
+                      </span>
+                      <span className="text-xs font-bold text-construction-blue dark:text-blue-400 tabular-nums">
+                        ${formatCompactNumber(cat.totalAmount)}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-construction-blue dark:bg-blue-400 transition-all duration-500 ease-out"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Budget Warning Banner */}
         {(isOverBudget || isNearBudget) && (
@@ -332,20 +285,24 @@ export function ProjectExpenseSummary({
               "flex items-center gap-3 p-3 rounded-xl",
               "transition-all duration-200",
               isOverBudget
-                ? "bg-red-50 border border-red-200"
-                : "bg-amber-50 border border-amber-200",
+                ? "bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800"
+                : "bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800",
             )}
           >
             <div
               className={cn(
                 "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
-                isOverBudget ? "bg-red-100" : "bg-amber-100",
+                isOverBudget
+                  ? "bg-red-100 dark:bg-red-900/40"
+                  : "bg-amber-100 dark:bg-amber-900/40",
               )}
             >
               <AlertCircle
                 className={cn(
                   "w-4 h-4",
-                  isOverBudget ? "text-red-600" : "text-amber-600",
+                  isOverBudget
+                    ? "text-red-600 dark:text-red-300"
+                    : "text-amber-600 dark:text-amber-300",
                 )}
               />
             </div>
@@ -353,7 +310,9 @@ export function ProjectExpenseSummary({
               <p
                 className={cn(
                   "text-sm font-semibold",
-                  isOverBudget ? "text-red-800" : "text-amber-800",
+                  isOverBudget
+                    ? "text-red-800 dark:text-red-200"
+                    : "text-amber-800 dark:text-amber-200",
                 )}
               >
                 {isOverBudget
@@ -363,7 +322,9 @@ export function ProjectExpenseSummary({
               <p
                 className={cn(
                   "text-xs mt-0.5",
-                  isOverBudget ? "text-red-600" : "text-amber-600",
+                  isOverBudget
+                    ? "text-red-600 dark:text-red-300"
+                    : "text-amber-600 dark:text-amber-300",
                 )}
               >
                 {isOverBudget
@@ -374,62 +335,6 @@ export function ProjectExpenseSummary({
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/**
- * StatusCard - Compact status indicator with visual feedback
- */
-interface StatusCardProps {
-  icon: typeof CheckCircle;
-  label: string;
-  value: number;
-  subtext: string;
-  variant: "success" | "danger" | "warning" | "neutral";
-}
-
-function StatusCard({
-  icon: Icon,
-  label,
-  value,
-  subtext,
-  variant,
-}: StatusCardProps) {
-  // Small dot color based on status - only element with color
-  const dotColors = {
-    success: "bg-[#059669]",
-    danger: "bg-[#DC2626]",
-    warning: "bg-[#F59E0B]",
-    neutral: "bg-gray-400",
-  };
-
-  // Determine effective dot color based on variant and value
-  const getDotColor = () => {
-    if (variant === "danger" && value === 0) return dotColors.success; // No rejected = good
-    if (variant === "warning" && value === 0) return dotColors.success; // No pending = good
-    if (variant === "success" && value === 0) return dotColors.neutral; // No approved = muted
-    return dotColors[variant];
-  };
-
-  return (
-    <div className="flex flex-col p-3 rounded-xl min-h-[76px] bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-1.5 mb-1">
-        {/* Small colored dot indicator - appropriate use of status color */}
-        <span
-          className={cn("w-2 h-2 rounded-full flex-shrink-0", getDotColor())}
-        />
-        <Icon className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-        <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          {label}
-        </span>
-      </div>
-      <span className="text-xl font-bold leading-tight text-construction-blue">
-        {value}
-      </span>
-      <span className="text-[10px] mt-0.5 text-gray-500 dark:text-gray-400">
-        {subtext}
-      </span>
     </div>
   );
 }

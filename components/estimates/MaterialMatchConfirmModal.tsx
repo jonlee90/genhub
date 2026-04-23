@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/ui/ResponsiveModal/index";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import Check from "lucide-react/icons/check";
 
 type MaterialMatchConfirmModalProps = {
@@ -111,7 +111,7 @@ export function MaterialMatchConfirmModal({
                   Last Updated:
                 </span>
                 <span className="ml-2 text-gray-700 dark:text-gray-300">
-                  {new Date(material.lastUpdated).toLocaleDateString()}
+                  {formatDate(material.lastUpdated, { includeYear: true })}
                 </span>
               </div>
             </div>

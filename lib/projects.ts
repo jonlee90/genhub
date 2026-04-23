@@ -487,13 +487,8 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
   let phaseTaskStats: any[] = [];
   let expenseStats: any = {
     total: 0,
-    approved: 0,
-    pending: 0,
-    rejected: 0,
     totalAmount: 0,
-    approvedAmount: 0,
-    pendingAmount: 0,
-    rejectedAmount: 0,
+    categoryBreakdown: [],
   };
   let taskStats: TaskStats = {
     total: 0,
@@ -530,18 +525,21 @@ export const getProjectDetailData = cache(async function getProjectDetailData(
 
     // Use expense stats from RPC with field validation
     if (statsProject.expense_stats) {
+      const rawBreakdown = Array.isArray(
+        statsProject.expense_stats.categoryBreakdown,
+      )
+        ? (statsProject.expense_stats.categoryBreakdown as Array<
+            Record<string, unknown>
+          >)
+        : [];
       expenseStats = {
         total: (statsProject.expense_stats.total as number) || 0,
-        approved: (statsProject.expense_stats.approved as number) || 0,
-        pending: (statsProject.expense_stats.pending as number) || 0,
-        rejected: (statsProject.expense_stats.rejected as number) || 0,
         totalAmount: (statsProject.expense_stats.totalAmount as number) || 0,
-        approvedAmount:
-          (statsProject.expense_stats.approvedAmount as number) || 0,
-        pendingAmount:
-          (statsProject.expense_stats.pendingAmount as number) || 0,
-        rejectedAmount:
-          (statsProject.expense_stats.rejectedAmount as number) || 0,
+        categoryBreakdown: rawBreakdown.map((row) => ({
+          category: String(row?.category ?? "other"),
+          count: Number(row?.count ?? 0),
+          totalAmount: Number(row?.totalAmount ?? 0),
+        })),
       };
     }
 

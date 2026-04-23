@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import Filter from "lucide-react/icons/filter";
 import Plus from "lucide-react/icons/plus";
 import X from "lucide-react/icons/x";
@@ -50,12 +50,6 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
 function ExpenseRow({
   expense,
   onClick,
@@ -89,7 +83,7 @@ function ExpenseRow({
               ) : null}
               <span>·</span>
               <span>
-                {dateFormatter.format(new Date(expense.expense_date))}
+                {formatDate(expense.expense_date, { includeYear: true })}
               </span>
             </div>
             {expense.payment_method ? (

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { memo } from 'react';
+import { memo } from "react";
 import {
   Users,
   Shield,
@@ -8,9 +8,9 @@ import {
   UserCog,
   UserPlus,
   UserCheck,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { StatCard } from '@/components/ui/stat-card';
+} from "lucide-react";
+import { cn, formatDate } from "@/lib/utils";
+import { StatCard } from "@/components/ui/stat-card";
 
 /**
  * TeamSummaryStats - Type definition for team-level statistics
@@ -65,16 +65,16 @@ interface TeamSummaryProps {
  */
 export const TeamSummary = memo(function TeamSummary({
   stats,
-  className = '',
+  className = "",
 }: TeamSummaryProps) {
   // Handle empty state when no team members exist
   if (stats.totalMembers === 0) {
     return (
       <div
         className={cn(
-          'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
-          'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
-          className
+          "bg-white dark:bg-gray-900 rounded-xl overflow-hidden",
+          "border-2 border-gray-200 dark:border-gray-700 shadow-sm",
+          className,
         )}
       >
         {/* Header */}
@@ -87,7 +87,9 @@ export const TeamSummary = memo(function TeamSummary({
               <h3 className="font-bold text-construction-blue dark:text-construction-blue text-sm uppercase tracking-wide">
                 Team Summary
               </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">No team members yet</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                No team members yet
+              </p>
             </div>
           </div>
         </div>
@@ -109,23 +111,25 @@ export const TeamSummary = memo(function TeamSummary({
   }
 
   // Calculate team health status
-  const activationRate = stats.totalMembers > 0
-    ? (stats.activeMembers / stats.totalMembers) * 100
-    : 0;
+  const activationRate =
+    stats.totalMembers > 0
+      ? (stats.activeMembers / stats.totalMembers) * 100
+      : 0;
 
-  const teamHealth = activationRate >= 80
-    ? 'healthy'
-    : activationRate >= 50
-      ? 'at-risk'
-      : 'needs-attention';
+  const teamHealth =
+    activationRate >= 80
+      ? "healthy"
+      : activationRate >= 50
+        ? "at-risk"
+        : "needs-attention";
 
   return (
     <div
       className={cn(
-        'bg-white dark:bg-gray-900 rounded-xl overflow-hidden',
-        'border-2 border-gray-200 dark:border-gray-700 shadow-sm',
-        'transition-all duration-200',
-        className
+        "bg-white dark:bg-gray-900 rounded-xl overflow-hidden",
+        "border-2 border-gray-200 dark:border-gray-700 shadow-sm",
+        "transition-all duration-200",
+        className,
       )}
     >
       {/* Header */}
@@ -139,21 +143,26 @@ export const TeamSummary = memo(function TeamSummary({
               Team Summary
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {stats.activeMembers} active member{stats.activeMembers !== 1 ? 's' : ''}
+              {stats.activeMembers} active member
+              {stats.activeMembers !== 1 ? "s" : ""}
             </p>
           </div>
           {/* Quick Status Badge */}
           <div
             className={cn(
-              'px-2.5 py-1 rounded-lg text-xs font-bold',
-              teamHealth === 'needs-attention'
-                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-                : teamHealth === 'at-risk'
-                  ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-                  : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+              "px-2.5 py-1 rounded-lg text-xs font-bold",
+              teamHealth === "needs-attention"
+                ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
+                : teamHealth === "at-risk"
+                  ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400"
+                  : "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
             )}
           >
-            {teamHealth === 'needs-attention' ? 'Needs Attention' : teamHealth === 'at-risk' ? 'At Risk' : 'Healthy'}
+            {teamHealth === "needs-attention"
+              ? "Needs Attention"
+              : teamHealth === "at-risk"
+                ? "At Risk"
+                : "Healthy"}
           </div>
         </div>
       </div>
@@ -185,7 +194,7 @@ export const TeamSummary = memo(function TeamSummary({
             label="Invited"
             value={stats.invitedMembers}
             subtext="Pending"
-            variant={stats.invitedMembers > 0 ? 'warning' : 'neutral'}
+            variant={stats.invitedMembers > 0 ? "warning" : "neutral"}
             showStatusDot={stats.invitedMembers > 0}
           />
         </div>
@@ -286,7 +295,7 @@ export const TeamSummary = memo(function TeamSummary({
                     </span>
                   </div>
                   <div className="text-[11px] text-gray-400 dark:text-gray-500">
-                    {new Date(member.joinedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {formatDate(member.joinedAt)}
                   </div>
                 </div>
               ))}

@@ -6,6 +6,7 @@ import Receipt from "lucide-react/icons/receipt";
 import Plus from "lucide-react/icons/plus";
 import { Button } from "@/components/ui/button";
 import { CreateExpenseModal } from "@/components/expenses/CreateExpenseModal";
+import { formatDate } from "@/lib/utils";
 
 // Task expense interface
 export interface TaskExpense {
@@ -117,7 +118,7 @@ export function TaskExpensesSection({
                   <span>{expense.vendor_name || "No vendor"}</span>
                   <span>-</span>
                   <span>
-                    {new Date(expense.expense_date).toLocaleDateString()}
+                    {formatDate(expense.expense_date, { includeYear: true })}
                   </span>
                 </div>
               </div>

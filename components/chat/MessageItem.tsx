@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { m as motion } from "framer-motion";
-import { cn, getInitials } from "@/lib/utils";
+import { cn, getInitials, formatDate } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageWithSender, EntityReference } from "@/types/db/chat";
 import {
@@ -432,10 +432,5 @@ function formatMessageTime(timestamp: string): string {
   if (isToday) return timeStr;
   if (isYesterday) return `YDA ${timeStr}`;
 
-  return (
-    date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    }) + ` ${timeStr}`
-  );
+  return formatDate(date) + ` ${timeStr}`;
 }
