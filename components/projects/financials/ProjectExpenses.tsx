@@ -6,6 +6,7 @@ import { cn, formatDate } from "@/lib/utils";
 import Filter from "lucide-react/icons/filter";
 import Plus from "lucide-react/icons/plus";
 import X from "lucide-react/icons/x";
+import HardHat from "lucide-react/icons/hard-hat";
 import type { ExpenseWithRelations } from "@/types/db/expense";
 
 const ExpenseDetailModal = dynamic(
@@ -86,6 +87,14 @@ function ExpenseRow({
                 {formatDate(expense.expense_date, { includeYear: true })}
               </span>
             </div>
+            {expense.subcontractor?.company_name ? (
+              <div className="flex items-center gap-1 mt-1 text-xs font-semibold text-construction-blue dark:text-blue-400">
+                <HardHat className="h-3 w-3 shrink-0" />
+                <span className="truncate">
+                  {expense.subcontractor.company_name}
+                </span>
+              </div>
+            ) : null}
             {expense.payment_method ? (
               <span className="inline-block mt-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-medium text-gray-600 dark:text-gray-300">
                 {expense.payment_method}

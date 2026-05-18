@@ -36,8 +36,14 @@ import { Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { m as motion } from "framer-motion";
 import Image from "next/image";
-import type { CreateExpenseModalProps } from "@/types/db/expense";
+import type {
+  CreateExpenseModalProps,
+  ExpenseCategory,
+} from "@/types/db/expense";
 import { getTaskTypeDisplayConfig } from "@/lib/config/task-type-display";
+
+const canLinkSubcontractor = (cat: ExpenseCategory | string | undefined) =>
+  cat === "labor" || cat === "subcontractor";
 
 export function CreateExpenseModal({
   projects,
@@ -85,26 +91,8 @@ export function CreateExpenseModal({
       description: isEdit ? expense.description : "",
       amount: isEdit ? String(expense.amount) : "",
       category: isEdit
-        ? (expense.category as
-            | "materials"
-            | "labor"
-            | "subcontractor"
-            | "equipment"
-            | "permits"
-            | "transportation"
-            | "meals"
-            | "lodging"
-            | "other")
-        : ("materials" as
-            | "materials"
-            | "labor"
-            | "subcontractor"
-            | "equipment"
-            | "permits"
-            | "transportation"
-            | "meals"
-            | "lodging"
-            | "other"),
+        ? (expense.category as ExpenseCategory)
+        : ("materials" as ExpenseCategory),
       expense_date: isEdit
         ? expense.expense_date
         : new Date().toISOString().split("T")[0],
@@ -114,13 +102,17 @@ export function CreateExpenseModal({
 
   // Watch values for derived state
   const selectedProject = watch("project_id");
+  const selectedCategory = watch("category");
   const [subcontractors, setSubcontractors] = useState<
     Array<{ id: string; company_name: string; contact_name: string | null }>
   >([]);
   const [subcontractorLoading, setSubcontractorLoading] = useState(false);
   const [selectedSubcontractorId, setSelectedSubcontractorId] = useState<
     string | null
-  >(null);
+  >(isEdit ? (expense?.subcontractor_id ?? null) : null);
+  const [subcontractorError, setSubcontractorError] = useState<string | null>(
+    null,
+  );
 
   // Filter tasks for selected project
   const projectTasks = useMemo(
@@ -131,21 +123,30 @@ export function CreateExpenseModal({
     [selectedProject, tasks],
   );
 
-  // Load subcontractors when project is selected
   useEffect(() => {
-    if (!selectedProject || isEdit) {
-      setSubcontractors([]);
+    if (
+      !canLinkSubcontractor(selectedCategory) ||
+      !selectedProject ||
+      subcontractors.length > 0
+    ) {
       return;
     }
+    let cancelled = false;
     setSubcontractorLoading(true);
     getSubcontractorsByCompany()
       .then((result) => {
+        if (cancelled) return;
         if (result.success && result.data) {
           setSubcontractors(result.data);
         }
       })
-      .finally(() => setSubcontractorLoading(false));
-  }, [selectedProject, isEdit]);
+      .finally(() => {
+        if (!cancelled) setSubcontractorLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategory, selectedProject, subcontractors.length]);
 
   // Count tasks per project
   const taskCountPerProject = useMemo(() => {
@@ -215,6 +216,12 @@ export function CreateExpenseModal({
   };
 
   const onSubmit = handleSubmit(async (data) => {
+    if (data.category === "subcontractor" && !selectedSubcontractorId) {
+      setSubcontractorError("Please select a subcontractor.");
+      return;
+    }
+    setSubcontractorError(null);
+
     if (isEdit) {
       const result = await updateExpense({
         id: expense.id,
@@ -232,6 +239,9 @@ export function CreateExpenseModal({
           | "other",
         expense_date: data.expense_date,
         payment_method: paymentMethod || undefined,
+        subcontractor_id: canLinkSubcontractor(data.category)
+          ? selectedSubcontractorId
+          : null,
       });
       if (result.success) {
         toast.success("Expense updated.");
@@ -265,7 +275,9 @@ export function CreateExpenseModal({
       expense_date: data.expense_date,
       payment_method: paymentMethod || undefined,
       receipt_url: receiptPreview || undefined, // In real implementation, use the uploaded URL
-      subcontractor_id: selectedSubcontractorId || undefined,
+      subcontractor_id: canLinkSubcontractor(data.category)
+        ? (selectedSubcontractorId ?? undefined)
+        : undefined,
     });
 
     if (result.success) {
@@ -494,7 +506,13 @@ export function CreateExpenseModal({
                 control={control}
                 rules={createExpenseValidation.category}
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={(v) => {
+                      field.onChange(v);
+                      setSubcontractorError(null);
+                    }}
+                  >
                     <SelectTrigger id="category" className="border-2">
                       <SelectValue />
                     </SelectTrigger>
@@ -542,28 +560,32 @@ export function CreateExpenseModal({
             </div>
           </div>
 
-          {/* Subcontractor Picker — only when project is selected and not editing */}
-          {!isEdit && selectedProject ? (
+          {canLinkSubcontractor(selectedCategory) && selectedProject ? (
             <div className="space-y-2">
               <Label
                 htmlFor="subcontractor_id"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="text-sm font-bold text-gray-700 dark:text-gray-300"
               >
-                Subcontractor
+                {selectedCategory === "subcontractor"
+                  ? "Subcontractor *"
+                  : "Subcontractor (optional)"}
               </Label>
               <div className="relative">
                 <select
                   id="subcontractor_id"
-                  className="w-full min-h-[44px] rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-base text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#001B51] disabled:opacity-50"
+                  className="w-full min-h-[44px] rounded-md border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-base text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-[#001B51] disabled:opacity-50"
                   value={selectedSubcontractorId ?? ""}
                   disabled={subcontractorLoading}
                   onChange={(e) => {
                     const val = e.target.value || null;
                     setSelectedSubcontractorId(val);
+                    if (val) setSubcontractorError(null);
                   }}
                 >
                   <option value="">
-                    {subcontractorLoading ? "Loading..." : "None (optional)"}
+                    {subcontractorLoading
+                      ? "Loading..."
+                      : "Select a subcontractor"}
                   </option>
                   {subcontractors.map((sub) => (
                     <option key={sub.id} value={sub.id}>
@@ -572,7 +594,12 @@ export function CreateExpenseModal({
                   ))}
                 </select>
               </div>
-              {selectedSubcontractorId ? (
+              {subcontractorError ? (
+                <p className="text-sm text-red-600 font-medium">
+                  {subcontractorError}
+                </p>
+              ) : null}
+              {!isEdit && selectedSubcontractorId ? (
                 <p className="text-xs text-blue-600 dark:text-blue-400 flex items-center gap-1">
                   <Building2 className="w-3 h-3" />A payment will be auto-added
                   to this subcontractor&apos;s contract.

@@ -17,39 +17,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { m as motion } from "framer-motion";
 import { formatDate } from "@/lib/utils";
-
-interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  expense_date: string;
-  vendor_name: string | null;
-  receipt_url: string | null;
-  created_at: string;
-  project: {
-    id: string;
-    name: string;
-  } | null;
-  task?: {
-    id: string;
-    title: string;
-  } | null;
-  submitter?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
-}
-
-interface ExpenseDetailModalProps {
-  expense: Expense;
-  onClose: () => void;
-  userRole?: string | null;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  currentUserId?: string;
-}
+import type { ExpenseDetailModalProps } from "@/types/db/expense";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -207,6 +175,17 @@ export function ExpenseDetailModal({
                 </Label>
                 <p className="text-base font-semibold text-gray-900 dark:text-gray-100 mt-1">
                   {expense.vendor_name}
+                </p>
+              </div>
+            ) : null}
+
+            {expense.subcontractor?.company_name ? (
+              <div>
+                <Label className="text-sm font-bold text-gray-600 dark:text-gray-400">
+                  Subcontractor
+                </Label>
+                <p className="text-base font-semibold text-construction-blue dark:text-blue-400 mt-1">
+                  {expense.subcontractor.company_name}
                 </p>
               </div>
             ) : null}

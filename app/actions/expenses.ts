@@ -72,6 +72,7 @@ const updateExpenseSchema = z.object({
   vendor_address: z.string().optional().nullable(),
   payment_method: z.string().optional().nullable(),
   store_account: z.string().optional().nullable(),
+  subcontractor_id: z.string().uuid().optional().nullable(),
 });
 
 const addLineItemSchema = z.object({
@@ -317,6 +318,7 @@ export async function getExpensesByProject(projectId: string) {
         *,
         project:projects(id, name),
         task:tasks(id, title),
+        subcontractor:subcontractors(id, company_name),
         line_items:expense_line_items(*)
       `,
       )
@@ -348,7 +350,8 @@ export async function getExpensesByCompany() {
         `
         *,
         project:projects(id, name),
-        task:tasks(id, title)
+        task:tasks(id, title),
+        subcontractor:subcontractors(id, company_name)
       `,
       )
       .eq("company_id", userContext.companyId)

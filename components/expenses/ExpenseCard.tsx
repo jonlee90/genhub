@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Calendar,
   Building2,
+  HardHat,
 } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 import type { ExpenseCardProps } from "@/types/db/expense";
@@ -82,6 +83,16 @@ export const ExpenseCard = React.memo(
                 </>
               ) : null}
             </div>
+
+            {/* Subcontractor */}
+            {expense.subcontractor?.company_name ? (
+              <div className="flex items-center gap-1.5 text-xs md:text-sm">
+                <HardHat className="h-3.5 w-3.5 text-construction-blue dark:text-blue-400 shrink-0" />
+                <span className="text-construction-blue dark:text-blue-400 font-semibold truncate">
+                  {expense.subcontractor.company_name}
+                </span>
+              </div>
+            ) : null}
 
             {/* Payment Method badge */}
             {expense.payment_method ? (

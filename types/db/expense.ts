@@ -26,6 +26,7 @@ export interface ExpenseWithRelations {
   receipt_url: string | null;
   payment_method?: string | null;
   store_account?: string | null;
+  subcontractor_id?: string | null;
   created_at: string;
   project: {
     id: string;
@@ -34,6 +35,10 @@ export interface ExpenseWithRelations {
   task?: {
     id: string;
     title: string;
+  } | null;
+  subcontractor?: {
+    id: string;
+    company_name: string;
   } | null;
   submitter?: {
     id: string;
@@ -114,5 +119,7 @@ export interface ExpenseDetailModalProps {
   expense: ExpenseWithRelations;
   onClose: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
+  userRole?: string | null;
   currentUserId?: string;
 }
