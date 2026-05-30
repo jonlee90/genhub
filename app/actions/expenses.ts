@@ -9,6 +9,7 @@ import { ensureSubcontractorOnProject } from "@/app/actions/projects";
 import { createClient } from "@/utils/supabase/server";
 import type { ExpensesRow, ExpensesInsert } from "@/types/db/tables/expenses";
 import type { ExpenseCategory } from "@/types/db/enums";
+import type { ExpenseWithRelations } from "@/types/db/expense";
 import type { Database } from "@/types/db/helpers";
 
 type Expense = ExpensesRow;
@@ -1063,32 +1064,15 @@ export const getInitialExpensesPageData = cache(
     try {
       const supabase = await createClient();
 
-      // Fetch projects and expenses in parallel, then fetch tasks for those projects
-      const [projectsResult, expensesResult] = await Promise.all([
-        supabase
-          .from("projects")
-          .select("id, name, status, end_date")
-          .eq("company_id", companyId)
-          .eq("status", "active")
-          .order("name"),
-        supabase
-          .from("expenses")
-          .select(
-            `
-          *,
-          project:projects!expenses_project_id_fkey (
-            id,
-            name
-          ),
-          task:tasks!expenses_task_id_fkey (
-            id,
-            title
-          )
-        `,
-          )
-          .eq("company_id", companyId)
-          .order("created_at", { ascending: false }),
-      ]);
+      // Expenses themselves are now loaded by getExpensesPage (paginated).
+      // This loader only provides the projects + tasks needed for the filter
+      // dropdowns and create/edit forms.
+      const projectsResult = await supabase
+        .from("projects")
+        .select("id, name, status, end_date")
+        .eq("company_id", companyId)
+        .eq("status", "active")
+        .order("name");
 
       // Fetch tasks for active projects (no waterfall now)
       const projectIds = projectsResult.data?.map((p) => p.id) || [];
@@ -1112,7 +1096,7 @@ export const getInitialExpensesPageData = cache(
       return {
         success: true,
         data: {
-          expenses: expensesResult.data || [],
+          expenses: [],
           projects: (projectsResult.data || []) as any[],
           tasks: tasksResult.data || [],
           role,
@@ -1398,5 +1382,326 @@ export async function getPaymentMethodSuggestions(): Promise<{
   } catch (error) {
     console.error("[getPaymentMethodSuggestions] Unexpected error:", error);
     return { error: "Failed to fetch payment method suggestions" };
+  }
+}
+
+// ============================================
+// Paginated + Filtered Expense Queries
+// ============================================
+
+/**
+ * Filter parameters for expense queries.
+ * Export here (single source of truth) so client components can import
+ * without redefining locally — avoids TS2719 duplicate-type errors.
+ */
+export interface ExpenseQueryFilters {
+  search?: string;
+  projectId?: string; // 'all' | uuid
+  category?: string; // 'all' | ExpenseCategory
+  hasReceipt?: "all" | "with" | "without";
+  dateRange?: "all" | "month" | "last30" | "year";
+  sort?: "created_at" | "date" | "amount_high" | "amount_low" | "description";
+}
+
+/** Shared select string used by all paginated expense queries (mirrors getInitialExpensesPageData). */
+const EXPENSE_SELECT = `
+  *,
+  project:projects!expenses_project_id_fkey (
+    id,
+    name
+  ),
+  task:tasks!expenses_task_id_fkey (
+    id,
+    title
+  )
+` as const;
+
+/**
+ * Sanitise a search term so it cannot break the PostgREST `.or()` syntax.
+ * Strips the characters that PostgREST uses as delimiters / operators.
+ */
+function sanitiseSearch(raw: string): string {
+  return raw.replace(/[%,()\s]/g, " ").trim();
+}
+
+/**
+ * Apply `ExpenseQueryFilters` to a Supabase query that already has
+ * `.from('expenses').eq('company_id', companyId)` set.
+ *
+ * Mutates-and-returns the query builder so callers can chain further.
+ *
+ * Rules applied:
+ *   query-select-only  – never reads more columns than needed
+ *   security-no-client-ids – company_id is always applied by the caller
+ */
+function applyExpenseFilters<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filters: ExpenseQueryFilters,
+): T {
+  // Category filter
+  if (filters.category && filters.category !== "all") {
+    query = query.eq("category", filters.category);
+  }
+
+  // Project filter
+  if (filters.projectId && filters.projectId !== "all") {
+    query = query.eq("project_id", filters.projectId);
+  }
+
+  // Receipt presence filter
+  if (filters.hasReceipt === "with") {
+    query = query.not("receipt_url", "is", null);
+  } else if (filters.hasReceipt === "without") {
+    query = query.is("receipt_url", null);
+  }
+
+  // Full-text-style search across description, vendor_name, category
+  if (filters.search) {
+    const term = sanitiseSearch(filters.search);
+    if (term.length > 0) {
+      query = query.or(
+        `description.ilike.%${term}%,vendor_name.ilike.%${term}%,category.ilike.%${term}%`,
+      );
+    }
+  }
+
+  // Date range filter — Date construction happens inside function body (not module scope)
+  if (filters.dateRange && filters.dateRange !== "all") {
+    const now = new Date();
+    let startDate: Date;
+
+    if (filters.dateRange === "month") {
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else if (filters.dateRange === "last30") {
+      startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    } else {
+      // 'year'
+      startDate = new Date(now.getFullYear(), 0, 1);
+    }
+
+    query = query.gte("expense_date", startDate.toISOString().split("T")[0]);
+  }
+
+  return query as T;
+}
+
+/**
+ * Fetch a single page of expenses with optional filtering, sorting, and pagination.
+ *
+ * Uses the limit+1 trick (cursor precedent from chat-queries.ts) to determine
+ * whether more pages exist without a separate COUNT query.
+ *
+ * Skills applied: query-avoid-n-plus-1 (single query with joins),
+ *                 security-no-client-ids (companyId from server context),
+ *                 query-index-usage (ordered by indexed columns)
+ */
+export async function getExpensesPage(
+  companyId: string,
+  filters: ExpenseQueryFilters,
+  offset: number,
+  limit = 30,
+): Promise<{
+  success: boolean;
+  data: { expenses: ExpenseWithRelations[]; hasMore: boolean };
+  error?: string;
+}> {
+  try {
+    // Resolve company scope from the session — never trust the caller-supplied
+    // companyId (these actions are invoked from the client).
+    const userContext = await getUserContext();
+    if ("error" in userContext || userContext.companyId !== companyId) {
+      return {
+        success: false,
+        error: "Unauthorized",
+        data: { expenses: [], hasMore: false },
+      };
+    }
+    const supabase = userContext.supabase;
+
+    // Build base query
+    let query = supabase
+      .from("expenses")
+      .select(EXPENSE_SELECT)
+      .eq("company_id", userContext.companyId);
+
+    // Apply filters
+    query = applyExpenseFilters(query, filters);
+
+    // Apply sort
+    switch (filters.sort) {
+      case "date":
+        query = query.order("expense_date", { ascending: false });
+        break;
+      case "amount_high":
+        query = query.order("amount", { ascending: false });
+        break;
+      case "amount_low":
+        query = query.order("amount", { ascending: true });
+        break;
+      case "description":
+        query = query.order("description", { ascending: true });
+        break;
+      case "created_at":
+      default:
+        query = query.order("created_at", { ascending: false });
+        break;
+    }
+
+    // Fetch limit+1 rows to determine hasMore (avoids COUNT query)
+    query = query.range(offset, offset + limit);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("[getExpensesPage] Supabase error:", error);
+      return {
+        success: false,
+        error: error.message,
+        data: { expenses: [], hasMore: false },
+      };
+    }
+
+    const rows = (data ?? []) as ExpenseWithRelations[];
+    const hasMore = rows.length > limit;
+    const expenses = hasMore ? rows.slice(0, limit) : rows;
+
+    return { success: true, data: { expenses, hasMore } };
+  } catch (error) {
+    console.error("[getExpensesPage] Unexpected error:", error);
+    return {
+      success: false,
+      error: "Failed to fetch expenses",
+      data: { expenses: [], hasMore: false },
+    };
+  }
+}
+
+/**
+ * Return count and total amount for the current filter set.
+ *
+ * Fetches only the `amount` column (no joins, no range) and aggregates in JS.
+ * Used to populate summary cards without a second paginated request.
+ *
+ * Skills applied: query-select-only (amount column only),
+ *                 security-no-client-ids (companyId from server context)
+ */
+export async function getExpensesSummary(
+  companyId: string,
+  filters: ExpenseQueryFilters,
+): Promise<{ count: number; totalAmount: number }> {
+  try {
+    const userContext = await getUserContext();
+    if ("error" in userContext || userContext.companyId !== companyId) {
+      return { count: 0, totalAmount: 0 };
+    }
+    const supabase = userContext.supabase;
+
+    let query = supabase
+      .from("expenses")
+      .select("amount")
+      .eq("company_id", userContext.companyId);
+
+    query = applyExpenseFilters(query, filters);
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("[getExpensesSummary] Supabase error:", error);
+      return { count: 0, totalAmount: 0 };
+    }
+
+    const rows = (data ?? []) as { amount: number }[];
+    const count = rows.length;
+    const totalAmount = rows.reduce((sum, r) => sum + (r.amount ?? 0), 0);
+
+    return { count, totalAmount };
+  } catch (error) {
+    console.error("[getExpensesSummary] Unexpected error:", error);
+    return { count: 0, totalAmount: 0 };
+  }
+}
+
+/**
+ * Return project-level and category-level aggregates for the full company
+ * expense set (no filters applied — used for sidebar/chart summaries).
+ *
+ * Fetches only `project_id, category, amount` columns — no joins, no range.
+ * Groups entirely in JS to avoid multiple round-trips.
+ *
+ * Skills applied: query-select-only (3 columns only),
+ *                 query-avoid-n-plus-1 (single query, JS grouping),
+ *                 security-no-client-ids (companyId from server context)
+ */
+export async function getExpenseAggregates(companyId: string): Promise<{
+  projectCounts: Record<string, number>;
+  projectAmounts: Record<string, number>;
+  categoryCounts: Record<string, number>;
+  totalCount: number;
+  totalAmount: number;
+}> {
+  const fallback = {
+    projectCounts: {},
+    projectAmounts: {},
+    categoryCounts: {},
+    totalCount: 0,
+    totalAmount: 0,
+  };
+
+  try {
+    const userContext = await getUserContext();
+    if ("error" in userContext || userContext.companyId !== companyId) {
+      return fallback;
+    }
+    const supabase = userContext.supabase;
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("project_id, category, amount")
+      .eq("company_id", userContext.companyId);
+
+    if (error) {
+      console.error("[getExpenseAggregates] Supabase error:", error);
+      return fallback;
+    }
+
+    const rows = (data ?? []) as {
+      project_id: string | null;
+      category: string | null;
+      amount: number;
+    }[];
+
+    const projectCounts: Record<string, number> = {};
+    const projectAmounts: Record<string, number> = {};
+    const categoryCounts: Record<string, number> = {};
+    let totalCount = 0;
+    let totalAmount = 0;
+
+    for (const row of rows) {
+      totalCount += 1;
+      totalAmount += row.amount ?? 0;
+
+      if (row.project_id) {
+        projectCounts[row.project_id] =
+          (projectCounts[row.project_id] ?? 0) + 1;
+        projectAmounts[row.project_id] =
+          (projectAmounts[row.project_id] ?? 0) + (row.amount ?? 0);
+      }
+
+      if (row.category) {
+        categoryCounts[row.category] = (categoryCounts[row.category] ?? 0) + 1;
+      }
+    }
+
+    return {
+      projectCounts,
+      projectAmounts,
+      categoryCounts,
+      totalCount,
+      totalAmount,
+    };
+  } catch (error) {
+    console.error("[getExpenseAggregates] Unexpected error:", error);
+    return fallback;
   }
 }

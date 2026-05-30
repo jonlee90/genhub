@@ -26,45 +26,21 @@ export function ExpensesListSkeleton() {
         <Skeleton className="h-4 w-40" />
       </div>
 
-      {/* Grid skeleton */}
-      <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, index) => (
-          <div key={index} className="relative h-full">
-            <div className="absolute inset-0 bg-gradient-to-br from-construction-blue/5 to-transparent rounded-xl" />
-            <div className="relative h-full bg-white border-2 border-gray-200 rounded-xl shadow-construction overflow-hidden flex flex-col">
-              {/* Header */}
-              <Skeleton className="relative h-32 md:h-40 border-b-2 bg-gradient-to-br from-gray-100 to-gray-50 border-gray-200" />
-
-              {/* Content */}
-              <div className="flex-1 p-4 md:p-5 space-y-3">
-                {/* Amount */}
-                <div className="flex items-baseline gap-2">
-                  <Skeleton className="h-5 w-5 md:h-6 md:w-6 shrink-0" />
-                  <Skeleton className="h-8 w-32" />
-                </div>
-
-                {/* Description */}
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
-
-                {/* Category */}
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-20" />
-                  <Skeleton className="h-6 w-24" />
-                </div>
-
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Footer */}
-                <div className="space-y-2 pt-3 border-t-2 border-gray-100">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                </div>
+      {/* List skeleton */}
+      <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden">
+        {[...Array(8)].map((_, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-b-0 min-h-[56px]"
+          >
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Skeleton className="h-4 w-4 rounded shrink-0" />
+              <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-56" />
               </div>
             </div>
+            <Skeleton className="h-4 w-20 shrink-0 ml-4" />
           </div>
         ))}
       </div>

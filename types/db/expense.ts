@@ -80,8 +80,18 @@ export interface ExpenseTaskContext {
 /**
  * Props for ExpensesList component
  */
+export interface ExpenseFilterAggregates {
+  projectCounts: Record<string, number>;
+  projectAmounts: Record<string, number>;
+  categoryCounts: Record<string, number>;
+  totalCount: number;
+  totalAmount: number;
+}
+
 export interface ExpensesListProps {
   initialExpenses: ExpenseWithRelations[];
+  initialHasMore: boolean;
+  aggregates: ExpenseFilterAggregates;
   projects: ExpenseProject[];
   tasks: ExpenseTask[];
   searchParams: { [key: string]: string | string[] | undefined };

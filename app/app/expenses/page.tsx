@@ -4,7 +4,12 @@ import { ExpensesList } from "@/components/expenses/ExpensesList";
 import { ExpensesListSkeleton } from "@/components/expenses/ExpensesListSkeleton";
 import { ExpensesPageHeader } from "@/components/expenses/ExpensesPageHeader";
 import { ExpenseSummary } from "@/components/expenses/ExpenseSummary";
-import { getExpenseAnalytics, getInitialExpensesPageData } from "@/app/actions/expenses";
+import {
+  getExpenseAnalytics,
+  getExpenseAggregates,
+  getExpensesPage,
+  getInitialExpensesPageData,
+} from "@/app/actions/expenses";
 import { auth } from "@/lib/auth";
 import { createClient } from "@/utils/supabase/server";
 
@@ -45,21 +50,26 @@ export default async function ExpensesPage({
     redirect("/app/onboarding");
   }
 
-  // Fetch initial page data and analytics in parallel
-  const [params, pageDataResult, analyticsResult] = await Promise.all([
-    searchParams,
-    getInitialExpensesPageData(companyUser.company_id, companyUser.role),
-    getExpenseAnalytics(),
-  ]);
+  // Fetch projects/tasks, first page of expenses, aggregates, and analytics in parallel
+  const [params, pageDataResult, firstPageResult, aggregates, analyticsResult] =
+    await Promise.all([
+      searchParams,
+      getInitialExpensesPageData(companyUser.company_id, companyUser.role),
+      getExpensesPage(companyUser.company_id, { sort: "created_at" }, 0),
+      getExpenseAggregates(companyUser.company_id),
+      getExpenseAnalytics(),
+    ]);
 
   if (!pageDataResult.success) {
     redirect("/app/onboarding");
   }
 
-  const { expenses, projects, tasks, companyId } = pageDataResult.data;
+  const { projects, tasks, companyId } = pageDataResult.data;
+  const initialExpenses = firstPageResult.data.expenses;
+  const initialHasMore = firstPageResult.data.hasMore;
 
   // Handle analytics error - fallback to null if error occurs
-  const analytics = analyticsResult.error ? null : (analyticsResult.data || null);
+  const analytics = analyticsResult.error ? null : analyticsResult.data || null;
 
   return (
     <div className="flex-1 space-y-4 md:space-y-6 p-4 md:p-8 pt-4 md:pt-6 relative overflow-hidden">
@@ -91,12 +101,16 @@ export default async function ExpensesPage({
       </div>
 
       {/* Expense Summary Cards - only show when expenses exist */}
-      {expenses.length > 0 && <ExpenseSummary analytics={analytics} />}
+      {aggregates.totalCount > 0 ? (
+        <ExpenseSummary analytics={analytics} />
+      ) : null}
 
       {/* Expenses List with Filters */}
       <Suspense fallback={<ExpensesListSkeleton />}>
         <ExpensesList
-          initialExpenses={expenses}
+          initialExpenses={initialExpenses}
+          initialHasMore={initialHasMore}
+          aggregates={aggregates}
           projects={projects}
           tasks={tasks}
           searchParams={params}
